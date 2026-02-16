@@ -21,13 +21,17 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ChannelPartnerService } from '../services/ChannelPartnerService';
+import { ChannelPartnerService } from '@/features/ChannelPartner/services/ChannelPartnerService';
 import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Trash2 } from 'lucide-react';
-import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
+import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { useChannelPartnerListState } from '@/features/ChannelPartner/context/ChannelPartnerListStateContext';
 
 
 export const ChannelPartner: React.FC = () => {
@@ -43,30 +47,28 @@ export const ChannelPartner: React.FC = () => {
   // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-
   // TOAST
   const { addToast } = useToast();
 
-  const { projectId } = useProject();
-
-  // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('');
+  // CONTEXT STATE
+  const { listState, updateListState } = useChannelPartnerListState();
+  const { searchTerm, filters, sortInfo } = listState;
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
-
     searchChannelPartner(value)
   }, 350);
 
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   //DELETE ChannelPartner MASTER
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
   const [deleteChannelPartnerDetailsData, setDeleteChannelPartnerDetailsData] = useState<ChannelPartnerData | null>(null)
+
+  //EXCEL IMPORT 
+  const [showImportModal, setShowImportModal] = useState(false);
+
 
   //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeChannelPartnerColumnsModal, setIsShowCustomizeChannelPartnerColumnsModal] = useState(false);
@@ -80,32 +82,16 @@ export const ChannelPartner: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    const incoming = location.state?.listState;
+    // Sync pagination with context state
+    setPagination({ currentPage: listState.page });
 
-    const listState = incoming ?? {
-      page: 1, filters:
-        {} as FilterInfo,
-      sortInfo: undefined,
-      searchTerm: ''
-    };
-
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
+    // Load channel partners with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadChannelPartner(listState.page ?? 1, { Name: String(listState.searchTerm).trim() });
-      return;
+      loadChannelPartner(listState.page, { Name: String(listState.searchTerm).trim() }, listState.sortInfo);
+    } else {
+      loadChannelPartner(listState.page, listState.filters, listState.sortInfo);
     }
-
-    loadChannelPartner(listState.page ?? 1, listState.filters ?? {});
-  }, [location.state]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
@@ -117,35 +103,39 @@ export const ChannelPartner: React.FC = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchChannelPartnerList = async (page: number = pagination.currentPage) => {
-    return await loadChannelPartner(page, filters);
+  const fetchChannelPartnerList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadChannelPartner(page, filters, sort);
   }
 
-  const loadChannelPartner = async (page: number, filterParams: FilterInfo) => {
+  const loadChannelPartner = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam = undefined;
 
-        if (sortInfo) {
-
-          const column = ChannelPartnerColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
         const params: FilterWithPaginationChannelPartnerRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           ChannelPartnerId: filterParams.ChannelPartnerId ? Number(filterParams.ChannelPartnerId) : undefined,
-          Name: filterParams.Name?.trim() || undefined,
-          SortBy: sortByParam,
-          ProjectId: Number(projectId),
+          ChannelPartnerName: searchtext ?? filterParams.Name?.trim() ?? undefined,
+          CompanyName: filterParams.CompanyName?.trim() || undefined,
+          FirmsType: filterParams.FirmsType?.trim() || undefined,
+          Type: filterParams.Type?.trim() || undefined,
+          MobileNumber: filterParams.MobileNumber?.trim() || undefined,
+          OfficeAddress: filterParams.OfficeAddress?.trim() || undefined,
+          GSTNumber: filterParams.GSTNumber?.trim() || undefined,
+          RERANumber: filterParams.RERANumber?.trim() || undefined,
+          PanNumber: filterParams.PanNumber?.trim() || undefined,
+          AadharCardNumber: filterParams.AadharCardNumber?.trim() || undefined,
+          Speciality: filterParams.Speciality?.trim() || undefined,
+          CityName: filterParams.CityName?.trim() || undefined,
+          VillageName: filterParams.VillageName?.trim() || undefined,
+          SortBy: getSortByParam(sortInfo ?? null, ChannelPartnerColumns)
 
         };
 
         const response = await ChannelPartnerService.apiCallPullChannelPartner(params);
+
         if (E.isRight(response)) {
 
           setChannelPartnerList(response.right.Data);
@@ -157,7 +147,9 @@ export const ChannelPartner: React.FC = () => {
           });
 
         } else {
+
           addToast({ type: 'error', title: response.left.message });
+
           return response;
         }
       },
@@ -172,34 +164,28 @@ export const ChannelPartner: React.FC = () => {
   //#region SEARCH & CLEAR
   const searchChannelPartner = async (searchValue: string) => {
 
-    setSearchTerm(searchValue);
+    updateListState({ searchTerm: searchValue, page: 1 });
 
     if (searchValue.trim() === '') {
 
-      fetchChannelPartnerList();
+      updateListState({ filters: {}, searchTerm: '' });
+
+      fetchChannelPartnerList(1);
 
       return
     }
 
-    const filterParams: FilterInfo = {
-      Name: searchValue.trim(),
-    };
-
-    await loadChannelPartner(1, filterParams);
+    await loadChannelPartner(1, filters, sortInfo, searchValue);
   };
 
   //#endregion
 
   //#region CLEAR CHANNEL PARTNER MASTER 
   const clearSearchChannelPartner = () => {
-    setSearchTerm('');
-
     debouncedSearch.cancel?.();
-
-    setFilters({});
+    updateListState({ searchTerm: '', filters: {}, page: 1, sortInfo: undefined });
     setTempFilters({});
-    setPagination({ currentPage: 1 });
-    loadChannelPartner(1, {});
+    loadChannelPartner(1, {}, undefined, undefined);
     try {
       navigate(location.pathname, {
         replace: true,
@@ -217,25 +203,29 @@ export const ChannelPartner: React.FC = () => {
       setLoadingMessage,
       async () => {
 
-        let sortByParam = undefined
-        if (sortInfo) {
-          const column = ChannelPartnerColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
         const params: FilterWithPaginationChannelPartnerRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
-          Name: filters.Name?.trim() || undefined,
-          ProjectId: Number(projectId),
-          SortBy: sortByParam,
+          ChannelPartnerName: filters.Name?.trim() || undefined,
+          CompanyName: filters.CompanyName?.trim() || undefined,
+          FirmsType: filters.FirmsType?.trim() || undefined,
+          Type: filters.Type?.trim() || undefined,
+          MobileNumber: filters.MobileNumber?.trim() || undefined,
+          OfficeAddress: filters.OfficeAddress?.trim() || undefined,
+          GSTNumber: filters.GSTNumber?.trim() || undefined,
+          RERANumber: filters.RERANumber?.trim() || undefined,
+          PanNumber: filters.PanNumber?.trim() || undefined,
+          AadharCardNumber: filters.AadharCardNumber?.trim() || undefined,
+          Speciality: filters.Speciality?.trim() || undefined,
+          CityName: filters.CityName?.trim() || undefined,
+          VillageName: filters.VillageName?.trim() || undefined,
+          SortBy: getSortByParam(sortInfo ?? null, ChannelPartnerColumns),
           ExportType: exportType
         };
 
         const response = await getChannelPartner(params);
 
-        handleExportFile(response, exportType, 'Channel Partner Master', addToast);
+        handleExportFile(response, exportType, 'Channel Partner', addToast);
 
         return response;
       },
@@ -251,29 +241,6 @@ export const ChannelPartner: React.FC = () => {
   //#endregion
 
   //#region IMPORT EXCEL | DOWNLOAD
-
-  const excelImportChannelPartner = async () => {
-
-    await runApiWithLoader(
-
-      setIsLoading,
-
-      setLoadingMessage,
-
-      async () => {
-
-
-        return null;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Import failed' })
-      },
-      undefined,
-      'Preparing Import'
-    )
-  }
-
 
   const downloadExcelSampleChannelPartner = async () => {
     await runApiWithLoader(
@@ -300,9 +267,40 @@ export const ChannelPartner: React.FC = () => {
       'Preparing Downloading'
     )
   }
-
-  const handleExcelImportChannelPartner = () => excelImportChannelPartner()
   const handleDownloadExcelSampleChannelPartner = () => downloadExcelSampleChannelPartner()
+
+  const uploadExcel = async (file: File, mergeExisting: string) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const fd = new FormData();
+
+        fd.append("ExcelFile", file);
+        fd.append("IsAllDelete", mergeExisting);
+        fd.append("TableName", 'CHANNEL PARTNER');
+
+        const response = await technicalService.apiCallExcelImport(fd);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: 'success', title: "Excel imported sucessfully" })
+
+          fetchChannelPartnerList();
+
+        } else {
+          addToast({ type: "error", title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (err: any) => addToast({ type: "error", title: err.message }),
+      undefined,
+      "Importing Excel"
+    );
+  };
   //#endregion
 
   //#region API | SERVICES CALL TO GET CHANNEL PARTNER
@@ -314,17 +312,16 @@ export const ChannelPartner: React.FC = () => {
 
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
+    updateListState({ page });
     fetchChannelPartnerList(page);
-  }, []);
+  }, [updateListState]);
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sortInfo: SortInfo) => {
 
-    setSortInfo(sortInfo);
-
-    fetchChannelPartnerList(1);
-
-  }, []);
+  const handleSortColumn = useCallback((sort: SortInfo) => {
+    updateListState({ sortInfo: sort, page: 1 });
+    loadChannelPartner(1, filters, sort, searchTerm || undefined);
+  }, [filters, searchTerm, updateListState]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -344,28 +341,22 @@ export const ChannelPartner: React.FC = () => {
 
   //#region NAVIGATE TO  VIEW CHANNEL PARTNER
   const handleNavigateToView = (row: ChannelPartnerData) => {
-    navigate('/channelPartner/view', {
-      state: {
-        editChannelPartnerData: row,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm
-        }
-      }
+    updateListState({
+      channelPartnerId: row.ChannelPartnerId,
+      channelPartnerName: row.Name,
+      uniquekey: row.Uniquekey
     });
+    navigate('/channelPartner/view');
   };
 
   //#region NAVIGATE TO ADD CHANNEL PARTNER
   const handleAddChannelPartnerModal = useCallback(() => {
     navigate('/channelPartner/add', {
       state: {
-        fromList: true,
-        listState: { page: pagination.currentPage, filters, sortInfo, searchTerm }
+        fromList: true
       }
     });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+  }, [navigate]);
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
@@ -394,32 +385,62 @@ export const ChannelPartner: React.FC = () => {
       )
     },
     {
+            key: 'SystemGeneratedCode',
+            label: 'Unique Code',
+            width: '20',
+            sortable: true,
+            fixed: 'left',
+            align: 'left',
+            render: value => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="150px"
+                    tooltipThreshold={20}
+                    tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                />
+            )
+        },
+    
+     {
+      key: 'Designation',
+      label: 'Designation',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || '-'
+    },
+    {
       key: 'CompanyName',
       label: 'Company Name',
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || '-'}
-          maxWidth="170px"
-          tooltipThreshold={25}
-        />
-      )
+      render: (value) => value || '-'
     },
+    {
+      key: 'FirmsType',
+      label: 'Firm Type',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || '-'
+    },
+    {
+      key: 'Type',
+      label: 'Type',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || '-'
+    },
+   
     {
       key: 'EmailId',
       label: 'Email Id',
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || '-'}
-          maxWidth="170px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value) => value || '-'
     },
     {
       key: 'MobileNumber',
@@ -430,14 +451,7 @@ export const ChannelPartner: React.FC = () => {
       render: (value) => value ? `+91 ${value}` : '-'
     },
 
-    {
-      key: 'OfficeAddress',
-      label: 'Office Address',
-      width: '12',
-      sortable: false,
-      align: 'center',
-      render: (value) => value || '-'
-    },
+    
 
     {
       key: 'PanNumber',
@@ -445,13 +459,16 @@ export const ChannelPartner: React.FC = () => {
       width: '12',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || '-'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
+      render: (value: string, row: any) => {
+        return (
+          <MultiImageViewer
+            images={parseDocumentUrls(row.PanCardURL)}
+            title="Pan Card Document"
+            triggerLabel={value || '-'}
+            isWrap={false}
+          />
+        );
+      }
     },
     {
       key: 'AadharCardNumber',
@@ -459,13 +476,16 @@ export const ChannelPartner: React.FC = () => {
       width: '12',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || '-'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
+      render: (value: string, row: any) => {
+        return (
+          <MultiImageViewer
+            images={parseDocumentUrls(row.AadharCardURL)}
+            title="Aadhaar Document"
+            triggerLabel={value || '-'}
+            isWrap={false}
+          />
+        );
+      }
     },
     {
       key: 'GSTNumber',
@@ -487,13 +507,47 @@ export const ChannelPartner: React.FC = () => {
       width: '12',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || '-'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
+      render: (value) => value || '-'
+    },
+    {
+      key: 'CountryName',
+      label: 'Country',
+      width: '14',
+      sortable: false,
+      align: 'left',
+      render: value => value || '-'
+    },
+    {
+      key: 'DistrictName',
+      label: 'District',
+      width: '14',
+      sortable: false,
+      align: 'left',
+      render: value => value || '-'
+    },
+    {
+      key: 'CityName',
+      label: 'City',
+      width: '14',
+      sortable: false,
+      align: 'left',
+      render: value => value || '-'
+    },
+    {
+      key: 'VillageName',
+      label: 'Village',
+      width: '15',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || '-'
+    },
+    {
+      key: 'OfficeAddress',
+      label: 'Office Address',
+      width: '12',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || '-'
     },
     {
       key: 'actions',
@@ -569,10 +623,8 @@ export const ChannelPartner: React.FC = () => {
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters);
-
-    loadChannelPartner(1, tempFilters);
-
+    updateListState({ filters: tempFilters, page: 1 });
+    loadChannelPartner(1, tempFilters, sortInfo);
     setShowFilterPopup(false);
   };
   //#endregion
@@ -580,19 +632,9 @@ export const ChannelPartner: React.FC = () => {
   //#region Clear
   const clearFilters = () => {
     setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
-    loadChannelPartner(1, {});
-
-    setShowFilterPopup(false);
-    // clear router state (very important)
-
+    updateListState({ filters: {}, page: 1, searchTerm: '', sortInfo: undefined });
+    loadChannelPartner(1, {}, undefined);
     navigate(location.pathname, { replace: true, state: {} });
-
   };
   //#endregion
 
@@ -626,13 +668,27 @@ export const ChannelPartner: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          setChannelPartnerList(prevData => prevData.filter(item => item.ChannelPartnerId !== deleteChannelPartnerDetailsData.ChannelPartnerId));
+          const newTotalRecords = pagination.totalRecords - 1;
 
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (channelPartnerMasterList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
           setPagination({
             currentPage: pagination.currentPage,
             totalRecords: pagination.totalRecords - 1,
             totalPages: Math.ceil((pagination.totalRecords - 1) / pagination.pageSize)
           });
+
+          await loadChannelPartner(pageToShow, filters, sortInfo);
+
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -666,14 +722,14 @@ export const ChannelPartner: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By Full Name"
         onSearchChange={v => {
-          setSearchTerm(v);
+          updateListState({ searchTerm: v });
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchChannelPartner}
         isShowFilterButton
         filters={filters}
         onOpenFilter={() => {
-          setTempFilters(filters);
+          setTempFilters(filters || {});
           setShowFilterPopup(true);
         }}
         isShowCustomizeButton
@@ -686,7 +742,7 @@ export const ChannelPartner: React.FC = () => {
 
         // IMPORT
         isShowImportButton={canAction}
-        onUploadExcel={handleExcelImportChannelPartner}
+        onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleChannelPartner}
 
         // EXPORT
@@ -739,7 +795,7 @@ export const ChannelPartner: React.FC = () => {
       <Modal
         isOpen={showFilterPopup}
         onClose={() => setShowFilterPopup(false)}
-        title="Filter - Channel Partner Master"
+        title="Filter - Channel Partner"
         onSubmit={e => {
           e.preventDefault();
           applyFilters();
@@ -747,31 +803,128 @@ export const ChannelPartner: React.FC = () => {
         saveText="Apply "
         cancelText="Clear"
         onCancel={() => clearFilters()}
-       
-        size="small-half"
-      >
+
+        size="small-half">
         <div className="space-y-6">
-          <div className="space-y-4">
+          <div>
             <Input type="text"
-              label='Channel Partner Name'
-              value={tempFilters?.Name ?? ''}
-              onChange={e => handleFilterChange('Name', e.target.value)}
-              placeholder="Enter Channel Partner Name" />
+              label='Full Name'
+              value={tempFilters?.ChannelPartnerName ?? ''}
+              onChange={e => handleFilterChange('ChannelPartnerName', e.target.value)}
+              placeholder="Enter Full Name" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Company Name'
+              value={tempFilters?.CompanyName ?? ''}
+              onChange={e => handleFilterChange('CompanyName', e.target.value)}
+              placeholder="Enter Company Name" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Firm Type'
+              value={tempFilters?.FirmsType ?? ''}
+              onChange={e => handleFilterChange('FirmsType', e.target.value)}
+              placeholder="Enter Firm Type" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Type'
+              value={tempFilters?.Type ?? ''}
+              onChange={e => handleFilterChange('Type', e.target.value)}
+              placeholder="Enter Type" />
+          </div>
+
+          <div>
+            <Input type="text"
+              label='Mobile Number'
+              value={tempFilters?.MobileNumber ?? ''}
+              onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+              placeholder="Enter Mobile Number" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Office Address'
+              value={tempFilters?.OfficeAddress ?? ''}
+              onChange={e => handleFilterChange('OfficeAddress', e.target.value)}
+              placeholder="Enter Office Address" />
+          </div>
+          <div>
+            <Input type="text"
+              label='GST Number'
+              value={tempFilters?.GSTNumber ?? ''}
+              onChange={e => handleFilterChange('GSTNumber', e.target.value)}
+              placeholder="Enter GST Number" />
+          </div>
+          <div>
+            <Input type="text"
+              label='RERA Number'
+              value={tempFilters?.RERANumber ?? ''}
+              onChange={e => handleFilterChange('RERANumber', e.target.value)}
+              placeholder="Enter RERA Number" />
+          </div>
+          <div>
+            <Input type="text"
+              label='PAN Number'
+              value={tempFilters?.PanNumber ?? ''}
+              onChange={e => handleFilterChange('PanNumber', e.target.value)}
+              placeholder="Enter PAN Number" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Aadhaar Card Number'
+              value={tempFilters?.AadharCardNumber ?? ''}
+              onChange={e => handleFilterChange('AadharCardNumber', e.target.value)}
+              placeholder="Enter Aadhaar Card Number" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Speciality'
+              value={tempFilters?.Speciality ?? ''}
+              onChange={e => handleFilterChange('Speciality', e.target.value)}
+              placeholder="Enter Speciality" />
+          </div>
+          <div>
+
+            <Input
+              label='City'
+              type="text"
+              value={tempFilters.CityName || ''}
+              onChange={e => handleFilterChange('CityName', e.target.value)}
+              placeholder="Enter City"
+            />
+          </div>
+          <div>
+
+            <Input
+              label='Village'
+              type="text"
+              value={tempFilters.VillageName || ''}
+              onChange={e => handleFilterChange('VillageName', e.target.value)}
+              placeholder="Enter Village"
+            />
           </div>
         </div>
       </Modal>
 
+      <ExportImport
+        open={showImportModal}
+        onClose={() => setShowImportModal(false)}
+        onUpload={(file, mergeExisting) => {
+          setShowImportModal(false);
+          uploadExcel(file, mergeExisting);
+        }}
+      />
+
       {/* DELETE CONFIRMATION  ChannelPartner MODAL */}
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
-        onClose={() => setIsConfirmationDialogBoxOpen(false)}
+        onClose={() => {
+          setIsConfirmationDialogBoxOpen(false)
+        }}
         onConfirm={handleDeleteChannelPartner}
-        title="You are about to delete this Channel Partner?"
-        message="Deleting this Channel Partner will permanently remove its data."
-        confirmText="Delete"
-        cancelText="Cancel"
         loading={isLoading}
-        variant="danger"
+        pageName='Channel Partner'
       />
 
     </div>

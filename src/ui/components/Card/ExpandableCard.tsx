@@ -18,7 +18,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   customizedIcon,
   child,
   height = 50,
-  expandedheight = 250,
+  expandedheight = 280,
   defaultOpen = false
 }) => {
   const [isExpandableOpen, setExpandableOpen] = useState(defaultOpen);
@@ -29,7 +29,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
         <span className="font-medium text-gray-800">{title}</span>
 
         <div className="flex items-center gap-2">
-          {/* Customized icon OUTSIDE chevron box */}
+          
           {customizedIcon && (
             <div className="flex items-center rounded-md">
               {customizedIcon}

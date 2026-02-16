@@ -1,7 +1,7 @@
 
 import { useNavigate, useParams } from "react-router-dom";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useEffect, useState } from "react";
@@ -28,6 +28,10 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { useLitigationListState } from "@/features/litigation/context/LitigationListStateContext";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import Tabs from "@/ui/components/Tab/Tab";
+import type { FilterWithPaginationLitigationDocumentRequest, LitigationDocumentData } from "../models/LitigationDocumentModel";
+import { litigationDocumentService } from "../services/LitigationDocumentServices";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 
 const ViewLitigation: React.FC = () => {
@@ -70,6 +74,7 @@ const ViewLitigation: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [isLitigationReopenDialogOpen, setIsLitigationReopenDialogOpen] = useState(false);
     const [selectedLitigationItem, setSelectedLitigationItem] = useState<LitigationReopenData | null>(null);
+    const [litigationDocumentList, setLitigationDocumentList] = useState<LitigationDocumentData[]>([]);
 
     const [closureData, setClosureData] = useState<LitigationClosureData[]>([]);
     const [isClosureModalOpen, setIsClosureModalOpen] = useState(false);
@@ -108,6 +113,15 @@ const ViewLitigation: React.FC = () => {
 
     //#region ERROR STATE MANAGEMENT
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+    //#region TAB ACTIVITY
+    const litigationTabList = [
+        { id: "Overview", label: "Overview" },
+        { id: "Document", label: "Document" },
+    ];
+
+    const [activeTab, setActiveTab] = useState<string>(litigationTabList[0].id);
+    const isEditDisabled = !isEditable || activeTab === "Document";
 
     //#region USE EFFECT TO FETCH CLOSURE DETAILS
     useEffect(() => {
@@ -158,7 +172,6 @@ const ViewLitigation: React.FC = () => {
     };
 
     //#region CLOSURE MODAL MANAGEMENT
-
     const handleopenClosureModal = (item?: LitigationClosureData) => {
         if (litigationStatus !== 'Open' && litigationStatus !== 'Reopen') return;
 
@@ -179,8 +192,8 @@ const ViewLitigation: React.FC = () => {
                 RemoveClosureAttachementURL: '',
             });
             setClosureURL(item.ClosureAttachementURL || '');
-            setIsClosureModalOpen(true);
         }
+        setIsClosureModalOpen(true);
     };
     //#endregion
 
@@ -248,6 +261,8 @@ const ViewLitigation: React.FC = () => {
 
         if (!closureFormData.ClosureDate?.trim()) {
             newErrors.ClosureDate = 'Closure Date is required.';
+        } else if (new Date(closureFormData.ClosureDate) < new Date()) {
+            newErrors.ClosureDate = 'Closure Date cannot be in the past.';
         }
 
         if (!closureFormData.Conclusion?.trim()) {
@@ -419,7 +434,10 @@ const ViewLitigation: React.FC = () => {
 
         if (!hearingFormData.HearingDate?.trim()) {
             newErrors.HearingDate = 'Hearing Date is required.';
+        } else if (new Date(hearingFormData.HearingDate) < new Date()) {
+            newErrors.HearingDate = 'Hearing Date cannot be in the past.';
         }
+
         if (!hearingFormData.Remark?.trim()) {
             newErrors.Remark = 'Remark is required.';
         }
@@ -441,7 +459,7 @@ const ViewLitigation: React.FC = () => {
         fd.append('Uniquekey', hearingFormData.Uniquekey ?? '');
         fd.append('LitigationId', String(hearingFormData.LitigationId ?? 0));
         fd.append('ProjectId', projectId!.toString());
-        fd.append('HearingDate', hearingFormData.HearingDate ?? '');
+        fd.append('HearingDate', `${hearingFormData.HearingDate}T${new Date().toTimeString().slice(0, 8)}`);
         fd.append('Remark', hearingFormData.Remark ?? '');
 
         hearingURLFiles.forEach(file => {
@@ -541,6 +559,7 @@ const ViewLitigation: React.FC = () => {
             'Deleting Hearing Details'
         );
     };
+    //#endregion
 
     //#region EDIT LITIGATION 
     const handleEditLitigation = (row: LitigationData) => {
@@ -575,8 +594,8 @@ const ViewLitigation: React.FC = () => {
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
-                    setLitigationData(prev =>prev ? { ...prev, Status: "Reopen" } : prev );
-                    
+                    setLitigationData(prev => prev ? { ...prev, Status: "Reopen" } : prev);
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -591,6 +610,48 @@ const ViewLitigation: React.FC = () => {
             'Reopening Case'
         );
     };
+    //#endregion
+
+    //#region FETCH LITIGATION DOCUMENT LIST
+    const fetchLitigationDocumentList = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationLitigationDocumentRequest = {
+                    PageNumber: 1,
+                    PageSize: 100,
+                    ProjectId: Number(projectId),
+                    LitigationId: currentLitigationId,
+                };
+                const response = await litigationDocumentService.apiCallPullLitigationDocument(params);
+
+                if (E.isRight(response)) {
+
+                    setLitigationDocumentList(response.right.Data);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Litigation Document'
+        );
+    };
+    //#endregion
+
+    //#region CHECK DOCUMENT URL EXISTS
+    const docsWithUrls = litigationDocumentList.filter(d => {
+        const urls = parseDocumentUrls(d.DocumentURL ?? "")
+            .filter(x => x?.trim()?.length);
+
+        return urls.length > 0;
+    });
     //#endregion
 
     return (
@@ -608,480 +669,567 @@ const ViewLitigation: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListLitigation()}
-                canAction={isEditable}
+                canAction={!isEditDisabled}
                 onEdit={() => {
-                    if (litigationData) handleEditLitigation(litigationData!);
+                    if (activeTab === "Overview" && litigationData) {
+                        handleEditLitigation(litigationData);
+                    }
                 }}
                 isLoading={false}
             />
 
-            <div className="grid grid-cols-12 gap-4 pt-5">
+            <div className='pt-2 '>
 
-                {/* LEFT SIDE */}
-                <div className="col-span-7">
+                <Tabs
+                    tabs={litigationTabList}
+                    defaultActive={activeTab}
+                    islarge={true}
+                    onTabChange={(t) => {
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
+                        setActiveTab(t.id);
 
-                        {/* ================= CASE DETAILS ================= */}
-                        <section className="bg-white border-b border-[#135bec2e] px-4 pt-1 pb-4">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Case Details
-                            </h4>
+                        if (t.id === "Overview") {
+                            fetchLitigationDetails();
+                        }
+                        else if (t.id === "Document") {
+                            fetchLitigationDocumentList()
+                        }
+                    }}
+                />
+            </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Case Title" value={litigationData?.Title} />
-                                <FieldItem label="Date Of Filling" value={litigationData?.DateOfFilling ?
-                                    formatDate_dd_MonthName_yy(litigationData.DateOfFilling) : ""} />
-                                <FieldItem label="Case Type" value={litigationData?.CaseType} />
-                                <FieldItem label="Case Number" value={litigationData?.CaseNumber} />
-                            </div>
+            {activeTab === "Overview" && (
+                <div className="grid grid-cols-12 gap-4 pt-5">
 
-                        </section>
+                    {/* LEFT SIDE */}
+                    <div className="col-span-7">
 
-                        {/* ================= COURT DETAILS ================= */}
-                        <section className="bg-white border-b border-[#135bec2e] p-4">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4"> Court Details</h4>
-                            <div className="lg:col-span-3 pb-1">
+                            {/* ================= CASE DETAILS ================= */}
+                            <section className="bg-white border-b border-[#135bec2e] px-4 pt-1 pb-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Case Details
+                                </h4>
+
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Court Type" value={litigationData?.CourtType} />
-                                    <FieldItem label="Court Name" value={litigationData?.CourtName} />
-                                    <FieldItem label="Court Location" value={litigationData?.CourtLocation} />
+                                    <FieldItem label="Case Title" value={litigationData?.Title} />
+                                    <FieldItem label="Date Of Filling" value={litigationData?.DateOfFilling ?
+                                        formatDate_dd_MonthName_yy(litigationData.DateOfFilling) : ""} />
+                                    <FieldItem label="Case Type" value={litigationData?.CaseType} />
+                                    <FieldItem label="Case / Petiton / Dispute Number" value={litigationData?.CaseNumber} />
                                 </div>
-                            </div>
-                        </section>
+                            </section>
 
-                        {/* ================= PARTIES DETAILS ================= */}
-                        <section className="bg-white p-4">
+                            {/* ================= COURT DETAILS ================= */}
+                            <section className="bg-white border-b border-[#135bec2e] p-4">
 
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">Parties Details </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
-                                <div className="lg:col-span-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                                        <FieldItem label="Plantiff" value={litigationData?.Plantiff} />
-                                        <FieldItem label="Defendant" value={litigationData?.Defendant} />
-
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4"> Court Details</h4>
+                                <div className="lg:col-span-3 pb-1">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Court Type" value={litigationData?.CourtType} />
+                                        <FieldItem label="Court Name" value={litigationData?.CourtName} />
+                                        <FieldItem label="Court Location" value={litigationData?.CourtLocation} />
                                     </div>
                                 </div>
+                            </section>
 
-                                <div className="lg:col-span-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                                        <FieldItem label="Assigned Representative" value={litigationData?.AssignedRepresentative} />
-                                        <FieldItem label="Opposing Representative" value={litigationData?.OpposingRepresentative} />
+                            {/* ================= PARTIES DETAILS ================= */}
+                            <section className="bg-white p-4">
 
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">Parties Details </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
+                                    <div className="lg:col-span-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                                            <FieldItem label="Plainiff" value={litigationData?.Plantiff} />
+                                            <FieldItem label="Defendant / Opposite Party / Respondent" value={litigationData?.Defendant} />
+                                        </div>
+                                    </div>
+
+                                    <div className="lg:col-span-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                                            <FieldItem label="Assigned Representative" value={litigationData?.AssignedRepresentative} />
+                                            <FieldItem label="Opposing Representative" value={litigationData?.OpposingRepresentative} />
+
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </section>
+                        </div>
+
+                        {/* ================= CLOSURE DETAILS ================= */}
+
+                        {(litigationStatus === 'Closed' || litigationStatus === 'Reopen') && (
+                            <div className="col-span-7">
+                                <div className="bg-white rounded-lg border border-[#135bec2e] shadow-sm p-4 mt-2">
+                                    <section>
+                                        <h4 className="text-lg font-semibold text-gray-900 pb-2">
+                                            Closure Details
+                                        </h4>
+
+                                        {closureData.length === 0 ? (
+                                            <p className="text-gray-500 text-sm">No closure history found.</p>
+                                        ) : (
+                                            closureData.map((item, index) => {
+
+                                                const isLatest = index === 0;
+                                                const isCaseReopen = litigationStatus === 'Reopen';
+
+                                                return (
+                                                    <div
+                                                        key={item.LitigationClosureId}
+                                                        className="mb-4 pb-4 border-b border-gray-300 last:border-b-0 last:pb-0"
+                                                    >
+                                                        <div className="flex pb-2 justify-between">
+                                                            <FieldItem
+                                                                label="Closure Date"
+                                                                value={formatDate_dd_MonthName_yy(item.ClosureDate)}
+                                                            />
+                                                            {isLatest && isCaseReopen && (
+                                                                <Button
+                                                                    color="transparent"
+                                                                    isborderRadius
+                                                                    size="sm"
+                                                                    style={{ color: 'blue', padding: '4px 8px' }}
+                                                                    title="Edit"
+                                                                    onClick={() => handleopenClosureModal(item)}
+                                                                    disabled={isLoading}
+                                                                    leftIcon={<Edit className="h-4 w-4" />}
+                                                                />
+                                                            )}
+                                                        </div>
+
+                                                        <div className="grid grid-cols-1 gap-4 ">
+
+                                                            <FieldItem label="Remark" value={item.Remark || '-'} />
+                                                            <FieldItem label="Conclusion" value={item.Conclusion || '-'} />
+                                                            <MultiImageViewer
+                                                                images={parseDocumentUrls(item.ClosureAttachementURL)}
+                                                                title="Closure Document"
+                                                                isIcon={false}
+                                                                triggerLabel="Document"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })
+                                        )}
+                                    </section>
+                                </div>
+                            </div>
+                        )}
+
+
+                        {/* =================CASE BRIEF DETAILS ================= */}
+
+                        <div className="col-span-7">
+                            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
+                                <h4 className="text-lg font-semibold text-gray-900 pb-2">
+                                    Case Brief / Petition / Suit
+                                </h4>
+                                <div className="lg:col-span-3 pt-1">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                        <p>{litigationData?.CaseBrief}</p>
                                     </div>
                                 </div>
-
                             </div>
-                        </section>
+                        </div>
+
+                        {/* =================CASE REMARKS DETAILS ================= */}
+
+                        <div className="col-span-7">
+                            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
+                                <h4 className="text-lg font-semibold text-gray-900 pb-2">
+                                    Case Remarks / Comments
+                                </h4>
+                                <div className="lg:col-span-3 pt-1">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                        <p>{litigationData?.Remark}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* ================= ACTION DETAILS ================= */}
+
+                        <div className="col-span-7">
+                            <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mt-2">
+
+                                <section className="bg-white p-4 flex flex-col">
+
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">Action Details</h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
+                                        <div className="lg:col-span-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                                                <FieldItem label="Created By" value={litigationData?.CreatedBy} />
+                                                <FieldItem
+                                                    label="Created Date"
+                                                    value={litigationData?.CreatedDate ?
+                                                        formatDate_dd_MonthName_yy(litigationData.CreatedDate) : ""} />
+                                            </div>
+                                        </div>
+
+                                        <div className="lg:col-span-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                                                <FieldItem
+                                                    label="Modified Date"
+                                                    value={litigationData?.ModifiedDate ?
+                                                        formatDate_dd_MonthName_yy(litigationData.ModifiedDate) : ""}
+                                                />
+                                                <FieldItem label="Modified By" value={litigationData?.ModifiedBy} />
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex justify-end gap-2">
+                                        {(litigationStatus === 'Open' || litigationStatus === 'Reopen') && (
+                                            <Button
+                                                className="w-full sm:w-auto"
+                                                size="sm"
+                                                onClick={() => handleopenClosureModal()}
+                                            >
+                                                Close Case
+                                            </Button>
+                                        )}
+
+                                        {litigationStatus === 'Closed' && (
+                                            <Button
+                                                size="sm"
+                                                onClick={() => {
+                                                    setSelectedLitigationItem(litigationData);
+                                                    setIsLitigationReopenDialogOpen(true);
+                                                }}
+                                            >
+                                                Reopen
+                                            </Button>
+                                        )}
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+
                     </div>
 
-                    {/* ================= CLOSURE DETAILS ================= */}
+                    {/*  RIGHT SIDE  */}
+                    <div className="col-span-5">
 
-                    {(litigationStatus === 'Closed' || litigationStatus === 'Reopen') && (
-                        <div className="col-span-7">
-                            <div className="bg-white rounded-lg border border-[#135bec2e] shadow-sm p-4 mt-2">
-                                <section>
-                                    <h4 className="text-lg font-semibold text-gray-900 pb-2">
-                                        Closure Details
-                                    </h4>
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
 
-                                    {closureData.length === 0 ? (
-                                        <p className="text-gray-500 text-sm">No closure history found.</p>
-                                    ) : (
-                                        closureData.map((item, index) => {
+                            <div className="border-b pb-2 mt-1">
+                                <div className="flex items-center justify-between">
+                                    <h1 className="text-lg font-semibold text-black"> Hearing History</h1>
 
-                                            const isLatest = index === 0;
-                                            const isCaseReopen = litigationStatus === 'Reopen';
+                                    {(litigationStatus === 'Open' ||
+                                        litigationStatus === 'Reopen') && (
+                                            <Button
+                                                className="w-full"
+                                                size="sm"
+                                                onClick={() =>
+                                                    handleopenHearingModal({
+                                                        LitigationId: litigationData?.LitigationId
+                                                    })
+                                                }
+                                            >
+                                                Add Hearing
+                                            </Button>
+                                        )}
+                                </div>
+                            </div>
 
-                                            return (
-                                                <div
-                                                    key={item.LitigationClosureId}
-                                                    className="mb-4 pb-4 border-b border-gray-300 last:border-b-0 last:pb-0"
-                                                >
-                                                    <div className="flex pb-2 justify-between">
-                                                        <FieldItem
-                                                            label="Closure Date"
-                                                            value={formatDate_dd_MonthName_yy(item.ClosureDate)}
-                                                        />
-                                                        {isLatest && isCaseReopen && (
+                            <div className="mt-4 space-y-4">
+                                {hearingData.length === 0 ? (
+                                    <p className="text-gray-500 text-sm">No hearing history found.</p>
+                                ) : (
+                                    hearingData.map((item, index) => {
+                                        const isLatest = index === 0;
+
+                                        const canEditHearing =
+                                            (litigationStatus === 'Open' || litigationStatus === 'Reopen')
+                                                ? isLatest
+                                                : false;
+
+                                        return (
+                                            <div
+                                                key={item.LitigationHearingId}
+                                                className="pb-3"
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span className="font-semibold text-gray-900">
+                                                        {formatDate_dd_MonthName_yy(item.HearingDate)}
+                                                    </span>
+
+                                                    {canEditHearing && (
+                                                        <>
                                                             <Button
                                                                 color="transparent"
                                                                 isborderRadius
                                                                 size="sm"
-                                                                style={{ color: 'blue', padding: '4px 8px' }}
-                                                                title="Edit"
-                                                                onClick={() => handleopenClosureModal(item)}
+                                                                style={{ color: 'blue' }}
+                                                                title="Edit Hearing"
+                                                                onClick={() => handleopenHearingModal(item)}
                                                                 disabled={isLoading}
                                                                 leftIcon={<Edit className="h-4 w-4" />}
                                                             />
-                                                        )}
-                                                    </div>
-
-                                                    <div className="grid grid-cols-1 gap-4 ">
-
-                                                        <FieldItem label="Remark" value={item.Remark || '-'} />
-                                                        <FieldItem label="Conclusion" value={item.Conclusion || '-'} />
-                                                    </div>
-
+                                                            <Button
+                                                                color="transparent"
+                                                                isborderRadius
+                                                                size="sm"
+                                                                style={{ color: 'red' }}
+                                                                title="Delete Hearing"
+                                                                onClick={() => handleDeleteHearing(item)}
+                                                                disabled={isLoading}
+                                                                leftIcon={<Trash2 className="h-4 w-4" />}
+                                                            />
+                                                        </>
+                                                    )}
                                                 </div>
-                                            );
-                                        })
-                                    )}
-                                </section>
-                            </div>
-                        </div>
-                    )}
 
-                    {/* =================CASE REMARKS DETAILS ================= */}
+                                                <p className="mt-2 text-sm text-gray-700">
+                                                    {item.Remark || "-"}
+                                                </p>
 
-                    <div className="col-span-7">
-                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
-                            <h4 className="text-lg font-semibold text-gray-900 pb-2">
-                                Case Remarks
-                            </h4>
-                            <div className="lg:col-span-3 pt-1">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                    <p>{litigationData?.Remark}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* =================CASE BRIEF DETAILS ================= */}
-
-                    <div className="col-span-7">
-                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
-                            <h4 className="text-lg font-semibold text-gray-900 pb-2">
-                                Case Brief
-                            </h4>
-                            <div className="lg:col-span-3 pt-1">
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                                    <p>{litigationData?.CaseBrief}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* ================= ACTION DETAILS ================= */}
-
-                    <div className="col-span-7">
-                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mt-2">
-
-                            <section className="bg-white p-4 flex flex-col">
-
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">Action Details</h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
-                                    <div className="lg:col-span-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                                            <FieldItem label="Created By" value={litigationData?.CreatedBy} />
-                                            <FieldItem
-                                                label="Created Date"
-                                                value={litigationData?.CreatedDate ?
-                                                    formatDate_dd_MonthName_yy(litigationData.CreatedDate) : ""} />
-                                        </div>
-                                    </div>
-
-                                    <div className="lg:col-span-3">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                                            <FieldItem
-                                                label="Modified Date"
-                                                value={litigationData?.ModifiedDate ?
-                                                    formatDate_dd_MonthName_yy(litigationData.ModifiedDate) : ""}
-                                            />
-                                            <FieldItem label="Modified By" value={litigationData?.ModifiedBy} />
-
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="flex justify-end gap-2">
-                                    {(litigationStatus === 'Open' || litigationStatus === 'Reopen') && (
-                                        <Button
-                                            className="w-full sm:w-auto"
-                                            size="sm"
-                                            onClick={() => handleopenClosureModal()}
-                                        >
-                                            Close Case
-                                        </Button>
-                                    )}
-
-                                    {litigationStatus === 'Closed' && (
-                                        <Button
-                                            size="sm"
-                                            onClick={() => {
-                                                setSelectedLitigationItem(litigationData);
-                                                setIsLitigationReopenDialogOpen(true);
-                                            }}
-                                        >
-                                            Reopen
-                                        </Button>
-                                    )}
-                                </div>
-                            </section>
-                        </div>
-                    </div>
-
-                </div>
-
-                {/*  RIGHT SIDE  */}
-                <div className="col-span-5">
-
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
-
-                        <div className="border-b pb-2 mt-1">
-                            <div className="flex items-center justify-between">
-                                <h1 className="text-lg font-semibold text-black"> Hearing History</h1>
-
-                                {(litigationStatus === 'Open' ||
-                                    litigationStatus === 'Reopen') && (
-                                        <Button
-                                            className="w-full"
-                                            size="sm"
-                                            onClick={() =>
-                                                handleopenHearingModal({
-                                                    LitigationId: litigationData?.LitigationId
-                                                })
-                                            }
-                                        >
-                                            Add Hearing
-                                        </Button>
-                                    )}
-                            </div>
-                        </div>
-
-                        <div className="mt-4 space-y-4">
-                            {hearingData.length === 0 ? (
-                                <p className="text-gray-500 text-sm">No hearing history found.</p>
-                            ) : (
-                                hearingData.map((item, index) => {
-                                    const isLatest = index === 0;
-
-                                    const canEditHearing =
-                                        (litigationStatus === 'Open' || litigationStatus === 'Reopen')
-                                            ? isLatest
-                                            : false;
-
-                                    return (
-                                        <div
-                                            key={item.LitigationHearingId}
-                                            className="pb-3"
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <span className="font-semibold text-gray-900">
-                                                    {formatDate_dd_MonthName_yy(item.HearingDate)}
-                                                </span>
-
-                                                {canEditHearing && (
-                                                    <>
-                                                        <Button
-                                                            color="transparent"
-                                                            isborderRadius
-                                                            size="sm"
-                                                            style={{ color: 'blue' }}
-                                                            title="Edit Hearing"
-                                                            onClick={() => handleopenHearingModal(item)}
-                                                            disabled={isLoading}
-                                                            leftIcon={<Edit className="h-4 w-4" />}
-                                                        />
-                                                        <Button
-                                                            color="transparent"
-                                                            isborderRadius
-                                                            size="sm"
-                                                            style={{ color: 'red' }}
-                                                            title="Delete Hearing"
-                                                            onClick={() => handleDeleteHearing(item)}
-                                                            disabled={isLoading}
-                                                            leftIcon={<Trash2 className="h-4 w-4" />}
-                                                        />
-                                                    </>
-                                                )}
+                                                <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
+                                                    <p>Document</p>
+                                                    <MultiImageViewer
+                                                        images={parseDocumentUrls(item.HearingAttachementURL)}
+                                                        title="Hearing Document"
+                                                        isIcon={false}
+                                                        triggerLabel="Document"
+                                                    />
+                                                </div>
                                             </div>
-
-                                            <p className="mt-2 text-sm text-gray-700">
-                                                {item.Remark || "-"}
-                                            </p>
-
-                                            <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
-                                                <p>Document</p>
-                                                <MultiImageViewer
-                                                    images={parseDocumentUrls(item.HearingAttachementURL)}
-                                                    title="Hearing Document"
-                                                    isIcon={false}
-                                                    triggerLabel="Document"
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            )}
+                                        );
+                                    })
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* CLOSURE MODAL */}
+                    {/* CLOSURE MODAL */}
 
-                <Modal
-                    isOpen={isClosureModalOpen}
-                    title={"Close Case"}
-                    onClose={handleClosureModal}
-                    onSubmit={handleAddUpdateClosure}
-                    cancelText="Cancel"
-                    saveText='Save'
-                    onCancel={handleClosureModal}
-                    loading={isLoading}
-                    size="lg"
-                >
-                    <div className="space-y-4">
+                    <Modal
+                        isOpen={isClosureModalOpen}
+                        title={"Close Case"}
+                        onClose={handleClosureModal}
+                        onSubmit={handleAddUpdateClosure}
+                        cancelText="Cancel"
+                        saveText='Save'
+                        onCancel={handleClosureModal}
+                        loading={isLoading}
+                        size="lg"
+                    >
+                        <div className="space-y-4">
 
-                        <div>
-                            <DatePickerInput
-                                label="Closure Date"
-                                value={formatDate_dd_mm_yyyy(closureFormData.ClosureDate ?? "")}
-                                onChange={(val) => handleFieldChange('ClosureDate',
-                                    convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                required
-                                error={errors.ClosureDate}
-                            />
-                        </div>
+                            <div>
+                                <DatePickerInput
+                                    label="Closure Date"
+                                    value={formatDate_dd_mm_yyyy(closureFormData.ClosureDate ?? "")}
+                                    onChange={(val) => handleFieldChange('ClosureDate',
+                                        convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                    required
+                                    error={errors.ClosureDate}
+                                />
+                            </div>
 
-                        <div>
-                            <MultiFilePicker
-                                label='Files'
-                                placeholder='Select Files'
-                                required
-                                error={errors.ClosureAttachementURL}
-                                value={closureURLFiles}
-                                onChange={setClosureURLFiles}
-                                availableFilesURL={closureURL ?? ""}
-                                allowedTypes={[
-                                    "image/jpeg",
-                                    "image/png",
-                                    "image/jpg",
-                                    "application/pdf"]}
-                                maxFiles={5}
-                                maxSizeMB={50}
-                                onRemoveExisting={(url) => {
-                                    SetRemoveClosureAttachementUrls((prev) => [...prev, url])
-                                }}
-                            />
-                        </div>
+                            <div>
+                                <MultiFilePicker
+                                    label='Files'
+                                    placeholder='Select Files'
+                                    required
+                                    error={errors.ClosureAttachementURL}
+                                    value={closureURLFiles}
+                                    onChange={setClosureURLFiles}
+                                    availableFilesURL={closureURL ?? ""}
+                                    allowedTypes={[
+                                        "image/jpeg",
+                                        "image/png",
+                                        "image/jpg",
+                                        "application/pdf"]}
+                                    maxFiles={5}
+                                    maxSizeMB={50}
+                                    onRemoveExisting={(url) => {
+                                        SetRemoveClosureAttachementUrls((prev) => [...prev, url])
+                                    }}
+                                />
+                            </div>
 
-                        <div>
-                            <TextArea
-                                label="Remarks"
-                                className='thin-scroll'
-                                value={closureFormData.Remark ?? ""}
-                                placeholder="Enter Remarks"
-                                onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                error={errors.Remarks} />
-                        </div>
-
-                        <div>
-                            <TextArea
-                                label="Conclusion"
-                                className='thin-scroll'
-                                value={closureFormData.Conclusion ?? ""}
-                                placeholder="Enter Conclusion"
-                                onChange={(e) => handleFieldChange("Conclusion", e.target.value)}
-                                error={errors.Conclusion} />
-                        </div>
-                    </div>
-                </Modal>
-
-                {/* HEARING MODAL */}
-
-                <Modal
-                    isOpen={isHearingModalOpen}
-                    title={"Add Hearing"}
-                    onClose={handleHearingModal}
-                    onSubmit={handleAddUpdateHearing}
-                    cancelText="Cancel"
-                    saveText="Save"
-                    onCancel={handleHearingModal}
-                    loading={isLoading}
-                    size="lg"
-                >
-                    <div className="space-y-4">
-
-                        <div>
-                            <DatePickerInput
-                                label="Hearing Date"
-                                value={formatDate_dd_mm_yyyy(hearingFormData.HearingDate ?? "")}
-                                onChange={(val) => handleHearingFieldChange('HearingDate',
-                                    convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                required
-                                error={errors.HearingDate}
-                            />
-                        </div>
-
-                        <div>
-                            <MultiFilePicker
-                                label='Files'
-                                required
-                                placeholder='Select Files'
-                                error={errors.HearingAttachementURL}
-                                value={hearingURLFiles}
-                                onChange={setHearingURLFiles}
-                                availableFilesURL={hearingURL ?? ""}
-                                allowedTypes={[
-                                    "image/jpeg",
-                                    "image/png",
-                                    "image/jpg",
-                                    "application/pdf"]}
-                                maxFiles={5}
-                                maxSizeMB={50}
-                                onRemoveExisting={(url) => {
-                                    SetRemoveHearingAttachementUrls((prev) => [...prev, url])
-                                }}
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                             <div>
                                 <TextArea
-                                    label="Remark"
+                                    label="Remarks"
                                     className='thin-scroll'
-                                    value={hearingFormData.Remark ?? ""}
+                                    value={closureFormData.Remark ?? ""}
                                     placeholder="Enter Remarks"
-                                    onChange={(e) => handleHearingFieldChange("Remark", e.target.value)}
-                                    error={errors.Remark} />
+                                    onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                                    error={errors.Remarks} />
+                            </div>
+
+                            <div>
+                                <TextArea
+                                    label="Conclusion"
+                                    className='thin-scroll'
+                                    value={closureFormData.Conclusion ?? ""}
+                                    placeholder="Enter Conclusion"
+                                    onChange={(e) => handleFieldChange("Conclusion", e.target.value)}
+                                    error={errors.Conclusion} />
                             </div>
                         </div>
+                    </Modal>
+
+                    {/* HEARING MODAL */}
+
+                    <Modal
+                        isOpen={isHearingModalOpen}
+                        title={"Add Hearing"}
+                        onClose={handleHearingModal}
+                        onSubmit={handleAddUpdateHearing}
+                        cancelText="Cancel"
+                        saveText="Save"
+                        onCancel={handleHearingModal}
+                        loading={isLoading}
+                        size="lg"
+                    >
+                        <div className="space-y-4">
+
+                            <div>
+                                <DatePickerInput
+                                    label="Hearing Date"
+                                    value={formatDate_dd_mm_yyyy(hearingFormData.HearingDate ?? "")}
+                                    onChange={(val) => handleHearingFieldChange('HearingDate',
+                                        convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                    required
+                                    error={errors.HearingDate}
+                                />
+                            </div>
+
+                            <div>
+                                <MultiFilePicker
+                                    label='Files'
+                                    required
+                                    placeholder='Select Files'
+                                    error={errors.HearingAttachementURL}
+                                    value={hearingURLFiles}
+                                    onChange={setHearingURLFiles}
+                                    availableFilesURL={hearingURL ?? ""}
+                                    allowedTypes={[
+                                        "image/jpeg",
+                                        "image/png",
+                                        "image/jpg",
+                                        "application/pdf"]}
+                                    maxFiles={5}
+                                    maxSizeMB={50}
+                                    onRemoveExisting={(url) => {
+                                        SetRemoveHearingAttachementUrls((prev) => [...prev, url])
+                                    }}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+                                <div>
+                                    <TextArea
+                                        label="Remark"
+                                        className='thin-scroll'
+                                        value={hearingFormData.Remark ?? ""}
+                                        placeholder="Enter Remarks"
+                                        onChange={(e) => handleHearingFieldChange("Remark", e.target.value)}
+                                        error={errors.Remark} />
+                                </div>
+                            </div>
+
+                        </div>
+                    </Modal>
+
+                    {/*Litigation Reopen Confirmation Dialog Box*/}
+
+                    <ConfirmationDialogBox
+                        isOpen={isLitigationReopenDialogOpen}
+                        onClose={() => {
+                            setIsLitigationReopenDialogOpen(false);
+                            setSelectedLitigationItem(null);
+                        }}
+                        onConfirm={handleLitigationReopen}
+                        title="Reopen Litigation"
+                        message={`Are you sure you want to Reopen.`}
+                        confirmText="Reopen"
+                        cancelText="Cancel"
+                        loading={isLoading}
+                    />
+
+                    {/*Delete Hearing Confirmation Dialog Box*/}
+
+                    <DeleteDialog
+                        isOpen={isDeleteHearingDialogOpen}
+                        onClose={() => {
+                            setIsDeleteHearingDialogOpen(false);
+                            setSelectedHearingItem(null);
+                        }}
+                        onConfirm={handleConfirmDeleteHearing}
+                        loading={isLoading}
+                        pageName="Litigation Hearing"
+                    />
+
+                </div>
+            )}
+
+            {activeTab === 'Document' && (
+                <div className="mt-3">
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+
+                        {docsWithUrls.length === 0 && (
+                            <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                                <NoDataView message="No Documents Found" />
+                            </section>
+                        )}
+
+                        {docsWithUrls.map(d => {
+                            const urls = parseDocumentUrls(d.DocumentURL ?? "")
+                                .filter(x => x?.trim()?.length);
+
+                            return (
+                                <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
+
+                                    <div className="flex items-start justify-between p-2 gap-2">
+                                        <div className="flex flex-col">
+
+                                            <span className="line-clamp-2 break-words font-medium text-gray-900">
+                                                {d.DocumentName}
+                                            </span>
+                                            <span className="text-sm text-gray-500 mt-1">
+                                                Document Count : {urls.length}
+                                            </span>
+                                        </div>
+
+                                        <MultiImageViewer
+                                            images={urls}
+                                            title={d.DocumentName ?? "Document"}
+                                            triggerLabel="View"
+                                            isIcon={false}
+                                        />
+                                    </div>
+
+                                    <div className="bg-gray-50 p-2 mt-auto">
+                                        <FieldItem
+                                            label="Uploaded By / Date"
+                                            value={`${d?.ModifiedBy || d?.CreatedBy || '-'} / ${d?.ModifiedDate
+                                                ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate)
+                                                : d?.CreatedDate
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate)
+                                                    : '-'
+                                                }`}
+                                        />
+                                    </div>
+
+                                </div>
+
+                            );
+                        })}
 
                     </div>
-                </Modal>
+                </div>
 
-                {/*Litigation Reopen Confirmation Dialog Box*/}
-
-                <ConfirmationDialogBox
-                    isOpen={isLitigationReopenDialogOpen}
-                    onClose={() => {
-                        setIsLitigationReopenDialogOpen(false);
-                        setSelectedLitigationItem(null);
-                    }}
-                    onConfirm={handleLitigationReopen}
-                    title="Reopen Litigation"
-                    message={`Are you sure you want to Reopen.`}
-                    confirmText="Reopen"
-                    cancelText="Cancel"
-                    loading={isLoading}
-                />
-
-                {/*Delete Hearing Confirmation Dialog Box*/}
-
-                <DeleteDialog
-                    isOpen={isDeleteHearingDialogOpen}
-                    onClose={() => {
-                        setIsDeleteHearingDialogOpen(false);
-                        setSelectedHearingItem(null);
-                    }}
-                    onConfirm={handleConfirmDeleteHearing}
-                    loading={isLoading}
-                    pageName="Litigation Hearing"
-                />
-
-            </div>
+            )}
         </div>
     );
 };

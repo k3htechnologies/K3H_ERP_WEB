@@ -412,6 +412,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE CHANNEL PARTNER SOURCING COLUMNS
+    storeChannelPartnerSourcingTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Channel Partner Sourcing Columns Details:', error);
+        }
+    },
+    //#endregion
+    //#region GET CHANNEL PARTNER SOURCING COLUMNS
+    getChannelPartnerSourcingTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS);
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Channel Partner Sourcing Columns Details:', error);
+                return null;
+            }
+        }
+        return null;
+    },
+    //#endregion
     //#region STORE ENQUIRY MASTER COLUMNS
     storeEnquiryTableColumns: (columns: string): void => {
         try {
@@ -997,7 +1020,7 @@ export const LocalStorageHelper = {
     },
     //#endregion
 
-     //#region STORE LITIGATION COLUMNS
+    //#region STORE LITIGATION COLUMNS
     storeLitigationTableColumns: (columns: string): void => {
         try {
             localStorage.setItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS, columns);
@@ -1014,6 +1037,76 @@ export const LocalStorageHelper = {
                 return localStorage.getItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
             } catch (error) {
                 console.error('Error reading Litigation Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+
+    //#region STORE CALLING DATA COLUMNS
+    storeCallingDataTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Calling Data Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET CALLING DATA COLUMNS
+    getCallingDataTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Calling Data Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE CALL LOG COLUMNS
+    storeCallLogTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Call Log Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET CALL LOG COLUMNS
+    getCallLogTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Call Log Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+    //#region STORE BOOKING COLUMNS
+    storeBookingTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error BOOKING Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET BOOKING COLUMNS
+    getBookingTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Booking Columns Details:', error)
                 return null
             }
         }
@@ -1058,6 +1151,9 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
+             localStorage.removeItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
 
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
@@ -1069,6 +1165,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.SHIFT_MASTER);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.WEEK_OFF_MASTER);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.LITIGATION);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.CHANNEL_PARTNER);
 
 
         } catch (error) {

@@ -2,7 +2,7 @@ import type { ApiResponse } from '@/core/api/ApiResponse';
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions';
 import { TechnicalApi } from '@/features/technical/api/TechnicalApi'
-import type { CountryStateCityDistrictVillageListResponse, FilterMagicLinkWithValidate, FilterPullExcelSample, FilterRefreshTokenRequest, FilterWithPaginationMaterialSubMaterialMasterUOM, FilterWithPaginationNotificationRequest, MaterialSubMaterialMasterUOMListResponse, NotificationListResponse, TechnicalListResponse } from '@/features/technical/models/TechnicalModel'
+import type { CountryStateCityDistrictVillageListResponse, FilterMagicLinkWithValidate, FilterPullExcelSample, FilterRefreshTokenRequest, FilterWithPaginationMaterialSubMaterialMasterUOM, FilterWithPaginationNotificationRequest, FilterWithPaginationVillageRequest, MaterialSubMaterialMasterUOMListResponse, NotificationListResponse, TechnicalListResponse, VillageListResponse } from '@/features/technical/models/TechnicalModel'
 
 export abstract class TechnicalDatasource {
 
@@ -189,6 +189,36 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
             if (error === TokenExpiredException) {
                 await this.pullMagicLinkWithValidate(params);
             }
+            throw error
+        }
+    }
+
+    async pullVillage(params: FilterWithPaginationVillageRequest): Promise<VillageListResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                PageSize: (params.PageSize ?? 20).toString(),
+                PageNumber: (params.PageNumber ?? 1).toString(),
+            })
+
+            if (params.VillageMasterId) queryParams.append('VillageMasterId', params.VillageMasterId.toString());
+
+            if (params.VillageName?.trim()) queryParams.append('VillageName', params.VillageName.trim());
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${TechnicalApi.PULL_VILLAGE}?${queryParams.toString()}`
+            )
+
+            return response;
+
+        } catch (error) {
+
+            console.error('ERROR: PULL NOTIFICATION :', error);
+
+            if (error === TokenExpiredException) {
+
+                await this.pullVillage(params);
+            }
+
             throw error
         }
     }

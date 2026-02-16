@@ -53,6 +53,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
   const [reportingPersonName, setReportingPersonName] = useState<string>();
   const [emailId, setEmailId] = useState<string>();
   const [personalMobileNumber, setPersonalMobileNumber] = useState<string>();
+  const [joiningDate, setJoiningDate] = useState<string>();
 
   const [isReturnAsset, setIsReturnAsset] = useState(false);
 
@@ -124,6 +125,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
       setReportingPersonName(employee.ReportPersonName ?? "");
       setEmailId(employee.EmailId ?? "");
       setPersonalMobileNumber(employee.PersonalMobileNumber ?? "");
+      setJoiningDate(formatDate_dd_mm_yyyy(employee.JoiningDate ?? ""));
     });
   }, [formData.EmployeeId]);
 
@@ -220,6 +222,11 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
     if (!formData.AssignedDate?.trim()) {
       newErrors.AssignedDate = 'Assigned Date is required';
     }
+
+    if (formData.AssignedDate && !isToDateGreaterOrEqualFromDate(joiningDate || "", formData.AssignedDate!)) {
+      newErrors.AssignedDate = "Assigned Date must be greater than or equal to Joining Date";
+    }
+
 
     if (isReturnAsset === true && formData.ReturnDate && !isToDateGreaterOrEqualFromDate(formData.AssignedDate!, formData.ReturnDate!)) {
       newErrors.ReturnDate = "Return Date must be greater than or equal to Assigned Date";
@@ -375,6 +382,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                     setReportingPersonName("");
                     setEmailId("");
                     setPersonalMobileNumber("");
+                    setJoiningDate(undefined);
                     return;
                   }
 
@@ -396,6 +404,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                     <FieldItem label="Reporting Person" value={reportingPersonName || '-'} />
                     <FieldItem label="Email ID" value={emailId || '-'} />
                     <FieldItem label="Personal Mobile Number" value={personalMobileNumber || '-'} />
+                    <FieldItem label="Joining Date" value={joiningDate || '-'} />
                   </div>
                 </div>
               )}

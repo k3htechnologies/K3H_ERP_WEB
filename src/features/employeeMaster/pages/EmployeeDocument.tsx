@@ -242,14 +242,7 @@ export const EmployeeDocument: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        // Find the column label for sorting
-        let sortByParam = undefined
-        if (sortInfo) {
-          const column = employeeDocumentColumns.find(col => col.key === sortInfo.column)
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
-          }
-        }
+        
 
         const params: FilterWithPaginationEmployeeDocumentRequest = {
           PageNumber: 1,
@@ -257,7 +250,7 @@ export const EmployeeDocument: React.FC = () => {
           IsCheckPermission: true,
           EmployeeId: employeeId || undefined,
           DocumentName: filters.DocumentName?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, employeeDocumentColumns),
           ExportType: exportType
         }
 

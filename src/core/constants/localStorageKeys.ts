@@ -1,47 +1,80 @@
 export const LOCAL_STORAGE_KEYS = {
+    //LOGIN DATA
     EMPLOYEE: 'employee_data',
     EMPLOYEE_PROJECT: 'employee_project_data',
     TOKEN: 'auth_token',
     LAST_VISITED_PAGE: 'lastVisitedPage',
-    DAPARTMENT_MASTER_SELECTED_COLUMNS: 'departmentMaster.selectedColumns',
-    DESIGNATION_MASTER_SELECTED_COLUMNS: 'designationMaster.selectedColumns',
-    EMPLOYEE_MASTER_SELECTED_COLUMNS: 'employeeMaster.selectedColumns',
+
+    //MENU
+    MENU_MODULE: 'menuModule',
+
+    //STATIC COUNTRY STATE DISTRICT CITY VILLAGE
+    COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER: 'country_state_district_city_village_data',
+
+    //SELECTED PROJECT ID
+    SELECTED_PROJECT_ID: 'selectedProjectId',
+
+
     BRANCH_MASTER_SELECTED_COLUMNS: 'branchMaster.selectedColumns',
     BRANCH_ASSOCIATIONS_MASTER_SELECTED_COLUMNS: 'branchAssociationsMaster.selectedColumns',
     ASSET_MASTER_SELECTED_COLUMNS: 'assetMaster.selectedColumns',
     ASSET_MAPPING_MASTER_SELECTED_COLUMNS: 'assetMappingMaster.selectedColumns',
     DEDUCTION_MASTER_SELECTED_COLUMNS: 'deductionMaster.selectedColumns',
     EARNING_MASTER_SELECTED_COLUMNS: 'earningMaster.selectedColumns',
-    VENDOR_SELECTED_COLUMNS: 'vendor.selectedColumns',
-    COMPANY_MASTER_SELECTED_COLUMNS: 'companyMaster.selectedColumns',
-    CHANNEL_PARTNER_SELECTED_COLUMNS: 'channelPartnerMaster.selectedColumns',
-    ENQUIRY_SELECTED_COLUMNS: 'enquiry.selectedColumns',
     BANK_LIST_MASTER_SELECTED_COLUMNS: 'bankListMaster.selectedColumns',
     HOLIDAY_MASTER_SELECTED_COLUMNS: 'holidayMaster.selectedColumns',
     HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS: 'holidayMappingMaster.selectedColumns',
     LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS: 'leaveEncashmentMaster.selectedColumns',
     LEAVE_TYPE_MASTER_SELECTED_COLUMNS: 'leaveTypeMaster.selectedColumns',
-    LEAVE_SELECTED_COLUMNS: 'leave.selectedColumns',
     LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS: 'leaveCreditConfiguration.selectedColumns',
     COMP_OFF_SELECTED_COLUMNS: 'compOffTableColumns',
     SHIFT_MASTER_SELECTED_COLUMNS: 'shiftMaster.selectedColumns',
     SHIFT_MAPPING_MASTER_SELECTED_COLUMNS: 'shiftMappingMaster.selectedColumns',
     WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS: 'weekOffMappingMaster.selectedColumns',
     WEEK_OFF_MASTER_SELECTED_COLUMNS: 'weekOffMaster.selectedColumns',
+
+    //PAYROLL
+    LEAVE_SELECTED_COLUMNS: 'leave.selectedColumns',
+    OUTDOOR_SELECTED_COLUMNS: 'outdoor.selectedColumns',
+
+    //SETTING -> COMPANY SETUP
+    DAPARTMENT_MASTER_SELECTED_COLUMNS: 'departmentMaster.selectedColumns',
+    DESIGNATION_MASTER_SELECTED_COLUMNS: 'designationMaster.selectedColumns',
+    EMPLOYEE_MASTER_SELECTED_COLUMNS: 'employeeMaster.selectedColumns',
+    COMPANY_MASTER_SELECTED_COLUMNS: 'companyMaster.selectedColumns',
     TNC_MASTER_SELECTED_COLUMNS: 'tncMaster.selectedColumns',
-    SUB_MATERIAL_MASTER_SELECTED_COLUMNS: 'subMaterialMaster.selectedColumns',
-    UOM_MASTER_SELECTED_COLUMNS: 'uomMaster.selectedColumns',
-    MATERIAL_MASTER_SELECTED_COLUMNS: 'materialMaster.selectedColumns',
+    VENDOR_SELECTED_COLUMNS: 'vendor.selectedColumns',
+
+    //LITIGATION
+    LITIGATION_SELECTED_COLUMNS: 'litigation.selectedColumns',
+
+    //PROJECT DOCUMENT
+
     PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectDocumentCategoryMaster.selectedColumns',
     APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'approvalDocumentCategoryMaster.selectedColumns',
     PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS: 'projectRERADocumentCategoryMaster.selectedColumns',
-    TENANT_SELECTED_COLUMNS: 'tenant.selectedColumns',
-    MENU_MODULE: 'menuModule',
-    COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER: 'country_state_district_city_village_data',
-    SELECTED_PROJECT_ID: 'selectedProjectId',
-    OUTDOOR_SELECTED_COLUMNS: 'outdoor.selectedColumns',
+
+    // REDEVELOPMENT
+
     REDEVELOPMENT_BUILDING_COLUMNS: 'redevelopmentBuilding.selectedColumns',
-    LITIGATION_SELECTED_COLUMNS: 'litigation.selectedColumns',
+    TENANT_SELECTED_COLUMNS: 'tenant.selectedColumns',
+
+    // PROCUREMENT MASTER
+    MATERIAL_MASTER_SELECTED_COLUMNS: 'materialMaster.selectedColumns',
+    SUB_MATERIAL_MASTER_SELECTED_COLUMNS: 'subMaterialMaster.selectedColumns',
+    UOM_MASTER_SELECTED_COLUMNS: 'uomMaster.selectedColumns',
+
+
+    // CHANNEL PARTNER
+    CHANNEL_PARTNER_SELECTED_COLUMNS: 'channelPartnerMaster.selectedColumns',
+
+    // SALES
+    CALLING_DATA_SELECTED_COLUMNS: 'callTracker.selectedColumns',
+    CALL_LOG_SELECTED_COLUMNS: 'callLog.selectedColumns',
+    ENQUIRY_SELECTED_COLUMNS: 'enquiry.selectedColumns',
+    CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS: 'channelPartnerSourcing.selectedColumns',
+    BOOKING_SELECTED_COLUMNS: 'booking.selectedColumns',
+
 
 } as const
 
@@ -56,7 +89,9 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     SHIFT_MASTER: 'shiftMaster.listState',
     WEEK_OFF_MASTER: 'weekOffMaster.listState',
     LITIGATION: 'Litigation.listState',
-    LEAVECREDITCONFIGURATION:'LeaveCreditConfiguration.listState',
-    LEAVE:'leave.listState',
-    OUTDOOR:'outdoor.listState'
+    LEAVECREDITCONFIGURATION: 'LeaveCreditConfiguration.listState',
+    LEAVE: 'leave.listState',
+    OUTDOOR: 'outdoor.listState',
+    CHANNEL_PARTNER: 'channelPartner.listState',
+    CHANNEL_PARTNER_SOURCING: 'channelPartnerSourcing.listState'
 } as const

@@ -4,19 +4,19 @@ import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import React from "react";
-import type { AddUpdateEnquiryRequest, FilterWithPaginationEnquiryRequest } from "../models/EnquiryModel";
+import type { AddUpdateEnquiryRequest, FilterWithPaginationEnquiryRequest } from "@/features/enquiry//models/EnquiryModel";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { EnquiryService } from "../services/EnquiryServices";
+import { EnquiryService } from "@/features/enquiry/services/EnquiryServices";
 import { filterEmail, filterMobile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, Search } from "lucide-react";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { ACCOMODATION_TYPE_OPTIONS, BUDGET_TYPE_OPTIONS, COMMERCIAL_FLAT_CONFIGURATION, CUSTOMER_CLASSIFICATION_TYPE, DESIRED_FLOOR_BAND, ETHNICITY_TYPE_OPTION, FINAL_STAGE_DETAILS_TYPE_OPTIONS, FINAL_STAGE_TYPE_OPTIONS, NEIGHBORHOOD_PLACES_TYPE_OPTION, OCCUPATION_TYPE_OPTIONS, POSSESSION_TYPE_OPTIONS, REQUIREMENT_TYPE_OPTIONS, RESIDENTIAL_FLAT_CONFIGURATION, SOURCE_OF_FUNDING_TYPE, SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
+import { ACCOMODATION_TYPE_OPTIONS, BUDGET_TYPE_OPTIONS, COMMERCIAL_FLAT_CONFIGURATION, CUSTOMER_CLASSIFICATION_TYPE, DESIRED_FLOOR_BAND, ENQUIRY_TIMELINE, ETHNICITY_TYPE_OPTION, FINAL_STAGE_DETAILS_TYPE_OPTIONS, FINAL_STAGE_TYPE_OPTIONS, OCCUPATION_TYPE_OPTIONS, POSSESSION_TYPE_OPTIONS, REQUIREMENT_TYPE_OPTIONS, RESIDENTIAL_FLAT_CONFIGURATION, SOURCE_OF_FUNDING_TYPE, SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS, SUB_SUB_SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
@@ -24,54 +24,85 @@ import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeM
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import RadioPill from "@/ui/components/forms/RadioPill";
 import { RangeSelector } from "@/ui/components/forms/RangeSelector";
-import { fetchChannelPartnerDropdown } from "@/features/ChannelPartner/channelPartnerDropDown";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
-import { calculateAge } from "@/core/utils/comman";
+import { calculateAge, isDateWithinPastDays, isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { fetchChannelPartnerByMobileNumber, fetchChannelPartnerTeamMemberDropdown } from "@/features/ChannelPartner/channelPartnerDropDown";
+import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
+import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
+import { fetchVillageDropdown } from "@/features/technical/villageDropDown";
+import { getCustomerClassification } from "@/features/enquiry/utils/customerClassification";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
     EnquiryId: 0,
     Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     ProjectId: 0,
-    EmployeeId: 0,
-    SalesAdvisorId: 0,
-    SourcingManagerId: 0,
-    PresalesExecutiveId: 0,
+
+    EnquiryTimeOut: "00:00",
+
     Name: "",
-    EmailId: "",
     MobileNumber: "",
-    OccupationType: "",
+    EmailId: "",
+    DateOfBirth: "",
+
     Accommodation: "",
-    Budget: '',
-    IsHomeLoan: true,
-    Requirement: "",
-    RequirementType: "",
-    AreaPreferred: 0,
-    PossessionType: "",
+    OccupationType: "",
+
     Source: "",
     SubSource: "",
     SubSubSource: "",
+
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+    ReferelName: "",
+    ReferelMobileNumber: "",
+    ReferelProjectName: "",
+    ReferelUnitNumber: "",
+
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+    LoyaltyExistingProjectName: "",
+    LoyaltyExistingUnitNumber: "",
+
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+    EmployeeReferenceMobileNumber: "",
+    EmployeeReferenceName: "",
+
+    ChannelPartnerTeamMemberId: 0,
+    ChannelPartnerTeamMemberMobileNumber: "",
+    ChannelPartnerTeamMemberName: "",
+
+    Nationality: "",
+    CountryOfResidence: "",
+    CityOfResidence: "",
+    CurrentLocation: "",
+    VillageMasterId: "",
+
+    PossessionType: "",
+    AreaPreferred: 0,
+    DesiredFloorBand: "",
+    Budget: "",
+
+    Requirement: "",
+    RequirementType: "",
+
+    CustomerClassification: "",
+    SourceOfFunding: "",
+    Ethnicity: "",
+
     FinalStage: "",
     FinalStageDetail: "",
-    NextFollowUpDate: "",
+
     EnquiryDate: "",
+    NextFollowUpDate: "",
+
+    SalesAdvisorId: 0,
+    SourcingManagerId: 0,
+
+    EnquiryTimeIn: "00:00",
+
     Remark: "",
-    Nationality: "",
-    ChannelPartnerId: 0,
-    ProjectName: "",
-    ChannelPartnerName: "",
-    ChannelPartnerMobileNumber: 0,
-    CityOfResidence: "",
-    CountryOfResidence: "",
-    CustomerClassification: "",
-    Ethnicity: "",
-    DesiredFloorBand: "",
-    NeighborhoodPlacesInterestedIn: "",
-    SourceOfFunding: "",
-    Age: '',
-    DateOfBirth: '',
-    EnquiryTimeIn: '00:00',
-    EnquiryTimeOut: '00:00'
+
 });
+
 
 export const AddUpdateEnquiry: React.FC = () => {
 
@@ -79,6 +110,27 @@ export const AddUpdateEnquiry: React.FC = () => {
     const [formData, setFormData] = useState<AddUpdateEnquiryRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
+    const [channelPartnerSearchByMobileNumber, setChannelPartnerSearchByMobileNumber] = useState<string>();
+    const [channelPartnerId, setChannelPartnerId] = useState<number>();
+    const [calculatedAge, setCalculatedAge] = useState<string>();
+    const [selectedVillageValues, setSelectedVillageValues] = useState<string | number | null>(null);
+
+    //SET CHANNEL PARTNER DETAILS
+
+    const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
+    const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
+    const [channelPartnerFirmsType, setChannelPartnerFirmsType] = useState<string>();
+    const [channelPartnerPanNumber, setChannelPartnerPanNumber] = useState<string>();
+    const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] = useState<string>();
+    const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] = useState<string>();
+    const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<string>();
+    const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
+    const [channelPartnerType, setChannelPartnerType] = useState<string>();
+
+    
+    
+        const [enquiryUniqueKey, setEnquiryUniqueKey] = useState<string>();
+
 
     // NAVIGATE
     const navigate = useNavigate();
@@ -92,7 +144,7 @@ export const AddUpdateEnquiry: React.FC = () => {
 
     const isAddMode = enquiryMasterId === 0;
 
-    const [nationality, setNationality] = useState<string>("Indian");
+    const [, setNationality] = useState<string>("Indian");
 
     // TOAST
     const { addToast } = useToast();
@@ -108,7 +160,10 @@ export const AddUpdateEnquiry: React.FC = () => {
     const [dropdownLabels, setDropdownLabels] = useState<{
         channelPartnerName?: string,
         MobileNumber?: string
-        employeeName?: string;
+        SalesAdvisor?: string;
+        SourcingManager?: string;
+        VillageName?: string;
+        ChannelPartnerTeamMemberName?: string,
 
     }>({})
 
@@ -171,19 +226,25 @@ export const AddUpdateEnquiry: React.FC = () => {
                     const e = response.right.Data?.[0];
 
                     if (e) {
+
                         setFormData(prev => ({
                             ...prev,
+
                             EnquiryId: e.EnquiryId ?? prev.EnquiryId,
                             Uniquekey: e.Uniquekey ?? prev.Uniquekey,
                             ProjectId: Number(projectId),
                             Name: e.Name ?? prev.Name,
                             EmailId: e.EmailId ?? prev.EmailId,
                             MobileNumber: e.MobileNumber ?? prev.MobileNumber,
+                            DateOfBirth: e.DateOfBirth ?? prev.DateOfBirth,
+
+                            CurrentLocation: e.CurrentLocation ?? prev.CurrentLocation,
+
+                            VillageMasterId: e.VillageMasterId ?? prev.VillageMasterId,
+
                             OccupationType: e.OccupationType ?? prev.OccupationType,
                             Accommodation: e.Accommodation ?? prev.Accommodation,
                             Budget: e.Budget ?? prev.Budget,
-                            Age: e.Age ?? prev.Age,
-                            IsHomeLoan: e.IsHomeLoan ?? prev.IsHomeLoan,
                             Requirement: e.Requirement ?? prev.Requirement,
                             RequirementType: e.RequirementType ?? prev.RequirementType,
                             AreaPreferred: e.AreaPreferred ?? prev.AreaPreferred,
@@ -191,31 +252,63 @@ export const AddUpdateEnquiry: React.FC = () => {
                             Source: e.Source ?? prev.Source,
                             SubSource: e.SubSource ?? prev.SubSource,
                             SubSubSource: e.SubSubSource ?? prev.SubSubSource,
+
+                            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+                            ReferelName: e.ReferelName ?? prev.ReferelName,
+                            ReferelMobileNumber: e.ReferelMobileNumber ?? prev.ReferelMobileNumber,
+                            ReferelProjectName: e.ReferelProjectName ?? prev.ReferelProjectName,
+                            ReferelUnitNumber: e.ReferelUnitNumber ?? prev.ReferelUnitNumber,
+
+                            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+                            LoyaltyExistingProjectName: e.LoyaltyExistingProjectName ?? prev.LoyaltyExistingProjectName,
+                            LoyaltyExistingUnitNumber: e.LoyaltyExistingUnitNumber ?? prev.LoyaltyExistingUnitNumber,
+
+                            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+                            EmployeeReferenceMobileNumber: e.EmployeeReferenceMobileNumber ?? prev.EmployeeReferenceMobileNumber,
+                            EmployeeReferenceName: e.EmployeeReferenceName ?? prev.EmployeeReferenceName,
+
+                            ChannelPartnerTeamMemberId: e.ChannelPartnerTeamMemberId ?? prev.ChannelPartnerTeamMemberId,
+                            ChannelPartnerTeamMemberMobileNumber: Number(e.ChannelPartnerTeamMemberId) > 0 ? "" : e.ChannelPartnerTeamMemberMobileNumber ?? prev.ChannelPartnerTeamMemberMobileNumber,
+                            ChannelPartnerTeamMemberName: Number(e.ChannelPartnerTeamMemberId) > 0 ? "" : e.ChannelPartnerTeamMemberName ?? prev.ChannelPartnerTeamMemberName,
+
                             FinalStage: e.FinalStage ?? prev.FinalStage,
                             FinalStageDetail: e.FinalStageDetail ?? prev.FinalStageDetail,
                             NextFollowUpDate: e.NextFollowUpDate ?? prev.NextFollowUpDate,
                             EnquiryDate: e.EnquiryDate ?? prev.EnquiryDate,
                             Remark: e.Remark ?? prev.Remark,
-                            ProjectName: e.ProjectName ?? prev.ProjectName,
                             SalesAdvisorId: e.SalesAdvisorId ?? prev.SalesAdvisorId,
                             SourcingManagerId: e.SourcingManagerId ?? prev.SourcingManagerId,
-                            PresalesExecutiveId: e.PresalesExecutiveId ?? prev.PresalesExecutiveId,
                             Nationality: e.Nationality ?? prev.Nationality,
                             DesiredFloorBand: e.DesiredFloorBand ?? prev.DesiredFloorBand,
-                            NeighborhoodPlacesInterestedIn: e.NeighborhoodPlacesInterestedIn ?? prev.NeighborhoodPlacesInterestedIn,
                             CustomerClassification: e.CustomerClassification ?? prev.CustomerClassification,
                             CountryOfResidence: e.CountryOfResidence ?? prev.CountryOfResidence,
                             CityOfResidence: e.CityOfResidence ?? prev.CityOfResidence,
                             SourceOfFunding: e.SourceOfFunding ?? prev.SourceOfFunding,
                             Ethnicity: e.Ethnicity ?? prev.Ethnicity,
+                            Timeline: e.Timeline ?? prev.Timeline,
+
                             EnquiryTimeIn: e.EnquiryTimeIn ?? prev.EnquiryTimeIn,
-                            EnquiryTimeOut: e.EnquiryTimeOut ?? prev.EnquiryTimeOut,
+                            EnquiryTimeOut: e.EnquiryTimeOut ?? prev.EnquiryTimeOut
+
                         }));
+
                         setDropdownLabels({
                             channelPartnerName: e.ChannelPartnerName || '',
-                            employeeName: e.EmployeeName || "",
+                            SalesAdvisor: e.SalesAdvisor || "",
+                            SourcingManager: e.SourcingManager || "",
+                            ChannelPartnerTeamMemberName: e.ChannelPartnerTeamMemberName || "",
 
                         });
+                        setSelectedVillageValues(e.VillageName || "")
+
+                        const age = calculateAge(e.DateOfBirth || "")
+
+                        setCalculatedAge(age);
+
+                        setEnquiryUniqueKey(e.SystemGeneratedCode || '');
+
+                        if (e.Source === 'Channel Partner') {
+                        } setChannelPartnerSearchByMobileNumber(e.ChannelPartnerMobileNumber ? e.ChannelPartnerMobileNumber.toString() : '');
                     }
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -256,12 +349,12 @@ export const AddUpdateEnquiry: React.FC = () => {
         }
 
 
-        if (!formData.EmailId) {
-            newErrors.EmailId = 'E-mail Id is required';
-        } else if (!isValidEmail(formData.EmailId.trim())) {
-            newErrors.EmailId = 'Enter a Valid E-mail Id'
-        }
+        if (formData.EmailId !== '') {
 
+            if (!isValidEmail(formData.EmailId!.trim())) {
+                newErrors.EmailId = 'Enter a Valid E-mail Id'
+            }
+        }
 
         if (!formData.DateOfBirth) {
             newErrors.DateOfBirth = 'DOB is required'
@@ -272,6 +365,18 @@ export const AddUpdateEnquiry: React.FC = () => {
             if (dob > today) {
                 newErrors.DateOfBirth = 'Date of Birth cannot be in the future'
             }
+        }
+
+        if (!formData.Accommodation) {
+            newErrors.Accommodation = 'Current Accommodation is required';
+        }
+
+        if (!formData.OccupationType) {
+            newErrors.OccupationType = 'Occupation Type is required';
+        }
+
+        if (!formData.Source) {
+            newErrors.Source = 'Source is required';
         }
 
         if (formData.Nationality === "NRI") {
@@ -286,34 +391,97 @@ export const AddUpdateEnquiry: React.FC = () => {
 
         }
 
-        if (!formData.AreaPreferred) {
-            newErrors.AreaPreferred = 'Area Preferred is required';
-        }
-        if (!formData.EnquiryDate) {
-            newErrors.EnquiryDate = 'Enquiry Date  is required';
-        }
-
-        else if (formData.EnquiryDate) {
-            const dob = new Date(formData.EnquiryDate as unknown as string)
-            const today = new Date()
-            if (dob > today) {
-                newErrors.EnquiryDate = 'Date of Enquiry cannot be in the future'
-            }
-        }
-
         if (formData.Source?.toUpperCase() === "CHANNEL PARTNER") {
 
-            if (!formData.ChannelPartnerId) {
+            if (!channelPartnerId) {
                 newErrors.ChannelPartnerId = 'Channel Partner is required';
             }
 
+            if (!formData.SubSource) {
+                newErrors.SubSource = 'Sub Source is required';
+            }
+
         }
+
         if (formData.Source?.toUpperCase() === "ADVERTISEMENT") {
 
             if (!formData.SubSource) {
                 newErrors.SubSource = 'Sub Source is required';
             }
 
+        }
+
+        // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+        if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE") {
+            if (!formData.ReferelName) {
+                newErrors.ReferelName = 'Referel Name is required';
+            }
+            if (!formData.ReferelMobileNumber) {
+                newErrors.ReferelMobileNumber = 'Referel Mobile Number is required';
+            } else if (!isValidMobile(formData.ReferelMobileNumber.trim())) {
+                newErrors.ReferelMobileNumber = 'Enter a valid 10-Digit Referel Mobile Number'
+            }
+
+
+            if (!formData.ReferelProjectName) {
+                newErrors.ReferelProjectName = 'Referel Project Name is required';
+            }
+            if (!formData.ReferelUnitNumber) {
+                newErrors.ReferelUnitNumber = 'Referel Unit Number is required';
+            }
+        }
+
+        // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+        if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "LOYALTY") {
+            if (!formData.LoyaltyExistingProjectName) {
+                newErrors.LoyaltyExistingProjectName = 'Loyalty Existing Project Name is required';
+            }
+            if (!formData.LoyaltyExistingUnitNumber) {
+                newErrors.LoyaltyExistingUnitNumber = 'Loyalty Existing Unit Number is required';
+            }
+        }
+
+        // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+        if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE") {
+
+            if (!formData.EmployeeReferenceMobileNumber) {
+                newErrors.EmployeeReferenceMobileNumber = 'Employee Reference Mobile Number is required';
+            } else if (!isValidMobile(formData.EmployeeReferenceMobileNumber.trim())) {
+                newErrors.EmployeeReferenceMobileNumber = 'Enter a valid 10-Digit Employee Reference Mobile Number'
+            }
+
+            if (!formData.EmployeeReferenceName) {
+                newErrors.EmployeeReferenceName = 'Employee Reference Name is required';
+            }
+        }
+
+        if (!formData.CurrentLocation) {
+            newErrors.CurrentLocation = 'Current Location is required';
+        } else if (formData.CurrentLocation.trim().length > 500) {
+            newErrors.CurrentLocation = 'Current Location must be at most 500 characters';
+        }
+
+        // =====================[CHANNEL PARTNER]=========================
+        const name = formData.ChannelPartnerTeamMemberName?.trim() || '';
+        const mobile = formData.ChannelPartnerTeamMemberMobileNumber?.trim() || '';
+        if (mobile && !name) {
+            newErrors.ChannelPartnerTeamMemberName = 'Channel Partner Team Member Name is required';
+        }
+
+        // 2️⃣ If name entered → mobile required
+        if (name && !mobile) {
+            newErrors.ChannelPartnerTeamMemberMobileNumber = 'Mobile Number is required';
+        }
+
+        // 3️⃣ If mobile entered → validate format
+        if (mobile && !isValidMobile(mobile)) {
+            newErrors.ChannelPartnerTeamMemberMobileNumber = 'Enter a valid 10-digit mobile number';
+        }
+
+        if (!formData.EnquiryDate) {
+            newErrors.EnquiryDate = "Enquiry date is required";
+        } else if (!isDateWithinPastDays(formData.EnquiryDate, 2)) {
+            newErrors.EnquiryDate = "Enquiry date can only be today or within the previous 2 days";
         }
 
         if (formData.FinalStage?.toUpperCase() === "LOST") {
@@ -325,9 +493,12 @@ export const AddUpdateEnquiry: React.FC = () => {
         }
 
         if (!formData.NextFollowUpDate) {
-            newErrors.NextFollowUpDate = 'Next Follow-Up Date  is required';
+            newErrors.NextFollowUpDate = 'Next Follow-Up Date is required';
         }
 
+        if (formData.NextFollowUpDate && !isToDateGreaterOrEqualFromDate(formData.EnquiryDate || "", formData.NextFollowUpDate!)) {
+            newErrors.NextFollowUpDate = "Next Follow Up Date must be greater than or equal to Enquiry Date";
+        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -337,51 +508,103 @@ export const AddUpdateEnquiry: React.FC = () => {
 
     //#region PUSH DATA
     const PushEnquiryFormData = (): AddUpdateEnquiryRequest => {
+
+        const villageIdsString = villageDropdown.selectedValues.length > 0
+            ? villageDropdown.selectedValues.join(',')
+            : '';
+
+        const customerClassification = getCustomerClassification({
+            Budget: formData.Budget,
+            PossessionType: formData.PossessionType,
+            Requirement: formData.Requirement,
+            VillageMasterId: villageIdsString,
+            Timeline: formData.Timeline ?? "",
+        });
+
+        // =====================[DIRECT WALKING → REFERENCE]=========================
+        const isDirectReference = formData.Source?.toUpperCase() === 'DIRECT WALKING' && formData.SubSource?.toUpperCase() === 'REFERENCE';
+        // =====================[DIRECT WALKING → LOYALTY]=========================
+        const isDirectLoyalty = formData.Source?.toUpperCase() === 'DIRECT WALKING' && formData.SubSource?.toUpperCase() === 'LOYALTY';
+
+        // =====================[DIRECT WALKING → EMPLOYEE REFERENCE]=========================
+        const isEmployeeReference = formData.Source?.toUpperCase() === 'DIRECT WALKING' && formData.SubSource?.toUpperCase() === 'EMPLOYEE REFERENCE';
+
+        const isIndian = formData.Nationality === '' || formData.Nationality?.toUpperCase() === 'Indian';
+
         return {
             EnquiryId: formData.EnquiryId,
             Uniquekey: formData.Uniquekey,
             ProjectId: Number(projectId),
-            EmployeeId: formData.EmployeeId,
-            SalesAdvisorId: formData.SalesAdvisorId,
-            SourcingManagerId: formData.SourcingManagerId,
-            PresalesExecutiveId: formData.PresalesExecutiveId,
+
+            EnquiryTimeOut: formData.EnquiryTimeOut,
+
             Name: formData.Name,
-            EmailId: formData.EmailId,
             MobileNumber: formData.MobileNumber,
-            OccupationType: formData.OccupationType,
-            Accommodation: formData.Accommodation,
-            Budget: formData.Budget,
+            EmailId: formData.EmailId,
             DateOfBirth: formData.DateOfBirth,
-            Age: formData.Age,
-            Nationality: formData.Nationality,
-            NeighborhoodPlacesInterestedIn: formData.NeighborhoodPlacesInterestedIn,
-            DesiredFloorBand: formData.DesiredFloorBand,
-            CustomerClassification: formData.CustomerClassification,
-            SourceOfFunding: formData.SourceOfFunding,
-            Ethnicity: formData.Ethnicity,
-            CountryOfResidence: formData.CountryOfResidence,
-            CityOfResidence: formData.CityOfResidence,
-            IsHomeLoan: formData.IsHomeLoan,
-            Requirement: formData.Requirement,
-            RequirementType: formData.RequirementType || null,
-            AreaPreferred: formData.AreaPreferred,
-            PossessionType: formData.PossessionType,
+
+            Accommodation: formData.Accommodation,
+            OccupationType: formData.OccupationType,
+
             Source: formData.Source,
             SubSource: formData.SubSource,
-            SubSubSource: formData.SubSubSource,
+            SubSubSource: (formData.Source)?.toUpperCase() === "CHANNEL PARTNER" ? String(channelPartnerId) : formData.SubSubSource,
+
+
+            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+            ReferelName: isDirectReference ? formData.ReferelName : '',
+            ReferelMobileNumber: isDirectReference ? formData.ReferelMobileNumber : '',
+            ReferelProjectName: isDirectReference ? formData.ReferelProjectName : '',
+            ReferelUnitNumber: isDirectReference ? formData.ReferelUnitNumber : '',
+
+            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+            LoyaltyExistingProjectName: isDirectLoyalty ? formData.LoyaltyExistingProjectName : '',
+            LoyaltyExistingUnitNumber: isDirectLoyalty ? formData.LoyaltyExistingUnitNumber : '',
+
+            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+            EmployeeReferenceMobileNumber: isEmployeeReference ? formData.EmployeeReferenceMobileNumber : '',
+            EmployeeReferenceName: isEmployeeReference ? formData.EmployeeReferenceName : '',
+
+            ChannelPartnerTeamMemberId: formData.ChannelPartnerTeamMemberId,
+            ChannelPartnerTeamMemberName: Number(formData.ChannelPartnerTeamMemberId) > 0 ? '' : formData.ChannelPartnerTeamMemberName,
+            ChannelPartnerTeamMemberMobileNumber: Number(formData.ChannelPartnerTeamMemberId) > 0 ? '' : formData.ChannelPartnerTeamMemberMobileNumber,
+
+            Nationality: isIndian ? 'Indian' : formData.Nationality,
+            CountryOfResidence: isIndian ? '' : formData.CountryOfResidence,
+            CityOfResidence: isIndian ? '' : formData.CityOfResidence,
+
+            CurrentLocation: formData.CurrentLocation,
+            VillageMasterId: villageIdsString,
+
+            PossessionType: formData.PossessionType,
+            AreaPreferred: formData.AreaPreferred,
+            DesiredFloorBand: formData.DesiredFloorBand,
+            Budget: formData.Budget,
+
+            Requirement: formData.Requirement,
+            RequirementType: formData.RequirementType || null,
+
+            CustomerClassification: customerClassification,
+            SourceOfFunding: formData.SourceOfFunding,
+            Ethnicity: formData.Ethnicity,
+            Timeline: formData.Timeline,
+
             FinalStage: formData.FinalStage,
             FinalStageDetail: formData.FinalStageDetail,
-            NextFollowUpDate: formData.NextFollowUpDate,
+
             EnquiryDate: formData.EnquiryDate,
+            NextFollowUpDate: formData.NextFollowUpDate,
+
+            SalesAdvisorId: formData.SalesAdvisorId,
+            SourcingManagerId: formData.SourcingManagerId,
+
             EnquiryTimeIn: formData.EnquiryTimeIn,
-            EnquiryTimeOut: formData.EnquiryTimeOut,
+
             Remark: formData.Remark,
-            ChannelPartnerId: formData.ChannelPartnerId,
-            ProjectName: formData.ProjectName,
-            ChannelPartnerName: formData.ChannelPartnerName,
-            ChannelPartnerMobileNumber: formData.ChannelPartnerMobileNumber
+
         };
-    }
+    };
+
     //#endregion
 
     //#region HANDLE ADD AND UPDATE Enquiry  MASTER
@@ -430,7 +653,85 @@ export const AddUpdateEnquiry: React.FC = () => {
         );
     };
     //#endregion
+    //#region HANDLE SEARCH CHANGE EVENT CHANNEL PARTNER
 
+    const handleSearchByChannelPartner = (searchValue: string) => {
+        setChannelPartnerSearchByMobileNumber(searchValue);
+    };
+
+    const clearChannelPartnerDetails = () => {
+        setChannelPartnerFullName("");
+        setChannelPartnerCompanyName("");
+        setChannelPartnerFirmsType("");
+        setChannelPartnerPanNumber("");
+        setChannelPartnerAadhaarCardNumber("");
+        setChannelPartnerRERANUmber("");
+        setChannelPartnerDesignation("");
+        setChannelPartnerMobileNumber("");
+        setChannelPartnerType("");
+        setChannelPartnerId(0);
+        handleFieldChange("ChannelPartnerTeamMemberId", 0);
+    };
+
+    const clearChannelPartnerAll = () => {
+        setChannelPartnerSearchByMobileNumber("");
+        clearChannelPartnerDetails();
+    };
+
+
+    useEffect(() => {
+        const mobile = channelPartnerSearchByMobileNumber?.trim() || "";
+
+        if (mobile.length !== 10) {
+            clearChannelPartnerDetails();
+            return;
+        }
+
+        fetchChannelPartnerByMobileNumber(mobile).then(channelPartner => {
+
+            if (!channelPartner) return;
+
+            setChannelPartnerId(Number(channelPartner.ChannelPartnerId));
+
+            setChannelPartnerFullName(channelPartner.Name ?? "");
+            setChannelPartnerFirmsType(channelPartner.FirmsType ?? "");
+            setChannelPartnerCompanyName(channelPartner.CompanyName ?? "");
+            setChannelPartnerPanNumber(channelPartner.PanNumber ?? "");
+            setChannelPartnerAadhaarCardNumber(channelPartner.AadharCardNumber ?? "");
+            setChannelPartnerRERANUmber(channelPartner.RERANumber ?? "");
+            setChannelPartnerDesignation(channelPartner.Designation ?? "");
+            setChannelPartnerMobileNumber(channelPartner.MobileNumber ?? "");
+            setChannelPartnerType(channelPartner.Type ?? "");
+
+        });
+
+    }, [channelPartnerSearchByMobileNumber]);
+
+
+    //#endregion
+
+    //#region FETCH CHANNEL PARTNER DROPDOWN WITH TEAM MEMBER
+    const fetchChannelPartnerTeamMember = useCallback(
+        async (pageNumber: number, params?: { value?: string }) => {
+
+            return fetchChannelPartnerTeamMemberDropdown(pageNumber, {
+
+                ...params,
+                value: channelPartnerCompanyName || "",
+
+            });
+        },
+        [channelPartnerCompanyName]
+    );
+
+    //#endregion
+    //#region FETCH CHANNEL PARTNER DROPDOWN WITH TEAM MEMBER
+    const villageDropdown = useMultiSelectDropdown({
+        value: selectedVillageValues,
+        fetchCallback: fetchVillageDropdown,
+        autoFetchOptions: true
+    });
+    //#endregion
     return (
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -448,7 +749,16 @@ export const AddUpdateEnquiry: React.FC = () => {
                     <div className="space-y-4 pb-2">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Enquiry Details</h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+                                <Input
+                                    type="text"
+                                    disabled
+                                    label='Unique key'
+                                    value={enquiryUniqueKey ?? ""}
+                                    placeholder="System Generated Unique key"
+                                />
+                            </div>
                             <div>
                                 <TimePicker
                                     label="Customer Time In"
@@ -496,7 +806,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                 <Input
                                     label='E-mail ID'
                                     type="text"
-                                    required
                                     value={formData.EmailId ?? ""}
                                     error={errors.EmailId}
                                     rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
@@ -519,7 +828,7 @@ export const AddUpdateEnquiry: React.FC = () => {
 
                                         const age = calculateAge(dob || "")
 
-                                        handleFieldChange('Age', age)
+                                        setCalculatedAge(age)
                                     }}
                                     required
                                     error={errors.DateOfBirth}
@@ -533,18 +842,14 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     required
                                     disabled
                                     label='Age'
-                                    value={formData.Age ?? ""}
-                                    onChange={(e) => handleFieldChange("Age", e.target.value)}
-                                    placeholder="Enter Age"
+                                    value={calculatedAge ?? ""}
+                                    onChange={(e) => setCalculatedAge(e.target.value)}
+                                    placeholder="System calculated Age"
                                     maxLength={250}
                                     error={errors.Age}
                                 />
 
                             </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-
 
                             <div>
                                 <SinglePageSelection
@@ -560,6 +865,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             <div>
                                 <SinglePageSelection
                                     label="Occupation Type"
+                                    required
                                     placeholder="Select Occupation Type"
                                     value={formData.OccupationType ?? ''}
                                     onChange={(value) => handleFieldChange("OccupationType", value)}
@@ -567,72 +873,10 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     error={errors.OccupationType}
                                 />
                             </div>
-                            <div>
-                                <SinglePageSelection
-                                    label="Source"
-                                    placeholder="Select Source"
-                                    value={formData.Source ?? ''}
-                                    onChange={(value) => handleFieldChange("Source", value)}
-                                    options={SOURCE_TYPE_OPTIONS.map(opt => ({
-                                        label: opt.name,
-                                        value: opt.id
-                                    }))}
-                                    error={errors.Source}
-                                />
-                            </div>
-                            {/* Advertisement - Sub Source */}
-                            {formData.Source === 'Direct Walking' && (
-                                <div>
-                                    <SinglePageSelection
-                                        label="Sub Source"
-                                        placeholder="Select Sub Source"
-                                        value={formData.SubSource ?? ''}
-                                        onChange={(value) => handleFieldChange("SubSource", String(value))}
-                                        options={SUBSOURCE_TYPE_OPTIONS.map(opt => ({
-                                            label: opt.name,
-                                            value: opt.id
-                                        }))}
-                                        error={errors.SubSource}
-                                    />
-                                </div>
-                            )}
-                            {/* Advertisement - Sub Source */}
-                            {formData.SubSource === 'Advertisement' && (
-                                <div>
-                                    <SinglePageSelection
-                                        label="Sub Source"
-                                        placeholder="Select Sub Sub Source"
-                                        value={formData.SubSubSource ?? ''}
-                                        onChange={(value) => handleFieldChange("SubSubSource", String(value))}
-                                        options={SUB_SUB_SOURCE_TYPE_OPTIONS.map(opt => ({
-                                            label: opt.name,
-                                            value: opt.id
-                                        }))}
-                                        error={errors.SubSubSource}
-                                    />
-                                </div>
-                            )}
-
-                            {/* Channel Partner - Channel Partner Dropdown */}
-                            {formData.Source === 'Channel Partner' && (
-                                <div>
-                                    <SingleSelectDropdownWithPagination
-                                        label="Channel Partner"
-                                        title="Select Channel Partner"
-                                        size="lg"
-                                        dataFetchCallBack={fetchChannelPartnerDropdown}
-                                        onSelected={(item) =>
-                                            handleFieldChange("ChannelPartnerId", Number(item.value))
-                                        }
-                                        initialValue={createDropdownInitialValue(formData.ChannelPartnerId,
-                                            dropdownLabels.channelPartnerName
-                                        )}
-                                        error={errors.ChannelPartnerId}
-                                    />
-                                </div>
-                            )}
 
                         </div>
+
+
 
                         <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
 
@@ -645,8 +889,8 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     <RadioPill
                                         name="Nationality"
                                         label="Indian"
-                                        value={formData.Nationality ?? ''}
-                                        checked={nationality === "Indian"}
+                                        value="Indian"
+                                        checked={formData.Nationality === "Indian"}
                                         onChange={() => {
                                             setNationality("Indian");
                                             handleFieldChange("Nationality", "Indian");
@@ -656,8 +900,8 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     <RadioPill
                                         name="Nationality"
                                         label="NRI"
-                                        value={formData.Nationality ?? ''}
-                                        checked={nationality === "NRI"}
+                                        value="NRI"
+                                        checked={formData.Nationality === "NRI"}
                                         onChange={() => {
                                             setNationality("NRI");
                                             handleFieldChange("Nationality", "NRI");
@@ -697,11 +941,396 @@ export const AddUpdateEnquiry: React.FC = () => {
                                 </>
                             )}
                         </div>
+
+                        {/* ============================================================= [SOURCE] ============================================================================================= */}
+                        <div className="space-y-4 pb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Source</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <SinglePageSelection
+                                        label="Source"
+                                        required
+                                        placeholder="Select Source"
+                                        value={formData.Source ?? ''}
+                                        onChange={(e) => {
+                                            handleFieldChange("Source", e);
+                                            handleFieldChange("SubSource", "");
+                                            handleFieldChange("SubSubSource", "");
+
+                                            if (e !== "Channel Partner") {
+                                                clearChannelPartnerAll();
+                                            }
+                                        }}
+                                        options={SOURCE_TYPE_OPTIONS.map(opt => ({
+                                            label: opt.name,
+                                            value: opt.id
+                                        }))}
+                                        error={errors.Source}
+                                    />
+
+                                </div>
+
+                                {formData.Source === 'Direct Walking' && (
+                                    <div>
+                                        <SinglePageSelection
+                                            label="Sub Source"
+                                            required={formData.Source === 'Direct Walking' ? true : false}
+                                            placeholder="Select Sub Source"
+                                            value={formData.SubSource ?? ''}
+                                            onChange={(e) => {
+                                                handleFieldChange("SubSource", e);
+                                                handleFieldChange("SubSubSource", "");
+                                            }}
+                                            options={SUBSOURCE_TYPE_OPTIONS.map(opt => ({
+                                                label: opt.name,
+                                                value: opt.id
+                                            }))}
+                                            error={errors.SubSource}
+                                        />
+                                    </div>
+                                )}
+
+                                {formData.Source === 'Direct Walking' && formData.SubSource === 'Advertisement' && (
+                                    <div>
+                                        <SinglePageSelection
+                                            label="Sub Sub Source"
+                                            required={formData.Source === 'Direct Walking' && formData.SubSource === 'Advertisement' ? true : false}
+                                            placeholder="Select Sub Sub Source"
+                                            value={formData.SubSubSource ?? ''}
+                                            onChange={(value) => handleFieldChange("SubSubSource", String(value))}
+                                            options={SUB_SUB_SOURCE_TYPE_OPTIONS.map(opt => ({
+                                                label: opt.name,
+                                                value: opt.id
+                                            }))}
+                                            error={errors.SubSubSource}
+                                        />
+                                    </div>
+                                )}
+
+                                {formData.Source === 'Direct Walking' && formData.SubSource === 'Reference' && (
+                                    <>
+                                        <Input
+                                            label="Referral Name"
+                                            type="text"
+                                            required
+                                            value={formData.ReferelName ?? ""}
+                                            error={errors.ReferelName}
+                                            onChange={(e) => handleFieldChange("ReferelName", e.target.value)}
+                                            placeholder="Enter Referral Name"
+                                            maxLength={150}
+                                        />
+
+                                        <Input
+                                            label="Referral Mobile Number"
+                                            required
+                                            type="text"
+                                            maxLength={10}
+                                            value={formData.ReferelMobileNumber ?? ""}
+                                            error={errors.ReferelMobileNumber}
+                                            leftIcon="+91"
+                                            rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                            onChange={(e) =>
+                                                handleFieldChange(
+                                                    "ReferelMobileNumber",
+                                                    filterMobile(e.target.value)
+                                                )
+                                            }
+                                            placeholder="Enter Referral Mobile Number"
+                                        />
+
+                                        <Input
+                                            label="Referral Project Name"
+                                            required
+                                            type="text"
+                                            value={formData.ReferelProjectName ?? ""}
+                                            error={errors.ReferelProjectName}
+                                            onChange={(e) =>
+                                                handleFieldChange("ReferelProjectName", e.target.value)
+                                            }
+                                            placeholder="Enter Referral Project Name"
+                                            maxLength={200}
+                                        />
+
+                                        <Input
+                                            label="Referral Unit Number"
+                                            required
+                                            type="text"
+                                            value={formData.ReferelUnitNumber ?? ""}
+                                            error={errors.ReferelUnitNumber}
+                                            onChange={(e) =>
+                                                handleFieldChange("ReferelUnitNumber", e.target.value)
+                                            }
+                                            placeholder="Enter Referral Unit Number"
+                                            maxLength={50}
+                                        />
+                                    </>
+                                )}
+                                {formData.Source === 'Direct Walking' && formData.SubSource === 'Loyalty' && (
+                                    <>
+                                        <Input
+                                            label="Existing Project Name"
+                                            required
+                                            type="text"
+                                            value={formData.LoyaltyExistingProjectName ?? ""}
+                                            error={errors.LoyaltyExistingProjectName}
+                                            onChange={(e) =>
+                                                handleFieldChange("LoyaltyExistingProjectName", e.target.value)
+                                            }
+                                            placeholder="Enter Existing Project Name"
+                                            maxLength={200}
+                                        />
+
+                                        <Input
+                                            label="Existing Unit Number"
+                                            required
+                                            type="text"
+                                            value={formData.LoyaltyExistingUnitNumber ?? ""}
+                                            error={errors.LoyaltyExistingUnitNumber}
+                                            onChange={(e) =>
+                                                handleFieldChange("LoyaltyExistingUnitNumber", e.target.value)
+                                            }
+                                            placeholder="Enter Existing Unit Number"
+                                            maxLength={50}
+                                        />
+
+                                    </>
+                                )}
+
+                                {formData.Source === 'Direct Walking' && formData.SubSource === 'Employee Reference' && (
+                                    <>
+                                        <Input
+                                            label="Employee Name"
+                                            required
+                                            type="text"
+                                            value={formData.EmployeeReferenceName ?? ""}
+                                            error={errors.EmployeeReferenceName}
+                                            onChange={(e) =>
+                                                handleFieldChange("EmployeeReferenceName", e.target.value)
+                                            }
+                                            placeholder="Enter Employee Name"
+                                            maxLength={150}
+                                        />
+
+                                        <Input
+                                            label="Employee Mobile Number"
+                                            required
+                                            type="text"
+                                            maxLength={10}
+                                            value={formData.EmployeeReferenceMobileNumber ?? ""}
+                                            error={errors.EmployeeReferenceMobileNumber}
+                                            leftIcon="+91"
+                                            rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                            onChange={(e) =>
+                                                handleFieldChange("EmployeeReferenceMobileNumber", filterMobile(e.target.value)
+                                                )
+                                            }
+                                            placeholder="Enter Employee Mobile Number"
+                                        />
+
+
+                                    </>
+                                )}
+
+                                {formData.Source === 'Channel Partner' && (
+                                    <>
+                                        <SinglePageSelection
+                                            label="Sub Source"
+                                            required={formData.Source === 'Channel Partner' ? true : false}
+                                            placeholder="Select Sub Source"
+                                            value={formData.SubSource ?? ''}
+                                            onChange={(value) => handleFieldChange("SubSource", String(value))}
+                                            options={SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS.map(opt => ({
+                                                label: opt.name,
+                                                value: opt.id
+                                            }))}
+                                            error={errors.SubSource}
+                                        />
+                                        <div>
+                                            <Input
+                                                type="text"
+                                                required
+                                                label="Channel Partner"
+                                                value={channelPartnerSearchByMobileNumber}
+                                                maxLength={10}
+                                                onChange={(e) => {
+                                                    handleSearchByChannelPartner(e.target.value);
+                                                    setChannelPartnerSearchByMobileNumber(e.target.value);
+                                                }}
+                                                placeholder="Search By Mobile Number"
+                                                leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+                                                error={errors.ChannelPartnerId}
+
+                                            />
+
+                                        </div>
+                                        {channelPartnerFullName != '' && (
+                                            <>
+                                                {(formData.ChannelPartnerTeamMemberName === "" && formData.ChannelPartnerTeamMemberMobileNumber === "") && (
+                                                    <div>
+                                                        <SingleSelectDropdownWithPagination
+                                                            label="Team Member"
+                                                            title="Select Team Member"
+                                                            size="lg"
+                                                            initialValue={createDropdownInitialValue(
+                                                                formData.ChannelPartnerTeamMemberId,
+                                                                dropdownLabels.ChannelPartnerTeamMemberName
+                                                            )}
+                                                            dataFetchCallBack={fetchChannelPartnerTeamMember}
+                                                            onSelected={(item) => {
+                                                                if (!item) {
+                                                                    handleFieldChange("ChannelPartnerTeamMemberId", null);
+                                                                    handleFieldChange("ChannelPartnerTeamMemberName", "");
+                                                                    handleFieldChange("ChannelPartnerTeamMemberMobileNumber", "");
+                                                                    return;
+                                                                }
+
+                                                                handleFieldChange(
+                                                                    "ChannelPartnerTeamMemberId",
+                                                                    Number(item.value)
+                                                                );
+                                                            }}
+                                                        />
+                                                    </div>
+                                                )}
+
+                                                {/* SHOW ONLY WHEN TEAM MEMBER IS NOT SELECTED */}
+                                                {!formData.ChannelPartnerTeamMemberId && (
+                                                    <>
+                                                        <div>
+                                                            <Input
+                                                                type="text"
+                                                                label="Team Member Name"
+                                                                value={formData.ChannelPartnerTeamMemberName ?? ""}
+                                                                onChange={(e) =>
+                                                                    handleFieldChange(
+                                                                        "ChannelPartnerTeamMemberName",
+                                                                        e.target.value
+                                                                    )
+                                                                }
+                                                                placeholder="Enter Team Member Name"
+                                                                maxLength={100}
+                                                                error={errors.ChannelPartnerTeamMemberName}
+                                                            />
+                                                        </div>
+
+                                                        <div>
+                                                            <Input
+                                                                label="Team Member Mobile Number"
+                                                                type="text"
+                                                                maxLength={10}
+                                                                value={formData.ChannelPartnerTeamMemberMobileNumber ?? ""}
+                                                                leftIcon="+91"
+                                                                rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                                                onChange={(e) =>
+                                                                    handleFieldChange("ChannelPartnerTeamMemberMobileNumber", filterMobile(e.target.value)
+                                                                    )
+                                                                }
+                                                                placeholder="Enter Team Member Mobile Number"
+                                                                error={errors.ChannelPartnerTeamMemberMobileNumber}
+                                                            />
+
+                                                        </div>
+                                                    </>
+                                                )}
+
+                                            </>
+                                        )}
+                                    </>
+
+                                )}
+                            </div>
+
+                            {formData.Source?.toUpperCase() === "CHANNEL PARTNER" &&
+                                channelPartnerSearchByMobileNumber?.length === 10 && (
+
+                                    <>
+                                        {channelPartnerId ? (
+                                            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                                    {channelPartnerFullName && (
+                                                        <FieldItem label="Full Name" value={channelPartnerFullName} />
+                                                    )}
+
+                                                    {channelPartnerCompanyName && (
+                                                        <FieldItem label="Company Name" value={channelPartnerCompanyName} />
+                                                    )}
+
+                                                    {channelPartnerFirmsType && (
+                                                        <FieldItem label="Firms Type" value={channelPartnerFirmsType} />
+                                                    )}
+
+                                                    {channelPartnerMobileNumber && (
+                                                        <FieldItem label="Mobile Number" value={channelPartnerMobileNumber} />
+                                                    )}
+
+                                                    {channelPartnerDesignation && (
+                                                        <FieldItem label="Designation" value={channelPartnerDesignation} />
+                                                    )}
+
+                                                    {channelPartnerType && (
+                                                        <FieldItem label="Type" value={channelPartnerType} />
+                                                    )}
+
+                                                    {channelPartnerPanNumber && (
+                                                        <FieldItem label="PAN Number" value={channelPartnerPanNumber} />
+                                                    )}
+
+                                                    {channelPartnerAadhaarCardNumber && (
+                                                        <FieldItem label="Aadhaar Card Number" value={channelPartnerAadhaarCardNumber} />
+                                                    )}
+
+                                                    {channelPartnerRERANUmber && (
+                                                        <FieldItem label="RERA Number" value={channelPartnerRERANUmber} />
+                                                    )}
+
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            !channelPartnerId && (
+                                                <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200 text-sm text-red-700">
+                                                    No Channel Partner found for this mobile number
+                                                </div>
+                                            )
+                                        )}
+                                    </>
+                                )}
+
+
+                        </div>
+
+                        {/* ============================================================= [ADDRESS] ============================================================================================= */}
+                        <div className="space-y-4 pb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                                <div>
+                                    <TextArea
+                                        label="Current Location"
+                                        placeholder="Enter Current Location"
+                                        required
+                                        className='thin-scroll'
+                                        value={formData.CurrentLocation ?? ""}
+                                        onChange={(e) => handleFieldChange("CurrentLocation", e.target.value)}
+                                        error={errors.CurrentLocation} />
+                                </div>
+                            </div>
+
+
+                        </div>
                         {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
                             <>
                                 <div className="space-y-4 pb-3">
                                     <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Property Preferences</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                                        <div>
+
+                                            <RangeSelector
+                                                label="Budget (In Cr)"
+                                                value={formData.Budget ?? ""}
+                                                onChange={(v) => handleFieldChange("Budget", v)}
+                                                options={BUDGET_TYPE_OPTIONS}
+                                                error={errors.Budget}
+                                            />
+                                        </div>
                                         <div>
                                             <SinglePageSelection
                                                 label="Possession Type"
@@ -713,12 +1342,71 @@ export const AddUpdateEnquiry: React.FC = () => {
                                             />
                                         </div>
                                         <div>
+                                            <SinglePageSelection
+                                                label="Requirement"
+                                                placeholder="Select Requirement"
+                                                value={formData.Requirement ?? ''}
+                                                onChange={(value) => handleFieldChange("Requirement", value)}
+                                                options={REQUIREMENT_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.Requirement}
+                                            />
+                                        </div>
+                                        {formData.Requirement && (
+                                            <div>
+                                                <SinglePageSelection
+                                                    label={formData.Requirement === 'Residential' ? "Residential Type" : formData.Requirement === 'Commercial' ? "Commercial Type" : "Type"}
+                                                    placeholder={`Select ${formData.Requirement === 'Residential' ? "Residential" : formData.Requirement === 'Commercial' ? "Commercial" : "Type"} Type`}
+                                                    value={formData.RequirementType ?? ''}
+                                                    onChange={(value) => handleFieldChange("RequirementType", value)}
+                                                    options={
+                                                        formData.Requirement === 'Residential'
+                                                            ? RESIDENTIAL_FLAT_CONFIGURATION.map(opt => ({ label: opt.name, value: opt.id }))
+                                                            : formData.Requirement === 'Commercial' || formData.Requirement === 'Commercial Leasing'
+                                                                ? COMMERCIAL_FLAT_CONFIGURATION.map(opt => ({ label: opt.name, value: opt.id }))
+                                                                : []
+                                                    }
+                                                    error={errors.Residential}
+                                                />
+                                            </div>
+                                        )}
+
+                                        <div>
+
+                                            <MultiSelectPagination
+                                                label="Location"
+                                                dataFetchCallBack={fetchVillageDropdown}
+                                                selectedValues={villageDropdown.selectedValues}
+                                                options={villageDropdown.initialOptions}
+
+                                                onChange={(values) => {
+                                                    const { idsString } = villageDropdown.handleChange(values);
+                                                    setSelectedVillageValues(idsString || null);
+                                                    if (errors.VillageMasterId) {
+                                                        setErrors((prev) => ({ ...prev, VillageMasterId: '' }));
+                                                    }
+                                                }}
+                                            />
+
+
+
+                                        </div>
+                                        <div>
+                                            <SinglePageSelection
+                                                label="Timeline"
+                                                placeholder="Select Timeline"
+                                                value={formData.Timeline ?? ''}
+                                                onChange={(value) => handleFieldChange("Timeline", value)}
+                                                options={ENQUIRY_TIMELINE.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.Timeline}
+                                            />
+                                        </div>
+                                        <div>
                                             <Input
-                                                label='Area Preferred (In Sq. Ft)'
+                                                label='Area Preferred (SqFt)'
                                                 error={errors.AreaPreferred}
                                                 type="text"
-                                                required
                                                 value={formData.AreaPreferred ?? ''}
+                                                rightIcon="SqFt"
                                                 maxLength={10}
                                                 onChange={(e) => {
                                                     const digits = e.target.value.replace(/\D/g, '');
@@ -740,74 +1428,10 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-
-                                    <div>
-
-                                        <RangeSelector
-                                            label="Budget (In Cr)"
-                                            required
-                                            value={formData.Budget ?? ""}
-                                            onChange={(v) => handleFieldChange("Budget", v)}
-                                            options={BUDGET_TYPE_OPTIONS}
-                                            error={errors.Budget}
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <SinglePageSelection
-                                            label="Neighborhood Places"
-                                            placeholder="Select Neighborhood Places"
-                                            value={formData.NeighborhoodPlacesInterestedIn ?? ''}
-                                            onChange={(value) => handleFieldChange('NeighborhoodPlacesInterestedIn', value)}
-                                            options={NEIGHBORHOOD_PLACES_TYPE_OPTION.map(opt => ({ label: opt.name, value: opt.id }))}
-                                            error={errors.NeighborhoodPlaces}
-                                        />
-                                    </div>
-                                    <div>
-                                        <SinglePageSelection
-                                            label="Requirement"
-                                            placeholder="Select Requirement"
-                                            value={formData.Requirement ?? ''}
-                                            onChange={(value) => handleFieldChange("Requirement", value)}
-                                            options={REQUIREMENT_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                            error={errors.Requirement}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-                                    {formData.Requirement === 'Residential' && (
-                                        <div>
-                                            <SinglePageSelection
-                                                label="Residential Type"
-                                                placeholder="Select Residential Type"
-                                                value={formData.RequirementType ?? ''}
-                                                onChange={(value) => handleFieldChange("RequirementType", value)}
-                                                options={RESIDENTIAL_FLAT_CONFIGURATION.map(opt => ({ label: opt.name, value: opt.id }))}
-                                                error={errors.Residential}
-                                            />
-                                        </div>
-                                    )}
-
-                                    {formData.Requirement === 'Commercial' && (
-                                        <div>
-                                            <SinglePageSelection
-                                                label="Commercial Type"
-                                                placeholder="Select Commercial Type"
-                                                value={formData.RequirementType ?? ''}
-                                                onChange={(value) => handleFieldChange("RequirementType", value)}
-                                                options={COMMERCIAL_FLAT_CONFIGURATION.map(opt => ({ label: opt.name, value: opt.id }))}
-                                                error={errors.CommercialType}
-                                            />
-                                        </div>
-                                    )}
-
-                                </div>
                                 <div className="space-y-4 pb-3">
                                     <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Customer Details</h3>
                                     <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-                                        <div>
+                                        <div style={{ display: "none" }}>
                                             <SinglePageSelection
                                                 label="Customer Classification"
                                                 placeholder="Select Customer Classification"
@@ -837,27 +1461,24 @@ export const AddUpdateEnquiry: React.FC = () => {
                                                 error={errors.Ethnicity}
                                             />
                                         </div>
+
                                     </div>
                                 </div>
 
                                 <div className="space-y-4 pb-3">
                                     <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Information</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                                         <div>
                                             <SinglePageSelection
-                                                label="Final Stage"
-                                                placeholder="Select Final Stage"
+                                                label="Stage"
+                                                placeholder="Select Stage"
                                                 value={formData.FinalStage ?? ''}
                                                 onChange={(value) => handleFieldChange("FinalStage", value)}
                                                 options={FINAL_STAGE_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
                                                 error={errors.FinalStage}
                                             />
                                         </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
                                         {formData.FinalStage === 'Lost' && (
                                             <div>
                                                 <SinglePageSelection
@@ -871,14 +1492,16 @@ export const AddUpdateEnquiry: React.FC = () => {
                                             </div>
                                         )}
                                     </div>
+
                                 </div>
                                 <div className="space-y-4 pb-3">
                                     <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Follow Up Details</h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+                                    <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
                                         <div>
                                             <DatePickerInput
                                                 label="Enquiry Date"
                                                 required
+                                                isDisplayCurrentDate={true}
                                                 value={formatDate_dd_mm_yyyy(formData.EnquiryDate)}
                                                 onChange={(val) => handleFieldChange('EnquiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                                 error={errors.EnquiryDate}
@@ -896,6 +1519,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         </div>
                                     </div>
                                 </div>
+
                             </>
                         )}
                     </div>
@@ -910,7 +1534,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         size="lg"
                                         dataFetchCallBack={fetchEmployeesByDept("Sale")}
                                         onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item.value))}
-                                        initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.employeeName)}
+                                        initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.SalesAdvisor)}
                                         error={errors.SalesAdvisorId}
                                     />
                                 </div>
@@ -922,27 +1546,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         size="lg"
                                         dataFetchCallBack={fetchEmployeesByDept("Sale")}
                                         onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item.value))}
-                                        initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.employeeName
-                                        )}
+                                        initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.SourcingManager)}
                                         error={errors.SourcingManagerId}
                                     />
 
                                 </div>
-
-                                <div>
-                                    <SingleSelectDropdownWithPagination
-                                        label="Presales Executive"
-                                        title="Select Presales Executive"
-                                        size="lg"
-                                        dataFetchCallBack={fetchEmployeesByDept("Sale")}
-                                        onSelected={(item) => handleFieldChange("PresalesExecutiveId", Number(item.value))}
-                                        initialValue={createDropdownInitialValue(formData.PresalesExecutiveId, dropdownLabels.employeeName)}
-                                        error={errors.PresalesExecutiveId}
-                                    />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-
                                 <div>
                                     <TimePicker
                                         label="Customer Time Out"
@@ -953,14 +1561,15 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         error={errors.EnquiryTimeOut}
                                     />
                                 </div>
+
                             </div>
+
                             <div>
                                 <TextArea
                                     label="Remarks"
                                     className='thin-scroll'
                                     value={formData.Remark ?? ""}
                                     placeholder="Enter Remarks"
-                                    maxLength={500}
                                     onChange={(e) => handleFieldChange("Remark", e.target.value)}
                                     error={errors.Remark} />
                             </div>
@@ -974,7 +1583,10 @@ export const AddUpdateEnquiry: React.FC = () => {
                 cancelText="Cancel"
                 saveText={formData.EnquiryId ? "Update" : "Add"}
                 onCancel={() => navigate(-1)}
-                canAction={canAction}
+                canAction={
+                    canAction &&
+                    formData?.FinalStage?.toLowerCase() !== "lost"
+                }
                 onSave={() => {
                     handleAddUpdateEnquiry();
                 }}

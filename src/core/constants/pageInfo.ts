@@ -343,6 +343,28 @@ export const getPageInfo = (path: string) => {
                 title: "Channel Partner",
                 description: "Single source of truth for channel partner information",
             }
+        case 'booking':
+            return {
+                title: "Booking",
+                description: "Single source of truth for channel partner information",
+            }
+        case 'sourcing':
+            return {
+                title: "Channel Partner Sourcing",
+                description: "Single source of truth for channel partner information",
+            }
+
+        case 'callTracker':
+            return {
+                title: "Call Tracker",
+                description: "Single source of truth for channel partner information",
+            }
+
+        case 'otherCharges':
+            return {
+                title: "Other Charges",
+                description: "Single source of truth for channel partner information",
+            }
 
         // MARKETING
         case 'content':

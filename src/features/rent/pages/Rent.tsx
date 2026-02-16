@@ -27,6 +27,7 @@ import { proposedOfferService } from '@/features/proposedOffer/services/Proposed
 import { Eye, Plus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useRentListState } from '@/features/rent/context/RentListStateContext';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 type PivotRentRow = {
   FlatNumber?: string;
@@ -203,22 +204,14 @@ export const Rent: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const col = columns.find(c => c.key === sortInfo.column);
-          if (col) {
-            sortByParam = `${col.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
+        
         const params: FilterWithPaginationTenantApplicantChargesRequest = {
           PageNumber: listState.page || pagination.currentPage,
           PageSize: listState.pageSize || pagination.pageSize,
           ProjectId: Number(projectId),
           BuildingId: buildingId,
           ...filters,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, columns)
         };
 
         const response = await rentService.apiCallPullTenantApplicantCharges(params);
@@ -378,14 +371,7 @@ export const Rent: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-        if (sortInfo) {
-          const column = columns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
+        
         const params: FilterWithPaginationTenantApplicantChargesRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -401,7 +387,7 @@ export const Rent: React.FC = () => {
           FlatCarpetAreaSqFt: filters.FlatCarpetAreaSqFt ? Number(filters.FlatCarpetAreaSqFt) : undefined,
           FlatType: filters.FlatType?.trim() || undefined,
           FlatConfiguration: filters.FlatConfiguration?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, columns),
           ExportType: exportType
         };
 
@@ -434,18 +420,20 @@ export const Rent: React.FC = () => {
       { key: 'ApplicantType', label: 'Applicant Type', width: '18' },
       { key: 'FlatType', label: 'Existing Unit Type', width: '18' },
       { key: 'FlatCarpetAreaSqFt', label: 'Existing Carpet Area (SqFt)', width: '18' },
-      {
-        key: 'ProposedOfferAmount',
-        label: 'Proposed Offer Amount (₹)',
-        width: '20',
-        align: 'right',
-        render: (_, row) => {
-          return `${row.ProposedOfferAmount || 0} ${row.Unit || ''}`;
-        }
-      },
-
-
+      
     ];
+
+    const proposedOfferColumn: TableColumn[] =
+    ['Rent', 'Brokerage','Additional Rent'].includes(activeTab)
+      ? [{
+          key: 'ProposedOfferAmount',
+          label: 'Proposed Offer Amount (₹)',
+          width: '20',
+          align: 'right',
+          render: (_, row) =>
+            `${row.ProposedOfferAmount || 0} ${row.Unit || ''}`
+        }]
+      : [];
 
     const dynamicColumns: TableColumn[] = dynamicHeaders.map(h => ({
       key: h,
@@ -548,8 +536,8 @@ export const Rent: React.FC = () => {
       }]
       : [];
 
-    return [...baseColumns, ...dynamicColumns, ...actionColumn];
-  }, [dynamicHeaders, canAction, buildingId, buildingName, activeTab, activeTenureTab, navigate, setPayTrackRentContext, updateListState, filters]);
+    return [...baseColumns,...proposedOfferColumn, ...dynamicColumns, ...actionColumn];
+  }, [dynamicHeaders, canAction,activeTab, buildingId, buildingName, activeTab, activeTenureTab, navigate, setPayTrackRentContext, updateListState, filters]);
 
 
   const paginationInfo: PaginationInfo = {

@@ -17,12 +17,13 @@ import { enquiryFollowUpService } from "@/features/enquiry/services/EnquiryFollo
 import { Button } from "@/ui/components/forms/Button";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { FINAL_STAGE_TYPE_OPTIONS } from "@/core/constants";
+import { FINAL_STAGE_DETAILS_TYPE_OPTIONS, FINAL_STAGE_TYPE_OPTIONS } from "@/core/constants";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
-import { Input } from "@/ui/components/forms";
+import { TextArea } from "@/ui/components/forms/Textarea";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { Edit, Trash2 } from "lucide-react";
 import { getStatusColor } from "./Status";
+import { calculateAge, isDateWithinPastDays } from "@/core/utils/comman";
 
 const ViewEnquiry: React.FC = () => {
 
@@ -50,12 +51,14 @@ const ViewEnquiry: React.FC = () => {
         ProjectId: Number(projectId) || 0,
         EnquiryId: EnquiryId ? Number(EnquiryId) : contextEnquiryId,
         Status: '',
+        LostReason: '',
         NextFollowUpDate: '',
         Remark: '',
         Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
     });
     const [enquiryFollowUpFormErrors, setEnquiryFollowUpErrors] = useState<{
         Status?: string;
+        LostReason?: string;
         NextFollowUpDate?: string;
         Remark?: string;
     }>({});
@@ -70,8 +73,6 @@ const ViewEnquiry: React.FC = () => {
         if (!projectId || !currentEnquiryId || currentEnquiryId === 0) return;
 
         fetchEnquiryDetails();
-
-        fetchEnquiryFollowUpDetails();
 
     }, [projectId, currentEnquiryId, addToast]);
     //#endregion
@@ -97,6 +98,8 @@ const ViewEnquiry: React.FC = () => {
                     const enquiryList = Array.isArray(response.right.Data) ? response.right.Data : [];
 
                     setEditEnquiryData(enquiryList);
+
+                    fetchEnquiryFollowUpDetails();
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -176,6 +179,7 @@ const ViewEnquiry: React.FC = () => {
                 EnquiryId: Number(currentEnquiryId),
                 ProjectId: Number(projectId),
                 Status: item.Status || '',
+                LostReason: item.LostReason || '',
                 NextFollowUpDate: item.NextFollowUpDate || '',
                 Remark: item.Remark || '',
 
@@ -189,6 +193,7 @@ const ViewEnquiry: React.FC = () => {
                 EnquiryId: Number(currentEnquiryId),
                 ProjectId: Number(projectId),
                 Status: '',
+                LostReason: '',
                 NextFollowUpDate: '',
                 Remark: '',
             });
@@ -208,6 +213,7 @@ const ViewEnquiry: React.FC = () => {
             ProjectId: Number(projectId),
             Status: '',
             NextFollowUpDate: '',
+            LostReason: '',
             Remark: '',
         });
         setEnquiryFollowUpErrors({});
@@ -216,6 +222,7 @@ const ViewEnquiry: React.FC = () => {
     const validateEnquiryFollowUpForm = (): boolean => {
         const errors: {
             Status?: string;
+            LostReason?: string;
             NextFollowUpDate?: string;
             Remark?: string;
         } = {};
@@ -223,7 +230,12 @@ const ViewEnquiry: React.FC = () => {
         if (!enquiryFollowUpFormData.Status?.trim()) {
             errors.Status = 'Status is required';
         }
-        if (!enquiryFollowUpFormData.NextFollowUpDate?.trim()) {
+
+        if (enquiryFollowUpFormData.Status?.trim() === "Lost" && enquiryFollowUpFormData.LostReason?.trim() === "") {
+            errors.LostReason = 'Lost Reason is required';
+        }
+
+        if (enquiryFollowUpFormData.Status?.trim() !== "Lost" && enquiryFollowUpFormData.Status?.trim() !== 'Booking Done' && enquiryFollowUpFormData.Status?.trim() !== 'Cancelled' && !enquiryFollowUpFormData.NextFollowUpDate?.trim()) {
             errors.NextFollowUpDate = 'Next FollowUp Date is required';
         }
         if (!enquiryFollowUpFormData.Remark?.trim()) {
@@ -251,7 +263,8 @@ const ViewEnquiry: React.FC = () => {
                     EnquiryId: Number(currentEnquiryId),
                     ProjectId: Number(projectId),
                     Status: enquiryFollowUpFormData.Status || '',
-                    NextFollowUpDate: enquiryFollowUpFormData.NextFollowUpDate || '',
+                    LostReason: enquiryFollowUpFormData.LostReason || '',
+                    NextFollowUpDate: enquiryFollowUpFormData.NextFollowUpDate || null,
                     Remark: enquiryFollowUpFormData.Remark || '',
                 };
 
@@ -331,6 +344,8 @@ const ViewEnquiry: React.FC = () => {
 
     const safe = (value?: any) => (value === null || value === undefined || value === '' ? '-' : value)
 
+    const canActionPerform = canAction && enquiryData?.FinalStage?.toUpperCase() !== "LOST" && enquiryData?.FinalStage?.toUpperCase() !== 'BOOKING DONE' && enquiryData?.FinalStage?.toUpperCase() !== 'CANCELLED';
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <Loader loading={isLoading} title={loadingMessage}>
@@ -339,12 +354,13 @@ const ViewEnquiry: React.FC = () => {
 
             {/* Header Details*/}
             <HeaderActionBar
-                titleText={enquiryData?.Name ?? ''}
-                subTitleText={enquiryData?.FinalStage ?? ''}
+                titleText={enquiryData?.Name ? `${enquiryData.Name} :` : ''}
+                subTitleText={enquiryData?.SystemGeneratedCode ?? ''}
+                subSubTitleText={enquiryData?.FinalStage ?? ''}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListEnquiry()}
-                canAction={canAction}
+                canAction={canActionPerform}
                 onEdit={() => {
                     if (enquiryData) handleEditEnquiry(enquiryData!);
                 }}
@@ -353,21 +369,17 @@ const ViewEnquiry: React.FC = () => {
 
             <div className="grid grid-cols-12 gap-4 pt-5">
 
-                {/* LEFT SIDE PROFILE CARD */}
                 <div className="col-span-6">
 
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
 
-                        {/* HEADER  DETAILS */}
                         <div className="border-b pb-2 mt-1">
                             <div className="flex items-start justify-between">
 
-                                {/* LEFT — TITLE */}
                                 <h1 className="text-lg font-semibold text-black">
                                     Lead Information
                                 </h1>
 
-                                {/* RIGHT — DATES */}
                                 <div className="text-xs text-gray-700">
 
                                     <div className="flex items-center gap-2">
@@ -402,7 +414,8 @@ const ViewEnquiry: React.FC = () => {
                             <FieldItem label="Unique Code:" value={safe(enquiryData?.SystemGeneratedCode)} />
                             <FieldItem label="Mobile No:" value={safe(enquiryData?.MobileNumber) ? `+91 ${safe(enquiryData?.MobileNumber)}` : '-'} />
                             <FieldItem label="E-Mail ID" value={safe(enquiryData?.EmailId)} />
-                            <FieldItem label="Age" value={safe(enquiryData?.Age)} />
+                            <FieldItem label="Date of Birth" value={safe(enquiryData?.DateOfBirth) ? formatDate_dd_MonthName_yy(safe(enquiryData?.DateOfBirth)) : ""} />
+                            <FieldItem label="Age" value={calculateAge(enquiryData?.DateOfBirth || "")} />
                             <FieldItem label="Accommodation" value={safe(enquiryData?.Accommodation)} />
                             <FieldItem label="Occupation Type" value={safe(enquiryData?.OccupationType)} />
                             <FieldItem label="Nationality" value={safe(enquiryData?.Nationality)} />
@@ -413,34 +426,182 @@ const ViewEnquiry: React.FC = () => {
                                 </>
                             ) : null}
 
-                            <FieldItem label="Possession Type" value={safe(enquiryData?.PossessionType)} />
-                            <FieldItem label="Area Preferred" value={safe(enquiryData?.AreaPreferred)} />
-                            <FieldItem label="Desired Floor Band" value={safe(enquiryData?.DesiredFloorBand)} />
-                            <FieldItem label="Budget (In CR)" value={safe(enquiryData?.Budget)} />
-                            <FieldItem label="Neighborhood Places" value={safe(enquiryData?.NeighborhoodPlacesInterestedIn)} />
-                            <FieldItem label="Requirement" value={safe(enquiryData?.Requirement)} />
-                            <FieldItem label="Requirement Type" value={safe(enquiryData?.RequirementType)} />
-                            <FieldItem label="Customer Classification" value={safe(enquiryData?.CustomerClassification)} />
-                            <FieldItem label="Source Of Funding" value={safe(enquiryData?.SourceOfFunding)} />
-                            <FieldItem label="Ethnicity" value={safe(enquiryData?.Ethnicity)} />
-                            <FieldItem label="Source " value={safe(enquiryData?.Source)} />
-                            {safe(enquiryData?.SubSource) !== "" ? <FieldItem label="Sub Source " value={safe(enquiryData?.SubSource)} /> : ""}
-                            {safe(enquiryData?.ChannelPartnerName) !== "" ? <FieldItem label="Channel Partner " value={safe(enquiryData?.ChannelPartnerName)} /> : ""}
-                            {safe(enquiryData?.ChannelPartnerName) !== "" ? <FieldItem label="Channel Partner Number:" value={safe(enquiryData?.ChannelPartnerMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerMobileNumber)}` : '-'} /> : ""}
-                            <FieldItem label="Final Stage " value={safe(enquiryData?.FinalStage)} />
-                            {safe(enquiryData?.FinalStageDetail) !== "" ? <FieldItem label="Final Stage Detail " value={safe(enquiryData?.FinalStageDetail)} /> : ""}
-                            <FieldItem label="Sales Advisor" value={safe(enquiryData?.SalesAdvisor)} />
-                            <FieldItem label="Sourcing Manager" value={safe(enquiryData?.SourcingManager)} />
-                            <FieldItem label="Presales Executive" value={safe(enquiryData?.PresalesExecutive)} />
+
+
+
                             <FieldItem label="Customer Time In" value={safe(enquiryData?.EnquiryTimeIn)} />
                             <FieldItem label="Customer Time Out" value={safe(enquiryData?.EnquiryTimeOut)} />
-                            <FieldItem label="Remarks" value={safe(enquiryData?.Remark)} />
-                            <FieldItem label="Created By" value={safe(enquiryData?.CreatedBy)} />
-                            <FieldItem label="Created Date" value={safe(enquiryData?.CreatedDate) ? formatDate_dd_MonthName_yy(safe(enquiryData?.CreatedDate)) : ""} />
-                            <FieldItem label="Modified By" value={safe(enquiryData?.ModifiedBy)} />
-                            <FieldItem label="Modified Date" value={safe(enquiryData?.ModifiedDate) ? formatDate_dd_MonthName_yy(safe(enquiryData?.ModifiedDate)) : ""} />
 
                         </div>
+                        <hr className="border-t border-gray-200" />
+
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Source
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+
+
+                                <FieldItem label="Source " value={safe(enquiryData?.Source)} />
+
+                                {enquiryData?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
+                                    <>
+                                        <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
+                                        <FieldItem label="Channel Partner " value={safe(enquiryData?.ChannelPartnerName)} />
+                                        <FieldItem label="Channel Partner Number" value={safe(enquiryData?.ChannelPartnerMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerMobileNumber)}` : '-'} />
+
+                                        {enquiryData?.ChannelPartnerTeamMemberName && (<FieldItem label="Cp Team Member Name " value={safe(enquiryData?.ChannelPartnerTeamMemberName)} />)}
+                                        {enquiryData?.ChannelPartnerTeamMemberMobileNumber && (<FieldItem label="Cp Team Member Mobile Number" value={safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber)}` : '-'} />)}
+                                    </>
+                                )}
+
+                                {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Advertisement' && (
+                                    <>
+                                        <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
+                                        <FieldItem label="Sub Sub Source" value={safe(enquiryData?.SubSubSource)} />
+                                    </>
+                                )}
+
+                                {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource !== 'Advertisement' && (
+                                    <>
+                                        <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
+                                    </>
+                                )}
+
+                                {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Reference' && (
+                                    <>
+                                        <FieldItem label="Referral Name" value={safe(enquiryData?.ReferelName ?? "")} />
+                                        <FieldItem label="Referral Mobile Number" value={safe(enquiryData?.ReferelMobileNumber) ? `+91 ${safe(enquiryData?.ReferelMobileNumber)}` : '-'} />
+                                        <FieldItem label="Referral Project Name" value={safe(enquiryData?.ReferelProjectName ?? "")} />
+                                        <FieldItem label="Referral Unit Number" value={safe(enquiryData?.ReferelUnitNumber ?? "")} />
+
+                                    </>
+                                )}
+                                {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Loyalty' && (
+                                    <>
+                                        <FieldItem label="Existing Project Name" value={safe(enquiryData?.LoyaltyExistingProjectName ?? "")} />
+                                        <FieldItem label="Existing Unit Number" value={safe(enquiryData?.LoyaltyExistingUnitNumber ?? "")} />
+
+                                    </>
+                                )}
+                                {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Employee Reference' && (
+                                    <>
+
+                                        <FieldItem label="Employee Mobile Number" value={safe(enquiryData?.EmployeeReferenceMobileNumber) ? `+91 ${safe(enquiryData?.EmployeeReferenceMobileNumber)}` : '-'} />
+                                        <FieldItem label="Employee Reference Name" value={safe(enquiryData?.EmployeeReferenceName ?? "")} />
+
+                                    </>
+                                )}
+
+                            </div>
+                        </section>
+
+                        <hr className="border-t border-gray-200" />
+
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Address
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                <FieldItem label="Current Location" value={safe(enquiryData?.CurrentLocation)} />
+                            </div>
+                        </section>
+
+                        <hr className="border-t border-gray-200" />
+
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Property Preferences
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Budget (In CR)" value={safe(enquiryData?.Budget)} />
+                                <FieldItem label="Possession Type" value={safe(enquiryData?.PossessionType)} />
+                                <FieldItem label="Requirement" value={safe(enquiryData?.Requirement)} />
+                                <FieldItem label={
+                                    enquiryData?.Requirement === "Residential"
+                                        ? "Residential Type"
+                                        : enquiryData?.Requirement === "Commercial"
+                                            ? "Commercial Type"
+                                            : "Type"
+                                }
+                                    value={safe(enquiryData?.RequirementType)}
+                                />
+                                <FieldItem label="Location" value={safe(enquiryData?.VillageName)} />
+                                <FieldItem label="Timeline" value={safe(enquiryData?.Timeline)} />
+                                <FieldItem label="Area Preferred (SqFt)" value={safe(enquiryData?.AreaPreferred)} />
+                                <FieldItem label="Desired Floor Band" value={safe(enquiryData?.DesiredFloorBand)} />
+
+
+                            </div>
+                        </section>
+                        <hr className="border-t border-gray-200" />
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Customer Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Customer Classification" value={safe(enquiryData?.CustomerClassification)} />
+                                <FieldItem label="Source Of Funding" value={safe(enquiryData?.SourceOfFunding)} />
+                                <FieldItem label="Ethnicity" value={safe(enquiryData?.Ethnicity)} />
+                            </div>
+                        </section>
+                        <hr className="border-t border-gray-200" />
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Enquiry Information
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Stage " value={safe(enquiryData?.FinalStage)} />
+                                {safe(enquiryData?.FinalStageDetail) !== "" ? <FieldItem label="Final Stage Detail " value={safe(enquiryData?.FinalStageDetail)} /> : ""}
+
+                            </div>
+                        </section>
+                        <hr className="border-t border-gray-200" />
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Sales Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Sales Advisor" value={safe(enquiryData?.SalesAdvisor)} />
+                                <FieldItem label="Sourcing Manager" value={safe(enquiryData?.SourcingManager)} />
+                            </div>
+                        </section>
+                        <hr className="border-t border-gray-200" />
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Enquiry Remark
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                <FieldItem label="Remark" value={safe(enquiryData?.Remark)} />
+                            </div>
+                        </section>
+                        <hr className="border-t border-gray-200" />
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Action Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Created By" value={enquiryData?.CreatedBy ?? '-'} />
+                                <FieldItem
+                                    label="Created Date"
+                                    value={formatDate_dd_MonthName_yy_hh_mm(enquiryData?.CreatedDate ?? '-')}
+                                />
+                                <FieldItem label="Modified By" value={enquiryData?.ModifiedBy ?? '-'} />
+                                <FieldItem
+                                    label="Modified Date"
+                                    value={formatDate_dd_MonthName_yy_hh_mm(enquiryData?.ModifiedDate ?? '-')}
+                                />
+                            </div>
+                        </section>
                     </div>
                 </div>
 
@@ -460,16 +621,18 @@ const ViewEnquiry: React.FC = () => {
                                 <div className="text-xs text-gray-700">
 
                                     <div className="flex items-center gap-2">
-                                        <Button
-                                            color="blue"
-                                            size="sm"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleOpenEnquiryFollowUpModal()
-                                            }}
-                                            title="Follow-Up">
-                                            Follow Up
-                                        </Button>
+                                        {canActionPerform && (
+                                            <Button
+                                                color="blue"
+                                                size="sm"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleOpenEnquiryFollowUpModal()
+                                                }}
+                                                title="Follow-Up">
+                                                Follow Up
+                                            </Button>
+                                        )}
                                     </div>
 
                                 </div>
@@ -496,64 +659,69 @@ const ViewEnquiry: React.FC = () => {
 
                                     {/* RIGHT — CONTENT */}
                                     <div>
+                                        {/* TOP ROW */}
+                                        <div className="flex items-start justify-between gap-3">
 
-                                        <div className="flex items-center gap-3">
-                                            <span className="font-semibold text-gray-900">
-                                                {formatDate_dd_MonthName_yy_hh_mm(item.CreatedDate ?? "")}
-                                            </span>
+                                            <div className="flex items-center gap-3">
+                                                <span className="font-semibold text-gray-900">
+                                                    {formatDate_dd_MonthName_yy_hh_mm(item.CreatedDate ?? "")}
+                                                </span>
 
-                                            <span className="text-xs text-gray-500">
-                                                {(() => {
-                                                    const { bg, text } = getStatusColor(item.Status || '');
-                                                    return (
-                                                        <span
-                                                            className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                                                            style={{ backgroundColor: bg, color: text }}
-                                                        >
-                                                            {item.Status || "-"}
-                                                        </span>
-                                                    );
-                                                })()}
-                                            </span>
-                                            {index === 0 && (
+                                                <span className="text-xs text-gray-500 flex flex-col gap-1">
+                                                    {(() => {
+                                                        const { bg, text } = getStatusColor(item.Status || '');
+                                                        return (
+                                                            <span
+                                                                className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                                                                style={{ backgroundColor: bg, color: text }}
+                                                            >
+                                                                {item.Status || "-"}
+                                                            </span>
+                                                        );
+                                                    })()}
+                                                </span>
+                                            </div>
+
+                                            {index === 0 && canActionPerform && isDateWithinPastDays(item.CreatedDate, 2) &&(
                                                 <div className="flex items-center gap-1">
                                                     <Button
-                                                        color='transparent'
+                                                        color="transparent"
                                                         isborderRadius
-                                                        size='sm'
-                                                        style={{
-                                                            color: 'blue',
-                                                            padding: '4px 8px'
-                                                        }}
+                                                        size="sm"
+                                                        style={{ color: 'blue', padding: '4px 8px' }}
                                                         title="Edit"
                                                         onClick={() => handleOpenEnquiryFollowUpModal(item)}
                                                         disabled={isLoading}
                                                         leftIcon={<Edit className="h-4 w-4" />}
-                                                    >
-                                                    </Button>
+                                                    />
+
                                                     <Button
-                                                        color='transparent'
+                                                        color="transparent"
                                                         isborderRadius
-                                                        size='sm'
-                                                        style={{
-                                                            color: 'red',
-                                                            padding: '4px 8px'
-                                                        }}
+                                                        size="sm"
+                                                        style={{ color: 'red', padding: '4px 8px' }}
                                                         title="Delete"
                                                         onClick={() => handleDeleteEnquiryFollowUp(item)}
                                                         disabled={isLoading}
                                                         leftIcon={<Trash2 className="h-4 w-4" />}
-                                                    >
-                                                    </Button>
+                                                    />
                                                 </div>
                                             )}
                                         </div>
+
+                                        {/* LOST REASON */}
+                                        {item.Status?.toLowerCase() === "lost" && (
+                                            <span className="block mt-1 text-xs text-gray-500 italic">
+                                                Lost Reason: {item.LostReason || "-"}
+                                            </span>
+                                        )}
 
                                         {/* REMARK */}
                                         <p className="mt-2 text-sm text-gray-700 leading-relaxed pb-5">
                                             {item.Remark || "-"}
                                         </p>
                                     </div>
+
                                 </div>
                             ))}
 
@@ -613,25 +781,39 @@ const ViewEnquiry: React.FC = () => {
                         required
                     />
 
-                    {/* NEXT FOLLOW UP DATE */}
-                    <DatePickerInput
-                        label="Next Follow Up Date"
-                        required
-                        value={formatDate_dd_mm_yyyy(enquiryFollowUpFormData.NextFollowUpDate) ?? ''}
-                        onChange={(e) => setEnquiryFollowUpFormData({ ...enquiryFollowUpFormData, NextFollowUpDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(e) })}
-                        error={enquiryFollowUpFormErrors.NextFollowUpDate}
-                    />
+                    {enquiryFollowUpFormData.Status === 'Lost' && (
+                        <div>
+                            <SinglePageSelection
+                                label="Lost Reason"
+                                required
+                                placeholder="Select Lost Reason"
+                                value={enquiryFollowUpFormData.LostReason ?? ''}
+                                onChange={(e) => setEnquiryFollowUpFormData({ ...enquiryFollowUpFormData, LostReason: String(e) })}
+                                options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+                                error={enquiryFollowUpFormErrors.LostReason}
+                            />
+                        </div>
+                    )}
 
+                    {enquiryFollowUpFormData.Status !== 'Lost' && enquiryFollowUpFormData.Status !== 'Booking Done' && enquiryFollowUpFormData.Status !== 'Cancelled'  && (
+                        <DatePickerInput
+                            label="Next Follow Up Date"
+                            required
+                            value={formatDate_dd_mm_yyyy(enquiryFollowUpFormData.NextFollowUpDate) ?? ''}
+                            onChange={(e) => setEnquiryFollowUpFormData({ ...enquiryFollowUpFormData, NextFollowUpDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(e) })}
+                            error={enquiryFollowUpFormErrors.NextFollowUpDate}
+                        />
+                    )}
                     {/* REMARK */}
-                    <Input
-                        type="text"
+                    <TextArea
                         label="Remark"
-                        value={enquiryFollowUpFormData.Remark ?? ''}
-                        onChange={(e) => setEnquiryFollowUpFormData({ ...enquiryFollowUpFormData, Remark: e.target.value })}
-                        required
-                        error={enquiryFollowUpFormErrors.Remark}
                         placeholder="Enter Remark"
-                    />
+                        required
+                        className='thin-scroll'
+                        value={enquiryFollowUpFormData.Remark ?? ""}
+                        onChange={(e) => setEnquiryFollowUpFormData({ ...enquiryFollowUpFormData, Remark: e.target.value })}
+                        error={enquiryFollowUpFormErrors.Remark} />
+
 
                 </div>
 

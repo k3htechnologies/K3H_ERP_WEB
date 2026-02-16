@@ -34,6 +34,7 @@ import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 import { getDocumentStatusColor } from './ProjectDocumentStatus';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 
 const initialFormState = (): AddUpdateProjectDocumentRequest => ({
@@ -267,14 +268,7 @@ const ProjectDocument: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = projectDocumentColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
+        
         const params: FilterWithPaginationProjectDocument = {
           PageNumber: page,
           PageSize: pagination.pageSize,
@@ -284,7 +278,7 @@ const ProjectDocument: React.FC = () => {
           ProjectDocumentStatus: filterParams.ProjectDocumentStatus,
           ProjectDocumentCategory: filterParams.ProjectDocumentCategory,
           ProjectDocumentCategoryId: Number(getActiveTabId(filterParams)),
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, projectDocumentColumns)
         };
 
         const response = await projectDocumentService.apiCallPullProjectDocument(params);

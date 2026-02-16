@@ -75,3 +75,25 @@ export const isToDateGreaterOrEqualFromDate = (
   return to.getTime() >= from.getTime();
 };
 
+
+//Common Validation: Allow Only Past N Days (Including Today)
+
+export const isDateWithinPastDays = (dateStr: string | null | undefined, pastDays: number): boolean => {
+  
+  if (!dateStr) return false;
+
+  const inputDate = new Date(dateStr);
+  const today = new Date();
+
+  // Normalize to date-only (important)
+  inputDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  const minAllowedDate = new Date(today);
+  minAllowedDate.setDate(today.getDate() - pastDays);
+
+  return inputDate >= minAllowedDate && inputDate <= today;
+  
+};
+
+

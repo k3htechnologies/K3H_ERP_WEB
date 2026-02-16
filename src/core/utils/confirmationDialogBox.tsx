@@ -77,7 +77,7 @@ export const ConfirmationDialogBox: React.FC<ConfirmationDialogBoxProps> = ({
 
     return (
         <div className="fixed inset-0 bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-lg w-full">
+            <div className="bg-white rounded-lg shadow-xl max-w-xl w-full">
 
                 {/* HEADER */}
 

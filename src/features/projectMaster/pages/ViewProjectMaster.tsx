@@ -97,7 +97,7 @@ export const ViewProjectMaster: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 1,
                     ProjectId: listState.projectId,
-                    IsProjectAccess:false
+                    IsProjectAccess: false
                 };
                 const response = await projectMasterService.apiCallPullProjectMaster(params);
                 if (E.isRight(response)) {
@@ -507,25 +507,25 @@ export const ViewProjectMaster: React.FC = () => {
                                         </div>
                                     </div>
                                 </section>
-                                 {/* ================= QUICK ACTIONS ================= */}
-                                            <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                                              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                                Action Details
-                                              </h4>
-                                
-                                              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                                <FieldItem label="Created By" value={editProjectData?.CreatedBy ?? '-'} />
-                                                <FieldItem
-                                                  label="Created Date"
-                                                  value={formatDate_dd_MonthName_yy_hh_mm(editProjectData?.CreatedDate ?? '-')}
-                                                />
-                                                <FieldItem label="Modified By" value={editProjectData?.ModifiedBy ?? '-'} />
-                                                <FieldItem
-                                                  label="Modified Date"
-                                                  value={formatDate_dd_MonthName_yy_hh_mm(editProjectData?.ModifiedDate ?? '-')}
-                                                />
-                                              </div>
-                                            </section>
+                                {/* ================= QUICK ACTIONS ================= */}
+                                <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        Action Details
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Created By" value={editProjectData?.CreatedBy ?? '-'} />
+                                        <FieldItem
+                                            label="Created Date"
+                                            value={formatDate_dd_MonthName_yy_hh_mm(editProjectData?.CreatedDate ?? '-')}
+                                        />
+                                        <FieldItem label="Modified By" value={editProjectData?.ModifiedBy ?? '-'} />
+                                        <FieldItem
+                                            label="Modified Date"
+                                            value={formatDate_dd_MonthName_yy_hh_mm(editProjectData?.ModifiedDate ?? '-')}
+                                        />
+                                    </div>
+                                </section>
 
                             </div>
 
@@ -579,14 +579,7 @@ export const ViewProjectMaster: React.FC = () => {
                                             <FieldItem label="Department" value={emp.Department ?? '-'} />
                                             <FieldItem label="Designation" value={emp.Designation ?? '-'} />
                                             <FieldItem label="Report Person" value={emp.ReportPersonName ?? '-'} />
-                                            <FieldItem
-                                                label="Joining Date"
-                                                value={emp.JoiningDate ? formatDate_dd_MonthName_yy(emp.JoiningDate) : '-'}
-                                            />
-                                            <FieldItem
-                                                label="Last Login"
-                                                value={emp.LastLogin ? formatDate_dd_MonthName_yy(emp.LastLogin) : '-'}
-                                            />
+                                            <FieldItem label="Last Login" value={emp.LastLogin ? formatDate_dd_MonthName_yy_hh_mm(emp.LastLogin) : '-'} />
                                         </div>
                                     </section>
                                 );
@@ -655,7 +648,7 @@ export const ViewProjectMaster: React.FC = () => {
                                         <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
                                         <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
                                         <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />
-                                        <FieldItem label="TAN Number" value={c?.TANNumber ?? '-'}  urls={c?.TANURL} isIcon/>
+                                        <FieldItem label="TAN Number" value={c?.TANNumber ?? '-'} urls={c?.TANURL} isIcon />
                                         <FieldItem label="City" value={c.CityName ?? "-"} />
                                     </div>
                                 </section>

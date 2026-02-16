@@ -1,22 +1,23 @@
 import React from 'react'
 
+
 const ProjectManagement: React.FC = () => {
     const data = [
         {
             title: "Total Projects",
-            value: 20
+            value: "-"
         },
         {
             title: "Redevelopment",
-            value: "08"
+            value: "-"
         },
         {
             title: "RERA Registered",
-            value: 12
+            value: "-"
         }
     ]
   return (
-    <div className="space-y-3 pt-5">
+    <div className="space-y-3 ">
          <h1 className="font-semibold text-gray-800">Project Management</h1>
          <div className="w-full bg-white p-7 border border-gray-100 shadow-sm grid grid-cols-1 sm:grid-cols-3 gap-6 rounded-sm">
             {data.map((c, i) => {

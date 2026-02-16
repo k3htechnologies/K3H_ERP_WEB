@@ -1,5 +1,4 @@
-import React from 'react'
-
+import { useState } from 'react'
 interface OverviewItem {
   totalCompanies?: number;
   totalEmployees?: number;
@@ -16,34 +15,66 @@ const OverviewCards: React.FC<Props> = ({ overViewData = [] }: Props) => {
 
   const data = overViewData[0] || {};
 
+  const [noData, setNoData] = useState(false);
+
+
   const cards = [
+    // {
+    //   title: "Total Companies",
+    //   value: data.totalCompanies ?? 24,
+    //   additonalData: "+2 this month",
+
+    // },
+    // {
+    //   title: "Total Employees",
+    //   value: data.totalEmployees ?? 320,
+    //   additonalData: "+15 last 30 days",
+
+    // },
+    // {
+    //   title: "Active Projects",
+    //   value: data.activeProjects ?? 47,
+    //   additonalData: "8 on hold",
+
+    // },
+    // {
+    //   title: "Registered Vendors",
+    //   value: data.registeredVendors ?? 156,
+    //   additonalData: "12 added recently",
+
+    // },
+    // {
+    //   title: "Payroll Configured",
+    //   value: data.payrollConfigured ?? "85%",
+    // }
     {
       title: "Total Companies",
-      value: data.totalCompanies ?? 24,
-      additonalData: "+2 this month",
+      value: 0,
+      additonalData: "No data",
 
     },
     {
       title: "Total Employees",
-      value: data.totalEmployees ?? 320,
-      additonalData: "+15 last 30 days",
+      value: 0,
+      additonalData: "No data",
 
     },
     {
       title: "Active Projects",
-      value: data.activeProjects ?? 47,
-      additonalData: "8 on hold",
+      value: 0,
+      additonalData: "No data",
 
     },
     {
       title: "Registered Vendors",
-      value: data.registeredVendors ?? 156,
-      additonalData: "12 added recently",
+      value: 0,
+      additonalData: "No data",
 
     },
     {
       title: "Payroll Configured",
-      value: data.payrollConfigured ?? "85%",
+      value: "0%",
+      additonalData: "No data",
     }
   ]
 
@@ -52,11 +83,14 @@ const OverviewCards: React.FC<Props> = ({ overViewData = [] }: Props) => {
       <h1 className="text-lg font-semibold text-gray-800">Overview</h1>
 
       <div className="grid grid-cols-5 gap-4">
+
+        
+
         {cards.map((c, i) => (
           <div
             key={i}
             className="bg-white rounded-2xl p-4 border border-gray-100"
-             style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
+            style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
           >
             <p className="text-sm text-gray-500">{c.title}</p>
             <div className="flex items-center gap-2 p-2">

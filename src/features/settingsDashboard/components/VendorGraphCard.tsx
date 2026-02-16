@@ -26,15 +26,15 @@ const VendorGraphCard: React.FC = () => {
     }
   ]
   return (
-    <div className="space-y-3 pt-12">
-        <div className=" bg-white rounded-xl p-8" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+    <div className="space-y-3 pt-9">
+        <div className=" bg-white rounded-xl p-6" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
       <h3 className="text-sm text-gray-500 font-medium ">
         Vendor Distribution
       </h3>
 
         <div className='grid grid-cols-2 items-center gap-4'>
           {/* Left DONUT */}
-          <div className="relative h-[220px]">
+          <div className="relative h-[210px]">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -65,7 +65,6 @@ const VendorGraphCard: React.FC = () => {
             ))}
            </div>
         </div>
-
         </div>
     </div>
   )

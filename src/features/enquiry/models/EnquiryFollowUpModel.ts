@@ -15,6 +15,7 @@ export interface EnquiryFollowUpData {
     Uniquekey: string | null
     EnquiryId?: number
     Status: string | null
+    LostReason: string | null
     NextFollowUpDate: string | null
     Remark: string | null
     CreatedById?: number | 0
@@ -31,6 +32,7 @@ export interface AddUpdateEnquiryFollowUpRequest {
     ProjectId: number
     EnquiryId: number
     Status?: string | null
+    LostReason?: string | null
     NextFollowUpDate?: string | null
     Remark?: string | null
 }

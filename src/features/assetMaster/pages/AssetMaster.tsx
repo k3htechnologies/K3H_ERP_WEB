@@ -26,6 +26,7 @@ import { assetMasterService } from '../services/AssetMasterService';
 import { Trash2 } from 'lucide-react';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { colorsForAssetStatusComponent } from '../constant/statusColors';
 
 export const AssetMaster: React.FC = () => {
 
@@ -107,6 +108,10 @@ export const AssetMaster: React.FC = () => {
           AssetMasterId: filterParams.AssetMasterId ? Number(filterParams.AssetMasterId) : undefined,
           AssetName: searchtext ?? filterParams.AssetName?.trim() ?? undefined,
           Status: filterParams.AssetStatus?.trim() || undefined,
+          AssetType: filterParams.AssetType?.trim() || undefined,
+          AssetBrand: filterParams.AssetBrand?.trim() || undefined,
+          AssetModel: filterParams.AssetModel?.trim() || undefined,
+          SerialNumber: filterParams.SerialNumber?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, assetMasterColumns)
         };
 
@@ -173,7 +178,12 @@ export const AssetMaster: React.FC = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           AssetName: filters.AssetName?.trim() || undefined,
+          AssetType: filters.AssetType?.trim() || undefined,
+          AssetBrand: filters.AssetBrand?.trim() || undefined,
+          AssetModel: filters.AssetModel?.trim() || undefined,
+          SerialNumber: filters.SerialNumber?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, assetMasterColumns),
+
           ExportType: exportType
         };
 
@@ -288,7 +298,7 @@ export const AssetMaster: React.FC = () => {
     },
     {
       key: 'AssetModel',
-      label: 'Model',
+      label: 'Asset Model',
       width: '15',
       sortable: false,
       align: 'left',
@@ -305,10 +315,18 @@ export const AssetMaster: React.FC = () => {
     {
       key: 'Status',
       label: 'Status',
-      width: '15',
+      width: '120px',
       sortable: false,
-      align: 'center',
-      render: (value) => value || ''
+      render: (value: string) => {
+
+        const statusColors = colorsForAssetStatusComponent[value as keyof typeof colorsForAssetStatusComponent] || colorsForAssetStatusComponent.Available;
+
+        return (
+          <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium overflow-hidden text-ellipsis whitespace-nowrap ${statusColors.Button} ${statusColors.buttonText}`}>
+            {value}
+          </span>
+        );
+      },
     },
     {
       key: 'EmployeeName',
@@ -319,7 +337,7 @@ export const AssetMaster: React.FC = () => {
       render: (value) => value || ''
     },
     {
-      key: 'actions',
+      key: 'Actions',
       label: 'Actions',
       width: '12',
       fixed: 'right',
@@ -355,7 +373,7 @@ export const AssetMaster: React.FC = () => {
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
-  const requiredAssetColumnKeys: string[] = ['AssetName'];
+  const requiredAssetColumnKeys: string[] = ['AssetName', 'Actions'];
 
   const allAssetColumnKeys: string[] = assetMasterColumns.map(c => c.key);
 
@@ -402,7 +420,6 @@ export const AssetMaster: React.FC = () => {
     setTempFilters({});
     updateListState({ filters: {}, page: 1 });
     loadAssets(1, {});
-    setShowFilterPopup(false);
   };
   //#endregion
 
@@ -575,18 +592,46 @@ export const AssetMaster: React.FC = () => {
         saveText="Apply"
         cancelText="Clear"
         onCancel={() => clearFilters()}
-       
+
         size="small-half"
       >
         <div className="space-y-6">
-          <div className="space-y-4">
+          <div>
             <Input type="text"
               label='Asset Name'
               value={tempFilters?.AssetName ?? ''}
               onChange={e => handleFilterChange('AssetName', e.target.value)}
               placeholder="Enter Asset Name" />
           </div>
-          <div className="space-y-4">
+          <div>
+            <Input type="text"
+              label='Asset Type'
+              value={tempFilters?.AssetType ?? ''}
+              onChange={e => handleFilterChange('AssetType', e.target.value)}
+              placeholder="Enter Asset Type" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Asset Brand'
+              value={tempFilters?.AssetBrand ?? ''}
+              onChange={e => handleFilterChange('AssetBrand', e.target.value)}
+              placeholder="Enter Asset Brand" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Asset Model'
+              value={tempFilters?.AssetModel ?? ''}
+              onChange={e => handleFilterChange('AssetModel', e.target.value)}
+              placeholder="Enter Asset Model" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Asset Serial Number'
+              value={tempFilters?.SerialNumber ?? ''}
+              onChange={e => handleFilterChange('SerialNumber', e.target.value)}
+              placeholder="Enter Asset Serial Number" />
+          </div>
+          <div>
             <Input type="text"
               label='Asset Status'
               value={tempFilters?.AssetStatus ?? ''}

@@ -31,7 +31,7 @@ export class AttendanceDatasourceImpl implements AttendanceDatasource {
             if (params.ApiKey?.trim()) queryParams.append('ApiKey', params.ApiKey.trim());
 
             return await this.k3hHttpClient.getRequestWithAuthentication(`${AttendanceApi.PULL}?${queryParams.toString()}`, { signal });
-            
+
         } catch (error: any) {
 
             console.error('ERROR: PULL ATTENDANCE :', error);
@@ -47,7 +47,7 @@ export class AttendanceDatasourceImpl implements AttendanceDatasource {
     async addUpdateAttendance(params: AddUpdateAttendance): Promise<AttendanceSaveResponse> {
         try {
 
-            return await this.k3hHttpClient.postRequestWithAuthentication( AttendanceApi.ADD_UPDATE,  params)
+            return await this.k3hHttpClient.postRequestWithAuthentication(AttendanceApi.ADD_UPDATE, params)
 
         } catch (error) {
 

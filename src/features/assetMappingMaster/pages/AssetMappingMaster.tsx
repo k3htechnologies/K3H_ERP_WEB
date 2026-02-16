@@ -266,6 +266,22 @@ export const AssetMappingMaster: React.FC = () => {
       align: 'center',
       render: (value) => value || ''
     },
+     {
+      key: 'Department',
+      label: 'Department',
+      width: '20',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || ''
+    },
+     {
+      key: 'Designation',
+      label: 'Designation',
+      width: '20',
+      sortable: false,
+      align: 'center',
+      render: (value) => value || ''
+    },
     {
       key: 'AssignedDate',
       label: 'Assigned Date',
@@ -275,21 +291,6 @@ export const AssetMappingMaster: React.FC = () => {
       render: (value) =>
         value ? formatDate_dd_MonthName_yy(value) : '-'
     },
-    {
-      key: 'ConditionOnIssue',
-      label: 'Condition At Issue',
-      width: '20',
-      sortable: false,
-      align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || '-'}
-          maxWidth="120px"
-          tooltipThreshold={12}
-        />
-      )
-    }
-
   ], [handleNavigateToView]);
   //#endregion
 
@@ -348,9 +349,6 @@ export const AssetMappingMaster: React.FC = () => {
 
     // load empty filters
     loadAssetMappings(1, {});
-
-    setShowFilterPopup(false);
-    // clear router state (very important)
 
     navigate(location.pathname,
       {

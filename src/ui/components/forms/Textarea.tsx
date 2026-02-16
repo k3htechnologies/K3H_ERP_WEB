@@ -21,6 +21,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       style,
       rows = 3,
       autoResize = true,
+      required,
       ...props
     },
     ref
@@ -152,13 +153,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
             }}
           >
             {label}
-            {props.required && (
-              <span
-                style={{ color: theme.colors.error, marginLeft: '4px' }}
-              >
-                *
-              </span>
-            )}
+            {required && <span style={{ color: theme.colors.error, marginLeft: '4px' }}>*</span>}
           </label>
         )}
 

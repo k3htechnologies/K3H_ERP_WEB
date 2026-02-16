@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useMemo } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
@@ -7,289 +7,171 @@ import type {
   FilterWithPaginationOutDoor,
   OutDoorMasterData,
 } from '@/features/outdoor/models/OutDoorModel';
-import { OutDoorService } from '@/features/outdoor/services/OutDoorDataService';
-import { formatDate_dd_MonthName_yy, formatTimeFromDateTime } from '@/core/utils/dateFormat';
+import { outDoorService } from '@/features/outdoor/services/OutDoorDataService';
+import { formatDate_dd_MonthName_yy, formatTimeFromDateTime, isPreviousDate, isToday } from '@/core/utils/dateFormat';
 import { Loader } from '@/core/utils/loader';
-import { useLocation, type Location, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { FilterInfo } from '@/ui/components/DataTable/DataTable';
-import { updateFilter } from '@/core/utils/filterHelper';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
+import { useOutDoorListState } from '@/features/outdoor/context/OutDoorListStateContext';
 import { Modal } from '@/ui/components/Modal/Modal';
-import { Input } from '@/ui/components/forms';
+import { Button } from '@/ui/components/forms';
 import { TextArea } from '@/ui/components/forms/Textarea';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
-import type { DeleteOutDoorRequest } from '@/features/outdoor/models/OutDoorModel';
 import {
   Clock,
-  MapPin,
-  FileText,
-  ExternalLink,
   Fingerprint,
   ClipboardCheck,
-  AlertTriangle,
-  Edit,
-  Trash2
+  AlertTriangle
 } from "lucide-react";
 import { getCurrentLocation, formatLocationString, type LocationData } from "@/core/utils/locationUtils";
-import { parseOutdoorDate, parseOutdoorTime, isToday, isPreviousDate } from "../utils/outdoorDateUtils";
+import { parseOutdoorDate, parseOutdoorTime } from "../utils/outdoorDateUtils";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { MultiImageViewer } from "@/ui/components/ImageViewer/ImageViewer";
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Pagination, type PaginationInfo } from "@/ui/components/Pagination/Pagination";
-import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import { handleExportFile } from '@/core/utils/exportFile';
+import { PunchCard } from '@/features/outdoor/components/PunchCard';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { DateRangeWithActions } from '@/ui/components/DateRangeWithActions';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { updateFiltersWithDates } from '@/core/helpers/dateFilterHelper';
 
 export const OutDoor: React.FC = () => {
-
   //#region STATE
   const [outDoorList, setOutDoorList] = useState<OutDoorMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
 
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(10);
 
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<any>(undefined);
+  const { addToast } = useToast();
 
-  // TOAST
-  const { addToast } = useToast()
+  const [, setTempFilters] = useState<FilterInfo>({});
 
-  // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('')
-
-  const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchOutDoors(value)
-  }, 350)
-
-  // FILTER STATES
-  const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
-  const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-
-  // PUNCH IN/OUT STATES
   const [punchingItemId, setPunchingItemId] = useState<number | null>(null);
   const [conclusionModalOpen, setConclusionModalOpen] = useState(false);
   const [selectedOutdoorItem, setSelectedOutdoorItem] = useState<OutDoorMasterData | null>(null);
   const [conclusionText, setConclusionText] = useState("");
+  const [isConclusionEditMode, setIsConclusionEditMode] = useState(false);
 
-  //DELETE CONFIRMATION DIALOG
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-  const [selectedOutdoorToDelete, setSelectedOutdoorToDelete] = useState<OutDoorMasterData | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
-  //#endregion
-
-  //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
   //#endregion
 
-  //#region STATE CREATED PAGE AFTER NAVIGATE VIEW OR ADD UPDATE PAGE THEN CHECK
 
-  const location = useLocation() as Location & {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: FilterInfo;
-        sortInfo?: any;
-        searchTerm?: string;
-        outdoorId?: number;
-      };
-    };
-  };
+  //#region OUTDOOR LIST STATE CONTEXT
+  const { listState, updateListState, clearOutDoorContext } = useOutDoorListState();
+
+  const { page, filters, sortInfo } = listState;
   //#endregion
 
-  //#region INIT
+  //#region DATA LOAD OUTDOOR
 
-  useEffect(() => {
-
-    const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: any; searchTerm?: string; outdoorId?: number }
-      | undefined;
-
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '', outdoorId: 0 };
-
-
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
-    if (listState.searchTerm && String(listState.searchTerm).trim()) {
-
-      setSearchTerm(String(listState.searchTerm));
-
-      loadOutDoors(listState.page ?? 1, { CompanyName: String(listState.searchTerm).trim() });
-
-      return;
-    }
-
-
-    loadOutDoors(listState.page ?? 1, listState.filters ?? {});
-
-  }, [location.state]);
-
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel?.()
-    }
-  }, [debouncedSearch])
-  //#endregion
-
-  //#region DATA LOAD
-  const fetchOutDoorList = async (page: number = pagination.currentPage) => {
-    return await loadOutDoors(page, filters);
-  }
-
-  const loadOutDoors = async (page: number, filterParams: FilterInfo) => {
+  const loadOutDoors = async (pageNum: number, filterParams: FilterInfo, sortInfo?: any) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-
-        let sortByParam = undefined;
-        if (sortInfo) {
-          // For outdoor, we can add sorting if needed
-          sortByParam = sortInfo;
-        }
         const params: FilterWithPaginationOutDoor = {
-          PageNumber: page,
+          PageNumber: pageNum,
           PageSize: pagination.pageSize,
-          StartDate: filterParams.StartDate
-            ? new Date(filterParams.StartDate).toISOString()
-            : undefined,
-          EndDate: filterParams.EndDate
-            ? new Date(filterParams.EndDate).toISOString()
-            : undefined,
+          StartDate: filterParams.StartDate || undefined,
+          EndDate: filterParams.EndDate || undefined,
           CompanyName: filterParams.CompanyName?.trim() || undefined,
-          SortBy: sortByParam
-        }
+          SortBy: getSortByParam(sortInfo ?? null, [])
+        };
 
-        const response = await getOutDoors(params);
+        const response = await outDoorService.apiCallPullOutDoor(params);
 
         if (E.isRight(response)) {
 
           setOutDoorList(response.right.Data || []);
 
           setPagination({
-            currentPage: page,
+            currentPage: pageNum,
             totalRecords: response.right.TotalNumberOfRecord,
-            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
           });
 
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
-        return response
+
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading Outdoor Data'
-    )
-  }
-
-  //#endregion
-
-  //#region SEARCH OUTDOOR
-  const searchOutDoors = async (searchValue: string) => {
-
-    setSearchTerm(searchValue);
-
-    if (searchValue.trim() === '') {
-      fetchOutDoorList();
-      return;
-    }
-
-    const filterParams: FilterInfo = {
-      CompanyName: searchValue.trim()
-    };
-
-    await loadOutDoors(1, filterParams);
-  }
-  //#endregion
-
-  //#region CLEAR SEARCH OUTDOOR
-  const clearSearchOutDoors = () => {
-    setSearchTerm('');
-
-    debouncedSearch.cancel?.();
-
-    setFilters({});
-    setTempFilters({});
-    setPagination({ currentPage: 1 });
-    loadOutDoors(1, {});
-    try {
-      navigate(location.pathname, { replace: true, state: {} });
-    } catch {
-    }
+      'Loading Outdoor'
+    );
   };
 
   //#endregion
 
-  //#region EXCEL EXPORT PDF | EXCEL
+  //#region INIT
+  useEffect(() => {
+
+    clearOutDoorContext();
+
+    setPagination({ currentPage: page });
+
+    setTempFilters(filters);
+
+    const hasStartDate = !!filters.StartDate;
+    const hasEndDate = !!filters.EndDate;
+
+    if (!(hasStartDate && !hasEndDate)) {
+      loadOutDoors(page, filters, sortInfo);
+    }
+
+  }, [page, filters, sortInfo, clearOutDoorContext]);
+
+  useEffect(() => {
+    setTempFilters(filters);
+  }, [filters]);
+  //#endregion
+
+  //#region EXPORT EXCEL | PDF
   const handleExportOutDoors = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam = undefined
-        if (sortInfo) {
-          sortByParam = sortInfo;
-        }
         const params: FilterWithPaginationOutDoor = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
-          StartDate: filters.StartDate
-            ? new Date(filters.StartDate).toISOString()
-            : undefined,
-          EndDate: filters.EndDate
-            ? new Date(filters.EndDate).toISOString()
-            : undefined,
+          StartDate: filters.StartDate || undefined,
+          EndDate: filters.EndDate || undefined,
           CompanyName: filters.CompanyName?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, []),
           ExportType: exportType
-        }
-        const response = await getOutDoors(params);
-        handleExportFile(response, exportType, 'Outdoor', addToast)
+        };
+
+        const response = await outDoorService.apiCallPullOutDoor(params);
+
+        handleExportFile(response, exportType, 'Outdoor', addToast);
+
         return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: 'error', title: error.message || 'Export failed' });
       },
       undefined,
-      'Preparing Export...'
-    )
-  }
+      'Preparing Export'
+    );
+  };
 
-  const handleExportOutDoorExcel = () => handleExportOutDoors('Excel')
-  const handleExportOutDoorPdf = () => handleExportOutDoors('PDF')
-  //#endregion
-
-  //#region GET OUTDOOR DATA FROM API
-  const getOutDoors = async (filterParams: FilterWithPaginationOutDoor) => {
-    return await OutDoorService.apiCallPullOutDoorData(filterParams);
-  }
-  //#endregion
-
-  //#region TABLE CONFIG
-
-  const handlePageChange = useCallback((page: number) => {
-    fetchOutDoorList(page);
-  }, []);
+  const handleExportOutDoorExcel = () => handleExportOutDoors('Excel');
+  const handleExportOutDoorPdf = () => handleExportOutDoors('PDF');
 
   //#endregion
 
+  //#region HELPER FUNCTIONS
   const canPunchInOut = useCallback((outdoorDate: string, outdoorTime: string): boolean => {
     if (!outdoorDate || !outdoorTime) return false;
 
@@ -315,7 +197,21 @@ export const OutDoor: React.FC = () => {
 
     try {
       const outdoorDateObj = parseOutdoorDate(item.OutDoorDate);
-      if (!outdoorDateObj || !isToday(outdoorDateObj)) {
+      if (!outdoorDateObj) {
+        return false;
+      }
+
+      const isTodayDate = isToday(outdoorDateObj);
+      const isPreviousDateValue = isPreviousDate(outdoorDateObj);
+
+      if (isPreviousDateValue) {
+        if (item.PunchIn && !item.PunchOut) {
+          return true;
+        }
+        return false;
+      }
+
+      if (!isTodayDate) {
         return false;
       }
 
@@ -354,7 +250,9 @@ export const OutDoor: React.FC = () => {
       return false;
     }
   }, []);
+  //#endregion
 
+  //#region PUNCH IN/OUT HANDLERS
   const handlePunchInOut = useCallback(async (item: OutDoorMasterData) => {
     if (punchingItemId !== null) return;
 
@@ -365,11 +263,9 @@ export const OutDoor: React.FC = () => {
       setLoadingMessage,
       async () => {
         try {
-          // Capture time first to ensure accuracy
           const now = new Date();
           const currentDateTime = now.toISOString();
 
-          // Get current location with retry for better accuracy
           let location: LocationData | null = null;
           let retries = 0;
           const maxRetries = 2;
@@ -403,67 +299,53 @@ export const OutDoor: React.FC = () => {
           }
 
           // Use same API for both punch in and punch out
-          const response = await OutDoorService.apiCallPunchInOut({
+          const response = await outDoorService.apiCallPunchInOut({
             OutdoorId: item.OutdoorId,
             Punch: currentDateTime,
             Address: locationString
           });
 
           if (E.isRight(response)) {
+
             const apiResponse = response.right;
 
-            // Check backend ErrorMessage first (same pattern as ProjectMaster)
-            if (apiResponse.ErrorMessage && apiResponse.ErrorMessage.length > 0) {
-              addToast({
-                type: "error",
-                title: apiResponse.ErrorMessage[0]
-              });
-            } else if (apiResponse.WarningMessage && apiResponse.WarningMessage.length > 0) {
-              addToast({
-                type: "warning",
-                title: apiResponse.WarningMessage[0]
-              });
-              await loadOutDoors(pagination.currentPage, filters);
+
+            await loadOutDoors(pagination.currentPage, filters, sortInfo);
+
+            addToast({ type: "success", title: apiResponse.SuccessMessage?.[0] });
+
+
             } else {
-              // Success - use backend SuccessMessage
-              await loadOutDoors(pagination.currentPage, filters);
-              addToast({
-                type: "success",
-                title: apiResponse.SuccessMessage?.[0]
-              });
-            }
-          } else {
-            // Network/HTTP error - use backend error message (same pattern as ProjectMaster)
-            addToast({
-              type: "error",
-              title: response.left.message
-            });
+            addToast({ type: "error", title: response.left.message });
           }
+
         } catch (error: any) {
-          addToast({
-            type: "error",
-            title: error.message
-          });
+
+          addToast({ type: "error", title: error.message });
+
         } finally {
+
           setPunchingItemId(null);
         }
       },
       undefined,
       (error: any) => {
-        addToast({
-          type: "error",
-          title: error.message
-        });
+
+        addToast({ type: "error", title: error.message });
+
         setPunchingItemId(null);
       },
       undefined,
-      !item.PunchIn ? "Punching In..." : "Punching Out..."
+      !item.PunchIn ? "Punching In" : "Punching Out"
     );
-  }, [punchingItemId, pagination.currentPage, filters, addToast]);
+  }, [punchingItemId, pagination.currentPage, filters, sortInfo, addToast]);
+  //#endregion
 
+  //#region CONCLUSION HANDLERS
   const handleOpenConclusionModal = useCallback((item: OutDoorMasterData) => {
     setSelectedOutdoorItem(item);
     setConclusionText(item.Conclusion || "");
+    setIsConclusionEditMode(false);
     setConclusionModalOpen(true);
   }, []);
 
@@ -471,6 +353,11 @@ export const OutDoor: React.FC = () => {
     setConclusionModalOpen(false);
     setSelectedOutdoorItem(null);
     setConclusionText("");
+    setIsConclusionEditMode(false);
+  }, []);
+
+  const handleEnableConclusionEdit = useCallback(() => {
+    setIsConclusionEditMode(true);
   }, []);
 
   const handleSaveConclusion = useCallback(async () => {
@@ -480,88 +367,54 @@ export const OutDoor: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const response = await OutDoorService.apiCallAddUpdateConclusion({
+        const response = await outDoorService.apiCallAddUpdateConclusion({
           OutdoorId: selectedOutdoorItem.OutdoorId,
           Conclusion: conclusionText
         });
 
         if (E.isRight(response)) {
-          const apiResponse = response.right;
+          addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-          // Check backend ErrorMessage first (same pattern as ProjectMaster)
-          if (apiResponse.ErrorMessage && apiResponse.ErrorMessage.length > 0) {
-            addToast({
-              type: "error",
-              title: apiResponse.ErrorMessage[0]
-            });
-          } else if (apiResponse.WarningMessage && apiResponse.WarningMessage.length > 0) {
-            addToast({
-              type: "warning",
-              title: apiResponse.WarningMessage[0]
-            });
-            await loadOutDoors(pagination.currentPage, filters);
-            handleCloseConclusionModal();
+          // Update the local state with the new conclusion
+          setOutDoorList(prevList =>
+            prevList.map(item =>
+              item.OutdoorId === selectedOutdoorItem.OutdoorId
+                ? { ...item, Conclusion: conclusionText }
+                : item
+            )
+          );
+
+          // Close the modal
+          setConclusionModalOpen(false);
+          setSelectedOutdoorItem(null);
+          setConclusionText("");
+          setIsConclusionEditMode(false);
+
           } else {
-            // Success - use backend SuccessMessage
-            await loadOutDoors(pagination.currentPage, filters);
             addToast({
-              type: "success",
-              title: apiResponse.SuccessMessage?.[0]
-            });
-            handleCloseConclusionModal();
-          }
-        } else {
-          // Network/HTTP error - use backend error message (same pattern as ProjectMaster)
-          addToast({
-            type: "error",
-            title: response.left.message
+            type: "error", title: response.left.message
           });
         }
       },
       undefined,
       (error: any) => {
         addToast({
-          type: "error",
-          title: error.message
+          type: "error", title: error.message
         });
       },
       undefined,
-      'Saving conclusion...'
+      'Saving conclusion'
     );
-  }, [selectedOutdoorItem, conclusionText, pagination.currentPage, filters, addToast, handleCloseConclusionModal]);
+  }, [selectedOutdoorItem, conclusionText, addToast]);
 
-  //#region FILTER HELPERS
-  const applyFilters = () => {
-    setFilters(tempFilters)
-    loadOutDoors(1, tempFilters)
-    setShowFilterPopup(false)
-  }
-
-  const clearFilters = () => {
-    setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
-    loadOutDoors(1, {});
-
-    setShowFilterPopup(false);
-
-    // clear router state (very important)
-    navigate(location.pathname, { replace: true, state: {} });
-  };
-
-
-  //#endregion
-
-  //#region  HANDLE CHANGE EVENT
-
-  const handleFilterChange = (key: string, value: string) => {
-    setTempFilters(prev => updateFilter(prev, key, value));
-  };
-
+  const handleConclusionSubmit = useCallback((e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedOutdoorItem?.Conclusion || isConclusionEditMode) {
+      handleSaveConclusion();
+    } else {
+      handleEnableConclusionEdit();
+    }
+  }, [selectedOutdoorItem, isConclusionEditMode, handleSaveConclusion, handleEnableConclusionEdit]);
   //#endregion
 
   //#region ADD OUTDOOR THEN NAVIGATE
@@ -570,108 +423,80 @@ export const OutDoor: React.FC = () => {
   }, [navigate]);
   //#endregion
 
-  //#region DELETE OUTDOOR
-  const handleConfirmationDialogBoxOpen = (item: OutDoorMasterData) => {
-    setSelectedOutdoorToDelete(item);
-    setIsConfirmationDialogBoxOpen(true);
-  };
-
-  const handleDeleteOutdoor = async () => {
-    if (!selectedOutdoorToDelete?.OutdoorId || !selectedOutdoorToDelete?.Uniquekey) return;
-
-    setIsDeleting(true);
-
-    const payload: DeleteOutDoorRequest = {
-      OutdoorId: selectedOutdoorToDelete.OutdoorId,
-      UniqueKey: selectedOutdoorToDelete.Uniquekey,
-    };
-
-    await runApiWithLoader(
-      setIsLoading,
-      setLoadingMessage,
-      async () => {
-        const response = await OutDoorService.apiCallDeleteOutDoor(payload);
-        if (E.isRight(response)) {
-          // Check backend ErrorMessage first
-          if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
-            addToast({ type: 'error', title: response.right.ErrorMessage[0] });
-          } else if (response.right.WarningMessage && response.right.WarningMessage.length > 0) {
-            addToast({ type: 'warning', title: response.right.WarningMessage[0] });
-            setIsConfirmationDialogBoxOpen(false);
-            setSelectedOutdoorToDelete(null);
-            loadOutDoors(pagination.currentPage, filters);
-          } else {
-            // Success - use backend SuccessMessage
-            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
-            setIsConfirmationDialogBoxOpen(false);
-            setSelectedOutdoorToDelete(null);
-            loadOutDoors(pagination.currentPage, filters);
-          }
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-        }
-        return response;
-      },
-      undefined,
-      (error: any) => addToast({ type: 'error', title: error?.message }),
-      undefined,
-      'Deleting Outdoor'
+  //#region DATE RANGE HANDLERS
+  const handleBothDatesChange = useCallback((fromDate: string | null, toDate: string | null) => {
+    updateFiltersWithDates(
+      filters,
+      { StartDate: fromDate, EndDate: toDate },
+      updateListState,
+      setTempFilters,
+      !!(fromDate && toDate)
     );
+  }, [filters, updateListState]);
 
-    setIsDeleting(false);
-  };
+  const handleFromDateChange = useCallback((date: string | null) => {
+    updateFiltersWithDates(
+      filters,
+      { StartDate: date },
+      updateListState,
+      setTempFilters
+    );
+  }, [filters, updateListState]);
+
+  const handleToDateChange = useCallback((date: string | null) => {
+    updateFiltersWithDates(
+      filters,
+      { EndDate: date },
+      updateListState,
+      setTempFilters
+    );
+  }, [filters, updateListState]);
   //#endregion
 
-  //#region PAGINATION INFO
-  const outDoorPaginationInfo: PaginationInfo = {
+  //#region PAGINATION CONFIG
+  const handlePageChange = useCallback((newPage: number) => {
+    updateListState({ page: newPage });
+  }, [updateListState]);
+
+  const outDoorPaginationInfo: PaginationInfo = useMemo(
+    () => ({
     currentPage: pagination.currentPage,
     totalPages: pagination.totalPages,
     totalRecords: pagination.totalRecords,
     pageSize: pagination.pageSize,
-    onPageChange: handlePageChange,
-  };
+      onPageChange: handlePageChange
+    }),
+    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
+  );
   //#endregion
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-      <TableActionToolbar
-        isShowSearchBar
-        searchTerm={searchTerm}
-        searchPlaceholder="Search By Company Name..."
-        onSearchChange={(v) => {
-          setSearchTerm(v)
-          debouncedSearch(v)
-        }}
-        onClearSearch={clearSearchOutDoors}
-        isShowFilterButton
-        filters={filters}
-        onOpenFilter={() => {
-          setTempFilters(filters)
-          setShowFilterPopup(true)
-        }}
-        // ADD
-        isShowAddButton={canAction}
+      <Loader loading={isLoading} title={loadingMessage}> </Loader>
+
+      <DateRangeWithActions
+        fromDate={filters.StartDate ?? null}
+        toDate={filters.EndDate ?? null}
+        onBothDatesChange={handleBothDatesChange}
+        onFromDateChange={handleFromDateChange}
+        onToDateChange={handleToDateChange}
+        canAction={canAction}
+        canExport={canExport}
         addTitle="Add"
         onAdd={handleAddOutdoor}
-
-        // IMPORT 
-        isShowImportButton={canAction}
-
-        // EXPORT
-        isShowExportButton={canExport}
+        hasData={outDoorList.length > 0}
         onExportExcel={handleExportOutDoorExcel}
         onExportPdf={handleExportOutDoorPdf}
         exportLoading={isLoading}
       />
-      <div className="p-4">
+
+      <>
 
         {outDoorList.length === 0 ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">No outdoor records found</p>
-          </div>
+          <NoDataView message='No outdoor records found'></NoDataView>
         ) : (
-          <div className="grid grid-cols-1 gap-4">
+
+          <div className="grid grid-cols-1 gap-5">
             {outDoorList.map((item) => {
               const isMeetingStarted = canPunchInOut(item.OutDoorDate, item.OutDoorTime);
               const hasMissed = hasMissedPunch(item);
@@ -683,9 +508,14 @@ export const OutDoor: React.FC = () => {
                 <ExpandableCard
                   key={item.OutdoorId}
                   title={
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex-1">
-                        <h3 className="text-sm font-medium text-gray-900 mb-1">
+                    <div className="flex items-center justify-between w-full gap-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-sm font-medium text-gray-900 mb-1 flex items-center gap-2">
+                          {hasMissed && (
+                            <div title={!item.PunchIn ? "Punch In missed" : "Punch Out missed"}>
+                              <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                            </div>
+                          )}
                           {formatDate_dd_MonthName_yy(item.OutDoorDate)}
                         </h3>
                         <div className="flex items-center gap-3">
@@ -700,17 +530,11 @@ export const OutDoor: React.FC = () => {
                   }
                   showline={true}
                   customizedIcon={
-                    <div className="flex items-center gap-2">
-                      {/* Missed Punch Icon */}
-                      {hasMissed && (
-                        <div title={!item.PunchIn ? "Punch In missed" : "Punch Out missed"}>
-                          <AlertTriangle className="w-5 h-5 text-red-500" />
-                        </div>
-                      )}
-
+                    <div className="flex items-center gap-2 flex-shrink-0">
                       {/* Conclusion Button */}
                       {isPunchedInAndOut && (
-                        <button
+                        <Button
+                          color='transparent'
                           onClick={(e) => {
                             e.stopPropagation();
                             handleOpenConclusionModal(item);
@@ -721,16 +545,17 @@ export const OutDoor: React.FC = () => {
                           <ClipboardCheck
                             className={`w-5 h-5 ${item.Conclusion ? 'text-purple-600' : 'text-gray-600'}`}
                           />
-                        </button>
+                        </Button>
                       )}
 
                       {/* Punch In/Out Button */}
                       {!isPunchedInAndOut && isMeetingStarted && (
-                        <button
+                        <Button
                           onClick={(e) => {
                             e.stopPropagation();
                             handlePunchInOut(item);
                           }}
+                          color='transparent'
                           disabled={punchingItemId === item.OutdoorId}
                           className="p-1.5 rounded-lg hover:bg-white/50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                           title={!item.PunchIn ? "Punch In" : "Punch Out"}
@@ -738,112 +563,78 @@ export const OutDoor: React.FC = () => {
                           {punchingItemId === item.OutdoorId ? (
                             <div className="w-5 h-5 border-2 border-green-600 border-t-transparent rounded-full animate-spin" />
                           ) : (
-                            <Fingerprint
-                              className={`w-5 h-5 ${!item.PunchIn ? 'text-green-600' : 'text-blue-600'}`}
+                            <Fingerprint className={`w-5 h-5 ${!item.PunchIn ? 'text-green-600' : 'text-blue-600'}`}
                             />
                           )}
-                        </button>
+                        </Button>
                       )}
 
-                      {/* Delete Button */}
-                      {canAction && (
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleConfirmationDialogBoxOpen(item);
-                          }}
-                          className="p-1.5 rounded-lg hover:bg-white/50 transition-colors"
-                          title="Delete Outdoor"
-                        >
-                          <Trash2 className="w-5 h-5 text-red-600" />
-                        </button>
-                      )}
                     </div>
 
                   }
                   child={
-                    <div className="space-y-4">
-                      {/* Left Column */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{ gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
-                        <div className="space-y-0">
-                          <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                            <div className="flex-1">
-                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Name</p>
-                              <p className="text-sm font-medium text-gray-900">{item.CompanyName || '-'}</p>
+                    <div className="space-y-6">
+                      <div className="space-y-0 p-2">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-b border-gray-200 pb-2">
+                          <FieldItem label="Company Name" value={item.CompanyName || '-'} isRow={false} />
+                          <FieldItem label="Department" value={item.DepartmentName || '-'} isRow={false} />
                             </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-b border-gray-200 pb-2 pt-2">
+                          <FieldItem label="Company Address" value={item.CompanyAddress || '-'} isRow={false} />
+                          <FieldItem label="Accompanied By" value={item.AccompaniedByName || '-'} isRow={false} />
                           </div>
 
-                          <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                            <div className="flex-1">
-                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Company Address</p>
-                              <p className="text-sm font-medium text-gray-900">{item.CompanyAddress || '-'}</p>
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-b border-gray-200 pb-2 pt-2">
+                          <FieldItem label="Purpose" value={<TooltipText text={item.Purpose || '-'} maxWidth="300px" tooltipThreshold={30} />} isRow={false} />
+                          <FieldItem label="Requested By" value={item.CreatedBy || '-'} isRow={false} />
                           </div>
 
-                          <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                            <div className="flex-1">
-                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Purpose</p>
-                              <div className="text-sm font-medium text-gray-900">
-                                <TooltipText
-                                  text={item.Purpose || '-'}
-                                  maxWidth="300px"
-                                  tooltipThreshold={30}
-                                />
-                              </div>
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 pt-2">
+                          <FieldItem label="Visiting Card"
+                            value={
+                              item.VisitingCardURL ? (() => {
+                                const cardUrls = parseDocumentUrls(item.VisitingCardURL);
+                                return (
+                                  <MultiImageViewer
+                                    images={cardUrls}
+                                    title="Visiting Card"
+                                    isIcon={true}
+                                    triggerLabel={
+                                      <span className="flex items-center gap-2 text-sm font-medium">
+                                        {cardUrls.length > 1 ? `View ${cardUrls.length} Cards` : 'View Card'}
+                                      </span>
+                                    }
+                                  />
+                                );
+                              })() : (
+                                <span className="text-gray-400 italic">Not Uploaded</span>
+                              )
+                            }
+                            isRow={false}
+                          />
                           </div>
 
-                          {item.Conclusion && (
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Conclusion</p>
-                                <p className="text-sm font-medium text-gray-600">{item.Conclusion}</p>
-                              </div>
-                            </div>
+                        <div className="flex items-start gap-2.5 pt-2">
+                          <div className="flex-1 flex justify-end">
+                            {canAction && (
+                              <Button
+                                onClick={() => navigate(`/outdoor/add/${item.OutdoorId}`)}
+                                color="blue"
+                                size="sm"
+                                variant="solid"
+                              >
+                                Edit
+                              </Button>
                           )}
                         </div>
-
-                        {/* Right Column */}
-                        <div className="space-y-0">
-                          {item.DepartmentName && (
-                            <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                              <div className="flex-1">
-                                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Department</p>
-                                <p className="text-sm font-medium text-gray-900">{item.DepartmentName}</p>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                            <div className="flex-1">
-                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Accompanied By</p>
-                              <p className="text-sm font-medium text-gray-900">{item.AccompaniedByName || '-'}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-start gap-2.5 p-2.5 rounded-lg border-b border-gray-200">
-                            <div className="flex-1">
-                              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-0.5">Requested By</p>
-                              <p className="text-sm font-medium text-gray-900">{item.CreatedBy || '-'}</p>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-end pt-2">
-                            <button
-                              onClick={() => navigate(`/outdoor/add/${item.OutdoorId}`)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm min-w-[110px] justify-center"
-                            >
-                              <Edit className="w-4 h-4" />
-                              Edit
-                            </button>
-                          </div>
                         </div>
                       </div>
 
                       {/* Punch In/Out Section */}
                       {(item.PunchIn || item.PunchOut || hasMissedPrevious) && (
-                        <div className="border-t border-gray-200 pt-3">
-                          <h4 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <div className="border-t border-gray-200 -mt-6 pt-4">
+                          <h4 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
                             <Fingerprint className="w-4 h-4" />
                             Attendance
                           </h4>
@@ -854,73 +645,15 @@ export const OutDoor: React.FC = () => {
                           ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                               {item.PunchIn && (
-                                <div className="p-3 bg-green-50 rounded-lg border border-green-100">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                                    <p className="text-xs font-semibold text-green-700 uppercase">Punch In</p>
-                                  </div>
-                                  <p className="text-sm font-medium text-gray-900 mb-1">
-                                    {formatTimeFromDateTime(item.PunchIn) || '-'}
-                                  </p>
-                                  {item.PunchInAddress && (
-                                    <p className="text-xs text-gray-600 flex items-start gap-1">
-                                      <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                      <span className="line-clamp-2">{item.PunchInAddress}</span>
-                                    </p>
-                                  )}
-                                </div>
+                                <PunchCard type="in" time={item.PunchIn} address={item.PunchInAddress} />
                               )}
                               {item.PunchOut && (
-                                <div className="p-3 bg-blue-50 rounded-lg border border-blue-100">
-                                  <div className="flex items-center gap-2 mb-1">
-                                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                                    <p className="text-xs font-semibold text-blue-700 uppercase">Punch Out</p>
-                                  </div>
-                                  <p className="text-sm font-medium text-gray-900 mb-1">
-                                    {formatTimeFromDateTime(item.PunchOut) || '-'}
-                                  </p>
-                                  {item.PunchOutAddress && (
-                                    <p className="text-xs text-gray-600 flex items-start gap-1">
-                                      <MapPin className="w-3 h-3 mt-0.5 flex-shrink-0" />
-                                      <span className="line-clamp-2">{item.PunchOutAddress}</span>
-                                    </p>
+                                <PunchCard type="out" time={item.PunchOut} address={item.PunchOutAddress} />
                                   )}
                                 </div>
                               )}
                             </div>
                           )}
-                        </div>
-                      )}
-
-                      {/* Visiting Card Section */}
-                      <div className="border-t border-gray-200 pt-3">
-                        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center gap-2.5">
-                            <FileText className="w-4 h-4 text-gray-400" />
-                            <div>
-                              <p className="text-sm font-medium text-gray-700">Visiting Card</p>
-                              <p className="text-xs text-gray-500">Document attachment</p>
-                            </div>
-                          </div>
-                          {item.VisitingCardURL ? (() => {
-                            const cardUrls = parseDocumentUrls(item.VisitingCardURL);
-                            return (
-                              <MultiImageViewer
-                                images={cardUrls}
-                                title="Visiting Card"
-                                triggerLabel={
-                                  <button className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium shadow-sm">
-                                    <ExternalLink className="w-3.5 h-3.5" />
-                                    View Card{cardUrls.length > 1 ? ` (${cardUrls.length})` : ''}
-                                  </button>
-                                }
-                              />
-                            );
-                          })() : (
-                            <span className="text-xs text-gray-400 italic">Not Uploaded</span>
-                          )}
-                        </div>
-                      </div>
                     </div>
                   }
                 />
@@ -930,88 +663,48 @@ export const OutDoor: React.FC = () => {
         )}
 
         <Pagination pagination={outDoorPaginationInfo} className="mt-4" />
-      </div>
+      </>
 
-      <Modal
-        isOpen={showFilterPopup}
-        onClose={() => setShowFilterPopup(false)}
-        title="Filter - Outdoor"
-        onSubmit={(e) => {
-          e.preventDefault()
-          applyFilters()
-        }}
-        saveText="Apply "
-        cancelText="Clear"
-        onCancel={() => clearFilters()}
-       
-        size="small-half"
-      >
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <Input
-                label='Start Date'
-                type="date"
-                value={tempFilters.StartDate || ''}
-                onChange={(e) => handleFilterChange('StartDate', e.target.value)}
-                placeholder="Enter Start Date"
-              />
-            </div>
-            <div>
-              <Input
-                label='End Date'
-                type="date"
-                value={tempFilters.EndDate || ''}
-                onChange={(e) => handleFilterChange('EndDate', e.target.value)}
-                placeholder="Enter End Date"
-              />
-            </div>
-          </div>
-        </div>
-      </Modal>
 
-      {/* Conclusion Modal */}
       <Modal
         isOpen={conclusionModalOpen}
         onClose={handleCloseConclusionModal}
-        title="Add Conclusion"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSaveConclusion();
-        }}
-        saveText="Save"
-        cancelText="Cancel"
-        onCancel={handleCloseConclusionModal}
-        loading={isLoading}
+        title={
+          selectedOutdoorItem?.Conclusion
+            ? isConclusionEditMode
+              ? "Edit Conclusion"
+              : "View Conclusion"
+            : "Add Conclusion"
+        }
         size="md"
+        onSubmit={handleConclusionSubmit}
+        saveText={
+          selectedOutdoorItem?.Conclusion && !isConclusionEditMode
+            ? "Edit"
+            : selectedOutdoorItem?.Conclusion
+              ? "Save"
+              : "Add"
+        }
+        loading={isLoading}
       >
+        <div className='-mt-2'>
         <TextArea
+
           label="Conclusion"
           value={conclusionText}
           onChange={(e) => setConclusionText(e.target.value)}
-          placeholder="Enter conclusion about the outdoor visit..."
+            placeholder="Enter conclusion about the outdoor visit"
           rows={6}
-          autoResize={true}
+            autoResize
+            disabled={selectedOutdoorItem?.Conclusion ? !isConclusionEditMode : false}
         />
+        </div>
+
       </Modal>
 
-      <ConfirmationDialogBox
-        isOpen={isConfirmationDialogBoxOpen}
-        onClose={() => {
-          setIsConfirmationDialogBoxOpen(false);
-          setSelectedOutdoorToDelete(null);
-        }}
-        onConfirm={() => {
-          setIsConfirmationDialogBoxOpen(false);
-          void handleDeleteOutdoor();
-        }}
-        title="You are about to delete Outdoor"
-        message="Are you sure you want to delete this outdoor visit?"
-        confirmText="Delete"
-        cancelText="Cancel"
-        loading={isDeleting}
-        variant="danger"
-      />
+
+
+
     </div>
   );
 };

@@ -28,6 +28,7 @@ export class AssetMappingMasterDatasourceImpl implements AssetMappingMasterDatas
             const queryParams = new URLSearchParams({
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
+                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             })
 
             if (params.AssetMasterMappingId) queryParams.append('AssetMasterMappingId', params.AssetMasterMappingId.toString());

@@ -3,7 +3,7 @@ import { useAssetMappingMasterListState } from "@/features/assetMappingMaster/co
 
 import { useEffect, useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import type { AssetMappingMasterData, FilterWithPaginationAssetMappingMasterRequest } from "../models/AssetMappingMasterModel";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
@@ -22,7 +22,7 @@ const ViewAssetMappingMaster: React.FC = () => {
     // NAVIGATION
     const navigate = useNavigate();
     const { listState } = useAssetMappingMasterListState();
-    const assetMappingName=listState.assetMappingName;
+    const assetMappingName = listState.assetMappingName;
 
     // TOAST
     const { addToast } = useToast();
@@ -154,7 +154,13 @@ const ViewAssetMappingMaster: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                                         <FieldItem label="Employee Name" value={editAssetMappingData!.EmployeeName} />
-
+                                        <FieldItem label="Department" value={editAssetMappingData!.Department} />
+                                        <FieldItem label="Designation" value={editAssetMappingData!.Designation} />
+                                        
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pt-3 pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem
                                             label="Assigned Date"
                                             value={
@@ -164,6 +170,12 @@ const ViewAssetMappingMaster: React.FC = () => {
                                             }
 
                                         />
+
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pt-3 pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
                                         <FieldItem label="Condition On Issue" value={editAssetMappingData!.ConditionOnIssue} />
 
                                     </div>
@@ -235,7 +247,7 @@ const ViewAssetMappingMaster: React.FC = () => {
                                             label="Created Date"
                                             value={
                                                 editAssetMappingData!.CreatedDate
-                                                    ? formatDate_dd_MonthName_yy(editAssetMappingData!.CreatedDate)
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(editAssetMappingData!.CreatedDate)
                                                     : "-"
                                             }
 
@@ -250,7 +262,7 @@ const ViewAssetMappingMaster: React.FC = () => {
                                             label="Modified Date"
                                             value={
                                                 editAssetMappingData!.ModifiedDate
-                                                    ? formatDate_dd_MonthName_yy(editAssetMappingData!.ModifiedDate)
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(editAssetMappingData!.ModifiedDate)
                                                     : "-"
                                             }
 

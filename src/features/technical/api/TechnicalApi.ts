@@ -6,7 +6,8 @@ export const TechnicalApi = {
     EXCEL_IMPORT: '/ExcelImport/ExcelImport',
     PULL_EXCEL_SAMPLE: '/ExcelImport/PullExcelSample',
     PULL_MATERIAL_SUBMATERIALUOM:'/Static/PullMaterialMasterSubMaterialMasterUOMMaster',
-    PULL_MAGIC_LINK_WITH_VALIDATE:'/MagicLink/PullMagicLinkWithValidate'
+    PULL_MAGIC_LINK_WITH_VALIDATE:'/MagicLink/PullMagicLinkWithValidate',
+    PULL_VILLAGE: '/Static/PullVillage',
     
 } as const
 

@@ -27,6 +27,7 @@ export const ViewBuilding: React.FC = () => {
     const [buildingData, setBuildingData] = useState<BuildingData | null>(null);
     const [buildingDocumentList, setBuildingDocumentList] = useState<BuildingDocumentData[]>([]);
     const [docFilesMap, setDocFilesMap] = useState<Record<number, BuildingDocumentData[]>>({});
+    
     const accordionItems = buildingDocumentList
         .filter(d => d.UploadedBuildingDocumentCount !== 0)
         .map(d => ({

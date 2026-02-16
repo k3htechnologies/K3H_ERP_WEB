@@ -1,9 +1,9 @@
 
 interface OverviewItem {
   TotalCases?: number;
-  TotalOpenCases?: number;
-  TotalClosedCases?: number;
-  TotalReopenCases?: number;
+  OpenCases?: number;
+  ClosedCases?: number;
+  ReOpenCases?: number;
   TotalHearings?: number;
 }
 
@@ -23,17 +23,17 @@ export default function OverviewCards({ overViewData = [] }: Props) {
     },
     {
       title: "Open Cases",
-      value: data.TotalOpenCases ?? 0,
+      value: data.OpenCases ?? 0,
       backgroundColor: "#ECFEFF",
     },
     {
       title: "Closed Cases",
-      value: data.TotalClosedCases ?? 0,
+      value: data.ClosedCases ?? 0,
       backgroundColor: "#FDF4FF",
     },
     {
       title: "Reopened Cases",
-      value: data.TotalReopenCases ?? 0,
+      value: data.ReOpenCases ?? 0,
       backgroundColor: "#FFF7ED",
     },
     {

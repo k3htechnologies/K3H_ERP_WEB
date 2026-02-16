@@ -1,11 +1,11 @@
 import type { ApiResponse } from '@/core/api/ApiResponse';
 
-export interface CompOffData{
-    CompOffId:number,
-    Uniquekey:string,
-    CompOffDate:string,
-    RequestDate :string,
-    Reason:string,
+export interface CompOffData {
+    CompOffId: number,
+    Uniquekey: string,
+    CompOffDate: string,
+    WorkingDate: string,
+    Reason: string,
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -16,15 +16,15 @@ export interface CompOffData{
     LastModifiedDate: string | null
 }
 
-export interface AddUpdateCompOff{
+export interface AddUpdateCompOff {
     CompOffId?: number | null,
     Uniquekey?: string | null,
     CompOffDate?: string | null,
-    RequestDate?: string | null,
+    WorkingDate?: string | null,
     Reason?: string | null
 
 }
-export interface FilterWithPaginationCompOff{
+export interface FilterWithPaginationCompOff {
     PageSize: number
     PageNumber: number
     CompOffId?: number
@@ -40,6 +40,19 @@ export interface DeleteCompOffRequest {
     Uniquekey?: string | null
 }
 
+export interface PullCompOffDatesRequest {
+    PageSize: number;
+    PageNumber: number;
+    EmployeeId?: number;
+    StartDate?: string;
+    EndDate?: string;
+}
+
+export interface CompOffDateItem {
+    AttendanceDate: string; // ISO format: "2026-01-06T00:00:00"
+}
+
 export type CompOffListResponse = ApiResponse<CompOffData[]>;
 export type CompOffSaveResponse = ApiResponse<CompOffData[]>;
 export type CompOffDeleteResponse = ApiResponse<number>;
+export type CompOffDatesResponse = ApiResponse<CompOffDateItem[]>;

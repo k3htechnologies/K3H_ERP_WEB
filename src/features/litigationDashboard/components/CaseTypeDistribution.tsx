@@ -32,9 +32,10 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
                         <Pie
                             data={chartData}
                             innerRadius={70}
-                            outerRadius={90}
+                            outerRadius={100}
                             paddingAngle={3}
                             dataKey="value"
+                            cornerRadius={10}
                         >
                             {chartData.map((_, index) => (
                                 <Cell key={index} fill={COLORS[index]} />
@@ -44,8 +45,8 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
 
                     {/* Center Text */}
                     <div className="absolute top-1/2 -translate-y-1/2 text-center">
-                        <p className="text-xl font-semibold">Total Cases</p>
-                        <p className="text-xl font-semibold">{data.TotalCases ?? 0}</p>
+                        <p className="text-md font-semibold">Total Cases</p>
+                        <p className="text-md font-semibold">{data.TotalCases ?? 0}</p>
                     </div>
                 </div>
 
@@ -67,8 +68,8 @@ function Card({ title, value, color }: any) {
     return (
         <div className="bg-gray-50 rounded-lg p-3"
         >
-            <p className="text-xl font-semibold" style={{ color: color }}>{title}</p>
-            <p className="text-xl font-semibold" style={{ color: color }}>{value ?? 0}</p>
+            <p className="text-md font-semibold" style={{ color: color }}>{title}</p>
+            <p className="text-md font-semibold" style={{ color: color }}>{value ?? 0}</p>
         </div>
     );
 }

@@ -27,7 +27,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
   isLoading = false,
 }) => {
   return (
-    
+
     <div className="flex justify-between items-center">
 
       {/* LEFT SIDE BUTTON */}

@@ -67,6 +67,21 @@ export const DesignationMasterFormModal: React.FC<DesignationMasterFormModalProp
               placeholder="Enter Notice Period"
             />
           </div>
+           <div>
+            <Input
+              label='Probation Period'
+              required
+              error={errors.ProbationPeriod}
+              type="text"
+              value={formData.ProbationPeriod ?? ''}
+              maxLength={4}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, '');
+                onFieldChange('ProbationPeriod', digits === '' ? 0 : Number(digits));
+              }}
+              placeholder="Enter Probation Period"
+            />
+          </div>
         </div>
       </div>
     </Modal>

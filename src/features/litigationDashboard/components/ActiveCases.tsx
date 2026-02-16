@@ -2,23 +2,16 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { useMemo } from "react";
 
-interface ActiveCasesRecord {
-    CaseTitle: string;
-    CaseNumber: string;
-    CaseType: string;
-    HearingDate: string;
-    Status: string;
-}
-
 interface Props {
-    activeCaseData: ActiveCasesRecord[]
+    activeCaseData: any[];
 }
 
-export default function ActiveCases({ activeCaseData = [] }: Props) {
+const ActiveCases: React.FC<Props> = ({ activeCaseData }) => {
+
     const activeCaseColumns = useMemo<any[]>(
         () => [
             {
-                key: "CaseTitle",
+                key: "Title",
                 label: "Case Title",
                 align: "left",
                 render: (value: string) => (
@@ -63,22 +56,25 @@ export default function ActiveCases({ activeCaseData = [] }: Props) {
                     </span>
                 )
             },
-        ],
-        []
+        ], []
     );
 
     return (
         <div className="space-y-3 pt-5">
+
             <h2 className="text-lg font-semibold text-gray-800">Active Cases</h2>
-            <div className="bg-white rounded-xl p-4 h-[300px] " style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+
+            <div className="bg-white rounded-xl p-4 h-[400px] " style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+
                 <DataTableWithOutBorder
                     columns={activeCaseColumns}
                     data={activeCaseData}
                     emptyMessage="No Active Cases Found"
                     fixedHeight={true}
-                    className="divide-y divide-gray-400 "
+                    className="flex-1"
                 />
             </div>
         </div>
     )
 }
+export default ActiveCases;

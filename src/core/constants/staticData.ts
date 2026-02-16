@@ -37,6 +37,8 @@ export const MASTER_DATA = {
 
   firmsType: ['LLP', 'Private Limited Company', 'Proprietorship'],
 
+  companyType: ['Existing Company', 'New Company'],
+
   projectStatus: ['On-Going', 'Completed', 'On-Hold', 'Cancelled', 'Planning'],
 
   businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use'],
@@ -52,7 +54,7 @@ export const MASTER_DATA = {
 
   flat_unit_Type: ['Commercial', 'Gym', 'Residential', 'Void'],
 
-  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', 'DUPLEX'],
+  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '1 + 1 JODI','2 + 1 JODI','2 + 2 JODI','2 + 3 JODI','PENTHOUSE'],
 
   commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
@@ -60,7 +62,7 @@ export const MASTER_DATA = {
 
   applicant_type: ['Applicant', 'Co - Applicant'],
 
-  speciality_type: ['Commercial Sale', 'Residential Sale', 'Commercial + Residential Sale',],
+  speciality_type: ['Commercial Sale', 'Commercial Leasing', 'Residential Sale', 'Commercial + Residential Sale'],
 
   carpet_area_type: ['MOFA', 'RERA'],
 
@@ -88,21 +90,23 @@ export const MASTER_DATA = {
 
   occupationType: ['Business', 'Homemaker', 'Professional', 'Salaried', 'Retired',],
 
-  budget: ['<1', '1.5', '2.5', '3', '4', '5', '5 <'],
+  budget: ['<1', '2', '3','4', '5', '6','8','10','12','15','20','25+'],
 
   accomodation: ["Rented", "Self-Owned",],
 
-  requirement: ["Commercial", "Residential"],
+  requirement: ["Commercial", "Commercial Leasing", "Residential"],
 
-  possessionType: ['Ready', 'Within 1 Year', 'More Than 2 Year'],
+  possessionType: ['RTMI', 'Under 1 Year', '1 Years To 2 Years', '2 Years To 3 Years', '3 Years & Above'],
 
   source: ['Channel Partner', 'Direct Walking'],
 
-  subSources: ['Advertisement', 'Exhibition', 'Enquiry', 'HRR Website', 'Reference'],
+  subSources: ['Advertisement', 'Exhibition', 'Employee Reference', 'HRR Website', 'Loyalty','Management Reference', 'Property Search Portal','SMS', 'Site Branding','Reference','Other'],
 
   subSubsource: ['Facebook', 'Hoarding', 'Instagram', 'Google Ads', 'Newspaper'],
+  
+  subSubsource_channelPartner: ['Channel Partner Data Calling','Channel Partner Walked IN','Digital Activity'],
 
-  finalStage: ['Booking Done', 'Enquiry', 'Follow-up', 'Lost', 'Inactive', 'Negotiation', 'Revisit', 'Site Visit'],
+  finalStage: ['Booking Done', 'Blocked', 'Cancelled', 'Negotiation','Lost', 'Retention', 'Re - Visit Scheduled','Re - Visit Proposed', 'Site Visit','Unit Selection / Blocked'],
 
   finalStageDetail: ['TimeLine Issue', 'Location Issue', 'Low Budget', 'Did Not Like Project', 'Other Issues'],
 
@@ -114,9 +118,9 @@ export const MASTER_DATA = {
 
   customerclassification: ['Hot', 'Warm', 'Cold'],
 
-  sourceOfFunding: ['Loan', 'Self-funded', 'Sale Of Property', 'Subvention Loan'],
+  sourceOfFunding: ['Loan', 'Self-funded', 'Sale Of Property'],
 
-  ethnicity: ['Bengali', 'Christian', 'Gujarati', 'Jain', 'Muslim', 'Marwari', 'Maharashtrian', 'North Indian', 'Parsi', 'Sindhi', 'south Indian', 'Others'],
+  ethnicity: ['Bengali', 'Christian', 'Gujarati', 'Jain', 'Muslim', 'Marwari', 'Maharashtrian', 'North Indian', 'Parsi','Punjabi', 'Sindhi', 'South Indian', 'Others'],
 
   nationality: ['Indian', 'NRI'],
 
@@ -221,6 +225,7 @@ export const MASTER_DATA = {
   weekdays: ['1', '2', '3', '4', '5', '6'],
 
   weekoff_type: ['Every', 'Alt(2,4)', 'Alt(1,3)', '1st', '2nd', '3rd', '4th', '5th'],
+  leavePeriodMode: ['Yearly', 'Monthly'],
 
   inventoryFlatStatus: ['Available', 'Booked', 'Blocked', 'Hold', 'Alloted'],
 
@@ -248,11 +253,25 @@ export const MASTER_DATA = {
 
   parkingStatus: ['Available', 'Block', 'Hold', 'Member'],
 
-  unitLayout: ['Living / Dining', 'Passage', 'Kitchen', 'Toilet','Master Bed Room','Main Door JAMB','KIT / Bed Door Jamb','Toilet Door Jamb'],
+  unitLayout: ['Living / Dining', 'Passage', 'Kitchen', 'Toilet', 'Master Bed Room', 'Main Door JAMB', 'KIT / Bed Door Jamb', 'Toilet Door Jamb'],
 
   caseType: ['Civil', 'Criminal'],
 
   courtType: ['Civil Court', 'District Court', 'High Court', 'Session Court', 'Supreme Court'],
+
+  paymentMode: ['Cash', 'Cheque', 'Demand Draft', 'IMPS', 'NEFT', 'Online Transfer', 'RTGS', 'UPI'],
+
+  paymentType: ['Advance', 'Late Fee', 'Penalty', 'Regular'],
+
+  amountType: ['Monthly', 'One Time', 'Quarterly', 'Yearly'],
+
+  channelPartnerDesignation: ['Business Head', 'Cluster Head', 'Owner', 'Partner', 'Team Member'],
+
+  channelPartnerType: ['International Channel Partner (IPC)', 'Institutional Channel Partner (ICP)', 'Retail Channel Partner (RCP)'],
+
+  enquiryTimeLine: ['Beyond 1 Month', 'Within 1 Month'],
+
+  supportType: ['A', 'B'],
 
 } as const
 
@@ -288,7 +307,7 @@ export const DAYS_OPTIONS = toOptions(MASTER_DATA.days)
 export const MARITAL_STATUS_OPTIONS = toOptions(MASTER_DATA.maritalStatuses)
 export const BLOOD_GROUP_OPTIONS = toOptions(MASTER_DATA.bloodGroups)
 export const FIRMS_TYPE_OPTIONS = toOptions(MASTER_DATA.firmsType)
-export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.firmsType)
+export const COMPANY_TYPE_OPTIONS = toOptions(MASTER_DATA.companyType)
 export const PROJECT_STATUS_OPTIONS = toOptions(MASTER_DATA.projectStatus)
 export const BUSINESS_CATEGORY_OPTIONS = toOptions(MASTER_DATA.businessCategory)
 export const PROJECT_DOCUMENT_STATUS = toOptions(MASTER_DATA.documentStatus)
@@ -299,6 +318,7 @@ export const OCCUPATION_TYPE_OPTIONS = toOptions(MASTER_DATA.occupationType)
 export const SOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.source)
 export const SUBSOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.subSources)
 export const SUB_SUB_SOURCE_TYPE_OPTIONS = toOptions(MASTER_DATA.subSubsource)
+export const SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS = toOptions(MASTER_DATA.subSubsource_channelPartner)
 export const FINAL_STAGE_TYPE_OPTIONS = toOptions(MASTER_DATA.finalStage)
 export const FINAL_STAGE_DETAILS_TYPE_OPTIONS = toOptions(MASTER_DATA.finalStageDetail)
 export const AGE_TYPE_OPTION = toOptions(MASTER_DATA.age)
@@ -334,6 +354,7 @@ export const CTC_EARNINGS = toOptions(MASTER_DATA.ctc_earning)
 export const LEAVE_TYPE_MASTER = toOptions(MASTER_DATA.leaveTypeMaster)
 export const WEEKDAYS = toOptions(MASTER_DATA.weekdays)
 export const WEEK_OFF_TYPE = toOptions(MASTER_DATA.weekoff_type)
+export const LEAVE_PERIOD_MODES = toOptions(MASTER_DATA.leavePeriodMode)
 export const INVENTORY_FLAT_STATUS = toOptions(MASTER_DATA.inventoryFlatStatus)
 export const PARKING_CATEGORY = toOptions(MASTER_DATA.parkingCategory)
 export const PARKING_SUBCATEGORY_STACK = toOptions(MASTER_DATA.parkingSubCategory_StackParking)
@@ -342,14 +363,23 @@ export const PARKING_SUBCATEGORY_PUZZLE = toOptions(MASTER_DATA.parkingSubCatego
 export const PARKING_SUBCATEGORY_TOWER = toOptions(MASTER_DATA.parkingSubCategory_TowerParking)
 export const PARKING_SUBCATEGORY_PIT_PUZZLE = toOptions(MASTER_DATA.parkingSubCategory_PitPuzzleParking)
 export const PARKING_SUBCATEGORY_CANTILEVER = toOptions(MASTER_DATA.parkingSubCategory_CantileverParking)
-export const PARKING_SUBCATEGORY_TANDEM = toOptions( MASTER_DATA.parkingSubCategory_TandemParking)
-export const PARKING_SUBCATEGORY_PODIUM = toOptions( MASTER_DATA.parkingSubCategory_PodiumParking)
-export const PARKING_SUBCATEGORY_PIT_STACK = toOptions( MASTER_DATA.parkingSubCategory_Pit_StackParking)
+export const PARKING_SUBCATEGORY_TANDEM = toOptions(MASTER_DATA.parkingSubCategory_TandemParking)
+export const PARKING_SUBCATEGORY_PODIUM = toOptions(MASTER_DATA.parkingSubCategory_PodiumParking)
+export const PARKING_SUBCATEGORY_PIT_STACK = toOptions(MASTER_DATA.parkingSubCategory_Pit_StackParking)
 export const PARKING_SIZE = toOptions(MASTER_DATA.parkingSize);
 export const PARKING_STATUS = toOptions(MASTER_DATA.parkingStatus);
 export const UNIT_LAYOUT = toOptions(MASTER_DATA.unitLayout);
-export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType)
-export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType)
+export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType);
+export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType);
+
+export const PAYMENT_MODE = toOptions(MASTER_DATA.paymentMode);
+export const PAYMENT_TYPE = toOptions(MASTER_DATA.paymentType);
+export const AMOUNT_TYPE = toOptions(MASTER_DATA.amountType);
+export const CHANNE_PARTNER_DESIGNATION = toOptions(MASTER_DATA.channelPartnerDesignation);
+export const CHANNE_PARTNER_TYPE = toOptions(MASTER_DATA.channelPartnerType);
+export const ENQUIRY_TIMELINE = toOptions(MASTER_DATA.enquiryTimeLine);
+export const SUPPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.supportType);
+
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

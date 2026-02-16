@@ -92,7 +92,8 @@ export const useDesignationMaster = () => {
           DesignationMasterId: editingDesignationMasterData.DesignationMasterId,
           Uniquekey: editingDesignationMasterData.Uniquekey || getInitialFormState().Uniquekey,
           DesignationName: editingDesignationMasterData.DesignationName || '',
-          NoticePeriod: editingDesignationMasterData.NoticePeriod || 0
+          NoticePeriod: editingDesignationMasterData.NoticePeriod || 0,
+          ProbationPeriod: editingDesignationMasterData.ProbationPeriod || 0
         });
       } else {
         setFormData(getInitialFormState());
@@ -336,6 +337,9 @@ export const useDesignationMaster = () => {
     if (!formData.NoticePeriod || Number(formData.NoticePeriod) <= 0) {
       newErrors.NoticePeriod = "Notice Period is required";
     }
+    if (!formData.ProbationPeriod || Number(formData.ProbationPeriod) <= 0) {
+      newErrors.ProbationPeriod = "Probation Period is required";
+    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -348,7 +352,8 @@ export const useDesignationMaster = () => {
       DesignationMasterId: formData.DesignationMasterId,
       Uniquekey: formData.Uniquekey,
       DesignationName: (formData.DesignationName || '').trim(),
-      NoticePeriod: Number(formData.NoticePeriod) || 0
+      NoticePeriod: Number(formData.NoticePeriod) || 0,
+      ProbationPeriod: Number(formData.ProbationPeriod) || 0
     };
   };
 

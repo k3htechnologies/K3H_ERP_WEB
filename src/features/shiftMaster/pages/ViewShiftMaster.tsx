@@ -145,7 +145,7 @@ const ViewShiftMaster: React.FC = () => {
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                <div className="lg:col-span-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Break Begin Time" value={editShiftMasterData!.BreakBeginTime} />
                                         <FieldItem label="Break End Time" value={editShiftMasterData!.BreakEndTime} />
@@ -153,12 +153,6 @@ const ViewShiftMaster: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="lg:col-span-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Grace Time" value={editShiftMasterData!.GraceTime} />
-
-                                    </div>
-                                </div>
                             </div>
                         </section>
                         {/* ================= HALF DAY AND ABSENCE RULES================= */}

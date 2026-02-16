@@ -1,23 +1,19 @@
 
-interface UploadedDocumentTableRecord {
-    CaseNumber: string;
-    DocumentName: string;
-}
 
 interface Props {
-    uploadedDocumentData: UploadedDocumentTableRecord[];
+    uploadedDocumentData: any[];
 }
 
 export default function UploadedDocument({ uploadedDocumentData = [] }: Props) {
     return (
-        <div className="space-y-3 pt-5">
+        <div className="space-y-3 pt-2">
 
             <div className="pt-2">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">
                     Recently Uploaded Documents
                 </h2>
 
-                <div className="bg-white rounded-xl p-4 h-[300px] " style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+                <div className="bg-white rounded-xl p-4 h-[380px] " style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                     {uploadedDocumentData.map((item, index) => (
                         <div key={index}
                             className="mb-1 p-3 border-b border-gray-300 last:border-b-0 last:pb-0"

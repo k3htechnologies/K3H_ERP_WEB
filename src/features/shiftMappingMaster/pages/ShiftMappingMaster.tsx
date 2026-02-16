@@ -44,6 +44,13 @@ export const ShiftMappingMaster: React.FC = () => {
     dropdownResetKey,
     mappingShift,
 
+    departmentName,
+    designationName,
+    branchName,
+    reportingPersonName,
+    emailId,
+    personalMobileNumber,
+
     // Setters
     setSearchTerm,
     setIsViewModalOpen,
@@ -179,6 +186,13 @@ export const ShiftMappingMaster: React.FC = () => {
         dropdownResetKey={dropdownResetKey}
         mappingShift={mappingShift}
         onApplicableTypeChange={handleApplicableTypeChange}
+
+        departmentName={departmentName}
+        designationName={designationName}
+        branchName={branchName}
+        reportingPersonName={reportingPersonName}
+        emailId={emailId}
+        personalMobileNumber={personalMobileNumber}
       />
 
       <CustomizeColumnsModal

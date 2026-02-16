@@ -1,10 +1,9 @@
 export const LeaveApi = {
-  PULL: '/Leave/PullLeave',
-  ADD_UPDATE: '/Leave/AddUpdateLeave',
-  DELETE: '/Leave/DeleteLeave',
-} as const;
+    PULL: '/Leave/PullLeave',
+    ADD_UPDATE: '/Leave/AddUpdateLeave',
+    DELETE: '/Leave/DeleteLeave',
 
-export type LeaveApiKeys = keyof typeof LeaveApi;
+} as const
 
-
+export type LeaveApiKeys = keyof typeof LeaveApi
 

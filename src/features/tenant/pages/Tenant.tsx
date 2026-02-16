@@ -32,6 +32,7 @@ import type { FilterPullExcelSample } from '@/features/technical/models/Technica
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { useTenantListState } from '@/features/tenant/context/TenantListStateContext';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const Tenant: React.FC = () => {
   //#region STATE
@@ -78,14 +79,6 @@ export const Tenant: React.FC = () => {
       setLoadingMessage,
       async () => {
 
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = tenantColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
 
         const params: FilterWithPaginationTenantRequest = {
           PageNumber: pageNum,
@@ -104,7 +97,7 @@ export const Tenant: React.FC = () => {
           Flat: filterParams.Flat?.trim() || undefined,
           ParkingNumber: filterParams.ParkingNumber?.trim() || undefined,
 
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, tenantColumns)
         };
 
         const response = await tenantService.apiCallPullTenant(params);
@@ -197,16 +190,6 @@ export const Tenant: React.FC = () => {
       setLoadingMessage,
       async () => {
 
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const column = tenantColumns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
-
         const params: FilterWithPaginationTenantRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -222,7 +205,7 @@ export const Tenant: React.FC = () => {
           Wing: filters.Wing?.trim() || undefined,
           Flat: filters.Flat?.trim() || undefined,
           ParkingNumber: filters.ParkingNumber?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, tenantColumns),
           ExportType: exportType
         };
 

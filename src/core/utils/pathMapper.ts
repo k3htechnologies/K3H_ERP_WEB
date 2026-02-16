@@ -12,7 +12,7 @@ export const mapPathToRoute = (apiPath: string): string => {
     const normalized = normalizePath(apiPath);
 
     const routeMap: Record<string, string> = {
-        
+
         '/departmentmaster': '/departmentMaster',
         '/designationmaster': '/designationMaster',
         '/branchmaster': '/branchMaster',
@@ -26,7 +26,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/leaveencashmentmaster': '/leaveEncashmentMaster',
         '/leavetypemaster': '/leaveTypeMaster',
         '/leave': '/leave',
-        '/leavecreditdebit': '/leaveCreditDebit',
+        '/leavecreditconfiguration': '/leaveCreditConfiguration',
         '/shiftmaster': '/shiftMaster',
         '/shiftmappingmaster': '/shiftMappingMaster',
         '/weekoffmaster': '/weekOffMaster',
@@ -57,14 +57,22 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/approvaldocument': '/approvalDocument',
         '/channelpartner': '/channelPartner',
         '/enquiry': '/enquiry',
-        '/calltracker':'/callTracker',
         '/resignation': '/resignation',
         '/payrollreport': '/payrollReport',
-        '/redevelopmentdashboard': 'redevelopmentDashboard',
-        '/inventorydashboard': 'inventoryDashboard'
+        '/attendancecalendar': '/attendanceCalendar',
+        '/compoff': '/compOff',
+        '/redevelopmentdashboard': '/redevelopmentDashboard',
+        '/inventorydashboard': '/inventoryDashboard',
+        '/approvedbank': '/approvedBank',
+        '/content': '/content',
+        '/sourcing': '/sourcing',
+        '/booking': '/booking',
+        '/calltracker':'/callTracker',
+        '/othercharges':'/otherCharges'
+
     }
 
-    
+
     if (normalized && routeMap[normalized]) {
         return routeMap[normalized]
     }

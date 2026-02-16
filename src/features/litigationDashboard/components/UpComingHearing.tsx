@@ -1,19 +1,11 @@
 
-interface UpComingHearingTableRecord {
-  CaseNumber: string;
-  CaseType: string;
-  CourtType: string;
-  Location: string;
-  HearingDate: string;
-}
-
 interface Props {
-  upComingHearingData: UpComingHearingTableRecord[];
+  upComingHearingData: any[];
 }
 
 export default function UpComingHearing({ upComingHearingData = [] }: Props) {
   return (
-    <div className="pt-5">
+    <div className="pt-4">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">
         Upcoming Hearings
       </h2>

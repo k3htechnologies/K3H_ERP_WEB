@@ -14,10 +14,15 @@ export interface FilterWithPaginationCallLogRequest {
 export interface CallLogData {
     CallLogId: number | 0
     ProjectId: number | 0
-    MobileNumber: number | 0
     Uniquekey: string | null
+    MobileNumber: number | 0
     Status: string | null
     Name: string | null
+    CallerName: string | null
+    ReceiverName: string | null
+    CallDateTime: string | null
+    RescheduleDateTime: string | null
+    Duration: number | 0
     Remark: string | null
     RescheduleDate: string | null
     CallDate: string | null

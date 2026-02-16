@@ -2,14 +2,8 @@ import {
     LineChart, ResponsiveContainer, Legend, Tooltip, Line, XAxis, YAxis
 } from "recharts";
 
-interface CaseAnalysisData {
-    Month: string;
-    OpenCases: number;
-    ClosedCases: number;
-}
-
 interface Props {
-    CaseAnalysisData: CaseAnalysisData[];
+    CaseAnalysisData: any[];
 }
 
 export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
@@ -26,15 +20,30 @@ export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
                     >
 
                         <XAxis dataKey="Month" />
-                        <YAxis />
+                        <YAxis
+                            type="number"
+                            domain={[10, 100]}
+                            allowDataOverflow={true}
+                            ticks={[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
+                            label={{
+                                value: "CASES (YEAR)",
+                                angle: -90,
+                                position: "insideLeft"
+                            }}
+                        />
 
                         <Tooltip />
-                        <Legend verticalAlign="top" align="right" />
+                        <Legend
+                            verticalAlign="top"
+                            align="right"
+                            iconSize={0}
+                            formatter={(value) => `- ${value}`}
+                        />
 
                         {/* Closed Cases*/}
                         <Line
                             type="monotone"
-                            dataKey="ClosedCases"
+                            dataKey="Closed"
                             stroke="#6366F1"
                             strokeWidth={3}
                             dot={false}
@@ -43,7 +52,7 @@ export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
                         {/* Opened Cases */}
                         <Line
                             type="monotone"
-                            dataKey="OpenCases"
+                            dataKey="Opened"
                             stroke="#EC4899"
                             strokeWidth={3}
                             dot={false}

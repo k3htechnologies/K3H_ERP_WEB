@@ -130,7 +130,6 @@ export const TimePicker: React.FC<TimePickerProps> = ({
     transition: theme.transitions.normal,
     boxSizing: "border-box",
     cursor: disabled ? "not-allowed" : "pointer",
-    boxShadow: isFocused && !error ? theme.shadows.focus : theme.shadows.sm,
     appearance: "none",
     WebkitAppearance: "none",
     MozAppearance: "none",
@@ -147,7 +146,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
       
       {label && (
 
-        <div style={{ marginBottom: "6px", fontSize: theme.fontSize.sm, fontWeight: theme.fontWeight.medium, color: theme.colors.text }}>
+        <div style={{ marginBottom: "3px", fontSize: theme.fontSize.sm, fontWeight: theme.fontWeight.medium, color: theme.colors.text }}>
 
           {label}
 

@@ -234,12 +234,12 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#region NAVIGATE TO  VIEW WEEK OFF VIEW PAGE
   const handleNavigateToView = (row: WeekOffMasterData) => {
     updateListState({ weekOffMasterId: row.WeekOffPolicyMasterId, weekOffName: row.WeekOffPolicyName });
-    navigate('/WeekOffMaster/view');
+    navigate('/weekOffMaster/view');
   };
 
   //#region NAVIGATE TO ADD WEEK OFF
   const handleAddWeekOffModal = useCallback(() => {
-    navigate('/WeekOffMaster/add');
+    navigate('/weekOffMaster/add');
   }, [navigate]);
 
   //#endregion
@@ -413,7 +413,6 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     setTempFilters({});
     updateListState({ filters: {}, page: 1 });
     loadWeekOff(1, {});
-    setShowFilterPopup(false);
   };
   //#endregion
 

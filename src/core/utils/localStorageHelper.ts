@@ -412,6 +412,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE CHANNEL PARTNER SOURCING COLUMNS
+    storeChannelPartnerSourcingTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Channel Partner Sourcing Columns Details:', error);
+        }
+    },
+    //#endregion
+    //#region GET CHANNEL PARTNER SOURCING COLUMNS
+    getChannelPartnerSourcingTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS);
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Channel Partner Sourcing Columns Details:', error);
+                return null;
+            }
+        }
+        return null;
+    },
+    //#endregion
     //#region STORE ENQUIRY MASTER COLUMNS
     storeEnquiryTableColumns: (columns: string): void => {
         try {
@@ -550,23 +573,23 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
-    //#region STORE LEAVE CREDIT DEBIT COLUMNS
-    storeLeaveCreditDebitTableColumns: (columns: string): void => {
+    //#region STORE LEAVE CREDIT CONFIGURATION COLUMNS
+    storeLeaveCreditConfigurationTableColumns: (columns: string): void => {
         try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_DEBIT_SELECTED_COLUMNS, columns);
+            localStorage.setItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS, columns);
         } catch (error) {
-            console.error('Error Leave Credit Debit Columns Details:', error)
+            console.error('Error Leave Credit Configuration Columns Details:', error)
         }
     },
     //#endregion
-    //#region GET LEAVE CREDIT DEBIT COLUMNS
-    getLeaveCreditDebitTableColumns: (): string | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_DEBIT_SELECTED_COLUMNS)
+    //#region GET LEAVE CREDIT CONFIGURATION COLUMNS
+    getLeaveCreditConfigurationTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS)
         if (stored) {
             try {
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_DEBIT_SELECTED_COLUMNS);
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS);
             } catch (error) {
-                console.error('Error reading Leave Credit Debit Columns Details:', error)
+                console.error('Error reading Leave Credit Configuration Columns Details:', error)
                 return null
             }
         }
@@ -996,6 +1019,7 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+
     //#region STORE LITIGATION COLUMNS
     storeLitigationTableColumns: (columns: string): void => {
         try {
@@ -1019,6 +1043,7 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+
     //#region STORE CALLING DATA COLUMNS
     storeCallingDataTableColumns: (columns: string): void => {
         try {
@@ -1065,29 +1090,6 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
-    //#region STORE SALE TARGET COLUMNS
-    storeSaleTargetTableColumns: (columns: string): void => {
-        try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.SALE_TARGET_SELECTED_COLUMNS, columns);
-        } catch (error) {
-            console.error('Error Sale Target Columns Details:', error)
-        }
-    },
-    //#endregion
-    //#region GET SALE TARGET COLUMNS
-    getSaleTargetTableColumns: (): string | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SALE_TARGET_SELECTED_COLUMNS)
-        if (stored) {
-            try {
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.SALE_TARGET_SELECTED_COLUMNS);
-            } catch (error) {
-                console.error('Error reading Sale Target Columns Details:', error)
-                return null
-            }
-        }
-        return null
-    },
-    //#endregion
     //#region STORE OTHER CHARGES COLUMNS
     storeOtherChargesTableColumns: (columns: string): void => {
         try {
@@ -1111,6 +1113,30 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE BOOKING COLUMNS
+    storeBookingTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error BOOKING Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET BOOKING COLUMNS
+    getBookingTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Booking Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+
     //#region CLEAR LOCAL STORAGE 
     clearLocalStorageData: (): void => {
         try {
@@ -1150,7 +1176,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
-
+             localStorage.removeItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
 
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
@@ -1162,7 +1188,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.SHIFT_MASTER);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.WEEK_OFF_MASTER);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.LITIGATION);
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.CALLTRACKER);
+            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.CHANNEL_PARTNER);
 
 
         } catch (error) {

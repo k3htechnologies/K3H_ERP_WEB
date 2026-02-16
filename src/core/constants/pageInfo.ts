@@ -166,10 +166,10 @@ export const getPageInfo = (path: string) => {
                 title: 'Week Off Mapping Master',
                 description: 'Manage and organize branch associations with complete CRUD operations',
             }
-        case 'leaveCreditDebit':
+        case 'leaveCreditConfiguration':
             return {
-                title: 'Leave Credit Debit Management',
-                description: 'Manage employee leave credit and debit with complete CRUD operations',
+                title: 'Leave Credit Configuration Management',
+                description: 'Manage leave credit Configuration',
             }
 
         // PAYROLL
@@ -181,18 +181,23 @@ export const getPageInfo = (path: string) => {
 
         case 'compOff':
             return {
-                title: 'compOff',
-                description: 'Manage compOff with complete CRUD operations',
+                title: 'CompOff',
+                description: 'Smartly Track Extra Work. Seamlessly Grant Comp Off',
             }
         case 'outdoor':
             return {
-                title: "Outdoor Managemen",
-                description: "outdoor visit information",
+                title: "Outdoor",
+                description: "Outdoor Work. Indoor Balance",
+            }
+        case 'attendance':
+            return {
+                title: "Attendance",
+                description: "Accurate Attendance. Smarter Workforce",
             }
         case 'resignation':
             return {
                 title: "Resignation",
-                description: "Resignation information",
+                description: "Simple Resignations. Smooth Transitions",
             }
         case 'payrollReport':
             return {
@@ -224,12 +229,12 @@ export const getPageInfo = (path: string) => {
         case 'approvalDocument':
             return {
                 title: 'Approval Document',
-                description: 'Manage and organize company departments with complete CRUD operations',
+                description: 'Structured Approvals. Trusted Records',
             }
         case 'approvalCategory':
             return {
                 title: 'Approval Document Category',
-                description: 'Manage and organize company departments with complete CRUD operations',
+                description: 'Structured Categories for Smarter Approval Document',
             }
 
         //PROFILE
@@ -244,48 +249,48 @@ export const getPageInfo = (path: string) => {
             if (second === "SiteProgressSubConstruction") {
                 return {
                     title: "Site Progress Sub Construction",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Structured Sub-Construction Progress, Simplified",
                 };
             }
 
             if (second === "SiteProgressWingConstruction") {
                 return {
                     title: "Wing Wise Construction",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Structured Building Progress — One Wing at a Time",
                 };
             }
 
             if (second === "SiteProgressFloorConstruction") {
                 return {
                     title: "Floor Wise Construction",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Clear Floor-Wise Visibility for Better Control",
                 };
             }
 
             if (second === "SiteProgressFlatConstruction") {
                 return {
                     title: "Flat Wise Construction",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Track Progress, Flat by Flat",
                 };
             }
 
             if (second === "SiteProgressConstructionActivity") {
                 return {
                     title: "Activity",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Track Every Action. Deliver Every Outcome.",
                 };
             }
 
             if (second === "SiteProgressConstructionSubActivity") {
                 return {
                     title: "Sub Activity",
-                    description: "Assign and manage module permissions for designations",
+                    description: "Small Steps. Big Progress",
                 };
             }
 
             return {
                 title: 'Site Progress',
-                description: 'Profile',
+                description: 'Clear Visibility Across Every Construction Stage',
             }
 
         //REDEVELOPMENT
@@ -331,7 +336,7 @@ export const getPageInfo = (path: string) => {
         case 'inventoryDashboard':
             return {
                 title: 'Inventory Dashboard',
-                description: 'Track building units, floors, and availability in real time',
+                description: 'Inventory Insights, Instantly',
             }
         case 'inventory':
             return {
@@ -356,12 +361,26 @@ export const getPageInfo = (path: string) => {
                 title: "Call Tracker",
                 description: "Track, manage, and follow up every sales call with ease.",
             }
-
+        case 'otherCharges':
+            return {
+                title: "Other Charges",
+                description: "Manage and track additional charges for projects",
+            }
             {/* CHANNEL PARTNER */ }
 
         case 'channelPartner':
             return {
                 title: "Channel Partner",
+                description: "Single source of truth for channel partner information",
+            }
+        case 'booking':
+            return {
+                title: "Booking",
+                description: "Single source of truth for channel partner information",
+            }
+        case 'sourcing':
+            return {
+                title: "Channel Partner Sourcing",
                 description: "Single source of truth for channel partner information",
             }
 

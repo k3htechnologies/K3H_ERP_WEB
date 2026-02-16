@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { usePagination } from '@/core/hooks/usePagination';
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { runApiWithLoader } from '@/core/utils';
@@ -16,7 +16,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { fetchBuildingDropdown } from '@/features/building/buildingDropdown';
@@ -24,6 +24,10 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import Tabs, { type TabItem } from '@/ui/components/Tab/Tab';
 import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
+import { Eye, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useRentListState } from '@/features/rent/context/RentListStateContext';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 type PivotRentRow = {
   FlatNumber?: string;
@@ -37,6 +41,8 @@ type PivotRentRow = {
   ProposedOfferAmount?: number;
   Amount?: number;
   Unit?: string;
+  TenantApplicantId?: number;
+  TenantId?: number;
   [month: string]: any;
 };
 
@@ -45,24 +51,16 @@ export const Rent: React.FC = () => {
   //#region STATE
   const { projectId } = useProject();
   const { addToast } = useToast();
-  const { canExport } = useMenuPermissions();
+  const { canAction, canExport } = useMenuPermissions();
+  const navigate = useNavigate();
+  const { listState, setPayTrackRentContext, updateListState } = useRentListState();
 
-  const { pagination, setPagination } = usePagination(20);
-  const [sortInfo] = useState<SortInfo | undefined>();
+  const { pagination, setPagination } = usePagination(listState.pageSize || 20);
+  const [sortInfo] = useState<SortInfo | undefined>(listState.sortInfo);
 
   const [tenantApplicantChargesList, setTenantApplicantChargesList] = useState<TenantApplicantCharges[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-
-  const [buildingId, setBuildingId] = useState(0);
-  const [buildingName, setBuildingName] = useState('');
-
-  const [filters, setFilters] = useState<FilterInfo>({});
-  const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showFilterPopup, setShowFilterPopup] = useState(false);
-
-  //#endregion
 
   //#region TAB ACTIVITY
   const rentTabList = [
@@ -73,9 +71,20 @@ export const Rent: React.FC = () => {
     { id: "Shifting", label: "Shifting" }
   ];
 
-  const [activeTab, setActiveTab] = useState(rentTabList[0].id);
+  // Use context state as source of truth, with local state as fallback
+  const buildingId = listState.buildingId || 0;
+  const buildingName = listState.buildingName || '';
+  const filters = listState.filters || {};
+  const searchTerm = listState.searchTerm || '';
+  // Ensure activeTab always has a value - use context or default to first tab
+  const activeTab = listState.activeTab || rentTabList[0].id;
+  const activeTenureTab = listState.tenure || '';
+
+  const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
+
   const [tenureTabList, setTenureTabList] = useState<TabItem[]>([]);
-  const [activeTenureTab, setActiveTenureTab] = useState('');
+  //#endregion
 
 
   const isMonthBasedTab = ['Rent', 'Additional Rent', 'Brokerage'].includes(activeTab);
@@ -86,9 +95,9 @@ export const Rent: React.FC = () => {
 
   //#region BUILDING DROPDOWN
   const selectedBuilding = useMemo(() => {
-    if (!projectId || !buildingId) return null;
-    return { label: buildingName, value: buildingId };
-  }, [buildingId, buildingName]);
+    if (!projectId || !buildingId || buildingId <= 0) return null;
+    return { label: buildingName || '', value: buildingId };
+  }, [projectId, buildingId, buildingName]);
 
   const fetchBuildingCallback = useCallback((pageNumber: number) =>
     fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) }),
@@ -99,7 +108,11 @@ export const Rent: React.FC = () => {
   //#region DEBOUNCE SEARCH
   const debouncedSearch = useDebouncedCallback((value: string) => {
     setPagination({ currentPage: 1 });
-    setFilters(prev => ({ ...prev, FlatNumber: value.trim() }));
+    updateListState({
+      searchTerm: value.trim(),
+      filters: { ...filters, FlatNumber: value.trim() },
+      page: 1
+    });
   }, 350);
   //#endregion
 
@@ -108,7 +121,7 @@ export const Rent: React.FC = () => {
     if (!projectId || buildingId <= 0) return;
     if (!['Rent', 'Brokerage'].includes(activeTab)) {
       setTenureTabList([]);
-      setActiveTenureTab('');
+      updateListState({ tenure: '' });
       return;
     }
 
@@ -126,18 +139,58 @@ export const Rent: React.FC = () => {
         const tabs = tenures.map(t => ({ id: t, label: t }));
         setTenureTabList(tabs);
 
+        // Restore tenure from context if available and valid, otherwise use first tab
         if (tabs.length > 0) {
-          setActiveTenureTab(tabs[0].id);
-          setFilters(prev => ({ ...prev, Tenure: tabs[0].id }));
+          const isTenureValid = activeTenureTab && tabs.some(t => t.id === activeTenureTab);
+
+          if (!isTenureValid) {
+            updateListState({
+              tenure: tabs[0].id,
+              filters: { ...filters, Tenure: tabs[0].id }
+            });
+          }
         }
       }
     })();
   }, [activeTab, projectId, buildingId]);
 
+  // Track previous project to detect actual project changes
+  const prevProjectIdRef = useRef<number | null>(null);
+
+  // Restore state from context on mount and when returning from other pages
   useEffect(() => {
-    setBuildingId(0);
-    setBuildingName('');
-  }, [projectId]);
+    if (listState.buildingId > 0) {
+      setPagination({ currentPage: listState.page || 1 });
+    }
+    // Initialize activeTab if not set
+    if (!listState.activeTab) {
+      updateListState({
+        activeTab: rentTabList[0].id,
+        filters: { ...listState.filters, ChargeType: rentTabList[0].id }
+      });
+    }
+    // Initialize prevProjectIdRef on first mount
+    if (prevProjectIdRef.current === null) {
+      prevProjectIdRef.current = projectId;
+    }
+  }, []);
+
+  // Reset building only when project actually changes (not on every render or navigation)
+  useEffect(() => {
+    const prevProjectId = prevProjectIdRef.current;
+    // Only clear building if project actually changed (not on initial mount or navigation)
+    if (prevProjectId !== null && prevProjectId !== projectId) {
+      // Project actually changed, clear building
+      if (listState.buildingId > 0) {
+        updateListState({ buildingId: 0, buildingName: '', filters: {}, searchTerm: '', page: 1 });
+      }
+      prevProjectIdRef.current = projectId;
+    } else if (prevProjectId === null) {
+      // First mount - just set the ref, don't clear building
+      prevProjectIdRef.current = projectId;
+    }
+    // Don't update ref on every render - only when project actually changes
+  }, [projectId, listState.buildingId, updateListState]);
 
   //#endregion
 
@@ -151,22 +204,14 @@ export const Rent: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-
-        if (sortInfo) {
-          const col = columns.find(c => c.key === sortInfo.column);
-          if (col) {
-            sortByParam = `${col.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
+        
         const params: FilterWithPaginationTenantApplicantChargesRequest = {
-          PageNumber: pagination.currentPage,
-          PageSize: pagination.pageSize,
+          PageNumber: listState.page || pagination.currentPage,
+          PageSize: listState.pageSize || pagination.pageSize,
           ProjectId: Number(projectId),
           BuildingId: buildingId,
           ...filters,
-          SortBy: sortByParam
+          SortBy: getSortByParam(sortInfo ?? null, columns)
         };
 
         const response = await rentService.apiCallPullTenantApplicantCharges(params);
@@ -175,10 +220,12 @@ export const Rent: React.FC = () => {
 
           setTenantApplicantChargesList(response.right.Data);
 
+          const currentPage = listState.page || pagination.currentPage;
+          const pageSize = listState.pageSize || pagination.pageSize;
           setPagination({
-            currentPage: pagination.currentPage,
+            currentPage,
             totalRecords: response.right.TotalNumberOfRecord,
-            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
+            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pageSize)
           });
 
         } else {
@@ -192,7 +239,7 @@ export const Rent: React.FC = () => {
       undefined,
       'Loading ' + activeTab
     );
-  }, [projectId, buildingId, filters, pagination.currentPage, pagination.pageSize, sortInfo]);
+  }, [projectId, buildingId, filters, listState.page, listState.pageSize, sortInfo]);
 
 
   useEffect(() => {
@@ -207,11 +254,14 @@ export const Rent: React.FC = () => {
     const id = Number(item.value);
     if (isNaN(id)) return;
 
-    setBuildingId(id);
-    setBuildingName(item.label);
-    setSearchTerm('');
+    updateListState({
+      buildingId: id,
+      buildingName: item.label,
+      searchTerm: '',
+      filters: { ChargeType: activeTab },
+      page: 1
+    });
     setPagination({ currentPage: 1 });
-    setFilters({ ChargeType: activeTab });
     setTenantApplicantChargesList([]);
   };
 
@@ -263,6 +313,8 @@ export const Rent: React.FC = () => {
           FlatType: item.FlatType,
           Unit: item.Unit,
           ProposedOfferAmount: Number(item.ProposedOfferAmount) || 0,
+          TenantApplicantId: item.TenantApplicantId,
+          TenantId: item.TenantId,
           Total: 0,
           'Paid Total': 0
         };
@@ -319,14 +371,7 @@ export const Rent: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        let sortByParam: string | undefined;
-        if (sortInfo) {
-          const column = columns.find(col => col.key === sortInfo.column);
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`;
-          }
-        }
-
+        
         const params: FilterWithPaginationTenantApplicantChargesRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -342,7 +387,7 @@ export const Rent: React.FC = () => {
           FlatCarpetAreaSqFt: filters.FlatCarpetAreaSqFt ? Number(filters.FlatCarpetAreaSqFt) : undefined,
           FlatType: filters.FlatType?.trim() || undefined,
           FlatConfiguration: filters.FlatConfiguration?.trim() || undefined,
-          SortBy: sortByParam,
+          SortBy: getSortByParam(sortInfo ?? null, columns),
           ExportType: exportType
         };
 
@@ -375,17 +420,20 @@ export const Rent: React.FC = () => {
       { key: 'ApplicantType', label: 'Applicant Type', width: '18' },
       { key: 'FlatType', label: 'Existing Unit Type', width: '18' },
       { key: 'FlatCarpetAreaSqFt', label: 'Existing Carpet Area (SqFt)', width: '18' },
-      {
-        key: 'ProposedOfferAmount',
-        label: 'Proposed Offer Amount (₹)',
-        width: '20',
-        align: 'right',
-        render: (_, row) => {
-          return `${row.ProposedOfferAmount || 0} ${row.Unit || ''}`;
-        }
-      }
-
+      
     ];
+
+    const proposedOfferColumn: TableColumn[] =
+    ['Rent', 'Brokerage','Additional Rent'].includes(activeTab)
+      ? [{
+          key: 'ProposedOfferAmount',
+          label: 'Proposed Offer Amount (₹)',
+          width: '20',
+          align: 'right',
+          render: (_, row) =>
+            `${row.ProposedOfferAmount || 0} ${row.Unit || ''}`
+        }]
+      : [];
 
     const dynamicColumns: TableColumn[] = dynamicHeaders.map(h => ({
       key: h,
@@ -394,35 +442,133 @@ export const Rent: React.FC = () => {
       align: 'right' as const
     }));
 
-    return [...baseColumns, ...dynamicColumns];
-  }, [dynamicHeaders]);
+    const actionColumn: TableColumn[] = canAction
+      ? [{
+        key: 'Actions',
+        label: 'Actions',
+        width: '12',
+        fixed: 'right',
+        align: 'center',
+        render: (_value, row: PivotRentRow) => {
+
+          const handleAddPayTrackRent = () => {
+
+            if (!row.TenantApplicantId || !buildingId) return;
+
+            const totalAmount = Number(row['Total'].replace('₹', '') || 0);
+            const paidTotalAmount = Number(row['Paid Total'].replace('₹', '') || 0);
+
+            setPayTrackRentContext(
+              row.TenantApplicantId,
+              row.ApplicantName || ''
+            );
+            updateListState({
+              buildingId,
+              buildingName,
+              activeTab,
+              tenure: activeTenureTab,
+              tenantId: row.TenantId || 0,
+              tenantName: row.ApplicantName || '',
+              tenantApplicantId: row.TenantApplicantId || 0,
+              flatNumber: row.FlatNumber || '',
+              applicantName: row.ApplicantName || '',
+              totalAmount: totalAmount,
+              paidTotalAmount: paidTotalAmount
+
+            });
+            navigate('/rent/pay');
+          };
+
+          const handleViewPayTrackRent = () => {
+            if (!row.TenantApplicantId || !buildingId) return;
+
+            const totalAmount = Number(row['Total'].replace('₹', '') || 0);
+            const paidTotalAmount = Number(row['Paid Total'].replace('₹', '') || 0);
+
+            setPayTrackRentContext(
+              row.TenantApplicantId,
+              row.ApplicantName || ''
+            );
+            updateListState({
+              buildingId,
+              buildingName,
+              activeTab,
+              tenure: activeTenureTab,
+              tenantId: row.TenantId || 0,
+              tenantName: row.ApplicantName || '',
+              tenantApplicantId: row.TenantApplicantId || 0,
+              flatNumber: row.FlatNumber || '',
+              applicantName: row.ApplicantName || '',
+              totalAmount: totalAmount,
+              paidTotalAmount: paidTotalAmount
+            });
+            navigate('/rent/paymentLedger');
+          };
+
+          return (
+            <div className="flex items-center justify-center">
+              {Number(String(row['Total']).replace(/[₹,]/g, '') || 0) !== Number(String(row['Paid Total']).replace(/[₹,]/g, '') || 0) && (
+                <Button
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                  style={{ color: 'red', padding: '4px 8px' }}
+                  onClick={handleAddPayTrackRent}
+                  title="Add Pay Track Rent"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              )}
+
+              <Button
+                color="transparent"
+                isborderRadius
+                size="sm"
+                style={{ color: 'blue', padding: '4px 8px' }}
+                onClick={handleViewPayTrackRent}
+                title="View Pay Track Rent"
+              >
+                <Eye className="h-4 w-4" />
+              </Button>
+            </div>
+          );
+        }
+      }]
+      : [];
+
+    return [...baseColumns,...proposedOfferColumn, ...dynamicColumns, ...actionColumn];
+  }, [dynamicHeaders, canAction,activeTab, buildingId, buildingName, activeTab, activeTenureTab, navigate, setPayTrackRentContext, updateListState, filters]);
 
 
   const paginationInfo: PaginationInfo = {
     ...pagination,
-    onPageChange: p => setPagination({ currentPage: p })
+    onPageChange: (p) => {
+      setPagination({ currentPage: p });
+      updateListState({ page: p });
+    }
   };
 
   //#endregion
 
   //#region  CLAER SEARCH & FILTERS
   const clearSearchRents = () => {
-    setSearchTerm('');
     debouncedSearch.cancel?.();
-
+    updateListState({
+      searchTerm: '',
+      filters: { ...filters, FlatNumber: '' },
+      page: 1
+    });
     setPagination({ currentPage: 1 });
-
-    setFilters(prev => ({
-      ...prev,
-      FlatNumber: ''
-    }));
   };
   //#endregion
 
   //#region APPLY & ClearS
 
   const applyFilters = () => {
-    setFilters(tempFilters);
+    updateListState({
+      filters: tempFilters,
+      page: 1
+    });
     setPagination({ currentPage: 1 });
     setShowFilterPopup(false);
   };
@@ -435,10 +581,13 @@ export const Rent: React.FC = () => {
     };
 
     setTempFilters(resetFilters);
-    setFilters(resetFilters);
+    updateListState({
+      filters: resetFilters,
+      searchTerm: '',
+      page: 1
+    });
     setPagination({ currentPage: 1 });
     setShowFilterPopup(false);
-    setSearchTerm('');
     debouncedSearch.cancel?.();
   };
 
@@ -458,7 +607,7 @@ export const Rent: React.FC = () => {
         searchTerm={searchTerm}
         searchPlaceholder="Search By Flat Number"
         onSearchChange={v => {
-          setSearchTerm(v);
+          updateListState({ searchTerm: v });
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchRents}
@@ -496,16 +645,19 @@ export const Rent: React.FC = () => {
         </div>
 
         {/* Tabs */}
-        {selectedBuilding && (
+        {selectedBuilding && activeTab && (
           <div className="flex-1 min-w-0 pt-2">
             <Tabs
               tabs={rentTabList}
               defaultActive={activeTab}
               onTabChange={t => {
-                setActiveTab(t.id);
-                setActiveTenureTab('');
+                updateListState({
+                  activeTab: t.id,
+                  tenure: '',
+                  filters: { ...filters, ChargeType: t.id, Tenure: '' },
+                  page: 1
+                });
                 setPagination({ currentPage: 1 });
-                setFilters(prev => ({ ...prev, ChargeType: t.id, Tenure: '' }));
               }}
               islarge
             />
@@ -522,9 +674,12 @@ export const Rent: React.FC = () => {
             tabs={tenureTabList}
             defaultActive={activeTenureTab}
             onTabChange={t => {
-              setActiveTenureTab(t.id);
+              updateListState({
+                tenure: t.id,
+                filters: { ...filters, Tenure: t.id },
+                page: 1
+              });
               setPagination({ currentPage: 1 });
-              setFilters(prev => ({ ...prev, Tenure: t.id }));
             }}
             islarge={false}
             isChips={true}

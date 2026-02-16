@@ -64,7 +64,7 @@ export class OtherChargesDatasourceImpl implements OtherChargesDatasource {
             return response
         } catch (error) {
 
-            console.error('ERROR: ADD UPDATE OTHER CHARGES:', error)
+            console.error('ERROR: ADD OTHER CHARGES:', error)
 
             if (error === TokenExpiredException) {
                 await this.addUpdateOtherCharges(params);

@@ -455,7 +455,6 @@ export const EmployeeResignation: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Details Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   <FieldItem label="Resignation Date" value={data.ResignationDate ? formatDate_dd_MonthName_yy(data.ResignationDate) : '-'} />
                   <FieldItem label="Notice Period" value={data.NoticePeriod} />

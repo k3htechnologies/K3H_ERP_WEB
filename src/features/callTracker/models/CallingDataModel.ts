@@ -16,6 +16,8 @@ export interface CallingDataData {
     ProjectId: number | 0
     MobileNumber: number | 0
     Name: string | null
+    Address: string | null
+    EmailId: string | null
     FromDate: number | 0
     ToDate: number | 0
     CreatedById: number | 0

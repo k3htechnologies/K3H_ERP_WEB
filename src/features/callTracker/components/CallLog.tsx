@@ -25,6 +25,7 @@ import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Loader } from "@/core/utils/loader";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 const initialFormState = (): UpdateCallLogRequest => ({
     CallLogId: 0,
@@ -42,6 +43,8 @@ export const CallLog: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [sortInfo, setSortInfo] = useState<SortInfo>();
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [callLogData, setCallLogData] = useState<CallLogData | null>(null);
 
     //DELETE CALL LOG DATA
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
@@ -346,12 +349,20 @@ export const CallLog: React.FC = () => {
             sortable: true,
             fixed: 'left',
             align: 'left',
-            render: (value) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
+            render: (value, row) => (
+                <span
+                    className="text-blue-600 cursor-pointer hover:underline"
+                    onClick={() => {
+                        setCallLogData(row);
+                        setIsViewModalOpen(true);
+                    }}
+                >
+                    <TooltipText
+                        text={value || '-'}
+                        maxWidth="250px"
+                        tooltipThreshold={25}
+                    />
+                </span>
             ),
         },
         {
@@ -766,6 +777,77 @@ export const CallLog: React.FC = () => {
                             />
                         </div>
 
+                    </div>
+                </div>
+            </Modal>
+
+            {/* VIEW CALL LOG MODAL */}
+
+            <Modal
+                isOpen={isViewModalOpen}
+                onClose={() => {
+                    setIsViewModalOpen(false);
+                    setEditingCallLogData(null);
+                }}
+                title="Call Log Details"
+                cancelText="Close"
+                size="xl"
+            >
+                <div className="space-y-6">
+
+                    <div className="space-y-4">
+                        <FieldItem label="Sales Executive" value={callLogData?.CallerName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+                        <FieldItem label="Receiver Name" value={callLogData?.ReceiverName} isRow withBorder={true} />
+                        <FieldItem label="Phone Number" value={callLogData?.MobileNumber} isRow withBorder={true} />
+                        <FieldItem label="Call Time" value={callLogData?.CallDate} isRow withBorder={true} />
+                        <FieldItem label="Reschedule Date" value={callLogData?.RescheduleDate} isRow withBorder={true} />
+                        <FieldItem label="Duration" value={callLogData?.Duration} isRow withBorder={true} />
+                        <FieldItem label="Status" value={callLogData?.Status} isRow withBorder={true} />
+                        <FieldItem label="Remark" value={callLogData?.Remark} isRow withBorder={true} />
+                    </div>
+
+                    <div className="space-y-4">
+                        <h4 className="text-lg font-semibold pb-2">
+                            Action Details
+                        </h4>
+                        <FieldItem label="Created By / Date" isRow={true} value={callLogData?.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(callLogData?.CreatedDate || '-')} withBorder={callLogData?.ModifiedBy !== '' ? true : false} />
+                        {callLogData?.ModifiedBy !== '' ?
+                            <FieldItem label="Modified By / Date" isRow={true} value={callLogData?.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(callLogData?.ModifiedDate || '-')} withBorder={false} />
+                            :
+                            ''}
+                    </div>
+
+                    <div className="flex justify-between items-center pt-4">
+                        {canAction && (
+                            <>
+                                <Button
+                                    color='red'
+                                    variant='solid'
+                                    colorMode="light"
+                                    size='md'
+                                    onClick={() => {
+                                        if (editingCallLogData) {
+                                            setDeleteCallLogData(editingCallLogData);
+                                            setIsViewModalOpen(false);
+                                            setIsConfirmationDialogBoxOpen(true);
+                                        }
+                                    }}
+                                >
+                                    Delete
+                                </Button>
+
+                                <Button
+                                    color='blue'
+                                    size='md'
+                                    onClick={() => {
+                                        setIsViewModalOpen(false);
+                                        setIsAddUpdateModalOpen(true);
+                                    }}
+                                >
+                                    Edit
+                                </Button>
+                            </>
+                        )}
                     </div>
                 </div>
             </Modal>

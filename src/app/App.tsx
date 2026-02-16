@@ -74,13 +74,20 @@ import ViewTenant from '@/features/tenant/pages/ViewTenant';
 import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
 import { ChannelPartner } from '@/features/ChannelPartner/pages/ChannelPartner';
 import { AddUpdateChannelPartner } from '@/features/ChannelPartner/pages/AddUpdateChannelPartner';
+import { ChannelPartnerSourcing } from '@/features/ChannelPartnerSourcing/pages/ChannelPartnerSourcing';
+
+import ViewChannelPartnerSourcing from '@/features/ChannelPartnerSourcing/pages/ViewChannelPartnerSourcing';
 import BuildingDescription from '@/features/building/pages/BuildingDescription';
 import BuildingDocument from '@/features/building/pages/BuildingDocument';
 import { BuildingListStateProvider } from '@/features/building/context/BuildingListStateContext';
+import { OutDoorListStateProvider } from '@/features/outdoor/context/OutDoorListStateContext';
+import { LeaveListStateProvider } from '@/features/leave/context/LeaveListStateContext';
 import { TenantListStateProvider } from '@/features/tenant/context/TenantListStateContext';
 import { EmployeeListStateProvider } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import { CompanyListStateProvider } from '@/features/companyMaster/context/CompanyListStateContext';
 import { VendorListStateProvider } from '@/features/vendor/context/VendorListStateContext';
+import { ChannelPartnerListStateProvider } from '@/features/ChannelPartner/context/ChannelPartnerListStateContext';
+import { ChannelPartnerSourcingListStateProvider } from '@/features/ChannelPartnerSourcing/context/ChannelPartnerSourcingListStateContext';
 import { ProjectMasterListStateProvider } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 import { AssetMasterListStateProvider } from '@/features/assetMaster/context/AssetMasterListStateContext';
 import { AssetMappingMasterListStateProvider } from '@/features/assetMappingMaster/context/AssetMappingMasterListStateContext';
@@ -95,10 +102,12 @@ import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
 import Event from '@/features/event/pages/Event';
+import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
-import LeaveCreditDebit from '@/features/leaveCreditDebit/pages/LeaveCreditDebit';
-import AddUpdateLeaveCreditDebit from '@/features/leaveCreditDebit/pages/AddUpdateLeaveCreditDebit';
-import ViewLeaveCreditDebit from '@/features/leaveCreditDebit/pages/ViewLeaveCreditDebit';
+import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
+import AddUpdateLeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/AddUpdateLeaveCreditConfiguration';
+import ViewLeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/ViewLeaveCreditConfiguration';
+import { LeaveCreditConfigurationListStateProvider } from '@/features/leaveCreditConfiguration/context/LeaveCreditConfigurationListStateContext';
 import { AddUpdateOutDoorPage } from '@/features/outdoor/pages/AddUpdateOutDoor';
 import Leave from '@/features/leave/pages/Leave';
 import AddUpdateLeave from '@/features/leave/pages/AddUpdateLeave';
@@ -130,11 +139,17 @@ import { ApprovedBankListStateProvider } from '@/features/approvedBank/context/A
 import { MarketingContentListStateProvider } from '@/features/marketingContent/context/MarketingContentListStateContext';
 import MarketingContentFolder from '@/features/marketingContent/pages/MarketingContentFolder';
 import MarketingContent from '@/features/marketingContent/pages/MarketingContent';
+import AddUpdatePayTrackRent from '@/features/payTrackRent/pages/AddUpdatePayTrackRent';
+import ViewPayTrackRent from '@/features/payTrackRent/pages/ViewPayTrackRent';
+import { RentListStateProvider } from '@/features/rent/context/RentListStateContext';
+import { BookingListStateProvider } from '@/features/booking/context/BookingListStateContext';
+import Booking from '@/features/booking/pages/Booking';
+import AddUpdateBooking from '@/features/booking/pages/AddUpdateBooking';
+import ViewBooking from '@/features/booking/pages/ViewBooking';
 import CallTracker from '@/features/callTracker/pages/CallTracker';
-import { SaleTarget } from '@/features/saleTarget/pages/SaleTarget';
-import { AddUpdateSaleTarget } from '@/features/saleTarget/pages/AddUpdateSaleTarget';
-import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
 import OtherCharges from '@/features/otherCharges/pages/OtherCharges';
+import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
+import { SaleTarget } from '@/features/saleTarget/pages/SaleTarget';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -266,23 +281,29 @@ function App() {
 
             <Route path="weekOffMaster" element={<WeekOffMasterListStateProvider><WeekOffMasterMaster /></WeekOffMasterListStateProvider>} />
 
-            <Route path="WeekOffMaster/view" element={<WeekOffMasterListStateProvider><ViewWeekOffMaster /></WeekOffMasterListStateProvider>} />
-            <Route path="WeekOffMaster/add/:WeekOffMasterId?" element={<WeekOffMasterListStateProvider><AddUpdateWeekOffMaster /></WeekOffMasterListStateProvider>} />
+            <Route path="weekOffMaster/view" element={<WeekOffMasterListStateProvider><ViewWeekOffMaster /></WeekOffMasterListStateProvider>} />
+            <Route path="weekOffMaster/add/:WeekOffMasterId?" element={<WeekOffMasterListStateProvider><AddUpdateWeekOffMaster /></WeekOffMasterListStateProvider>} />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
 
             {/* PAYROLL */}
 
-            <Route path="compoff" element={<CompOff />} />
-            <Route path="outdoor/add/:outdoorId?" element={<AddUpdateOutDoorPage />} />
-            <Route path="leaveCreditDebit" element={<LeaveCreditDebit />} />
-            <Route path="leaveCreditDebit/add/:id?" element={<AddUpdateLeaveCreditDebit />} />
-            <Route path="leaveCreditDebit/view/:id?" element={<ViewLeaveCreditDebit />} />
-            <Route path="outdoor" element={<OutDoor />} />
-            <Route path="leave" element={<Leave />} />
-            <Route path="leave/add/:id?" element={<AddUpdateLeave />} />
-            <Route path="leave/view/:id?" element={<ViewLeave />} />
+            <Route path="compOff" element={<CompOff />} />
+
+            <Route path="outdoor/add/:outdoorId?" element={<OutDoorListStateProvider><AddUpdateOutDoorPage /></OutDoorListStateProvider>} />
+            <Route path="outdoor" element={<OutDoorListStateProvider><OutDoor /></OutDoorListStateProvider>} />
+
+            <Route path="leaveCreditConfiguration" element={<LeaveCreditConfigurationListStateProvider><LeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
+            <Route path="leaveCreditConfiguration/add/:id?" element={<LeaveCreditConfigurationListStateProvider><AddUpdateLeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
+            <Route path="leaveCreditConfiguration/view/:id?" element={<LeaveCreditConfigurationListStateProvider><ViewLeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
+
+            <Route path="leave" element={<LeaveListStateProvider><Leave /></LeaveListStateProvider>} />
+            <Route path="leave/add/:id?" element={<LeaveListStateProvider><AddUpdateLeave /></LeaveListStateProvider>} />
+            <Route path="leave/view/:id?" element={<LeaveListStateProvider><ViewLeave /></LeaveListStateProvider>} />
+
             <Route path="resignation" element={<EmployeeResignation />} />
             <Route path="payrollReport" element={<PayrollReport />} />
+
+            <Route path="attendance" element={<AttendanceCalendar />} />
 
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
@@ -304,27 +325,14 @@ function App() {
             {/* COMMAN */}
             <Route path="event" element={<Event />} />
 
-            {/* LITIGATION */}
-            <Route path='litigation' element={<LitigationListStateProvider><Litigation /></LitigationListStateProvider>} />
-            <Route path='litigation/add/:LitigationId?' element={<LitigationListStateProvider><AddUpdateLitigation /></LitigationListStateProvider>} />
-            <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
-            <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
-
-            {/* LITIGATION DASHBOARD*/}
-            <Route path="litigationDashboard" element={<LitigationDashboard />} />
-
-            {/* PROJECT */}
-            <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />
-            <Route path='approvedBank/approvedBankFile/:ApprovedBankFolderId?' element={<ApprovedBankListStateProvider><ApprovedBankFile /></ApprovedBankListStateProvider>} />
-
-            {/* MARKETING */}
-            <Route path='content' element={<MarketingContentListStateProvider><MarketingContentFolder /></MarketingContentListStateProvider>} />
-            <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
             {/* SALES */}
-            <Route path="channelPartner" element={<ChannelPartner />} />
-            <Route path="channelPartner/view" element={<ViewChannelPartner />} />
-            <Route path="channelPartner/add/:ChannelPartnerId?" element={<AddUpdateChannelPartner />} />
+            <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
+            <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
+            <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
+
+            <Route path="sourcing" element={<ChannelPartnerSourcingListStateProvider><ChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
+            <Route path="sourcing/view" element={<ChannelPartnerSourcingListStateProvider><ViewChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
 
             <Route path="enquiry" element={<EnquiryListStateProvider><Enquiry /></EnquiryListStateProvider>} />
             <Route path="enquiry/view/:EnquiryId?" element={<EnquiryListStateProvider><ViewEnquiry /></EnquiryListStateProvider>} />
@@ -332,10 +340,13 @@ function App() {
 
             <Route path="callTracker" element={<CallTracker />} />
 
-            <Route path="target" element={<SaleTarget />} />
-            <Route path="saleTarget/add" element={<AddUpdateSaleTarget />} />
-
             <Route path="otherCharges" element={<OtherCharges />} />
+
+            <Route path='target' element={<SaleTarget />} />
+
+            <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
+            <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />
+            <Route path="booking/add" element={<BookingListStateProvider><AddUpdateBooking /></BookingListStateProvider>} />
 
             {/* REDEVELOPMENT */}
 
@@ -352,7 +363,9 @@ function App() {
             <Route path="tenant/add/:tenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
             <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
 
-            <Route path="rent" element={<Rent />} />
+            <Route path="rent" element={<RentListStateProvider><Rent /></RentListStateProvider>} />
+            <Route path="rent/pay/:PayTrackRentId?" element={<RentListStateProvider><AddUpdatePayTrackRent /></RentListStateProvider>} />
+            <Route path="rent/paymentLedger" element={<RentListStateProvider><ViewPayTrackRent /></RentListStateProvider>} />
 
             <Route path="proposedOffer" element={<ProposedOffer />} />
 
@@ -368,6 +381,22 @@ function App() {
             <Route path="siteProgress/SiteProgressConstructionActivity" element={<SiteProgressConstructionActivity />} />
             <Route path="siteProgress/SiteProgressConstructionSubActivity" element={<SiteProgressConstructionSubActivity />} />
 
+
+            {/* LITIGATION */}
+            <Route path='litigation' element={<LitigationListStateProvider><Litigation /></LitigationListStateProvider>} />
+            <Route path='litigation/add/:LitigationId?' element={<LitigationListStateProvider><AddUpdateLitigation /></LitigationListStateProvider>} />
+            <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
+            <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
+
+            <Route path="litigationDashboard" element={<LitigationDashboard />} />
+
+            {/* PROJECT */}
+            <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />
+            <Route path='approvedBank/approvedBankFile/:ApprovedBankFolderId?' element={<ApprovedBankListStateProvider><ApprovedBankFile /></ApprovedBankListStateProvider>} />
+
+            {/* MARKETING */}
+            <Route path='content' element={<MarketingContentListStateProvider><MarketingContentFolder /></MarketingContentListStateProvider>} />
+            <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

@@ -12,7 +12,7 @@ import { technicalService } from "@/features/technical/services/TechnicalService
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { runApiWithLoader } from "@/core/utils";
 import { filterEmail, filterMobile, filterPAN, filterGST, filterAadhaar, isValidEmail, isValidMobile, isValidPAN, isValidGST, isValidAadhaar, hasAnyDocumentFile } from "@/core/utils/fileValidation";
-import { COMPANY_TYPE_OPTIONS } from "@/core/constants/staticData";
+import { FIRMS_TYPE_OPTIONS } from "@/core/constants/staticData";
 import type { AddUpdateVendorRequest, FilterWithPaginationVendorRequest } from "../models/VendorModel";
 import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMaterialUOM } from "@/features/technical/models/TechnicalModel";
 import * as E from "fp-ts/Either";
@@ -600,7 +600,7 @@ export const AddUpdateVendor: React.FC = () => {
               required
               value={formData.CompanyType}
               onChange={(val) => handleFieldChange("CompanyType", String(val))}
-              options={COMPANY_TYPE_OPTIONS.map((opt) => ({
+              options={FIRMS_TYPE_OPTIONS.map((opt) => ({
                 label: opt.name,
                 value: opt.id,
               }))}
@@ -911,7 +911,7 @@ export const AddUpdateVendor: React.FC = () => {
                       return (
                         <div
                           key={item.SubMaterialMasterId}
-                          className="bg-white rounded-lg p-1 flex justify-between items-center hover:bg-gray-50"
+                          className="bg-white rounded-lg p-1 flex justify-between items-center"
                         >
                           <div>
                             <p className="font-medium text-gray-900">{item.SubMaterialName}</p>

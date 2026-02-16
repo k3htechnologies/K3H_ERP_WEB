@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
 import OverviewCards from "@/features/litigationDashboard/components/OverviewCards";
-import CaseTypeDistribution from "../components/CaseTypeDistribution";
-import CourtDistribution from "../components/CourtDistribution";
-import ActiveCases from "../components/ActiveCases";
-import UpComingHearing from "../components/UpComingHearing";
-import UploadedDocument from "../components/UploadedDocumnet";
-import CaseAnalysis from "../components/CaseAnalysis";
+import CaseTypeDistribution from "@/features/litigationDashboard/components/CaseTypeDistribution";
+import CourtDistribution from "@/features/litigationDashboard/components/CourtDistribution";
+import ActiveCases from "@/features/litigationDashboard/components/ActiveCases";
+import UpComingHearing from "@/features/litigationDashboard/components/UpComingHearing";
+import UploadedDocument from "@/features/litigationDashboard/components/UploadedDocumnet";
+import CaseAnalysis from "@/features/litigationDashboard/components/CaseAnalysis";
 import { useNavigate } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useToast } from "@/core/hooks/useToast";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
-import { litigationDashboardService } from "../services/litigationDashboardService";
+import { litigationDashboardService } from "@/features/litigationDashboard/services/litigationDashboardService";
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 
@@ -34,10 +34,10 @@ const LitigationDashboard: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-        fetchLitigation();
+        fetchLitigationDashboard();
     }, [projectId]);
 
-    const fetchLitigation = useCallback(async () => {
+    const fetchLitigationDashboard = useCallback(async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -60,7 +60,6 @@ const LitigationDashboard: React.FC = () => {
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
-
                 return response;
             },
             undefined,
@@ -68,112 +67,122 @@ const LitigationDashboard: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            "Loading Data"
+            "Loading Litigation Dashboard"
         );
     }, [projectId, addToast]);
 
-    const courtStaticData = [
-        {
-            CourtName: "Civil Court",
-            TotalCase: 240,
-            OpenCase: 74,
-        },
-        {
-            CourtName: "District Court",
-            TotalCase: 180,
-            OpenCase: 74,
-        },
-        {
-            CourtName: "High Court",
-            TotalCase: 280,
-            OpenCase: 70,
-        },
-        {
-            CourtName: "Session Court",
-            TotalCase: 100,
-            OpenCase: 60,
-        },
-        {
-            CourtName: "Supreme Court",
-            TotalCase: 240,
-            OpenCase: 74,
-        },
-    ];
+    // const overViewStaticData = [
+    //     {
+    //         TotalCases: 450,
+    //         TotalOpenCases: 100,
+    //         TotalClosedCases: 150,
+    //         TotalReopenCases: 150,
+    //         TotalHearings: 50,
+    //     }
+    // ]
 
-    const upComingHearingStaticData = [
-        {
-            CaseNumber: "CN-2024-001",
-            CaseType: "Civil Suit",
-            CourtType: "District Court",
-            Location: "Borivali",
-            HearingDate: "2026-02-15",
-        },
-        {
-            CaseNumber: "CN-2024-002",
-            CaseType: "Criminal Appeal",
-            CourtType: "District Court",
-            Location: "Mumbai",
-            HearingDate: "2026-02-18",
-        },
-        {
-            CaseNumber: "CN-2024-003",
-            CaseType: "Writ Petition",
-            CourtType: "District Court",
-            Location: "Borivali",
-            HearingDate: "2026-02-20",
-        },
-    ];
+    // const courtStaticData = [
+    //     {
+    //         CourtName: "Civil Court",
+    //         TotalCase: 200,
+    //         OpenCase: 74,
+    //     },
+    //     {
+    //         CourtName: "District Court",
+    //         TotalCase: 180,
+    //         OpenCase: 74,
+    //     },
+    //     {
+    //         CourtName: "High Court",
+    //         TotalCase: 200,
+    //         OpenCase: 70,
+    //     },
+    //     {
+    //         CourtName: "Session Court",
+    //         TotalCase: 100,
+    //         OpenCase: 60,
+    //     },
+    //     {
+    //         CourtName: "High Court",
+    //         TotalCase: 240,
+    //         OpenCase: 74,
+    //     },
+    // ];
 
-    const ActiveCasesStaticData = [
-        {
-            CaseTitle: "Smith vs. Johnson",
-            CaseNumber: "CN-2024-001",
-            CaseType: "Civil Suit",
-            HearingDate: "2026-02-15",
-            Status: "Open",
-        },
-        {
-            CaseTitle: "Brown vs. State",
-            CaseNumber: "CN-2024-002",
-            CaseType: "Criminal Appeal",
-            HearingDate: "2026-02-20",
-            Status: "Open",
-        }
-    ];
+    // const upComingHearingStaticData = [
+    //     {
+    //         CaseNumber: "CN-2024-001",
+    //         CaseType: "Civil Suit",
+    //         CourtType: "District Court",
+    //         Location: "Borivali",
+    //         HearingDate: "2026-02-15",
+    //     },
+    //     {
+    //         CaseNumber: "CN-2024-002",
+    //         CaseType: "Criminal Appeal",
+    //         CourtType: "District Court",
+    //         Location: "Mumbai",
+    //         HearingDate: "2026-02-18",
+    //     },
+    //     {
+    //         CaseNumber: "CN-2024-003",
+    //         CaseType: "Writ Petition",
+    //         CourtType: "District Court",
+    //         Location: "Borivali",
+    //         HearingDate: "2026-02-20",
+    //     },
+    // ];
 
-    const uploadedDocumentStaticData = [
-        {
-            CaseNumber: "CN-2024-001",
-            DocumentName: "Case Summary",
-        },
-        {
-            CaseNumber: "CN-2024-002",
-            DocumentName: "Evidence",
-        },
-    ]
+    // const ActiveCasesStaticData = [
+    //     {
+    //         CaseTitle: "Smith vs. Johnson",
+    //         CaseNumber: "CN-2024-001",
+    //         CaseType: "Civil Suit",
+    //         HearingDate: "2026-02-15",
+    //         Status: "Open",
+    //     },
+    //     {
+    //         CaseTitle: "Brown vs. State",
+    //         CaseNumber: "CN-2024-002",
+    //         CaseType: "Criminal Appeal",
+    //         HearingDate: "2026-02-20",
+    //         Status: "Open",
+    //     }
+    // ];
 
-    const caseTypeStaticData = [
-        {
-            TotalCases: 450,
-            CivilCases: 280,
-            CriminalCases: 170,
-        }
-    ];
+    // const uploadedDocumentStaticData = [
+    //     {
+    //         CaseNumber: "CN-2024-001",
+    //         DocumentName: "Case Summary",
+    //     },
+    //     {
+    //         CaseNumber: "CN-2024-002",
+    //         DocumentName: "Evidence",
+    //     },
+    // ]
 
-    const data = [
-        { Month: "JAN", OpenCases: 28, ClosedCases: 20 },
-        { Month: "FEB", OpenCases: 30, ClosedCases: 24 },
-        { Month: "MAR", OpenCases: 25, ClosedCases: 5 },
-        { Month: "APR", OpenCases: 40, ClosedCases: 35 },
-        { Month: "MAY", OpenCases: 45, ClosedCases: 80 },
-        { Month: "JUN", OpenCases: 18, ClosedCases: 40 },
-        { Month: "JUL", OpenCases: 42, ClosedCases: 65 },
-        { Month: "AUG", OpenCases: 60, ClosedCases: 95 },
-        { Month: "SEP", OpenCases: 55, ClosedCases: 65 },
-        { Month: "OCT", OpenCases: 75, ClosedCases: 75 },
-        { Month: "NOV", OpenCases: 100, ClosedCases: 90 },
-        { Month: "DEC", OpenCases: 102, ClosedCases: 92 },
-    ];
+    // const caseTypeStaticData = [
+    //     {
+    //         TotalCases: 450,
+    //         CivilCases: 280,
+    //         CriminalCases: 170,
+    //     }
+    // ];
+
+    // const data = [
+    //     { Month: "JAN", Opened: 28, Closed: 20 },
+    //     { Month: "FEB", Opened: 30, Closed: 24 },
+    //     { Month: "MAR", Opened: 25, Closed: 55 },
+    //     { Month: "APR", Opened: 40, Closed: 35 },
+    //     { Month: "MAY", Opened: 45, Closed: 80 },
+    //     { Month: "JUN", Opened: 18, Closed: 40 },
+    //     { Month: "JUL", Opened: 42, Closed: 65 },
+    //     { Month: "AUG", Opened: 60, Closed: 95 },
+    //     { Month: "SEP", Opened: 55, Closed: 65 },
+    //     { Month: "OCT", Opened: 75, Closed: 75 },
+    //     { Month: "NOV", Opened: 100, Closed: 90 },
+    //     { Month: "DEC", Opened: 102, Closed: 92 },
+    // ];
 
     return (
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
@@ -182,22 +191,26 @@ const LitigationDashboard: React.FC = () => {
             <div className="cursor-pointer" onClick={() => navigate("/litigation")}>
                 <OverviewCards overViewData={overViewData} />
 
-                <div className="grid grid-cols-2 gap-4">
-                    <CaseTypeDistribution CaseTypeData={caseTypeStaticData} />
-                    <CourtDistribution courtData={courtStaticData} />
+                <div className="grid grid-cols-[0.8fr_1.2fr] gap-4">
+                    <CaseTypeDistribution CaseTypeData={caseTypeDistributionData} />
+                    <CourtDistribution courtData={courtDistributionData} />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <ActiveCases activeCaseData={ActiveCasesStaticData} />
-                    <UpComingHearing upComingHearingData={upComingHearingStaticData} />
-
+                <div className="grid grid-cols-[0.8fr_1.2fr] gap-4">
+                    <ActiveCases activeCaseData={activeCaseData} />
+                    <UpComingHearing upComingHearingData={upComingHearingData} />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <CaseAnalysis CaseAnalysisData={data} />
-                    <UploadedDocument uploadedDocumentData={uploadedDocumentStaticData} />
+                <div className="grid grid-cols-3 gap-4">
+                    <div className="col-span-2">
+                        <CaseAnalysis CaseAnalysisData={caseAnalysisData} />
+                    </div>
 
+                    <div className="col-span-1">
+                        <UploadedDocument uploadedDocumentData={uploadedDocumentData} />
+                    </div>
                 </div>
+
             </div>
         </div>
     )

@@ -513,7 +513,6 @@ export const Vendor: React.FC = () => {
     )
   }
 
-
   const handleDownloadExcelSampleVendor = () => downloadExcelSampleVendor()
 
   const uploadExcel = async (file: File, mergeExisting: string) => {
@@ -929,5 +928,4 @@ export const Vendor: React.FC = () => {
 }
 
 export default Vendor
-
 

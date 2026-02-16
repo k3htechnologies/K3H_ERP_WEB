@@ -16,354 +16,67 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { Input, Button } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { Trash2 } from 'lucide-react';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import type { DeleteLeaveRequest } from '@/features/leave/models/LeaveModel';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
-import { useLocation, type Location, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { updateFilter } from '@/core/utils/filterHelper';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatDate_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
+import { useLeaveListState } from '@/features/leave/context/LeaveListStateContext';
+import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import DatePickerInput from '@/ui/components/forms/Datepicker';
+import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const Leave: React.FC = () => {
-
   //#region STATE
   const [leaveList, setLeaveList] = useState<LeaveData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const navigate = useNavigate();
 
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
-  //TABLE SORT INFO
-  const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
+  const { addToast } = useToast();
 
-  // TOAST
-  const { addToast } = useToast()
-
-  // SINGLE SEARCH TEXT BOX
-  const [searchTerm, setSearchTerm] = useState('')
-
-  const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchLeaves(value)
-  }, 350)
-
-
-  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-  const [filters, setFilters] = useState<FilterInfo>({});
+
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeLeaveColumnsModal, setIsShowCustomizeLeaveColumnsModal] = useState(false);
 
-  //DELETE CONFIRMATION DIALOG
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-  const [selectedLeaveToDelete, setSelectedLeaveToDelete] = useState<LeaveData | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
+
+  const [deleteLeaveData, setDeleteLeaveData] = useState<LeaveData | null>(null)
+
+  const { canAction, canExport } = useMenuPermissions()
 
   //#endregion
 
-  //#region MENU PERMISSIONS
-  const { canAction, canExport } = useMenuPermissions();
-  //#endregion
+  //#region LEAVE LIST STATE CONTEXT
+  const { listState, updateListState, resetFilters, clearLeaveContext } = useLeaveListState();
 
-  //#region STATE CREATED PAGE AFTER NAVIGATE VIEW OR ADD UPDATE PAGE THEN CHECK
-
-  const location = useLocation() as Location & {
-    state?: {
-      listState?: {
-        page?: number;
-        filters?: FilterInfo;
-        sortInfo?: SortInfo;
-        searchTerm?: string;
-        leaveId?: number;
-      };
-    };
-  };
-  //#endregion
-
-  //#region INIT
-
-  useEffect(() => {
-
-    const incoming = location.state?.listState as
-      | { page?: number; filters?: FilterInfo; sortInfo?: SortInfo; searchTerm?: string; leaveId?: number }
-      | undefined;
-
-    const listState = incoming ?? { page: 1, filters: {} as FilterInfo, sortInfo: undefined, searchTerm: '', leaveId: 0 };
-
-
-    setPagination({ currentPage: listState.page ?? pagination.currentPage });
-
-    setSortInfo(listState.sortInfo);
-
-    setFilters(listState.filters ?? {});
-
-    setTempFilters(listState.filters ?? {});
-
-    setSearchTerm(listState.searchTerm ?? '');
-
-    if (listState.searchTerm && String(listState.searchTerm).trim()) {
-
-      setSearchTerm(String(listState.searchTerm));
-
-      loadLeaves(listState.page ?? 1, { LeaveType: String(listState.searchTerm).trim() });
-
-      return;
-    }
-
-
-    loadLeaves(listState.page ?? 1, listState.filters ?? {});
-
-  }, [location.state]);
-
-  useEffect(() => {
-    return () => {
-      debouncedSearch.cancel?.()
-    }
-  }, [debouncedSearch])
-  //#endregion
-
-  //#region DATA LOAD
-  const fetchLeaveList = async (page: number = pagination.currentPage) => {
-    return await loadLeaves(page, filters);
-  }
-
-  const loadLeaves = async (page: number, filterParams: FilterInfo) => {
-    await runApiWithLoader(
-      setIsLoading,
-      setLoadingMessage,
-      async () => {
-
-        let sortByParam = undefined;
-        if (sortInfo) {
-          const column = leaveColumns.find(col => col.key === sortInfo.column)
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
-          }
-        }
-        const params: FilterWithPaginationLeaveRequest = {
-          PageNumber: page,
-          PageSize: pagination.pageSize,
-          LeaveType: filterParams.LeaveType?.trim() || undefined,
-          LeaveTypeMasterId: filterParams.LeaveTypeMasterId ? Number(filterParams.LeaveTypeMasterId) : undefined,
-          StartDate: filterParams.StartDate?.trim() || undefined,
-          EndDate: filterParams.EndDate?.trim() || undefined,
-          SortBy: sortByParam
-        }
-
-        const response = await getLeaves(params);
-
-        if (E.isRight(response)) {
-
-          setLeaveList(response.right.Data);
-
-          setPagination({
-            currentPage: page,
-            totalRecords: response.right.TotalNumberOfRecord,
-            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
-          });
-
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-        }
-        return response
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
-      },
-      undefined,
-      'Loading Leave Data'
-    )
-  }
-
-  //#endregion
-
-  //#region SEARCH LEAVE
-  const searchLeaves = async (searchValue: string) => {
-
-    setSearchTerm(searchValue);
-
-    if (searchValue.trim() === '') {
-      fetchLeaveList();
-      return;
-    }
-
-    const filterParams: FilterInfo = {
-      LeaveType: searchValue.trim()
-    };
-
-    await loadLeaves(1, filterParams);
-  }
-  //#endregion
-
-  //#region CLEAR SEARCH LEAVE
-  const clearSearchLeaves = () => {
-    setSearchTerm('');
-
-    debouncedSearch.cancel?.();
-
-    setFilters({});
-    setTempFilters({});
-    setPagination({ currentPage: 1 });
-    loadLeaves(1, {});
-    try {
-      navigate(location.pathname, { replace: true, state: {} });
-    } catch {
-    }
-  };
-
-  //#endregion
-
-  //#region EXCEL EXPORT PDF | EXCEL
-  const handleExportLeaves = async (exportType: 'Excel' | 'PDF') => {
-    await runApiWithLoader(
-      setIsLoading,
-      setLoadingMessage,
-      async () => {
-        let sortByParam = undefined
-        if (sortInfo) {
-          const column = leaveColumns.find(col => col.key === sortInfo.column)
-          if (column) {
-            sortByParam = `${column.label} ${sortInfo.direction.toUpperCase()}`
-          }
-        }
-        const params: FilterWithPaginationLeaveRequest = {
-          PageNumber: 1,
-          PageSize: pagination.totalRecords,
-          LeaveType: filters.LeaveType?.trim() || undefined,
-          LeaveTypeMasterId: filters.LeaveTypeMasterId ? Number(filters.LeaveTypeMasterId) : undefined,
-          StartDate: filters.StartDate?.trim() || undefined,
-          EndDate: filters.EndDate?.trim() || undefined,
-          SortBy: sortByParam,
-          ExportType: exportType
-        }
-        const response = await getLeaves(params);
-        handleExportFile(response, exportType, 'Leave', addToast)
-        return response;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message })
-      },
-      undefined,
-      'Preparing Export...'
-    )
-  }
-
-  const handleExportLeaveExcel = () => handleExportLeaves('Excel')
-  const handleExportLeavePdf = () => handleExportLeaves('PDF')
-  //#endregion
-
-  //#region GET LEAVE DATA FROM API
-  const getLeaves = async (filterParams: FilterWithPaginationLeaveRequest) => {
-    return await LeaveService.apiCallPullLeave(filterParams);
-  }
-  //#endregion
-
-  //#region TABLE CONFIG
-
-  const handlePageChange = useCallback((page: number) => {
-    fetchLeaveList(page);
-  }, []);
-
-  const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    fetchLeaveList(1);
-  }, []);
-
-  const leavePaginationInfo: PaginationInfo = useMemo(
-    () => ({
-      currentPage: pagination.currentPage,
-      totalPages: pagination.totalPages,
-      totalRecords: pagination.totalRecords,
-      pageSize: pagination.pageSize,
-      onPageChange: handlePageChange
-    }),
-    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
-  )
-
-  const leaveListForTable = useMemo(() => leaveList, [leaveList]);
-
+  const { page, filters, sortInfo, searchTerm } = listState;
   //#endregion
 
   //#region VIEW LEAVE DETAILS
   const handleViewLeaveDetails = useCallback((row: LeaveData) => {
-    navigate('/leave/view', {
-      state: {
-        editLeaveData: row,
-        fromList: true,
-        listState: {
-          page: pagination.currentPage,
-          filters,
-          sortInfo,
-          searchTerm,
-          leaveId: row.LeaveId,
-        },
-      },
-    });
-  }, [navigate, pagination.currentPage, filters, sortInfo, searchTerm]);
+    updateListState({ leaveId: row.LeaveId });
+    navigate('/leave/view');
+  }, [navigate, updateListState]);
 
   //#endregion
 
   //#region DELETE LEAVE
   const handleConfirmationDialogBoxOpen = useCallback((row: LeaveData) => {
-    setSelectedLeaveToDelete(row);
+    setDeleteLeaveData(row);
     setIsConfirmationDialogBoxOpen(true);
   }, []);
 
-  const handleDeleteLeave = useCallback(async () => {
-    if (!selectedLeaveToDelete?.LeaveId || !selectedLeaveToDelete?.Uniquekey) return;
-
-    setIsDeleting(true);
-
-    const payload: DeleteLeaveRequest = {
-      LeaveId: selectedLeaveToDelete.LeaveId,
-      Uniquekey: selectedLeaveToDelete.Uniquekey,
-    };
-
-    await runApiWithLoader(
-      setIsLoading,
-      setLoadingMessage,
-      async () => {
-        const response = await LeaveService.apiCallDeleteLeave(payload);
-        if (E.isRight(response)) {
-          // Check backend ErrorMessage first
-          if (response.right.ErrorMessage && response.right.ErrorMessage.length > 0) {
-            addToast({ type: 'error', title: response.right.ErrorMessage[0] });
-          } else if (response.right.WarningMessage && response.right.WarningMessage.length > 0) {
-            addToast({ type: 'warning', title: response.right.WarningMessage[0] });
-            setIsConfirmationDialogBoxOpen(false);
-            setSelectedLeaveToDelete(null);
-            fetchLeaveList();
-          } else {
-            // Success - use backend SuccessMessage
-            addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
-            setIsConfirmationDialogBoxOpen(false);
-            setSelectedLeaveToDelete(null);
-            fetchLeaveList();
-          }
-        } else {
-          addToast({ type: 'error', title: response.left.message });
-        }
-        return response;
-      },
-      undefined,
-      (error: any) => addToast({ type: 'error', title: error?.message }),
-      undefined,
-      'Deleting Leave'
-    );
-
-    setIsDeleting(false);
-  }, [selectedLeaveToDelete, addToast, fetchLeaveList]);
   //#endregion
 
   //#region TABLE COLUMN
-
   const leaveColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -411,7 +124,7 @@ export const Leave: React.FC = () => {
       {
         key: 'NoOfDays',
         label: 'No Of Days',
-        width: '15',
+        width: '10',
         sortable: false,
         align: 'center',
         render: (value) => value || '-'
@@ -419,14 +132,14 @@ export const Leave: React.FC = () => {
       {
         key: 'Reason',
         label: 'Reason',
-        width: '24',
+        width: '35',
         sortable: false,
         align: 'left',
         render: (value) => (
           <TooltipText
             text={value || '-'}
-            maxWidth="240px"
-            tooltipThreshold={24}
+            maxWidth="350px"
+            tooltipThreshold={35}
           />
         )
       },
@@ -462,8 +175,259 @@ export const Leave: React.FC = () => {
       },
     ],
     [canAction, handleViewLeaveDetails, handleConfirmationDialogBoxOpen]
+  );
+
+  //#endregion
+
+  //#region DATA LOAD LEAVE
+
+  const loadLeaves = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const params: FilterWithPaginationLeaveRequest = {
+          PageNumber: pageNum,
+          PageSize: pagination.pageSize,
+          LeaveType: filterParams.LeaveType?.trim() || undefined,
+          LeaveTypeMasterId: filterParams.LeaveTypeMasterId ? Number(filterParams.LeaveTypeMasterId) : undefined,
+          StartDate: filterParams.StartDate?.trim() || undefined,
+          EndDate: filterParams.EndDate?.trim() || undefined,
+          SortBy: getSortByParam(sortInfo ?? null, [])
+        };
+
+        const response = await LeaveService.apiCallPullLeave(params);
+
+        if (E.isRight(response)) {
+
+          setLeaveList(response.right.Data);
+
+          setPagination({
+            currentPage: pageNum,
+            totalRecords: response.right.TotalNumberOfRecord,
+            totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
+          });
+
+        } else {
+          addToast({ type: 'error', title: response.left.message });
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
+      undefined,
+      'Loading Leave'
+    );
+  };
+
+  //#endregion
+
+  //#region INIT
+  useEffect(() => {
+
+    clearLeaveContext();
+
+    if (searchTerm && searchTerm.trim()) {
+
+      loadLeaves(page, { LeaveType: searchTerm.trim() }, sortInfo);
+
+    } else {
+
+      loadLeaves(page, filters, sortInfo);
+
+    }
+  }, [page, filters, sortInfo, searchTerm, clearLeaveContext]);
+
+
+  useEffect(() => {
+
+    setPagination({ currentPage: page });
+
+  }, [page]);
+
+  useEffect(() => {
+
+    setTempFilters(filters);
+
+  }, [filters]);
+
+  //#endregion
+
+  //#region SEARCH LEAVE FILTER
+
+  const debouncedSearch = useDebouncedCallback((value: string, isSerach: boolean = true) => {
+
+    let filterParams: FilterInfo = {};
+
+    if (value.trim() === '') {
+
+      updateListState({ searchTerm: '', filters: {}, page: 1 });
+
+      return;
+    }
+
+    if (isSerach) {
+
+      filterParams = { LeaveType: value.trim() };
+    }
+
+    updateListState({ searchTerm: value, filters: filterParams, page: 1 });
+
+  }, 350);
+
+  const searchLeaves = (searchValue: string) => {
+
+    updateListState({ searchTerm: searchValue });
+
+    debouncedSearch(searchValue, false);
+  };
+
+  //#endregion
+
+  //#region CLEAR SEARCH LEAVE
+  const clearSearchLeaves = () => {
+    debouncedSearch.cancel?.();
+    resetFilters();
+    setTempFilters({});
+  };
+
+  //#endregion
+
+  //#region  EXCEL EXPORT TO EXCEL | PDF
+  const handleExportLeaves = async (exportType: 'Excel' | 'PDF') => {
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+  
+
+        const params: FilterWithPaginationLeaveRequest = {
+          PageNumber: 1,
+          PageSize: pagination.totalRecords,
+          LeaveType: filters.LeaveType?.trim() || undefined,
+          LeaveTypeMasterId: filters.LeaveTypeMasterId ? Number(filters.LeaveTypeMasterId) : undefined,
+          StartDate: filters.StartDate?.trim() || undefined,
+          EndDate: filters.EndDate?.trim() || undefined,
+          SortBy: getSortByParam(sortInfo ?? null, []),
+          ExportType: exportType
+        };
+
+        const response = await LeaveService.apiCallPullLeave(params);
+        handleExportFile(response, exportType, 'Leave', addToast);
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
+      undefined,
+      'Preparing Export...'
+    );
+  };
+
+  const handleExportLeaveExcel = () => handleExportLeaves('Excel');
+  const handleExportLeavePdf = () => handleExportLeaves('PDF');
+  //#endregion
+
+  //#region HANDLE PAGE CHANGE EVENT
+
+  const handlePageChange = useCallback((page: number) => {
+    updateListState({ page });
+  }, [updateListState]);
+
+  //#endregion
+
+  //#region TABLE SORT COLUMN
+  const handleSortColumn = (sortInfo: SortInfo) => {
+
+    updateListState({ sortInfo, page: 1 });
+
+  }
+  //#endregion
+
+  const leavePaginationInfo: PaginationInfo = useMemo(
+    () => ({
+      currentPage: pagination.currentPage,
+      totalPages: pagination.totalPages,
+      totalRecords: pagination.totalRecords,
+      pageSize: pagination.pageSize,
+      onPageChange: handlePageChange
+    }),
+    [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
   )
 
+  const leaveListForTable = useMemo(() => leaveList, [leaveList]);
+
+  //#endregion
+
+  //#region DELETE LEAVE
+  const handleDeleteLeave = async () => {
+    setIsConfirmationDialogBoxOpen(false);
+
+    if (!deleteLeaveData) return;
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const payload: DeleteLeaveRequest = {
+          LeaveId: deleteLeaveData.LeaveId,
+          Uniquekey: deleteLeaveData.Uniquekey,
+        };
+
+        const response = await LeaveService.apiCallDeleteLeave(payload);
+
+        if (E.isRight(response)) {
+
+          const newTotalRecords = pagination.totalRecords - 1;
+
+          const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+          let pageToShow = pagination.currentPage;
+
+          if (pagination.currentPage > newTotalPages) {
+            pageToShow = newTotalPages;
+          }
+
+          else if (leaveList.length === 1 && pagination.currentPage > 1) {
+            pageToShow = pagination.currentPage - 1;
+          }
+
+          setPagination({
+            currentPage: pageToShow,
+            totalRecords: newTotalRecords,
+            totalPages: newTotalPages
+          });
+
+          await loadLeaves(pageToShow, filters, sortInfo);
+
+          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+
+          setIsConfirmationDialogBoxOpen(false);
+
+          setDeleteLeaveData(null);
+
+        } else {
+
+          addToast({ type: 'error', title: response.left.message });
+
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: 'error', title: error.message });
+      },
+      undefined,
+      'Deleting Leave'
+    );
+  };
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
@@ -512,27 +476,15 @@ export const Leave: React.FC = () => {
 
   //#region FILTER HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters)
-    loadLeaves(1, tempFilters)
-    setShowFilterPopup(false)
-  }
-
-  const clearFilters = () => {
-    setTempFilters({});
-    setFilters({});
-
-    // reset page
-    setPagination({ currentPage: 1 });
-
-    // load empty filters
-    loadLeaves(1, {});
-
+    updateListState({ filters: tempFilters, page: 1 });
     setShowFilterPopup(false);
-
-    // clear router state (very important)
-    navigate(location.pathname, { replace: true, state: {} });
   };
 
+  const clearFilters = () => {
+    resetFilters();
+    setTempFilters({});
+    setShowFilterPopup(false);
+  };
 
   //#endregion
 
@@ -558,10 +510,9 @@ export const Leave: React.FC = () => {
         isShowSearchBar
         searchTerm={searchTerm}
         searchPlaceholder="Search By Leave Type..."
-        onSearchChange={(v) => {
-          setSearchTerm(v)
-          debouncedSearch(v)
-        }}
+        onSearchChange={
+          searchLeaves
+        }
         onClearSearch={clearSearchLeaves}
         isShowFilterButton
         filters={filters}
@@ -643,44 +594,34 @@ export const Leave: React.FC = () => {
               />
             </div>
             <div>
-              <Input
+              <DatePickerInput
                 label='Start Date'
-                type="date"
-                value={tempFilters.StartDate || ''}
-                onChange={(e) => handleFilterChange('StartDate', e.target.value)}
-                placeholder="Enter Start Date"
+                value={tempFilters.StartDate ? formatDate_dd_mm_yyyy(tempFilters.StartDate) : ''}
+                onChange={(val) => handleFilterChange('StartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
               />
             </div>
             <div>
-              <Input
+              <DatePickerInput
                 label='End Date'
-                type="date"
-                value={tempFilters.EndDate || ''}
-                onChange={(e) => handleFilterChange('EndDate', e.target.value)}
-                placeholder="Enter End Date"
+                value={tempFilters.EndDate ? formatDate_dd_mm_yyyy(tempFilters.EndDate) : ''}
+                onChange={(val) => handleFilterChange('EndDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
               />
             </div>
           </div>
         </div>
       </Modal>
 
-      <ConfirmationDialogBox
+      <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}
         onClose={() => {
-          setIsConfirmationDialogBoxOpen(false);
-          setSelectedLeaveToDelete(null);
+          setIsConfirmationDialogBoxOpen(false)
+          setDeleteLeaveData(null)
         }}
-        onConfirm={() => {
-          setIsConfirmationDialogBoxOpen(false);
-          void handleDeleteLeave();
-        }}
-        title="You are about to delete Leave"
-        message="Are you sure you want to delete this leave?"
-        confirmText="Delete"
-        cancelText="Cancel"
-        loading={isDeleting}
-        variant="danger"
+        onConfirm={handleDeleteLeave}
+        loading={isLoading}
+        pageName='leave'
       />
+
 
     </div>
   )

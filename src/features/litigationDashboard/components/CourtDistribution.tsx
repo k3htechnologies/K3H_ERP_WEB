@@ -28,7 +28,7 @@ export default function CourtDistribution({ courtData = [] }: Props) {
                     </div>
                 </div>
 
-                <div className="h-[280px]">
+                <div className="h-[280px] ">
                     <ResponsiveContainer>
                         <BarChart
                             data={courtData}
@@ -41,7 +41,7 @@ export default function CourtDistribution({ courtData = [] }: Props) {
                             {/* Court names */}
                             <YAxis
                                 type="category"
-                                dataKey="CourtName"
+                                dataKey="CourtType"
                                 axisLine={false}
                                 tickLine={false}
                                 tick={{ fontSize: 13, fill: "#6b7280" }}
@@ -49,26 +49,25 @@ export default function CourtDistribution({ courtData = [] }: Props) {
 
                             {/* TOTAL CASE */}
                             <Bar
-                                dataKey="TotalCase"
+                                dataKey="TotalCases"
                                 barSize={12}
                                 fill="#2563eb"
                                 radius={[6, 6, 6, 6]}
                                 background={{ fill: "#e5e7eb", radius: 6 }}
                             >
-                                <LabelList dataKey="TotalCase" position="right" fill="#6b7280" fontSize={14}
+                                <LabelList dataKey="TotalCases" position="right" fill="#6b7280" fontSize={14}
                                 />
                             </Bar>
 
                             {/* OPEN CASE */}
                             <Bar
-                                dataKey="OpenCase"
+                                dataKey="OpenCases"
                                 barSize={12}
                                 fill="#f43f5e"
                                 radius={[6, 6, 6, 6]}
                                 background={{ fill: "#e5e7eb", radius: 6 }}
-
                             >
-                                <LabelList dataKey="OpenCase" position="right" fill="#6b7280" fontSize={14}
+                                <LabelList dataKey="OpenCases" position="right" fill="#6b7280" fontSize={14}
                                 />
                             </Bar>
 

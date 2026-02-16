@@ -31,6 +31,7 @@ export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   className?: string
   style?: CSSProperties
   autoResize?: boolean
+  required?: boolean
 }
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size' | 'color'> {
   variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'dark' | 'transparent_border' | 'light'
@@ -103,4 +104,5 @@ export interface DatePickerProps
   maxYear?: number;
   disabled?: boolean;
   helperText?: string;
+  isDisplayCurrentDate?:boolean;
 }

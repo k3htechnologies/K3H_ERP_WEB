@@ -4,8 +4,10 @@ export interface FilterWithPaginationBranchAssociationsMasterRequest {
     PageSize: number
     PageNumber: number
     BranchAssociationsId?: number
+    IsCheckPermission?: boolean
     EmployeeName?: string
     BranchMasterId?: string
+    EmployeeId?: number
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

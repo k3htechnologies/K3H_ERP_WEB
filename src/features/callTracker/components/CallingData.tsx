@@ -20,8 +20,9 @@ import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Loader } from "@/core/utils/loader";
 import { callingDataService } from "@/features/callTracker/services/CallingDataService";
 import * as E from 'fp-ts/Either';
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 
 export const CallingData: React.FC = () => {
@@ -32,6 +33,8 @@ export const CallingData: React.FC = () => {
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
+    const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+    const [callingData, setCallingData] = useState<CallingDataData | null>(null);
 
     //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -249,12 +252,20 @@ export const CallingData: React.FC = () => {
             sortable: true,
             fixed: 'left',
             align: 'left',
-            render: (value) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                />
+            render: (value, row) => (
+                <span
+                    className="text-blue-600 cursor-pointer hover:underline"
+                    onClick={() => {
+                        setCallingData(row);
+                        setIsViewModalOpen(true);
+                    }}
+                >
+                    <TooltipText
+                        text={value || '-'}
+                        maxWidth="250px"
+                        tooltipThreshold={25}
+                    />
+                </span>
             ),
         },
         {
@@ -468,6 +479,39 @@ export const CallingData: React.FC = () => {
                             value={tempFilters.ToDate || ''}
                             onChange={(value) => handleFilterChange('ToDate', value || '')}
                         />
+                    </div>
+                </div>
+            </Modal>
+
+            {/* VIEW CALLING DATA MODAL */}
+
+            <Modal
+                isOpen={isViewModalOpen}
+                onClose={() => {
+                    setIsViewModalOpen(false);
+                }}
+                title="Calling Data Details"
+                cancelText="Close"
+                size="xl"
+            >
+                <div className="space-y-6">
+
+                    <div className="space-y-4">
+                        <FieldItem label="Customer Name" value={callingData?.Name} isRow withBorder={true} className='font-medium text-blue-900 ' />
+                        <FieldItem label="Location" value={callingData?.Address} isRow withBorder={true} />
+                        <FieldItem label="Phone Number" value={callingData?.MobileNumber} isRow withBorder={true} />
+                        <FieldItem label="Email ID" value={callingData?.EmailId} isRow withBorder={true} />
+                    </div>
+
+                    <div className="space-y-4">
+                        <h4 className="text-lg font-semibold pb-2">
+                            Action Details
+                        </h4>
+                        <FieldItem label="Created By / Date" isRow={true} value={callingData?.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(callingData?.CreatedDate || '-')} withBorder={callingData?.ModifiedBy !== '' ? true : false} />
+                        {callingData?.ModifiedBy !== '' ?
+                            <FieldItem label="Modified By / Date" isRow={true} value={callingData?.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(callingData?.ModifiedDate || '-')} withBorder={false} />
+                            :
+                            ''}
                     </div>
                 </div>
             </Modal>

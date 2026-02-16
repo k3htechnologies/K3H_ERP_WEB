@@ -18,6 +18,7 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { getInitialFormState, getWeekOffMappingMasterColumns, REQUIRED_COLUMN_KEYS } from '@/features/weekOffMappingMaster/constants/weekOffMappingMasterConstants';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { fetchEmployeeMasterById } from '@/features/employeeMaster/employeeMasterDropDown';
 
 export const useWeekOffMappingMaster = () => {
   //#region STATE MANAGEMENT
@@ -46,6 +47,14 @@ export const useWeekOffMappingMaster = () => {
   const [editingWeekOffMappingMasterData, setEditingWeekOffMappingMasterData] = useState<WeekOffMappingMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
+  //SET UP EMPLOYEE DETAILS STATES
+  const [departmentName, setDepartmentName] = useState("");
+  const [designationName, setDesignationName] = useState("");
+  const [branchName, setBranchName] = useState("");
+  const [reportingPersonName, setReportingPersonName] = useState("");
+  const [emailId, setEmailId] = useState("");
+  const [personalMobileNumber, setPersonalMobileNumber] = useState("");
+  
   //ADD UPDATE WEEK OFF MAPPING MASTER
   const [formData, setFormData] = useState<AddUpdateWeekOffMappingMasterRequest>(() => getInitialFormState());
 
@@ -116,6 +125,38 @@ export const useWeekOffMappingMaster = () => {
     }
   }, [isAddUpdateModalOpen, editingWeekOffMappingMasterData]);
 
+  useEffect(() => {
+      let mounted = true;
+  
+      const loadEmployeeDetails = async () => {
+        if (!formData.EmployeeId) {
+          setDepartmentName("");
+          setDesignationName("");
+          setBranchName("");
+          setReportingPersonName("");
+          setEmailId("");
+          setPersonalMobileNumber("");
+          return;
+        }
+  
+        const employee = await fetchEmployeeMasterById(Number(formData.EmployeeId));
+  
+        if (!employee || !mounted) return;
+  
+        setDepartmentName(employee.Department ?? "");
+        setDesignationName(employee.Designation ?? "");
+        setBranchName(employee.Branch ?? "");
+        setReportingPersonName(employee.ReportPersonName ?? "");
+        setEmailId(employee.EmailId ?? "");
+        setPersonalMobileNumber(employee.PersonalMobileNumber ?? "");
+      };
+  
+      loadEmployeeDetails();
+  
+      return () => {
+        mounted = false;
+      };
+    }, [formData.EmployeeId]);
   //#endregion
 
   //#region TABLE COLUMN DEFINITION
@@ -534,6 +575,13 @@ export const useWeekOffMappingMaster = () => {
     dropdownLabels,
     dropdownResetKey,
     mappingWeekoff,
+
+    departmentName,
+    designationName,
+    branchName,
+    reportingPersonName,
+    emailId,
+    personalMobileNumber,
 
     // Setters
     setSearchTerm,

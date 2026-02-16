@@ -24,7 +24,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         , 'leaveEncashmentMaster'
         , 'leaveTypeMaster'
         , 'leave'
-        , 'leaveCreditDebit'
+        , 'leaveCreditConfiguration'
         , 'outdoor'
         , 'shiftMaster'
         , 'shiftMappingMaster'
@@ -36,6 +36,9 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         , 'event'
         , 'resignation'
         ,'channelPartner'
+        ,'compOff'
+        ,'attendance'
+        ,'payrollReport'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

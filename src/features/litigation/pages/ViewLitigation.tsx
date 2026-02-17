@@ -19,9 +19,9 @@ import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import type { AddUpdateLitigationClosureRequest, FilterWithPaginationLitigationClosureRequest, LitigationClosureData } from "@/features/litigation/models/LitigationClosureModel";
 import type { AddUpdateLitigationHearingRequest, DeleteLitigationHearingRequest, FilterWithPaginationLitigationHearingRequest, LitigationHearingData } from "@/features/litigation/models/LitigationHearingModel";
 import type { FilterWithPaginationLitigationRequest, LitigationData, LitigationReopenData, UpdateLitigationReopenRequest } from "@/features/litigation/models/LitigationModel";
-import { litigationClosureService } from "@/features/litigation/services/LitigationClosureServices";
-import { litigationHearingService } from "@/features/litigation/services/LitigationHearingServices";
-import { litigationService } from "@/features/litigation/services/LitigationServices";
+import { litigationClosureService } from "@/features/litigation/services/LitigationClosureService";
+import { litigationHearingService } from "@/features/litigation/services/LitigationHearingService";
+import { litigationService } from "@/features/litigation/services/LitigationService";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { TextArea } from "@/ui/components/forms/Textarea";
@@ -30,7 +30,7 @@ import { useLitigationListState } from "@/features/litigation/context/Litigation
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import Tabs from "@/ui/components/Tab/Tab";
 import type { FilterWithPaginationLitigationDocumentRequest, LitigationDocumentData } from "../models/LitigationDocumentModel";
-import { litigationDocumentService } from "../services/LitigationDocumentServices";
+import { litigationDocumentService } from "../services/LitigationDocumentService";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 

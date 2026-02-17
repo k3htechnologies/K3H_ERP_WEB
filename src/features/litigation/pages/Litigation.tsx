@@ -23,7 +23,7 @@ import { useNavigate } from 'react-router-dom';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { FileText, Trash2 } from 'lucide-react';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
-import { litigationService } from '@/features/litigation/services/LitigationServices';
+import { litigationService } from '@/features/litigation/services/LitigationService';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { getLitigationStatuscolor } from './Status';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
@@ -398,7 +398,7 @@ export const Litigation: React.FC = () => {
             fixed: 'right',
             align: 'center',
             render: (_value, row) => {
-                
+
                 if (!canAction) return null;
 
                 return (

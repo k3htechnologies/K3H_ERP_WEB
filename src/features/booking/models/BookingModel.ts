@@ -1,4 +1,5 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
+import type { ParkingData } from "@/features/parking/models/ParkingModel";
 
 //=============================================================
 // [ FILTER REQUEST ]
@@ -54,14 +55,9 @@ export interface BookingData {
     BookingId: number | null;
     Uniquekey: string | null;
     ProjectName: string | null;
-
-    // APPLICANT DETAILS
+    EnquiryId: number | null;
     ApplicantName: string | null;
-
-    // BOOKING TYPE (FLAT / PARKING)
     BookingType: string | null;
-
-    // INVENTORY DETAILS
     Flat: string | null;
     ParkingData?: ParkingData[] | null;
     ParkingNumber: string | null;
@@ -73,22 +69,11 @@ export interface BookingData {
     RERACarpetAreaSqFt: number | null;
     FlatType: string | null;
     FlatConfiguration: string | null;
-
-    // APPLICANT DETAILS
     BookingApplicantData?: BookingApplicantData[] | null;
     PermanentAddress: string | null;
     CommunicationAddress: string | null;
-
-    // SOURCE DETAILS
-    Source: string | null;
-    SubSource: string | null;
-    ChannelPartnerName: string | null;
-    ChannelPartnerCompany: string | null;
-    ChannelPartnerMobileNumber: string | null;
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
-
-    // BOOKING DETAILS
     RegistrationDate: string | null;
     AgreementValue: number | null;
     AgreementValueTDS: number | null;
@@ -97,7 +82,6 @@ export interface BookingData {
     StampDutyPercentage: number | null;
     StampDutyAmount: number | null;
     RegistrationFees: number | null;
-
     ParkingId: string | null;
     HandoverType: string | null;
     ModeOfPayment: string | null;
@@ -106,50 +90,30 @@ export interface BookingData {
     ChequeRTGSDate: string | null;
     BankListMasterId: number | null;
     BankName: string | null;
-
-    // FLAT ALTERATION REMARKS
     FlatAlterationRemark: string | null;
-
-    // TERMS & CONDITION
     TermsAndConditionsDescription: string | null;
-
-    // OTHER CHARGE
     BookingOtherChargesData?: BookingOtherChargesData[] | null;
-
-    // PAYMENT SCHEDULE
     BookingPaymentScheduleData?: BookingPaymentScheduleData[] | null;
-
-    // USER DETAILS
     CreatedById: number | null;
     CreatedBy: string | null;
     CreatedDate: string | null;
     ModifiedById: number | null;
     ModifiedBy: string | null;
     ModifiedDate: string | null;
-
-    // APPROVAL ACCESS CONTROL
     IsApproval: boolean;
     ApprovalStatus: string | null;
-
     ProjectId: number | null;
-    // CRM DETAILS
     TotalAmountReceivedAgainstBooking: number | null;
     TotalAmountRefundedAgainstBooking: number | null;
     RefundedAmountOnTillDate: number | null;
-
-    // MODIFICATION REQUEST STATUS
     FlatAlterationRequestIsApproval: boolean;
     FlatAlterationRequestApprovalStatus: string | null;
     ParkingModificationRequestIsApproval: boolean;
     ParkingModificationRequestApprovalStatus: string | null;
     BookingApplicantModificationRequestIsApproval: boolean;
     BookingApplicantModificationRequestApprovalStatus: string | null;
-
-    // TRANSFER BOOKING HISTORY
     TransferBookingId: number | null;
     TransferFlat: string | null;
-
-    // BOOKING TYPE (ALLOTED)
     TenantId: number | null;
 }
 
@@ -212,12 +176,6 @@ export interface BookingPaymentScheduleData {
     ModifiedBy: string | null;
     ModifiedDate: string | null;
 }
-
-export interface ParkingData {
-    ParkingId: number | null;
-    ParkingNumber: string | null;
-}
-
 //=============================================================
 // [ ADD UPDATE REQUEST ]
 //=============================================================
@@ -225,10 +183,9 @@ export interface AddUpdateBookingRequest {
     BookingId: number | null;
     Uniquekey: string | null;
     ProjectId: number | null;
+    EnquiryId: number | null;
     PermanentAddress: string | null;
     CommunicationAddress: string | null;
-    Source: string | null;
-    SubSource: string | null;
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
     InventoryFlatId: number | null;
@@ -283,7 +240,26 @@ export interface AddUpdateBookingApplicantRequest {
     GSTNumberURL?: File[] | null;
     RemoveGSTNumberURL?: string | null;
 }
+export interface AddUpdateBookingOtherChargesRequest {
+    BookingOtherChargesId: number | null;
+    Uniquekey: string | null;
+    ChargeName: string | null;
+    CalculatedOn: string | null;
+    Value: number | null;
+    GSTPercentage: number | null;
+    GSTValue: number | null;
+}
 
+export interface AddUpdateBookingPaymentScheduleRequest {
+    BookingPaymentScheduleId: number | null;
+    Type: string | null;
+    Name: string | null;
+    Date: string | null;
+    PaymentSchedulePercentage: number | null;
+    PaymentScheduleAmount: number | null;
+    PaymentScheduleGSTAmount: number | null;
+    PaymentScheduleTDSAmount: number | null;
+}
 //=============================================================
 // [ CANCEL REQUEST ]
 //=============================================================

@@ -1,7 +1,10 @@
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import type { ParkingData } from "@/features/parking/models/ParkingModel";
 import { colorsForParkingComponent } from "@/features/parking/utils/parkingColors";
-import { Edit, Eye } from "lucide-react";
+import { Edit, Eye, BookOpen } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/ui/components/forms";
+import { useBookingListState } from "@/features/booking/context/BookingListStateContext";
 
 interface ParkingCardProps {
   parking: ParkingData;
@@ -9,7 +12,9 @@ interface ParkingCardProps {
   canAction?: boolean
 }
 
-export const ParkingCard = ({ parking, onEdit,canAction }: ParkingCardProps) => {
+export const ParkingCard = ({ parking, onEdit, canAction }: ParkingCardProps) => {
+  const navigate = useNavigate();
+  const { updateListState } = useBookingListState();
 
   const hexToRgba = (hex: string, alpha: number = 0.12) => {
     const cleanHex = hex.replace('#', '');
@@ -27,9 +32,44 @@ export const ParkingCard = ({ parking, onEdit,canAction }: ParkingCardProps) => 
     background: `linear-gradient(to bottom, ${fromColor}, ${toColor})`
   };
 
+  const handleBook = () => {
+    navigate('/booking/add', {
+      state: {
+        parkingData: {
+          ParkingId: parking.ParkingId,
+          ParkingNumber: parking.ParkingNumber,
+          ParkingCategory: parking.ParkingCategory,
+          ParkingType: parking.ParkingType,
+          ParkingSubType: parking.ParkingSubType,
+          ParkingDimensions: parking.ParkingDimensions,
+          IsEVChargingAvailable: parking.IsEVChargingAvailable,
+          BuildingNumber: parking.BuildingNumber,
+          Floor: parking.Floor,
+          Wing: parking.Wing,
+          InventoryBuildingId: parking.InventoryBuildingId,
+          InventoryFlatFloorBasementPodiumWingId: parking.InventoryFlatFloorBasementPodiumWingId,
+          InventoryFloorId: parking.InventoryFloorId,
+          PageName: "PARKING BOOK",
+        }
+      }
+    });
+  };
+
+  const handleOwnerNameClick = () => {
+    if (parking.BookingId && parking.BookingId > 0) {
+      updateListState({
+        bookingId: parking.BookingId,
+        bookingName: parking.OwnerName || '',
+      });
+      navigate('/booking/view', {
+        state: { sourcePage: 'parking' }
+      });
+    }
+  };
+
   return (
     <div
-      className={`flex flex-col justify-evenly h-[200px] w-[300px] rounded-[8px] border ${colorsForParkingComponent[parking.ParkingStatus ?? "Available"].Border} border-[0.3px] px-2 `} style={gradientStyle}>
+      className={`flex flex-col justify-evenly ${parking.ParkingStatus === "Available" ? "min-h-[240px]" : "h-[240px]"} w-[300px] rounded-[8px] border ${colorsForParkingComponent[parking.ParkingStatus ?? "Available"].Border} border-[0.3px] px-2 `} style={gradientStyle}>
 
       <FieldItem label="Parking No" value={parking.ParkingNumber} isRow={true} isUsedForInventoryFlat={true} />
       <FieldItem label="Category" value={parking.ParkingCategory} isRow={true} isUsedForInventoryFlat={true} />
@@ -55,6 +95,30 @@ export const ParkingCard = ({ parking, onEdit,canAction }: ParkingCardProps) => 
         )}
 
       </div>
+
+      {parking.ParkingStatus === "Available" && parking.ParkingNumber !== "" && parking.ParkingCategory  !== ""  && (
+        <div className="flex items-center justify-center mt-2">
+          <Button
+            onClick={handleBook}
+            color="blue"
+            size="sm"
+            className="w-full"
+          >
+            <BookOpen className="h-4 w-4 mr-2" />
+            Book
+          </Button>
+        </div>
+      )}
+
+      {parking.OwnerName && (parking.ParkingStatus === "Booked" || parking.ParkingStatus === "Member") && (
+        <p 
+          className="text-center text-[#135BEC] font-semibold cursor-pointer hover:underline mt-2"
+          onClick={handleOwnerNameClick}
+          title="Click to view booking details"
+        >
+          Owner : {parking.OwnerName}
+        </p>
+      )}
 
     </div>
   );

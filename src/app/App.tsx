@@ -150,6 +150,7 @@ import CallTracker from '@/features/callTracker/pages/CallTracker';
 import OtherCharges from '@/features/otherCharges/pages/OtherCharges';
 import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
 import { SaleTarget } from '@/features/saleTarget/pages/SaleTarget';
+import { PaymentScheduleMaster } from '@/features/paymentScheduleMaster/pages/paymentScheduleMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -307,9 +308,9 @@ function App() {
 
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
-            <Route path="inventory" element={<Inventory></Inventory>} />
+            <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
-            <Route path="parking" element={<Parking></Parking>} />
+            <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
@@ -343,6 +344,8 @@ function App() {
             <Route path="otherCharges" element={<OtherCharges />} />
 
             <Route path='target' element={<SaleTarget />} />
+            
+            <Route path="paymentScheduleMaster" element={<PaymentScheduleMaster />} />
 
             <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
             <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />

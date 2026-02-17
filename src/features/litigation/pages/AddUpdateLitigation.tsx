@@ -5,7 +5,7 @@ import useToast from "@/core/hooks/useToast";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { Input } from "@/ui/components/forms";
-import { litigationService } from "@/features/litigation/services/LitigationServices";
+import { litigationService } from "@/features/litigation/services/LitigationService";
 import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
@@ -152,7 +152,7 @@ export const AddUpdateLitigation: React.FC = () => {
 
         if (!formData.Title?.trim()) {
             newErrors.Title = 'Title  is required.';
-        } 
+        }
         if (!formData.DateOfFilling) {
             newErrors.DateOfFilling = 'Date Of Filling is required.';
         }

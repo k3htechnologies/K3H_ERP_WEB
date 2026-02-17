@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import type { BookingData, FilterWithPaginationBookingRequest } from '../models/BookingModel';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
@@ -12,24 +12,32 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useBookingListState } from '@/features/booking/context/BookingListStateContext';
 import Tabs from '@/ui/components/Tab/Tab';
-import { formatDate_dd_MonthName_yy_hh_mm, formatDate_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm, formatDate_MonthName_yy } from '@/core/utils/dateFormat';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
+import type { EnquiryData, FilterWithPaginationEnquiryRequest } from '@/features/enquiry/models/EnquiryModel';
+import { EnquiryService } from '@/features/enquiry/services/EnquiryServices';
 
 export const ViewBooking: React.FC = () => {
 
     //#region STATE MANAGEMENT
     const [bookingData, setBookingData] = useState<BookingData | null>(null);
+    const [editEnquiryData, setEditEnquiryData] = useState<EnquiryData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const { canAction } = useMenuPermissions();
     const { addToast } = useToast();
     const navigate = useNavigate();
+    const location = useLocation();
     const { projectId } = useProject();
+
+    // Track source page for navigation back
+    const sourcePage = (location.state as any)?.sourcePage || 'booking';
 
     //#region BOOKING LIST STATE CONTEXT
     const { listState } = useBookingListState();
     const { bookingId, bookingName } = listState;
     //#endregion
+
     //#endregion
 
     //#region TAB ACTIVITY
@@ -53,6 +61,46 @@ export const ViewBooking: React.FC = () => {
     //#endregion
 
     //#region DATA LOAD OVERVIEW
+
+    const fetchEnquiryDetails = async (enquiryIdToFetch: number) => {
+
+        if (!enquiryIdToFetch || enquiryIdToFetch === 0) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationEnquiryRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    EnquiryId: enquiryIdToFetch,
+                    ProjectId: Number(projectId)
+                };
+
+                const response = await EnquiryService.apiCallPullEnquiry(params);
+
+                if (E.isRight(response)) {
+
+                    const enquiryList = response.right.Data?.[0] ?? null;;
+
+                    setEditEnquiryData(enquiryList);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Enquiry Details'
+        );
+    };
+
+
     const loadBookingFromServer = async () => {
         if (!bookingId) return;
         await runApiWithLoader(
@@ -70,8 +118,15 @@ export const ViewBooking: React.FC = () => {
                 const response = await bookingService.apiCallPullBooking(params);
 
                 if (E.isRight(response)) {
+                    const booking = response.right.Data?.[0] ?? null;
 
-                    setBookingData(response.right.Data?.[0] ?? null);
+                    setBookingData(booking);
+
+                    if (booking?.EnquiryId && booking.EnquiryId > 0) {
+
+                        await fetchEnquiryDetails(booking.EnquiryId);
+
+                    }
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -126,9 +181,18 @@ export const ViewBooking: React.FC = () => {
                 subTitleText={bookingData.ApplicantName ?? bookingName}
                 cancelText="Back"
                 EditText="Edit"
-                onCancel={() => navigate('/booking')}
-                canAction={canAction}
-                onEdit={() => navigate(`/booking/edit`)}
+                onCancel={() => {
+                    // Navigate back to source page
+                    if (sourcePage === 'inventory') {
+                        navigate('/inventory');
+                    } else if (sourcePage === 'parking') {
+                        navigate('/parking');
+                    } else {
+                        navigate('/booking');
+                    }
+                }}
+                canAction={canAction && sourcePage === 'booking' ? true : false}
+                onEdit={() => navigate('/booking/add')}
                 isLoading={isLoading}
             />
 
@@ -146,6 +210,92 @@ export const ViewBooking: React.FC = () => {
             <div className="mt-3">
                 {activeTab === 'Overview' && (
                     <>
+                        {/* ===================== ENQUIRY DETAILS ===================== */}
+                        {editEnquiryData && (
+                            <div className="space-y-4 pt-5 pb-3">
+                                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+                                    Enquiry Details
+                                </h3>
+
+                                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
+
+                                        <FieldItem label="Unique Code:" value={editEnquiryData?.SystemGeneratedCode || '-'} />
+                                        <FieldItem label="Name" value={editEnquiryData?.Name || '-'} />
+
+                                        <FieldItem label="Mobile No:" value={safe(editEnquiryData?.MobileNumber) ? `+91 ${editEnquiryData?.MobileNumber}` : '-'} />
+                                        <FieldItem label="Source" value={editEnquiryData?.Source || '-'} />
+                                        <FieldItem label="Sub Source" value={editEnquiryData?.SubSource || '-'} />
+                                        {editEnquiryData?.Source?.toUpperCase() !== 'CHANNEL PARTNER' && !!editEnquiryData?.SubSubSource?.trim() && (
+                                            <FieldItem label="Sub Sub Source" value={editEnquiryData?.SubSubSource || '-'} />
+                                        )}
+                                    </div>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3 pt-5">
+                                        <FieldItem label="Sales Advisor" value={editEnquiryData?.SalesAdvisor ?? '-'} />
+                                        <FieldItem label="Sourcing Manager" value={editEnquiryData?.SourcingManager ?? '-'} />
+
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-3 pt-5">
+                                        <FieldItem label="Current Location" value={editEnquiryData?.CurrentLocation || '-'} />
+                                    </div>
+                                </div>
+
+                                {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
+                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Reference' && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+
+                                            <FieldItem label="Referral Name" value={editEnquiryData?.ReferelName || '-'} />
+                                            <FieldItem label="Referral Mobile" value={editEnquiryData?.ReferelMobileNumber ? `+91 ${editEnquiryData?.ReferelMobileNumber}` : '-'} />
+                                            <FieldItem label="Referral Project" value={editEnquiryData?.ReferelProjectName || '-'} />
+                                            <FieldItem label="Referral Unit No" value={editEnquiryData?.ReferelUnitNumber || '-'} />
+
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
+                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Loyalty' && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+
+                                            <FieldItem label="Existing Project" value={editEnquiryData?.LoyaltyExistingProjectName || '-'} />
+                                            <FieldItem label="Existing Unit No" value={editEnquiryData?.LoyaltyExistingUnitNumber || '-'} />
+
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
+                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Employee Reference' && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+
+                                            <FieldItem label="Employee Name" value={editEnquiryData?.EmployeeReferenceName || '-'} />
+                                            <FieldItem label="Employee Mobile" value={editEnquiryData?.EmployeeReferenceMobileNumber ? `+91 ${editEnquiryData?.EmployeeReferenceMobileNumber}` : '-'} />
+
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* ===================== CHANNEL PARTNER DETAILS ===================== */}
+                                {editEnquiryData?.Source?.toUpperCase() === 'CHANNEL PARTNER' && (
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+
+                                            <FieldItem label="Channel Partner" value={editEnquiryData?.ChannelPartnerName || '-'} />
+                                            <FieldItem label="CP Mobile" value={editEnquiryData?.ChannelPartnerMobileNumber ? `+91 ${editEnquiryData?.ChannelPartnerMobileNumber}` : '-'} />
+                                            <FieldItem label="CP Team Member" value={editEnquiryData?.ChannelPartnerTeamMemberName || '-'} />
+                                            <FieldItem label="CP Team Mobile" value={editEnquiryData?.ChannelPartnerTeamMemberMobileNumber || '-'} />
+
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
                         {/* Applicant Details */}
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
@@ -177,7 +327,6 @@ export const ViewBooking: React.FC = () => {
                             </div>
                         </section>
 
-                        {/* Project & Source Details + Booking Summary */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                             <div className="lg:col-span-2 space-y-6">
                                 {/* Project Details */}
@@ -188,37 +337,88 @@ export const ViewBooking: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Project Name" value={safe(bookingData.ProjectName)} />
                                         <FieldItem label="Booking Type" value={safe(bookingData.BookingType)} />
-                                        <FieldItem label="Flat" value={safe(bookingData.Flat)} />
-                                        <FieldItem label="Wing" value={safe(bookingData.Wing)} />
-                                        <FieldItem label="Floor" value={safe(bookingData.Floor)} />
-                                        <FieldItem label="Building Number" value={safe(bookingData.BuildingNumber)} />
-                                        <FieldItem label="Flat Type" value={safe(bookingData.FlatType)} />
-                                        <FieldItem label="Flat Configuration" value={safe(bookingData.FlatConfiguration)} />
-                                        <FieldItem label="RERA Carpet Area (SqFt)" value={safe(bookingData.RERACarpetAreaSqFt)} />
-                                        <FieldItem label="Parking Number" value={safe(bookingData.ParkingNumber)} />
+
+                                        {bookingData.BookingType?.toUpperCase() === "FLAT" && (
+                                            <>
+                                                <FieldItem label="Flat" value={safe(bookingData.Flat)} />
+                                                <FieldItem label="Wing" value={safe(bookingData.Wing)} />
+                                                <FieldItem label="Floor" value={safe(bookingData.Floor)} />
+                                                <FieldItem label="Building Number" value={safe(bookingData.BuildingNumber)} />
+                                                <FieldItem label="Flat Type" value={safe(bookingData.FlatType)} />
+                                                <FieldItem label="Flat Configuration" value={safe(bookingData.FlatConfiguration)} />
+                                                <FieldItem label="RERA Carpet Area (SqFt)" value={safe(bookingData.RERACarpetAreaSqFt)} />
+                                            </>
+                                        )}
+
+                                        {bookingData.BookingType?.toUpperCase() === "PARKING" && (
+                                            <FieldItem label="Parking Number" value={safe(bookingData.ParkingNumber)} />
+                                        )}
                                     </div>
                                 </section>
 
-                                {/* Source Details */}
-                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                {/* Parking Details */}
+                                {bookingData.ParkingData && bookingData.ParkingData.length > 0 && (
+                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                            Parking Details
+                                        </h4>
+                                        
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            {bookingData.ParkingData.map((parking, index) => (
+                                                <React.Fragment key={parking.ParkingId || index}>
+                                                    <FieldItem label="Parking Number" value={safe(parking.ParkingNumber)} />
+                                                    <FieldItem label="Building" value={safe(parking.BuildingNumber)} />
+                                                    <FieldItem label="Wing" value={safe(parking.Wing)} />
+                                                    <FieldItem label="Floor" value={safe(parking.Floor)} />
+                                                    <FieldItem label="Category" value={safe(parking.ParkingCategory)} />
+                                                    <FieldItem label="Type" value={safe(parking.ParkingType)} />
+                                                    <FieldItem label="Size" value={safe(parking.ParkingSubType)} />
+                                                    <FieldItem label="Dimensions" value={safe(parking.ParkingDimensions)} />
+                                                    <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
+                                                </React.Fragment>
+                                            ))}
+                                        </div>
+                                    </section>
+                                )}
+                                <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Source Details
+                                        Booking Details
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Source" value={safe(bookingData.Source)} />
-                                        <FieldItem label="Sub Source" value={safe(bookingData.SubSource)} />
-                                        <FieldItem label="Channel Partner" value={safe(bookingData.ChannelPartnerName)} />
-                                        <FieldItem label="Channel Partner Company" value={safe(bookingData.ChannelPartnerCompany)} />
-                                        <FieldItem label="Channel Mobile Number" value={safe(bookingData.ChannelPartnerMobileNumber)} />
-                                        <FieldItem label="Brokerage (%)" value={safe(bookingData.BrokeragePercentage)} />
-                                        <FieldItem label="Brokerage Amount (₹)" value={formatCurrency(bookingData.BrokerageAmount)} />
+                                        <FieldItem label="Expected Registration Date" value={bookingData.RegistrationDate ? formatDate_dd_MonthName_yy_hh_mm(bookingData.RegistrationDate) : '-'} />
+                                        <FieldItem label="Handover Type" value={safe(bookingData.HandoverType)} />
+                                        <FieldItem label="Mode Of Payment" value={safe(bookingData.ModeOfPayment)} />
                                     </div>
                                 </section>
+
+                                {/* Flat Alteration Remarks */}
+                                {bookingData.FlatAlterationRemark && (
+                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                            Flat Alteration Remarks
+                                        </h4>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <FieldItem label="Remarks" value={safe(bookingData.FlatAlterationRemark)} />
+                                        </div>
+                                    </section>
+                                )}
+
+                                {/* Terms & Conditions */}
+                                {bookingData.TermsAndConditionsDescription && (
+                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                            Terms & Conditions
+                                        </h4>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <FieldItem label="Description" value={safe(bookingData.TermsAndConditionsDescription)} />
+                                        </div>
+                                    </section>
+                                )}
                             </div>
 
                             {/* Right side summary card */}
                             <div className="lg:col-span-1 space-y-6">
-                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                         Booking Summary
                                     </h4>
@@ -238,55 +438,13 @@ export const ViewBooking: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Booking details, remarks, terms, action details */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
                             <div className="lg:col-span-2 space-y-6">
-                                {/* Booking Details */}
-                                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Booking Details
-                                    </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem
-                                            label="Registration Date"
-                                            value={
-                                                bookingData.RegistrationDate
-                                                    ? formatDate_dd_MonthName_yy_hh_mm(bookingData.RegistrationDate)
-                                                    : '-'
-                                            }
-                                        />
-                                        <FieldItem label="Handover Type" value={safe(bookingData.HandoverType)} />
-                                        <FieldItem label="Mode Of Payment" value={safe(bookingData.ModeOfPayment)} />
-                                    </div>
-                                </section>
 
-                                {/* Flat Alteration Remarks */}
-                                {bookingData.FlatAlterationRemark && (
-                                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                            Flat Alteration Remarks
-                                        </h4>
-                                        <div className="grid grid-cols-1 gap-4">
-                                            <FieldItem label="Remarks" value={safe(bookingData.FlatAlterationRemark)} />
-                                        </div>
-                                    </section>
-                                )}
-
-                                {/* Terms & Conditions */}
-                                {bookingData.TermsAndConditionsDescription && (
-                                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                            Terms & Conditions
-                                        </h4>
-                                        <div className="grid grid-cols-1 gap-4">
-                                            <FieldItem label="Description" value={safe(bookingData.TermsAndConditionsDescription)} />
-                                        </div>
-                                    </section>
-                                )}
 
                                 {/* Other Charges Summary */}
                                 {bookingData.BookingOtherChargesData && bookingData.BookingOtherChargesData.length > 0 && (
-                                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
                                         <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                             Other Charges
                                         </h4>
@@ -319,7 +477,7 @@ export const ViewBooking: React.FC = () => {
 
                                 {/* Payment Schedule Summary */}
                                 {bookingData.BookingPaymentScheduleData && bookingData.BookingPaymentScheduleData.length > 0 && (
-                                    <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
                                         <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                             Payment Schedule
                                         </h4>
@@ -342,7 +500,7 @@ export const ViewBooking: React.FC = () => {
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(schedule.Type)}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(schedule.Name)}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                                {schedule.Date ? formatDate_MonthName_yy(schedule.Date) : '-'}
+                                                                {schedule.Date ? formatDate_dd_MonthName_yy(schedule.Date) : '-'}
                                                             </td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{safe(schedule.PaymentSchedulePercentage)}</td>
                                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(schedule.PaymentScheduleAmount)}</td>

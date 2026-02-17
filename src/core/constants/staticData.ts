@@ -54,7 +54,7 @@ export const MASTER_DATA = {
 
   flat_unit_Type: ['Commercial', 'Gym', 'Residential', 'Void'],
 
-  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '1 + 1 JODI','2 + 1 JODI','2 + 2 JODI','2 + 3 JODI','PENTHOUSE'],
+  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '1 + 1 JODI', '2 + 1 JODI', '2 + 2 JODI', '2 + 3 JODI', 'PENTHOUSE'],
 
   commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
@@ -70,7 +70,7 @@ export const MASTER_DATA = {
 
   unit_sqft_lumsum: ['Per Sq Ft', 'Lump Sum'],
 
-  business_category: ['Commercial', 'Gym', 'Residential', 'School'],
+  business_category: ['Commercial', 'Mixed Use', 'Residential'],
 
   project_scheme: ['BMC', 'MHADA', 'SRA'],
 
@@ -90,9 +90,9 @@ export const MASTER_DATA = {
 
   occupationType: ['Business', 'Homemaker', 'Professional', 'Salaried', 'Retired',],
 
-  budget: ['<1', '2', '3','4', '5', '6','8','10','12','15','20','25+'],
+  budget: ['<1', '2', '3', '4', '5', '6', '8', '10', '12', '15', '20', '25+'],
 
-  accomodation: ["Rented", "Self-Owned",],
+  accomodation: ["Rented", "Self-Owned"],
 
   requirement: ["Commercial", "Commercial Leasing", "Residential"],
 
@@ -100,13 +100,13 @@ export const MASTER_DATA = {
 
   source: ['Channel Partner', 'Direct Walking'],
 
-  subSources: ['Advertisement', 'Exhibition', 'Employee Reference', 'HRR Website', 'Loyalty','Management Reference', 'Property Search Portal','SMS', 'Site Branding','Reference','Other'],
+  subSources: ['Advertisement', 'Exhibition', 'Employee Reference', 'HRR Website', 'Loyalty', 'Management Reference', 'Property Search Portal', 'SMS', 'Site Branding', 'Reference', 'Other'],
 
   subSubsource: ['Facebook', 'Hoarding', 'Instagram', 'Google Ads', 'Newspaper'],
-  
-  subSubsource_channelPartner: ['Channel Partner Data Calling','Channel Partner Walked IN','Digital Activity'],
 
-  finalStage: ['Booking Done', 'Blocked', 'Cancelled', 'Negotiation','Lost', 'Retention', 'Re - Visit Scheduled','Re - Visit Proposed', 'Site Visit','Unit Selection / Blocked'],
+  subSubsource_channelPartner: ['Channel Partner Data Calling', 'Channel Partner Walked IN', 'Digital Activity'],
+
+  finalStage: ['Booking Done', 'Blocked', 'Cancelled', 'Negotiation', 'Lost', 'Retention', 'Re - Visit Scheduled', 'Re - Visit Proposed', 'Site Visit', 'Unit Selection / Blocked'],
 
   finalStageDetail: ['TimeLine Issue', 'Location Issue', 'Low Budget', 'Did Not Like Project', 'Other Issues'],
 
@@ -120,7 +120,7 @@ export const MASTER_DATA = {
 
   sourceOfFunding: ['Loan', 'Self-funded', 'Sale Of Property'],
 
-  ethnicity: ['Bengali', 'Christian', 'Gujarati', 'Jain', 'Muslim', 'Marwari', 'Maharashtrian', 'North Indian', 'Parsi','Punjabi', 'Sindhi', 'South Indian', 'Others'],
+  ethnicity: ['Bengali', 'Christian', 'Gujarati', 'Jain', 'Muslim', 'Marwari', 'Maharashtrian', 'North Indian', 'Parsi', 'Punjabi', 'Sindhi', 'South Indian', 'Others'],
 
   nationality: ['Indian', 'NRI'],
 
@@ -271,7 +271,9 @@ export const MASTER_DATA = {
 
   enquiryTimeLine: ['Beyond 1 Month', 'Within 1 Month'],
 
-  supportType: ['A', 'B'],
+  supportType: ['Below The Line (BTL)', 'Paper Insert', 'Standee Require', 'Vedio Recording'],
+
+  handoverType: ['Bare Shell', 'Builder Finished']
 
 } as const
 
@@ -373,6 +375,7 @@ export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType);
 export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType);
 
 export const PAYMENT_MODE = toOptions(MASTER_DATA.paymentMode);
+export const HANDOVER_TYPE = toOptions(MASTER_DATA.handoverType);
 export const PAYMENT_TYPE = toOptions(MASTER_DATA.paymentType);
 export const AMOUNT_TYPE = toOptions(MASTER_DATA.amountType);
 export const CHANNE_PARTNER_DESIGNATION = toOptions(MASTER_DATA.channelPartnerDesignation);

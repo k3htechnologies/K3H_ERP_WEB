@@ -22,12 +22,12 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 import type { AddUpdateLitigationDocumentRequest, DeleteLitigationDocumentRequest, FilterWithPaginationLitigationDocumentRequest, LitigationDocumentData } from '@/features/litigation/models/LitigationDocumentModel';
-import { litigationDocumentService } from '@/features/litigation/services/LitigationDocumentServices';
+import { litigationDocumentService } from '@/features/litigation/services/LitigationDocumentService';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { useLitigationListState } from '@/features/litigation/context/LitigationListStateContext';
 import type { FilterWithPaginationLitigationRequest, LitigationData } from '@/features/litigation/models/LitigationModel';
-import { litigationService } from '../services/LitigationServices';
+import { litigationService } from '../services/LitigationService';
 
 const initialFormState = (): AddUpdateLitigationDocumentRequest => ({
     LitigationDocumentId: 0,
@@ -188,7 +188,7 @@ export const LitigationDocument: React.FC = () => {
         )
     }
     //#endregion
-    
+
     //#region FETCH LITIGATION DETAILS
     const fetchLitigationDetails = async () => {
 

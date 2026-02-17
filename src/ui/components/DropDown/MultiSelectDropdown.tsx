@@ -195,14 +195,16 @@ export const MultiSelectDropdown = forwardRef<
       });
     };
 
-    // Display selected labels
-    const selectedLabels =
-      selectedValues.length > 0
-        ? options
+    // Display selected labels (show only 3, then + count)
+    const allSelectedLabels = selectedValues.length > 0
+      ? options
           .filter((opt) => selectedValues.includes(opt[valueKey]))
           .map((opt) => opt[labelKey])
-          .join(", ")
-        : placeholder;
+      : [];
+
+    const visibleTags = allSelectedLabels.slice(0, 3);
+    const remainingCount = allSelectedLabels.length - visibleTags.length;
+    const hasSelections = selectedValues.length > 0;
 
     const toggleSelection = (val: string | number) => {
       if (selectedValues.includes(val)) {
@@ -272,14 +274,58 @@ export const MultiSelectDropdown = forwardRef<
             alignItems: "center",
             justifyContent: "space-between",
             border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
-            whiteSpace: "nowrap",
             overflow: "hidden",
-            textOverflow: "ellipsis",
           }}
         >
-          <span style={{ color: selectedValues.length ? "#000" : "#888" }}>
-            {selectedLabels}
-          </span>
+          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }}>
+            {hasSelections ? (
+              <>
+                {visibleTags.map((tagLabel, index) => {
+                  const fontSizeNum = parseFloat(String(currentSize.fontSize).replace('px', '')) || 14;
+                  return (
+                    <div
+                      key={`${tagLabel}-${index}`}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        fontSize: `${fontSizeNum - 2}px`,
+                        color: theme.colors.text,
+                      }}
+                    >
+                      {tagLabel}
+                      {index < visibleTags.length - 1 && (
+                        <span style={{ margin: "0 4px", color: theme.colors.border }}>,</span>
+                      )}
+                    </div>
+                  );
+                })}
+                {remainingCount > 0 && (
+                  <span
+                    style={{
+                      marginLeft: 4,
+                      fontSize: `${(parseFloat(String(currentSize.fontSize).replace('px', '')) || 14) - 1}px`,
+                      color: theme.colors.text,
+                      fontWeight: theme.fontWeight.medium,
+                    }}
+                  >
+                    +{remainingCount}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span
+                style={{
+                  fontSize: currentSize.fontSize,
+                  color: "#9ca3af",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                {placeholder}
+              </span>
+            )}
+          </div>
 
           {isOpen ? <ChevronUp size={20} color="#888" /> : <ChevronDown size={20} color="#888" />}
         </div>

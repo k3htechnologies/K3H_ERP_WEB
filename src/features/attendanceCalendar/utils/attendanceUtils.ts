@@ -52,6 +52,25 @@ export const getStatusTextColor = (status?: string): string =>
 export const getStatusBadgeClasses = (status?: string): { backgroundColor: string; color: string } =>
   STATUS_CONFIG[resolveStatus(status)].badge;
 
+/**
+ * Get a user-friendly status label for display.
+ * Converts values like "CHECKOUT_MISSING" or "checkout missing" to "Checkout Missing".
+ */
+export const getStatusLabel = (status?: string | null): string => {
+  if (!status) return '-';
+  const trimmed = String(status).trim();
+  if (!trimmed) return '-';
+
+  // Replace underscores/hyphens with spaces and collapse multiple spaces
+  const normalized = trimmed.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').toLowerCase();
+
+  // Title-case each word
+  return normalized
+    .split(' ')
+    .map((w) => (w.length > 0 ? w[0].toUpperCase() + w.slice(1) : w))
+    .join(' ');
+};
+
 /* ================= DATE UTILITIES ================= */
 
 export const parseMMDDYYYY = (dateStr?: string | null): string | null => {

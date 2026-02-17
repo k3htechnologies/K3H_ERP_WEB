@@ -417,7 +417,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                             label="Department"
                             title="Select Department"
                             required
-                            size="md"
+                            // size="md"
                             dataFetchCallBack={fetchDepartmentMasterDropdown}
                             onSelected={(selectedItem) => {
                                 const deptId = selectedItem?.value ? Number(selectedItem.value) : null;

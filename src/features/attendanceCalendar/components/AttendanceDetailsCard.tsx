@@ -22,6 +22,10 @@ export const AttendanceDetailsCard = React.memo<AttendanceDetailsCardProps>(({
     [attendance.AttendanceStatus]
   );
 
+  const statusLabel = useMemo(() => {
+    return attendance.AttendanceStatus ? getStatusLabel(attendance.AttendanceStatus) : '-';
+  }, [attendance.AttendanceStatus]);
+
   const formattedPunchIn = useMemo(() => {
     if (!attendance.PunchIn) return '-';
     try {
@@ -67,7 +71,7 @@ export const AttendanceDetailsCard = React.memo<AttendanceDetailsCardProps>(({
             <div className="text-sm text-[#1D1D1D80] text-center select-none">:</div>
             <div className="text-sm text-[#1D1D1D] font-medium break-words min-w-0">
               <span style={{ color: statusTextColor }}>
-                {attendance.AttendanceStatus || '-'}
+                {statusLabel}
               </span>
             </div>
           </div>

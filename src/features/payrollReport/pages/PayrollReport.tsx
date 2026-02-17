@@ -11,7 +11,7 @@ import type {
 import { employeeResignationService } from '@/features/resignation/services/EmployeeResignationService';
 import { Loader } from '@/core/utils/loader';
 import Tabs from '@/ui/components/Tab/Tab';
-import { formatDate_dd_MonthName_yy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, parseTimeFromISO } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, parseTimeFromISO, formatTimeFromDateTime } from '@/core/utils/dateFormat';
 import { DataTable, type FilterInfo, type TableColumn, type PaginationInfo, type SortInfo } from '@/ui/components/DataTable/DataTable';
 import { DataTableExpandable, type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
 import { DataTableWithOutBorder, type TableColumn as TableColumnWithoutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
@@ -278,6 +278,7 @@ export const PayrollReport: React.FC = () => {
           StartDate: activeFilters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.StartDate) || undefined : undefined,
           EndDate: activeFilters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.EndDate) || undefined : undefined,
           EmployeeName: searchTerm?.trim() || activeFilters.EmployeeName?.trim() || undefined,
+          IsReport: true
         }
 
         const response = await attendanceService.apiCallPullAttendance(params);
@@ -348,6 +349,7 @@ export const PayrollReport: React.FC = () => {
           StartDate: activeFilters.StartDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.StartDate) || undefined : undefined,
           EndDate: activeFilters.EndDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(activeFilters.EndDate) || undefined : undefined,
           EmployeeName: searchTerm?.trim() || activeFilters.EmployeeName?.trim() || undefined,
+          IsReport: true
         }
 
         const response = await attendanceRegularizationService.apiCallPullAttendanceRegularization(params);
@@ -695,13 +697,8 @@ export const PayrollReport: React.FC = () => {
   // Helper function to format time to 12-hour format (e.g., "9:20 Am", "6:20 Pm")
   const formatTime12Hour = useCallback((timeValue?: string | null): string => {
     if (!timeValue) return '-';
-    const formatted = parseTimeFromISO(timeValue);
-    if (formatted) {
-      // Convert to format like "9:20 Am" or "6:20 Pm"
-      const [time, ampm] = formatted.split(' ');
-      return `${time} ${ampm}`;
-    }
-    return timeValue;
+    const formatted = formatTimeFromDateTime(timeValue);
+    return formatted && formatted.trim() !== '' ? formatted : (timeValue || '-');
   }, []);
 
   // Helper function to format working hours (e.g., "09h:00m:12s")

@@ -209,6 +209,8 @@ export interface AddUpdateEnquiryRequest {
     Remark?: string | null;
 
     VillageMasterId?: string | null;
+
+    OTP?: string | null;
 }
 
 

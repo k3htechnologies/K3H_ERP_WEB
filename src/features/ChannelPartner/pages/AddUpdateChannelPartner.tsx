@@ -20,6 +20,9 @@ import Checkbox from "@/ui/components/forms/Checkbox";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { fetchChannelPartnerById, fetchChannelPartnerCompanyDropdown } from "@/features/ChannelPartner/channelPartnerDropDown";
+import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
+import { Modal } from "@/ui/components/Modal/Modal";
+import { sendOTP } from "@/features/technical/services/OTPService";
 
 const initialFormState = (): AddUpdateChannelPartnerRequest => ({
     ChannelPartnerId: 0,
@@ -52,7 +55,7 @@ const initialFormState = (): AddUpdateChannelPartnerRequest => ({
     StateMasterId: null,
     CityMasterId: null,
     VillageMasterId: null,
-
+    OTP: "",
 });
 
 export const AddUpdateChannelPartner: React.FC = () => {
@@ -73,6 +76,13 @@ export const AddUpdateChannelPartner: React.FC = () => {
     const [removeAadharCardUrls, setRemoveAadharCardUrls] = useState<string[]>([]);
 
     const [channelPartnerUniqueKey, setChannelPartnerUniqueKey] = useState<string>();
+
+    //COMPLETE VERIFICATION
+    const [otp, setOtp] = useState("");
+    const [isOtpSent, setIsOtpSent] = useState(false);
+    const [isOtpVerified, setIsOtpVerified] = useState(false);
+    const [showOtpSection, setShowOtpSection] = useState(false);
+
     // NAVIGATE
     const navigate = useNavigate();
 
@@ -386,7 +396,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
         fd.append("StateMasterId", String(formData.StateMasterId ?? 0));
         fd.append("CityMasterId", String(formData.CityMasterId ?? 0));
         fd.append("VillageMasterId", String(formData.VillageMasterId ?? 0));
-
+        fd.append("OTP", otp?.trim() ?? "");
 
         panCardURLFiles.forEach(file => {
             if (file instanceof File) {
@@ -419,7 +429,34 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
             setErrors(validation.errors);
 
+            addToast({ type: 'error', title: 'Please fill the required filed' });
+
             return;
+        }
+
+        if (formData.ChannelPartnerId === 0 && !isOtpVerified) {
+
+            if (!isOtpSent) {
+
+                const sent = await sendOTP({
+
+                    mobileNumber: formData.MobileNumber || "",
+                    module: "CHANNEL PARTNER",
+                    setIsLoading,
+                    setLoadingMessage,
+                    addToast
+                });
+
+
+                if (sent) {
+                    setShowOtpSection(true);
+                    setIsOtpSent(true);
+
+                }
+
+                return;
+            }
+
         }
 
         await runApiWithLoader(
@@ -1087,7 +1124,48 @@ export const AddUpdateChannelPartner: React.FC = () => {
                 }}
                 isLoading={isLoading}
             />
-        </div >
+            <Modal
+                isOpen={showOtpSection && formData.ChannelPartnerId === 0}
+                onClose={() => {
+                    setOtp("");
+                    setIsOtpSent(false);
+                    setIsOtpVerified(false);
+                    setShowOtpSection(false);
+
+                }}
+                title="Complete Verification"
+                saveText={formData.ChannelPartnerId ? "Update" : "Verify OTP & Add"}
+                size="md"
+                onSubmit={(e) => {
+
+                    e.preventDefault();
+
+                    if (!otp) {
+
+                        addToast({ type: "error", title: "Please enter OTP" });
+                        return;
+                    }
+
+                    setIsOtpVerified(true);
+
+                    handleAddUpdateChannelPartner();
+                }}
+            >
+
+                <CompleteVerificationSection
+                    steps={[
+                        { id: "basic", label: "Basic Details", completed: true },
+                        { id: "source", label: "Source Details", completed: true },
+                        { id: "property", label: "Property Preferences", completed: true },
+                        { id: "followup", label: "Follow-up Details", completed: true },
+                    ]}
+                    otp={otp}
+                    onOtpChange={setOtp}
+                    mobileNumber={formData.MobileNumber ?? ""}
+                />
+
+            </Modal>
+        </div>
     );
 };
 

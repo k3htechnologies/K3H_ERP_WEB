@@ -32,6 +32,9 @@ import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpaginatio
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { fetchVillageDropdown } from "@/features/technical/villageDropDown";
 import { getCustomerClassification } from "@/features/enquiry/utils/customerClassification";
+import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
+import { Modal } from "@/ui/components/Modal/Modal";
+import { sendOTP } from "@/features/technical/services/OTPService";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
     EnquiryId: 0,
@@ -101,6 +104,8 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
 
     Remark: "",
 
+    OTP: "",
+
 });
 
 
@@ -127,10 +132,14 @@ export const AddUpdateEnquiry: React.FC = () => {
     const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
     const [channelPartnerType, setChannelPartnerType] = useState<string>();
 
-    
-    
-        const [enquiryUniqueKey, setEnquiryUniqueKey] = useState<string>();
+    const [enquiryUniqueKey, setEnquiryUniqueKey] = useState<string>();
 
+    //COMPLETE VERIFICATION
+
+    const [otp, setOtp] = useState("");
+    const [isOtpSent, setIsOtpSent] = useState(false);
+    const [isOtpVerified, setIsOtpVerified] = useState(false);
+    const [showOtpSection, setShowOtpSection] = useState(false);
 
     // NAVIGATE
     const navigate = useNavigate();
@@ -492,11 +501,7 @@ export const AddUpdateEnquiry: React.FC = () => {
 
         }
 
-        if (!formData.NextFollowUpDate) {
-            newErrors.NextFollowUpDate = 'Next Follow-Up Date is required';
-        }
-
-        if (formData.NextFollowUpDate && !isToDateGreaterOrEqualFromDate(formData.EnquiryDate || "", formData.NextFollowUpDate!)) {
+        if (formData.NextFollowUpDate != null && formData.NextFollowUpDate !== "" && !isToDateGreaterOrEqualFromDate(formData.EnquiryDate || "", formData.NextFollowUpDate!)) {
             newErrors.NextFollowUpDate = "Next Follow Up Date must be greater than or equal to Enquiry Date";
         }
         return {
@@ -593,7 +598,7 @@ export const AddUpdateEnquiry: React.FC = () => {
             FinalStageDetail: formData.FinalStageDetail,
 
             EnquiryDate: formData.EnquiryDate,
-            NextFollowUpDate: formData.NextFollowUpDate,
+            NextFollowUpDate: formData.NextFollowUpDate || null,
 
             SalesAdvisorId: formData.SalesAdvisorId,
             SourcingManagerId: formData.SourcingManagerId,
@@ -601,6 +606,8 @@ export const AddUpdateEnquiry: React.FC = () => {
             EnquiryTimeIn: formData.EnquiryTimeIn,
 
             Remark: formData.Remark,
+
+            OTP: otp?.trim()
 
         };
     };
@@ -618,7 +625,34 @@ export const AddUpdateEnquiry: React.FC = () => {
 
             setErrors(validation.errors);
 
+            addToast({ type: 'error', title: 'Please fill the required filed' });
+
             return;
+        }
+
+        if (formData.EnquiryId === 0 && !isOtpVerified) {
+
+            if (!isOtpSent) {
+
+                const sent = await sendOTP({
+
+                    mobileNumber: formData.MobileNumber || "",
+                    module: "ENQUIRY",
+                    setIsLoading,
+                    setLoadingMessage,
+                    addToast
+                });
+
+
+                if (sent) {
+                    setShowOtpSection(true);
+                    setIsOtpSent(true);
+
+                }
+
+                return;
+            }
+
         }
 
         await runApiWithLoader(
@@ -732,6 +766,7 @@ export const AddUpdateEnquiry: React.FC = () => {
         autoFetchOptions: true
     });
     //#endregion
+
     return (
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -1511,7 +1546,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         <div>
                                             <DatePickerInput
                                                 label="Next Follow-Up Date"
-                                                required
                                                 value={formatDate_dd_mm_yyyy(formData.NextFollowUpDate)}
                                                 onChange={(val) => handleFieldChange('NextFollowUpDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                                 error={errors.NextFollowUpDate}
@@ -1592,6 +1626,49 @@ export const AddUpdateEnquiry: React.FC = () => {
                 }}
                 isLoading={isLoading}
             />
+
+            <Modal
+                isOpen={showOtpSection && formData.EnquiryId === 0}
+                onClose={() => {
+                    setOtp("");
+                    setIsOtpSent(false);
+                    setIsOtpVerified(false);
+                    setShowOtpSection(false);
+
+                }}
+                title="Complete Verification"
+                saveText={formData.EnquiryId ? "Update" : "Verify OTP & Add"}
+                size="md"
+                onSubmit={(e) => {
+
+                    e.preventDefault();
+
+                    if (!otp) {
+
+                        addToast({ type: "error", title: "Please enter OTP" });
+                        return;
+                    }
+
+                    setIsOtpVerified(true);
+
+                    handleAddUpdateEnquiry();
+                }}
+            >
+
+                <CompleteVerificationSection
+                    steps={[
+                        { id: "basic", label: "Basic Details", completed: true },
+                        { id: "source", label: "Source Details", completed: true },
+                        { id: "property", label: "Property Preferences", completed: true },
+                        { id: "followup", label: "Follow-up Details", completed: true },
+                    ]}
+                    otp={otp}
+                    onOtpChange={setOtp}
+                    mobileNumber={formData.MobileNumber ?? ""}
+                />
+
+            </Modal>
+
         </div>
     );
 };

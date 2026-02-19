@@ -1,10 +1,9 @@
-import { useState } from 'react'
 interface OverviewItem {
-  totalCompanies?: number;
-  totalEmployees?: number;
-  activeProjects?: number;
-  registeredVendors?: number;
-  payrollConfigured?: number;
+  ActiveProjects?: number;
+  PayrollConfiguredPercent?: number;
+  RegisteredVendors?: number;
+  TotalCompanies?: number;
+  TotalEmployees?: number;
 }
 
 interface Props {
@@ -13,96 +12,91 @@ interface Props {
 
 const OverviewCards: React.FC<Props> = ({ overViewData = [] }: Props) => {
 
-  const data = overViewData[0] || {};
-
-  const [noData, setNoData] = useState(false);
-
-
-  const cards = [
-    // {
-    //   title: "Total Companies",
-    //   value: data.totalCompanies ?? 24,
-    //   additonalData: "+2 this month",
-
-    // },
-    // {
-    //   title: "Total Employees",
-    //   value: data.totalEmployees ?? 320,
-    //   additonalData: "+15 last 30 days",
-
-    // },
-    // {
-    //   title: "Active Projects",
-    //   value: data.activeProjects ?? 47,
-    //   additonalData: "8 on hold",
-
-    // },
-    // {
-    //   title: "Registered Vendors",
-    //   value: data.registeredVendors ?? 156,
-    //   additonalData: "12 added recently",
-
-    // },
-    // {
-    //   title: "Payroll Configured",
-    //   value: data.payrollConfigured ?? "85%",
-    // }
-    {
-      title: "Total Companies",
-      value: 0,
-      additonalData: "No data",
-
-    },
-    {
-      title: "Total Employees",
-      value: 0,
-      additonalData: "No data",
-
-    },
-    {
-      title: "Active Projects",
-      value: 0,
-      additonalData: "No data",
-
-    },
-    {
-      title: "Registered Vendors",
-      value: 0,
-      additonalData: "No data",
-
-    },
-    {
-      title: "Payroll Configured",
-      value: "0%",
-      additonalData: "No data",
-    }
-  ]
-
   return (
     <div className="space-y-3 pt-5">
       <h1 className="text-lg font-semibold text-gray-800">Overview</h1>
 
       <div className="grid grid-cols-5 gap-4">
-
-        
-
-        {cards.map((c, i) => (
-          <div
-            key={i}
-            className="bg-white rounded-2xl p-4 border border-gray-100"
-            style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
-          >
-            <p className="text-sm text-gray-500">{c.title}</p>
-            <div className="flex items-center gap-2 p-2">
-              <p className="text-2xl font-semibold text-gray-900">
-                {c.value}
-              </p>
-              <p className="text-[12px] text-green-600">
-                {c.additonalData}
-              </p>
+        {overViewData.length > 0 && (
+          <>
+            <div
+              className="bg-white rounded-2xl p-4 border border-gray-100"
+              style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
+            >
+              <p className="text-sm text-gray-400 font-semibold">Total Companies</p>
+              <div className="flex items-center gap-2 p-2">
+                <p className="text-2xl font-semibold text-gray-900">
+                  {overViewData[0].TotalCompanies}
+                </p>
+                {/* Helper Text */}
+                <p className="text-[12px] text-green-600">
+                  +2 this month
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
+
+            <div
+              className="bg-white rounded-2xl p-4 border border-gray-100"
+              style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
+            >
+              <p className="text-sm text-gray-400 font-semibold">Total Employees</p>
+              <div className="flex items-center gap-2 p-2">
+                <p className="text-2xl font-semibold text-gray-900">
+                  {overViewData[0].TotalEmployees}
+                </p>
+                {/* Helper Text */}
+                <p className="text-[12px] text-green-600">
+                  +15 last 30 days
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="bg-white rounded-2xl p-4 border border-gray-100"
+              style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
+            >
+              <p className="text-sm text-gray-400 font-semibold">Active Projects</p>
+              <div className="flex items-center gap-2 p-2">
+                <p className="text-2xl font-semibold text-gray-900">
+                  {overViewData[0].ActiveProjects}
+                </p>
+                {/* Helper Text */}
+                <p className="text-[12px] text-amber-600">
+                  8 on hold
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="bg-white rounded-2xl p-4 border border-gray-100"
+              style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
+            >
+              <p className="text-sm text-gray-400 font-semibold">Registered Vendors</p>
+              <div className="flex items-center gap-2 p-2">
+                <p className="text-2xl font-semibold text-gray-900">
+                  {overViewData[0].RegisteredVendors}
+                </p>
+                {/* Helper Text */}
+                <p className="text-[12px] text-green-600">
+                  12 added recently
+                </p>
+              </div>
+            </div>
+
+            <div
+              className="bg-white rounded-2xl p-4 border border-gray-100"
+              style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
+            >
+              <p className="text-sm text-gray-400 font-semibold">Payroll Configured</p>
+              <div className="flex items-center gap-2 p-2">
+                <p className="text-2xl font-semibold text-gray-900">
+                  {overViewData[0].PayrollConfiguredPercent} %
+                </p>
+
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   )

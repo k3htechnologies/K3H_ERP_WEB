@@ -6,44 +6,52 @@ import VendorManagement from '../components/VendorManagement'
 import VendorGraphCard from '../components/VendorGraphCard'
 import ProjectManagement from '../components/ProjectManagement'
 import ProjectStatus from '../components/ProjectStatus'
-import PayrollMaster from '../components/PayrollMaster'
+// import PayrollMaster from '../components/PayrollMaster'
 import { runApiWithLoader } from '@/core/utils'
-import { usePagination } from '@/core/hooks/usePagination';
-import type { FilterWithPaginationSettingsDashboard } from '@/features/settingsDashboard/models/SettingsDashboardModel';
 import { settingsDashboardService } from '@/features/settingsDashboard/services/SettingsDashboardServices';
 import { useToast } from '@/core/hooks/useToast';
+
 import * as E from 'fp-ts/Either';
 
 const SettingsDashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [overViewCards, setOverViewCards] = useState<any>([]);
+  const [companySetup, setCompanySetup] = useState<any>([]);
+  const [procurementMaster, setProcurementMaster] = useState<any>([]);
+  const [vendorManagement, setVendorManagement] = useState<any>([]);
+  const [vendorGraphCard, setVendorGraphCard] = useState<any>([]);
+  const [projectManagement, setProjectManagement] = useState<any>([]);
+  const [projectStatus, setProjectStatus] = useState<any>([]);
+  // const [payrollMaster, setPayrollMaster] = useState<any>([]);
 
   const { addToast } = useToast();
 
   // PAGINATION STATE
-  const { pagination, setPagination } = usePagination(10);
 
   useEffect(() => {
-    loadSettingsDashboardData(pagination.currentPage);
+    loadSettingsDashboardData();
   }, []);
 
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-  const loadSettingsDashboardData = async (page: number) => {
+  const loadSettingsDashboardData = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        const params: FilterWithPaginationSettingsDashboard = {
-          PageNumber: page,
-          PageSize: pagination.pageSize,
-        }
-        const response = await settingsDashboardService.apiCallPullSettingsDashboard(params);
-        console.log('Settings Dashboard Response is: ', response);
+
+        const response = await settingsDashboardService.apiCallPullSettingsDashboard();
         if (E.isRight(response)) {
-          setPagination({
-            currentPage: page,
-          });
+          const e = response.right.Data;
+          setOverViewCards(e.Table0 || []);
+          setCompanySetup(e.Table1 || []);
+          setProcurementMaster(e.Table2 || []);
+          setVendorManagement(e.Table3 || []);
+          setProjectManagement(e.Table4 || []);
+          setVendorGraphCard(e.Table5 || []);
+          setProjectStatus(e.Table6 || []);
+
         } else {
           addToast({ type: 'error', title: response.left.message });
           console.log('Respo', response);
@@ -54,19 +62,19 @@ const SettingsDashboard: React.FC = () => {
   }
 
   return (
-    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
-      <OverviewCards />
+    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-3">
+      <OverviewCards overViewData={overViewCards} />
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        <CompanySetup />
-        <ProcurementMaster />
-        <VendorManagement />
-        <VendorGraphCard />
-        <ProjectManagement />
-        <ProjectStatus />
+        <CompanySetup companySetupData={companySetup} />
+        <ProcurementMaster procurementMasterData={procurementMaster} />
+        <VendorManagement vendorManagementData={vendorManagement} />
+        <VendorGraphCard vendorGraphData={vendorGraphCard} />
+        <ProjectManagement projectManagementData={projectManagement} />
+        <ProjectStatus projectStatusData={projectStatus} />
       </div>
-      <div>
+      {/* <div>
         <PayrollMaster />
-      </div>
+      </div> */}
     </div>
   )
 }

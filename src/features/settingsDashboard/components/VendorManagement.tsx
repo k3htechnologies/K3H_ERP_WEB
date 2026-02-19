@@ -1,26 +1,38 @@
 import React from 'react'
 
-const VendorManagement: React.FC = () => {
+interface VendorManagementData {
+    TotalVendors: number;
+    CompanyTypeCount: number;
+    MissingDetails: number;
+    TotalMaterial: number;
+    ContractCount: number;
+}
+
+interface Props {
+    vendorManagementData: VendorManagementData[];
+}
+
+const VendorManagement: React.FC<Props> = ({ vendorManagementData = [] }: Props) => {
     const data = [
         {
             title: "Total Vendors",
-            value: "-"
+            value: vendorManagementData[0]?.TotalVendors
         },
         {
             title: "Company Type",
-            value: "-"
+            value: '2'
         },
         {
             title: "Missing Details",
-            value: "-"
+            value: vendorManagementData[0]?.MissingDetails
         },
         {
             title: "Total Material",
-            value: "-"
+            value: vendorManagementData[0]?.TotalMaterial
         },
         {
             title: "Total Contract",
-            value: "-"
+            value: vendorManagementData[0]?.ContractCount
         }
     ]
 
@@ -32,7 +44,7 @@ const VendorManagement: React.FC = () => {
                     return (
                         <div key={i}>
                             <p className="text-sm text-gray-500 font-medium">{c.title}</p>
-                            <p className="text-lg font-semibold text-gray-900">{c.value}</p>
+                            <p className={c.title === "Missing Details" ? 'font-semibold text-lg text-orange-400' : 'text-lg font-semibold text-gray-900'}>{c.value}</p>
                         </div>
                     );
                 })}
@@ -46,7 +58,6 @@ const VendorManagement: React.FC = () => {
                     </div>
                     <p className="text-right text-purple-600 font-bold text-lg">12</p>
                 </div>
-                
             </div>
         </div>
     )

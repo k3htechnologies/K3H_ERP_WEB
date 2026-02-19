@@ -1,10 +1,10 @@
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
-import type { FilterWithPaginationSettingsDashboard, SettingsDashboardDatasetResponse } from '@/features/settingsDashboard/models/SettingsDashboardModel';
+import type { SettingsDashboardDatasetResponse } from '@/features/settingsDashboard/models/SettingsDashboardModel';
 import { SettingsDashboardApi } from '../api/settingsDashboardApi';
 
 export abstract class SettingsDashboardDatasource {
-    abstract pullSettingsDashboard(params: FilterWithPaginationSettingsDashboard, signal?: AbortSignal): Promise<SettingsDashboardDatasetResponse>;
+    abstract pullSettingsDashboard(signal?: AbortSignal): Promise<SettingsDashboardDatasetResponse>;
 }
 
 export class SettingsDashboardDatasourceImpl implements SettingsDashboardDatasource {
@@ -12,13 +12,10 @@ export class SettingsDashboardDatasourceImpl implements SettingsDashboardDatasou
         return baseClient
     }
 
-    async pullSettingsDashboard(params: FilterWithPaginationSettingsDashboard, signal?: AbortSignal): Promise<SettingsDashboardDatasetResponse> {
+    async pullSettingsDashboard(signal?: AbortSignal): Promise<SettingsDashboardDatasetResponse> {
         try {
-            const queryParams = new URLSearchParams({
-                PageSize: params.PageSize.toString(),
-                PageNumber: params.PageNumber.toString(),
-            })
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(`${SettingsDashboardApi.PULL}?${queryParams.toString()}`, { signal })
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(`${SettingsDashboardApi.PULL}`, { signal })
             console.log('Response >>>>', response);
             return response;
 
@@ -27,7 +24,7 @@ export class SettingsDashboardDatasourceImpl implements SettingsDashboardDatasou
             console.error('ERROR: PULL SETTINGS DASHBOARD :', error);
 
             if (error === TokenExpiredException) {
-                await this.pullSettingsDashboard(params);
+                await this.pullSettingsDashboard(signal);
             }
             throw error
         }

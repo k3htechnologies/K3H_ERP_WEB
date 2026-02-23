@@ -333,6 +333,11 @@ export const getPageInfo = (path: string) => {
             }
 
             {/* SALES */ }
+        case 'salesDashboard':
+            return {
+                title: 'Sales Dashboard',
+                description: 'Sales Insights, Instantly',
+            }
         case 'enquiry':
             return {
                 title: "Enquiry",

@@ -145,6 +145,7 @@ import AddUpdateBooking from '@/features/booking/pages/AddUpdateBooking';
 import ViewBooking from '@/features/booking/pages/ViewBooking';
 import CallTracker from '@/features/callTracker/pages/CallTracker';
 import OtherCharges from '@/features/otherCharges/pages/OtherCharges';
+import SalesDashboard from '@/features/salesDashboard/pages/SalesDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -322,6 +323,7 @@ function App() {
 
 
             {/* SALES */}
+            <Route path="salesDashboard" element={<SalesDashboard />} />
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />

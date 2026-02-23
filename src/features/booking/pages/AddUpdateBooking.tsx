@@ -39,6 +39,10 @@ import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpaginatio
 import { fetchParkingDropdown } from '@/features/parking/parkingDropDown';
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
 import type { ParkingData } from '@/features/parking/models/ParkingModel';
+import { fetchTncMasterDropdown } from '@/features/tnc/tncDropDown';
+import RichTextEditor from '@/ui/components/forms/RichTextEditor';
+import { sendOTP } from '@/features/technical/services/OTPService';
+import CompleteVerificationSection from '@/ui/components/TwoWayVerification/CompleteVerificationSection';
 
 const initialFormState = (): AddUpdateBookingRequest => ({
     BookingId: 0,
@@ -72,6 +76,7 @@ const initialFormState = (): AddUpdateBookingRequest => ({
     BankListMasterId: 0,
     TransferBookingId: 0,
     TenantId: 0,
+    OTP: "",
 });
 
 const initialFormStateApplicantDetails = (): AddUpdateBookingApplicantRequest => ({
@@ -239,6 +244,13 @@ export const AddUpdateBooking: React.FC = () => {
     const [parkingData, setParkingData] = useState<ParkingData[]>([]);
     const [selectedParkingValues, setSelectedParkingValues] = useState<string | number | null>(null);
     const [inventoryFlatFloorBasementPodiumWingId, setInventoryFlatFloorBasementPodiumWingId] = useState<number>(0);
+
+    //COMPLETE VERIFICATION
+
+    const [otp, setOtp] = useState("");
+    const [isOtpSent, setIsOtpSent] = useState(false);
+    const [isOtpVerified, setIsOtpVerified] = useState(false);
+    const [showOtpSection, setShowOtpSection] = useState(false);
 
     const [dropdownLabels, setDropdownLabels] = useState<{
         buildingName?: string;
@@ -940,7 +952,7 @@ export const AddUpdateBooking: React.FC = () => {
             },
             {
                 key: 'PaymentSchedulePercentage',
-                label: 'Percentage',
+                label: 'Percentage (%)',
                 width: '12',
                 sortable: false,
                 align: 'center',
@@ -948,7 +960,7 @@ export const AddUpdateBooking: React.FC = () => {
             },
             {
                 key: 'Cumulative',
-                label: 'Cumulative %',
+                label: 'Cumulative (%)',
                 width: '15',
                 sortable: false,
                 align: 'center',
@@ -958,7 +970,29 @@ export const AddUpdateBooking: React.FC = () => {
             },
             {
                 key: 'PaymentScheduleAmount',
-                label: 'Amount',
+                label: 'Amount (₹)',
+                width: '18',
+                sortable: false,
+                align: 'right',
+                render: (value) => {
+                    if (!value) return '-';
+                    return `₹${Number(value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+            },
+            {
+                key: 'PaymentScheduleGSTAmount',
+                label: 'GST Amount (₹)',
+                width: '18',
+                sortable: false,
+                align: 'right',
+                render: (value) => {
+                    if (!value) return '-';
+                    return `₹${Number(value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                }
+            },
+            {
+                key: 'PaymentScheduleTDSAmount',
+                label: 'TDS Amount (₹)',
                 width: '18',
                 sortable: false,
                 align: 'right',
@@ -1142,8 +1176,6 @@ export const AddUpdateBooking: React.FC = () => {
         if (!formData.ProjectId || formData.ProjectId === 0) {
             newErrors.ProjectId = 'Project is required';
         }
-
-        
 
         if (!formData.PermanentAddress) {
             newErrors.PermanentAddress = 'Permanent Address is required';
@@ -1502,6 +1534,31 @@ export const AddUpdateBooking: React.FC = () => {
 
         }
 
+        if (formData.BookingId === 0 && !isOtpVerified) {
+
+            if (!isOtpSent) {
+
+                const sent = await sendOTP({
+
+                    mobileNumber: applicantList.find(x => x.ApplicantType === "Applicant")?.ApplicantMobileNumber || "",
+                    module: "BOOKING",
+                    setIsLoading,
+                    setLoadingMessage,
+                    addToast
+                });
+
+
+                if (sent) {
+                    setShowOtpSection(true);
+                    setIsOtpSent(true);
+
+                }
+
+                return;
+            }
+
+        }
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -1544,6 +1601,7 @@ export const AddUpdateBooking: React.FC = () => {
                 // Convert other charges to JSON
                 const otherChargesJSON = otherCharges.length > 0 ? JSON.stringify(otherCharges) : '';
                 formDataToSend.append('OtherChargesDetailJSON', otherChargesJSON);
+
                 // Convert payment schedules to JSON
                 const paymentScheduleJSON = paymentSchedules.length > 0 ? JSON.stringify(paymentSchedules) : '';
                 formDataToSend.append('PaymentScheduleDetailJSON', paymentScheduleJSON);
@@ -1558,6 +1616,7 @@ export const AddUpdateBooking: React.FC = () => {
                 formDataToSend.append('BankListMasterId', String(formData.BankListMasterId ?? 0));
                 formDataToSend.append('TransferBookingId', String(formData.TransferBookingId ?? 0));
                 formDataToSend.append('TenantId', String(formData.TenantId ?? 0));
+                formDataToSend.append('OTP', otp?.trim());
 
                 // Helper function to add files with existing
                 const addFilesWithExisting = (
@@ -1661,13 +1720,24 @@ export const AddUpdateBooking: React.FC = () => {
         },
         []
     );
-    //#endregion
 
     const parkingDropdown = useMultiSelectDropdown({
         value: selectedParkingValues,
         fetchCallback: fetchParkingProjectWise,
         autoFetchOptions: true,
     });
+
+
+    //#endregion
+
+    //#region FETCH TNC DROPDOWN WITH MODULE NAME
+    const fetchTncByModuleName = (moduleName: string) =>
+        (page: number, params?: { value?: string }) =>
+            fetchTncMasterDropdown(page, {
+                value: params?.value || "",
+                moduleName: moduleName,
+            });
+    //#endregion
 
     //#region RENDER
     return (
@@ -1683,7 +1753,7 @@ export const AddUpdateBooking: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            disabled={bookingId > 0 ? true :false}
+                            disabled={bookingId > 0 ? true : false}
                             label="Enquiry Unique Code"
                             value={enquiryUniqueCode}
                             onChange={(e) => {
@@ -2045,6 +2115,22 @@ export const AddUpdateBooking: React.FC = () => {
                                         })));
                                     }
 
+                                    // ================= RECALCULATE PAYMENT SCHEDULE GST AMOUNTS =================
+                                    if (paymentSchedules.length > 0) {
+                                        setPaymentSchedules(prev => prev.map(schedule => ({
+                                            ...schedule,
+                                            PaymentScheduleGSTAmount: (agreementValue * (formData.AgreementValueGSTPercentage || 0)) / 100
+                                        })));
+                                    }
+
+                                    // ================= RECALCULATE PAYMENT SCHEDULE TDS AMOUNTS =================
+                                    if (paymentSchedules.length > 0) {
+                                        setPaymentSchedules(prev => prev.map(schedule => ({
+                                            ...schedule,
+                                            PaymentScheduleTDSAmount: (agreementValue * (formData.AgreementValueGSTPercentage || 0)) / 100
+                                        })));
+                                    }
+
                                 }}
                                 placeholder="Agreement Value"
                                 rightIcon="₹"
@@ -2377,6 +2463,40 @@ export const AddUpdateBooking: React.FC = () => {
                                     initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
                                     error={errors.BankListMasterId}
                                 />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ============================================================= [ADITIONAL DETAILS] ============================================================================================= */}
+                    <div className="space-y-4 pb-3">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Additional Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+                            <div>
+                                <TextArea
+                                    label="Flat Alteration Remark"
+                                    required
+                                    value={formData.FlatAlterationRemark ?? ""}
+                                    onChange={(e) => handleFieldChange('FlatAlterationRemark', e.target.value)}
+                                    placeholder="Enter Permanent Address"
+                                    error={errors.FlatAlterationRemark}
+                                />
+                            </div>
+                            <div>
+                                <SingleSelectDropdownWithPagination
+                                    label="Term & Conditional"
+                                    title="Term & Conditional"
+                                    size="lg"
+                                    dataFetchCallBack={fetchTncByModuleName("Booking")}
+                                    onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item.value)}
+                                />
+                            </div>
+                            <div>
+                                <RichTextEditor
+                                    value={formData.TermsAndConditionsDescription ?? ""}
+                                    onChange={(html) => handleFieldChange('TermsAndConditionsDescription', html)}
+                                    placeholder="Enter Description"
+                                />
+
                             </div>
                         </div>
                     </div>
@@ -2751,7 +2871,7 @@ export const AddUpdateBooking: React.FC = () => {
                     const scheduleDate = paymentScheduleType === 'Date' && paymentScheduleDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(paymentScheduleDate) : null;
 
                     const hasDuplicate = paymentSchedules.some((schedule, idx) => {
-                       
+
                         if (editingPaymentScheduleIndex !== null && idx === editingPaymentScheduleIndex) {
                             return false;
                         }
@@ -2759,7 +2879,7 @@ export const AddUpdateBooking: React.FC = () => {
                         if (paymentScheduleType === 'Date' && schedule.Type === 'Date') {
                             return schedule.Date === scheduleDate;
                         } else if (paymentScheduleType === 'Stage' && schedule.Type === 'Stage') {
-                           
+
                             return schedule.Name === scheduleName;
                         }
                         return false;
@@ -2802,8 +2922,8 @@ export const AddUpdateBooking: React.FC = () => {
                         Date: scheduleDate,
                         PaymentSchedulePercentage: percentage,
                         PaymentScheduleAmount: amount,
-                        PaymentScheduleGSTAmount: 0,
-                        PaymentScheduleTDSAmount: 0
+                        PaymentScheduleGSTAmount: (amount * Number(formData.AgreementValueGSTPercentage)) / 100,
+                        PaymentScheduleTDSAmount: (amount * Number(formData.AgreementValueGSTPercentage)) / 100,
                     };
 
                     if (editingPaymentScheduleIndex !== null) {
@@ -3055,6 +3175,50 @@ export const AddUpdateBooking: React.FC = () => {
                     </div>
                 </div>
             </Modal>
+
+            <Modal
+                isOpen={showOtpSection && formData.EnquiryId === 0}
+                onClose={() => {
+                    setOtp("");
+                    setIsOtpSent(false);
+                    setIsOtpVerified(false);
+                    setShowOtpSection(false);
+
+                }}
+                title="Complete Verification"
+                saveText={formData.EnquiryId ? "Update" : "Verify OTP & Add"}
+                size="md"
+                onSubmit={(e) => {
+
+                    e.preventDefault();
+
+                    if (!otp) {
+
+                        addToast({ type: "error", title: "Please enter OTP" });
+                        return;
+                    }
+
+                    setIsOtpVerified(true);
+
+                    handleSubmit();
+                }}
+            >
+
+                <CompleteVerificationSection
+                    steps={[
+                        { id: "basic", label: "Basic Details", completed: true },
+                        { id: "source", label: "Source Details", completed: true },
+                        { id: "property", label: "Property Preferences", completed: true },
+                        { id: "followup", label: "Follow-up Details", completed: true },
+                    ]}
+                    otp={otp}
+                    onOtpChange={setOtp}
+                    mobileNumber={applicantList.find(x => x.ApplicantType === "Applicant")?.ApplicantMobileNumber ?? ""}
+                />
+
+            </Modal>
+
+
         </div>
     );
     //#endregion

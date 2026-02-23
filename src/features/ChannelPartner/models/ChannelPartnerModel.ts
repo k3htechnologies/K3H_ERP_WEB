@@ -152,6 +152,7 @@ export interface AddUpdateChannelPartnerRequest {
     StateMasterId: number | null;
     CityMasterId: number | null;
     VillageMasterId: number | null;
+     OTP?: string | null;
 }
 
 export interface DeleteChannelPartnerRequest {

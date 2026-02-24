@@ -33,7 +33,6 @@ export const HolidayMasterFormModal: React.FC<HolidayMasterFormModalProps> = ({
   loading,
   holidayFiles,
   setHolidayFiles,
-  holidayURL,
   removedHolidayUrls,
   setRemovedHolidayUrls
 }) => {
@@ -57,7 +56,7 @@ export const HolidayMasterFormModal: React.FC<HolidayMasterFormModalProps> = ({
               value={formData.HolidayName ?? ''}
               onChange={(e) => onFieldChange("HolidayName", e.target.value)}
               required
-              maxLength={100}
+              maxLength={50}
               placeholder="Enter Holiday Name"
               error={errors.HolidayName}
             />
@@ -70,7 +69,6 @@ export const HolidayMasterFormModal: React.FC<HolidayMasterFormModalProps> = ({
               error={errors.HolidayURL}
               value={holidayFiles}
               onChange={setHolidayFiles}
-              availableFilesURL={holidayURL ?? ""}
               allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
               maxFiles={5}
               maxSizeMB={10}

@@ -103,14 +103,14 @@ const ViewShiftMaster: React.FC = () => {
                     <div className="lg:col-span-2 space-y-6">
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Basic Shift Details
+                                Shift Details
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                 <div className="lg:col-span-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Shift Begin Time" value={editShiftMasterData!.ShiftName} />
-                                        <FieldItem label="Shift End Time" value={editShiftMasterData!.ShiftCode} />
+                                        <FieldItem label="Shift Name" value={editShiftMasterData!.ShiftName} />
+                                        <FieldItem label="Shift Code" value={editShiftMasterData!.ShiftCode} />
 
                                     </div>
                                 </div>
@@ -180,7 +180,7 @@ const ViewShiftMaster: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
 
                                         <FieldItem label="Mark Half Day if Intime After" value={editShiftMasterData!.HalfDayInTimeAfter} />
-                                        <FieldItem label="Mark Half Day if Outtime After" value={editShiftMasterData!.HalfDayOutTimeBefore} />
+                                        <FieldItem label="Mark Half Day if Outtime Before" value={editShiftMasterData!.HalfDayOutTimeBefore} />
 
                                     </div>
                                 </div>

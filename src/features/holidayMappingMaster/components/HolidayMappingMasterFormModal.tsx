@@ -51,9 +51,9 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
         <div className='space-y-4'>
           <div>
             <SingleSelectDropdownWithPagination
-              label="Holiday"
+              label="Holiday Name"
               key={dropdownResetKey}
-              title="Select Holiday"
+              title="Select Holiday Name"
               size="lg"
               required
               dataFetchCallBack={fetchHolidayMasterDropdown}
@@ -80,9 +80,9 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
           </div>
           <div>
             <SingleSelectDropdownWithPagination
-              label="Branch"
+              label="Branch Name"
               key={dropdownResetKey}
-              title="Select Branch "
+              title="Select Branch Name"
               size="lg"
               dataFetchCallBack={fetchBranchMasterDropdown}
               onSelected={(item) => {

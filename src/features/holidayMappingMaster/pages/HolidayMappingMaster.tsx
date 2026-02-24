@@ -209,7 +209,7 @@ export const HolidayMappingMaster: React.FC = () => {
         onClose={handleDeleteDialogClose}
         onConfirm={handleDeleteHolidayMappingMaster}
         loading={isLoading}
-        pageName='holidayMapping'
+        pageName='Holiday Mapping'
       />
     </div>
 

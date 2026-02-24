@@ -345,16 +345,7 @@ export const TncMaster: React.FC = () => {
           </div>
         )
       },
-      {
-        key: 'Description',
-        label: 'Description',
-        width: '30',
-        sortable: false,
-        align: 'left',
-        render: value => (
-          <TooltipText text={value || '-'} maxWidth="340px" tooltipThreshold={34} />
-        )
-      },
+
       {
         key: 'actions',
         label: 'Actions',
@@ -452,7 +443,10 @@ export const TncMaster: React.FC = () => {
           <div className="space-y-4">
             <FieldItem label="Module Name" value={data.ModuleName} isRow withBorder={true} />
             <FieldItem label="Title" value={data.Title} isRow withBorder={true} />
-            <FieldItem label="Description" value={data.Description} isRow withBorder={true} />
+            <h4 className="text-sm font-medium text-[#1D1D1D80] truncate">
+              Description :
+            </h4>
+            <RichTextEditor value={data.Description ?? ""} onChange={() => { }} readOnly={true} />
 
           </div>
 

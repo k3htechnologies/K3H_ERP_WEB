@@ -5,9 +5,12 @@ export function getTimeDuration(startTime: string, endTime: string): string {
   const [eH, eM] = endTime.split(":").map(Number);
 
   const start = sH * 60 + sM;
-  const end = eH * 60 + eM;
+  let end = eH * 60 + eM;
 
-  if (end <= start) return "";
+  // Handle next day (cross midnight)
+  if (end < start) {
+    end += 24 * 60;
+  }
 
   const diff = end - start;
   const hours = Math.floor(diff / 60);

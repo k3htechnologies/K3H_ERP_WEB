@@ -68,7 +68,9 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/sourcing': '/sourcing',
         '/booking': '/booking',
         '/calltracker':'/callTracker',
-        '/othercharges':'/otherCharges'
+        '/othercharges':'/otherCharges',
+        '/settingdashboard': '/settingDashboard',
+        '/payrolldashboard': '/payrollDashboard',
 
     }
 

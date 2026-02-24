@@ -59,7 +59,7 @@ export const DesignationMasterFormModal: React.FC<DesignationMasterFormModalProp
               error={errors.NoticePeriod}
               type="text"
               value={formData.NoticePeriod ?? ''}
-              maxLength={4}
+              maxLength={3}
               onChange={(e) => {
                 const digits = e.target.value.replace(/\D/g, '');
                 onFieldChange('NoticePeriod', digits === '' ? 0 : Number(digits));
@@ -74,7 +74,7 @@ export const DesignationMasterFormModal: React.FC<DesignationMasterFormModalProp
               error={errors.ProbationPeriod}
               type="text"
               value={formData.ProbationPeriod ?? ''}
-              maxLength={4}
+              maxLength={3}
               onChange={(e) => {
                 const digits = e.target.value.replace(/\D/g, '');
                 onFieldChange('ProbationPeriod', digits === '' ? 0 : Number(digits));

@@ -185,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       console.log(item.label)
 
-      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard") {
+      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard"  || item.path==="payrollDashboard") {
 
         const route = mapPathToRoute(item.path)
 

@@ -242,7 +242,7 @@ export const EmployeeDocument: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        
+
 
         const params: FilterWithPaginationEmployeeDocumentRequest = {
           PageNumber: 1,
@@ -350,28 +350,29 @@ export const EmployeeDocument: React.FC = () => {
         sortable: true,
         fixed: 'left',
         align: 'left',
-        render: (value, row) => (
-          <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
+        render: (value, row) => {
 
-            <TooltipText
-              text={value || '-'}
-              maxWidth="300px"
-              tooltipThreshold={40}
-            />
+          const isAction =
+            listState.pageName?.toUpperCase() === 'PROFILE'
+              ? true
+              : canAction;
 
-            <div className="flex justify-between items-center">
+          return (
+            <div className={`flex items-center ${isAction ? 'justify-between' : 'justify-start'}`}>
 
-              {canAction && (
-                <>
+              <TooltipText
+                text={value || '-'}
+                maxWidth="300px"
+                tooltipThreshold={40}
+              />
+
+              {isAction && (
+                <div className="flex justify-between items-center">
 
                   <Button
                     color='transparent'
                     size='sm'
-
-                    style={{
-                      color: '#0B3251',
-                      padding: '0px 8px'
-                    }}
+                    style={{ color: '#0B3251', padding: '0px 8px' }}
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -379,16 +380,12 @@ export const EmployeeDocument: React.FC = () => {
                       handleEditEmployeeDocument(row)
                     }}
                     leftIcon={<Edit className="h-4 w-4" />}
-                  >
-                  </Button>
+                  />
 
                   <Button
                     color='transparent'
                     size='sm'
-                    style={{
-                      color: 'red',
-                      padding: '0px 8px'
-                    }}
+                    style={{ color: 'red', padding: '0px 8px' }}
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
@@ -396,17 +393,14 @@ export const EmployeeDocument: React.FC = () => {
                       handleConfirmationDialogBoxOpen(row)
                     }}
                     leftIcon={<Trash2 className="h-4 w-4" />}
-                  >
-                  </Button>
+                  />
 
-
-
-                </>
+                </div>
               )}
-            </div>
 
-          </div>
-        )
+            </div>
+          );
+        }
       },
       {
         key: 'DocumentURL',
@@ -427,7 +421,7 @@ export const EmployeeDocument: React.FC = () => {
         }
 
       },
-       {
+      {
         key: 'ModifiedBy',
         label: 'Last Modified By',
         width: '33',
@@ -840,7 +834,7 @@ export const EmployeeDocument: React.FC = () => {
               <Input
                 label='Document Name'
                 required
-                disabled={editingEmployeeDocumentData ? true :false}
+                disabled={editingEmployeeDocumentData ? true : false}
                 error={errors.DocumentName}
                 type="text"
                 value={formData.DocumentName || ''}

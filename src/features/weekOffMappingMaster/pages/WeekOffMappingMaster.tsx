@@ -129,7 +129,7 @@ export const WeekOffMappingMaster: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By WeekoOff Policy Name"
+        searchPlaceholder="Search By Week Off Policy Name"
         onSearchChange={(v) => {
           setSearchTerm(v)
           debouncedSearch(v)

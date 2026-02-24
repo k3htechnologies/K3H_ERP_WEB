@@ -303,7 +303,6 @@ export const useHolidayMappingMaster = () => {
     setTempFilters({})
     setFilters({})
     loadHolidayMappings(1, {})
-    setShowFilterPopup(false)
   }
   //#endregion
 
@@ -334,7 +333,7 @@ export const useHolidayMappingMaster = () => {
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (formData.HolidayMasterId === 0) {
+    if (!formData.HolidayMasterId) {
       newErrors.HolidayMasterId = "Holiday is required"
     }
 

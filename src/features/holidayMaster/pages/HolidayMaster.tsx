@@ -164,7 +164,7 @@ export const HolidayMaster: React.FC = () => {
         onClose={handleDeleteDialogClose}
         onConfirm={handleDeleteHolidayMaster}
         loading={isLoading}
-        pageName='holiday'
+        pageName='Holiday'
       />
     </div>
 

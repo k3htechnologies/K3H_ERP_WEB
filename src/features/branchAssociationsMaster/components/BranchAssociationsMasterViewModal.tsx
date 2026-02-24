@@ -60,6 +60,7 @@ export const BranchAssociationsMasterViewModal: React.FC<BranchAssociationsMaste
               Action Details
             </h4>
             <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
+            
             {data.ModifiedBy !== '' ?
               <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
               :

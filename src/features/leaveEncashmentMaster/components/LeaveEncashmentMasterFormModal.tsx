@@ -1,10 +1,10 @@
 import React from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Input } from '@/ui/components/forms';
-import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { CTC_EARNINGS } from '@/core/constants';
 import { allowPercentage, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
 import type { AddUpdateLeaveEncashmentMasterRequest } from '@/features/leaveEncashmentMaster/models/LeaveEncashmentMasterModel';
+import { MultiSelectDropdown } from '@/ui/components/DropDown/MultiSelectDropdown';
 
 interface LeaveEncashmentMasterFormModalProps {
   isOpen: boolean;
@@ -36,7 +36,7 @@ export const LeaveEncashmentMasterFormModal: React.FC<LeaveEncashmentMasterFormM
       isOpen={isOpen}
       onClose={onClose}
       onCancel={onCancel}
-      title={editingData ? 'Update LeaveEncashment Master' : 'Add LeaveEncashment Master'}
+      title={editingData ? 'Update Leave Encashment Master' : 'Add Leave Encashment Master'}
       onSubmit={onSubmit}
       saveText={editingData ? 'Update' : 'Add'}
       onreset={onReset}
@@ -46,13 +46,13 @@ export const LeaveEncashmentMasterFormModal: React.FC<LeaveEncashmentMasterFormM
       <div className="space-y-6 p-6 bg-blue-100">
         <div className='space-y-4'>
           <div>
-            <SinglePageSelection
-              label="Name"
-              placeholder="Select Name"
+
+            <MultiSelectDropdown
+              label="Earning Name"
               required
-              value={formData.EarningMasterName || ''}
-              onChange={(e) => onFieldChange('EarningMasterName', String(e))}
-              options={CTC_EARNINGS.map((opt) => ({ label: opt.name, value: opt.id }))}
+              options={CTC_EARNINGS.map(m => ({ label: m.name, value: m.id }))}
+              selectedValues={Array.isArray(formData.EarningMasterName) ? formData.EarningMasterName : []}
+              onChange={(values) => onFieldChange("EarningMasterName", values)}
               error={errors.EarningMasterName}
             />
           </div>

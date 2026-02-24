@@ -487,9 +487,10 @@ export const AddUpdateEnquiry: React.FC = () => {
             newErrors.ChannelPartnerTeamMemberMobileNumber = 'Enter a valid 10-digit mobile number';
         }
 
-        if (!formData.EnquiryDate) {
+
+        if (Number(formData.EnquiryDate)=== 0 && !formData.EnquiryDate) {
             newErrors.EnquiryDate = "Enquiry date is required";
-        } else if (!isDateWithinPastDays(formData.EnquiryDate, 2)) {
+        } else if (Number(formData.EnquiryDate)=== 0 &&!isDateWithinPastDays(formData.EnquiryDate, 2)) {
             newErrors.EnquiryDate = "Enquiry date can only be today or within the previous 2 days";
         }
 
@@ -501,7 +502,7 @@ export const AddUpdateEnquiry: React.FC = () => {
 
         }
 
-        if (formData.NextFollowUpDate != null && formData.NextFollowUpDate !== "" && !isToDateGreaterOrEqualFromDate(formData.EnquiryDate || "", formData.NextFollowUpDate!)) {
+        if (Number(formData.EnquiryDate)=== 0 && formData.NextFollowUpDate != null && formData.NextFollowUpDate !== "" && !isToDateGreaterOrEqualFromDate(formData.EnquiryDate || "", formData.NextFollowUpDate!)) {
             newErrors.NextFollowUpDate = "Next Follow Up Date must be greater than or equal to Enquiry Date";
         }
         return {
@@ -1540,7 +1541,10 @@ export const AddUpdateEnquiry: React.FC = () => {
                                                 value={formatDate_dd_mm_yyyy(formData.EnquiryDate)}
                                                 onChange={(val) => handleFieldChange('EnquiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                                 error={errors.EnquiryDate}
+                                                disabled={Number(formData.EnquiryId) > 0 ? true :false}
+
                                             />
+
                                         </div>
 
                                         <div>
@@ -1549,6 +1553,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                                 value={formatDate_dd_mm_yyyy(formData.NextFollowUpDate)}
                                                 onChange={(val) => handleFieldChange('NextFollowUpDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                                 error={errors.NextFollowUpDate}
+                                                disabled={Number(formData.EnquiryId) > 0 ? true :false}
                                             />
                                         </div>
                                     </div>

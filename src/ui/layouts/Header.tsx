@@ -487,7 +487,7 @@ export const Header: React.FC<HeaderProps> = ({
                         </div>
                         <div className="min-w-0">
                             <h2 className="text-lg font-semibold text-gray-900 truncate">{fullName}</h2>
-                            <p className="text-sm text-gray-500 truncate">{department} | {designation}</p>
+                            <p className="text-sm text-gray-500">{department} | {designation}</p>
                         </div>
                     </div>
 

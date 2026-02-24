@@ -10,6 +10,11 @@ export const getPageInfo = (path: string) => {
             }
 
             {/* SETTING -> COMPANY SETUP */ }
+        case 'settingDashboard':
+            return {
+                title: 'Setting Dashboard',
+                description: 'Centralized department management for real estate operations',
+            }
         case 'departmentMaster':
             return {
                 title: 'Department Master',
@@ -156,6 +161,13 @@ export const getPageInfo = (path: string) => {
             }
 
         // PAYROLL
+
+        case 'payrollDashboard':
+            return {
+                title: 'Payroll Dashboard',
+                description: 'Manage and organize employee leave requests with complete CRUD operations',
+            }
+
         case 'leave':
             return {
                 title: 'Leave Management',

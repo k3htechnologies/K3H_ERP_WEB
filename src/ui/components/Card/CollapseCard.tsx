@@ -8,6 +8,7 @@ interface CollapseCardProps {
   mobileNumber: string
   partnershipPercent: string | number
   gender: string
+  photoURL?: string
   defaultOpen?: boolean
   children?: React.ReactNode
 }
@@ -17,6 +18,7 @@ export const CollapseCard: React.FC<CollapseCardProps> = ({
   mobileNumber,
   partnershipPercent,
   gender,
+  photoURL,
   defaultOpen = false,
   children
 }) => {
@@ -31,16 +33,24 @@ export const CollapseCard: React.FC<CollapseCardProps> = ({
       <div className="flex items-start px-4 py-4 relative">
 
         {/* Avatar */}
-        <div className="h-12 w-12 rounded-full bg-gray-200 mr-4"></div>
+        {photoURL && photoURL.trim() !== "" && (
+          <div className="h-12 w-12 rounded-full overflow-hidden mr-4">
+            <img
+              src={photoURL.split(',')[0].trim()}
+              alt={name}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        )}
 
         {/* Right section fields */}
         <div className="flex-1">
 
           {/* TOP ROW */}
           <div className="grid grid-cols-4 gap-4">
-            <FieldItem label="Name" value={name} />
+            <FieldItem label="Full Name" value={name} urls={photoURL}  isIcon={true}/>
             <FieldItem label="Mobile Number" value={mobileNumber} />
-            <FieldItem label="Partner Ship %" value={partnershipPercent} />
+            <FieldItem label="Share %" value={partnershipPercent} />
             <FieldItem label="Gender" value={gender} />
           </div>
 

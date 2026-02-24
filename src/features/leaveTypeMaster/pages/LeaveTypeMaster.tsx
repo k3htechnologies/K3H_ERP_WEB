@@ -122,7 +122,7 @@ export const LeaveTypeMaster: React.FC = () => {
           debouncedSearch(v)
         }}
         onClearSearch={clearsearchLeaveTypes}
-        isShowFilterButton
+        isShowFilterButton={false}
         filters={filters}
         onOpenFilter={handleOpenFilter}
         isShowCustomizeButton
@@ -205,7 +205,7 @@ export const LeaveTypeMaster: React.FC = () => {
         onClose={handleDeleteDialogClose}
         onConfirm={handleDeleteLeaveTypeMaster}
         loading={isLoading}
-        pageName='leaveType'
+        pageName='Leave Type'
       />
     </div>
 

@@ -145,6 +145,8 @@ import AddUpdateBooking from '@/features/booking/pages/AddUpdateBooking';
 import ViewBooking from '@/features/booking/pages/ViewBooking';
 import CallTracker from '@/features/callTracker/pages/CallTracker';
 import OtherCharges from '@/features/otherCharges/pages/OtherCharges';
+import SettingsDashboard from '@/features/settingsDashboard/pages/SettingsDashboard';
+import PayrollDashboard from '@/features/payrollDashboard/pages/PayrollDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -203,6 +205,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
 
             {/* SETTING -> COMPANY SETUP */}
+            <Route path="settingDashboard" element={<SettingsDashboard />} />
 
             <Route path="departmentMaster" element={<DepartmentMaster />} />
 
@@ -282,6 +285,7 @@ function App() {
 
             {/* PAYROLL */}
 
+            <Route path="payrollDashboard" element={<PayrollDashboard />} />
             <Route path="compOff" element={<CompOff />} />
 
             <Route path="outdoor/add/:outdoorId?" element={<OutDoorListStateProvider><AddUpdateOutDoorPage /></OutDoorListStateProvider>} />

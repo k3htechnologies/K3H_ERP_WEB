@@ -31,6 +31,7 @@ export class LeaveEncashmentMasterDatasourceImpl implements LeaveEncashmentMaste
             })
 
             if (params.LeaveEncashmentMasterSlabsId) queryParams.append('LeaveEncashmentMasterSlabsId', params.LeaveEncashmentMasterSlabsId.toString());
+            if (params.EarningName?.trim()) queryParams.append('EarningName', params.EarningName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

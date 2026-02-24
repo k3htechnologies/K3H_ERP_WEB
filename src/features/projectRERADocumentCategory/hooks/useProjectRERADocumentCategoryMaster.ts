@@ -15,8 +15,6 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { updateFilter } from '@/core/utils/filterHelper';
-import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
-import { technicalService } from '@/features/technical/services/TechnicalService';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { getInitialFormState, getProjectRERADocumentCategoryMasterColumns, REQUIRED_COLUMN_KEYS } from '@/features/projectRERADocumentCategory/constants/projectRERADocumentCategoryMasterConstants';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
@@ -69,7 +67,7 @@ export const useProjectRERADocumentCategoryMaster = () => {
   //#endregion
 
   //#region INITIALIZATION
-  
+
   useEffect(() => {
     if (!projectId) return;
     fetchProjectRERADocumentCategoryList();
@@ -414,58 +412,6 @@ export const useProjectRERADocumentCategoryMaster = () => {
   };
   //#endregion
 
-  //#region IMPORT EXCEL | DOWNLOAD
-  const downloadExcelSampleProjectRERADocumentCategoryMaster = async () => {
-    await runApiWithLoader(
-      setIsLoading,
-      setLoadingMessage,
-      async () => {
-        const params: FilterPullExcelSample = {
-          TableName: 'PROJECT RERA DOCUMENT CATEGORY MASTER'
-        };
-
-        const response = await technicalService.apiCallPullExcelSample(params);
-
-        handleExportFile(
-          response,
-          'Excel',
-          'Project RERA Document Category Master',
-          addToast,
-          'Sample file download successfully'
-        );
-
-        return response;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' });
-      },
-      undefined,
-      'Preparing Downloading'
-    );
-  };
-
-  const handleDownloadExcelSampleProjectRERADocumentCategoryMaster = () => downloadExcelSampleProjectRERADocumentCategoryMaster();
-
-  const excelImportProjectRERADocumentCategoryMaster = async () => {
-    await runApiWithLoader(
-      setIsLoading,
-      setLoadingMessage,
-      async () => {
-        return null;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Import failed' });
-      },
-      undefined,
-      'Preparing Import'
-    );
-  };
-
-  const handleExcelImportProjectRERADocumentCategoryMaster = () => excelImportProjectRERADocumentCategoryMaster();
-  //#endregion
-
   //#region DELETE PROJECT RERA DOCUMENT CATEGORY MASTER
   const handleDeleteProjectRERADocumentCategoryMaster = async () => {
     setIsConfirmationDialogBoxOpen(false);
@@ -583,8 +529,6 @@ export const useProjectRERADocumentCategoryMaster = () => {
     handleDeleteProjectRERADocumentCategoryMaster,
     handleExportProjectRERADocumentCategoryExcel,
     handleExportProjectRERADocumentCategoryPdf,
-    handleDownloadExcelSampleProjectRERADocumentCategoryMaster,
-    handleExcelImportProjectRERADocumentCategoryMaster,
     debouncedSearch,
     clearsearchProjectRERADocumentCategories,
   };

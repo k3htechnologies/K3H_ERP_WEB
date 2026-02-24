@@ -52,6 +52,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     searchWeekOff(value)
   }, 350);
 
+
   //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
@@ -93,7 +94,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchWeekOffMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadWeekOff(page, filters, sort);
+    return await loadWeekOff(page, filters, sort ?? sortInfo);
   }
 
   const loadWeekOff = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
@@ -130,18 +131,20 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       undefined,
       (error: any) => addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading WeekOff'
+      'Loading Week Off'
     );
   };
   //#endregion
 
   //#region SEARCH & CLEAR WEEK OFF MASTER
+
   const searchWeekOff = async (searchValue: string) => {
     updateListState({ searchTerm: searchValue });
 
     if (searchValue.trim() === '') {
+      updateListState({ searchTerm: '', page: 1 });
       fetchWeekOffMasterList();
-      return
+      return;
     }
 
     updateListState({ searchTerm: searchValue, page: 1 });
@@ -151,14 +154,12 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#endregion
 
   //#region CLEAR WEEK OFF MASTER 
+
   const clearSearchWeekOff = () => {
-    updateListState({ searchTerm: '', filters: {}, page: 1 });
-
     debouncedSearch.cancel?.();
-
+    updateListState({ searchTerm: '', filters: {}, page: 1 });
     setTempFilters({});
-    setPagination({ currentPage: 1 });
-    loadWeekOff(1, { WeekOffPolicyName: '' }, sortInfo, undefined);
+    loadWeekOff(1, { EmployeeName: '' }, sortInfo, undefined);
   };
   //#endregion
 
@@ -305,7 +306,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     },
     {
       key: 'WeeklyOff2',
-      label: 'Weekly Off2',
+      label: 'Weekly Off 2',
       width: '15',
       sortable: false,
       align: 'center',
@@ -313,7 +314,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     },
     {
       key: 'WeeklyOff2Type',
-      label: 'Weekly Off2 Type',
+      label: 'Weekly Off 2 Type',
       width: '15',
       sortable: false,
       align: 'center',
@@ -328,7 +329,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       render: (value) => value || '-'
     },
     {
-      key: 'actions',
+      key: 'Actions',
       label: 'Actions',
       width: '12',
       fixed: 'right',
@@ -363,7 +364,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
-  const requiredWeekOffColumnKeys: string[] = ['WeekOffPolicyName'];
+  const requiredWeekOffColumnKeys: string[] = ['WeekOffPolicyName','Actions'];
 
   const allWeekOffColumnKeys: string[] = WeekOffMasterColumns.map(c => c.key);
 
@@ -504,13 +505,13 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By WeekOff Name"
+        searchPlaceholder="Search By Week Off Name"
         onSearchChange={v => {
           updateListState({ searchTerm: v });
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchWeekOff}
-        isShowFilterButton
+        isShowFilterButton={false}
         filters={filters}
         onOpenFilter={() => {
           setTempFilters(filters);
@@ -584,7 +585,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
         saveText="Apply "
         cancelText="Clear"
         onCancel={() => clearFilters()}
-       
+
         size="small-half"
       >
         <div className="space-y-6">

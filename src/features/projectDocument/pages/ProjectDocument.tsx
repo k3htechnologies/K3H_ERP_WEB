@@ -432,8 +432,8 @@ const ProjectDocument: React.FC = () => {
             <div className="flex items-center justify-end ml-2 gap-1">
               <TooltipText
                 text={value || ''}
-                maxWidth="250px"
-                tooltipThreshold={40}
+                maxWidth="500px"
+                tooltipThreshold={60}
               />
             </div>
 
@@ -1138,7 +1138,7 @@ const ProjectDocument: React.FC = () => {
 
           addToast({ type: 'success', title: "Excel imported sucessfully" })
 
-          fetchProjectDocumentList();
+          loadProjectDocumentTabs();
 
         } else {
           addToast({ type: "error", title: response.left.message });

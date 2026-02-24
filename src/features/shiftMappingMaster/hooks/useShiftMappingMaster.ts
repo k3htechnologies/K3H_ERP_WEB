@@ -348,7 +348,6 @@ export const useShiftMappingMaster = () => {
     setTempFilters({})
     setFilters({})
     loadShiftMappings(1, {})
-    setShowFilterPopup(false)
   }
   //#endregion
 

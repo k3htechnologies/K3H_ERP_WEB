@@ -21,6 +21,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
     loadingMessage,
     pagination,
     sortInfo,
+    searchTerm,
     viewLeaveEncashmentMasterDetailsData,
     isViewModalOpen,
     errors,
@@ -37,6 +38,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
     isShowCustomizeLeaveEncashmentMasterColumnsModal,
 
     // Setters
+    setSearchTerm,
     setIsViewModalOpen,
     setViewLeaveEncashmentMasterDetailsData,
     setErrors,
@@ -60,6 +62,8 @@ export const LeaveEncashmentMaster: React.FC = () => {
     handleDeleteLeaveEncashmentMaster,
     handleExportLeaveEncashmentExcel,
     handleExportLeaveEncashmentPdf,
+    debouncedSearch,
+    clearsearchLeaveEncashment,
   } = useLeaveEncashmentMaster();
 
   const leaveEncashmentListForTable = useMemo(() => leaveEncashmentMasterList, [leaveEncashmentMasterList]);
@@ -100,7 +104,18 @@ export const LeaveEncashmentMaster: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
       <TableActionToolbar
-        isShowSearchBar={false}
+      
+        isShowSearchBar
+
+        searchTerm={searchTerm}
+
+        searchPlaceholder="Search By Earning Name"
+        onSearchChange={(v) => {
+          setSearchTerm(v)
+          debouncedSearch(v)
+        }}
+        onClearSearch={clearsearchLeaveEncashment}
+
         isShowFilterButton={false}
         isShowCustomizeButton
         onCustomize={() => setIsShowCustomizeLeaveEncashmentMasterColumnsModal(true)}
@@ -170,7 +185,7 @@ export const LeaveEncashmentMaster: React.FC = () => {
         onClose={handleDeleteDialogClose}
         onConfirm={handleDeleteLeaveEncashmentMaster}
         loading={isLoading}
-        pageName='leaveEncashment'
+        pageName='Leave Encashment'
       />
     </div>
 

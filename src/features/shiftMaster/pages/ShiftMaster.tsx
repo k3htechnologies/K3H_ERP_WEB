@@ -303,7 +303,7 @@ export const ShiftMaster: React.FC = () => {
       render: (value) => value || '-'
     },
     {
-      key: 'actions',
+      key: 'Actions',
       label: 'Actions',
       width: '12',
       fixed: 'right',
@@ -337,7 +337,7 @@ export const ShiftMaster: React.FC = () => {
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
-  const requiredShiftColumnKeys: string[] = ['ShiftName'];
+  const requiredShiftColumnKeys: string[] = ['ShiftName','Actions'];
 
   const allShiftColumnKeys: string[] = ShiftMasterColumns.map(c => c.key);
 
@@ -481,7 +481,7 @@ export const ShiftMaster: React.FC = () => {
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchShifts}
-        isShowFilterButton
+        isShowFilterButton={false}
         filters={filters}
         onOpenFilter={() => {
           setTempFilters(filters);

@@ -346,7 +346,6 @@ export const useWeekOffMappingMaster = () => {
     setTempFilters({})
     setFilters({})
     loadWeekOffMappings(1, {})
-    setShowFilterPopup(false)
   }
   //#endregion
 

@@ -28,14 +28,14 @@ export const FieldItem: React.FC<{
 
     // Check if value is a ReactNode (React element)
     const isReactNode = React.isValidElement(value);
-    const displayValue = value !== undefined && value !== null && value !== '' 
-      ? (isReactNode ? value : String(value)) 
+    const displayValue = value !== undefined && value !== null && value !== ''
+      ? (isReactNode ? value : String(value))
       : '-';
     const borderClass = withBorder ? 'border-b border-[#135bec2e]' : '';
 
     // parse urls (returns [])
     const imageUrls = parseDocumentUrls(urls);
-    const hasDocs = imageUrls.length > 0 ? true :false;
+    const hasDocs = imageUrls.length > 0 ? true : false;
 
     const rowGridStyle: React.CSSProperties = {
       display: 'grid',
@@ -70,12 +70,12 @@ export const FieldItem: React.FC<{
                     isIcon === true ? (
                       <span className="flex items-center gap-2 text-sm font-medium">
                         {isSetValue ? <span>{displayValue}</span> : ''}
-                        
+
                       </span>
                     ) : (
                       <button
                         type="button"
-                        className="text-sm font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0 underline"
+                        className="text-sm font-medium text-left break-words whitespace-pre-line max-w-[400px] cursor-pointer p-0 min-w-0 underline"
                         style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
                       >
                         {displayValue}
@@ -86,9 +86,7 @@ export const FieldItem: React.FC<{
               ) : isReactNode ? (
                 displayValue
               ) : (
-                <span
-                  className={`text-sm text-[#1D1D1D] font-medium text-left break-words whitespace-normal max-w-[400px] ${className} min-w-0`}
-                >
+                <span className={`mt-1 text-sm text-[#1D1D1D] font-medium break-words whitespace-pre-line ${className} min-w-0`}>
                   {displayValue}
                 </span>
               )}
@@ -113,12 +111,12 @@ export const FieldItem: React.FC<{
             triggerLabel={
               isIcon === true ? (
                 <span className="flex items-center gap-2 text-sm font-medium mt-1 ">
-                 {isSetValue ? <span>{displayValue}</span> : ''}
+                  {isSetValue ? <span>{displayValue}</span> : ''}
                 </span>
               ) : (
                 <button
                   type="button"
-                  className="text-sm font-medium text-left break-words whitespace-normal max-w-[400px] cursor-pointer p-0 min-w-0 underline"
+                  className="text-sm font-medium text-left break-words whitespace-pre-line max-w-[400px] cursor-pointer p-0 min-w-0 underline"
                   style={{ background: 'transparent', border: 'none', color: COLORS.primary1 }}
                 >
                   {displayValue}
@@ -131,7 +129,7 @@ export const FieldItem: React.FC<{
             {displayValue}
           </div>
         ) : (
-          <span className={`mt-1 text-sm text-[#1D1D1D] font-medium break-words whitespace-normal ${className} min-w-0`}>
+          <span className={`mt-1 text-sm text-[#1D1D1D] font-medium break-words whitespace-pre-line ${className} min-w-0`}>
             {displayValue}
           </span>
         )}

@@ -207,9 +207,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
     if (!formData.ShiftEndTime || formData.ShiftEndTime === "00:00") {
       newErrors.ShiftEndTime = 'Shift End Time is required.';
-    }
-
-    if (!isEndTimeGreater(formData.ShiftBeginTime, formData.ShiftEndTime)) {
+    } else if (!isEndTimeGreater(formData.ShiftBeginTime, formData.ShiftEndTime)) {
       newErrors.ShiftEndTime = "End time must be greater than start time.";
     }
 
@@ -227,9 +225,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
     if (!formData.BreakEndTime || formData.BreakEndTime === "00:00") {
       newErrors.BreakEndTime = 'Break End Time is required.';
-    }
-
-    if (!isEndTimeGreater(formData.BreakBeginTime, formData.BreakEndTime)) {
+    } else if (!isEndTimeGreater(formData.BreakBeginTime, formData.BreakEndTime)) {
       newErrors.BreakEndTime = "Break End time must be greater than start time.";
     }
 
@@ -331,7 +327,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
           {/* Basic Shift Details */}
 
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Shift Details</h3>
+            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Shift Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <Input
@@ -366,7 +362,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <TimePicker
-                  label="Shift Begin Time"
+                  label="Shift Begin Time (24 hours Format)"
                   required
                   size="md"
                   format={24}
@@ -378,7 +374,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
               <div>
                 <TimePicker
-                  label="Shift End Time"
+                  label="Shift End Time (24 hours Format)"
                   required
                   size="md"
                   format={24}
@@ -390,7 +386,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
               <div>
                 <TimePicker
-                  label="Shift Duration"
+                  label="Shift Duration (24 hours Format)"
                   disabled
                   size="md"
                   format={24}
@@ -402,7 +398,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
               <div>
                 <TimePicker
-                  label="Shift Work Duration"
+                  label="Shift Work Duration (24 hours Format)"
                   disabled
                   size="md"
                   format={24}
@@ -419,7 +415,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <TimePicker
-                  label="Break Begin Time"
+                  label="Break Begin Time (24 hours Format)"
                   required
                   size="md"
                   format={24}
@@ -430,7 +426,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
               </div>
               <div>
                 <TimePicker
-                  label="Break End Time"
+                  label="Break End Time (24 hours Format)"
                   required
                   size="md"
                   format={24}
@@ -442,7 +438,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
               <div>
                 <TimePicker
-                  label="Break Duration Time"
+                  label="Break Duration Time (24 hours Format)"
                   disabled
                   size="md"
                   format={24}
@@ -458,7 +454,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
               <div>
                 <TimePicker
-                  label="First Half Up To"
+                  label="First Half Upto (24 hours Format)"
                   required
                   size="md"
                   format={24}
@@ -470,7 +466,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
               <div>
                 <TimePicker
-                  label="Calculate Absent if working hours less than"
+                  label="Calculate Absent if working hours less than (24 hours Format)"
                   size="md"
                   format={24}
                   value={formData.AbsentWorkingHours || ""}
@@ -502,7 +498,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
 
               <div>
                 <TimePicker
-                  label="Mark Half Day if Outtime After"
+                  label="Mark Half Day if Outtime Before"
                   size="md"
                   format={24}
                   value={formData.HalfDayOutTimeBefore || ""}

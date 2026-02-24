@@ -13,8 +13,12 @@ import {
 } from '../components';
 import { createFormResetHandler } from '@/features/projectDocumentCategory/utils/projectDocumentCategoryMasterUtils';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 export const ProjectDocumentCategoryMaster: React.FC = () => {
+
+  const { projectId } = useProject();
+
   const {
     // State
     projectDocumentCategoryMasterList,
@@ -136,7 +140,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
         isShowCustomizeButton
         onCustomize={() => setIsShowCustomizeProjectDocumentCategoryMasterColumnsModal(true)}
         // ADD
-        isShowAddButton={canAction}
+        isShowAddButton={canAction && Number(projectId) > 0 ? true : false }
         addTitle="Add"
         onAdd={handleAddProjectDocumentCategoryModal}
         // IMPORT

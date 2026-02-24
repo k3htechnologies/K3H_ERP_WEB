@@ -12,7 +12,7 @@ import { DatePickerInput } from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import { filterNumbersWithDecimal, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 
 const initialFormState = (): AddUpdateAssetMasterRequest => ({
@@ -186,6 +186,10 @@ export const AddUpdateAssetMaster: React.FC = () => {
 
     if (!formData.PurchaseDate) {
       newErrors.PurchaseDate = "Purchase Date is required";
+    }
+
+    if (!hasAnyDocumentFile(assetInvoiceFiles, assetInvoiceURL, removedAssetInvoiceUrls)) {
+      newErrors.AssetInvoiceURL = "Asset Invoice is required.";
     }
 
     return {

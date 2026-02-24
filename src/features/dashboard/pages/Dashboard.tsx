@@ -10,9 +10,6 @@ const Dashboard = () => (
       <div className="col-span-5">
       </div>
     </div>
-
-    
-
   </div>
 );
 

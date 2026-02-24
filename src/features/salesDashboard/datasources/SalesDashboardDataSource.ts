@@ -4,7 +4,7 @@ import type { SalesDashboardDatasetResponse } from '@/features/salesDashboard/mo
 import { SalesDashboardApi } from '../api/salesDashboardApi';
 
 export abstract class SalesDashboardDatasource {
-    abstract pullSalesDashboard(signal?: AbortSignal): Promise<SalesDashboardDatasetResponse>;
+    abstract pullSalesDashboard(ProjectId: number, signal?: AbortSignal): Promise<SalesDashboardDatasetResponse>;
 }
 
 export class SalesDashboardDatasourceImpl implements SalesDashboardDatasource {
@@ -12,17 +12,24 @@ export class SalesDashboardDatasourceImpl implements SalesDashboardDatasource {
         return baseClient
     }
 
-    async pullSalesDashboard(signal?: AbortSignal): Promise<SalesDashboardDatasetResponse> {
+    async pullSalesDashboard(ProjectId: number, signal?: AbortSignal): Promise<SalesDashboardDatasetResponse> {
         try {
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(`${SalesDashboardApi.PULL}`, { signal })
-            console.log('Response >>>>', response);
+
+            const queryParams = new URLSearchParams({
+                ProjectId: ProjectId.toString()
+            })
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(`${SalesDashboardApi.PULL}?${queryParams.toString()}`, { signal })
             return response;
 
         } catch (error) {
+
             console.error('ERROR: PULL SALES DASHBOARD :', error);
+
             if (error === TokenExpiredException) {
-                await this.pullSalesDashboard(signal);
+
+                await this.pullSalesDashboard(ProjectId, signal);
             }
+
             throw error
         }
     }

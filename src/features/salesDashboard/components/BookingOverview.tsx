@@ -1,104 +1,124 @@
-import React from 'react';
 import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
+    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
     Cell
 } from 'recharts';
 
 import AreaWiseDistribution from './AreaWiseDistribution';
 
-const salesData = [
-    { month: 'JANUARY', value: 4 },
-    { month: 'FEBRUARY', value: 6 },
-    { month: 'MARCH', value: 12 },
-    { month: 'APRIL', value: 9 },
-    { month: 'MAY', value: 18 },
-    { month: 'JUNE', value: 7 },
-    { month: 'JULY', value: 14 },
-    { month: 'AUGUST', value: 24 },
-    { month: 'SEPTEMBER', value: 11 },
-    { month: 'OCTOBER', value: 16 },
-    { month: 'NOVEMBER', value: 10 },
-    { month: 'DECEMBER', value: 5 },
-];
+interface BookingCardOverviewData {
+    DirectBookingCount: number;
+    DirectBookingPct: number;
+    ChannelPartnerBookingCount: number;
+    ChannelPartnerBookingPct: number;
+    UpcomingRegistrationCount: number;
+}
 
-const sourceWiseDistributionData = [
-    {
-        icon: '🌐', // Aap yahan Lucide-react ya FontAwesome icons use kar sakte hain
-        source: 'Website',
-        subData: 'Organic & Paid',
-        count: '134',
-        percentage: '39.2%',
-        color: 'bg-blue-50', // Tailwind class for background color
+interface SourceWiseDistributionData {
+    SourceName: string;
+    SubSourceName: string;
+    SubSubSourceName: string;
+    TotalEnquiries: number;
+    SourcePct: number;
+
+}
+interface BudgetWiseDistributionData {
+    MonthName: string;
+    MonthNumber: number;
+    YearNumber: number;
+    TotalBookingValue: number;
+    BudgetSlab: string;
+}
+
+interface Props {
+    budgetWiseDistribution: BudgetWiseDistributionData[];
+}
+
+interface Props {
+    bookingOverviewData: BookingCardOverviewData[];
+    sourceWiseDistribution: SourceWiseDistributionData[];
+    bookingConversionRate: any[];
+    residentialData: any[];
+}
+
+export default function BookingOverview({ bookingOverviewData, sourceWiseDistribution, bookingConversionRate, residentialData, budgetWiseDistribution }: Props) {
+
+    const salesData = Object.values(
+        budgetWiseDistribution.reduce<Record<string, any>>((acc, curr) => {
+
+            const month = curr.MonthName;
+
+            if (!acc[month]) {
+                acc[month] = {
+                    month: month.toUpperCase(),
+                    monthNumber: curr.MonthNumber,
+                    value: curr.TotalBookingValue,
+                };
+            }
+
+            acc[month].value += Number(curr.TotalBookingValue);
+
+            return acc;
+        }, {})
+    ).sort((a, b) => a.monthNumber - b.monthNumber);
+
+    const data = bookingOverviewData?.[0] ?? {
+        DirectBookingCount: 0,
+        DirectBookingPct: 0,
+        ChannelPartnerBookingCount: 0,
+        ChannelPartnerBookingPct: 0,
+        UpcomingRegistrationCount: 0
+    };
+
+    const sourceWiseDistributionData = sourceWiseDistribution?.map((item) => ({
+        icon: '🌐',
+        source: item.SourceName,
+        subData: item.SubSubSourceName,
+        count: item.TotalEnquiries,
+        percentage: item.SourcePct,
+        color: 'bg-blue-50',
         borderColor: 'border-blue-200',
         textColor: 'text-blue-600'
-    },
-    {
-        icon: '📱',
-        source: 'Advertisement',
-        subData: 'Facebook, Instagram, etc',
-        count: '98',
-        percentage: '28.7%',
-        color: 'bg-pink-50',
-        borderColor: 'border-pink-200',
-        textColor: 'text-pink-600'
-    },
-    {
-        icon: '👥',
-        source: 'Referrals',
-        subData: 'Employee Referrals',
-        count: '56',
-        percentage: '16.4%',
-        color: 'bg-orange-50',
-        borderColor: 'border-orange-200',
-        textColor: 'text-orange-600'
-    },
-    {
-        icon: '🏢',
-        source: 'Property Search Portal',
-        subData: 'Direct Visit',
-        count: '54',
-        percentage: '15.7%',
-        color: 'bg-green-50',
-        borderColor: 'border-green-200',
-        textColor: 'text-green-600'
-    }
-];
+    }))
 
-const BookingOverview: React.FC = () => {
     return (
         <div className="space-y-4 pt-5">
             <h2 className="text-lg font-bold text-gray-800">Booking Overview</h2>
 
-            {/* Main White Card containing everything */}
             <div className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm space-y-8">
 
-                {/* Top 3 Stats Row */}
                 <div className="flex gap-4 items-stretch">
+
                     {/* Direct Booking */}
                     <div className="flex-1 bg-[#F5F3FF] border border-indigo-100 rounded-xl p-4 shadow-sm">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-xs font-bold text-indigo-700">Direct Booking</p>
-                                <p className="text-[10px] font-bold text-indigo-400 mt-1">66.7%</p>
+                                <p className="text-xs font-bold text-indigo-700">
+                                    Direct Booking
+                                </p>
+                                <p className="text-[10px] font-bold text-indigo-400 mt-1">
+                                    {data.DirectBookingPct ?? 0}%
+                                </p>
                             </div>
-                            <span className="text-2xl font-black text-indigo-900">28</span>
+                            <span className="text-2xl font-black text-indigo-900">
+                                {data.DirectBookingCount ?? 0}
+                            </span>
                         </div>
                     </div>
 
-                    {/* CP Booking */}
+                    {/* Channel Partner Booking */}
                     <div className="flex-1 bg-[#EFF6FF] border border-blue-100 rounded-xl p-4 shadow-sm">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-xs font-bold text-blue-700 leading-tight">Channel Partner Booking</p>
-                                <p className="text-[10px] font-bold text-blue-400 mt-1">33.3%</p>
+                                <p className="text-xs font-bold text-blue-700 leading-tight">
+                                    Channel Partner Booking
+                                </p>
+                                <p className="text-[10px] font-bold text-blue-400 mt-1">
+                                    {data.ChannelPartnerBookingPct ?? 0}%
+                                </p>
                             </div>
-                            <span className="text-2xl font-black text-blue-900">14</span>
+                            <span className="text-2xl font-black text-blue-900">
+                                {data.ChannelPartnerBookingCount ?? 0}
+                            </span>
                         </div>
                     </div>
 
@@ -106,15 +126,19 @@ const BookingOverview: React.FC = () => {
                     <div className="flex-1 bg-[#FFFBEB] border border-yellow-100 rounded-xl p-4 shadow-sm">
                         <div className="flex justify-between items-start">
                             <div>
-                                <p className="text-xs font-bold text-yellow-700">Upcoming Registration</p>
+                                <p className="text-xs font-bold text-yellow-700">
+                                    Upcoming Registration
+                                </p>
                                 <div className="h-4"></div>
                             </div>
-                            <span className="text-2xl font-black text-yellow-600">22</span>
+                            <span className="text-2xl font-black text-yellow-600">
+                                {data.UpcomingRegistrationCount ?? 0}
+                            </span>
                         </div>
                     </div>
+
                 </div>
 
-                {/* Graph Section Inside the same White Card */}
                 <div className="space-y-6">
                     <div>
                         <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Sales Distribution</p>
@@ -151,7 +175,13 @@ const BookingOverview: React.FC = () => {
                                     {salesData.map((entry, index) => (
                                         <Cell
                                             key={`cell-${index}`}
-                                            fill={entry.month === 'AUGUST' ? '#2563EB' : '#3B82F6'}
+                                            fill={
+                                                entry.value === 0
+                                                    ? '#243e64ff'
+                                                    : entry.month === 'AUGUST'
+                                                        ? '#2563EB'
+                                                        : '#3B82F6'
+                                            }
                                         />
                                     ))}
                                 </Bar>
@@ -160,7 +190,6 @@ const BookingOverview: React.FC = () => {
                     </div>
                 </div>
                 <div className='grid grid-cols-2 gap-5'>
-                    {/* Column 1: Source Wise Distribution */}
                     <div className="flex flex-col gap-3">
                         <p className="text-sm text-blue-500 font-bold">Source Wise Distribution</p>
                         <div className='font-bold text-gray-700 p-5 rounded-md h-full'>
@@ -179,26 +208,37 @@ const BookingOverview: React.FC = () => {
                                         </div>
                                         <div className="text-right">
                                             <p className={`text-sm font-bold ${item.textColor}`}>{item.count}</p>
-                                            <p className="text-[10px] text-gray-400 font-medium">{item.percentage}</p>
+                                            <p className="text-[10px] text-gray-400 font-medium">{item.percentage} %</p>
                                         </div>
                                     </div>
 
-                                    <div className="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden mt-1">
-                                        <div
-                                            className={`h-full rounded-full ${item.textColor.replace('text', 'bg')}`}
-                                            style={{ width: item.percentage }}
-                                        ></div>
+                                    <div className="h-5 w-full mt-1">
+                                        <ResponsiveContainer width="100%" height={180}>
+                                            <BarChart
+                                                layout="vertical"
+                                                data={[{ value: Number(item.percentage) || 0 }]}
+                                            >
+                                                <XAxis type="number" hide domain={[0, 100]} />
+                                                <YAxis type="category" hide />
+                                                <Bar
+                                                    dataKey="value"
+                                                    barSize={24}
+                                                    radius={[0, 10, 10, 0]}
+                                                    fill="#3B82F6"
+
+                                                />
+                                            </BarChart>
+                                        </ResponsiveContainer>
                                     </div>
                                 </div>
                             ))}
                         </div>
                     </div>
 
-                    {/* Column 2: Area Wise Distribution */}
                     <div className="flex flex-col gap-3">
                         <p className="text-sm text-blue-700 font-bold">Area Wise Distribution</p>
                         <div className='font-bold text-gray-700  p-2 rounded-xl h-full'>
-                            <AreaWiseDistribution />
+                            <AreaWiseDistribution bookingConversionRateData={bookingConversionRate} residentialData={residentialData} />
                         </div>
                     </div>
                 </div>
@@ -206,5 +246,3 @@ const BookingOverview: React.FC = () => {
         </div>
     );
 };
-
-export default BookingOverview;

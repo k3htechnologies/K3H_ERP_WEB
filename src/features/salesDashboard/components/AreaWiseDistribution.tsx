@@ -1,15 +1,41 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Tabs from "@/ui/components/Tab/Tab";
+import {
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    ResponsiveContainer,
+} from "recharts";
 
-const AreaWiseDistribution = () => {
-    const flatData = [
-        { room: '1 BHK', count: "40%" },
-        { room: '2 BHK', count: "12%" },
-        { room: '3 BHK', count: "8%" },
-        { room: '4 BHK', count: "10%" },
-        { room: 'Duplex', count: "20%" },
-        { room: 'Jodi', count: "20%" },
-    ]
+interface BookingConversionRateData {
+    TotalEnquiries: number;
+    TotalBookings: number;
+    ConversionRatePct: number;
+}
+
+interface ResidentialData {
+    UnitType: string;
+    TotalEnquiries: number;
+    Percentage: number;
+}
+
+interface Props {
+    bookingConversionRateData: BookingConversionRateData[];
+    residentialData: ResidentialData[];
+}
+
+export default function AreaWiseDistribution({ bookingConversionRateData, residentialData }: Props) {
+    const data = bookingConversionRateData?.[0] ?? {
+        TotalEnquiries: 0,
+        TotalBookings: 0,
+        ConversionRatePct: 0
+    }
+
+    const flatData = residentialData?.map((item) => ({
+        room: item.UnitType,
+        count: item.Percentage,
+    }))
 
     const tabList = [
         { id: "Residential", label: "Residential" },
@@ -31,37 +57,76 @@ const AreaWiseDistribution = () => {
                 <div className="mt-6 space-y-5 p-2">
                     {flatData.map((item, index) => (
                         <div key={index} className="space-y-2">
+
                             {/* Text Row */}
                             <div className="flex justify-between items-center text-xs font-semibold">
                                 <p className="text-gray-700">{item.room}</p>
-                                <p className="text-gray-900">{item.count}</p>
+                                <p className="text-gray-900">{item.count}%</p>
                             </div>
 
-                            {/* Progress Bar Container */}
-                            <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
-                                <div
-                                    className="bg-blue-600 h-full rounded-full transition-all duration-500"
-                                    style={{ width: item.count }}
-                                />
+                            {/* Recharts Progress Bar */}
+                            <div className="h-5 w-full">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                        layout="vertical"
+                                        data={[{ value: Number(item.count) || 0 }]}
+                                    >
+                                        <XAxis type="number" hide domain={[0, 100]} />
+                                        <YAxis type="category" hide />
+                                        <Bar
+                                            dataKey="value"
+                                            barSize={24}
+                                            radius={[0, 10, 10, 0]}
+                                            fill="#2563EB"
+                                            background={{
+                                                fill: "#E5E7EB",
+                                                radius: 20,
+                                            }}
+                                        />
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </div>
+
                         </div>
                     ))}
 
-                    {/* Booking Conversion Rate Footer */}
                     <div className="mt-8 bg-[#0D2159] rounded-xl p-5 text-white">
                         <div className="flex justify-between items-center mb-3">
                             <p className="text-xs font-bold">Booking Conversion Rate</p>
-                            <p className="text-xs font-bold">15%</p>
+                            <p className="text-xs font-bold">{data.ConversionRatePct}%</p>
                         </div>
-                        <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden mb-2">
-                            <div className="bg-blue-400 h-full w-[15%]" />
+
+                        {/* Chart Progress */}
+                        <div className="h-5 w-full mb-2">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    layout="vertical"
+                                    data={[{ value: Number(data?.ConversionRatePct) || 0 }]}
+                                >
+                                    <XAxis type="number" hide domain={[0, 100]} />
+                                    <YAxis type="category" hide />
+                                    <Bar
+                                        dataKey="value"
+                                        radius={[10, 10, 10, 0]}
+                                        barSize={24}
+                                        fill="#3B82F6"
+                                        background={{
+                                            fill: "rgba(255,255,255,0.2)",
+                                            radius: 20
+                                        }}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
                         </div>
-                        <p className="text-[10px] text-blue-200">42 bookings from 342 enquiries</p>
+
+                        <p className="text-[10px] text-blue-200">
+                            {data.TotalBookings} bookings from {data.TotalEnquiries} enquiries
+                        </p>
                     </div>
+
+
                 </div>
             )}
         </div>
     )
 }
-
-export default AreaWiseDistribution;        

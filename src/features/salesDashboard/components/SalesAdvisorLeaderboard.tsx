@@ -1,53 +1,99 @@
-import React from 'react';
+import { formatToKLCr } from "@/core/utils/comman";
 
-const Leaderboard = () => {
-  const salesData = [
-    { name: 'Rajesh Kumar', role: 'Sr. Sales Executive', bookings: '18/15', bookingValue: '₹2.1Cr', conversationRate: '90%' },
-    { name: 'Priya Sharma', role: 'Sales Executive', bookings: '15/10', bookingValue: '₹1.6Cr', conversationRate: '75%' },
-    { name: 'Amit Singh', role: 'Sales Executive', bookings: '12/8', bookingValue: '₹1.3Cr', conversationRate: '65%' },
-    { name: 'Sneha Verma', role: 'Sr. Sales Executive', bookings: '10/7', bookingValue: '₹1.0Cr', conversationRate: '60%' },
-  ]
+interface SalesAdvisorLeaderBoardItem {
+  FullName: string;
+  Designation: string;
+  TotalBookings: number;
+  BookingValueInCr: number;
+  ConversionRate: number | Record<string, any>;
+}
+
+interface Props {
+  leaderBoardData: SalesAdvisorLeaderBoardItem[];
+}
+
+export default function Leaderboard({
+  leaderBoardData = [],
+}: Props) {
 
   return (
     <div className="space-y-4 pt-5">
-      <h2 className="text-lg font-semibold text-gray-800">Sales Advisor Leaderboard</h2>
-      <div className="bg-white border border-gray-100 rounded-lg shadow-sm overflow-hidden">
-        {/* Header */}
+      <h2 className="text-lg font-semibold text-gray-800">
+        Sales Advisor Leaderboard
+      </h2>
+
+      <div className="h-[620px] overflow-y-auto bg-white border border-gray-100 rounded-lg shadow-sm thin-scroll">
         <div className="p-4 border-b border-gray-100">
-          <h2 className="text-gray-500 font-medium text-lg">Top Sales Advisor</h2>
+          <h2 className="text-gray-500 font-medium text-lg">
+            Top Sales Advisor
+          </h2>
         </div>
 
-        {/* List */}
         <div className="flex flex-col">
-          {salesData.map((advisor, index) => (
-            <div
-              key={index}
-              className={`p-5 ${index !== salesData.length - 1 ? 'border-b border-gray-200' : ''}`}
-            >
-              <h3 className="text-gray-800 font-semibold text-base">{advisor.name}</h3>
-              <p className="text-gray-400 text-sm mb-4">{advisor.role}</p>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <p className="text-gray-400 text-xs uppercase tracking-wide">Bookings</p>
-                  <p className="text-gray-900 font-bold">{advisor.bookings}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs uppercase tracking-wide">Booking Value</p>
-                  <p className="text-gray-900 font-bold">{advisor.bookingValue}</p>
-                </div>
-                <div>
-                  <p className="text-gray-400 text-xs uppercase tracking-wide">Conversation Rate</p>
-                  <p className="text-green-600 font-bold">{advisor.conversationRate}</p>
+          {leaderBoardData.length === 0 && (
+            <div className="p-6 text-center text-gray-400 text-sm">
+              No Data Available
+            </div>
+          )}
+
+          {leaderBoardData.map((advisor, index) => {
+
+            const conversionRate =
+              typeof advisor.ConversionRate === "number"
+                ? `${advisor.ConversionRate}%`
+                : "0%";
+
+            return (
+              <div
+                key={index}
+                className={`p-5 ${index !== leaderBoardData.length - 1
+                  ? "border-b border-gray-200"
+                  : ""
+                  }`}
+              >
+                <h3 className="text-gray-800 font-semibold text-base">
+                  {advisor.FullName}
+                </h3>
+
+                <p className="text-gray-400 text-sm mb-4">
+                  {advisor.Designation}
+                </p>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-gray-400 text-xs uppercase tracking-wide">
+                      Bookings
+                    </p>
+                    <p className="text-gray-900 font-bold">
+                      {advisor.TotalBookings}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-gray-400 text-xs uppercase tracking-wide">
+                      Booking Value
+                    </p>
+                    <p className="text-gray-900 font-bold">
+                      ₹{formatToKLCr(advisor.BookingValueInCr)}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p className="text-gray-400 text-xs uppercase tracking-wide">
+                      Conversion Rate
+                    </p>
+                    <p className="text-green-600 font-bold">
+                      {conversionRate}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
+
         </div>
       </div>
     </div>
-
   );
-};
-
-export default Leaderboard;
+}

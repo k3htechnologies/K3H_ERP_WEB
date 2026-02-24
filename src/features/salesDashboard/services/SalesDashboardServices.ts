@@ -6,11 +6,14 @@ import type { SalesDashboardDatasetResponse } from '@/features/salesDashboard/mo
 const salesDashboardDatasource = new SalesDashboardDatasourceImpl();
 
 export const salesDashboardService = {
-    apiCallPullSalesDashboard: async (signal?: AbortSignal): Promise<E.Either<Failure, SalesDashboardDatasetResponse>> => {
+
+    apiCallPullSalesDashboard: async (ProjectId: number, signal?: AbortSignal): Promise<E.Either<Failure, SalesDashboardDatasetResponse>> => {
         try {
-            const response = await salesDashboardDatasource.pullSalesDashboard(signal);
-            return E.right(response);
+
+            return E.right(await salesDashboardDatasource.pullSalesDashboard(ProjectId, signal));
+
         } catch (error: any) {
+
             return E.left({ message: error.message, code: error.code });
         }
     }

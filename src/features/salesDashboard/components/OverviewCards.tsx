@@ -1,66 +1,94 @@
-import React from 'react';
+interface OverviewCardData {
+    ActiveFollowUps: number;
+    LostLeadsToday: number;
+    Message: string;
+    NewLeadsThisMonth: number;
+    TodayBookingValue: number;
+    TodayBookings: number;
+    TodayClosed: number;
+    TodayConnected: number;
+    TodayNotConnected: number;
+    TodayRescheduled: number;
+    TodayTotalCalls: number;
+    TotalEnquiries: number;
+    ActiveCp: number;
+    CPPercentage: number;
+    Achieved: number;
+    OverallConversion: number;
+    IncreaseEnquiryPercentage: number;
+    TodaysFollowUpDues: number;
+    TotalBookingConversion: string;
+    AverageBookingValue: number;
+}
 
 interface StatData {
     title: string;
-    value: string | number;
+    value: number;
     subValue?: string;
     subLabel?: string;
-    subColor?: string; // e.g., 'text-green-500', 'text-red-500', 'text-blue-500'
-    variant?: 'primary' | 'default';
+    subColor?: string;
+    variant?: 'primary' | 'secondary';
 }
 
-const OverviewCards: React.FC = () => {
+interface Props {
+    overViewCardData: OverviewCardData[];
+}
+
+export default function OverviewCards({ overViewCardData }: Props) {
+    const data = overViewCardData[0] || {};
+
     const stats: StatData[] = [
         {
             title: 'Total Enquiries',
-            value: '1284',
-            subValue: '+12.5%',
+            value: data.TotalEnquiries || 0,
+            subValue: `${data.IncreaseEnquiryPercentage}%`,
             subLabel: 'vs last month',
             subColor: 'text-green-400',
             variant: 'primary',
         },
         {
-            title: 'New Lead',
-            value: '200',
+            title: 'New Enquiry',
+            value: data.NewLeadsThisMonth || 0,
             subLabel: 'This month',
         },
         {
             title: 'Active Follow-Ups',
-            value: '156',
-            subValue: '5',
+            value: data.ActiveFollowUps || 0,
+            subValue: `${data.TodaysFollowUpDues}`,
             subLabel: 'Due Today',
             subColor: 'text-orange-500',
         },
         {
-            title: 'Lost Leads',
-            value: '300',
+            title: 'Lost Enquiry',
+            value: data.LostLeadsToday || 0,
             subLabel: 'High Alert',
             subColor: 'text-red-500',
         },
         {
             title: 'Total Bookings',
-            value: '127',
-            subValue: '+0.5%',
+            value: data.TodayBookings || 0,
+            subValue: `${data.TotalBookingConversion}%`,
             subLabel: 'conversion up',
             subColor: 'text-green-500',
         },
         {
             title: 'Total Booking Value',
-            value: '₹ 18.45 Cr',
-            subLabel: 'Avg ₹14.5L',
+            value: data.TodayBookingValue || 0,
+            subLabel: `Avg ${data.AverageBookingValue}L`,
             subColor: 'text-blue-500',
         },
         {
             title: 'Target vs Achieved',
-            value: '76.5%',
+            value: data.Achieved,
             subLabel: 'out of 100%',
         },
         {
             title: 'CP Contribution',
-            value: '68.2%',
-            subLabel: '80 active partners',
+            value: data.CPPercentage,
+            subLabel: `${data.ActiveCp} active partners`,
             subColor: 'text-blue-500',
         },
+
     ];
 
     return (
@@ -72,8 +100,8 @@ const OverviewCards: React.FC = () => {
                     <div
                         key={index}
                         className={`p-4 rounded-xl border transition-all duration-200 ${stat.variant === 'primary'
-                                ? 'bg-[#0B3D7B] border-[#0B3D7B] text-white shadow-md'
-                                : 'bg-white border-gray-200 text-gray-800 shadow-sm hover:shadow-md'
+                            ? 'bg-[#0B3D7B] border-[#0B3D7B] text-white shadow-md'
+                            : 'bg-white border-gray-200 text-gray-800 shadow-sm hover:shadow-md'
                             }`}
                     >
                         <div className="flex flex-col h-full justify-between space-y-2">
@@ -96,8 +124,8 @@ const OverviewCards: React.FC = () => {
                                         )}
                                         {stat.subLabel && (
                                             <span className={`${stat.variant === 'primary'
-                                                    ? 'text-gray-300'
-                                                    : (stat.subValue ? 'text-gray-500' : (stat.subColor || 'text-gray-500'))
+                                                ? 'text-gray-300'
+                                                : (stat.subValue ? 'text-gray-500' : (stat.subColor || 'text-gray-500'))
                                                 }`}>
                                                 {stat.subLabel}
                                             </span>
@@ -112,5 +140,3 @@ const OverviewCards: React.FC = () => {
         </div>
     );
 };
-
-export default OverviewCards;

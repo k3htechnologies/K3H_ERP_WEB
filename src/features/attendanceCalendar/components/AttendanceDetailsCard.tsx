@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy, formatTimeFromDateTime, convertUtcToLocal } from '@/core/utils/dateFormat';
-import { convertToISO, getStatusTextColor } from '../utils/attendanceUtils';
+import { convertToISO, getStatusTextColor, getStatusLabel } from '../utils/attendanceUtils';
 import type { AttendanceData } from '../models/AttendanceModel';
 
 interface AttendanceDetailsCardProps {

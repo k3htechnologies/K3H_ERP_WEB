@@ -147,11 +147,11 @@ export const isPreviousDate = (date: Date): boolean => {
   const todayYear = today.getFullYear();
   const todayMonth = today.getMonth();
   const todayDay = today.getDate();
-  
+
   const dateYear = date.getFullYear();
   const dateMonth = date.getMonth();
   const dateDay = date.getDate();
-  
+
   return (
     dateYear < todayYear ||
     (dateYear === todayYear && dateMonth < todayMonth) ||
@@ -192,7 +192,7 @@ export const convertUtcToLocal = (utcDateTimeString?: string | null): Date | nul
 
   try {
     const trimmed = utcDateTimeString.trim();
-    
+
     // If it already has timezone info (Z or offset), parse directly
     if (trimmed.includes('Z') || trimmed.match(/[+-]\d{2}:\d{2}$/)) {
       const date = new Date(trimmed);
@@ -254,7 +254,7 @@ export const formatTimeFromDateTime = (dateTimeString?: string | null): string =
 
     // Check if it's an ISO datetime string (contains 'T')
     const isIsoDateTime = trimmed.includes('T');
-    
+
     if (isIsoDateTime) {
       // Treat ISO datetime strings as UTC and convert to local time
       // This handles both "2025-12-03T15:26:50.513Z" and "2025-12-03T15:26:50.513" (assumed UTC from API)

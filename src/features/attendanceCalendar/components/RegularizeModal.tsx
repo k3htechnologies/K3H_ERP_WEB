@@ -3,7 +3,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { TimePicker } from '@/ui/components/TimePicker/TimePicker';
 import { TextArea } from '@/ui/components/forms/Textarea';
-import { getStatusTextColor, extractTimeFromDateTime } from '../utils/attendanceUtils';
+import { getStatusTextColor, extractTimeFromDateTime, getStatusLabel } from '../utils/attendanceUtils';
 import { formatTimeFromDateTime } from '@/core/utils/dateFormat';
 import type { AttendanceData } from '../models/AttendanceModel';
 

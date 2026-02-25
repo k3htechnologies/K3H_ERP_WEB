@@ -10,6 +10,7 @@ interface InventoryHeaderProps {
     onUploadExcel: () => void;
     onDownloadSampleExcel: () => void;
     canExport: boolean;
+    canAction: boolean;
     exportLoading: boolean;
     onAddBuilding?: () => void;
     onAddWing?: () => void;
@@ -32,6 +33,7 @@ export const InventoryHeader = ({
     onUploadExcel,
     onDownloadSampleExcel,
     canExport,
+    canAction,
     exportLoading,
     onAddBuilding,
     onAddWing,
@@ -57,7 +59,7 @@ export const InventoryHeader = ({
                 searchTerm={searchTerm}
                 onSearchChange={onSearchChange}
                 onClearSearch={onClearSearch}
-                isShowAddButton
+                isShowAddButton={canAction}
                 onAdd={() => {}}
                 showMoreAddOptions={
                     <div className="flex flex-col w-[150px] bg-white rounded-md border-[1px] border-gray-200 shadow-lg">
@@ -114,7 +116,7 @@ export const InventoryHeader = ({
                 isShowExportButton={canExport}
                 onExportExcel={onExportExcel}
                 onExportPdf={onExportPdf}
-                isShowImportButton={true}
+                isShowImportButton={canAction}
                 onUploadExcel={onUploadExcel}
                 onDownloadSampleExcel={onDownloadSampleExcel}
                 exportLoading={exportLoading}

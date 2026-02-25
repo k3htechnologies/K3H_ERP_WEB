@@ -147,6 +147,7 @@ import CallTracker from '@/features/callTracker/pages/CallTracker';
 import OtherCharges from '@/features/otherCharges/pages/OtherCharges';
 import SettingsDashboard from '@/features/settingsDashboard/pages/SettingsDashboard';
 import PayrollDashboard from '@/features/payrollDashboard/pages/PayrollDashboard';
+import SalesDashboard from '@/features/salesDashboard/pages/SalesDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -326,6 +327,8 @@ function App() {
 
 
             {/* SALES */}
+             <Route path="saleDashboard" element={<SalesDashboard />} />
+
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />

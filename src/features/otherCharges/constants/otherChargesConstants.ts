@@ -21,14 +21,14 @@ export const getInitialFormState = (): AddUpdateOtherChargesRequest => ({
 export const getOtherChargesColumns = (): TableColumn[] => [
   {
     key: 'ChargeName',
-    label: 'Charge Name',
+    label: 'Charges',
     width: '16',
-    sortable: false,
-    align: 'center'
+    sortable: true,
+    align: 'left'
   },
   {
     key: 'Value',
-    label: 'Value',
+    label: 'Value (₹)',
     width: '16',
     sortable: false,
     align: 'center'
@@ -42,14 +42,21 @@ export const getOtherChargesColumns = (): TableColumn[] => [
   },
   {
     key: 'GSTPercentage',
-    label: 'GST Percentage',
+    label: 'GST Percentage (%)',
     width: '16',
     sortable: false,
     align: 'center'
   },
   {
     key: 'GSTValue',
-    label: 'GST Value',
+    label: 'GST Value (₹)',
+    width: '16',
+    sortable: false,
+    align: 'center'
+  },
+  {
+    key: 'Total',
+    label: 'Value  + GST Value (₹)',
     width: '16',
     sortable: false,
     align: 'center'

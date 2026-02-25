@@ -9,8 +9,12 @@ import {
   OtherChargesViewModal,
   OtherChargesFilterModal
 } from "@/features/otherCharges/components";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
 export const OtherCharges: React.FC = () => {
+
+  const { projectId } = useProject();
+
   const {
     // State
     otherChargesList,
@@ -116,7 +120,7 @@ export const OtherCharges: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Charge Name"
+        searchPlaceholder="Search By Charges"
         onSearchChange={v => {
           setSearchTerm(v);
           debouncedSearch(v);
@@ -126,9 +130,9 @@ export const OtherCharges: React.FC = () => {
         filters={filters}
         onOpenFilter={handleOpenFilter}
         isShowCustomizeButton
-        
+
         // ADD
-        isShowAddButton={canAction}
+        isShowAddButton={canAction && Number(projectId) > 0}
         addTitle="Add"
         onAdd={handleAddOtherChargesModal}
         // IMPORT

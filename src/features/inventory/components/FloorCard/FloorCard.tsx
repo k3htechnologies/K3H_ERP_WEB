@@ -25,9 +25,11 @@ interface FloorCardProps {
     onParkingUpdate?: () => void;
     onDeleteFloor?: (floor: InventoryFloorData, wing: InventoryFlatFloorBasementPodiumWingData, building: InventoryData) => void;
     isLastFloor?: boolean;
+    canAction?: boolean;
+    canBookingAction?: boolean;
 }
 
-export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkingUpdate, onDeleteFloor, isLastFloor }: FloorCardProps) => {
+export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkingUpdate, onDeleteFloor, isLastFloor, canAction, canBookingAction }: FloorCardProps) => {
     const navigate = useNavigate();
     const { addToast } = useToast();
 
@@ -105,7 +107,7 @@ export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkin
 
 
                 } else {
-                    
+
                     addToast({ type: 'error', title: response.left.message });
                 }
 
@@ -136,33 +138,37 @@ export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkin
                 defaultOpen={true}
                 customizedIcon={
                     <div className="flex items-center gap-2">
-                        <div
-                            className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition-colors"
-                            onClick={handleParkingClick}
-                            title="Update Parking Count"
-                        >
-                            <span className="text-[#135BEC] font-medium text-sm">{floor.ParkingCount || 0}</span>
-                            <Car className="text-[#135BEC]" size={20} />
-                        </div>
-                        <Plus
-                            className="p-1.5 cursor-pointer hover:bg-gray-100 rounded transition-colors"
-                            size={28}
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                handleAddFlat();
-                            }}
-                        />
-                        {onDeleteFloor && isLastFloor && wing.Wing.toUpperCase() !== 'BGP' && (
-                            <button
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    onDeleteFloor(floor, wing, building);
-                                }}
-                                className="p-1.5 cursor-pointer hover:bg-red-100 rounded transition-colors"
-                                title="Delete Floor"
-                            >
-                                <Trash color="red" className="text-red-600" size={20} />
-                            </button>
+                        {canAction && (
+                            <>
+                                <div
+                                    className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition-colors"
+                                    onClick={handleParkingClick}
+                                    title="Update Parking Count"
+                                >
+                                    <span className="text-[#135BEC] font-medium text-sm">{floor.ParkingCount || 0}</span>
+                                    <Car className="text-[#135BEC]" size={20} />
+                                </div>
+                                <Plus
+                                    className="p-1.5 cursor-pointer hover:bg-gray-100 rounded transition-colors"
+                                    size={28}
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAddFlat();
+                                    }}
+                                />
+                                {onDeleteFloor && isLastFloor && wing.Wing.toUpperCase() !== 'BGP' && (
+                                    <button
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            onDeleteFloor(floor, wing, building);
+                                        }}
+                                        className="p-1.5 cursor-pointer hover:bg-red-100 rounded transition-colors"
+                                        title="Delete Floor"
+                                    >
+                                        <Trash color="red" className="text-red-600" size={20} />
+                                    </button>
+                                )}
+                            </>
                         )}
                     </div>
                 }
@@ -176,7 +182,9 @@ export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkin
                                 onDelete={onDelete}
                                 wing={wing.Wing}
                                 floor={floor.Floor}
-                                buildingNumber={building.BuildingNumber}
+                                buildingNumber={building?.BuildingNumber ?? ""}
+                                canAction={canAction}
+                                canBookingAction={canBookingAction}
                             />
                         ))}
                     </div>
@@ -204,10 +212,13 @@ export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkin
                     <Input
                         label="Number of Parking"
                         value={parkingCount}
-                        onChange={(e) => setParkingCount(e.target.value)}
+                        onChange={(e) => {
+                            const digits = e.target.value.replace(/\D/g, '');
+                            setParkingCount(digits)
+                        }}
                         placeholder="Enter Parking Count"
                         required
-                        min="0"
+                        maxLength={3}
                     />
                 </div>
             </Modal>

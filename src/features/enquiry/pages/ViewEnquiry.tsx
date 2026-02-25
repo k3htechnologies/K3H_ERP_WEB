@@ -387,8 +387,8 @@ const ViewEnquiry: React.FC = () => {
                                             Enquiry Date
                                         </span>
                                         <span>:</span>
-                                        <span className="font-semibold w-24 text-right">
-                                            {formatDate_dd_mm_yyyy(safe(enquiryData?.EnquiryDate ?? ""))}
+                                        <span className="font-semibold w-32 text-right">
+                                            {formatDate_dd_MonthName_yy(safe(enquiryData?.EnquiryDate ?? ""))}
                                         </span>
                                     </div>
 
@@ -397,8 +397,8 @@ const ViewEnquiry: React.FC = () => {
                                             Next Follow-up Date
                                         </span>
                                         <span>:</span>
-                                        <span className="font-semibold w-24 text-right">
-                                            {formatDate_dd_mm_yyyy(safe(enquiryData?.NextFollowUpDate))}
+                                        <span className="font-semibold w-32 text-right">
+                                            {formatDate_dd_MonthName_yy(safe(enquiryData?.NextFollowUpDate))}
                                         </span>
                                     </div>
 
@@ -411,7 +411,7 @@ const ViewEnquiry: React.FC = () => {
                         {/* Basic Deatils */}
 
                         <div className="grid grid-cols-2 gap-x-10 gap-y-6 p-4">
-                            <FieldItem label="Unique Code:" value={safe(enquiryData?.SystemGeneratedCode)} />
+                            <FieldItem label="Enquiry Code:" value={safe(enquiryData?.SystemGeneratedCode)} />
                             <FieldItem label="Mobile No:" value={safe(enquiryData?.MobileNumber) ? `+91 ${safe(enquiryData?.MobileNumber)}` : '-'} />
                             <FieldItem label="E-Mail ID" value={safe(enquiryData?.EmailId)} />
                             <FieldItem label="Date of Birth" value={safe(enquiryData?.DateOfBirth) ? formatDate_dd_MonthName_yy(safe(enquiryData?.DateOfBirth)) : ""} />
@@ -449,11 +449,15 @@ const ViewEnquiry: React.FC = () => {
                                 {enquiryData?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
                                     <>
                                         <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
-                                        <FieldItem label="Channel Partner " value={safe(enquiryData?.ChannelPartnerName)} />
-                                        <FieldItem label="Channel Partner Number" value={safe(enquiryData?.ChannelPartnerMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerMobileNumber)}` : '-'} />
+                                        <FieldItem label="CP Name" value={safe(enquiryData?.ChannelPartnerName)} />
+                                        <FieldItem label="CP Mobile Number" value={safe(enquiryData?.ChannelPartnerMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerMobileNumber)}` : '-'} />
+                                        <FieldItem label="CP Designation" value={safe(enquiryData?.ChannelPartnerDesignation)} />
+                                        <FieldItem label="CP Company Name" value={safe(enquiryData?.ChannelPartnerCompany)} />
+                                        <FieldItem label="CP Firms Type" value={safe(enquiryData?.ChannelPartnerFirmsType)} />
+                                        <FieldItem label="CP Type" value={safe(enquiryData?.ChannelPartnerType)} />
 
-                                        {enquiryData?.ChannelPartnerTeamMemberName && (<FieldItem label="Cp Team Member Name " value={safe(enquiryData?.ChannelPartnerTeamMemberName)} />)}
-                                        {enquiryData?.ChannelPartnerTeamMemberMobileNumber && (<FieldItem label="Cp Team Member Mobile Number" value={safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber)}` : '-'} />)}
+                                        {enquiryData?.ChannelPartnerTeamMemberName && (<FieldItem label="CP Team Member Name " value={safe(enquiryData?.ChannelPartnerTeamMemberName)} />)}
+                                        {enquiryData?.ChannelPartnerTeamMemberMobileNumber && (<FieldItem label="CP Team Member Mobile Number" value={safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber) ? `+91 ${safe(enquiryData?.ChannelPartnerTeamMemberMobileNumber)}` : '-'} />)}
                                     </>
                                 )}
 
@@ -558,7 +562,7 @@ const ViewEnquiry: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Stage " value={safe(enquiryData?.FinalStage)} />
-                                {safe(enquiryData?.FinalStageDetail) !== "" ? <FieldItem label="Final Stage Detail " value={safe(enquiryData?.FinalStageDetail)} /> : ""}
+                                {safe(enquiryData?.FinalStageDetail) !== "" ? <FieldItem label="Stage Reason " value={safe(enquiryData?.FinalStageDetail)} /> : ""}
 
                             </div>
                         </section>
@@ -682,7 +686,7 @@ const ViewEnquiry: React.FC = () => {
                                                 </span>
                                             </div>
 
-                                            {index === 0 && canActionPerform && isDateWithinPastDays(item.CreatedDate, 2) &&(
+                                            {index === 0 && canActionPerform && isDateWithinPastDays(item.CreatedDate, 2) && (
                                                 <div className="flex items-center gap-1">
                                                     <Button
                                                         color="transparent"
@@ -795,7 +799,7 @@ const ViewEnquiry: React.FC = () => {
                         </div>
                     )}
 
-                    {enquiryFollowUpFormData.Status !== 'Lost' && enquiryFollowUpFormData.Status !== 'Booking Done' && enquiryFollowUpFormData.Status !== 'Cancelled'  && (
+                    {enquiryFollowUpFormData.Status !== 'Lost' && enquiryFollowUpFormData.Status !== 'Booking Done' && enquiryFollowUpFormData.Status !== 'Cancelled' && (
                         <DatePickerInput
                             label="Next Follow Up Date"
                             required

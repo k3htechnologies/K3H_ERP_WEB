@@ -27,8 +27,6 @@ import { Loader } from "@/core/utils/loader";
 import { Trash2 } from "lucide-react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel";
-import { technicalService } from "@/features/technical/services/TechnicalService";
 import { useEnquiryListState } from "@/features/enquiry/context/EnquiryListStateContext";
 import { getStatusColor } from "./Status";
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
@@ -264,59 +262,6 @@ export const Enquiry: React.FC = () => {
     const handleExportEnquiryPdf = () => handleExportEnquiry('PDF')
     //#endregion
 
-    //#region IMPORT EXCEL | DOWNLOAD
-
-    const excelImportEnquiry = async () => {
-
-        await runApiWithLoader(
-
-            setIsLoading,
-
-            setLoadingMessage,
-
-            async () => {
-
-                return null;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message || 'Import failed' })
-            },
-            undefined,
-            'Preparing Import'
-        )
-    }
-
-    const downloadExcelSampleEnquiry = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const params: FilterPullExcelSample = {
-                    TableName: 'ENQUIRY'
-                }
-
-                const response = await technicalService.apiCallPullExcelSample(params);
-
-                handleExportFile(response, 'Excel', 'Enquiry Master', addToast, 'Sample file download successfully')
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message || 'Export failed' })
-            },
-            undefined,
-            'Preparing Downloading'
-        )
-    }
-
-    const handleExcelImportEnquiry = () => excelImportEnquiry()
-    const handleDownloadExcelSampleEnquiry = () => downloadExcelSampleEnquiry()
-    //#endregion
-
-
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((newPage: number) => {
         updateListState({ page: newPage });
@@ -368,7 +313,22 @@ export const Enquiry: React.FC = () => {
     //#region TABLE COLUMNS
     const EnquiryColumns = useMemo<TableColumn[]>(() => [
 
-        
+        {
+            key: 'SystemGeneratedCode',
+            label: 'Enquiry Code',
+            width: '20',
+            sortable: true,
+            fixed: 'left',
+            align: 'left',
+            render: value => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="150px"
+                    tooltipThreshold={20}
+                    tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                />
+            )
+        },
         {
             key: 'Name',
             label: 'Name',
@@ -385,22 +345,7 @@ export const Enquiry: React.FC = () => {
                 />
             )
         },
-        {
-            key: 'SystemGeneratedCode',
-            label: 'Unique Code',
-            width: '20',
-            sortable: true,
-            fixed: 'left',
-            align: 'left',
-            render: value => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="150px"
-                    tooltipThreshold={20}
-                    tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                />
-            )
-        },
+        
         {
             key: 'MobileNumber',
             label: 'Mobile Number',
@@ -411,6 +356,14 @@ export const Enquiry: React.FC = () => {
 
         },
         {
+            key: 'EnquiryDate',
+            label: 'Enquiry Date',
+            width: '12',
+            sortable: false,
+            align: 'center',
+            render: (value?: string) =>value ? formatDate_dd_MonthName_yy(value) : '-'
+        },
+        {
             key: 'EnquiryFollowUpDays',
             label: 'Enquiry Follow Up Days',
             width: '14',
@@ -419,8 +372,17 @@ export const Enquiry: React.FC = () => {
             render: value => value || '-'
         },
         {
+            key: 'NextFollowUpDate',
+            label: 'Next Follow-Up Date',
+            width: '12',
+            sortable: false,
+            align: 'center',
+            render: (value?: string) =>
+                value ? formatDate_dd_MonthName_yy(value) : '-'
+        },
+        {
             key: 'FinalStage',
-            label: 'Final Stage',
+            label: 'Stage',
             width: '14',
             sortable: false,
             align: 'left',
@@ -442,7 +404,7 @@ export const Enquiry: React.FC = () => {
         },
         {
             key: 'EmailId',
-            label: 'Email Id',
+            label: 'Email-Id',
             width: '14',
             sortable: false,
             align: 'left',
@@ -505,6 +467,22 @@ export const Enquiry: React.FC = () => {
             render: value => value || '-'
         },
         {
+            key: 'Timeline',
+            label: 'Timeline',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'Ethnicity',
+            label: 'Ethnicity',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
             key: 'Source',
             label: 'Source',
             width: '14',
@@ -527,6 +505,38 @@ export const Enquiry: React.FC = () => {
             sortable: false,
             align: 'left',
             render: (value, row) =>row?.Source === 'Channel Partner' ? '-' : value || '-'
+        },
+          {
+            key: 'ChannelPartnerName',
+            label: 'Channel Partner Name',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'ChannelPartnerCompany',
+            label: 'Channel Partner Company',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'ChannelPartnerMobileNumber',
+            label: 'Channel Partner Mobile No',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'CustomerClassification',
+            label: 'Customer Classification',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
         },
         {
             key: 'Nationality',
@@ -561,39 +571,6 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
-        {
-            key: 'CustomerClassification',
-            label: 'Customer Classification',
-            width: '14',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
-
-        {
-            key: 'ChannelPartnerName',
-            label: 'Channel Partner Name',
-            width: '14',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
-        {
-            key: 'ChannelPartnerCompany',
-            label: 'Channel Partner Company',
-            width: '14',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
-        {
-            key: 'ChannelPartnerMobileNumber',
-            label: 'Channel Partner Mobile No',
-            width: '14',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
 
         {
             key: 'FinalStageDetail',
@@ -603,23 +580,7 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
-        {
-            key: 'NextFollowUpDate',
-            label: 'Next Follow-Up Date',
-            width: '12',
-            sortable: false,
-            align: 'center',
-            render: (value?: string) =>
-                value ? formatDate_dd_MonthName_yy(value) : '-'
-        },
-        {
-            key: 'EnquiryDate',
-            label: 'Enquiry Date',
-            width: '12',
-            sortable: false,
-            align: 'center',
-            render: (value?: string) =>value ? formatDate_dd_MonthName_yy(value) : '-'
-        },
+        
         {
             key: 'SalesAdvisor',
             label: 'Sales Advisor',
@@ -807,9 +768,7 @@ export const Enquiry: React.FC = () => {
                 onAdd={handleAddEnquiryModal}
 
                 // IMPORT
-                isShowImportButton={canAction}
-                onUploadExcel={handleExcelImportEnquiry}
-                onDownloadSampleExcel={handleDownloadExcelSampleEnquiry}
+                isShowImportButton={false}
 
                 //EXPORT
                 isShowExportButton={canExport && EnquiryForTable.length > 0}

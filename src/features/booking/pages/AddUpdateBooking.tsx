@@ -43,6 +43,7 @@ import { fetchTncMasterDropdown } from '@/features/tnc/tncDropDown';
 import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { sendOTP } from '@/features/technical/services/OTPService';
 import CompleteVerificationSection from '@/ui/components/TwoWayVerification/CompleteVerificationSection';
+import { getBookingVerificationSteps } from '@/features/booking/utils/bookingVerificationSteps';
 
 const initialFormState = (): AddUpdateBookingRequest => ({
     BookingId: 0,
@@ -2092,10 +2093,7 @@ export const AddUpdateBooking: React.FC = () => {
                                     handleFieldChange('AgreementValue', value);
 
                                     // ================= TDS RULE =================
-                                    const tdsAmount =
-                                        agreementValue > 4999999.99
-                                            ? (agreementValue * 1) / 100
-                                            : 0;
+                                    const tdsAmount = agreementValue > 4999999.99 ? (agreementValue * 1) / 100 : 0;
 
                                     handleFieldChange('AgreementValueTDS', tdsAmount.toFixed(2));
 
@@ -2923,7 +2921,7 @@ export const AddUpdateBooking: React.FC = () => {
                         PaymentSchedulePercentage: percentage,
                         PaymentScheduleAmount: amount,
                         PaymentScheduleGSTAmount: (amount * Number(formData.AgreementValueGSTPercentage)) / 100,
-                        PaymentScheduleTDSAmount: (amount * Number(formData.AgreementValueGSTPercentage)) / 100,
+                        PaymentScheduleTDSAmount: agreementValue > 4999999.99 ? (amount * 1) / 100 : 0,
                     };
 
                     if (editingPaymentScheduleIndex !== null) {
@@ -3205,12 +3203,7 @@ export const AddUpdateBooking: React.FC = () => {
             >
 
                 <CompleteVerificationSection
-                    steps={[
-                        { id: "basic", label: "Basic Details", completed: true },
-                        { id: "source", label: "Source Details", completed: true },
-                        { id: "property", label: "Property Preferences", completed: true },
-                        { id: "followup", label: "Follow-up Details", completed: true },
-                    ]}
+                    steps={getBookingVerificationSteps(formData)}
                     otp={otp}
                     onOtpChange={setOtp}
                     mobileNumber={applicantList.find(x => x.ApplicantType === "Applicant")?.ApplicantMobileNumber ?? ""}

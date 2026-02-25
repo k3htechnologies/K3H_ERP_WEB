@@ -79,9 +79,9 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
   const [channelPartnerFirmsType, setChannelPartnerFirmsType] = useState<string>();
   const [channelPartnerPanNumber, setChannelPartnerPanNumber] = useState<string>();
-   const [channelPartnerPanURL, setChannelPartnerPanURL] = useState<string>();
+  const [channelPartnerPanURL, setChannelPartnerPanURL] = useState<string>();
   const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] = useState<string>();
-   const [channelPartnerAadhaarCardURL, setChannelPartnerAadhaarCardURL] = useState<string>();
+  const [channelPartnerAadhaarCardURL, setChannelPartnerAadhaarCardURL] = useState<string>();
   const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] = useState<string>();
   const [channelPartnerSystemGeneratedCode, setChannelPartnerSystemGeneratedCode] = useState<string>();
   const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
@@ -444,7 +444,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FieldItem label="CP Code" value={channelPartnerSystemGeneratedCode || '-'} />
                 <FieldItem label="Full Name" value={channelPartnerFullName || '-'} />
-                <FieldItem  label="Mobile No" value={channelPartnerMobileNumber ? `+91 ${channelPartnerMobileNumber}` : '-'}  />
+                <FieldItem label="Mobile No" value={channelPartnerMobileNumber ? `+91 ${channelPartnerMobileNumber}` : '-'} />
                 <FieldItem label="Designation" value={channelPartnerDesignation || '-'} />
                 <FieldItem label="Speciality" value={channelPartnerSpeciality || '-'} />
                 <FieldItem label="CP Type" value={channelPartnerType || '-'} />
@@ -504,10 +504,10 @@ const ViewChannelPartnerSourcing: React.FC = () => {
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                <FieldItem label="PAN Number" value={channelPartnerPanNumber || '-'} urls={channelPartnerPanURL} isIcon/>
-                <FieldItem label="Aadhaar Number" value={channelPartnerAadhaarCardNumber || '-'}  urls={channelPartnerAadhaarCardURL} isIcon/>
-                <FieldItem label="GST Number" value={channelPartnerGSTNumber || '-'}  urls={channelPartnerGSTURL} isIcon/>
+
+                <FieldItem label="PAN Number" value={channelPartnerPanNumber || '-'} urls={channelPartnerPanURL} isIcon />
+                <FieldItem label="Aadhaar Number" value={channelPartnerAadhaarCardNumber || '-'} urls={channelPartnerAadhaarCardURL} isIcon />
+                <FieldItem label="GST Number" value={channelPartnerGSTNumber || '-'} urls={channelPartnerGSTURL} isIcon />
               </div>
             </section>
 
@@ -636,13 +636,13 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                                               items-center justify-center
                                               font-bold text-sm
                                               ${item.IBM_OBM === "IBM"
-                                      ? "bg-[#8A38F5]/15 text-[#8A38F5]"
-                                      : item.IBM_OBM === "OBM"
-                                        ? "bg-[#FFF2E2] text-[#FF9F2D]"
-                                        : ""
-                                    } `}
+                                  ? "bg-[#8A38F5]/15 text-[#8A38F5]"
+                                  : item.IBM_OBM === "OBM"
+                                    ? "bg-[#FFF2E2] text-[#FF9F2D]"
+                                    : ""
+                                } `}
 
-                                    
+
                               >
                                 {item.IBM_OBM || "-"}
                               </div>
@@ -784,10 +784,8 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
         <CompleteVerificationSection
           steps={[
-            { id: "basic", label: "Basic Details", completed: true },
-            { id: "source", label: "Source Details", completed: true },
-            { id: "property", label: "Property Preferences", completed: true },
-            { id: "followup", label: "Follow-up Details", completed: true },
+            { id: "basic", label: "Remark", completed: true },
+            { id: "support", label: "Support", completed: formData.Support === "" ? false : true },
           ]}
           otp={otp}
           onOtpChange={setOtp}

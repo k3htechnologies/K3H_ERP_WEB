@@ -60,7 +60,6 @@ export const SinglePageSelection = forwardRef<
 
     const currentSize = sizeConfig[size];
 
-    // Match placeholder text size with MultiSelectPagination for sm / md / lg
     const placeholderFontSizeMap: Record<string, number> = {
       sm: 12,
       md: 14,

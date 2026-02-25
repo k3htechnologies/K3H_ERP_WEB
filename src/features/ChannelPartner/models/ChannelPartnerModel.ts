@@ -8,6 +8,7 @@ export interface FilterWithPaginationChannelPartnerRequest {
     ChannelPartnerName?: string
     MobileNumber?: string
     CompanyName?: string
+    Designation?: string
     FirmsType?: string
     Type?: string
     OfficeAddress?: string
@@ -39,6 +40,7 @@ export interface ChannelPartnerData {
     OfficeAddress: string
     AlternativeMobileNumber: string
     GSTNumber: string
+    GSTCertificateURL: string
     IsRERANumber: number | 0
     RERANumber: string
     PanNumber: string
@@ -88,11 +90,16 @@ export interface ChannelPartnerTeamData {
     EmailId: string
     OfficeAddress: string
     AlternativeMobileNumber: string
+
     GSTNumber: string
+    GSTCertificateURL: string
+
     IsRERANumber: number | 0
     RERANumber: string
+
     PanNumber: string
     PanCardURL: string
+    
     AadharCardURL: string
     AadharCardNumber: string
 
@@ -143,6 +150,8 @@ export interface AddUpdateChannelPartnerRequest {
     RemovePanCardURL: string | ''
     RemoveAadharCardURL: string | ''
     GSTNumber: string
+    GSTCertificateURL: File[] | null
+    RemoveGSTCertificateURL: string | ''
     RERANumber: string
     IsRERANumber: number | 0
     Speciality: string

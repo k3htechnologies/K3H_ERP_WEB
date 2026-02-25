@@ -1110,7 +1110,7 @@ const ApprovalDocument: React.FC = () => {
 
         fd.append("ExcelFile", file);
         fd.append("IsAllDelete", mergeExisting);
-        fd.append("TableName", 'Tenant');
+        fd.append("TableName", 'APPROVAL DOCUMENT');
         fd.append("ProjectId", String(projectId));
 
         const response = await technicalService.apiCallExcelImport(fd);
@@ -1119,7 +1119,7 @@ const ApprovalDocument: React.FC = () => {
 
           addToast({ type: 'success', title: "Excel imported sucessfully" })
 
-          fetchApprovalDocumentList();
+          loadApprovalDocumentTabs();
 
         } else {
           addToast({ type: "error", title: response.left.message });

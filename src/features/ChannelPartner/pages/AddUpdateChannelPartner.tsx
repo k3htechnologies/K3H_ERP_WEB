@@ -38,17 +38,23 @@ const initialFormState = (): AddUpdateChannelPartnerRequest => ({
     MobileNumber: '',
     AlternativeMobileNumber: '',
     EmailId: '',
-    AadharCardNumber: '',
     PanNumber: '',
     PanCardURL: null,
     RemovePanCardURL: '',
+
+    AadharCardNumber: '',
+    AadharCardURL: null,
     RemoveAadharCardURL: '',
+
     GSTNumber: '',
+    GSTCertificateURL: null,
+    RemoveGSTCertificateURL: '',
+
     IsRERANumber: 0,
     RERANumber: '',
     Speciality: '',
     OfficeAddress: '',
-    AadharCardURL: null,
+
 
     CountryMasterId: 1,
     DistrictMasterId: null,
@@ -65,17 +71,22 @@ export const AddUpdateChannelPartner: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
-    // AADHAR CARD URL
+    // PAN CARD URL
+
     const [panCardURLFiles, setPanCardURLFiles] = useState<(File | string)[]>([]);
     const [panCardURL, setPanCardURL] = useState<string>();
     const [removePanCardUrls, setRemovePanCardUrls] = useState<string[]>([]);
 
-    // PAN CARD URL
+    // AADHAR CARD URL
     const [aadharCardURLFiles, setAadharCardURLFiles] = useState<(File | string)[]>([]);
     const [aadharCardURL, setAadharCardURL] = useState<string>();
     const [removeAadharCardUrls, setRemoveAadharCardUrls] = useState<string[]>([]);
 
-    const [channelPartnerUniqueKey, setChannelPartnerUniqueKey] = useState<string>();
+    // GST CERTIFICATE URL
+
+    const [gSTCertificateURLFiles, setGSTCertificateURLFiles] = useState<(File | string)[]>([]);
+    const [gSTCertificateURL, setGSTCertificateURL] = useState<string>();
+    const [removeGSTCertificateUrls, setRemoveGSTCertificateUrls] = useState<string[]>([]);
 
     //COMPLETE VERIFICATION
     const [otp, setOtp] = useState("");
@@ -237,9 +248,14 @@ export const AddUpdateChannelPartner: React.FC = () => {
                         setPanCardURLFiles([])
                         setPanCardURL(e.PanCardURL);
                         setRemovePanCardUrls([])
+
                         setAadharCardURLFiles([]);
                         setAadharCardURL(e.AadharCardURL);
                         setRemoveAadharCardUrls([]);
+
+                        setGSTCertificateURLFiles([]);
+                        setGSTCertificateURL(e.GSTCertificateURL);
+                        setRemoveGSTCertificateUrls([]);
 
                         setSelectedCountryId(e.CountryMasterId ?? null);
                         setSelectedStateId(e.StateMasterId ?? null);
@@ -248,8 +264,6 @@ export const AddUpdateChannelPartner: React.FC = () => {
                         setSelectedVillageId(e.VillageMasterId ?? null);
 
                         setIsReadOnly(e.Designation === "Owner" ? false : true)
-
-                        setChannelPartnerUniqueKey(e.SystemGeneratedCode || '');
                     }
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -343,8 +357,14 @@ export const AddUpdateChannelPartner: React.FC = () => {
             newErrors.PanCardURL = "PAN card file is required.";
         }
 
-        if (formData.GSTNumber !== "" && !isValidGST(formData.GSTNumber)) {
+        if (!formData.GSTNumber) {
             newErrors.GSTNumber = 'GST Number is required';
+        }else if(!isValidGST(formData.GSTNumber)){
+             newErrors.GSTNumber = 'Valid GST Number is required';
+        }
+
+        if (formData.GSTNumber !== "" && !hasAnyDocumentFile(gSTCertificateURLFiles, gSTCertificateURL, removeGSTCertificateUrls)) {
+            newErrors.GSTCertificateURL = "GST Certificate file is required.";
         }
 
         if (!formData.CountryMasterId) {
@@ -413,6 +433,14 @@ export const AddUpdateChannelPartner: React.FC = () => {
         });
 
         fd.append("RemoveAadharCardURL", removeAadharCardUrls.join(","));
+
+         gSTCertificateURLFiles.forEach(file => {
+            if (file instanceof File) {
+                fd.append("GSTCertificateURL", file);
+            }
+        });
+
+        fd.append("RemoveGSTCertificateURL", removeGSTCertificateUrls.join(","));
 
         return fd;
     };
@@ -557,16 +585,6 @@ export const AddUpdateChannelPartner: React.FC = () => {
                         <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Details</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
-
-                            <div>
-                                <Input
-                                    type="text"
-                                    disabled
-                                    label='Unique key'
-                                    value={channelPartnerUniqueKey ?? ""}
-                                    placeholder="System Generated Unique key"
-                                />
-                            </div>
                             <div>
                                 <Input
                                     type="text"
@@ -696,12 +714,17 @@ export const AddUpdateChannelPartner: React.FC = () => {
                                         }
 
                                         const companyId = Number(item.value);
+                                        
                                         handleFieldChange("CompanyName", item.label);
 
                                         setLoadingMessage("Fetch Company Details")
+
                                         setIsLoading(true);
+
                                         const company = await fetchChannelPartnerById(companyId);
+
                                         setIsLoading(false);
+
                                         applyExistingCompanyData(company);
                                     }}
                                 />
@@ -906,6 +929,27 @@ export const AddUpdateChannelPartner: React.FC = () => {
                                     }}
                                     placeholder="Enter Valid GST Number"
                                 />
+                            </div>
+
+                            <div>
+                                <MultiFilePicker
+                                    label='GST Certificate'
+                                    placeholder="Select GST Certificate"
+                                    error={errors.GSTCertificateURL}
+                                    value={gSTCertificateURLFiles}
+                                    onChange={setGSTCertificateURLFiles}
+                                    availableFilesURL={gSTCertificateURL ?? ""}
+                                    allowedTypes={[
+                                        "image/jpeg",
+                                        "image/png",
+                                        "image/jpg"]}
+                                    maxFiles={5}
+                                    maxSizeMB={50}
+                                    onRemoveExisting={(url) => {
+                                        setRemoveGSTCertificateUrls(prev => [...prev, url]);
+                                    }}
+                                />
+
                             </div>
 
                         </div>

@@ -104,15 +104,17 @@ const Inventory = () => {
     //#endregion
 
     //#region MENU PERMISSIONS
-    const { canExport } = useMenuPermissions();
+    const { canAction, canExport } = useMenuPermissions();
+    const { canAction: canBookingAction } = useMenuPermissions('/booking');
     //#endregion
 
     //#region INIT
 
     // Clear all state when project changes
     useEffect(() => {
+
         if (!projectId) {
-            // Clear all inventory-related state when no project is selected
+
             setInventory([]);
             setSelectedBuilding(undefined);
             setSelectedBuildingIndex(null);
@@ -182,7 +184,6 @@ const Inventory = () => {
 
         // Clear search
         setSearchTerm('');
-        // Note: We keep the tab state when project changes (user preference)
 
     }, [projectId])
 
@@ -192,7 +193,7 @@ const Inventory = () => {
 
         fetchInventory();
 
-    }, [projectId])
+    }, [projectId,])
 
     useEffect(() => {
         if (!projectId) return;
@@ -1094,7 +1095,7 @@ const Inventory = () => {
             width: '120px',
             sortable: false,
             render: (value: string) => {
-                
+
                 const statusColors = colorsForFlatComponent[value as keyof typeof colorsForFlatComponent] || colorsForFlatComponent.Available;
 
                 return (
@@ -1192,7 +1193,8 @@ const Inventory = () => {
                 onExportPdf={handleExportInventoryPdf}
                 onUploadExcel={() => setShowImportModal(true)}
                 onDownloadSampleExcel={handleDownloadExcelSampleInventory}
-                canExport={canExport}
+                canExport={canExport && Number(projectId) > 0}
+                canAction={canAction && Number(projectId) > 0}
                 exportLoading={isLoading}
                 onAddBuilding={handleOpenAddBuildingModal}
                 onAddWing={handleOpenAddWingModal}
@@ -1291,6 +1293,8 @@ const Inventory = () => {
                             onParkingUpdate={fetchInventory}
                             onDeleteFloor={handleDeleteFloor}
                             isLastFloor={isLastFloor}
+                            canAction={canAction}
+                            canBookingAction={canBookingAction}
                         />
                     );
                 })
@@ -1359,26 +1363,35 @@ const Inventory = () => {
                         <Input
                             label="No Of Basement"
                             value={noOfBasement}
-                            onChange={(e) => setNoOfBasement(e.target.value)}
+                            onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, '');
+                                setNoOfBasement(digits)
+                            }}
                             placeholder="Enter No Of Basement"
                             required
-                            min="0"
+                            maxLength={2}
                         />
                         <Input
                             label="No Of Podium"
                             value={noOfPodium}
-                            onChange={(e) => setNoOfPodium(e.target.value)}
+                            onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, '');
+                                setNoOfPodium(digits)
+                            }}
                             placeholder="Enter No Of Podium"
                             required
-                            min="0"
+                            maxLength={2}
                         />
                         <Input
                             label="No Of Wings"
                             value={noOfWings}
-                            onChange={(e) => handleNoOfWingsChange(e.target.value)}
+                            onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, '');
+                                handleNoOfWingsChange(digits)
+                            }}
                             placeholder="Enter No Of Wings"
                             required
-                            min="1"
+                            maxLength={2}
                         />
                     </div>
 
@@ -1394,18 +1407,24 @@ const Inventory = () => {
                                         <Input
                                             label="No Of Floor"
                                             value={wing.NoOfFloorExcludingPodium}
-                                            onChange={(e) => handleWingDataChange(index, 'NoOfFloorExcludingPodium', e.target.value)}
+                                            onChange={(e) => {
+                                                const digits = e.target.value.replace(/\D/g, '');
+                                                handleWingDataChange(index, 'NoOfFloorExcludingPodium', digits)
+                                            }}
                                             placeholder="Enter No Of Floor"
                                             required
-                                            min="1"
+                                            maxLength={2}
                                         />
                                         <Input
                                             label="Max No Of Flats Per Floor"
                                             value={wing.MaxNoOfFlatPerFloor}
-                                            onChange={(e) => handleWingDataChange(index, 'MaxNoOfFlatPerFloor', e.target.value)}
+                                            onChange={(e) => {
+                                                const digits = e.target.value.replace(/\D/g, '');
+                                                handleWingDataChange(index, 'MaxNoOfFlatPerFloor', digits)
+                                            }}
                                             placeholder="Enter Max No Of Flats Per Floor"
                                             required
-                                            min="1"
+                                            maxLength={2}
                                         />
                                     </div>
                                 </div>
@@ -1451,18 +1470,26 @@ const Inventory = () => {
                         <Input
                             label="No Of Floor"
                             value={wingNoOfFloor}
-                            onChange={(e) => setWingNoOfFloor(e.target.value)}
+                            onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, '');
+                                setWingNoOfFloor(digits)
+                            }}
                             placeholder="Enter No Of Floor"
                             required
-                            min="1"
+                            maxLength={2}
+
                         />
                         <Input
                             label="Max No Of Flats Per Floor"
                             value={wingMaxNoOfFlatsPerFloor}
-                            onChange={(e) => setWingMaxNoOfFlatsPerFloor(e.target.value)}
+                            onChange={(e) => {
+                                const digits = e.target.value.replace(/\D/g, '');
+                                setWingMaxNoOfFlatsPerFloor(digits)
+                            }}
                             placeholder="Enter Max No Of Flats Per Floor"
                             required
-                            min="1"
+                            maxLength={2}
+
                         />
                     </div>
                 </div>

@@ -345,6 +345,11 @@ export const getPageInfo = (path: string) => {
             }
 
             {/* SALES */ }
+        case 'saleDashboard':
+            return {
+                title: "Sales Dashboard",
+                description: "Centralized enquiry management for faster response",
+            }
         case 'enquiry':
             return {
                 title: "Enquiry",

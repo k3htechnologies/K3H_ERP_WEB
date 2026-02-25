@@ -4,6 +4,7 @@ import { Input } from '@/ui/components/forms';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { UNIT_SQFT_LUMPSUM } from '@/core/constants/staticData';
 import type { AddUpdateOtherChargesRequest } from '@/features/otherCharges/models/OtherChargesModel';
+import { allowPercentage, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
 
 interface OtherChargesFormModalProps {
   isOpen: boolean;
@@ -43,7 +44,7 @@ export const OtherChargesFormModal: React.FC<OtherChargesFormModalProps> = ({
         <div className="space-y-4">
           <div>
             <Input
-              label="Charge Name"
+              label="Charges"
               required
               type="text"
               value={formData.ChargeName ?? ''}
@@ -56,7 +57,7 @@ export const OtherChargesFormModal: React.FC<OtherChargesFormModalProps> = ({
 
           <div>
             <Input
-              label="Value (in ₹)"
+              label="Value (₹)"
               required
               type="text"
               value={formData.Value ?? ''}
@@ -65,6 +66,7 @@ export const OtherChargesFormModal: React.FC<OtherChargesFormModalProps> = ({
                 onFieldChange('Value', digits === '' ? 0 : Number(digits));
               }}
               error={errors.Value}
+              rightIcon="₹"
               maxLength={10}
               placeholder="Enter Value "
             />
@@ -83,27 +85,37 @@ export const OtherChargesFormModal: React.FC<OtherChargesFormModalProps> = ({
           </div>
 
           <div>
+
             <Input
-              label="GST (in %)"
-              type="text"
+              label="GST (%)"
               value={formData.GSTPercentage ?? ''}
-              onChange={e => {
-                const digits = e.target.value.replace(/\D/g, '');
-                onFieldChange('GSTPercentage', digits === '' ? 0 : Number(digits));
+              onChange={(e) => {
+                const val = allowPercentage(e.target.value);
+                if (val !== null) {
+                  const gstValue = filterNumbersWithDecimal(e.target.value);
+                  onFieldChange('GSTPercentage', gstValue);
+                }
               }}
-              error={errors.GSTPercentage}
-              maxLength={5}
-              placeholder="Enter GST Percentage "
+              placeholder="Enter GST (%)"
+              rightIcon="%"
+              required
             />
+
           </div>
 
           <div>
             <Input
-              label="GST Value"
-              required
+              label="GST Value (₹)"
               value={formData.GSTValue ?? ''}
               error={errors.GSTValue}
-              readOnly
+              disabled
+            />
+          </div>
+           <div>
+            <Input
+              label="Value + GST Value (₹)"
+              value={Number(formData.Value) + Number(formData.GSTValue)}
+              disabled
             />
           </div>
         </div>

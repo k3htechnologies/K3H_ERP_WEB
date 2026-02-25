@@ -22,6 +22,7 @@ import { COMMERCIAL_FLAT_CONFIGURATION, FLAT_UNIT_FACING, FLAT_UNIT_TYPE, INVENT
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { filterNumbersWithDecimal } from '@/core/utils/fileValidation';
 import Checkbox from '@/ui/components/forms/Checkbox';
+import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 
 interface FormDataInventoryFlat {
   InventoryFlatId: number;
@@ -73,9 +74,13 @@ const initialFormStateInventoryFlatSpecification = (): FormDataInventoryFlatSpec
 });
 
 const InventorySpecification: React.FC = () => {
+
   const navigate = useNavigate();
   const location = useLocation();
   const { addToast } = useToast();
+
+  const { canAction } = useMenuPermissions('/inventory');
+  const { canAction: canBookingAction } = useMenuPermissions('/booking');
 
   const flatData = (location.state as { flat?: InventoryFlatData; projectId?: number })?.flat;
   const projectId = (location.state as { flat?: InventoryFlatData; projectId?: number })?.projectId;
@@ -352,7 +357,7 @@ const InventorySpecification: React.FC = () => {
             FlatStatus: formDataInventoryFlat.FlatStatus,
             FlatFacing: formDataInventoryFlat.FlatFacing,
             InventoryFlatSpecificationJSON: specificationsJSON,
-             IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt: formDataInventoryFlat.IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt,
+            IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt: formDataInventoryFlat.IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt,
           };
 
           const response = await inventoryService.apiCallUpdateInventoryFlat(params);
@@ -488,8 +493,19 @@ const InventorySpecification: React.FC = () => {
     }, 0);
   }, [specifications]);
 
-  const isChange = formDataInventoryFlat.FlatStatus === "Alloted" || formDataInventoryFlat.FlatStatus === "Booked" ? false : true;
-  const disabled = formDataInventoryFlat.FlatStatus === "Alloted" || formDataInventoryFlat.FlatStatus === "Booked" ? true : false;
+  const isFlatLocked = ["Alloted", "Booked"].includes(
+    formDataInventoryFlat.FlatStatus
+  );
+
+  const canFullEdit = canAction && !isFlatLocked;
+
+  const canStatusEditOnly = !canAction && canBookingAction && !isFlatLocked;
+
+  const isChange = canFullEdit;
+
+  const disabled = !canFullEdit;
+
+  const statusDisabled = !(canFullEdit || canStatusEditOnly);
 
 
   return (
@@ -582,7 +598,7 @@ const InventorySpecification: React.FC = () => {
                 placeholder="Select Status"
                 required
                 error={errorsInventoryFlat.FlatStatus}
-                disabled={disabled}
+                disabled={statusDisabled}
               />
             </div>
           </div>
@@ -596,7 +612,7 @@ const InventorySpecification: React.FC = () => {
                 </h3>
               </div>
 
-              {isChange && (
+              {canFullEdit  && (
                 <Button
                   onClick={handleAddSpecification}
                   color="blue"
@@ -625,6 +641,7 @@ const InventorySpecification: React.FC = () => {
                   label="Apply the same flat specifications for all units in the inventory with the same RERA carpet area?"
                   checked={formDataInventoryFlat.IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt === true}
                   onChange={(e) => handleFieldChangeInventoryFlat('IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt', e.target.checked ? true : false)}
+                  disabled={disabled}
                 />
               </div>
             </div>
@@ -641,7 +658,7 @@ const InventorySpecification: React.FC = () => {
             setErrorsInventoryFlat({});
             navigate(-1);
           }}
-          canAction={isChange}
+          canAction={canFullEdit || canStatusEditOnly}
           onSave={handleSave}
           isLoading={isLoading}
         />

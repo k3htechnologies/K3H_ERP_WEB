@@ -81,6 +81,10 @@ export interface EnquiryData {
     ChannelPartnerId: number | null;
     ChannelPartnerName: string | null;
     ChannelPartnerMobileNumber: number | null;
+    ChannelPartnerCompany: string| null;
+    ChannelPartnerFirmsType: string| null;
+    ChannelPartnerDesignation: string| null;
+    ChannelPartnerType: string| null;
 
     ChannelPartnerTeamMemberId: number;
     ChannelPartnerTeamMemberName: string | null;

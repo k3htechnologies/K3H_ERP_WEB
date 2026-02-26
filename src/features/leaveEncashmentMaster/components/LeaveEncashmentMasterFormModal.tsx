@@ -51,10 +51,11 @@ export const LeaveEncashmentMasterFormModal: React.FC<LeaveEncashmentMasterFormM
               label="Earning Name"
               required
               options={CTC_EARNINGS.map(m => ({ label: m.name, value: m.id }))}
-              selectedValues={Array.isArray(formData.EarningMasterName) ? formData.EarningMasterName : []}
-              onChange={(values) => onFieldChange("EarningMasterName", values)}
+              selectedValues={formData.EarningMasterName ? formData.EarningMasterName.split(",") : []}
+               onChange={(values) => onFieldChange("EarningMasterName", values.join(","))}
               error={errors.EarningMasterName}
             />
+
           </div>
           <div>
             <Input

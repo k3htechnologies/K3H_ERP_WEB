@@ -1382,7 +1382,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         )}
 
                                         <div>
-
                                             <MultiSelectPagination
                                                 label="Location"
                                                 dataFetchCallBack={fetchVillageDropdown}
@@ -1397,8 +1396,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                                     }
                                                 }}
                                             />
-
-
+                                            
 
                                         </div>
                                         <div>

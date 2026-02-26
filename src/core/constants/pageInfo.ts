@@ -382,6 +382,26 @@ export const getPageInfo = (path: string) => {
                 title: "Other Charges",
                 description: "Single source of truth for channel partner information",
             }
+        case 'paymentSchedule':
+            return {
+                title: "Payment Schedule",
+                description: "Single source of truth for channel partner information",
+            }
+        case 'paymentScheduleReport':
+            return {
+                title: "Payment Schedule Report",
+                description: "Single source of truth for channel partner information",
+            }
+        case 'enquiryReport':
+            return {
+                title: "Enquiry Report",
+                description: "Centralized enquiry management for faster response",
+            }
+        case 'cpEnquiryReport':
+            return {
+                title: "Channel Partner Enquiry Report",
+                description: "Centralized enquiry management for faster response",
+            }
 
         // MARKETING
         case 'content':

@@ -12,34 +12,32 @@ import { paymentScheduleMasterService } from "@/features/paymentScheduleMaster/s
 import * as E from 'fp-ts/Either';
 import { Button, Input } from "@/ui/components/forms";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
-import { Edit } from "lucide-react";
+import { Edit, Plus, Trash2 } from "lucide-react";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { fetchBuildingDropdown, fetchWingDropdown } from "../BuildingWingFlatDropdown";
+import { fetchBuildingDropdown, fetchWingDropdown } from "@/features/inventory/InventoryDropdown";
 import { useNavigate } from "react-router-dom";
-import { fetchPaymentScheduleDropdown } from "@/features/paymentSchedule/paymentScheduleDropDown";
+import { Modal } from "@/ui/components/Modal/Modal";
+import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import { fetchPaymentScheduleDropdown } from "@/features/paymentScheduleMaster/paymentScheduleDropDown";
 
 const initialFormState = (): AddUpdatePaymentScheduleMasterRequest => ({
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   PaymentScheduleMasterId: 0,
   ProjectId: 0,
-  BuildingId: 0,
-  Stage: '',
+  InventoryBuildingId: 0,
   PaymentSchedulePercentage: 0,
   PaymentScheduleCummulativePercentage: 0,
+  Stage: '',
   Wing: '',
-
 });
 
 export const PaymentScheduleMaster: React.FC = () => {
 
   // STATE
   const [PaymentScheduleMasterList, setPaymentScheduleMasterList] = useState<PaymentScheduleMasterData[]>([]);
-  const [sortInfo, setSortInfo] = useState<SortInfo>();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [stagedData, setStagedData] = useState<AddUpdatePaymentScheduleMasterRequest[]>([]);
-  const [showForm,] = useState(true);
   const [stageOptions, setStageOptions] = useState<{ label: string; value: string }[]>([]);
   const [wingOptions, setWingOptions] = useState<{ label: string; value: string }[]>([]);
   const [buildingOptions, setBuildingOptions] = useState<{ label: string; value: number }[]>([]);
@@ -56,9 +54,7 @@ export const PaymentScheduleMaster: React.FC = () => {
   // PAGINATION
   const { pagination, setPagination } = usePagination(20);
 
-  //#region PROJECT SELECTION GET ID
   const { projectId } = useProject();
-  //#endregion
 
   const [ratePerSqFt, setRatePerSqFt] = useState<number>(0);
 
@@ -71,28 +67,26 @@ export const PaymentScheduleMaster: React.FC = () => {
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions();
-  //#endregion
 
   const calculateCumulative = (currentPercentage: number) => {
-    const allRecords = [
-      ...PaymentScheduleMasterList,
-      ...stagedData,
-    ];
-
-    const totalExisting = allRecords.reduce(
-      (sum, item) => sum + Number(item.PaymentSchedulePercentage || 0),
+    const totalExisting = PaymentScheduleMasterList.reduce(
+      (sum, item) =>
+        sum +
+        (editingPaymentScheduleMasterData &&
+          item.PaymentScheduleMasterId ===
+          editingPaymentScheduleMasterData.PaymentScheduleMasterId
+          ? 0
+          : Number(item.PaymentSchedulePercentage || 0)),
       0
     );
 
-    const newTotal = totalExisting + currentPercentage;
-
-    return newTotal;
+    return totalExisting + currentPercentage;
   };
-  //#region LOAD DATA
-  const loadPaymentScheduleMaster = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo = {}, sort?: SortInfo) => {
+  //#endregion
 
+  //#region LOAD PAYMENT SCHEDULE DATA
+  const loadPaymentScheduleMaster = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo = {}, sort?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -101,20 +95,23 @@ export const PaymentScheduleMaster: React.FC = () => {
           PageNumber: page,
           PageSize: pagination.pageSize,
           ProjectId: Number(projectId),
+          InventoryBuildingId: filterParams.InventoryBuildingId ? Number(filterParams.InventoryBuildingId) : undefined,
           Wing: filterParams.Wing ?? undefined,
-          Name: filterParams.Name ?? undefined,
+          Stage: filterParams.Stage ?? undefined,
           SortBy: getSortByParam(sort ?? null, PaymentScheduleMasterColumns),
         };
 
         const response = await paymentScheduleMasterService.apiCallPullPaymentScheduleMaster(params);
 
         if (E.isRight(response)) {
+
           setPaymentScheduleMasterList(response.right.Data);
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
+
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
@@ -123,7 +120,7 @@ export const PaymentScheduleMaster: React.FC = () => {
       (error: any) =>
         addToast({ type: 'error', title: error.message }),
       undefined,
-      'Loading '
+      'Loading Data '
     );
   },
     [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination,]);
@@ -131,19 +128,14 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    if (!projectId) return;
-
-    setPagination({ currentPage: 1 });
-    loadPaymentScheduleMaster(1, {}, sortInfo);
+    setFormData(initialFormState());
+    setStageOptions([]);
   }, [projectId]);
-  //#endregion
+  //#endregion  
 
   useEffect(() => {
     if (!projectId) return;
-
-    fetchBuildingDropdown({
-      projectId: projectId
-    }).then(res => {
+    fetchBuildingDropdown({ projectId: Number(projectId) }).then(res => {
       setBuildingOptions(res.itemList);
     });
 
@@ -151,17 +143,39 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   // ================= BUILDING CHANGE =================
 
-  const handleBuildingChange = async (buildingId: number) => {
+  const handleBuildingChange = async (inventoryInventoryBuildingId: number) => {
+
+    if (!inventoryInventoryBuildingId) {
+      setFormData(prev => ({
+        ...prev,
+        InventoryBuildingId: 0,
+        Wing: '',
+        Stage: ''
+      }));
+
+      setWingOptions([]);
+      setStageOptions([]);
+      setPaymentScheduleMasterList([]);
+
+      setPagination({
+        currentPage: 1,
+        totalRecords: 0,
+        totalPages: 1
+      });
+
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
-      BuildingId: buildingId,
+      InventoryBuildingId: inventoryInventoryBuildingId,
       Wing: '',
-      FlatConfiguration: ''
+      Stage: ''
     }));
 
     const res = await fetchWingDropdown({
       projectId: projectId ?? undefined,
-      buildingId: buildingId ?? undefined
+      inventoryBuildingId: inventoryInventoryBuildingId ?? undefined
     });
 
     setWingOptions(res.itemList);
@@ -170,6 +184,26 @@ export const PaymentScheduleMaster: React.FC = () => {
   // ================= WING CHANGE =================
 
   const handleWingChange = async (wing: string) => {
+
+    setRatePerSqFt(0);
+    if (!wing) {
+
+      setFormData(prev => ({
+        ...prev,
+        Wing: '',
+        Stage: ''
+      }));
+
+      setStageOptions([]);
+      setPaymentScheduleMasterList([]);
+      setPagination({
+        currentPage: 1,
+        totalRecords: 0,
+        totalPages: 1
+      });
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       Wing: wing,
@@ -178,25 +212,38 @@ export const PaymentScheduleMaster: React.FC = () => {
 
     const res = await fetchPaymentScheduleDropdown({
       projectId: projectId ?? undefined,
+      inventoryBuildingId: formData.InventoryBuildingId,
+      wing: wing
     });
+
     setStageOptions(res.itemList);
+    await loadPaymentScheduleMaster(1, {
+      InventoryBuildingId: String(formData.InventoryBuildingId),
+      Wing: wing
+    });
   };
+  //#endregion
 
   useEffect(() => {
     if (isAddUpdateModalOpen) {
       if (editingPaymentScheduleMasterData) {
         setFormData({
           PaymentScheduleMasterId: editingPaymentScheduleMasterData.PaymentScheduleMasterId ?? 0,
-          BuildingId: editingPaymentScheduleMasterData.BuildingId ?? 0,
+          InventoryBuildingId: formData.InventoryBuildingId,
+          Wing: formData.Wing,
           Uniquekey: editingPaymentScheduleMasterData.Uniquekey ?? initialFormState().Uniquekey,
           Stage: editingPaymentScheduleMasterData.Stage ?? '',
-          Wing: editingPaymentScheduleMasterData.Wing ?? '',
           PaymentSchedulePercentage: editingPaymentScheduleMasterData.PaymentSchedulePercentage ?? '',
           PaymentScheduleCummulativePercentage: editingPaymentScheduleMasterData.PaymentScheduleCummulativePercentage ?? '',
           ProjectId: Number(projectId),
         });
       } else {
-        setFormData(initialFormState());
+        setFormData(prev => ({
+          ...initialFormState(),
+          InventoryBuildingId: prev.InventoryBuildingId,
+          Wing: prev.Wing,
+          ProjectId: Number(projectId),
+        }));
       }
       setErrors({});
     }
@@ -205,18 +252,10 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setPagination({ currentPage: page });
-    loadPaymentScheduleMaster(1, {}, sortInfo);
+    loadPaymentScheduleMaster(1, {});
   };
   //#endregion
 
-  //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    setPagination({ currentPage: 1 });
-
-    loadPaymentScheduleMaster(1, {}, sort);
-  }, []);
-  //#endregion
 
   //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: PaymentScheduleMasterData) => {
@@ -225,23 +264,15 @@ export const PaymentScheduleMaster: React.FC = () => {
   }, [])
   //#endregion
 
-  const handleFieldChange = (field: keyof AddUpdatePaymentScheduleMasterRequest, value: any) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
-  };
-  //#endregion
-
   //#region EDIT PAYMENT SCHEDULE
-  const handleEditPaymentScheduleMaster = useCallback((row: PaymentScheduleMasterData) => {
-    setEditingPaymentScheduleMasterData({
-      ...row,
-      Stage: row.Stage
-    })
-    setIsAddUpdateModalOpen(true);
-  }, [])
+  const handleEditPaymentScheduleMaster = useCallback(async (row: PaymentScheduleMasterData) => {
 
+    const res = await fetchPaymentScheduleDropdown({ projectId: projectId ?? undefined });
+
+    setStageOptions(res.itemList);
+    setEditingPaymentScheduleMasterData(row);
+    setIsAddUpdateModalOpen(true);
+  }, [projectId]);
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
 
@@ -255,12 +286,16 @@ export const PaymentScheduleMaster: React.FC = () => {
       newErrors.Stage = "Stage is required";
     }
 
-    if (!formData.Wing) {
-      newErrors.Wing = "Wing is required";
-    }
-
     if (!formData.PaymentSchedulePercentage) {
       newErrors.PaymentSchedulePercentage = "Percentage is required";
+    }
+
+    const percentage = Number(formData.PaymentSchedulePercentage || 0);
+    const newTotal = calculateCumulative(percentage);
+
+    if (newTotal > 100) {
+      newErrors.PaymentSchedulePercentage =
+        "Total percentage cannot exceed 100%";
     }
 
     return {
@@ -268,13 +303,12 @@ export const PaymentScheduleMaster: React.FC = () => {
       errors: newErrors,
     };
   };
-
   // PUSH FORM DATA
   const PushPaymentScheduleMasterFormData = (): AddUpdatePaymentScheduleMasterRequest => {
 
     return {
       PaymentScheduleMasterId: Number(formData.PaymentScheduleMasterId) || 0,
-      BuildingId: Number(formData.BuildingId) || 0,
+      InventoryBuildingId: Number(formData.InventoryBuildingId) || 0,
       Uniquekey: formData.Uniquekey ?? null,
       Stage: formData.Stage ?? null,
       Wing: formData.Wing ?? null,
@@ -284,8 +318,8 @@ export const PaymentScheduleMaster: React.FC = () => {
     };
   };
 
-  // UPDATE PAYMENT SCHEDULE DATA
-  const handleAddUpdatePaymentScheduleMaster = async (e: React.FormEvent) => {
+  //ADD UPDATE PAYMENT SCHEDULE DATA
+  const handleAddEditPaymentScheduleMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
     setErrors({})
@@ -303,7 +337,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
         const payload = PushPaymentScheduleMasterFormData();
 
-        const response = await paymentScheduleMasterService.apiCallAddUpdatePaymentScheduleMaster([payload]);
+        const response = await paymentScheduleMasterService.apiCallAddUpdatePaymentScheduleMaster(payload);
 
         if (E.isRight(response)) {
 
@@ -333,6 +367,10 @@ export const PaymentScheduleMaster: React.FC = () => {
                   : item
               )
             )
+            await loadPaymentScheduleMaster(
+              pagination.currentPage,
+              { Wing: formData.Wing ?? '', InventoryBuildingId: formData.InventoryBuildingId ? String(formData.InventoryBuildingId) : "" },
+            );
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
           setEditingPaymentScheduleMasterData(null);
@@ -346,7 +384,7 @@ export const PaymentScheduleMaster: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-      'Update Payment Schedule'
+      'Update Payment Schdule'
     )
   };
   //#endregion
@@ -354,8 +392,8 @@ export const PaymentScheduleMaster: React.FC = () => {
   //#region TABLE COLUMNS
   const PaymentScheduleMasterColumns = useMemo<TableColumn[]>(() => [
     {
-      key: 'Name',
-      label: 'Name',
+      key: 'Stage',
+      label: 'Stage',
       width: '25',
       sortable: false,
       fixed: 'left',
@@ -378,11 +416,16 @@ export const PaymentScheduleMaster: React.FC = () => {
     },
     {
       key: 'PaymentScheduleCummulativePercentage',
-      label: 'Cummulative%',
+      label: 'Cumulative Percentage',
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => `${value || 0}%`
+      render: (_value, _row, rowIndex) => {
+
+        const cumulative = PaymentScheduleMasterList.slice(0, rowIndex + 1).reduce((sum, item) => sum + Number(item.PaymentSchedulePercentage || 0), 0);
+
+        return `${cumulative}%`;
+      }
     },
     {
       key: 'Actions',
@@ -392,39 +435,39 @@ export const PaymentScheduleMaster: React.FC = () => {
       align: 'center',
       render: (_value, row) => (
         <div className="flex items-center justify-center">
-          {/* {canAction && ( */}
-          <>
-            <Button
-              color="transparent"
-              size="sm"
-              style={{
-                color: 'blue',
-                padding: '0px 8px'
-              }}
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                handleEditPaymentScheduleMaster(row)
-              }}
-              leftIcon={<Edit className="h-4 w-4" />}
-            />
+          {canAction && (
+            <>
+              <Button
+                color="transparent"
+                size="sm"
+                style={{
+                  color: 'blue',
+                  padding: '0px 8px'
+                }}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleEditPaymentScheduleMaster(row)
+                }}
+                leftIcon={<Edit className="h-4 w-4" />}
+              />
 
-            {/* <Button
-              color="transparent"
-              size="sm"
-              style={{
-                color: 'red',
-                padding: '0px 8px'
-              }}
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                handleConfirmationDialogBoxOpen(row)
-              }}
-              leftIcon={<Trash2 className="h-4 w-4" />}
-            /> */}
-          </>
-          {/* )} */}
+              <Button
+                color="transparent"
+                size="sm"
+                style={{
+                  color: 'red',
+                  padding: '0px 8px'
+                }}
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleConfirmationDialogBoxOpen(row)
+                }}
+                leftIcon={<Trash2 className="h-4 w-4" />}
+              />
+            </>
+          )}
         </div>
       )
     },
@@ -444,9 +487,16 @@ export const PaymentScheduleMaster: React.FC = () => {
     [pagination, handlePageChange]
   )
   const PaymentScheduleMasterForTable = useMemo(() => PaymentScheduleMasterList, [PaymentScheduleMasterList]);
+
+  const totalPercentage = useMemo(() => {
+    return PaymentScheduleMasterList.reduce(
+      (sum, item) => sum + Number(item.PaymentSchedulePercentage || 0),
+      0
+    );
+  }, [PaymentScheduleMasterList]);
   //#endregion
 
-  //#region DELETE PAYMENT SCHEDULE
+  //#region DELETE PAYMENT SCHEDULE DATA
   const handleDeletePaymentScheduleMaster = async () => {
 
     setIsConfirmationDialogBoxOpen(false);
@@ -464,7 +514,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
           Uniquekey: deletePaymentScheduleMasterData.Uniquekey || "",
 
-          ProjectId: deletePaymentScheduleMasterData.ProjectId || 0
+          ProjectId: Number(projectId)
         };
 
         const response = await paymentScheduleMasterService.apiCallDeletePaymentScheduleMaster(params);
@@ -489,8 +539,12 @@ export const PaymentScheduleMaster: React.FC = () => {
             totalRecords: newTotalRecords,
             totalPages: newTotalPages
           });
-          await loadPaymentScheduleMaster(pageToShow);
-
+          await loadPaymentScheduleMaster(
+            pageToShow, {
+            InventoryBuildingId: formData.InventoryBuildingId ? String(formData.InventoryBuildingId) : "",
+            Wing: formData.Wing ?? ""
+          },
+          );
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -509,13 +563,26 @@ export const PaymentScheduleMaster: React.FC = () => {
   };
   //#endregion
 
+
   //#region NAVIGATE TO PAYMENT SCHEDULE REPORT
   const handlePaymentScheduleMasterReport = useCallback(() => {
-    navigate('/paymentScheduleMasterReport', {
-      state: { ratePerSqFt }
+    navigate('/paymentMasterReport', {
+      state: {
+        ratePerSqFt,
+        InventoryBuildingId: formData.InventoryBuildingId,
+        Wing: formData.Wing,
+      }
     });
-  }, [navigate, ratePerSqFt]);
+  }, [navigate, ratePerSqFt, formData.InventoryBuildingId, formData.Wing, addToast]);
   //#endregion
+
+  //#region HANDLE FIELD CHANGE
+  const handleFieldChange = (field: keyof AddUpdatePaymentScheduleMasterRequest, value: any) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: '' }));
+    }
+  };
 
   //#region
   const validateGenerate = (): boolean => {
@@ -525,136 +592,68 @@ export const PaymentScheduleMaster: React.FC = () => {
       newErrors.ratePerSqFt = "Rate is required and must be greater than 0";
     }
 
-    setErrors(newErrors);
+    if (!formData.Wing) {
+      newErrors.Wing = "Wing is required";
+    }
 
+    const totalPercentage = PaymentScheduleMasterList.reduce(
+      (sum, item) => sum + Number(item.PaymentSchedulePercentage || 0),
+      0
+    );
+
+    if (totalPercentage !== 100) {
+      addToast({
+        type: "error",
+        title: "Total Payment Schedule Percentage must be exactly 100% to Generate Report",
+      });
+      return false;
+    }
+
+    setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
   //#endregion
 
   //#region
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
 
       <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
 
-      {showForm && (
+      <div className="my-6 p-4">
 
-        <div className="my-6 p-2 border border-gray-200 rounded-lg">
-          <div className="grid grid-cols-3 gap-4">
-
-            <div>
-              <SinglePageSelection
-                label="Building"
-                placeholder="Select Building"
-                options={buildingOptions}
-                value={formData.BuildingId || ''}
-                required
-                error={errors.BuildingId}
-                onChange={(value) => handleBuildingChange(Number(value))}
-              />
-            </div>
-
-            <div>
-              <SinglePageSelection
-                label="Wing"
-                placeholder="Select Wing"
-                options={wingOptions}
-                value={formData.Wing ?? ''}
-                required
-                error={errors.Wing}
-                onChange={(value) => handleWingChange(String(value))}
-              />
-            </div>
-
-            <div>
-              <SinglePageSelection
-                label="Stage"
-                placeholder="Select Stage"
-                options={stageOptions}
-                value={formData.Stage ?? ''}
-                onChange={(value) =>
-                  setFormData(prev => ({
-                    ...prev,
-                    Stage: String(value)
-                  }))
-                }
-              />
-            </div>
-
-            <div>
-              <Input
-                label="Percentage"
-                type="text"
-                value={formData.PaymentSchedulePercentage ?? ''}
-                required
-                onChange={e => {
-                  const digits = e.target.value.replace(/\D/g, '');
-                  const percentage = digits === '' ? 0 : Number(digits);
-
-                  const newTotal = calculateCumulative(percentage);
-
-                  if (newTotal > 100) {
-                    setErrors(prev => ({
-                      ...prev,
-                      PaymentSchedulePercentage: "Total percentage cannot exceed 100%"
-                    }));
-                    return;
-                  }
-                  setFormData(prev => ({
-                    ...prev,
-                    PaymentSchedulePercentage: percentage,
-                    PaymentScheduleCummulativePercentage: newTotal
-                  }));
-                }}
-                error={errors.PaymentSchedulePercentage}
-
-              />
-            </div>
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <SinglePageSelection
+              label="Building"
+              placeholder="Select Building"
+              options={buildingOptions}
+              value={formData.InventoryBuildingId || ''}
+              required
+              error={errors.InventoryBuildingId}
+              onChange={(value) => handleBuildingChange(Number(value))}
+            />
           </div>
 
-          {/* Add Button */}
-          <div className="flex justify-end mt-1">
-            <Button
-              className="border border-green-600 text-green-600 hover:bg-green-50 px-3 py-1 rounded-md"
-              onClick={() => {
-                const validation = validateUpdatePaymentScheduleMasterForm();
-                if (!validation.isValid) {
-                  setErrors(validation.errors);
-                  return;
-                }
-                const payload = PushPaymentScheduleMasterFormData();
-
-                setStagedData(prev => [...prev, payload]);
-                setFormData({
-                  ...initialFormState(),
-                  ProjectId: Number(projectId)
-                });
-              }}
-            >
-              Add
-            </Button>
+          <div>
+            <SinglePageSelection
+              label="Wing"
+              placeholder="Select Wing"
+              options={wingOptions}
+              value={formData.Wing ?? ''}
+              required
+              error={errors.Wing}
+              onChange={(value) => handleWingChange(String(value))}
+            />
           </div>
-        </div>
-      )}
 
-      {/* DATA TABLE */}
-      {showForm ? (
-        <DataTable
-          columns={PaymentScheduleMasterColumns}
-          data={[...PaymentScheduleMasterForTable, ...stagedData]}
-          emptyMessage="No Data Found"
-          fixedHeight={true}
-          className="flex-1"
-        />
-      ) : (
-        <>
-          <div className="grid grid-cols-3 gap-4">
-
+          {totalPercentage === 100 && (
             <div>
               <Input
                 label="Rate Per Sq.Ft"
                 placeholder="Enter Rate"
                 required
+                maxLength={8}
                 value={ratePerSqFt || ''}
                 error={errors.ratePerSqFt}
                 onChange={(e) => {
@@ -668,60 +667,185 @@ export const PaymentScheduleMaster: React.FC = () => {
                 }}
               />
             </div>
+          )}
+        </div>
+      </div>
 
-            <div>
-              <SinglePageSelection
-                label="Wing"
-                placeholder="Select Wing"
-                options={wingOptions}
-                value={formData.Wing ?? ''}
-                required
-                error={errors.Wing}
-                onChange={(value) =>
-                  handleFieldChange('Wing', String(value))
-                }
-              />
+      {/* TOTAL SUMMARY */}
+
+      <div className="space-y-4 pb-5">
+
+        <div className="flex items-center justify-between border-b border-gray-300 pb-2">
+          <div className="flex items-center gap-30">
+
+            <h3 className="text-lg font-semibold text-gray-900">
+              Payment Schedule List
+            </h3>
+
+            <div className="text-sm">
+              <span className="font-semibold text-gray-700">Total: </span>
+              <span
+                className={`font-bold ${totalPercentage === 100
+                  ? "text-green-600"
+                  : "text-red-600"
+                  }`}
+              >
+                {totalPercentage.toFixed(2)}%
+              </span>
+
+              {totalPercentage !== 100 && (
+                <span className="text-xs text-red-600 ml-2">
+                  {totalPercentage < 100
+                    ? `Missing ${(100 - totalPercentage).toFixed(2)}%`
+                    : `Exceeds ${(totalPercentage - 100).toFixed(2)}%`}
+                </span>
+              )}
             </div>
           </div>
 
-          <DataTable
-            data={PaymentScheduleMasterForTable}
-            columns={PaymentScheduleMasterColumns}
-            pagination={PaymentScheduleMasterPaginationInfo}
-            emptyMessage="No Payment Schedule Data Found"
-            fixedHeight={true}
-            recordsPerPage={20}
-            className="flex-1"
-            sortInfo={sortInfo}
-            onSort={handleSortColumn}
-          />
-          <div className="flex justify-end mt-4">
+          {totalPercentage < 100 &&
+            formData.InventoryBuildingId > 0 &&
+            formData.Wing && (
+              <Button
+                onClick={() => {
+                  setEditingPaymentScheduleMasterData(null);
+                  setFormData(prev => ({
+                    ...initialFormState(),
+                    InventoryBuildingId: prev.InventoryBuildingId,
+                    Wing: prev.Wing,
+                    ProjectId: Number(projectId),
+                  }));
+                  setErrors({});
+                  setIsAddUpdateModalOpen(true);
+                }}
+                color="blue"
+                variant="solid"
+                colorMode="extraLight"
+                style={{ width: '35px', height: '35px' }}
+                centerIcon={<Plus className="h-4 w-4" />}
+              />
+            )}
+        </div>
 
-            <Button
-              className="border border-green-600 text-green-600 hover:bg-green-50 px-3 py-1 rounded-md"
-              onClick={() => {
-                if (!validateGenerate()) return;
-                handlePaymentScheduleMasterReport();
-              }}
-            >
-              Generate Payment Schedule
-            </Button>
-          </div>
-        </>
-      )}
+        {/* DATA TABLE */}
 
-      {showForm && (
-        <div className="flex justify-end mt-4">
+        <DataTable
+          data={PaymentScheduleMasterForTable}
+          columns={PaymentScheduleMasterColumns}
+          pagination={PaymentScheduleMasterPaginationInfo}
+          emptyMessage="No Payment Schedule Data Found"
+          fixedHeight={true}
+          recordsPerPage={20}
+          className="flex-1"
+        />
+      </div>
+
+      {/* Generate Button */}
+
+      {totalPercentage === 100 && (
+        <div className="flex justify-end mt-2">
           <Button
             className="border border-green-600 text-green-600 hover:bg-green-50 px-3 py-1 rounded-md"
-            onClick={(e) => {
-                handleAddUpdatePaymentScheduleMaster(e);
-              }}
+            onClick={() => {
+              if (!validateGenerate()) return;
+              handlePaymentScheduleMasterReport();
+            }}
           >
-            Save
+            Generate Payment Schedule
           </Button>
         </div>
       )}
+      {/*ADD UPDATE MODAL */}
+
+      <Modal
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingPaymentScheduleMasterData(null);
+
+          setFormData(prev => ({
+            ...initialFormState(),
+            InventoryBuildingId: prev.InventoryBuildingId,
+            Wing: prev.Wing,
+            ProjectId: prev.ProjectId
+          }));
+          setErrors({});
+        }}
+        onCancel={() => {
+          setIsAddUpdateModalOpen(false);
+          setEditingPaymentScheduleMasterData(null);
+
+          setFormData(prev => ({
+            ...initialFormState(),
+            InventoryBuildingId: prev.InventoryBuildingId,
+            Wing: prev.Wing,
+            ProjectId: prev.ProjectId
+          }));
+
+          setErrors({});
+        }}
+        title={editingPaymentScheduleMasterData ? 'Update Schedule' : 'Add Payment Schedule'}
+        onSubmit={handleAddEditPaymentScheduleMaster}
+        saveText={editingPaymentScheduleMasterData ? 'Update Schedule' : 'Add Schedule'}
+        loading={isLoading}
+        size="xl"
+      >
+        <div className="space-y-10 p-6 bg-blue-100">
+          <div className="space-y-4" >
+
+            <div>
+              <SinglePageSelection
+                label="Stages"
+                placeholder="Select Stages"
+                required
+                options={stageOptions}
+                value={formData.Stage ?? ''}
+                onChange={(value) =>
+                  setFormData(prev => ({
+                    ...prev,
+                    Stage: String(value)
+                  }))}
+                error={errors.Stage}
+              />
+            </div>
+
+            <div>
+              <Input
+                label="Percentage%"
+                value={formData.PaymentSchedulePercentage?.toString() ?? ''}
+                required
+                onChange={(e) => {
+                  const val = allowPercentage(e.target.value);
+                  if (val !== null) {
+                    const percentageValue = filterNumbersWithDecimal(e.target.value);
+
+                    handleFieldChange('PaymentSchedulePercentage', percentageValue);
+
+                    const percentage = Number(percentageValue || 0);
+                    const newTotal = calculateCumulative(percentage);
+
+                    if (newTotal > 100) {
+                      setErrors(prev => ({
+                        ...prev,
+                        PaymentSchedulePercentage: "Total percentage cannot exceed 100%"
+                      }));
+                    } else {
+                      setErrors(prev => ({
+                        ...prev,
+                        PaymentSchedulePercentage: ""
+                      }));
+
+                      handleFieldChange('PaymentScheduleCummulativePercentage', newTotal.toFixed(2));
+                    }
+                  }
+                }}
+                placeholder="Percentage"
+                error={errors.PaymentSchedulePercentage}
+              />
+            </div>
+          </div>
+        </div>
+      </Modal>
 
       {/* DELETE CONFIRMATION MODAL */}
 

@@ -148,6 +148,10 @@ import OtherCharges from '@/features/otherCharges/pages/OtherCharges';
 import SettingsDashboard from '@/features/settingsDashboard/pages/SettingsDashboard';
 import PayrollDashboard from '@/features/payrollDashboard/pages/PayrollDashboard';
 import SalesDashboard from '@/features/salesDashboard/pages/SalesDashboard';
+import EnquiryReport from '@/features/enquiryReport/pages/EnquiryReport';
+import CPEnquiryReport from '@/features/cpEnquiryReport/pages/CPEnquiryReport';
+import PaymentScheduleMaster from '@/features/paymentScheduleMaster/pages/PaymentScheduleMaster';
+import PaymentScheduleTab from '@/features/paymentScheduleMaster/components/PaymentScheduleTab';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -327,7 +331,7 @@ function App() {
 
 
             {/* SALES */}
-             <Route path="saleDashboard" element={<SalesDashboard />} />
+            <Route path="saleDashboard" element={<SalesDashboard />} />
 
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
@@ -344,9 +348,16 @@ function App() {
 
             <Route path="otherCharges" element={<OtherCharges />} />
 
+            <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
+            <Route path="paymentScheduleReport" element={<PaymentScheduleTab />} />
+
+
             <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
             <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />
             <Route path="booking/add" element={<BookingListStateProvider><AddUpdateBooking /></BookingListStateProvider>} />
+
+            <Route path="enquiryReport" element={<EnquiryReport />} />
+            <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
 
             {/* REDEVELOPMENT */}
 

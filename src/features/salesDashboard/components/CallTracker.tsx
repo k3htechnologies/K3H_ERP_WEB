@@ -1,13 +1,5 @@
-import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    Cell,
-    Tooltip,
-    ResponsiveContainer
-} from 'recharts';
-import ReportsGrid from './ReportGridSection';
+import { BarChart, Bar, XAxis, YAxis, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import ReportsGrid from '@/features/salesDashboard/components/ReportGridSection';
 
 interface CallTrackerItem {
     TotalCalls: number;
@@ -68,7 +60,7 @@ export default function CallTracker({ callTrackerData = [], topCallersTodayData 
 
     return (
         <div className="space-y-4">
-            <h2 className="text-lg font-bold text-gray-800">Call Tracker</h2>
+            <h2 className="text-lg font-semibold text-gray-800">Call Tracker</h2>
 
             <div className="flex flex-row gap-4 items-stretch">
                 <div className="flex-1 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
@@ -114,7 +106,6 @@ export default function CallTracker({ callTrackerData = [], topCallersTodayData 
                                 </div>
                             </div>
 
-                            {/* Chart */}
                             <div className="space-y-2">
                                 <p className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">
                                     Call Status Distribution
@@ -153,7 +144,6 @@ export default function CallTracker({ callTrackerData = [], topCallersTodayData 
                             <p className="text-xs font-semibold text-gray-500 mb-4 mt-2">
                                 Top Callers Today
                             </p>
-                            {/* your caller list */}
                             {topCallersTodayData.map((caller, index) => (
                                 <div key={index} className="flex justify-between items-center">
                                     <p className="text-sm font-medium text-gray-500 p-2">{caller.FullName}</p>

@@ -412,10 +412,6 @@ export const Booking: React.FC = () => {
                 }}
                 isShowCustomizeButton
                 onCustomize={() => setIsShowCustomizeBookingColumnsModal(true)}
-                // ADD
-                isShowAddButton={canAction && Number(projectId) > 0}
-                addTitle="Add"
-                onAdd={() => navigate('/booking/add')}
                 // IMPORT
                 isShowImportButton={false}
 

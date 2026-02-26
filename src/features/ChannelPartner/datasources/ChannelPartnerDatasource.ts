@@ -27,6 +27,7 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
             const queryParams = new URLSearchParams({
                 pageSize: (params.PageSize ?? 10).toString(),
                 pageNumber: (params.PageNumber ?? 1).toString(),
+                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             })
 
             if (params.ChannelPartnerId) queryParams.append('ChannelPartnerId', params.ChannelPartnerId.toString());

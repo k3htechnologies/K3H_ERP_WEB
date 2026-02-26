@@ -7,20 +7,18 @@ import { runApiWithLoader } from "@/core/utils";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { paymentScheduleMasterService } from "@/features/paymentScheduleMaster/services/PaymentScheduleMasterService";
 import * as E from 'fp-ts/Either';
-import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { DataTable, type FilterInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { Loader } from "@/core/utils/loader";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { handleExportFile } from "@/core/utils/exportFile";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useLocation } from "react-router-dom";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 export const CostSheetReport: React.FC = () => {
     const [CostSheetReportList, setCostSheetReportList] = useState<CostSheetReportData[]>([]);
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-    const [activeFlatConfig, setActiveFlatConfig] = useState<string>('');
-    const [filters,] = useState<FilterInfo>({});
 
     // PAGINATION
     const { pagination, setPagination } = usePagination(20);
@@ -31,6 +29,8 @@ export const CostSheetReport: React.FC = () => {
 
     const location = useLocation();
     const ratePerSqFt = location.state?.ratePerSqFt || 0;
+    const inventoryBuildingId = location.state?.InventoryBuildingId || 0;
+    const wing = location.state?.Wing || ''
 
     // TOAST
     const { addToast } = useToast();
@@ -49,8 +49,9 @@ export const CostSheetReport: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
-                    Wing: filterParams.Wing ?? undefined,
-                    BuildingId: filterParams.BuildingId ? Number(filterParams.BuildingId) : undefined,
+                    Wing: wing,
+                    InventoryBuildingId: inventoryBuildingId,
+                    Rate: ratePerSqFt,
                     FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
                     SortBy: getSortByParam(sort ?? null, CostSheetColumns),
                 };
@@ -72,7 +73,7 @@ export const CostSheetReport: React.FC = () => {
             (error: any) =>
                 addToast({ type: 'error', title: error.message }),
             undefined,
-            'Loading '
+            'Loading Data '
         );
     },
         [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination,]);
@@ -83,14 +84,8 @@ export const CostSheetReport: React.FC = () => {
         if (!projectId) return;
 
         setPagination({ currentPage: 1 });
-        loadCostSheetReport(1, filters, sortInfo);
+        loadCostSheetReport(1, {});
     }, [projectId]);
-    //#endregion
-
-    const handlePageChange = (page: number) => {
-        setPagination({ currentPage: page });
-        loadCostSheetReport(page, filters, sortInfo);
-    };
     //#endregion
 
     //#region TABLE SORT COLUMN
@@ -98,7 +93,7 @@ export const CostSheetReport: React.FC = () => {
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
 
-        loadCostSheetReport(1, filters, sort,);
+        loadCostSheetReport(1, {}, sort,);
     }, []);
     //#endregion
 
@@ -112,7 +107,6 @@ export const CostSheetReport: React.FC = () => {
                 const params: FilterWithPaginationCostSheetReportRequest = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
-                    Wing: filters.Wing?.trim() || undefined,
                     ProjectId: Number(projectId),
                     SortBy: getSortByParam(sortInfo ?? null, CostSheetColumns),
                     ExportType: exportType
@@ -137,14 +131,13 @@ export const CostSheetReport: React.FC = () => {
 
     //#region TABLE COLUMNS
     const CostSheetColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: 'Rate',
-            label: 'Rate Per Sq.ft',
+         {
+            key: 'FlatConfiguration',
+            label: 'Flat Configuration',
             width: '25',
             sortable: false,
-            fixed: 'left',
-            align: 'left',
-            render: () => ratePerSqFt || 0
+            align: 'center',
+            render: value => value || 0
         },
         {
             key: 'CarpetArea',
@@ -155,54 +148,27 @@ export const CostSheetReport: React.FC = () => {
             render: value => value || 0
         },
         {
+            key: 'Rate',
+            label: 'Rate Per Sq.ft',
+            width: '25',
+            sortable: false,
+            fixed: 'left',
+            align: 'center',
+            render: () => ratePerSqFt || 0
+        },
+        {
             key: 'TotalValue',
             label: 'Total Base Value',
             width: '25',
             sortable: false,
-            align: 'right',
-            render: (_value, row) => {
-                const carpet = Number(row.CarpetArea || 0);
-                const total = carpet * Number(ratePerSqFt || 0);
-
-                return total.toLocaleString();
-            }
+            align: 'center',
+            render: value => value || '-'
         }
     ], [ratePerSqFt]);
     //#endregion
 
-    //#region COST SHEET REPORT TABLE PAGINATION INFO
-    const CostSheetReportPaginationInfo: PaginationInfo = useMemo(
-        () => ({
-            currentPage: pagination.currentPage,
-            totalPages: pagination.totalPages,
-            totalRecords: pagination.totalRecords,
-            pageSize: pagination.pageSize,
-            onPageChange: handlePageChange
-        }),
-        [pagination, handlePageChange]
-    )
-    const CostSheetReportForTable = useMemo(() => {
-        if (!activeFlatConfig) return CostSheetReportList;
-
-        return CostSheetReportList.filter(
-            item => item.FlatConfiguration === activeFlatConfig
-        );
-    }, [CostSheetReportList, activeFlatConfig]);
+    const CostSheetReportForTable = useMemo(() => CostSheetReportList,[CostSheetReportList]);
     //#endregion
-
-    const flatConfigurations = useMemo(() => {
-        const configs = CostSheetReportList
-            .map(item => item.FlatConfiguration)
-            .filter(Boolean);
-
-        return Array.from(new Set(configs)) as string[];
-    }, [CostSheetReportList]);
-
-    useEffect(() => {
-        if (flatConfigurations.length > 0) {
-            setActiveFlatConfig(flatConfigurations[0]);
-        }
-    }, [flatConfigurations]);
 
     //#region
     return (
@@ -220,27 +186,9 @@ export const CostSheetReport: React.FC = () => {
                 exportLoading={isLoading}
             />
 
-            {flatConfigurations.length > 0 && (
-                <div className="flex gap-6 border-b mb-4">
-                    {flatConfigurations.map(config => (
-                        <button
-                            key={config}
-                            onClick={() => setActiveFlatConfig(config)}
-                            className={`pb-2 text-sm font-medium ${activeFlatConfig === config
-                                ? 'border-b-2 border-blue-600 text-blue-600'
-                                : 'text-gray-500'
-                                }`}
-                        >
-                            {config}
-                        </button>
-                    ))}
-                </div>
-            )}
-
             <DataTable
                 columns={CostSheetColumns}
                 data={CostSheetReportForTable}
-                pagination={CostSheetReportPaginationInfo}
                 emptyMessage="No Cost Sheet Data Found"
                 fixedHeight={true}
                 recordsPerPage={20}

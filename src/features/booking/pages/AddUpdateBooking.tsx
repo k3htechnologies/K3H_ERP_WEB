@@ -34,7 +34,7 @@ import { Plus } from 'lucide-react';
 import RadioPill from '@/ui/components/forms/RadioPill';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { fetchEnquiryBySystemGeneratedCode } from '@/features/enquiry/enquiryDropDown';
-import { fetchPaymentScheduleDropdown } from '@/features/paymentSchedule/paymentScheduleDropDown';
+import { fetchPaymentScheduleDropdown } from '@/features/paymentScheduleMaster/paymentScheduleDropDown';
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { fetchParkingDropdown } from '@/features/parking/parkingDropDown';
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
@@ -44,6 +44,9 @@ import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { sendOTP } from '@/features/technical/services/OTPService';
 import CompleteVerificationSection from '@/ui/components/TwoWayVerification/CompleteVerificationSection';
 import { getBookingVerificationSteps } from '@/features/booking/utils/bookingVerificationSteps';
+import type { FilterWithPaginationOtherChargesRequest } from '@/features/otherCharges/models/OtherChargesModel';
+import { otherChargesService } from '@/features/otherCharges/services/OtherChargesService';
+import { mapOtherChargesToBookingOtherCharges } from '@/features/booking/utils/MapOtherCharges';
 
 const initialFormState = (): AddUpdateBookingRequest => ({
     BookingId: 0,
@@ -453,14 +456,12 @@ export const AddUpdateBooking: React.FC = () => {
         const hasValidCode = code && code.length === 18;
 
         if (hasEnquiryId) {
-            fetchEnquiryBySystemGeneratedCode('', Number(projectId), Number(enquiryId))
-                .then(handleEnquiryResponse);
+            fetchEnquiryBySystemGeneratedCode('', Number(projectId), Number(enquiryId)).then(handleEnquiryResponse);
             return;
         }
 
         if (hasValidCode) {
-            fetchEnquiryBySystemGeneratedCode(code, Number(projectId), 0)
-                .then(handleEnquiryResponse);
+            fetchEnquiryBySystemGeneratedCode(code, Number(projectId), 0).then(handleEnquiryResponse);
             return;
         }
 
@@ -536,8 +537,11 @@ export const AddUpdateBooking: React.FC = () => {
                 const response = await bookingService.apiCallPullBooking(params);
 
                 if (E.isRight(response)) {
+
                     const booking = response.right.Data?.[0];
+
                     if (booking) {
+
                         setFormData({
                             BookingId: booking.BookingId ?? 0,
                             Uniquekey: booking.Uniquekey,
@@ -636,17 +640,19 @@ export const AddUpdateBooking: React.FC = () => {
                             PaymentScheduleGSTAmount: schedule.PaymentScheduleGSTAmount ?? null,
                             PaymentScheduleTDSAmount: schedule.PaymentScheduleTDSAmount ?? null,
                         }));
+
                         setPaymentSchedules(paymentSchedulesMapped);
 
                         const otherChargesMapped: AddUpdateBookingOtherChargesRequest[] = (booking?.BookingOtherChargesData || []).map(charge => ({
-                            BookingOtherChargesId: charge.BookingOtherChargesId ?? null,
+                            BookingOtherChargesId: charge.BookingOtherChargesId ?? 0,
                             Uniquekey: charge.Uniquekey ?? null,
                             ChargeName: charge.ChargeName ?? null,
                             CalculatedOn: charge.CalculatedOn ?? null,
-                            Value: charge.Value ?? null,
-                            GSTPercentage: charge.GSTPercentage ?? null,
-                            GSTValue: charge.GSTValue ?? null,
+                            Value: charge.Value ?? 0,
+                            GSTPercentage: charge.GSTPercentage ?? 0,
+                            GSTValue: charge.GSTValue ?? 0,
                         }));
+
                         setOtherCharges(otherChargesMapped);
                     }
                 } else {
@@ -1066,7 +1072,7 @@ export const AddUpdateBooking: React.FC = () => {
         () => [
             {
                 key: 'ChargeName',
-                label: 'Name',
+                label: 'Charges',
                 width: '20',
                 sortable: false,
                 align: 'left',
@@ -1083,7 +1089,7 @@ export const AddUpdateBooking: React.FC = () => {
             },
             {
                 key: 'Value',
-                label: 'Value',
+                label: 'Value (₹)',
                 width: '18',
                 sortable: false,
                 align: 'right',
@@ -1094,7 +1100,7 @@ export const AddUpdateBooking: React.FC = () => {
             },
             {
                 key: 'GSTPercentage',
-                label: 'GST %',
+                label: 'GST (%)',
                 width: '12',
                 sortable: false,
                 align: 'center',
@@ -1102,7 +1108,7 @@ export const AddUpdateBooking: React.FC = () => {
             },
             {
                 key: 'GSTValue',
-                label: 'GST Value',
+                label: 'GST Value (₹)',
                 width: '18',
                 sortable: false,
                 align: 'right',
@@ -1112,7 +1118,7 @@ export const AddUpdateBooking: React.FC = () => {
                 }
             },
             {
-                key: 'actions',
+                key: 'Actions',
                 label: 'Actions',
                 width: '12',
                 fixed: 'right',
@@ -1740,7 +1746,45 @@ export const AddUpdateBooking: React.FC = () => {
             });
     //#endregion
 
-    //#region RENDER
+    //#region FETCH OTHER CHARGES WHEN FIRST TIME BOOKING MEANS BOOKINGID===0
+    const loadOtherCharges = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationOtherChargesRequest = {
+                    PageNumber: 1,
+                    PageSize: 500,
+                    IsCheckPermission:false,
+                    ProjectId: Number(projectId),
+                }
+
+                const response = await otherChargesService.apiCallPullOtherCharges(params);
+
+                if (E.isRight(response)) {
+
+                    const mappedCharges = mapOtherChargesToBookingOtherCharges(response.right.Data);
+
+                    setOtherCharges(mappedCharges);
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Other Charges'
+        )
+    }
+
+    //#endregion
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}>
@@ -1754,7 +1798,7 @@ export const AddUpdateBooking: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            disabled={bookingId > 0 ? true : false}
+                            disabled={Number(bookingId) > 0 ? true : false}
                             label="Enquiry Unique Code"
                             value={enquiryUniqueCode}
                             onChange={(e) => {
@@ -1933,7 +1977,7 @@ export const AddUpdateBooking: React.FC = () => {
                             <TextArea
                                 label="Permanent Address"
                                 required
-                                value={formData.PermanentAddress === "" ? currentLocation : formData.PermanentAddress ?? ""}
+                                value={formData.PermanentAddress ?? ""}
                                 onChange={(e) => handleFieldChange('PermanentAddress', e.target.value)}
                                 placeholder="Enter Permanent Address"
                                 error={errors.PermanentAddress}
@@ -1941,7 +1985,7 @@ export const AddUpdateBooking: React.FC = () => {
                             <TextArea
                                 label="Communication Address"
                                 required
-                                value={formData.CommunicationAddress === "" ? currentLocation : formData.CommunicationAddress ?? ""}
+                                value={formData.CommunicationAddress ?? ""}
                                 onChange={(e) => handleFieldChange('CommunicationAddress', e.target.value)}
                                 placeholder="Enter Communication Address"
                                 error={errors.CommunicationAddress}
@@ -2088,6 +2132,7 @@ export const AddUpdateBooking: React.FC = () => {
                                 value={formData.AgreementValue?.toString() ?? ''}
                                 onChange={(e) => {
                                     const value = filterNumbersWithDecimal(e.target.value);
+
                                     const agreementValue = Number(value || 0);
 
                                     handleFieldChange('AgreementValue', value);
@@ -2098,12 +2143,19 @@ export const AddUpdateBooking: React.FC = () => {
                                     handleFieldChange('AgreementValueTDS', tdsAmount.toFixed(2));
 
                                     /* ================= REGISTRATION FEES ================= */
-                                    const registrationFees =
-                                        agreementValue > 4999999.99
-                                            ? 30000
-                                            : (agreementValue * 1) / 100;
+                                    const registrationFees = agreementValue > 4999999.99 ? 30000 : (agreementValue * 1) / 100;
 
                                     handleFieldChange('RegistrationFees', registrationFees.toFixed(2));
+
+                                    /* ================= AGREMENT GST % ================= */
+                                    const agreementGSTAMount = (agreementValue * Number(formData.AgreementValueGSTPercentage)) / 100;
+
+                                    handleFieldChange('AgreementValueGSTAmount', agreementGSTAMount.toFixed(2));
+
+                                    /* ================= STAMP DUTY % ================= */
+                                    const stampDutyAMount = (agreementValue * Number(formData.StampDutyPercentage)) / 100;
+
+                                    handleFieldChange('StampDutyAmount', stampDutyAMount.toFixed(2));
 
                                     // ================= RECALCULATE PAYMENT SCHEDULE AMOUNTS =================
                                     if (paymentSchedules.length > 0) {
@@ -2128,6 +2180,11 @@ export const AddUpdateBooking: React.FC = () => {
                                             PaymentScheduleTDSAmount: (agreementValue * (formData.AgreementValueGSTPercentage || 0)) / 100
                                         })));
                                     }
+
+                                    if (otherCharges.length === 0) {
+                                        loadOtherCharges();
+                                    }
+                                    
 
                                 }}
                                 placeholder="Agreement Value"

@@ -3,6 +3,7 @@ import type { ApiResponse } from "@/core/api/ApiResponse"
 export interface FilterWithPaginationOtherChargesRequest {
     PageSize: number
     PageNumber: number
+    IsCheckPermission?: boolean
     ProjectId?: number
     ChargeName?: string
     SortBy?: string

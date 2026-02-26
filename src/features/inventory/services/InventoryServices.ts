@@ -35,6 +35,8 @@ import type {
     AddInventoryFlatResponse,
     AddUpdateInventoryFloorParkingCountResponse,
     FilterPaginatedFlatsResponse,
+    FilterWithPaginationProjectInventoryStructureRequest,
+    ProjectInventoryStructureListResponse,
 } from "@/features/inventory/models/InventoryMasterModel";
 import type { Failure } from "@/core/api/FailureResponse";
 
@@ -234,6 +236,17 @@ export const inventoryService = {
         try {
 
             return E.right(await inventoryDatasource.pullInventoryFloorForPaymentSchedule(params, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+        }
+    },
+
+    apiCallPullProjectInventoryStructure: async (params: FilterWithPaginationProjectInventoryStructureRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectInventoryStructureListResponse>> => {
+
+        try {
+            return E.right(await inventoryDatasource.pullProjectInventoryStructure(params, options?.signal));
 
         } catch (error: any) {
 

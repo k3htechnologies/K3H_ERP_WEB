@@ -8,6 +8,7 @@ export interface DropdownOptions {
 
 interface MultiSelectPaginationProps {
     label?: string;
+    title?: string;
     options?: DropdownOptions[]; // optional when using dataFetchCallBack
     selectedValues: (string | number)[];
     required?: boolean;
@@ -25,6 +26,7 @@ interface MultiSelectPaginationProps {
 
 const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     label,
+    title,
     options: propOptions = [],
     selectedValues,
     hasSubmitted = false,
@@ -284,6 +286,10 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
 
     const visibleTags = selectedLabels.slice(0, 2);
     const remainingCount = selectedLabels.length - visibleTags.length;
+    const displayTitle =
+        selectedLabels.length > 0
+            ? selectedLabels.join(", ")
+            : title || "Select...";
 
     return (
         <div
@@ -314,6 +320,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                 aria-haspopup="listbox"
                 aria-expanded={isOpen}
                 onClick={() => !disabled && setIsOpen(!isOpen)}
+                title={displayTitle}
                 style={{
                     display: "flex",
                     alignItems: "center",
@@ -341,7 +348,11 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                     ...style,
                 }}
             >
-                <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }}>
+                {/* <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" ,  title={selectedLabels.join(", ")}}}> */}
+                <div
+                    style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }}
+                    title={selectedLabels.join(", ")}
+                >
                     {hasSelections ? (
                         <>
                             {visibleTags.map((tagLabel, index) => (
@@ -377,15 +388,15 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                         </>
                     ) : (
                         <span
+
                             style={{
-                                fontSize: currentSize.fontSize,
-                                color: "#9ca3af",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
+                                flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
+                                color: selectedLabels ? "#9ca3af" : theme.colors.textLight, fontWeight: "400",
                             }}
+                            title={displayTitle}
+
                         >
-                            Select...
+                            {displayTitle}
                         </span>
                     )}
                 </div>
@@ -450,7 +461,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                                 fontSize: currentSize.fontSize,
                                 padding: "6px 8px",
                                 background: disabled ? "#f5f5f5" : "transparent",
-                                color: theme.colors.text,
+                                color: '#000',
                                 boxSizing: "border-box",
                             }}
                         />
@@ -585,8 +596,9 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                                                     flexShrink: 0,
                                                 }}
                                             />
-                                            <span style={{ fontSize: currentSize.fontSize }}>{opt.label}</span>
-                                        </div>
+                                            <span style={{ fontSize: currentSize.fontSize }} title={opt.label}>
+                                                {opt.label}
+                                            </span>                                        </div>
                                     );
                                 })}
                                 {loading && options.length > 0 && (

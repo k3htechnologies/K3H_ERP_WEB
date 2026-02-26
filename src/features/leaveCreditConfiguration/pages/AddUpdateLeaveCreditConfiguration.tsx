@@ -1,4 +1,4 @@
-import React, {  useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
@@ -376,7 +376,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                 <div />
             </Loader>
             <div className="space-y-6">
-               
+
 
                 {/* Details Card */}
                 <div className="rounded-lg shadow-sm border border-gray-200 p-6" style={{ backgroundColor: '#FFFFFF' }}>
@@ -432,6 +432,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                         />
                         <MultiSelectPagination
                             label="Designation"
+                            title='Select Designation'
                             dataFetchCallBack={fetchDesignationMasterDropdown}
                             selectedValues={designationDropdown.selectedValues}
                             options={designationDropdown.initialOptions}

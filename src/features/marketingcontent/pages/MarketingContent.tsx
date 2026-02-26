@@ -408,7 +408,7 @@ export const MarketingContent: React.FC = () => {
 
         fd.append('RemoveMarketingContentURL', removeMarketingContentUrls.join(','));
         return fd;
-    };  
+    };
 
     //#region ADD UPDATE MARKETING CONTENT 
     const handleAddUpdateMarketingContent = async (e: React.FormEvent) => {

@@ -30,7 +30,6 @@ import type { FilterPullExcelSample } from '@/features/technical/models/Technica
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
-import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 import { getDocumentStatusColor } from '@/features/projectDocument/pages/ProjectDocumentStatus';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
@@ -431,8 +430,8 @@ const ApprovalDocument: React.FC = () => {
             <div className="flex items-center justify-end ml-2 gap-1">
               <TooltipText
                 text={value || ''}
-                maxWidth="250px"
-                tooltipThreshold={40}
+                maxWidth="700px"
+                tooltipThreshold={100}
               />
             </div>
 
@@ -787,10 +786,6 @@ const ApprovalDocument: React.FC = () => {
       newErrors.ApprovalDocumentStatus = "Status is required"
     }
 
-    if (!hasAnyDocumentFile(approvalDocumentFiles, approvalDocumentURL, RemoveApprovalDocumentUrls)) {
-      newErrors.ApprovalDocumentURL = "File is required.";
-    }
-
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
@@ -1115,7 +1110,7 @@ const ApprovalDocument: React.FC = () => {
 
         fd.append("ExcelFile", file);
         fd.append("IsAllDelete", mergeExisting);
-        fd.append("TableName", 'Tenant');
+        fd.append("TableName", 'APPROVAL DOCUMENT');
         fd.append("ProjectId", String(projectId));
 
         const response = await technicalService.apiCallExcelImport(fd);
@@ -1124,7 +1119,7 @@ const ApprovalDocument: React.FC = () => {
 
           addToast({ type: 'success', title: "Excel imported sucessfully" })
 
-          fetchApprovalDocumentList();
+          loadApprovalDocumentTabs();
 
         } else {
           addToast({ type: "error", title: response.left.message });
@@ -1350,14 +1345,7 @@ const ApprovalDocument: React.FC = () => {
                 : ""}
 
             </div>
-            <div>
-              <DatePickerInput
-                label="Expiry Date"
-                value={formatDate_dd_mm_yyyy(formData.ApprovalDocumentExpiryDate)}
-                onChange={(val) => handleFieldChange('ApprovalDocumentExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-              />
-            </div>
-            <div>
+             <div>
               <SinglePageSelection
                 label="Status"
                 placeholder='Select Status'
@@ -1372,7 +1360,6 @@ const ApprovalDocument: React.FC = () => {
               <MultiFilePicker
                 label="Files"
                 placeholder='Select Files'
-                required
                 value={approvalDocumentFiles}
                 onChange={setApprovalDocumentFiles}
                 availableFilesURL={approvalDocumentURL ?? ""}
@@ -1383,6 +1370,13 @@ const ApprovalDocument: React.FC = () => {
                 onRemoveExisting={(url) => {
                   setRemoveApprovalDocumentUrls((prev) => [...prev, url])
                 }}
+              />
+            </div>
+            <div>
+              <DatePickerInput
+                label="Expiry Date"
+                value={formatDate_dd_mm_yyyy(formData.ApprovalDocumentExpiryDate)}
+                onChange={(val) => handleFieldChange('ApprovalDocumentExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
               />
             </div>
             <div>

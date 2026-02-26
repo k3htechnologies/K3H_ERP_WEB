@@ -13,8 +13,11 @@ import {
 } from '../components';
 import { createFormResetHandler } from '@/features/approvalDocumentCategory/utils/approvalDocumentCategoryMasterUtils';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 export const ApprovalDocumentCategoryMaster: React.FC = () => {
+
+  const { projectId } = useProject();
   const {
     // State
     approvalDocumentCategoryMasterList,
@@ -136,7 +139,7 @@ export const ApprovalDocumentCategoryMaster: React.FC = () => {
         isShowCustomizeButton
         onCustomize={() => setIsShowCustomizeApprovalDocumentCategoryMasterColumnsModal(true)}
         // ADD
-        isShowAddButton={canAction}
+        isShowAddButton={canAction && Number(projectId) > 0 ? true : false}
         addTitle="Add"
         onAdd={handleAddApprovalDocumentCategoryModal}
         // IMPORT

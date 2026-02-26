@@ -79,6 +79,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         const params: FilterWithPaginationChannelPartnerRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
+          IsCheckPermission:false,
           ChannelPartnerId: filterParams.ChannelPartnerId ? Number(filterParams.ChannelPartnerId) : undefined,
           MobileNumber: searchtext ?? filterParams.Name?.trim() ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, channelPartnerColumns)

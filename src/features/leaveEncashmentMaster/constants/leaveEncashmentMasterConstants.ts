@@ -27,21 +27,21 @@ export const getLeaveEncashmentMasterColumns = (): TableColumn[] => [
   },
   {
     key: 'MinSalary',
-    label: 'Min Salary',
+    label: 'Min Salary (₹)',
     width: '20',
     sortable: false,
     align: 'center'
   },
   {
     key: 'MaxSalary',
-    label: 'Max Salary',
+    label: 'Max Salary (₹)',
     width: '20',
     sortable: false,
     align: 'center'
   },
   {
     key: 'EncashmentRate',
-    label: 'Encashment Rate',
+    label: 'Encashment Rate (%)',
     width: '20',
     sortable: false,
     align: 'center'

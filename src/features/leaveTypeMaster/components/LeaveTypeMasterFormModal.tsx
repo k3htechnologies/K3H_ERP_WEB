@@ -84,7 +84,7 @@ export const LeaveTypeMasterFormModal: React.FC<LeaveTypeMasterFormModalProps> =
                 onChange={(e) => onFieldChange("MaxCarryForward", e.target.value)}
                 required
                 placeholder="Enter Max Carry Forward"
-                maxLength={250}
+                maxLength={3}
                 error={errors.MaxCarryForward}
               />
             </div>

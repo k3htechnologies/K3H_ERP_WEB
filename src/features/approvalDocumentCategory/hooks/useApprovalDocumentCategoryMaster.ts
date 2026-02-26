@@ -464,8 +464,11 @@ export const useApprovalDocumentCategoryMaster = () => {
         const response = await technicalService.apiCallExcelImport(fd);
 
         if (E.isRight(response)) {
+
           addToast({ type: 'success', title: "Excel imported sucessfully" });
+
           fetchApprovalDocumentCategoryList();
+          
         } else {
           addToast({ type: "error", title: response.left.message });
         }

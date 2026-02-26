@@ -12,8 +12,12 @@ import {
 } from '../components';
 import { createFormResetHandler } from '@/features/projectRERADocumentCategory/utils/projectRERADocumentCategoryMasterUtils';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 export const ProjectRERADocumentCategoryMaster: React.FC = () => {
+
+  const { projectId } = useProject();
+
   const {
     // State
     projectRERADocumentCategoryMasterList,
@@ -70,8 +74,6 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
     handleDeleteProjectRERADocumentCategoryMaster,
     handleExportProjectRERADocumentCategoryExcel,
     handleExportProjectRERADocumentCategoryPdf,
-    handleDownloadExcelSampleProjectRERADocumentCategoryMaster,
-    handleExcelImportProjectRERADocumentCategoryMaster,
     debouncedSearch,
     clearsearchProjectRERADocumentCategories,
   } = useProjectRERADocumentCategoryMaster();
@@ -133,13 +135,11 @@ export const ProjectRERADocumentCategoryMaster: React.FC = () => {
         isShowCustomizeButton
         onCustomize={() => setIsShowCustomizeProjectRERADocumentCategoryMasterColumnsModal(true)}
         // ADD
-        isShowAddButton={canAction}
+        isShowAddButton={canAction && Number(projectId) > 0 ? true : false}
         addTitle="Add"
         onAdd={handleAddProjectRERADocumentCategoryModal}
         // IMPORT
-        isShowImportButton={canAction}
-        onUploadExcel={handleExcelImportProjectRERADocumentCategoryMaster}
-        onDownloadSampleExcel={handleDownloadExcelSampleProjectRERADocumentCategoryMaster}
+        isShowImportButton={false}
         // EXPORT
         isShowExportButton={canExport && projectRERADocumentCategoryListForTable.length > 0}
         onExportExcel={handleExportProjectRERADocumentCategoryExcel}

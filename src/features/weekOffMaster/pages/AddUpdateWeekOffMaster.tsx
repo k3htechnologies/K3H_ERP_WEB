@@ -140,7 +140,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.WeekOffPolicyName?.trim()) {
-      newErrors.WeekOffPolicyName = 'Weekoff Policy Name is required';
+      newErrors.WeekOffPolicyName = 'Week Off Policy Name is required';
 
     } else if (formData.WeekOffPolicyName.trim().length > 50) {
       newErrors.WeekOffPolicyName = 'Week Off Name must be at most 50 characters';
@@ -157,25 +157,33 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
       newErrors.WeekDays = 'Weekdays is required.';
     }
 
+    if (!formData.WeekDaysStartsOn) {
+      newErrors.WeekDaysStartsOn = "Weekday Starts On is required";
+    }
+
     if (!formData.WeeklyOff?.trim()) {
-      newErrors.WeeklyOff = "Week Off  is required";
+      newErrors.WeeklyOff = "Week Off is required";
+    } else if (formData.WeeklyOff?.trim() === formData.WeekDaysStartsOn?.trim()) {
+      newErrors.WeeklyOff = "Week day start on & Week off can't be the same";
     }
 
     if (formData.WeeklyOff2) {
+
       if (!formData.WeeklyOff2Type?.trim()) {
         newErrors.WeeklyOff2Type = "Weekly Off2 Type is required";
       }
+    }
 
+    if (formData.WeeklyOff2) {
+
+      if (formData.WeekDaysStartsOn?.trim() === formData.WeeklyOff2?.trim()) {
+        newErrors.weeklyOff2 = "Week day start on & Week off 2 can't be the same";
+      }
     }
 
     if (formData.WeeklyOff2 !== '' && formData.WeeklyOff?.trim() === formData.WeeklyOff2?.trim()) {
       newErrors.weeklyOff2 = "Weekly Off 2 must be different from Weekly Off 1";
     }
-
-    if (!formData.WeekDaysStartsOn) {
-      newErrors.WeekDaysStartsOn = "Weekdays Starts On is required";
-    }
-
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -195,7 +203,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
       WeekDaysStartsOn: formData.WeekDaysStartsOn,
       WeeklyOff: formData.WeeklyOff,
       WeeklyOff2: formData.WeeklyOff2,
-      WeeklyOff2Type: formData.WeeklyOff2Type,
+      WeeklyOff2Type: formData.WeeklyOff2 === "" ? "" : formData.WeeklyOff2Type,
       NotApplicableForMonths: Array.isArray(formData.NotApplicableForMonths)
         ? formData.NotApplicableForMonths.join(",")
         : formData.NotApplicableForMonths,
@@ -275,7 +283,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
                   value={formData.WeekOffPolicyName ?? ""}
                   onChange={(e) => handleFieldChange("WeekOffPolicyName", e.target.value)}
                   placeholder="Enter Week Off Name"
-                  maxLength={250}
+                  maxLength={50}
                   error={errors.WeekOffPolicyName}
                 />
               </div>
@@ -296,8 +304,9 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
 
                 <SinglePageSelection
                   label="Weekdays"
+                  required
                   placeholder="Select Weekdays"
-                  value={formData.WeekDays}
+                  value={String(formData.WeekDays)}
                   onChange={(value) => handleFieldChange("WeekDays", value)}
                   options={WEEKDAYS.map(opt => ({ label: opt.name, value: opt.id }))}
                   error={errors.WeekDays}
@@ -305,8 +314,8 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
               </div>
               <div>
                 <SinglePageSelection
-                  label="Weekdays Starts On"
-                  placeholder="Select Weekdays Starts On"
+                  label="Weekday Starts On"
+                  placeholder="Select Weekday Starts On"
                   required
                   value={formData.WeekDaysStartsOn}
                   onChange={(value) => handleFieldChange("WeekDaysStartsOn", value)}

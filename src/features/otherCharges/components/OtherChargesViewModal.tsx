@@ -55,7 +55,7 @@ export const OtherChargesViewModal: React.FC<OtherChargesViewModalProps> = ({
         <div className="space-y-4">
           
           <FieldItem
-            label="Charge Name"
+            label="Charges"
             value={data.ChargeName}
             isRow
             withBorder={true}
@@ -82,6 +82,12 @@ export const OtherChargesViewModal: React.FC<OtherChargesViewModalProps> = ({
           <FieldItem
             label="GST Value"
             value={data.GSTValue ? `₹ ${data.GSTValue}` : '-'}
+            isRow
+            withBorder={true}
+          />
+          <FieldItem
+            label="Value + GST Value"
+            value={data.Value + data.GSTValue ? `₹ ${data.Value + data.GSTValue}` : '-'}
             isRow
             withBorder={true}
           />

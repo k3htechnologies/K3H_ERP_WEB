@@ -6,7 +6,8 @@ import type { AuthenticationResponse } from '@/features/authentication/models/Au
 export abstract class AuthenticationDatasource {
 
     abstract isValidMobileNumber(mobileNumber: string): Promise<ApiResponse<string>>;
-    abstract isValidOTP(mobileNumber: string, otp: string,type: string): Promise<AuthenticationResponse>;
+    abstract isValidOTP(mobileNumber: string, otp: string, type: string): Promise<AuthenticationResponse>;
+    abstract sendOTPMobileNumberAndModule(mobileNumber: string, moduleName: string): Promise<ApiResponse<string>>
 }
 
 export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
@@ -15,6 +16,7 @@ export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
     }
 
     async isValidMobileNumber(mobileNumber: string): Promise<ApiResponse<string>> {
+
         try {
 
             const queryParams = new URLSearchParams({ MobileNumber: mobileNumber.trim() ?? '' })
@@ -26,24 +28,39 @@ export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
             return response as ApiResponse<string>;
 
         } catch (error) {
-            
+
             throw error
         }
     }
 
-    async isValidOTP(mobileNumber: string, otp: string,type: string): Promise<AuthenticationResponse> {
+    async isValidOTP(mobileNumber: string, otp: string, type: string): Promise<AuthenticationResponse> {
         try {
             const queryParams = new URLSearchParams({
+
                 MobileNumber: mobileNumber.trim() ?? '',
                 OTP: otp.trim() ?? '',
-                Type:type.trim() ?? ''
+                Type: type.trim() ?? ''
+
             })
 
-            const response = await this.k3hHttpClient.getRequestWithoutAuthentication(
-                `${AuthenticationApi.ValidateOTP}?${queryParams.toString()}`
-            );
+            return await this.k3hHttpClient.getRequestWithoutAuthentication(`${AuthenticationApi.ValidateOTP}?${queryParams.toString()}`);
 
-            return response;
+        } catch (error) {
+
+            throw error
+        }
+    }
+
+    async sendOTPMobileNumberAndModule(mobileNumber: string, module: string): Promise<ApiResponse<string>> {
+
+        try {
+
+            const queryParams = new URLSearchParams({ MobileNumber: mobileNumber.trim() ?? '', Module: module.trim() ?? '' })
+
+            const response = await this.k3hHttpClient.getRequestWithoutAuthentication(`${AuthenticationApi.SEND_OTP}?${queryParams.toString()}`);
+
+            return response as ApiResponse<string>;
+
         } catch (error) {
 
             throw error

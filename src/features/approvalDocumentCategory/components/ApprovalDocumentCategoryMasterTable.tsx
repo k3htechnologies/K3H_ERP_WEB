@@ -34,7 +34,7 @@ export const ApprovalDocumentCategoryMasterTable: React.FC<ApprovalDocumentCateg
         return {
           ...col,
           render: (_value, row: ApprovalDocumentCategoryMasterData) => (
-            canAction && !(row as any).NumberOfEmployee ? (
+            canAction && !(row as any).DocumentCount ? (
               <div className="flex items-center justify-center gap-2">
                 <Button
                   onClick={(e) => {

@@ -13,6 +13,9 @@ import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
 
 export const OtherCharges: React.FC = () => {
+
+  const { projectId } = useProject();
+
   const {
     // State
     otherChargesList,
@@ -123,7 +126,7 @@ export const OtherCharges: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Charge Name"
+        searchPlaceholder="Search By Charges"
         onSearchChange={v => {
           setSearchTerm(v);
           debouncedSearch(v);
@@ -136,7 +139,7 @@ export const OtherCharges: React.FC = () => {
         onCustomize={() => setIsShowCustomizeOtherChargesColumnsModal(true)}
 
         // ADD
-        isShowAddButton={canAction}
+        isShowAddButton={canAction && Number(projectId) > 0}
         addTitle="Add"
         onAdd={handleAddOtherChargesModal}
         // IMPORT

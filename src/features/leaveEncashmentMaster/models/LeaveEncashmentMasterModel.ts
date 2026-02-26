@@ -4,6 +4,7 @@ export interface FilterWithPaginationLeaveEncashmentMasterRequest {
     PageSize: number
     PageNumber: number
     LeaveEncashmentMasterSlabsId?: number
+    EarningName?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

@@ -1,9 +1,8 @@
-import { useState, useEffect, useRef, forwardRef, useCallback, type ReactNode } from "react";
+import { useState, useEffect, useRef, forwardRef, useCallback, type ReactNode, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, ChevronUp, Info, InfoIcon, Search, X } from "lucide-react";
 import type { SinglePageSelectionProps } from "@/core/types/dropDownSelectionType";
 import { THEME } from "@/core/constants/theme";
-import { COLORS } from "@/core/constants";
 
 export const SinglePageSelection = forwardRef<
   HTMLDivElement,
@@ -43,24 +42,23 @@ export const SinglePageSelection = forwardRef<
   ) => {
     const theme = THEME;
 
-    const anchorRef = useRef<HTMLDivElement | null>(null);
-    const portalRef = useRef<HTMLDivElement | null>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const buttonRef = useRef<HTMLDivElement | null>(null);
 
     const [isOpen, setIsOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState("");
     const [filteredOptions, setFilteredOptions] = useState(options);
 
-    const [, setOpenUpward] = useState(false);
-
     /* ================= SIZE CONFIG (UNCHANGED) ================= */
 
     const sizeConfig = {
-      sm: { height: "36px", padding: "6px 12px", fontSize: theme.fontSize.sm },
-      md: { height: "44px", padding: "8px 16px", fontSize: theme.fontSize.md },
-      lg: { height: "52px", padding: "10px 20px", fontSize: theme.fontSize.lg },
+      sm: { height: "36px", padding: "6px 12px", fontSize: theme.fontSize.sm, dropdownHeight: 150, paddingNum: 6 },
+      md: { height: "44px", padding: "8px 16px", fontSize: theme.fontSize.md, dropdownHeight: 200, paddingNum: 8 },
+      lg: { height: "52px", padding: "10px 20px", fontSize: theme.fontSize.lg, dropdownHeight: 250, paddingNum: 10 },
     };
 
     const currentSize = sizeConfig[size];
+
 
     /* ================= FILTER LOGIC (UNCHANGED)  ================= */
 
@@ -86,32 +84,25 @@ export const SinglePageSelection = forwardRef<
     /* ================= CLICK OUTSIDE / ESC (UNCHANGED) ================= */
 
     useEffect(() => {
-      const handlePointerDown = (e: PointerEvent) => {
-        const target = e.target as Node;
-
+      const handleClick = (e: MouseEvent) => {
         if (
-          anchorRef.current?.contains(target) ||
-          portalRef.current?.contains(target)
+          containerRef.current &&
+          !containerRef.current.contains(e.target as Node)
         ) {
-          return;
+          setIsOpen(false);
         }
-
-        setIsOpen(false);
       };
-
-      const handleEscape = (e: KeyboardEvent) => {
+      const handleKey = (e: KeyboardEvent) => {
         if (e.key === "Escape") setIsOpen(false);
       };
-
-      // capture phase = runs BEFORE React onClick
-      document.addEventListener("pointerdown", handlePointerDown, true);
-      document.addEventListener("keydown", handleEscape);
-
+      document.addEventListener("mousedown", handleClick);
+      document.addEventListener("keydown", handleKey);
       return () => {
-        document.removeEventListener("pointerdown", handlePointerDown, true);
-        document.removeEventListener("keydown", handleEscape);
+        document.removeEventListener("mousedown", handleClick);
+        document.removeEventListener("keydown", handleKey);
       };
     }, []);
+
     /* ================= SELECTED LABEL (UNCHANGED) ================= */
 
     const selectedLabel = options.find((opt: any) => opt[valueKey] === value)?.[labelKey] || placeholder;
@@ -126,111 +117,127 @@ export const SinglePageSelection = forwardRef<
       setSearchTerm("");
     };
 
-    /* ================= PORTAL POSITION (ONLY NEW LOGIC) ================= */
+    /* ================= OPTION STYLES (MATCH SingleSelectDropdownWithPagination) ================= */
+    const getOptionStyles = (selected: boolean, hovered = false): CSSProperties => {
+      return {
+        padding: "10px 14px",
+        borderBottom: "1px solid #f3f3f3",
+        cursor: disabled ? "not-allowed" : "pointer",
+        backgroundColor: selected
+          ? "rgba(11,95,255,0.18)"
+          : hovered
+            ? "rgba(11,95,255,0.12)"
+            : theme.colors.background,
 
-    const SIZE_MAP = {
-      sm: { fontSize: 12, padding: 6, dropdownHeight: 150 },
-      md: { fontSize: 14, padding: 6, dropdownHeight: 200 },
-      lg: { fontSize: 16, padding: 6, dropdownHeight: 250 },
+
+        transition: theme.transitions.normal,
+      };
     };
 
-    const sizeStyles = SIZE_MAP[size as keyof typeof SIZE_MAP];
+    /* ================= PORTAL POSITION (MATCH SingleSelectDropdownWithPagination) ================= */
 
-    const DROPDOWN_ESTIMATED_HEIGHT = sizeStyles.dropdownHeight + 12;
     const [portalPos, setPortalPos] = useState<{
-      left: number;
       top: number;
+      left: number;
       width: number;
       maxHeight: number;
+      openUpward: boolean;
     } | null>(null);
 
-    const updatePortalPos = useCallback(() => {
-      const node = anchorRef.current;
-      if (!node || typeof window === "undefined") {
+    const updatePortalPosition = useCallback(() => {
+      const buttonNode = buttonRef.current;
+      const containerNode = containerRef.current;
+      if (!buttonNode || !containerNode || typeof window === "undefined") {
         setPortalPos(null);
         return;
       }
 
-      const rect = node.getBoundingClientRect();
+      // Use button's position for accurate attachment
+      const rect = buttonNode.getBoundingClientRect();
+      const containerRect = containerNode.getBoundingClientRect();
       const vw = window.innerWidth;
       const vh = window.innerHeight;
 
-      const dropdownH = sizeStyles.dropdownHeight;
-      const spaceBelow = vh - rect.bottom;
-      const spaceAbove = rect.top;
+      const preferredHeight = currentSize.dropdownHeight;
+      const padding = 8;
 
-      // open below if enough space; otherwise open above
-      const openBelow = spaceBelow >= DROPDOWN_ESTIMATED_HEIGHT || spaceBelow >= spaceAbove;
+      // Calculate exact content height based on number of items (no extra space)
+      const searchBarHeight = searchable ? 48 : 0; // search bar height (padding + input + border) or 0 if not searchable
+      // Item height: padding top/bottom + font size
+      const fontSizeNum = parseFloat(currentSize.fontSize.replace('px', ''));
+      const itemHeight = 10 + 14 + (fontSizeNum * 1.2); // padding top (10px) + bottom (14px) + font
+      const optionsTopPadding = 0; // no extra padding
+      const minHeight = searchBarHeight + optionsTopPadding + itemHeight; // minimum: search bar + spacing + at least one item
+      const maxItems = Math.max(1, filteredOptions.length);
+      // Calculate exact content height: search bar + spacing + items (no extra padding)
+      const contentHeight = searchBarHeight + optionsTopPadding + (maxItems * itemHeight);
+      // Use exact content height when less than preferred, otherwise cap at preferred
+      const calculatedHeight = contentHeight <= preferredHeight ? contentHeight : preferredHeight;
 
-      // compute top for fixed positioning (viewport coords)
-      let top = openBelow ? rect.bottom + 6 : rect.top - dropdownH - 6;
+      // Calculate available space below and above
+      const availableSpaceBelow = vh - rect.bottom - padding;
+      const availableSpaceAbove = rect.top - padding;
 
-      // clamp so popup remains on-screen
-      const minTop = 8;
-      const maxTop = Math.max(8, vh - dropdownH - 8);
-      top = Math.min(Math.max(top, minTop), maxTop);
+      // Determine if we should open above or below
+      const hasEnoughSpaceBelow = availableSpaceBelow >= calculatedHeight;
+      const hasMoreSpaceAbove = availableSpaceAbove > availableSpaceBelow;
 
-      // left and width (clamp right edge)
-      let left = rect.left;
-      let width = rect.width;
-      const rightOverflow = left + width - vw;
-      if (rightOverflow > 8) {
-        left = Math.max(8, left - rightOverflow);
+      let top: number;
+      let maxHeight: number;
+      let openUpward = false;
+
+      if (hasEnoughSpaceBelow) {
+        // Open below with calculated height - position exactly at bottom edge
+        top = rect.bottom;
+        maxHeight = calculatedHeight;
+      } else if (hasMoreSpaceAbove && availableSpaceAbove >= minHeight) {
+        // Open above - position exactly at top edge
+        openUpward = true;
+        maxHeight = Math.min(calculatedHeight, Math.max(minHeight, availableSpaceAbove));
+        top = rect.top - maxHeight;
+      } else {
+        // Not enough space in either direction, open below with reduced height
+        top = rect.bottom;
+        maxHeight = Math.max(minHeight, availableSpaceBelow);
       }
 
-      setPortalPos({ left, top, width, maxHeight: dropdownH });
+      // Clamp top position to stay within viewport
+      top = Math.max(padding, Math.min(top, vh - maxHeight - padding));
 
-      // also set openUpward (for backwards compatibility if needed)
-      setOpenUpward(!openBelow);
-    }, [sizeStyles.dropdownHeight]);
+      // left and width (clamp right edge) - use container for width, button for left alignment
+      let left = rect.left;
+      let width = containerRect.width;
+      const rightOverflow = left + width - vw;
+      if (rightOverflow > padding) {
+        left = Math.max(padding, left - rightOverflow);
+      }
 
+      setPortalPos({ left, top, width, maxHeight, openUpward });
+    }, [currentSize.dropdownHeight, currentSize.fontSize, filteredOptions.length, searchable]);
 
-  useEffect(() => {
-        if (!isOpen) return;
-        updatePortalPos(); // initial compute
-  
-        const onUpdate = () => updatePortalPos();
-        window.addEventListener("resize", onUpdate);
-        window.addEventListener("scroll", onUpdate, true); // track ancestor scroll too
-        return () => {
-          window.removeEventListener("resize", onUpdate);
-          window.removeEventListener("scroll", onUpdate, true);
-        };
-      }, [isOpen, updatePortalPos]);
-  
-      // handle toggle: compute portal position when opening
-      const handleToggle = () => {
-        if (disabled) return;
-  
-        const node = anchorRef.current;
-        if (!node || typeof window === "undefined") {
-          setIsOpen(prev => !prev);
-          return;
-        }
-  
-        const rect = node.getBoundingClientRect();
-        const windowHeight = window.innerHeight;
-  
-        const spaceBelow = windowHeight - rect.bottom;
-        const spaceAbove = rect.top;
-  
-        // maintain openUpward fallback
-        if (spaceBelow < DROPDOWN_ESTIMATED_HEIGHT && spaceAbove > spaceBelow) {
-          setOpenUpward(true);
-        } else {
-          setOpenUpward(false);
-        }
-  
-        setIsOpen(prev => {
-          const next = !prev;
-          if (next) {
-            setTimeout(() => updatePortalPos(), 0);
-          } else {
-            setPortalPos(null);
-          }
-          return next;
-        });
+    useEffect(() => {
+      if (!isOpen) return;
+      // Use setTimeout to ensure DOM is updated before calculating position
+      setTimeout(() => {
+        updatePortalPosition();
+      }, 0);
+
+      const onUpdate = () => updatePortalPosition();
+      window.addEventListener("resize", onUpdate);
+      window.addEventListener("scroll", onUpdate, true); // track ancestor scroll too
+      return () => {
+        window.removeEventListener("resize", onUpdate);
+        window.removeEventListener("scroll", onUpdate, true);
       };
+    }, [isOpen, updatePortalPosition, filteredOptions.length]);
+
+    /* ================= TOGGLE (UNCHANGED BEHAVIOR) ================= */
+
+    const handleToggle = () => {
+      if (disabled) return;
+      setIsOpen(prev => !prev);
+    };
+
     /* ================= RENDER ================= */
 
     return (
@@ -240,7 +247,7 @@ export const SinglePageSelection = forwardRef<
             if (typeof ref === "function") ref(node);
             else ref.current = node;
           }
-          anchorRef.current = node;
+          containerRef.current = node;
         }}
         style={{ width: "100%", position: "relative" }}
         className={className}
@@ -267,13 +274,27 @@ export const SinglePageSelection = forwardRef<
 
         {/* Select Box */}
         <div
+          ref={buttonRef}
           onClick={handleToggle}
+          // style={{
+          //   position: "relative",   // 👈 IMPORTANT
+          //   height: currentSize.height,
+          //   fontSize: currentSize.fontSize,
+          //   padding: currentSize.padding,
+          //   // paddingLeft: leftIcon ? "38px" : "8px",
+          //   borderRadius: "6px",
+          //   backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
+          //   cursor: disabled ? "not-allowed" : "pointer",
+          //   display: "flex",
+          //   alignItems: "center",
+          //   justifyContent: "space-between",
+          //   border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
+          // }}
           style={{
-            position: "relative",   // 👈 IMPORTANT
+            position: 'relative',
             height: currentSize.height,
             fontSize: currentSize.fontSize,
             padding: currentSize.padding,
-            paddingLeft: leftIcon ? "38px" : "12px",    // 👈 SPACE FOR ICON
             borderRadius: "6px",
             backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
             cursor: disabled ? "not-allowed" : "pointer",
@@ -281,6 +302,7 @@ export const SinglePageSelection = forwardRef<
             alignItems: "center",
             justifyContent: "space-between",
             border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
+            overflow: "hidden",
           }}
         >
           {/* LEFT CLICKABLE ICON */}
@@ -309,17 +331,20 @@ export const SinglePageSelection = forwardRef<
 
           <span
             style={{
-              color: isPlaceholder
-                ? COLORS.placeholder
+              fontSize: currentSize.fontSize,
+              color: selectedLabel === placeholder
+                ? "#9ca3af" // placeholder color
                 : selectedTextColor
                   ? chosenSelectedColor
-                  : "#000",
-              fontWeight: selectedTextColor ? "700" : "400",
+                  : "#000", // default text color
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              // fontWeight: selectedTextColor ? "700" : "400",
             }}
           >
             {selectedLabel}
           </span>
-
 
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
 
@@ -352,19 +377,28 @@ export const SinglePageSelection = forwardRef<
           typeof document !== "undefined" &&
           createPortal(
             <div
-            ref={portalRef}
               onMouseDown={(e) => e.stopPropagation()}
               style={{
                 position: "fixed",
                 top: portalPos.top,
                 left: portalPos.left,
                 width: portalPos.width,
-                backgroundColor: theme.colors.background,
-                border: "1px solid #ccc",
-                borderRadius: "6px",
+                maxHeight: portalPos.maxHeight,
+                overflow: "hidden",
+                margin: 0,
+                border: `1px solid ${theme.colors.border}`,
+                borderTop: portalPos.openUpward ? `1px solid ${theme.colors.border}` : "none",
+                borderBottom: portalPos.openUpward ? "none" : `1px solid ${theme.colors.border}`,
+                borderLeft: `1px solid ${theme.colors.border}`,
+                borderRight: `1px solid ${theme.colors.border}`,
+                borderRadius: portalPos.openUpward
+                  ? `${theme.borderRadius.sm} ${theme.borderRadius.sm} 0 0`
+                  : `0 0 ${theme.borderRadius.sm} ${theme.borderRadius.sm}`,
+                boxShadow: theme.shadows.lg,
                 zIndex: 9999,
-                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                maxHeight: "260px",
+                padding: 0,
+                backgroundColor: theme.colors.background,
+                boxSizing: "border-box",
                 display: "flex",
                 flexDirection: "column",
               }}
@@ -402,29 +436,42 @@ export const SinglePageSelection = forwardRef<
               )}
 
               {/* Options */}
-              <div className="thin-scroll" style={{ overflowY: "auto", flex: 1 }}>
+              <div
+                className="thin-scroll"
+                style={{
+                  overflowY: "auto",
+                  flex: 1,
+                  maxHeight: portalPos.maxHeight - (searchable ? 48 : 0), // leave room for search if searchable
+                  scrollBehavior: "smooth",
+                  WebkitOverflowScrolling: "touch",
+                  boxSizing: "border-box",
+                  scrollbarWidth: "thin",
+                  scrollbarColor: `${theme.colors.border} transparent`,
+                }}
+              >
                 {filteredOptions.length > 0 ? (
-                  filteredOptions.map((opt: any, idx: number) => (
-                    <div
-                      key={idx}
-                      onClick={() => {
-                        onChange(opt[valueKey]);
-                        setIsOpen(false);
-                        setSearchTerm("");
-                      }}
-                      style={{
-                        padding: "10px 14px",
-                        borderBottom: "1px solid #f3f3f3",
-                        cursor: "pointer",
-                        backgroundColor:
-                          opt[valueKey] === value
-                            ? "#e6f0ff"
-                            : theme.colors.background,
-                      }}
-                    >
-                      {opt[labelKey]}
-                    </div>
-                  ))
+                  filteredOptions.map((opt: any, idx: number) => {
+                    const selected = opt[valueKey] === value;
+                    return (
+                      <div
+                        key={idx}
+                        onClick={() => {
+                          onChange(opt[valueKey]);
+                          setIsOpen(false);
+                          setSearchTerm("");
+                        }}
+                        onMouseEnter={e =>
+                          !disabled && Object.assign(e.currentTarget.style, getOptionStyles(selected, true))
+                        }
+                        onMouseLeave={e =>
+                          !disabled && Object.assign(e.currentTarget.style, getOptionStyles(selected, false))
+                        }
+                        style={getOptionStyles(selected)}
+                      >
+                        {opt[labelKey]}
+                      </div>
+                    );
+                  })
                 ) : (
                   <div
                     style={{

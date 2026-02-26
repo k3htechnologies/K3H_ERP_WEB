@@ -5,7 +5,7 @@ export interface FilterWithPaginationPaymentScheduleMasterRequest {
     PageNumber: number
     ProjectId?: number
     PaymentScheduleMasterId?: number
-    BuildingId?: number
+    InventoryBuildingId?: number
     Stage?: string
     Wing?: string
     SortBy?: string
@@ -16,7 +16,7 @@ export interface PaymentScheduleMasterData {
     PaymentScheduleMasterId: number | 0
     Uniquekey: string | null
     ProjectId: number | 0
-    BuildingId: number | 0
+    InventoryBuildingId: number | 0
     Stage: string | null
     Wing: string | null
     FlatConfiguration: string | null
@@ -36,7 +36,7 @@ export interface AddUpdatePaymentScheduleMasterRequest {
     PaymentScheduleMasterId: number | 0
     Uniquekey: string | null
     ProjectId: number | 0
-    BuildingId: number | 0
+    InventoryBuildingId: number | 0
     Stage: string | null;
     Wing: string | null
     PaymentSchedulePercentage: number | null
@@ -49,38 +49,13 @@ export interface DeletePaymentScheduleMasterRequest {
     ProjectId: number | null
 }
 
-export interface FilterWithPaginationProjectInventoryStructureRequest {
-    ProjectId?: number
-    BuildingId?: number
-    Wing?: string
-    FlatConfiguration?: string
-    SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
-}
-
-export interface ProjectInventoryStructureData {
-    BuildingId: number | 0
-    Uniquekey: string | null
-    ProjectId: number | 0
-    Wing: string | null
-    FlatConfiguration: string | null
-    CreatedById: number | 0
-    CreatedBy: string | ''
-    CreatedDate: string | null
-    ModifiedById: number | 0
-    ModifiedBy: string | ''
-    ModifiedDate: string | null
-    LastModifiedBy: string | ''
-    LastModifiedDate: string | null
-}
-
 // PAYMENT SCHEDULE REPORT
 
 export interface FilterWithPaginationPaymentScheduleMasterReportRequest {
     PageSize: number
     PageNumber: number
     ProjectId?: number
-    BuildingId?: number
+    InventoryBuildingId?: number
     PaymentScheduleMasterId?: number
     Rate?: number
     Wing?: string
@@ -93,7 +68,7 @@ export interface PaymentScheduleMasterReportData {
     PaymentScheduleMasterId: number | 0
     Uniquekey: string | null
     ProjectId: number | 0
-    BuildingId: number | 0
+    InventoryBuildingId: number | 0
     Wing: string | null
     Name: string | null
     Rate: number | 0
@@ -115,7 +90,7 @@ export interface FilterWithPaginationCostSheetReportRequest {
     PageSize: number
     PageNumber: number
     ProjectId?: number
-    BuildingId?: number
+    InventoryBuildingId?: number
     PaymentScheduleMasterId?: number
     Rate?: number
     Wing?: string
@@ -128,7 +103,7 @@ export interface CostSheetReportData {
     PaymentScheduleMasterId: number | 0
     Uniquekey: string | null
     ProjectId: number | 0
-    BuildingId: number | 0
+    InventoryBuildingId: number | 0
     Wing: string | null
     Rate: number | 0
     FlatConfiguration: string | null
@@ -145,8 +120,6 @@ export interface CostSheetReportData {
 export type PaymentScheduleMasterListResponse = ApiResponse<PaymentScheduleMasterData[]>;
 export type PaymentScheduleMasterSaveResponse = ApiResponse<PaymentScheduleMasterData[]>;
 export type PaymentScheduleMasterDeleteResponse = ApiResponse<number[]>;
-
-export type ProjectInventoryStructureListResponse = ApiResponse<ProjectInventoryStructureData[]>;
 
 // PAYMENT SCHEDULE REPORT
 export type PaymentScheduleMasterReportListResponse = ApiResponse<PaymentScheduleMasterReportData[]>;

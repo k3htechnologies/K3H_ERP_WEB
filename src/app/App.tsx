@@ -148,10 +148,14 @@ import AddUpdateBooking from '@/features/booking/pages/AddUpdateBooking';
 import ViewBooking from '@/features/booking/pages/ViewBooking';
 import CallTracker from '@/features/callTracker/pages/CallTracker';
 import OtherCharges from '@/features/otherCharges/pages/OtherCharges';
-import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
-import { SaleTarget } from '@/features/saleTarget/pages/SaleTarget';
-import { PaymentScheduleMaster } from '@/features/paymentScheduleMaster/pages/PaymentScheduleMaster';
+import SettingsDashboard from '@/features/settingsDashboard/pages/SettingsDashboard';
+import PayrollDashboard from '@/features/payrollDashboard/pages/PayrollDashboard';
+import SalesDashboard from '@/features/salesDashboard/pages/SalesDashboard';
+import EnquiryReport from '@/features/enquiryReport/pages/EnquiryReport';
+import CPEnquiryReport from '@/features/cpEnquiryReport/pages/CPEnquiryReport';
+import PaymentScheduleMaster from '@/features/paymentScheduleMaster/pages/PaymentScheduleMaster';
 import PaymentScheduleTab from '@/features/paymentScheduleMaster/components/PaymentScheduleTab';
+import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -210,6 +214,7 @@ function App() {
             <Route path="dashboard" element={<Dashboard />} />
 
             {/* SETTING -> COMPANY SETUP */}
+            <Route path="settingDashboard" element={<SettingsDashboard />} />
 
             <Route path="departmentMaster" element={<DepartmentMaster />} />
 
@@ -289,6 +294,7 @@ function App() {
 
             {/* PAYROLL */}
 
+            <Route path="payrollDashboard" element={<PayrollDashboard />} />
             <Route path="compOff" element={<CompOff />} />
 
             <Route path="outdoor/add/:outdoorId?" element={<OutDoorListStateProvider><AddUpdateOutDoorPage /></OutDoorListStateProvider>} />
@@ -329,6 +335,8 @@ function App() {
 
 
             {/* SALES */}
+            <Route path="saleDashboard" element={<SalesDashboard />} />
+
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
@@ -344,14 +352,16 @@ function App() {
 
             <Route path="otherCharges" element={<OtherCharges />} />
 
-            <Route path='target' element={<SaleTarget />} />
-
             <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
             <Route path="paymentScheduleReport" element={<PaymentScheduleTab />} />
+
 
             <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
             <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />
             <Route path="booking/add" element={<BookingListStateProvider><AddUpdateBooking /></BookingListStateProvider>} />
+
+            <Route path="enquiryReport" element={<EnquiryReport />} />
+            <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
 
             {/* REDEVELOPMENT */}
 

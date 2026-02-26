@@ -308,7 +308,7 @@ const ProjectRERADocument: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Loading ' + projectRERADocumentTabList.find(t => t.id === activeTab)?.label || 'Project RERA Document'
+      'Loading Project RERA Document'
     );
   };
   //#endregion
@@ -1083,7 +1083,7 @@ const ProjectRERADocument: React.FC = () => {
                 <Input
                   label='Document'
                   required
-                  readOnly
+                  disabled
                   type="text"
                   value={formData.ProjectRERADocumentName}
                   maxLength={250}

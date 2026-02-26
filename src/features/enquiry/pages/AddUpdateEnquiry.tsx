@@ -32,6 +32,10 @@ import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpaginatio
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { fetchVillageDropdown } from "@/features/technical/villageDropDown";
 import { getCustomerClassification } from "@/features/enquiry/utils/customerClassification";
+import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
+import { Modal } from "@/ui/components/Modal/Modal";
+import { sendOTP } from "@/features/technical/services/OTPService";
+import { getEnquiryVerificationSteps } from "@/features/enquiry/utils/verificationSteps";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
     EnquiryId: 0,
@@ -101,6 +105,8 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
 
     Remark: "",
 
+    OTP: "",
+
 });
 
 
@@ -126,11 +132,12 @@ export const AddUpdateEnquiry: React.FC = () => {
     const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<string>();
     const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
     const [channelPartnerType, setChannelPartnerType] = useState<string>();
+    //COMPLETE VERIFICATION
 
-    
-    
-        const [enquiryUniqueKey, setEnquiryUniqueKey] = useState<string>();
-
+    const [otp, setOtp] = useState("");
+    const [isOtpSent, setIsOtpSent] = useState(false);
+    const [isOtpVerified, setIsOtpVerified] = useState(false);
+    const [showOtpSection, setShowOtpSection] = useState(false);
 
     // NAVIGATE
     const navigate = useNavigate();
@@ -305,8 +312,6 @@ export const AddUpdateEnquiry: React.FC = () => {
 
                         setCalculatedAge(age);
 
-                        setEnquiryUniqueKey(e.SystemGeneratedCode || '');
-
                         if (e.Source === 'Channel Partner') {
                         } setChannelPartnerSearchByMobileNumber(e.ChannelPartnerMobileNumber ? e.ChannelPartnerMobileNumber.toString() : '');
                     }
@@ -353,17 +358,6 @@ export const AddUpdateEnquiry: React.FC = () => {
 
             if (!isValidEmail(formData.EmailId!.trim())) {
                 newErrors.EmailId = 'Enter a Valid E-mail Id'
-            }
-        }
-
-        if (!formData.DateOfBirth) {
-            newErrors.DateOfBirth = 'DOB is required'
-
-        } else if (formData.DateOfBirth) {
-            const dob = new Date(formData.DateOfBirth as unknown as string)
-            const today = new Date()
-            if (dob > today) {
-                newErrors.DateOfBirth = 'Date of Birth cannot be in the future'
             }
         }
 
@@ -478,9 +472,10 @@ export const AddUpdateEnquiry: React.FC = () => {
             newErrors.ChannelPartnerTeamMemberMobileNumber = 'Enter a valid 10-digit mobile number';
         }
 
-        if (!formData.EnquiryDate) {
+
+        if (Number(formData.EnquiryDate) === 0 && !formData.EnquiryDate) {
             newErrors.EnquiryDate = "Enquiry date is required";
-        } else if (!isDateWithinPastDays(formData.EnquiryDate, 2)) {
+        } else if (Number(formData.EnquiryDate) === 0 && !isDateWithinPastDays(formData.EnquiryDate, 2)) {
             newErrors.EnquiryDate = "Enquiry date can only be today or within the previous 2 days";
         }
 
@@ -492,11 +487,7 @@ export const AddUpdateEnquiry: React.FC = () => {
 
         }
 
-        if (!formData.NextFollowUpDate) {
-            newErrors.NextFollowUpDate = 'Next Follow-Up Date is required';
-        }
-
-        if (formData.NextFollowUpDate && !isToDateGreaterOrEqualFromDate(formData.EnquiryDate || "", formData.NextFollowUpDate!)) {
+        if (Number(formData.EnquiryId) === 0 && formData.NextFollowUpDate != null && formData.NextFollowUpDate !== "" && !isToDateGreaterOrEqualFromDate(formData.EnquiryDate || "", formData.NextFollowUpDate!)) {
             newErrors.NextFollowUpDate = "Next Follow Up Date must be greater than or equal to Enquiry Date";
         }
         return {
@@ -541,7 +532,7 @@ export const AddUpdateEnquiry: React.FC = () => {
             Name: formData.Name,
             MobileNumber: formData.MobileNumber,
             EmailId: formData.EmailId,
-            DateOfBirth: formData.DateOfBirth,
+            DateOfBirth: formData.DateOfBirth === "" ? null : formData.DateOfBirth,
 
             Accommodation: formData.Accommodation,
             OccupationType: formData.OccupationType,
@@ -593,7 +584,7 @@ export const AddUpdateEnquiry: React.FC = () => {
             FinalStageDetail: formData.FinalStageDetail,
 
             EnquiryDate: formData.EnquiryDate,
-            NextFollowUpDate: formData.NextFollowUpDate,
+            NextFollowUpDate: formData.NextFollowUpDate === "" ? null : formData.NextFollowUpDate,
 
             SalesAdvisorId: formData.SalesAdvisorId,
             SourcingManagerId: formData.SourcingManagerId,
@@ -601,6 +592,8 @@ export const AddUpdateEnquiry: React.FC = () => {
             EnquiryTimeIn: formData.EnquiryTimeIn,
 
             Remark: formData.Remark,
+
+            OTP: otp?.trim()
 
         };
     };
@@ -618,7 +611,34 @@ export const AddUpdateEnquiry: React.FC = () => {
 
             setErrors(validation.errors);
 
+            addToast({ type: 'error', title: 'Please fill the required filed' });
+
             return;
+        }
+
+        if (formData.EnquiryId === 0 && !isOtpVerified) {
+
+            if (!isOtpSent) {
+
+                const sent = await sendOTP({
+
+                    mobileNumber: formData.MobileNumber || "",
+                    module: "ENQUIRY",
+                    setIsLoading,
+                    setLoadingMessage,
+                    addToast
+                });
+
+
+                if (sent) {
+                    setShowOtpSection(true);
+                    setIsOtpSent(true);
+
+                }
+
+                return;
+            }
+
         }
 
         await runApiWithLoader(
@@ -732,6 +752,7 @@ export const AddUpdateEnquiry: React.FC = () => {
         autoFetchOptions: true
     });
     //#endregion
+
     return (
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -747,18 +768,10 @@ export const AddUpdateEnquiry: React.FC = () => {
                     {/* Basic Enquiry Details */}
 
                     <div className="space-y-4 pb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Basic Enquiry Details</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Details</h3>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <Input
-                                    type="text"
-                                    disabled
-                                    label='Unique key'
-                                    value={enquiryUniqueKey ?? ""}
-                                    placeholder="System Generated Unique key"
-                                />
-                            </div>
+
                             <div>
                                 <TimePicker
                                     label="Customer Time In"
@@ -830,7 +843,6 @@ export const AddUpdateEnquiry: React.FC = () => {
 
                                         setCalculatedAge(age)
                                     }}
-                                    required
                                     error={errors.DateOfBirth}
 
                                 />
@@ -839,7 +851,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                             <div>
                                 <Input
                                     type="text"
-                                    required
                                     disabled
                                     label='Age'
                                     value={calculatedAge ?? ""}
@@ -1473,6 +1484,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                             <SinglePageSelection
                                                 label="Stage"
                                                 placeholder="Select Stage"
+                                                disabled={Number(formData.EnquiryId) > 0 ? true : false}
                                                 value={formData.FinalStage ?? ''}
                                                 onChange={(value) => handleFieldChange("FinalStage", value)}
                                                 options={FINAL_STAGE_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
@@ -1488,6 +1500,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                                     onChange={(value) => handleFieldChange("FinalStageDetail", value)}
                                                     options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
                                                     error={errors.FinalStageDetail}
+                                                    disabled={Number(formData.EnquiryId) > 0 ? true : false}
                                                 />
                                             </div>
                                         )}
@@ -1505,16 +1518,19 @@ export const AddUpdateEnquiry: React.FC = () => {
                                                 value={formatDate_dd_mm_yyyy(formData.EnquiryDate)}
                                                 onChange={(val) => handleFieldChange('EnquiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                                 error={errors.EnquiryDate}
+                                                disabled={Number(formData.EnquiryId) > 0 ? true : false}
+
                                             />
+
                                         </div>
 
                                         <div>
                                             <DatePickerInput
                                                 label="Next Follow-Up Date"
-                                                required
                                                 value={formatDate_dd_mm_yyyy(formData.NextFollowUpDate)}
                                                 onChange={(val) => handleFieldChange('NextFollowUpDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                                 error={errors.NextFollowUpDate}
+                                                disabled={Number(formData.EnquiryId) > 0 ? true : false}
                                             />
                                         </div>
                                     </div>
@@ -1583,15 +1599,53 @@ export const AddUpdateEnquiry: React.FC = () => {
                 cancelText="Cancel"
                 saveText={formData.EnquiryId ? "Update" : "Add"}
                 onCancel={() => navigate(-1)}
-                canAction={
-                    canAction &&
+                canAction={canAction && (
+                    formData.EnquiryId === 0 ||
                     formData?.FinalStage?.toLowerCase() !== "lost"
-                }
+                )}
                 onSave={() => {
                     handleAddUpdateEnquiry();
                 }}
                 isLoading={isLoading}
             />
+
+            <Modal
+                isOpen={showOtpSection && formData.EnquiryId === 0}
+                onClose={() => {
+                    setOtp("");
+                    setIsOtpSent(false);
+                    setIsOtpVerified(false);
+                    setShowOtpSection(false);
+
+                }}
+                title="Complete Verification"
+                saveText={formData.EnquiryId ? "Update" : "Verify OTP & Add"}
+                size="md"
+                onSubmit={(e) => {
+
+                    e.preventDefault();
+
+                    if (!otp) {
+
+                        addToast({ type: "error", title: "Please enter OTP" });
+                        return;
+                    }
+
+                    setIsOtpVerified(true);
+
+                    handleAddUpdateEnquiry();
+                }}
+            >
+
+                <CompleteVerificationSection
+                    steps={getEnquiryVerificationSteps({ formData })}
+                    otp={otp}
+                    onOtpChange={setOtp}
+                    mobileNumber={formData.MobileNumber ?? ""}
+                />
+
+            </Modal>
+
         </div>
     );
 };

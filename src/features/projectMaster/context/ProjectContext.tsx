@@ -25,8 +25,6 @@ export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     LocalStorageHelper.storeSelectedProject?.(id)
 
-    console.log(id)
-
   }
 
   return (

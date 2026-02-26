@@ -119,6 +119,7 @@ export const ChannelPartner: React.FC = () => {
           ChannelPartnerId: filterParams.ChannelPartnerId ? Number(filterParams.ChannelPartnerId) : undefined,
           ChannelPartnerName: searchtext ?? filterParams.Name?.trim() ?? undefined,
           CompanyName: filterParams.CompanyName?.trim() || undefined,
+          Designation: filterParams.Designation?.trim() || undefined,
           FirmsType: filterParams.FirmsType?.trim() || undefined,
           Type: filterParams.Type?.trim() || undefined,
           MobileNumber: filterParams.MobileNumber?.trim() || undefined,
@@ -208,6 +209,7 @@ export const ChannelPartner: React.FC = () => {
           PageSize: pagination.totalRecords,
           ChannelPartnerName: filters.Name?.trim() || undefined,
           CompanyName: filters.CompanyName?.trim() || undefined,
+          Designation: filters.Designation?.trim() || undefined,
           FirmsType: filters.FirmsType?.trim() || undefined,
           Type: filters.Type?.trim() || undefined,
           MobileNumber: filters.MobileNumber?.trim() || undefined,
@@ -369,6 +371,22 @@ export const ChannelPartner: React.FC = () => {
   //#region TABLE COLUMNS
   const ChannelPartnerColumns = useMemo<TableColumn[]>(() => [
     {
+      key: 'SystemGeneratedCode',
+      label: 'CP Code',
+      width: '20',
+      sortable: true,
+      fixed: 'left',
+      align: 'left',
+      render: value => (
+        <TooltipText
+          text={value || '-'}
+          maxWidth="150px"
+          tooltipThreshold={20}
+          tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+        />
+      )
+    },
+    {
       key: 'Name',
       label: 'Full Name',
       width: '20',
@@ -384,29 +402,22 @@ export const ChannelPartner: React.FC = () => {
         />
       )
     },
+
+
     {
-            key: 'SystemGeneratedCode',
-            label: 'Unique Code',
-            width: '20',
-            sortable: true,
-            fixed: 'left',
-            align: 'left',
-            render: value => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="150px"
-                    tooltipThreshold={20}
-                    tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                />
-            )
-        },
-    
-     {
       key: 'Designation',
       label: 'Designation',
       width: '15',
       sortable: false,
       align: 'center',
+      render: (value) => value || '-'
+    },
+    {
+      key: 'Speciality',
+      label: 'Speciality',
+      width: '15',
+      sortable: false,
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -433,7 +444,7 @@ export const ChannelPartner: React.FC = () => {
       align: 'center',
       render: (value) => value || '-'
     },
-   
+
     {
       key: 'EmailId',
       label: 'Email Id',
@@ -450,9 +461,6 @@ export const ChannelPartner: React.FC = () => {
       align: 'left',
       render: (value) => value ? `+91 ${value}` : '-'
     },
-
-    
-
     {
       key: 'PanNumber',
       label: 'Pan Number',
@@ -493,13 +501,16 @@ export const ChannelPartner: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'center',
-      render: (value) => (
-        <TooltipText
-          text={value || '-'}
-          maxWidth="150px"
-          tooltipThreshold={15}
-        />
-      )
+      render: (value: string, row: any) => {
+        return (
+          <MultiImageViewer
+            images={parseDocumentUrls(row.GSTCertificateURL)}
+            title="GST Certificate"
+            triggerLabel={value || '-'}
+            isWrap={false}
+          />
+        );
+      }
     },
     {
       key: 'RERANumber',
@@ -746,7 +757,7 @@ export const ChannelPartner: React.FC = () => {
         onDownloadSampleExcel={handleDownloadExcelSampleChannelPartner}
 
         // EXPORT
-        isShowExportButton={canExport}
+        isShowExportButton={canExport && ChannelPartnerForTable.length > 0 ? true : false}
         onExportExcel={handleExportChannelPartnerExcel}
         onExportPdf={handleExportChannelPartnerPdf}
         exportLoading={isLoading}
@@ -809,8 +820,8 @@ export const ChannelPartner: React.FC = () => {
           <div>
             <Input type="text"
               label='Full Name'
-              value={tempFilters?.ChannelPartnerName ?? ''}
-              onChange={e => handleFilterChange('ChannelPartnerName', e.target.value)}
+              value={tempFilters?.Name ?? ''}
+              onChange={e => handleFilterChange('Name', e.target.value)}
               placeholder="Enter Full Name" />
           </div>
           <div>
@@ -819,6 +830,13 @@ export const ChannelPartner: React.FC = () => {
               value={tempFilters?.CompanyName ?? ''}
               onChange={e => handleFilterChange('CompanyName', e.target.value)}
               placeholder="Enter Company Name" />
+          </div>
+          <div>
+            <Input type="text"
+              label='Designation'
+              value={tempFilters?.Designation ?? ''}
+              onChange={e => handleFilterChange('Designation', e.target.value)}
+              placeholder="Enter Designation" />
           </div>
           <div>
             <Input type="text"

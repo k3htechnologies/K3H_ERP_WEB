@@ -3,7 +3,6 @@ export const PaymentScheduleMasterApi = {
     PULL: '/PaymentScheduleMaster/PullPaymentScheduleMaster',
     ADD_UPDATE: '/PaymentScheduleMaster/AddUpdatePaymentScheduleMaster',
     DELETE: '/PaymentScheduleMaster/DeletePaymentScheduleMaster',
-    PULL_BUILDING_WING: '/PaymentScheduleMaster/PullProjectInventoryStructure',
 
     //PAYMENT SCHEDULE REPORT
     PULL_PAYMENT_SCHEDULE_REPORT: '/PaymentScheduleMaster/PullPaymentScheduleMasterReport',

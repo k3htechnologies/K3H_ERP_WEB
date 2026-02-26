@@ -10,7 +10,6 @@ import useToast from "@/core/hooks/useToast";
 import type { FilterPullExcelSample } from "@/features/technical/models/TechnicalModel";
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import { handleExportFile } from "@/core/utils/exportFile";
-import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import ExportImport from "@/ui/components/ExcelImport/ExcelImport";
@@ -77,10 +76,10 @@ export const CallingData: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
-                    Name: searchText?.trim() || undefined,
+                    Name: searchText ?? filterParams.Name?.trim() ?? undefined,
                     FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
                     ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
-                    MobileNumber: filterParams.MobileNumber ? Number(filterParams.MobileNumber) : undefined,
+                    MobileNumber: filterParams.MobileNumber ?? undefined,
                     SortBy: getSortByParam(sort ?? null, CallingDataColumns),
                 };
 
@@ -139,11 +138,13 @@ export const CallingData: React.FC = () => {
 
     //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
+
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
-
         loadCallingData(1, filters, sort, searchTerm);
+
     }, [searchTerm]);
+
     //#endregion
 
     //#region EXPORT / IMPORT EXCEL AND PDF
@@ -248,7 +249,7 @@ export const CallingData: React.FC = () => {
         {
             key: 'Name',
             label: 'Customer Name',
-            width: '25',
+            width: '15',
             sortable: true,
             fixed: 'left',
             align: 'left',
@@ -284,15 +285,31 @@ export const CallingData: React.FC = () => {
         },
         {
             key: 'MobileNumber',
-            label: 'Phone Number',
+            label: 'Mobile Number',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value ? `+91 ${value}` : '-'
+        },
+        {
+            key: 'EmailId',
+            label: 'E-mail ID',
             width: '15',
             sortable: false,
             align: 'center',
             render: value => value || '-'
         },
         {
-            key: 'EmailId',
-            label: 'E-mail ID',
+            key: 'CreatedDate',
+            label: 'Last Modified Date',
+            width: '33',
+            sortable: false,
+            align: 'left',
+            render: (value, row) => value ? formatDate_dd_MonthName_yy(row.CreatedDate) : '-'
+        },
+        {
+            key: 'Address',
+            label: 'Address',
             width: '15',
             sortable: false,
             align: 'center',
@@ -338,7 +355,7 @@ export const CallingData: React.FC = () => {
         setFilters(tempFilters);
         setPagination({ currentPage: 1 });
 
-        loadCallingData(1, tempFilters, sortInfo, searchTerm);
+        loadCallingData(1, tempFilters);
         setShowFilterPopup(false);
     };
     //#endregion
@@ -350,7 +367,6 @@ export const CallingData: React.FC = () => {
         setPagination({ currentPage: 1 });
 
         loadCallingData(1, {}, sortInfo, searchTerm);
-        setShowFilterPopup(false);
     };
 
     //#region HANDLE FILTER CHNAGE
@@ -464,7 +480,26 @@ export const CallingData: React.FC = () => {
                 size="small-half"
             >
                 <div className="space-y-4">
+                    <div>
 
+                        <Input
+                            type="text"
+                            label='Customer Name'
+                            value={tempFilters.Name || ''}
+                            onChange={e => handleFilterChange('Name', e.target.value)}
+                            placeholder="Enter Name"
+                        />
+                    </div>
+                    <div>
+
+                        <Input
+                            type="text"
+                            label='Mobile Number'
+                            value={tempFilters.MobileNumber || ''}
+                            onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+                            placeholder="Enter Mobile Number"
+                        />
+                    </div>
                     <div>
                         <DatePickerInput
                             label='From Date'

@@ -53,7 +53,10 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
     setIsOpen(true);
   };
 
-  const close = () => setIsOpen(false);
+  const close = () => {
+    setIsOpen(false);
+    setIsMaximized(false); // reset maximize state
+  };
 
 
   useEffect(() => {
@@ -142,11 +145,10 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   const ViewerContent = () => (
     <div
       className={`bg-white shadow-xl w-full flex flex-col transition-all
-      ${
-        isMaximized
+      ${isMaximized
           ? "fixed inset-0 rounded-none max-w-none h-screen"
           : `${sizeClasses[size]} rounded-lg max-h-[90vh]`
-      }`}
+        }`}
       onClick={(e) => e.stopPropagation()}
       role="dialog"
       aria-modal="true"

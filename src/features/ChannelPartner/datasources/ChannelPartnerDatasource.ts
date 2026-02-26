@@ -27,12 +27,14 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
             const queryParams = new URLSearchParams({
                 pageSize: (params.PageSize ?? 10).toString(),
                 pageNumber: (params.PageNumber ?? 1).toString(),
+                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             })
 
             if (params.ChannelPartnerId) queryParams.append('ChannelPartnerId', params.ChannelPartnerId.toString());
             if (params.ChannelPartnerName?.trim()) queryParams.append('ChannelPartnerName', params.ChannelPartnerName.trim());
             if (params.MobileNumber?.trim()) queryParams.append('MobileNumber', params.MobileNumber.trim());
             if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
+            if (params.Designation?.trim()) queryParams.append('Designation', params.Designation.trim());
             if (params.FirmsType?.trim()) queryParams.append('FirmsType', params.FirmsType.trim());
             if (params.Type?.trim()) queryParams.append('Type', params.Type.trim());
             if (params.OfficeAddress?.trim()) queryParams.append('OfficeAddress', params.OfficeAddress.trim());
@@ -107,6 +109,7 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
             })
 
             if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
+            
             return await this.k3hHttpClient.getRequestWithAuthentication(`${ChannelPartnerApi.PULL_CHANNELPARTNER_COMPANY}?${queryParams.toString()}`, { signal });
 
         } catch (error: any) {

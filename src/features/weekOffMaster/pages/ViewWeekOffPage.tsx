@@ -115,7 +115,7 @@ const ViewWeekOffMaster: React.FC = () => {
                                 </div>
                                 <div className="lg:col-span-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Week Days Starts On" value={editWeekOffPolicyMasterData!.WeekDaysStartsOn} />
+                                        <FieldItem label="Week Day Starts On" value={editWeekOffPolicyMasterData!.WeekDaysStartsOn} />
                                     </div>
                                 </div>
                             </div>
@@ -131,8 +131,8 @@ const ViewWeekOffMaster: React.FC = () => {
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Weekly Off" value={editWeekOffPolicyMasterData!.WeeklyOff} />
-                                        <FieldItem label="Weekly Off2" value={editWeekOffPolicyMasterData!.WeeklyOff2} />
-                                        <FieldItem label="Weekly Off2 Type" value={editWeekOffPolicyMasterData!.WeeklyOff2Type} />
+                                        <FieldItem label="Weekly Off 2" value={editWeekOffPolicyMasterData!.WeeklyOff2} />
+                                        <FieldItem label="Weekly Off 2 Type" value={editWeekOffPolicyMasterData!.WeeklyOff2Type} />
 
                                     </div>
                                 </div>

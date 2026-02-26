@@ -95,7 +95,7 @@ export const WeekOffMappingMasterTable: React.FC<WeekOffMappingMasterTableProps>
       data={data}
       columns={tableColumns}
       pagination={pagination}
-      emptyMessage="No Weekoff Mappings Found"
+      emptyMessage="No Week off Mappings Found"
       fixedHeight={true}
       recordsPerPage={20}
       className="flex-1"

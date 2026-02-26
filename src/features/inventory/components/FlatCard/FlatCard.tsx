@@ -13,9 +13,11 @@ interface FlatCardProps {
     wing?: string;
     floor?: string;
     buildingNumber?: string;
+    canAction?: boolean;
+    canBookingAction?: boolean;
 }
 
-export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumber }: FlatCardProps) => {
+export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumber, canAction, canBookingAction }: FlatCardProps) => {
     const navigate = useNavigate();
     const { updateListState } = useBookingListState();
 
@@ -62,7 +64,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                     Floor: floor || flat.Floor,
                     BuildingNumber: buildingNumber || flat.BuildingNumber,
                     PageName: "UNIT BOOK",
-                    InventoryFlatFloorBasementPodiumWingId:flat.InventoryFlatFloorBasementPodiumWingId
+                    InventoryFlatFloorBasementPodiumWingId: flat.InventoryFlatFloorBasementPodiumWingId
                 }
             }
         });
@@ -111,16 +113,29 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
 
                 {(flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") && <Eye size={16} onClick={handleEdit} />}
 
-                {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
-                    <Edit className="cursor-pointer" onClick={handleEdit} size={16} />
-                )}
+                {canAction ? (
+                    <>
+                        {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
+                            <Edit className="cursor-pointer" onClick={handleEdit} size={16} />
+                        )}
 
-                {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
-                    <Trash onClick={handleDelete} color="red" size={16} />
-                )}
+                        {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
+                            <Trash onClick={handleDelete} color="red" size={16} />
+                        )}
+                    </>
+                ) 
+                :canBookingAction ? (
+                        <>
+                            {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
+                                <Edit className="cursor-pointer" onClick={handleEdit} size={16} />
+                            )}
+                        </>
+                    ) : null
+                }
+
             </div>
 
-            {flat.FlatStatus === "Available" && flat.FlatType !== "" && flat.RERACarpetAreaSqFt > 0 && (
+            {flat.FlatStatus === "Available" && flat.FlatType !== "" && flat.RERACarpetAreaSqFt > 0 && canBookingAction && (
                 <div className="flex items-center justify-center mt-2">
                     <Button
                         onClick={handleBook}
@@ -135,7 +150,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
             )}
 
             {flat.OwnerName && (flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") ? (
-                <p 
+                <p
                     className="text-center text-[#135BEC] font-semibold cursor-pointer hover:underline"
                     onClick={handleOwnerNameClick}
                     title="Click to view booking details"

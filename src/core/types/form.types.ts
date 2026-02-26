@@ -87,6 +87,7 @@ export interface RichTextEditorProps {
   error?: string;
   helperText?: string;
   className?: string;
+  readOnly?: boolean
 }
 
 export interface DatePickerProps

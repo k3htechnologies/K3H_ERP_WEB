@@ -10,6 +10,11 @@ export const getPageInfo = (path: string) => {
             }
 
             {/* SETTING -> COMPANY SETUP */ }
+        case 'settingDashboard':
+            return {
+                title: 'Setting Dashboard',
+                description: 'Centralized department management for real estate operations',
+            }
         case 'departmentMaster':
             return {
                 title: 'Department Master',
@@ -173,6 +178,13 @@ export const getPageInfo = (path: string) => {
             }
 
         // PAYROLL
+
+        case 'payrollDashboard':
+            return {
+                title: 'Payroll Dashboard',
+                description: 'Manage and organize employee leave requests with complete CRUD operations',
+            }
+
         case 'leave':
             return {
                 title: 'Leave Management',
@@ -350,7 +362,11 @@ export const getPageInfo = (path: string) => {
             }
 
             {/* SALES */ }
-
+        case 'saleDashboard':
+            return {
+                title: "Sales Dashboard",
+                description: "Centralized enquiry management for faster response",
+            }
         case 'enquiry':
             return {
                 title: "Enquiry",
@@ -382,6 +398,51 @@ export const getPageInfo = (path: string) => {
             return {
                 title: "Channel Partner Sourcing",
                 description: "Single source of truth for channel partner information",
+            }
+
+        case 'callTracker':
+            return {
+                title: "Call Tracker",
+                description: "Single source of truth for channel partner information",
+            }
+
+        case 'otherCharges':
+            return {
+                title: "Other Charges",
+                description: "Single source of truth for channel partner information",
+            }
+        case 'paymentSchedule':
+            return {
+                title: "Payment Schedule",
+                description: "Single source of truth for channel partner information",
+            }
+        case 'paymentScheduleReport':
+            return {
+                title: "Payment Schedule Report",
+                description: "Single source of truth for channel partner information",
+            }
+        case 'enquiryReport':
+            return {
+                title: "Enquiry Report",
+                description: "Centralized enquiry management for faster response",
+            }
+        case 'cpEnquiryReport':
+            return {
+                title: "Channel Partner Enquiry Report",
+                description: "Centralized enquiry management for faster response",
+            }
+
+        // MARKETING
+        case 'content':
+            return {
+                title: "Content",
+                description: "Profile",
+            }
+        // PROJECT
+        case 'approvedBank':
+            return {
+                title: "Approved Bank",
+                description: "Profile",
             }
 
         default:

@@ -35,7 +35,7 @@ export const PaymentScheduleMasterReport: React.FC = () => {
     //#endregion
 
     const location = useLocation();
-    const buldingId = location.state?.BuildingId || 0;
+    const inventoryBuildingId = location.state?.InventoryBuildingId || 0;
     const wing = location.state?.Wing || 0
     const ratePerSqFt = location.state?.ratePerSqFt || 0;
 
@@ -50,7 +50,7 @@ export const PaymentScheduleMasterReport: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
-                    BuildingId: buldingId,
+                    InventoryBuildingId: inventoryBuildingId,
                     Wing: wing,
                     Rate: ratePerSqFt,
                     FlatConfiguration: filterParams.FlatConfiguration ?? undefined,
@@ -82,11 +82,11 @@ export const PaymentScheduleMasterReport: React.FC = () => {
 
     //#region INIT
     useEffect(() => {
-        if (!projectId || !buldingId || !wing) return;
+        if (!projectId || !inventoryBuildingId || !wing) return;
 
         setPagination({ currentPage: 1 });
         loadPaymentScheduleMasterReportData(1, {});
-    }, [projectId, buldingId, wing]);
+    }, [projectId, inventoryBuildingId, wing]);
     //#endregion
 
     const dynamicHeaders = useMemo(() => {

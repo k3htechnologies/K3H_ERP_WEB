@@ -4,7 +4,7 @@ import type { CompanyMasterData, FilterWithPaginationCompanyMasterRequest } from
 import { useCompanyListState } from "@/features/companyMaster/context/CompanyListStateContext";
 import { Loader } from "@/core/utils/loader";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { CollapseCard } from "@/ui/components/Card/CollapseCard";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -170,7 +170,7 @@ export const ViewCompantMaster: React.FC = () => {
                             Address Details
                         </h4>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                             <FieldItem label="Country" value={editCompanyData?.CountryName ?? '-'} />
                             <FieldItem label="State" value={editCompanyData?.StateName ?? '-'} />
                             <FieldItem label="District" value={editCompanyData?.DistrictName ?? '-'} />
@@ -184,16 +184,16 @@ export const ViewCompantMaster: React.FC = () => {
                             Action Details
                         </h4>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                             <FieldItem label="Created By" value={editCompanyData?.CreatedBy ?? '-'} />
                             <FieldItem
                                 label="Created Date"
-                                value={formatDate_dd_MonthName_yy(editCompanyData?.CreatedDate ?? '-')}
+                                value={formatDate_dd_MonthName_yy_hh_mm(editCompanyData?.CreatedDate ?? '-')}
                             />
                             <FieldItem label="Modified By" value={editCompanyData?.ModifiedBy ?? '-'} />
                             <FieldItem
                                 label="Modified Date"
-                                value={formatDate_dd_MonthName_yy(editCompanyData?.ModifiedDate ?? '-')}
+                                value={formatDate_dd_MonthName_yy_hh_mm(editCompanyData?.ModifiedDate ?? '-')}
                             />
                         </div>
                     </section>
@@ -218,12 +218,13 @@ export const ViewCompantMaster: React.FC = () => {
                                     mobileNumber={partner.MobileNumber || '-'}
                                     partnershipPercent={partner.PartnerPercentage ?? '-'}
                                     gender={partner.Gender || '-'}
+                                    photoURL={partner.PhotoURL || '-'}
                                 >
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(partner.DateOfBirth ?? '-')} />
                                         <FieldItem label="Email" value={partner.EmailId ?? '-'} />
-                                        <FieldItem label="PAN Number" value={partner.PanNumber ?? '-'} />
-                                        <FieldItem label="Aadhar Card" value={partner.AadharCardNumber ?? '-'} />
+                                        <FieldItem label="PAN Number" value={partner.PanNumber ?? '-'}  urls={partner.PanCardURL}  isIcon={true}/>
+                                        <FieldItem label="Aadhaar Card" value={partner.AadharCardNumber ?? '-'} urls={partner.AadharCardURL}  isIcon={true} />
                                     </div>
                                 </CollapseCard>
                             ))}

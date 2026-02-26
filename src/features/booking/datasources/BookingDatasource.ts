@@ -145,10 +145,10 @@ export class BookingDatasourceImpl implements BookingDatasource {
         try {
             const queryParams = new URLSearchParams();
 
+
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
-            if (params.InventoryBuildingId) {
-                queryParams.append('InventoryBuildingId', params.InventoryBuildingId.toString());
-            }
+            if (params.InventoryBuildingId) queryParams.append('InventoryBuildingId', params.InventoryBuildingId.toString());
+
             if (params.Wing) queryParams.append('Wing', params.Wing.toString());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

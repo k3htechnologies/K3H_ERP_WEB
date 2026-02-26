@@ -423,7 +423,7 @@ export const CompanyMaster: React.FC = () => {
                 render: (value) => value || '-'
             },
             {
-                key: 'actions',
+                key: 'Actions',
                 label: 'Actions',
                 width: '12',
                 fixed: 'right',
@@ -460,7 +460,7 @@ export const CompanyMaster: React.FC = () => {
     //#endregion
 
     //#region CUSTOMIZE COLUMNS
-    const requiredCompanyColumnKeys: string[] = ['CompanyName'];
+    const requiredCompanyColumnKeys: string[] = ['CompanyName','Actions'];
 
     const allCompanyColumnKeys: string[] = companyColumns.map(c => c.key);
 

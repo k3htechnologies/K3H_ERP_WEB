@@ -16,6 +16,7 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { getInitialFormState, getLeaveEncashmentMasterColumns, REQUIRED_COLUMN_KEYS } from '@/features/leaveEncashmentMaster/constants/leaveEncashmentMasterConstants';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 
 export const useLeaveEncashmentMaster = () => {
   //#region STATE MANAGEMENT
@@ -25,6 +26,12 @@ export const useLeaveEncashmentMaster = () => {
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const { addToast } = useToast()
+
+  const [searchTerm, setSearchTerm] = useState('')
+  const debouncedSearch = useDebouncedCallback((value: string) => {
+    searchLeaveEncashment(value)
+  }, 350)
+
   const [viewLeaveEncashmentMasterDetailsData, setViewLeaveEncashmentMasterDetailsData] = useState<LeaveEncashmentMasterData | null>(null)
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
@@ -94,7 +101,7 @@ export const useLeaveEncashmentMaster = () => {
     return await loadLeaveEncashments(page, sort);
   }
 
-  const loadLeaveEncashments = async (page: number, sortInfo?: SortInfo) => {
+  const loadLeaveEncashments = async (page: number, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -103,6 +110,7 @@ export const useLeaveEncashmentMaster = () => {
         const params: FilterWithPaginationLeaveEncashmentMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
+          EarningName: searchtext?.trim() ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, leaveEncashmentMasterColumns)
         }
 
@@ -127,6 +135,28 @@ export const useLeaveEncashmentMaster = () => {
       undefined,
       'Loading Leave Encashment'
     )
+  }
+  //#endregion
+
+  //#region SEARCH LEAVE ENCASHMENT 
+  const searchLeaveEncashment = async (searchValue: string) => {
+    setSearchTerm(searchValue);
+
+    if (searchValue.trim() === '') {
+
+      fetchLeaveEncashmentList();
+      return
+    }
+
+    await loadLeaveEncashments(1, sortInfo, searchValue)
+  }
+  //#endregion
+
+  //#region CLEAR SEARCH LEAVE ENCASHMENT 
+  const clearsearchLeaveEncashment = () => {
+    setSearchTerm('');
+    debouncedSearch.cancel?.();
+    loadLeaveEncashments(1, sortInfo, undefined);
   }
   //#endregion
 
@@ -168,9 +198,12 @@ export const useLeaveEncashmentMaster = () => {
 
   //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
+
     setSortInfo(sort);
-    loadLeaveEncashments(1, sort);
-  }, []);
+
+    loadLeaveEncashments(1, sort, searchTerm || undefined);
+
+  }, [searchTerm]);
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
@@ -275,10 +308,16 @@ export const useLeaveEncashmentMaster = () => {
   const PushLeaveEncashmentMasterFormData = (): AddUpdateLeaveEncashmentMasterRequest => {
     return {
       LeaveEncashmentMasterSlabsId: formData.LeaveEncashmentMasterSlabsId,
+
       Uniquekey: formData.Uniquekey,
-      EarningMasterName: formData.EarningMasterName,
+
+      EarningMasterName: Array.isArray(formData.EarningMasterName)
+        ? formData.EarningMasterName.join(",")
+        : formData.EarningMasterName,
+
       MinSalary: Number(formData.MinSalary) || 0,
       MaxSalary: Number(formData.MaxSalary) || 0,
+      
       EncashmentRate: Number(formData.EncashmentRate) || 0,
     };
   };
@@ -406,6 +445,7 @@ export const useLeaveEncashmentMaster = () => {
     loadingMessage,
     pagination,
     sortInfo,
+    searchTerm,
     viewLeaveEncashmentMasterDetailsData,
     isViewModalOpen,
     errors,
@@ -424,6 +464,7 @@ export const useLeaveEncashmentMaster = () => {
     allLeaveEncashmentMasterColumnKeys,
 
     // Setters
+    setSearchTerm,
     setIsViewModalOpen,
     setViewLeaveEncashmentMasterDetailsData,
     setErrors,
@@ -448,5 +489,7 @@ export const useLeaveEncashmentMaster = () => {
     handleDeleteLeaveEncashmentMaster,
     handleExportLeaveEncashmentExcel,
     handleExportLeaveEncashmentPdf,
+    debouncedSearch,
+    clearsearchLeaveEncashment,
   }
 }

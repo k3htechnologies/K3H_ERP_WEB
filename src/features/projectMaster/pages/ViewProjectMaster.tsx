@@ -540,7 +540,7 @@ export const ViewProjectMaster: React.FC = () => {
                         <TableActionToolbar
                             isShowSearchBar
                             searchTerm={searchTermForEmployee}
-                            searchPlaceholder="Search By Employee Name"
+                            searchPlaceholder="Search By Employee Name or Department"
                             onSearchChange={(v) => {
                                 setSearchTermForEmployeeName(v)
                                 debouncedSearchForEmployeeName(v)

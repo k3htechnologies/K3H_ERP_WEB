@@ -25,6 +25,8 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { SUPPORT_TYPE_OPTIONS } from "@/core/constants";
 import { isDateWithinPastDays } from "@/core/utils/comman";
+import { sendOTP } from "@/features/technical/services/OTPService";
+import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
 
 const initialFormState = (): AddUpdateChannelPartnerSourcingRequest => ({
   ChannelPartnerSourcingId: 0,
@@ -33,7 +35,8 @@ const initialFormState = (): AddUpdateChannelPartnerSourcingRequest => ({
   ProjectId: 0,
   SourcingRemark: "",
   Support: "",
-  IBM_OBM: "IBM"
+  IBM_OBM: "IBM",
+  OTP: "",
 });
 
 
@@ -46,7 +49,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState("");
 
   const [sourcingDataList, setSourcingDataList] = useState<ChannelPartnerSourcingData[]>([]);
-  const [activeTab, setActiveTab] = useState<"IBM" | "OBM">("IBM");
+  const [activeTab, setActiveTab] = useState<"ALL" | "IBM" | "OBM">("ALL");
   const [isRemarkModalOpen, setIsRemarkModalOpen] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [selectedRemark, setSelectedRemark] = useState<ChannelPartnerSourcingData | null>(null);
@@ -62,6 +65,13 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
   const { projectId } = useProject();
 
+  //COMPLETE VERIFICATION
+
+  const [otp, setOtp] = useState("");
+  const [isOtpSent, setIsOtpSent] = useState(false);
+  const [isOtpVerified, setIsOtpVerified] = useState(false);
+  const [showOtpSection, setShowOtpSection] = useState(false);
+
   //SET CHANNEL PARTNER DETAILS
   const [channelPartnerId, setChannelPartnerId] = useState<number>();
   const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
@@ -69,13 +79,16 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
   const [channelPartnerFirmsType, setChannelPartnerFirmsType] = useState<string>();
   const [channelPartnerPanNumber, setChannelPartnerPanNumber] = useState<string>();
+  const [channelPartnerPanURL, setChannelPartnerPanURL] = useState<string>();
   const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] = useState<string>();
+  const [channelPartnerAadhaarCardURL, setChannelPartnerAadhaarCardURL] = useState<string>();
   const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] = useState<string>();
   const [channelPartnerSystemGeneratedCode, setChannelPartnerSystemGeneratedCode] = useState<string>();
   const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
   // Channel Partner – Additional Details
   const [channelPartnerType, setChannelPartnerType] = useState<string>();
   const [channelPartnerGSTNumber, setChannelPartnerGSTNumber] = useState<string>();
+  const [channelPartnerGSTURL, setChannelPartnerGSTURL] = useState<string>();
   const [channelPartnerOfficeAddress, setChannelPartnerOfficeAddress] = useState<string>();
 
   // Location Details
@@ -110,9 +123,12 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       setChannelPartnerFirmsType(channelPartner.FirmsType ?? "");
       setChannelPartnerCompanyName(channelPartner.CompanyName ?? "");
       setChannelPartnerPanNumber(channelPartner.PanNumber ?? "");
+      setChannelPartnerPanURL(channelPartner.PanCardURL ?? "");
       setChannelPartnerAadhaarCardNumber(channelPartner.AadharCardNumber ?? "");
+      setChannelPartnerAadhaarCardURL(channelPartner.AadharCardURL ?? "");
       setChannelPartnerRERANUmber(channelPartner.RERANumber ?? "");
       setChannelPartnerGSTNumber(channelPartner.GSTNumber ?? '');
+      setChannelPartnerGSTURL(channelPartner.GSTCertificateURL ?? "");
       setChannelPartnerSystemGeneratedCode(channelPartner.SystemGeneratedCode ?? '');
       setChannelPartnerDesignation(channelPartner.Designation ?? '');
       // Type & Address
@@ -149,10 +165,16 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
         if (E.isRight(response)) {
 
-          const filteredData = (response.right.Data || []).filter(
-            item => item.IBM_OBM === activeTab
-          );
+          let filteredData = response.right.Data || [];
 
+
+          if (activeTab !== "ALL") {
+            filteredData = filteredData.filter(
+              item => item.IBM_OBM === activeTab
+            );
+          }
+
+          // Always sort (ALL or filtered)
           filteredData.sort((a, b) => {
             const dateA = a.CreatedDate ? new Date(a.CreatedDate).getTime() : 0;
             const dateB = b.CreatedDate ? new Date(b.CreatedDate).getTime() : 0;
@@ -254,10 +276,38 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   };
 
   const handleRemarkFormSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
 
     if (!validateRemarkForm()) {
+
       return;
+
+    }
+
+    if (formData.ChannelPartnerSourcingId === 0 && !isOtpVerified) {
+
+      if (!isOtpSent) {
+
+        const sent = await sendOTP({
+
+          mobileNumber: channelPartnerMobileNumber || "",
+          module: "CHANNEL PARTNER SOURCING",
+          setIsLoading,
+          setLoadingMessage,
+          addToast
+        });
+
+
+        if (sent) {
+          setShowOtpSection(true);
+          setIsOtpSent(true);
+
+        }
+
+        return;
+      }
+
     }
 
     await runApiWithLoader(
@@ -271,7 +321,8 @@ const ViewChannelPartnerSourcing: React.FC = () => {
           ProjectId: projectId || 0,
           SourcingRemark: formData.SourcingRemark?.trim() || "",
           Support: formData.Support?.trim() || "",
-          IBM_OBM: formData.IBM_OBM
+          IBM_OBM: formData.IBM_OBM,
+          OTP: otp?.trim()
         };
 
         const response = await ChannelPartnerSourcingService.apiCallAddUpdateChannelPartnerSourcing(params);
@@ -391,15 +442,12 @@ const ViewChannelPartnerSourcing: React.FC = () => {
             {/* BASIC DETAILS */}
             <section className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FieldItem label="Unique Key" value={channelPartnerSystemGeneratedCode || '-'} />
+                <FieldItem label="CP Code" value={channelPartnerSystemGeneratedCode || '-'} />
                 <FieldItem label="Full Name" value={channelPartnerFullName || '-'} />
-                <FieldItem
-                  label="Mobile No."
-                  value={channelPartnerMobileNumber ? `+91 ${channelPartnerMobileNumber}` : '-'}
-                />
+                <FieldItem label="Mobile No" value={channelPartnerMobileNumber ? `+91 ${channelPartnerMobileNumber}` : '-'} />
                 <FieldItem label="Designation" value={channelPartnerDesignation || '-'} />
                 <FieldItem label="Speciality" value={channelPartnerSpeciality || '-'} />
-                <FieldItem label="Channel Partner Type" value={channelPartnerType || '-'} />
+                <FieldItem label="CP Type" value={channelPartnerType || '-'} />
               </div>
             </section>
 
@@ -456,9 +504,10 @@ const ViewChannelPartnerSourcing: React.FC = () => {
               </h4>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FieldItem label="PAN Number" value={channelPartnerPanNumber || '-'} />
-                <FieldItem label="Aadhaar Number" value={channelPartnerAadhaarCardNumber || '-'} />
-                <FieldItem label="GST Number" value={channelPartnerGSTNumber || '-'} />
+
+                <FieldItem label="PAN Number" value={channelPartnerPanNumber || '-'} urls={channelPartnerPanURL} isIcon />
+                <FieldItem label="Aadhaar Number" value={channelPartnerAadhaarCardNumber || '-'} urls={channelPartnerAadhaarCardURL} isIcon />
+                <FieldItem label="GST Number" value={channelPartnerGSTNumber || '-'} urls={channelPartnerGSTURL} isIcon />
               </div>
             </section>
 
@@ -489,13 +538,15 @@ const ViewChannelPartnerSourcing: React.FC = () => {
             {/* IBM/OBM Tabs */}
             <div className="mt-4">
               <Tabs
+
                 tabs={[
+                  { id: "ALL", label: "ALL" },
                   { id: "IBM", label: "IBM" },
                   { id: "OBM", label: "OBM" }
                 ]}
                 defaultActive={activeTab}
                 onTabChange={(tab: TabItem) => {
-                  setActiveTab(tab.id as "IBM" | "OBM");
+                  setActiveTab(tab.id as "ALL" | "IBM" | "OBM");
                 }}
                 isChips={true}
               />
@@ -503,11 +554,13 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
             {/* Timeline */}
             <div className="mt-3">
+
               {sourcingDataList?.length > 0 ? (
                 sourcingDataList.map((item, index) => {
                   const isModified = !!(item.ModifiedBy && item.ModifiedDate);
 
                   return (
+
                     <div key={item.ChannelPartnerSourcingId} className="grid grid-cols-[24px_1fr] gap-3">
                       {/* LEFT — DOT + LINE */}
                       <div className="flex flex-col items-center">
@@ -532,8 +585,27 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                             {isModified ? item.ModifiedBy : item.CreatedBy}
                           </span>
 
-                          {index === 0 && canAction && isDateWithinPastDays(item.CreatedDate, 2) && (
+                          {index === 0 && canAction && isDateWithinPastDays(item.CreatedDate, 2) ? (
+
                             <div className="flex items-center gap-1 ml-auto">
+
+                              <div className="flex items-center gap-1 ml-auto">
+                                <div
+                                  className={`flex h-[25px] w-[67px]
+                                              rounded-[6px]
+                                              items-center justify-center
+                                              font-bold text-sm
+                                              ${item.IBM_OBM === "IBM"
+                                      ? "bg-[#8A38F5]/15 text-[#8A38F5]"
+                                      : item.IBM_OBM === "OBM"
+                                        ? "bg-[#FFF2E2] text-[#FF9F2D]"
+                                        : ""
+                                    } `}
+                                >
+                                  {item.IBM_OBM || "-"}
+                                </div>
+                              </div>
+
                               <Button
                                 color="transparent"
                                 isborderRadius
@@ -555,8 +627,28 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                                 disabled={isLoading}
                                 leftIcon={<Trash2 className="h-4 w-4" />}
                               />
+
                             </div>
-                          )}
+                          ) :
+                            <div className="flex items-center gap-1 ml-auto">
+                              <div className={`flex h-[25px] w-[67px]
+                                              rounded-[6px]
+                                              items-center justify-center
+                                              font-bold text-sm
+                                              ${item.IBM_OBM === "IBM"
+                                  ? "bg-[#8A38F5]/15 text-[#8A38F5]"
+                                  : item.IBM_OBM === "OBM"
+                                    ? "bg-[#FFF2E2] text-[#FF9F2D]"
+                                    : ""
+                                } `}
+
+
+                              >
+                                {item.IBM_OBM || "-"}
+                              </div>
+                            </div>
+
+                          }
                         </div>
 
                         {item.Support?.toLowerCase() !== "" && (
@@ -658,6 +750,49 @@ const ViewChannelPartnerSourcing: React.FC = () => {
         loading={isLoading}
         pageName='Remark'
       />
+
+      <Modal
+        isOpen={showOtpSection && formData.ChannelPartnerSourcingId === 0}
+        onClose={() => {
+          setOtp("");
+          setIsOtpSent(false);
+          setIsOtpVerified(false);
+          setShowOtpSection(false);
+
+        }}
+        title="Complete Verification"
+        saveText={formData.ChannelPartnerSourcingId ? "Update" : "Verify OTP & Add"}
+        size="md"
+        onSubmit={(e) => {
+
+          e.preventDefault();
+
+          if (!otp) {
+
+            addToast({ type: "error", title: "Please enter OTP" });
+            return;
+          }
+
+          setIsOtpVerified(true);
+
+          handleRemarkFormSubmit(e);
+
+          setShowOtpSection(false);
+
+        }}
+      >
+
+        <CompleteVerificationSection
+          steps={[
+            { id: "basic", label: "Remark", completed: true },
+            { id: "support", label: "Support", completed: formData.Support === "" ? false : true },
+          ]}
+          otp={otp}
+          onOtpChange={setOtp}
+          mobileNumber={channelPartnerMobileNumber ?? ""}
+        />
+
+      </Modal>
     </div>
   );
 };

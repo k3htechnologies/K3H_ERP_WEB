@@ -25,12 +25,13 @@ import type { FilterPullExcelSample } from '@/features/technical/models/Technica
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
-import { FileText } from 'lucide-react';
+import { FileText, AlertTriangle } from 'lucide-react';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
 import ToggleSwitch from '@/ui/components/forms/ToggleSwitch';
+import { isEmployeeComplete } from "@/features/employeeMaster/utils/employeeUtils";
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -288,14 +289,28 @@ export const EmployeeMaster: React.FC = () => {
         width: '14',
         sortable: true,
         align: 'center',
-        render: value => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="140px"
-            tooltipThreshold={14}
-            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-          />
-        )
+        render: (value, row) => {
+          const complete = isEmployeeComplete(row);
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+
+              <TooltipText
+                text={value || '-'}
+                maxWidth="140px"
+                tooltipThreshold={14}
+                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+              />
+
+              {!complete && (
+                <span title="Employee profile incomplete">
+                  <AlertTriangle className="w-4 h-4 text-amber-500 cursor-pointer" />
+                </span>
+              )}
+
+            </div>
+          );
+        }
       },
       {
         key: 'FullName',
@@ -340,12 +355,6 @@ export const EmployeeMaster: React.FC = () => {
                 </div>
               </div>
 
-              {/* right: optional action area (kept if canAction true) */}
-              {canAction && (
-                <div className="flex items-center gap-2">
-                  {/* put any action buttons/icons here, e.g. edit/view */}
-                </div>
-              )}
             </div>
           );
         }

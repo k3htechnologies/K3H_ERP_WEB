@@ -4,7 +4,7 @@ export interface FilterWithPaginationCallingDataRequest {
     PageSize: number
     PageNumber: number
     ProjectId?: number
-    MobileNumber?: number
+    MobileNumber?: string
     Name?: string
     FromDate?: string
     ToDate?: string

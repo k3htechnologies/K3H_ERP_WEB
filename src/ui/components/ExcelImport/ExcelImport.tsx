@@ -14,13 +14,13 @@ export default function ExportImport({
 }) {
 
   const [files, setFiles] = useState<(File | string)[]>([]);
-  const [mergeExisting, setMergeExisting] = useState<string>("1");
+  const [mergeExisting, setMergeExisting] = useState<string>("0");
   const [errorMessage, setErrorMessage] = useState('')
 
   useEffect(() => {
     if (!open) {
       setFiles([]);
-      setMergeExisting("1");
+      setMergeExisting("0");
     }
   }, [open])
 

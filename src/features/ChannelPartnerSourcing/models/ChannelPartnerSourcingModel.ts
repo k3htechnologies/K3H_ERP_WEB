@@ -37,6 +37,7 @@ export interface AddUpdateChannelPartnerSourcingRequest {
   SourcingRemark: string;
   Support: string;
   IBM_OBM?: string;
+   OTP?: string | null;
 }
 
 export interface DeleteChannelPartnerSourcingRequest {

@@ -61,10 +61,7 @@ export const OtherChargesTable: React.FC<OtherChargesTableProps> = ({
         return {
           ...col,
           render: (value, row: OtherChargesData) => (
-            <span
-              className="text-blue-600 cursor-pointer hover:underline"
-              onClick={() => onView(row)}
-            >
+            <span className="text-[#135BEC] font-medium cursor-pointer hover:underline" onClick={() => onView(row)} >
               {value || '-'}
             </span>
           )
@@ -96,6 +93,17 @@ export const OtherChargesTable: React.FC<OtherChargesTableProps> = ({
         return {
           ...col,
           render: (value: number) => (value ? `₹ ${value}` : '-')
+        };
+      }
+
+      if (col.key === 'Total') {
+        return {
+          ...col,
+          render: (_value, row: OtherChargesData) => (
+            <span>
+              ₹ {(Number(row.Value || 0) + Number(row.GSTValue || 0)).toFixed(2)}
+            </span>
+          )
         };
       }
 

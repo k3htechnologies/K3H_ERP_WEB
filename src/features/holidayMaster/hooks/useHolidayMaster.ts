@@ -84,9 +84,11 @@ export const useHolidayMaster = () => {
           HolidayURL: null,
           RemoveHolidayURL: '',
         });
+
         setHolidayURL(editingHolidayMasterData.HolidayURL);
         setHolidayFiles(editingHolidayMasterData.HolidayURL ? [editingHolidayMasterData.HolidayURL] : []);
         setRemovedHolidayUrls([]);
+
       } else {
         setFormData(getInitialFormState());
         setHolidayFiles([]);
@@ -352,7 +354,7 @@ export const useHolidayMaster = () => {
         addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
-      formData.HolidayMasterId === 0 ? 'Add HolidayMaster' : 'Update HolidayMaster...'
+      formData.HolidayMasterId === 0 ? 'Add Holiday' : 'Update Holiday'
     )
   };
   //#endregion

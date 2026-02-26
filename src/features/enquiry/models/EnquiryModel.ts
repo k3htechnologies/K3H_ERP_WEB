@@ -3,7 +3,7 @@ import type { ApiResponse } from "@/core/api/ApiResponse"
 export interface FilterWithPaginationEnquiryRequest {
     PageSize: number;
     PageNumber: number;
-
+    IsCheckPermission?: boolean
     ProjectId?: number;
     EnquiryId?: number;
     SystemGeneratedCode?: string;
@@ -81,6 +81,10 @@ export interface EnquiryData {
     ChannelPartnerId: number | null;
     ChannelPartnerName: string | null;
     ChannelPartnerMobileNumber: number | null;
+    ChannelPartnerCompany: string | null;
+    ChannelPartnerFirmsType: string | null;
+    ChannelPartnerDesignation: string | null;
+    ChannelPartnerType: string | null;
 
     ChannelPartnerTeamMemberId: number;
     ChannelPartnerTeamMemberName: string | null;
@@ -209,6 +213,8 @@ export interface AddUpdateEnquiryRequest {
     Remark?: string | null;
 
     VillageMasterId?: string | null;
+
+    OTP?: string | null;
 }
 
 

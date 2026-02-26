@@ -12,6 +12,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   error,
   helperText,
   className,
+  readOnly = false,
 }) => {
   const theme = THEME
   const containerRef = useRef<HTMLDivElement | null>(null)
@@ -26,17 +27,20 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const quill = new Quill(el, {
       theme: 'snow',
       placeholder,
-      modules: {
-        toolbar: [
-          ['bold', 'italic', 'underline', 'strike'],
-          [{ size: [] }],
-          [{ font: [] }],
-          [{ color: [] }, { background: [] }],
-          [{ align: [] }],
-          [{ list: 'ordered' }, { list: 'bullet' }],
-          ['clean'],
-        ],
-      },
+      readOnly: readOnly,
+      modules: readOnly
+        ? { toolbar: false }              // ✅ disable toolbar
+        : {
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ size: [] }],
+            [{ font: [] }],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['clean'],
+          ],
+        },
     })
 
     quillRef.current = quill

@@ -49,6 +49,7 @@ export interface FilterPaymentScheduleStagesRequest {
     ExportType?: 'Excel' | 'PDF';
 }
 
+
 //=============================================================
 // [ BOOKING DATA ]
 //=============================================================
@@ -212,6 +213,7 @@ export interface AddUpdateBookingRequest {
     BankListMasterId: number | null;
     TransferBookingId: number | null;
     TenantId: number | null;
+    OTP?: string | null;
 }
 
 export interface AddUpdateBookingApplicantRequest {

@@ -16,6 +16,7 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 export const CostSheetReport: React.FC = () => {
     const [CostSheetReportList, setCostSheetReportList] = useState<CostSheetReportData[]>([]);
+    const [sortInfo, setSortInfo] = useState<SortInfo>();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
@@ -28,7 +29,7 @@ export const CostSheetReport: React.FC = () => {
 
     const location = useLocation();
     const ratePerSqFt = location.state?.ratePerSqFt || 0;
-    const buldingId = location.state?.BuildingId || 0;
+    const inventoryBuildingId = location.state?.InventoryBuildingId || 0;
     const wing = location.state?.Wing || ''
 
     // TOAST
@@ -49,7 +50,7 @@ export const CostSheetReport: React.FC = () => {
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     Wing: wing,
-                    BuildingId: buldingId,
+                    InventoryBuildingId: inventoryBuildingId,
                     Rate: ratePerSqFt,
                     FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
                     SortBy: getSortByParam(sort ?? null, CostSheetColumns),
@@ -87,6 +88,15 @@ export const CostSheetReport: React.FC = () => {
     }, [projectId]);
     //#endregion
 
+    //#region TABLE SORT COLUMN
+    const handleSortColumn = useCallback((sort: SortInfo) => {
+        setSortInfo(sort);
+        setPagination({ currentPage: 1 });
+
+        loadCostSheetReport(1, {}, sort,);
+    }, []);
+    //#endregion
+
     //#region EXPORT / IMPORT EXCEL AND PDF
     const handleExportCostSheetReportData = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
@@ -98,10 +108,12 @@ export const CostSheetReport: React.FC = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     ProjectId: Number(projectId),
+                    SortBy: getSortByParam(sortInfo ?? null, CostSheetColumns),
                     ExportType: exportType
                 };
 
                 const response = await paymentScheduleMasterService.apiCallPullCostSheetReport(params);
+
                 handleExportFile(response, exportType, 'Cost Sheet Report', addToast);
 
                 return response;
@@ -119,7 +131,7 @@ export const CostSheetReport: React.FC = () => {
 
     //#region TABLE COLUMNS
     const CostSheetColumns = useMemo<TableColumn[]>(() => [
-        {
+         {
             key: 'FlatConfiguration',
             label: 'Flat Configuration',
             width: '25',
@@ -155,7 +167,7 @@ export const CostSheetReport: React.FC = () => {
     ], [ratePerSqFt]);
     //#endregion
 
-    const CostSheetReportForTable = useMemo(() => CostSheetReportList, [CostSheetReportList]);
+    const CostSheetReportForTable = useMemo(() => CostSheetReportList,[CostSheetReportList]);
     //#endregion
 
     //#region
@@ -181,6 +193,8 @@ export const CostSheetReport: React.FC = () => {
                 fixedHeight={true}
                 recordsPerPage={20}
                 className="flex-1"
+                sortInfo={sortInfo}
+                onSort={handleSortColumn}
             />
         </div>
     )

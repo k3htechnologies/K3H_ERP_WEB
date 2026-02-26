@@ -550,6 +550,12 @@ const Employee: React.FC = () => {
 
           setSearchTermForEmployee("");
 
+          setFilters({});
+
+          await loadEmployees(1, {});
+          
+          await loadProjectMasterWithEmployee(projectId);
+
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
         } else {
@@ -664,8 +670,7 @@ const Employee: React.FC = () => {
                   const checked = selectedEmployeeIds.includes(id);
 
                   return (
-                    <div key={id}
-                      className="flex items-start gap-3 py-3 hover:bg-gray-50 transition-colors duration-150 cursor-pointer px-2"
+                    <div key={id} className="flex items-start gap-3 py-3 hover:bg-gray-50 transition-colors duration-150 cursor-pointer px-2"
                       onClick={(ev) => {
                         if ((ev.target as HTMLElement).tagName.toLowerCase() === 'input') return;
                         toggleEmployeeSelection(id);

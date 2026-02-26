@@ -12,8 +12,6 @@ import type {
     PaymentScheduleMasterReportListResponse,
     FilterWithPaginationCostSheetReportRequest,
     CostSheetReportListResponse,
-    FilterWithPaginationProjectInventoryStructureRequest,
-    ProjectInventoryStructureListResponse,
 
 } from "@/features/paymentScheduleMaster/models/PaymentScheduleMasterModel";
 import { PaymentScheduleMasterApi } from "@/features/paymentScheduleMaster/api/PaymentScheduleMasterApi";
@@ -23,8 +21,6 @@ export abstract class PaymentScheduleMasterDatasource {
     abstract pullPaymentScheduleMaster(params: FilterWithPaginationPaymentScheduleMasterRequest, signal?: AbortSignal): Promise<PaymentScheduleMasterListResponse>;
     abstract addUpdatePaymentScheduleMaster(data: AddUpdatePaymentScheduleMasterRequest): Promise<PaymentScheduleMasterListResponse>;
     abstract deletePaymentScheduleMaster(params: DeletePaymentScheduleMasterRequest): Promise<PaymentScheduleMasterDeleteResponse>;
-
-    abstract pullProjectInventoryStructure(params: FilterWithPaginationProjectInventoryStructureRequest, signal?: AbortSignal): Promise<ProjectInventoryStructureListResponse>;
 
     // PAYMENT SCHEDULE REPORT
     abstract pullPaymentScheduleMasterReport(params: FilterWithPaginationPaymentScheduleMasterReportRequest, signal?: AbortSignal): Promise<PaymentScheduleMasterReportListResponse>;
@@ -45,7 +41,7 @@ export class PaymentScheduleMasterDatasourceImpl implements PaymentScheduleMaste
             });
 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
-            if (params.BuildingId) queryParams.append("BuildingId", params.BuildingId.toString());
+            if (params.InventoryBuildingId) queryParams.append("InventoryBuildingId", params.InventoryBuildingId.toString());
             if (params.PaymentScheduleMasterId) queryParams.append("PaymentScheduleMasterId", params.PaymentScheduleMasterId.toString());
             if (params.Stage) queryParams.append('Stage', params.Stage.toString());
             if (params.Wing) queryParams.append('Wing', params.Wing.toString());
@@ -112,33 +108,7 @@ export class PaymentScheduleMasterDatasourceImpl implements PaymentScheduleMaste
         }
     }
 
-    async pullProjectInventoryStructure(params: FilterWithPaginationProjectInventoryStructureRequest, signal?: AbortSignal): Promise<ProjectInventoryStructureListResponse> {
-        try {
-            const queryParams = new URLSearchParams();
-
-            if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
-            if (params.BuildingId) queryParams.append("BuildingId", params.BuildingId.toString());
-            if (params.Wing) queryParams.append('Wing', params.Wing.toString());
-            if (params.FlatConfiguration) queryParams.append('FlatConfiguration', params.FlatConfiguration.toString());
-            if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
-            if (params.ExportType) queryParams.append("ExportType", params.ExportType);
-
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${PaymentScheduleMasterApi.PULL_BUILDING_WING}?${queryParams.toString()}`, { signal }
-            )
-            return response
-
-        } catch (error: any) {
-
-            console.error("ERROR: PULL PROJECT INVENTORY STRUCTURE :", error);
-
-            if (error === TokenExpiredException) {
-
-                await this.pullProjectInventoryStructure(params);
-            }
-            throw error;
-        }
-    }
+    
 
     // PAYMENT SCHEDULE REPORT
 
@@ -150,7 +120,7 @@ export class PaymentScheduleMasterDatasourceImpl implements PaymentScheduleMaste
             });
 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
-            if (params.BuildingId) queryParams.append("BuildingId", params.BuildingId.toString());
+            if (params.InventoryBuildingId) queryParams.append("InventoryBuildingId", params.InventoryBuildingId.toString());
             if (params.PaymentScheduleMasterId) queryParams.append("PaymentScheduleMasterId", params.PaymentScheduleMasterId.toString());
             if (params.Rate) queryParams.append("Rate", params.Rate.toString());
             if (params.Wing) queryParams.append('Wing', params.Wing.toString());
@@ -183,7 +153,7 @@ export class PaymentScheduleMasterDatasourceImpl implements PaymentScheduleMaste
             });
 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
-            if (params.BuildingId) queryParams.append("BuildingId", params.BuildingId.toString());
+            if (params.InventoryBuildingId) queryParams.append("InventoryBuildingId", params.InventoryBuildingId.toString());
             if (params.PaymentScheduleMasterId) queryParams.append("PaymentScheduleMasterId", params.PaymentScheduleMasterId.toString());
             if (params.Rate) queryParams.append("Rate", params.Rate.toString());
             if (params.Wing) queryParams.append('Wing', params.Wing.toString());

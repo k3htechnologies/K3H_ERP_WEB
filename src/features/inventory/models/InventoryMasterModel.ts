@@ -217,6 +217,31 @@ export interface FilterPaginatedFlatsRequest {
     FlatFacing?: string
 }
 
+export interface FilterWithPaginationProjectInventoryStructureRequest {
+    ProjectId?: number
+    InventoryBuildingId?: number
+    Wing?: string
+    FlatConfiguration?: string
+    SortBy?: string
+    ExportType?: 'Excel' | 'PDF'
+}
+
+export interface ProjectInventoryStructureData {
+    inventoryBuildingId: number | 0
+    Uniquekey: string | null
+    ProjectId: number | 0
+    Wing: string | null
+    FlatConfiguration: string | null
+    CreatedById: number | 0
+    CreatedBy: string | ''
+    CreatedDate: string | null
+    ModifiedById: number | 0
+    ModifiedBy: string | ''
+    ModifiedDate: string | null
+    LastModifiedBy: string | ''
+    LastModifiedDate: string | null
+}
+
 export type ProjectInventoryExistsResponse = ApiResponse<boolean>;
 export type InventoryListReponse = ApiResponse<InventoryData[]>
 export type AddInventoryResponse = ApiResponse<InventoryData[]>
@@ -234,4 +259,5 @@ export type AddInventoryFloorResponse = ApiResponse<InventoryData[]>
 export type AddInventoryFlatResponse = ApiResponse<InventoryFlatData[]>
 export type AddUpdateInventoryFloorParkingCountResponse = ApiResponse<string>;
 export type FilterPaginatedFlatsResponse = ApiResponse<InventoryFlatData[]>;
+export type ProjectInventoryStructureListResponse = ApiResponse<ProjectInventoryStructureData[]>;
 

@@ -27,6 +27,7 @@ export class EnquiryDatasourceImpl implements EnquiryDatasource {
             const queryParams = new URLSearchParams({
                 PageSize: String(params.PageSize),
                 PageNumber: String(params.PageNumber),
+                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             });
 
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());

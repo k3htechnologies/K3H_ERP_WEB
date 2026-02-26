@@ -44,7 +44,8 @@ export interface FilterWithPaginationChannelPartnerBookingRequest {
 
 export interface FilterPaymentScheduleStagesRequest {
     ProjectId?: number;
-    InventoryFlatFloorBasementPodiumWingId?: number;
+    InventoryBuildingId?: number;
+    Wing?: string
     ExportType?: 'Excel' | 'PDF';
 }
 

@@ -34,7 +34,7 @@ import { Plus } from 'lucide-react';
 import RadioPill from '@/ui/components/forms/RadioPill';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { fetchEnquiryBySystemGeneratedCode } from '@/features/enquiry/enquiryDropDown';
-import { fetchPaymentScheduleDropdown } from '@/features/paymentSchedule/paymentScheduleDropDown';
+import { fetchPaymentScheduleDropdown } from '@/features/paymentScheduleMaster/paymentScheduleDropDown';
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { fetchParkingDropdown } from '@/features/parking/parkingDropDown';
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
@@ -1143,7 +1143,7 @@ export const AddUpdateBooking: React.FC = () => {
             newErrors.ProjectId = 'Project is required';
         }
 
-        
+
 
         if (!formData.PermanentAddress) {
             newErrors.PermanentAddress = 'Permanent Address is required';
@@ -1683,7 +1683,7 @@ export const AddUpdateBooking: React.FC = () => {
                         <Input
                             type="text"
                             required
-                            disabled={bookingId > 0 ? true :false}
+                            disabled={bookingId > 0 ? true : false}
                             label="Enquiry Unique Code"
                             value={enquiryUniqueCode}
                             onChange={(e) => {
@@ -2705,21 +2705,7 @@ export const AddUpdateBooking: React.FC = () => {
                 pageName='applicant'
             />
 
-               {paymentScheduleType === 'Stage' && (
-                        <div>
-                            <SinglePageSelection
-                                label="Stage"
-                                placeholder="Select Stage"
-                                value={paymentScheduleStage}
-                                onChange={(e) => {
-                                    const selectedStage = String(e);
-                                    setPaymentScheduleStage(selectedStage);
-                                    if (selectedStage !== 'Other') {
-                                        setPaymentScheduleStageOther('');
-                                    }
-                                }}
-                                options={paymentScheduleOptions}
-                      {/* ADD PAYMENT SCHEDULE MODAL */}
+            {/* ADD PAYMENT SCHEDULE MODAL */}
             <Modal
                 isOpen={isPaymentScheduleModalOpen}
                 onClose={() => {
@@ -2765,7 +2751,7 @@ export const AddUpdateBooking: React.FC = () => {
                     const scheduleDate = paymentScheduleType === 'Date' && paymentScheduleDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(paymentScheduleDate) : null;
 
                     const hasDuplicate = paymentSchedules.some((schedule, idx) => {
-                       
+
                         if (editingPaymentScheduleIndex !== null && idx === editingPaymentScheduleIndex) {
                             return false;
                         }
@@ -2773,7 +2759,7 @@ export const AddUpdateBooking: React.FC = () => {
                         if (paymentScheduleType === 'Date' && schedule.Type === 'Date') {
                             return schedule.Date === scheduleDate;
                         } else if (paymentScheduleType === 'Stage' && schedule.Type === 'Stage') {
-                           
+
                             return schedule.Name === scheduleName;
                         }
                         return false;
@@ -2886,7 +2872,21 @@ export const AddUpdateBooking: React.FC = () => {
                         </div>
                     )}
 
-                       />
+                    {paymentScheduleType === 'Stage' && (
+                        <div>
+                            <SinglePageSelection
+                                label="Stage"
+                                placeholder="Select Stage"
+                                value={paymentScheduleStage}
+                                onChange={(e) => {
+                                    const selectedStage = String(e);
+                                    setPaymentScheduleStage(selectedStage);
+                                    if (selectedStage !== 'Other') {
+                                        setPaymentScheduleStageOther('');
+                                    }
+                                }}
+                                options={paymentScheduleOptions}
+                            />
                         </div>
                     )}
 
@@ -3061,7 +3061,6 @@ export const AddUpdateBooking: React.FC = () => {
 };
 
 export default AddUpdateBooking;
-
 
 
 

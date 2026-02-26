@@ -18,6 +18,8 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { getInitialFormState, getHolidayMappingMasterColumns, REQUIRED_COLUMN_KEYS } from '@/features/holidayMappingMaster/constants/holidayMappingMasterConstants';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
+import { fetchBranchMasterDropdown } from '@/features/branchMaster/branchMasterDropDown';
 
 export const useHolidayMappingMaster = () => {
   //#region STATE MANAGEMENT
@@ -38,6 +40,7 @@ export const useHolidayMappingMaster = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+  const [branchValue, setBranchValue] = useState<string | number | null>(null);
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -66,7 +69,11 @@ export const useHolidayMappingMaster = () => {
   }>({});
   //#endregion
 
-  //#endregion
+  const branchValueDropdown = useMultiSelectDropdown({
+    value: branchValue,
+    fetchCallback: fetchBranchMasterDropdown,
+    autoFetchOptions: true,
+  });
 
   //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
@@ -512,7 +519,7 @@ export const useHolidayMappingMaster = () => {
     allHolidayMappingMasterColumnKeys,
     dropdownLabels,
     dropdownResetKey,
-
+    branchValueDropdown,
     // Setters
     setSearchTerm,
     setIsViewModalOpen,
@@ -530,6 +537,7 @@ export const useHolidayMappingMaster = () => {
     setSelectedHolidayMappingMasterColumnKeys,
     setDropdownLabels,
     setDropdownResetKey,
+    setBranchValue,
 
     // Actions
     fetchHolidayMappingList,

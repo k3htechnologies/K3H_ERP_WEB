@@ -20,6 +20,7 @@ interface HolidayMappingMasterFormModalProps {
   loading: boolean;
   dropdownLabels: { branchName?: string; holidayName?: string };
   dropdownResetKey: number;
+  branchValueDropdown:string
 }
 
 export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormModalProps> = ({
@@ -33,7 +34,7 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
   editingData,
   loading,
   dropdownLabels,
-  dropdownResetKey
+  dropdownResetKey,
 }) => {
   return (
     <Modal
@@ -78,6 +79,7 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
               error={errors.HolidayDate}
             />
           </div>
+          
           <div>
             <SingleSelectDropdownWithPagination
               label="Branch"

@@ -9,7 +9,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { callLogService } from "@/features/callTracker/services/CallLogService";
 import * as E from 'fp-ts/Either';
-import { Edit, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Button, Input } from "@/ui/components/forms";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { getCallTrackerStatuscolor } from "@/features/callTracker/utils/Status";
@@ -455,21 +455,6 @@ export const CallLog: React.FC = () => {
                                 color="transparent"
                                 size="sm"
                                 style={{
-                                    color: 'blue',
-                                    padding: '0px 8px'
-                                }}
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    handleEditCallLog(row)
-                                }}
-                                leftIcon={<Edit className="h-4 w-4" />}
-                            />
-
-                            <Button
-                                color="transparent"
-                                size="sm"
-                                style={{
                                     color: 'red',
                                     padding: '0px 8px'
                                 }}
@@ -840,6 +825,9 @@ export const CallLog: React.FC = () => {
                                     color='blue'
                                     size='md'
                                     onClick={() => {
+                                        if (callLogData) {
+                                            setEditingCallLogData(callLogData); 
+                                        }
                                         setIsViewModalOpen(false);
                                         setIsAddUpdateModalOpen(true);
                                     }}

@@ -78,7 +78,6 @@ export const LOCAL_STORAGE_KEYS = {
     ENQUIRY_SELECTED_COLUMNS: 'enquiry.selectedColumns',
     CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS: 'channelPartnerSourcing.selectedColumns',
     BOOKING_SELECTED_COLUMNS: 'booking.selectedColumns',
-    PAYMENT_SCHEDULE_MASTER_SELECTED_COLUMNS: 'paymentScheduleMaster.selectedColumns'
 
 } as const
 

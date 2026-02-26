@@ -150,7 +150,8 @@ import CallTracker from '@/features/callTracker/pages/CallTracker';
 import OtherCharges from '@/features/otherCharges/pages/OtherCharges';
 import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
 import { SaleTarget } from '@/features/saleTarget/pages/SaleTarget';
-import { PaymentScheduleMaster } from '@/features/paymentScheduleMaster/pages/paymentScheduleMaster';
+import { PaymentScheduleMaster } from '@/features/paymentScheduleMaster/pages/PaymentScheduleMaster';
+import PaymentScheduleTab from '@/features/paymentScheduleMaster/components/PaymentScheduleTab';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -344,8 +345,9 @@ function App() {
             <Route path="otherCharges" element={<OtherCharges />} />
 
             <Route path='target' element={<SaleTarget />} />
-            
-            <Route path="paymentScheduleMaster" element={<PaymentScheduleMaster />} />
+
+            <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
+            <Route path="paymentScheduleReport" element={<PaymentScheduleTab />} />
 
             <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
             <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />

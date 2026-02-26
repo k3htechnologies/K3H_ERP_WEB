@@ -161,12 +161,24 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
         const el = scrollRef.current;
         if (!el || loading || !dataFetchCallBack) return;
 
-        const nearBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 10;
+        const nearBottom =
+            el.scrollHeight - el.scrollTop <= el.clientHeight + 10;
+
         if (nearBottom && options.length < totalRecords) {
-            fetchOptions(false);
+            const previousScrollHeight = el.scrollHeight;
+
+            fetchOptions(false).then(() => {
+                // restore scroll position
+                requestAnimationFrame(() => {
+                    if (!scrollRef.current) return;
+
+                    const newScrollHeight = scrollRef.current.scrollHeight;
+                    scrollRef.current.scrollTop +=
+                        newScrollHeight - previousScrollHeight;
+                });
+            });
         }
     }, [loading, options.length, totalRecords, fetchOptions, dataFetchCallBack]);
-
     // Add scroll event listener
     useEffect(() => {
         if (!isOpen || !dataFetchCallBack) return;

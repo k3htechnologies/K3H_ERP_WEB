@@ -47,10 +47,15 @@ export const MultiSelectDropdown = forwardRef<
     const buttonRef = useRef<HTMLDivElement | null>(null);
     const portalRef = useRef<HTMLDivElement | null>(null);
 
+    // const sizeConfig = {
+    //   sm: { height: "38px", padding: "6px 12px", fontSize: theme.fontSize.sm, dropdownHeight: 200 },
+    //   md: { height: "46px", padding: "8px 16px", fontSize: theme.fontSize.md, dropdownHeight: 250 },
+    //   lg: { height: "54px", padding: "10px 20px", fontSize: theme.fontSize.lg, dropdownHeight: 300 },
+    // };
     const sizeConfig = {
-      sm: { height: "38px", padding: "6px 12px", fontSize: theme.fontSize.sm, dropdownHeight: 200 },
-      md: { height: "46px", padding: "8px 16px", fontSize: theme.fontSize.md, dropdownHeight: 250 },
-      lg: { height: "54px", padding: "10px 20px", fontSize: theme.fontSize.lg, dropdownHeight: 300 },
+      sm: { height: "36px", padding: "6px 12px", fontSize: theme.fontSize.sm, dropdownHeight: 150, paddingNum: 6 },
+      md: { height: "44px", padding: "8px 16px", fontSize: theme.fontSize.md, dropdownHeight: 200, paddingNum: 8 },
+      lg: { height: "52px", padding: "10px 20px", fontSize: theme.fontSize.lg, dropdownHeight: 250, paddingNum: 10 },
     };
 
     const currentSize = sizeConfig[size];
@@ -198,8 +203,8 @@ export const MultiSelectDropdown = forwardRef<
     // Display selected labels (show only 3, then + count)
     const allSelectedLabels = selectedValues.length > 0
       ? options
-          .filter((opt) => selectedValues.includes(opt[valueKey]))
-          .map((opt) => opt[labelKey])
+        .filter((opt) => selectedValues.includes(opt[valueKey]))
+        .map((opt) => opt[labelKey])
       : [];
 
     const visibleTags = allSelectedLabels.slice(0, 3);
@@ -243,274 +248,277 @@ export const MultiSelectDropdown = forwardRef<
           }
         `}</style>
         <div ref={ref || containerRef} style={{ width: "100%", position: "relative" }}>
-        {/* Label */}
-        {label && (
-          <label
+          {/* Label */}
+          {label && (
+            <label
+              style={{
+                display: "block",
+                marginBottom: "4px",
+                fontWeight: 500,
+                fontSize: theme.fontSize.sm,
+                color: theme.colors.text
+                ,
+              }}
+            >
+              {label}
+              {required && <span style={{ color: theme.colors.error }}> *</span>}
+            </label>
+          )}
+
+          {/* Select box */}
+          <div
+            ref={buttonRef}
+            onClick={handleToggle}
             style={{
-              display: "block",
-              marginBottom: "4px",
-              fontWeight: 500,
-              fontSize: theme.fontSize.md,
-              color: theme.colors.text,
+              height: currentSize.height,
+              fontSize: currentSize.fontSize,
+              padding: currentSize.padding,
+              borderRadius: "6px",
+              backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
+              cursor: disabled ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
+              overflow: "hidden",
             }}
           >
-            {label}
-            {required && <span style={{ color: theme.colors.error }}> *</span>}
-          </label>
-        )}
-
-        {/* Select box */}
-        <div
-          ref={buttonRef}
-          onClick={handleToggle}
-          style={{
-            height: currentSize.height,
-            fontSize: currentSize.fontSize,
-            padding: currentSize.padding,
-            borderRadius: "6px",
-            backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
-            cursor: disabled ? "not-allowed" : "pointer",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
-            overflow: "hidden",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }}>
-            {hasSelections ? (
-              <>
-                {visibleTags.map((tagLabel, index) => {
-                  const fontSizeNum = parseFloat(String(currentSize.fontSize).replace('px', '')) || 14;
-                  return (
-                    <div
-                      key={`${tagLabel}-${index}`}
+            <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }}>
+              {hasSelections ? (
+                <>
+                  {visibleTags.map((tagLabel, index) => {
+                    return (
+                      <div
+                        key={`${tagLabel}-${index}`}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          fontSize: currentSize.fontSize,
+                          fontFamily: "inherit",
+                          fontWeight: theme.fontWeight.normal,
+                          // color: theme.colors.text,
+                          color: "#000",
+                        }}
+                      >
+                        {tagLabel}
+                        {index < visibleTags.length - 1 && (
+                          <span style={{ margin: "0 4px", color: theme.colors.border }}>,</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                  {remainingCount > 0 && (
+                    <span
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        fontSize: `${fontSizeNum - 2}px`,
-                        color: theme.colors.text,
+                        marginLeft: 4,
+                        fontSize: `${(parseFloat(String(currentSize.fontSize).replace('px', '')) || 14) - 1}px`,
+                        color: "#000",
+                        fontWeight: theme.fontWeight.normal,
                       }}
                     >
-                      {tagLabel}
-                      {index < visibleTags.length - 1 && (
-                        <span style={{ margin: "0 4px", color: theme.colors.border }}>,</span>
-                      )}
-                    </div>
-                  );
-                })}
-                {remainingCount > 0 && (
-                  <span
-                    style={{
-                      marginLeft: 4,
-                      fontSize: `${(parseFloat(String(currentSize.fontSize).replace('px', '')) || 14) - 1}px`,
-                      color: theme.colors.text,
-                      fontWeight: theme.fontWeight.medium,
-                    }}
-                  >
-                    +{remainingCount}
-                  </span>
-                )}
-              </>
-            ) : (
-              <span
-                style={{
-                  fontSize: currentSize.fontSize,
-                  color: "#9ca3af",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {placeholder}
-              </span>
-            )}
-          </div>
-
-          {isOpen ? <ChevronUp size={20} color="#888" /> : <ChevronDown size={20} color="#888" />}
-        </div>
-
-        {/* Portal Dropdown */}
-        {isOpen && !disabled && portalPos && typeof document !== "undefined" && createPortal(
-          <div
-            ref={portalRef}
-            onMouseDown={(e) => e.stopPropagation()}
-            style={{
-              position: "fixed",
-              left: portalPos.left,
-              top: portalPos.top,
-              width: portalPos.width,
-              maxHeight: portalPos.maxHeight,
-              overflow: "hidden",
-              margin: 0,
-              border: `1px solid ${theme.colors.border}`,
-              borderTop: portalPos.openUpward ? `1px solid ${theme.colors.border}` : "none",
-              borderBottom: portalPos.openUpward ? "none" : `1px solid ${theme.colors.border}`,
-              borderLeft: `1px solid ${theme.colors.border}`,
-              borderRight: `1px solid ${theme.colors.border}`,
-              borderRadius: portalPos.openUpward
-                ? `${theme.borderRadius.sm} ${theme.borderRadius.sm} 0 0`
-                : `0 0 ${theme.borderRadius.sm} ${theme.borderRadius.sm}`,
-              boxShadow: theme.shadows.lg,
-              zIndex: 9999,
-              padding: 0,
-              background: theme.colors.background,
-              boxSizing: "border-box",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            {/* Search */}
-            {searchable && (
-              <div
-                style={{
-                  padding: "8px 12px",
-                  borderBottom: "1px solid #eee",
-                  display: "flex",
-                  alignItems: "center",
-                  backgroundColor: "#fff",
-                }}
-              >
-                <Search size={16} color="#888" style={{ marginRight: "8px" }} />
-                <input
-                  type="text"
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  autoFocus
+                      +{remainingCount}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <span
                   style={{
-                    width: "100%",
-                    border: "none",
-                    outline: "none",
-                  }}
-                />
-              </div>
-            )}
-
-            {/* Select All / Clear All */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                padding: "8px 12px",
-                borderBottom: "1px solid #eee",
-                backgroundColor: "#fafafa",
-              }}
-            >
-              <button
-                onClick={handleSelectAll}
-                type="button"
-                style={{
-                  border: "none",
-                  background: "none",
-                  cursor: "pointer",
-                  fontSize: theme.fontSize.sm,
-                  color: "#6b7280",
-                  transition: theme.transitions.fast,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "#4b5563";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "#6b7280";
-                }}
-              >
-                Select All
-              </button>
-
-              <button
-                onClick={handleClearAll}
-                type="button"
-                style={{
-                  border: "none",
-                  background: "none",
-                  cursor: "pointer",
-                  fontSize: theme.fontSize.sm,
-                  color: "#6b7280",
-                  transition: theme.transitions.fast,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = "#4b5563";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = "#6b7280";
-                }}
-              >
-                Clear All
-              </button>
-            </div>
-
-            {/* Options */}
-            <div
-              className="thin-scroll"
-              style={{
-                overflowY: "auto",
-                flex: 1,
-                maxHeight: portalPos.maxHeight - (searchable ? 48 : 0) - 40, // leave room for search and select all
-                scrollBehavior: "smooth",
-                WebkitOverflowScrolling: "touch",
-                boxSizing: "border-box",
-              }}
-            >
-              {filteredOptions.map((opt: any, idx: number) => (
-                <div
-                  key={idx}
-                  onClick={() => toggleSelection(opt[valueKey])}
-                  style={{
-                    padding: "10px 14px",
-                    borderBottom: "1px solid #f3f3f3",
-                    cursor: "pointer",
-                    backgroundColor: selectedValues.includes(opt[valueKey])
-                      ? theme.colors.hover
-                      : theme.colors.background,
-                    color: selectedValues.includes(opt[valueKey])
-                      ? theme.colors.text
-                      : theme.colors.textSecondary,
-                    borderRadius: theme.borderRadius.sm,
-                    transition: theme.transitions.normal,
-                    display: "flex",
-                    gap: "8px",
-                    alignItems: "center",
+                    fontSize: currentSize.fontSize,
+                    color: "#9ca3af",
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
                   }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={selectedValues.includes(opt[valueKey])}
-                    readOnly
-                    style={{
-                      marginRight: 8,
-                      accentColor: theme.colors.primary1,
-                      cursor: "pointer",
-                    }}
-                  />
-                  {opt[labelKey]}
-                </div>
-
-              ))}
-
-              {filteredOptions.length === 0 && (
-                <div style={{ padding: "12px", textAlign: "center", color: "#999" }}>
-                  No results found
-                </div>
+                  {placeholder}
+                </span>
               )}
             </div>
-          </div>,
-          document.body
-        )}
 
-        {/* Error */}
-        {error && (
-          <div
-            style={{
-              marginTop: theme.spacing.sm,
-              fontSize: theme.fontSize.sm,
-              color: theme.colors.error,
-            }}
-          >
-            {error}
+            {isOpen ? <ChevronUp size={20} color="#888" /> : <ChevronDown size={20} color="#888" />}
           </div>
-        )}
-      </div>
+
+          {/* Portal Dropdown */}
+          {isOpen && !disabled && portalPos && typeof document !== "undefined" && createPortal(
+            <div
+              ref={portalRef}
+              onMouseDown={(e) => e.stopPropagation()}
+              style={{
+                position: "fixed",
+                left: portalPos.left,
+                top: portalPos.top,
+                width: portalPos.width,
+                maxHeight: portalPos.maxHeight,
+                overflow: "hidden",
+                margin: 0,
+                border: `1px solid ${theme.colors.border}`,
+                borderTop: portalPos.openUpward ? `1px solid ${theme.colors.border}` : "none",
+                borderBottom: portalPos.openUpward ? "none" : `1px solid ${theme.colors.border}`,
+                borderLeft: `1px solid ${theme.colors.border}`,
+                borderRight: `1px solid ${theme.colors.border}`,
+                borderRadius: portalPos.openUpward
+                  ? `${theme.borderRadius.sm} ${theme.borderRadius.sm} 0 0`
+                  : `0 0 ${theme.borderRadius.sm} ${theme.borderRadius.sm}`,
+                boxShadow: theme.shadows.lg,
+                zIndex: 9999,
+                padding: 0,
+                background: theme.colors.background,
+                boxSizing: "border-box",
+                display: "flex",
+                flexDirection: "column",
+              }}
+            >
+              {/* Search */}
+              {searchable && (
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    borderBottom: "1px solid #eee",
+                    display: "flex",
+                    alignItems: "center",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  <Search size={16} color="#888" style={{ marginRight: "8px" }} />
+                  <input
+                    type="text"
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    autoFocus
+                    style={{
+                      width: "100%",
+                      border: "none",
+                      outline: "none",
+                    }}
+                  />
+                </div>
+              )}
+
+              {/* Select All / Clear All */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  padding: "8px 12px",
+                  borderBottom: "1px solid #eee",
+                  backgroundColor: "#fafafa",
+                }}
+              >
+                <button
+                  onClick={handleSelectAll}
+                  type="button"
+                  style={{
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                    fontSize: theme.fontSize.sm,
+                    color: "#6b7280",
+                    transition: theme.transitions.fast,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "#4b5563";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "#6b7280";
+                  }}
+                >
+                  Select All
+                </button>
+
+                <button
+                  onClick={handleClearAll}
+                  type="button"
+                  style={{
+                    border: "none",
+                    background: "none",
+                    cursor: "pointer",
+                    fontSize: theme.fontSize.sm,
+                    color: "#6b7280",
+                    transition: theme.transitions.fast,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.color = "#4b5563";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.color = "#6b7280";
+                  }}
+                >
+                  Clear All
+                </button>
+              </div>
+
+              {/* Options */}
+              <div
+                className="thin-scroll"
+                style={{
+                  overflowY: "auto",
+                  flex: 1,
+                  maxHeight: portalPos.maxHeight - (searchable ? 48 : 0) - 40, // leave room for search and select all
+                  scrollBehavior: "smooth",
+                  WebkitOverflowScrolling: "touch",
+                  boxSizing: "border-box",
+                }}
+              >
+                {filteredOptions.map((opt: any, idx: number) => (
+                  <div
+                    key={idx}
+                    onClick={() => toggleSelection(opt[valueKey])}
+                    style={{
+                      padding: "10px 14px",
+                      borderBottom: "1px solid #f3f3f3",
+                      cursor: "pointer",
+                      backgroundColor: selectedValues.includes(opt[valueKey])
+                        ? theme.colors.hover
+                        : '#fff',
+                      color: selectedValues.includes(opt[valueKey])
+                        ? "#000"
+                        : theme.colors.textSecondary,
+                      borderRadius: theme.borderRadius.sm,
+                      transition: theme.transitions.normal,
+                      display: "flex",
+                      gap: "8px",
+                      alignItems: "center",
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedValues.includes(opt[valueKey])}
+                      readOnly
+                      style={{
+                        marginRight: 8,
+                        accentColor: theme.colors.primary1,
+                        cursor: "pointer",
+                      }}
+                    />
+                    {opt[labelKey]}
+                  </div>
+
+                ))}
+
+                {filteredOptions.length === 0 && (
+                  <div style={{ padding: "12px", textAlign: "center", color: "#999" }}>
+                    No results found
+                  </div>
+                )}
+              </div>
+            </div>,
+            document.body
+          )}
+
+          {/* Error */}
+          {error && (
+            <div
+              style={{
+                marginTop: theme.spacing.sm,
+                fontSize: theme.fontSize.sm,
+                color: theme.colors.error,
+              }}
+            >
+              {error}
+            </div>
+          )}
+        </div>
       </>
     );
   }

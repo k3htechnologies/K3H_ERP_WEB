@@ -3,7 +3,6 @@ import { createPortal } from "react-dom";
 import { ChevronDown, ChevronUp, Info, InfoIcon, Search, X } from "lucide-react";
 import type { SinglePageSelectionProps } from "@/core/types/dropDownSelectionType";
 import { THEME } from "@/core/constants/theme";
-import { COLORS } from "@/core/constants";
 
 export const SinglePageSelection = forwardRef<
   HTMLDivElement,
@@ -60,12 +59,6 @@ export const SinglePageSelection = forwardRef<
 
     const currentSize = sizeConfig[size];
 
-    const placeholderFontSizeMap: Record<string, number> = {
-      sm: 12,
-      md: 14,
-      lg: 16,
-    };
-    const placeholderFontSize = placeholderFontSizeMap[size] ?? 14;
 
     /* ================= FILTER LOGIC (UNCHANGED)  ================= */
 
@@ -135,6 +128,8 @@ export const SinglePageSelection = forwardRef<
           : hovered
             ? "rgba(11,95,255,0.12)"
             : theme.colors.background,
+
+
         transition: theme.transitions.normal,
       };
     };
@@ -281,12 +276,25 @@ export const SinglePageSelection = forwardRef<
         <div
           ref={buttonRef}
           onClick={handleToggle}
+          // style={{
+          //   position: "relative",   // 👈 IMPORTANT
+          //   height: currentSize.height,
+          //   fontSize: currentSize.fontSize,
+          //   padding: currentSize.padding,
+          //   // paddingLeft: leftIcon ? "38px" : "8px",
+          //   borderRadius: "6px",
+          //   backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
+          //   cursor: disabled ? "not-allowed" : "pointer",
+          //   display: "flex",
+          //   alignItems: "center",
+          //   justifyContent: "space-between",
+          //   border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
+          // }}
           style={{
-            position: "relative",   // 👈 IMPORTANT
+            position: 'relative',
             height: currentSize.height,
             fontSize: currentSize.fontSize,
             padding: currentSize.padding,
-            paddingLeft: leftIcon ? "38px" : "12px",    // 👈 SPACE FOR ICON
             borderRadius: "6px",
             backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
             cursor: disabled ? "not-allowed" : "pointer",
@@ -294,6 +302,7 @@ export const SinglePageSelection = forwardRef<
             alignItems: "center",
             justifyContent: "space-between",
             border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
+            overflow: "hidden",
           }}
         >
           {/* LEFT CLICKABLE ICON */}
@@ -322,18 +331,20 @@ export const SinglePageSelection = forwardRef<
 
           <span
             style={{
-              fontSize: placeholderFontSize,
-              color: isPlaceholder
-                ? COLORS.placeholder
+              fontSize: currentSize.fontSize,
+              color: selectedLabel === placeholder
+                ? "#9ca3af" // placeholder color
                 : selectedTextColor
                   ? chosenSelectedColor
-                  : "#000",
-              fontWeight: selectedTextColor ? "700" : "400",
+                  : "#000", // default text color
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              // fontWeight: selectedTextColor ? "700" : "400",
             }}
           >
             {selectedLabel}
           </span>
-
 
           <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
 
@@ -425,10 +436,10 @@ export const SinglePageSelection = forwardRef<
               )}
 
               {/* Options */}
-              <div 
-                className="thin-scroll" 
-                style={{ 
-                  overflowY: "auto", 
+              <div
+                className="thin-scroll"
+                style={{
+                  overflowY: "auto",
                   flex: 1,
                   maxHeight: portalPos.maxHeight - (searchable ? 48 : 0), // leave room for search if searchable
                   scrollBehavior: "smooth",

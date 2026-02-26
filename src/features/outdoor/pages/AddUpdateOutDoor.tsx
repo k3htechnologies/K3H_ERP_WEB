@@ -369,7 +369,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
       <Loader loading={isLoading} title={loadingMessage}>  <div /> </Loader>
 
-      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
+      <div className="flex-1 space-y-2 px-6 py-3">
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [OUTDOOR DETAILS] ============================================================================================= */}
           <div className="space-y-4 pb-3">
@@ -435,7 +435,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                   }}
                   disabled={!!outdoorFormData.PunchIn || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
                 />
-                
+
               </div>
 
 

@@ -59,6 +59,7 @@ export const DataTableWithOutBorder: React.FC<DataTableWithOutBorderProps> = ({
     recordsPerPage = 10,
     sortInfo,
     onSort,
+
 }) => {
 
     const handleSort = (columnKey: string) => {
@@ -167,15 +168,15 @@ export const DataTableWithOutBorder: React.FC<DataTableWithOutBorderProps> = ({
                                     key={column.key}
                                     className={`px-4 py-2  bg-white text-gray-800 tracking-wider whitespace-nowrap
                                                     ${column.align === 'center' ? 'text-center' :
-                                                                                        column.align === 'right' ? 'text-right' : 'text-left'}
+                                            column.align === 'right' ? 'text-right' : 'text-left'}
                                                     ${column.width ? `w-${column.width}` : ''}
                                                     ${column.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
                                                     ${column.fixed === 'left'
-                                                                                        ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
-                                                                                        : column.fixed === 'right'
-                                                                                            ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
-                                                                                            : ''
-                                                                                    }
+                                            ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
+                                            : column.fixed === 'right'
+                                                ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
+                                                : ''
+                                        }
                                                     `}
                                     style={{
                                         ...(column.width ? { width: column.width } : {}),

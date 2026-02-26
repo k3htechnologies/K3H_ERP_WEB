@@ -14,6 +14,7 @@ import { Loader } from '@/core/utils/loader';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import GenerateReport from "@/features/salesDashboard/components/GenerateReport";
 import Enquiries from "@/features/salesDashboard/components/Enquiries";
+import FollowUp from "@/features/salesDashboard/components/FollowUp";
 
 
 const SalesDashboard: React.FC = () => {
@@ -35,6 +36,7 @@ const SalesDashboard: React.FC = () => {
     const [channelPartnerIBMOBMdata, setChannelPartnerIBMOBMdata] = useState<any[]>([]);
     const [commercialData, setCommercialData] = useState<any[]>([]);
     const [enquiryModel, setEnquiryModel] = useState<any[]>([]);
+
 
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -90,7 +92,7 @@ const SalesDashboard: React.FC = () => {
 
     return (
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
-            <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+            <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
             <GenerateReport />
             <div>
                 <OverviewCards overViewCardData={overViewCardData} />
@@ -99,8 +101,13 @@ const SalesDashboard: React.FC = () => {
                 <EnquiryLeadFunnel enquiryLeadFunnelData={enquiryLeadFunnelData} enquiryHotWarmColdData={enquiryHotWarmColdData} />
                 <TargetPerformance targetPerformanceData={targetPerfomanceData} />
             </div>
-            <div className="mt-5">
-                <Enquiries enquiryData={enquiryModel} />
+            <div className=" flex flex-row gap-5 items-stretch w-full min-w-0">
+                <div className="w-2/3 min-w-0">
+                    <Enquiries enquiryData={enquiryModel} />
+                </div>
+                <div className="w-1/3 min-w-0">
+                    <FollowUp />
+                </div>
             </div>
             <div className="mt-8">
                 <CallTracker callTrackerData={callTrackerData} topCallersTodayData={topCallersTodayData} overviewCardData={overViewCardData} />

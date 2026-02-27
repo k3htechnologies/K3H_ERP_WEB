@@ -29,6 +29,7 @@ export class OtherChargesDatasourceImpl implements OtherChargesDatasource {
             const queryParams = new URLSearchParams({
                 pageSize: String(params.PageSize ?? 10),
                 pageNumber: String(params.PageNumber ?? 1),
+                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             });
 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());

@@ -1,9 +1,5 @@
-import {
-    BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    Cell
-} from 'recharts';
-
-import AreaWiseDistribution from './AreaWiseDistribution';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
+import AreaWiseDistribution from '@/features/salesDashboard/components/AreaWiseDistribution';
 
 interface BookingCardOverviewData {
     DirectBookingCount: number;
@@ -19,8 +15,8 @@ interface SourceWiseDistributionData {
     SubSubSourceName: string;
     TotalEnquiries: number;
     SourcePct: number;
-
 }
+
 interface BudgetWiseDistributionData {
     MonthName: string;
     MonthNumber: number;
@@ -38,20 +34,20 @@ interface Props {
     sourceWiseDistribution: SourceWiseDistributionData[];
     bookingConversionRate: any[];
     residentialData: any[];
+    commercialData: any[];
 }
 
-export default function BookingOverview({ bookingOverviewData, sourceWiseDistribution, bookingConversionRate, residentialData, budgetWiseDistribution }: Props) {
+export default function BookingOverview({ bookingOverviewData, sourceWiseDistribution, bookingConversionRate, residentialData, budgetWiseDistribution, commercialData }: Props) {
 
     const salesData = Object.values(
         budgetWiseDistribution.reduce<Record<string, any>>((acc, curr) => {
-
             const month = curr.MonthName;
 
             if (!acc[month]) {
                 acc[month] = {
                     month: month.toUpperCase(),
                     monthNumber: curr.MonthNumber,
-                    value: curr.TotalBookingValue,
+                    value: 0,
                 };
             }
 
@@ -157,11 +153,30 @@ export default function BookingOverview({ bookingOverviewData, sourceWiseDistrib
                                     tick={{ fontSize: 9, fill: '#9CA3AF', fontWeight: 600 }}
                                 />
                                 <YAxis
+                                    width={80}
                                     axisLine={true}
                                     tickLine={true}
-                                    tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                                    domain={[0, 25]}
                                     ticks={[0, 5, 10, 15, 20, 25]}
-                                    unit=" CR"
+                                    tick={{ fontSize: 10, fill: '#9CA3AF' }}
+                                    tickFormatter={(value) => {
+                                        switch (value) {
+                                            case 0:
+                                                return '< 1 CR'
+                                            case 5:
+                                                return '1 -5 CR'
+                                            case 10:
+                                                return '5 - 10 CR'
+                                            case 15:
+                                                return '10 -15 CR'
+                                            case 20:
+                                                return '15 -20 CR'
+                                            case 25:
+                                                return '20<CR'
+                                            default:
+                                                return value
+                                        }
+                                    }}
                                 />
                                 <Tooltip
                                     cursor={{ fill: '#F9FAFB' }}
@@ -176,7 +191,7 @@ export default function BookingOverview({ bookingOverviewData, sourceWiseDistrib
                                         <Cell
                                             key={`cell-${index}`}
                                             fill={
-                                                entry.value === 0
+                                                entry.value === 1
                                                     ? '#243e64ff'
                                                     : entry.month === 'AUGUST'
                                                         ? '#2563EB'
@@ -213,7 +228,7 @@ export default function BookingOverview({ bookingOverviewData, sourceWiseDistrib
                                     </div>
 
                                     <div className="h-5 w-full mt-1">
-                                        <ResponsiveContainer width="100%" height={180}>
+                                        <ResponsiveContainer width="100%" height="100%">
                                             <BarChart
                                                 layout="vertical"
                                                 data={[{ value: Number(item.percentage) || 0 }]}
@@ -238,7 +253,7 @@ export default function BookingOverview({ bookingOverviewData, sourceWiseDistrib
                     <div className="flex flex-col gap-3">
                         <p className="text-sm text-blue-700 font-bold">Area Wise Distribution</p>
                         <div className='font-bold text-gray-700  p-2 rounded-xl h-full'>
-                            <AreaWiseDistribution bookingConversionRateData={bookingConversionRate} residentialData={residentialData} />
+                            <AreaWiseDistribution bookingConversionRateData={bookingConversionRate} residentialData={residentialData} commercialData={commercialData} />
                         </div>
                     </div>
                 </div>

@@ -1,5 +1,3 @@
-// customerClassification.util.ts
-
 export type CustomerClassification = "Cold" | "Warm" | "Hot";
 
 interface ClassificationInput {

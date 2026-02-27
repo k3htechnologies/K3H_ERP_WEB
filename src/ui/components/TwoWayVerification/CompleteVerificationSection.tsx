@@ -1,5 +1,6 @@
 import React from "react";
 import { Input } from "../forms";
+import { Check } from "lucide-react";
 
 export interface VerificationStep {
   id: string;
@@ -44,21 +45,9 @@ const CompleteVerificationSection: React.FC<CompleteVerificationSectionProps> = 
         {steps.map((step) => (
           <div key={step.id} className="flex items-center gap-3">
 
-            <div
-              className={`w-4 h-4 rounded
-                ${step.completed
-                  ? "bg-blue-600"
-                  : "bg-blue-200"
-                }`}
-            />
+            <div className={`w-6 h-6 rounded-md flex items-center justify-center border-2 transition-all duration-200 ${step.completed ? "bg-blue-600 text-white" : "bg-blue-200 text-transparent"}`} >{step.completed && <Check size={14} strokeWidth={3} />}</div>
 
-            <span
-              className={`text-sm
-                ${step.completed
-                  ? "text-gray-900 font-medium"
-                  : "text-gray-500"
-                }`}
-            >
+            <span className={`text-sm ${step.completed ? "text-gray-900 font-medium" : "text-gray-500"}`} >
               {step.label}
             </span>
 

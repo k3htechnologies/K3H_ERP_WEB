@@ -43,10 +43,7 @@ export const MASTER_DATA = {
 
   businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use'],
 
-  documentStatus: [
-    'Applied', 'Doc Missing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable',
-    'Paid', 'Payment Due', 'Rejected',
-  ],
+  documentStatus: [ 'Applied', 'Doc Missing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable', 'Paid', 'Payment Due', 'Rejected'],
 
   bankAccountType: ['Current', 'DEMAT', 'Fixed', 'Salary', 'Saving'],
 
@@ -273,7 +270,13 @@ export const MASTER_DATA = {
 
   supportType: ['Below The Line (BTL)', 'Paper Insert', 'Standee Require', 'Vedio Recording'],
 
-  handoverType: ['Bare Shell', 'Builder Finished']
+  handoverType: ['Bare Shell', 'Builder Finished'],
+
+  reportType: ['Date', 'Year'],
+
+  year: ['2025', '2026', '2027', '2028', '2029', '2030', '2031', '2032', '2033', '2034', '2035', '2036', '2037', '2038', '2039', '2040', '2041', '2042'],
+
+  monthsShots :[ 'Jan','Feb','Mar','Apr','May','Jun',  'Jul','Aug','Sep','Oct','Nov','Dec'],
 
 } as const
 
@@ -304,6 +307,7 @@ export const EMERGENCY_RELATION_OPTIONS = toOptions(MASTER_DATA.emergencyRelatio
 export const EMPLOYEE_TYPE_OPTIONS = toOptions(MASTER_DATA.employeeTypes)
 export const GENDER_OPTIONS = toOptions(MASTER_DATA.genders)
 export const MONTHS_OPTIONS = toOptions(MASTER_DATA.months)
+export const MONTHS_SHOT_OPTIONS = toOptions(MASTER_DATA.monthsShots)
 export const DEDUCTION_TYPE_OPTIONS = toOptions(MASTER_DATA.deductionType)
 export const DAYS_OPTIONS = toOptions(MASTER_DATA.days)
 export const MARITAL_STATUS_OPTIONS = toOptions(MASTER_DATA.maritalStatuses)
@@ -382,6 +386,8 @@ export const CHANNE_PARTNER_DESIGNATION = toOptions(MASTER_DATA.channelPartnerDe
 export const CHANNE_PARTNER_TYPE = toOptions(MASTER_DATA.channelPartnerType);
 export const ENQUIRY_TIMELINE = toOptions(MASTER_DATA.enquiryTimeLine);
 export const SUPPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.supportType);
+export const REPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.reportType);
+export const YEAR_OPTIONS = toOptions(MASTER_DATA.year);
 
 
 

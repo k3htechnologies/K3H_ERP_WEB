@@ -35,6 +35,7 @@ import { getCustomerClassification } from "@/features/enquiry/utils/customerClas
 import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { sendOTP } from "@/features/technical/services/OTPService";
+import { getEnquiryVerificationSteps } from "@/features/enquiry/utils/verificationSteps";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
     EnquiryId: 0,
@@ -531,7 +532,7 @@ export const AddUpdateEnquiry: React.FC = () => {
             Name: formData.Name,
             MobileNumber: formData.MobileNumber,
             EmailId: formData.EmailId,
-            DateOfBirth: formData.DateOfBirth==="" ? null:formData.DateOfBirth,
+            DateOfBirth: formData.DateOfBirth === "" ? null : formData.DateOfBirth,
 
             Accommodation: formData.Accommodation,
             OccupationType: formData.OccupationType,
@@ -583,7 +584,7 @@ export const AddUpdateEnquiry: React.FC = () => {
             FinalStageDetail: formData.FinalStageDetail,
 
             EnquiryDate: formData.EnquiryDate,
-            NextFollowUpDate: formData.NextFollowUpDate ==="" ? null: formData.NextFollowUpDate,
+            NextFollowUpDate: formData.NextFollowUpDate === "" ? null : formData.NextFollowUpDate,
 
             SalesAdvisorId: formData.SalesAdvisorId,
             SourcingManagerId: formData.SourcingManagerId,
@@ -1381,7 +1382,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                         )}
 
                                         <div>
-
                                             <MultiSelectPagination
                                                 label="Location"
                                                 dataFetchCallBack={fetchVillageDropdown}
@@ -1396,8 +1396,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                                     }
                                                 }}
                                             />
-
-
+                                            
 
                                         </div>
                                         <div>
@@ -1637,12 +1636,7 @@ export const AddUpdateEnquiry: React.FC = () => {
             >
 
                 <CompleteVerificationSection
-                    steps={[
-                        { id: "basic", label: "Basic Details", completed: true },
-                        { id: "source", label: "Source Details", completed: true },
-                        { id: "property", label: "Property Preferences", completed: true },
-                        { id: "followup", label: "Follow-up Details", completed: true },
-                    ]}
+                    steps={getEnquiryVerificationSteps({ formData })}
                     otp={otp}
                     onOtpChange={setOtp}
                     mobileNumber={formData.MobileNumber ?? ""}

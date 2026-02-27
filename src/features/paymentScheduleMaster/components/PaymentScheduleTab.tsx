@@ -3,24 +3,27 @@ import Tabs from "@/ui/components/Tab/Tab";
 import CostSheetReport from "@/features/paymentScheduleMaster/components/CostSheetReport";
 import PaymentScheduleMasterReport from "@/features/paymentScheduleMaster/components/PaymentScheduleMasterReport";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export const PaymentScheduleTab: React.FC = () => {
 
     // USE NAVIGATE
     const navigate = useNavigate();
+    const location = useLocation();
+    const buildingName = location.state?.BuildingId || ''
+    const wing = location.state?.Wing || ''
+    const ratePerSqFt = location.state?.ratePerSqFt || 0;
 
     const PaymentScheduleTabList = [
         { id: 'Cost Sheet', label: 'Cost Sheet' },
         { id: 'Payment Schedule', label: 'Payment Schedule' },
     ];
     //#endregion
-
     const [activeTab, setActiveTab] = useState(PaymentScheduleTabList[0].id);
 
-    //#region BACK PROJECT PAGE
+    //#region BACK PAYMENT SCHEDULE PAGE
     const handleBackToPaymentScheduleMaster = () => {
-        navigate('/paymentScheduleMaster');
+        navigate('/paymentSchedule');
     };
     //#endregion
 
@@ -29,7 +32,9 @@ export const PaymentScheduleTab: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
             <HeaderActionBar
-                titleText="Payment Schedule Master Report"
+                titleText={buildingName ?? ''}
+                subTitleText={wing ?? ''}
+                subSubTitleText={ratePerSqFt ?? ''}
                 cancelText="Cancel"
                 onCancel={() => handleBackToPaymentScheduleMaster()}
                 isLoading={false}

@@ -6,6 +6,7 @@ export const fetchChannelPartnerDropdown = async (pageNumber: number, params?: {
         const responseEither = await ChannelPartnerService.apiCallPullChannelPartner({
             PageSize: 10,
             PageNumber: pageNumber,
+            IsCheckPermission:false,
             ChannelPartnerName: params?.value || ""
         });
 
@@ -68,6 +69,7 @@ export const fetchChannelPartnerTeamMemberDropdown = async (pageNumber: number, 
         const responseEither = await ChannelPartnerService.apiCallPullChannelPartner({
             PageSize: 10,
             PageNumber: pageNumber,
+            IsCheckPermission:false,
             CompanyName: params?.value || ""
         });
 

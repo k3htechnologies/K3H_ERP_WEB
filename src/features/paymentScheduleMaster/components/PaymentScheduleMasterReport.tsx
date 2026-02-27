@@ -6,19 +6,19 @@ import useToast from "@/core/hooks/useToast";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { paymentScheduleMasterService } from "@/features/paymentScheduleMaster/services/PaymentScheduleMasterService";
-import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { DataTable, type FilterInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import * as E from 'fp-ts/Either';
 import { Loader } from "@/core/utils/loader";
 import { handleExportFile } from "@/core/utils/exportFile";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { useLocation } from "react-router-dom";
 
 export const PaymentScheduleMasterReport: React.FC = () => {
 
     const [PaymentScheduleMasterReportList, setPaymentScheduleMasterReportList] = useState<PaymentScheduleMasterReportData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-    const [sortInfo, setSortInfo] = useState<SortInfo>();
 
     // PAGINATION
     const { pagination, setPagination } = usePagination(20);
@@ -34,8 +34,13 @@ export const PaymentScheduleMasterReport: React.FC = () => {
     const { projectId } = useProject();
     //#endregion
 
+    const location = useLocation();
+    const inventoryBuildingId = location.state?.InventoryBuildingId || 0;
+    const wing = location.state?.Wing || 0
+    const ratePerSqFt = location.state?.ratePerSqFt || 0;
+
     //#region
-    const loadPaymentScheduleMasterReportData = useCallback(async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    const loadPaymentScheduleMasterReportData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo) => {
 
         await runApiWithLoader(
             setIsLoading,
@@ -45,15 +50,17 @@ export const PaymentScheduleMasterReport: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
+                    InventoryBuildingId: inventoryBuildingId,
+                    Wing: wing,
+                    Rate: ratePerSqFt,
+                    FlatConfiguration: filterParams.FlatConfiguration ?? undefined,
                     SortBy: getSortByParam(sort ?? null, PaymentScheduleMasterReportColumns),
                 };
 
                 const response = await paymentScheduleMasterService.apiCallPullPaymentScheduleMasterReport(params);
 
                 if (E.isRight(response)) {
-
                     setPaymentScheduleMasterReportList(response.right.Data);
-
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,
@@ -67,7 +74,7 @@ export const PaymentScheduleMasterReport: React.FC = () => {
             (error: any) =>
                 addToast({ type: 'error', title: error.message }),
             undefined,
-            'Loading '
+            'Loading Data'
         );
     },
         [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination,]);
@@ -75,26 +82,26 @@ export const PaymentScheduleMasterReport: React.FC = () => {
 
     //#region INIT
     useEffect(() => {
-        if (!projectId) return;
+        if (!projectId || !inventoryBuildingId || !wing) return;
 
         setPagination({ currentPage: 1 });
-        loadPaymentScheduleMasterReportData(1, sortInfo,);
-    }, [projectId]);
+        loadPaymentScheduleMasterReportData(1, {});
+    }, [projectId, inventoryBuildingId, wing]);
     //#endregion
 
-    const handlePageChange = (page: number) => {
-        setPagination({ currentPage: page });
-        loadPaymentScheduleMasterReportData(page, sortInfo,);
-    };
+    const dynamicHeaders = useMemo(() => {
+        const map = new Map<string, number>();
+
+        PaymentScheduleMasterReportList.forEach(item => {
+            if (item.Name) {
+                map.set(item.Name, item.PaymentSchedulePercentage ?? 0);
+            }
+        });
+
+        return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+    }, [PaymentScheduleMasterReportList]);
     //#endregion
 
-    //#region TABLE SORT COLUMN
-    const handleSortColumn = useCallback((sort: SortInfo) => {
-        setSortInfo(sort);
-        setPagination({ currentPage: 1 });
-
-        loadPaymentScheduleMasterReportData(1, sort,);
-    }, []);
     //#endregion
 
     //#region EXPORT / IMPORT EXCEL AND PDF
@@ -108,7 +115,6 @@ export const PaymentScheduleMasterReport: React.FC = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     ProjectId: Number(projectId),
-                    SortBy: getSortByParam(sortInfo ?? null, PaymentScheduleMasterReportColumns),
                     ExportType: exportType
                 };
 
@@ -129,58 +135,55 @@ export const PaymentScheduleMasterReport: React.FC = () => {
     const handleExportPaymentScheduleMasterReportDataPdf = () => handleExportPaymentScheduleMasterReportData('PDF')
     //#endregion
 
-
     //#region TABLE COLUMNS
-    const PaymentScheduleMasterReportColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: 'CarpetArea',
-            label: 'Carpet Area',
-            width: '25',
-            sortable: false,
-            fixed: 'left',
-            align: 'left',
-            render: value => value || 0
+    const PaymentScheduleMasterReportColumns = useMemo<TableColumn[]>(() => {
+        const baseColumn: TableColumn[] = [
+            {
+                key: 'CarpetArea',
+                label: 'Carpet Area',
+                width: '20',
+                fixed: 'left',
+                align: 'left'
+            }
+        ];
 
-        },
-        {
-            key: 'Name',
-            label: 'Name',
-            width: '25',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-        },
-        {
-            key: 'PaymentSchedulePercentage',
-            label: 'Percentage',
-            width: '25',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-        },
-         {
-            key: 'TotalValue',
-            label: 'Total Value',
-            width: '25',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-        },
-    ], [])
+        const dynamicColumns: TableColumn[] = dynamicHeaders.map(([name, percentage]) => ({
+            key: name,
+            label: `${name} (${percentage}%)`,
+            width: '20',
+            align: 'right',
+            render: (_value, row) => {
+                const stage = PaymentScheduleMasterReportList.find(
+                    item => item.Name === name && item.CarpetArea === row.CarpetArea
+                );
+
+                return stage?.TotalValue
+                    ? Number(stage.TotalValue).toLocaleString()
+                    : '-';
+            }
+        }));
+
+        return [...baseColumn, ...dynamicColumns];
+    }, [dynamicHeaders]);
     //#endregion
 
-    //#region PAYMENT SCHEDULE REPORT TABLE PAGINATION INFO
-    const PaymentScheduleMasterReportPaginationInfo: PaginationInfo = useMemo(
-        () => ({
-            currentPage: pagination.currentPage,
-            totalPages: pagination.totalPages,
-            totalRecords: pagination.totalRecords,
-            pageSize: pagination.pageSize,
-            onPageChange: handlePageChange
-        }),
-        [pagination, handlePageChange]
-    )
-    const PaymentScheduleMasterReportForTable = useMemo(() => PaymentScheduleMasterReportList, [PaymentScheduleMasterReportList]);
+    const PaymentScheduleMasterReportForTable = useMemo(() => {
+        const grouped = new Map<number, Record<string, any>>();
+
+        PaymentScheduleMasterReportList.forEach(item => {
+            if (!grouped.has(item.CarpetArea)) {
+                grouped.set(item.CarpetArea, {
+                    CarpetArea: item.CarpetArea
+                });
+            }
+            if (item.Name) {
+                const row = grouped.get(item.CarpetArea)!;
+                row[item.Name] = item.TotalValue;
+            }
+        });
+
+        return Array.from(grouped.values());
+    }, [PaymentScheduleMasterReportList]);
     //#endregion
 
     //#region 
@@ -202,15 +205,11 @@ export const PaymentScheduleMasterReport: React.FC = () => {
             <DataTable
                 columns={PaymentScheduleMasterReportColumns}
                 data={PaymentScheduleMasterReportForTable}
-                pagination={PaymentScheduleMasterReportPaginationInfo}
                 emptyMessage="No Payment Schedule Report Data Found"
                 fixedHeight={true}
                 recordsPerPage={20}
                 className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
             />
-
         </div>
     )
 }

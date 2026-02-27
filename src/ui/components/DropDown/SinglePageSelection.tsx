@@ -295,6 +295,7 @@ export const SinglePageSelection = forwardRef<
             height: currentSize.height,
             fontSize: currentSize.fontSize,
             padding: currentSize.padding,
+            paddingLeft: leftIcon ? "38px" : "8px",
             borderRadius: "6px",
             backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
             cursor: disabled ? "not-allowed" : "pointer",
@@ -304,6 +305,7 @@ export const SinglePageSelection = forwardRef<
             border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
             overflow: "hidden",
           }}
+
         >
           {/* LEFT CLICKABLE ICON */}
           {leftIcon && (
@@ -340,7 +342,7 @@ export const SinglePageSelection = forwardRef<
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              // fontWeight: selectedTextColor ? "700" : "400",
+              fontWeight: selectedTextColor ? "700" : "400",
             }}
           >
             {selectedLabel}

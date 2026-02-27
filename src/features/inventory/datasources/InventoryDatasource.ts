@@ -34,6 +34,8 @@ import type {
     AddInventoryFlatResponse,
     AddUpdateInventoryFloorParkingCountResponse,
     FilterPaginatedFlatsResponse,
+    FilterWithPaginationProjectInventoryStructureRequest,
+    ProjectInventoryStructureListResponse,
 } from "@/features/inventory/models/InventoryMasterModel";
 import { InventoryApis } from "@/features/inventory/api/InventoryApis";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
@@ -57,6 +59,7 @@ export abstract class InventoryDatasource {
     abstract addInventoryFlat(params: AddInventoryFlatRequest): Promise<AddInventoryFlatResponse>;
     abstract addUpdateInventoryFloorParkingCount(params: AddUpdateInventoryFloorParkingCountRequest): Promise<AddUpdateInventoryFloorParkingCountResponse>;
     abstract pullInventoryFloorForPaymentSchedule(params: FilterInventoryRequest, signal?: AbortSignal): Promise<InventoryListReponse>;
+    abstract pullProjectInventoryStructure(params: FilterWithPaginationProjectInventoryStructureRequest, signal?: AbortSignal): Promise<ProjectInventoryStructureListResponse>
 }
 
 export class InventoryDatasourceImpl implements InventoryDatasource {
@@ -413,4 +416,33 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
             throw error;
         }
     }
+
+    async pullProjectInventoryStructure(params: FilterWithPaginationProjectInventoryStructureRequest, signal?: AbortSignal): Promise<ProjectInventoryStructureListResponse> {
+            try {
+                const queryParams = new URLSearchParams({
+                    ProjectId: String(params.ProjectId ?? 10),
+                });
+    
+                if (params.InventoryBuildingId) queryParams.append("InventoryBuildingId", params.InventoryBuildingId.toString());
+                if (params.Wing) queryParams.append('Wing', params.Wing.toString());
+                if (params.FlatConfiguration) queryParams.append('FlatConfiguration', params.FlatConfiguration.toString());
+                if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
+                if (params.ExportType) queryParams.append("ExportType", params.ExportType);
+    
+                const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                    `${InventoryApis.PULL_INVENTORY_STRUCTURE}?${queryParams.toString()}`, { signal }
+                )
+                return response
+    
+            } catch (error: any) {
+    
+                console.error("ERROR: PULL PROJECT INVENTORY STRUCTURE :", error);
+    
+                if (error === TokenExpiredException) {
+    
+                    await this.pullProjectInventoryStructure(params);
+                }
+                throw error;
+            }
+        }
 }

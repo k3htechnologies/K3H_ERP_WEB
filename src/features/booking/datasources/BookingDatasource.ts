@@ -31,7 +31,7 @@ export class BookingDatasourceImpl implements BookingDatasource {
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
             })
-            
+
             if (params.BookingId) queryParams.append('BookingId', params.BookingId.toString());
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
             if (params.ApplicantMobileNumber?.trim()) queryParams.append('ApplicantMobileNumber', params.ApplicantMobileNumber.trim());
@@ -49,7 +49,7 @@ export class BookingDatasourceImpl implements BookingDatasource {
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${BookingApi.PULL}?${queryParams.toString()}`,
-                {signal}
+                { signal }
             )
 
             return response
@@ -126,7 +126,7 @@ export class BookingDatasourceImpl implements BookingDatasource {
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${BookingApi.PULL_CHANNEL_PARTNER_BOOKING}?${queryParams.toString()}`,
-                {signal}
+                { signal }
             )
 
             return response
@@ -145,10 +145,11 @@ export class BookingDatasourceImpl implements BookingDatasource {
         try {
             const queryParams = new URLSearchParams();
 
+
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
-            if (params.InventoryFlatFloorBasementPodiumWingId) {
-                queryParams.append('InventoryFlatFloorBasementPodiumWingId', params.InventoryFlatFloorBasementPodiumWingId.toString());
-            }
+            if (params.InventoryBuildingId) queryParams.append('InventoryBuildingId', params.InventoryBuildingId.toString());
+
+            if (params.Wing) queryParams.append('Wing', params.Wing.toString());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(

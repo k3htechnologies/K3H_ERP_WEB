@@ -2,7 +2,7 @@
 import * as E from 'fp-ts/Either';
 import type { Failure } from "@/core/api/FailureResponse";
 import { PaymentScheduleMasterDatasourceImpl } from '@/features/paymentScheduleMaster/datasources/PaymentScheduleMasterDataSource';
-import type { PaymentScheduleMasterDeleteResponse, PaymentScheduleMasterListResponse, PaymentScheduleMasterSaveResponse, DeletePaymentScheduleMasterRequest, FilterWithPaginationPaymentScheduleMasterRequest, AddUpdatePaymentScheduleMasterRequest, FilterWithPaginationPaymentScheduleMasterReportRequest, PaymentScheduleMasterReportListResponse, FilterWithPaginationCostSheetReportRequest, CostSheetReportListResponse, FilterWithPaginationProjectInventoryStructureRequest, ProjectInventoryStructureListResponse } from "@/features/paymentScheduleMaster/models/PaymentScheduleMasterModel";
+import type { PaymentScheduleMasterDeleteResponse, PaymentScheduleMasterListResponse, PaymentScheduleMasterSaveResponse, DeletePaymentScheduleMasterRequest, FilterWithPaginationPaymentScheduleMasterRequest, AddUpdatePaymentScheduleMasterRequest, FilterWithPaginationPaymentScheduleMasterReportRequest, PaymentScheduleMasterReportListResponse, FilterWithPaginationCostSheetReportRequest, CostSheetReportListResponse } from "@/features/paymentScheduleMaster/models/PaymentScheduleMasterModel";
 
 const PaymentScheduleMasterDatasource = new PaymentScheduleMasterDatasourceImpl();
 
@@ -19,7 +19,7 @@ export const paymentScheduleMasterService = {
         }
     },
 
-    apiCallAddUpdatePaymentScheduleMaster: async (params: AddUpdatePaymentScheduleMasterRequest[]): Promise<E.Either<Failure, PaymentScheduleMasterSaveResponse>> => {
+    apiCallAddUpdatePaymentScheduleMaster: async (params: AddUpdatePaymentScheduleMasterRequest): Promise<E.Either<Failure, PaymentScheduleMasterSaveResponse>> => {
         try {
 
             return E.right(await PaymentScheduleMasterDatasource.addUpdatePaymentScheduleMaster(params));
@@ -42,19 +42,7 @@ export const paymentScheduleMasterService = {
 
         }
     },
-
-     apiCallPullProjectInventoryStructure: async (params: FilterWithPaginationProjectInventoryStructureRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectInventoryStructureListResponse>> => {
-
-        try {
-            return E.right(await PaymentScheduleMasterDatasource.pullProjectInventoryStructure(params, options?.signal));
-
-        } catch (error: any) {
-
-            return E.left({ message: error.message, code: error.code });
-        }
-    },
-
-    // PAYMENT SCHEDULE REPORT
+    
     apiCallPullPaymentScheduleMasterReport: async (params: FilterWithPaginationPaymentScheduleMasterReportRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, PaymentScheduleMasterReportListResponse>> => {
 
         try {

@@ -23,6 +23,7 @@ import { fetchChannelPartnerById, fetchChannelPartnerCompanyDropdown } from "@/f
 import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { sendOTP } from "@/features/technical/services/OTPService";
+import { getChannelPartnerVerificationSteps } from "@/features/ChannelPartner/utils/channelPartnerVerificationSteps";
 
 const initialFormState = (): AddUpdateChannelPartnerRequest => ({
     ChannelPartnerId: 0,
@@ -357,10 +358,10 @@ export const AddUpdateChannelPartner: React.FC = () => {
             newErrors.PanCardURL = "PAN card file is required.";
         }
 
-        if (!formData.GSTNumber) {
+        if (formData.GSTNumber !== "" && !formData.GSTNumber?.trim()) {
             newErrors.GSTNumber = 'GST Number is required';
-        }else if(!isValidGST(formData.GSTNumber)){
-             newErrors.GSTNumber = 'Valid GST Number is required';
+        } else if (formData.GSTNumber !== "" && !isValidGST(formData.GSTNumber)) {
+            newErrors.GSTNumber = 'Valid GST Number is required';
         }
 
         if (formData.GSTNumber !== "" && !hasAnyDocumentFile(gSTCertificateURLFiles, gSTCertificateURL, removeGSTCertificateUrls)) {
@@ -434,7 +435,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
         fd.append("RemoveAadharCardURL", removeAadharCardUrls.join(","));
 
-         gSTCertificateURLFiles.forEach(file => {
+        gSTCertificateURLFiles.forEach(file => {
             if (file instanceof File) {
                 fd.append("GSTCertificateURL", file);
             }
@@ -714,7 +715,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                                         }
 
                                         const companyId = Number(item.value);
-                                        
+
                                         handleFieldChange("CompanyName", item.label);
 
                                         setLoadingMessage("Fetch Company Details")
@@ -1196,13 +1197,22 @@ export const AddUpdateChannelPartner: React.FC = () => {
                 }}
             >
 
+
+
                 <CompleteVerificationSection
-                    steps={[
-                        { id: "basic", label: "Basic Details", completed: true },
-                        { id: "source", label: "Source Details", completed: true },
-                        { id: "property", label: "Property Preferences", completed: true },
-                        { id: "followup", label: "Follow-up Details", completed: true },
-                    ]}
+                    steps={getChannelPartnerVerificationSteps({
+
+                        formData,
+
+                        panCardURLFiles,
+                        aadharCardURLFiles,
+                        gSTCertificateURLFiles,
+
+                        panCardURL,
+                        aadharCardURL,
+                        gSTCertificateURL
+
+                    })}
                     otp={otp}
                     onOtpChange={setOtp}
                     mobileNumber={formData.MobileNumber ?? ""}

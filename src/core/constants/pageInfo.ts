@@ -377,6 +377,12 @@ export const getPageInfo = (path: string) => {
                 description: "Single source of truth for channel partner information",
             }
 
+        case 'target':
+            return {
+                title: "Target",
+                description: "Single source of truth for channel partner information",
+            }
+
         case 'otherCharges':
             return {
                 title: "Other Charges",

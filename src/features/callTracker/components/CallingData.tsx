@@ -136,7 +136,6 @@ export const CallingData: React.FC = () => {
 
     //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
-
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
         loadCallingData(1, filters, sort, searchTerm);

@@ -64,7 +64,8 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                     Floor: floor || flat.Floor,
                     BuildingNumber: buildingNumber || flat.BuildingNumber,
                     PageName: "UNIT BOOK",
-                    InventoryFlatFloorBasementPodiumWingId: flat.InventoryFlatFloorBasementPodiumWingId
+                    InventoryFlatFloorBasementPodiumWingId: flat.InventoryFlatFloorBasementPodiumWingId,
+                    InventoryBuildingId:flat.InventoryBuildingId
                 }
             }
         });

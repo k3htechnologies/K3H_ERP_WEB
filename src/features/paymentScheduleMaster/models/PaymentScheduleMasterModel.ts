@@ -4,6 +4,7 @@ export interface FilterWithPaginationPaymentScheduleMasterRequest {
     PageSize: number
     PageNumber: number
     ProjectId?: number
+    PaymentScheduleSchemeMasterId?: number
     PaymentScheduleMasterId?: number
     InventoryBuildingId?: number
     Stage?: string

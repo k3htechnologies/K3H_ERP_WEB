@@ -12,7 +12,7 @@ import { TextArea } from '@/ui/components/forms/Textarea';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { bookingService } from '../services/BookingService';
-import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterLetters, filterMobile, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidDrivingLicenseNumber, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from '@/core/utils/fileValidation';
+import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidDrivingLicenseNumber, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from '@/core/utils/fileValidation';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useBookingListState } from '@/features/booking/context/BookingListStateContext';
@@ -24,7 +24,7 @@ import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { APPLICANT_TYPE, HANDOVER_TYPE, PAYMENT_MODE, UNIT_SQFT_LUMPSUM } from '@/core/constants';
+import { APPLICANT_TYPE, HANDOVER_TYPE, PAYMENT_MODE } from '@/core/constants';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
@@ -47,6 +47,10 @@ import { getBookingVerificationSteps } from '@/features/booking/utils/bookingVer
 import type { FilterWithPaginationOtherChargesRequest } from '@/features/otherCharges/models/OtherChargesModel';
 import { otherChargesService } from '@/features/otherCharges/services/OtherChargesService';
 import { mapOtherChargesToBookingOtherCharges } from '@/features/booking/utils/MapOtherCharges';
+import { fetchPaymentScheduleSchemeMasterDropDown } from '@/features/paymentScheduleSchemeMaster/PaymentScheduleSchemeMasterDropdown';
+import type { FilterWithPaginationPaymentScheduleMasterRequest } from '@/features/paymentScheduleMaster/models/PaymentScheduleMasterModel';
+import { paymentScheduleMasterService } from '@/features/paymentScheduleMaster/services/PaymentScheduleMasterService';
+import { mapPaymentScheduleToBookingPaymentSchedule } from '../utils/MapPaymentSchedule';
 
 const initialFormState = (): AddUpdateBookingRequest => ({
     BookingId: 0,
@@ -57,6 +61,15 @@ const initialFormState = (): AddUpdateBookingRequest => ({
     CommunicationAddress: '',
     BrokeragePercentage: 0,
     BrokerageAmount: 0,
+    ReferelPercentage: 0,
+    ReferelAmount: 0,
+
+    LoyaltyPercentage: 0,
+    LoyaltyAmount: 0,
+
+    EmployeeReferencePercentage: 0,
+    EmployeeReferenceAmount: 0,
+
     InventoryFlatId: 0,
     AgreementValue: 0,
     AgreementValueTDS: 0,
@@ -66,13 +79,17 @@ const initialFormState = (): AddUpdateBookingRequest => ({
     StampDutyAmount: 0,
     RegistrationFees: 0,
     ParkingId: '',
+    NumberOfParking: 0,
     HandoverType: '',
     RegistrationDate: null,
     ModeOfPayment: '',
     FlatAlterationRemark: '',
+    PaymentRemark: '',
+    OtherRemark: '',
     TermsAndConditionsDescription: '',
     BookingType: '',
     OtherChargesDetailJSON: null,
+    PaymentSchedulSchemeMasterId: 0,
     PaymentScheduleDetailJSON: null,
     BookingAmount: 0,
     ChequeRTGSNumber: '',
@@ -247,7 +264,6 @@ export const AddUpdateBooking: React.FC = () => {
     const [selectedFlatData, setSelectedFlatData] = useState<InventoryFlatData | null>(null);
     const [parkingData, setParkingData] = useState<ParkingData[]>([]);
     const [selectedParkingValues, setSelectedParkingValues] = useState<string | number | null>(null);
-    const [inventoryFlatFloorBasementPodiumWingId, setInventoryFlatFloorBasementPodiumWingId] = useState<number>(0);
 
     //COMPLETE VERIFICATION
 
@@ -259,9 +275,8 @@ export const AddUpdateBooking: React.FC = () => {
     const [dropdownLabels, setDropdownLabels] = useState<{
         buildingName?: string;
         bankName?: string;
-        sourcingManager?: string;
-        closingManager?: string;
         parkingNumber?: string;
+        paymentSchedulScheme?: string;
         parkingCategory?: string;
         parkingType?: string;
         parkingSubType?: string;
@@ -287,12 +302,6 @@ export const AddUpdateBooking: React.FC = () => {
 
     //#region OTHER CHARGES STATE
     const [otherCharges, setOtherCharges] = useState<AddUpdateBookingOtherChargesRequest[]>([]);
-    const [isOtherChargesModalOpen, setIsOtherChargesModalOpen] = useState(false);
-    const [otherChargeName, setOtherChargeName] = useState<string>('');
-    const [otherChargeCalculatedOn, setOtherChargeCalculatedOn] = useState<string>('');
-    const [otherChargeValue, setOtherChargeValue] = useState<string>('');
-    const [otherChargeGSTPercentage, setOtherChargeGSTPercentage] = useState<string>('');
-    const [editingOtherChargeIndex, setEditingOtherChargeIndex] = useState<number | null>(null);
     //#endregion
 
     //#region PAYMENT SCHEDULE CALCULATIONS
@@ -315,10 +324,11 @@ export const AddUpdateBooking: React.FC = () => {
     useEffect(() => {
 
         const loadPaymentSchedule = async () => {
-
+            const flatDataFromState = (location.state as any)?.flatData;
             const response = await fetchPaymentScheduleDropdown({
                 projectId: Number(projectId),
-                value: inventoryFlatFloorBasementPodiumWingId,
+                inventoryBuildingId: flatDataFromState.InventoryBuildingId,
+                wing: flatDataFromState.Wing,
             });
 
             setPaymentScheduleOptions(response.itemList);
@@ -371,7 +381,6 @@ export const AddUpdateBooking: React.FC = () => {
             });
 
             // Set selected values for display
-            setInventoryFlatFloorBasementPodiumWingId(flatDataFromState.InventoryFlatFloorBasementPodiumWingId);
             setSelectedWing(flatDataFromState.Wing || '');
             setSelectedFloor(flatDataFromState.Floor || '');
 
@@ -551,6 +560,14 @@ export const AddUpdateBooking: React.FC = () => {
                             CommunicationAddress: booking.CommunicationAddress ?? '',
                             BrokeragePercentage: booking.BrokeragePercentage ?? 0,
                             BrokerageAmount: booking.BrokerageAmount ?? 0,
+                            ReferelPercentage: booking.ReferelPercentage ?? 0,
+                            ReferelAmount: booking.ReferelAmount ?? 0,
+
+                            LoyaltyPercentage: booking.LoyaltyPercentage ?? 0,
+                            LoyaltyAmount: booking.LoyaltyAmount ?? 0,
+
+                            EmployeeReferencePercentage: booking.EmployeeReferencePercentage ?? 0,
+                            EmployeeReferenceAmount: booking.EmployeeReferenceAmount ?? 0,
                             InventoryFlatId: booking.InventoryFlatId ?? 0,
 
                             AgreementValue: booking.AgreementValue ?? 0,
@@ -561,13 +578,17 @@ export const AddUpdateBooking: React.FC = () => {
                             StampDutyAmount: booking.StampDutyAmount ?? 0,
                             RegistrationFees: booking.RegistrationFees ?? 0,
                             ParkingId: booking.ParkingId ?? '',
+                            NumberOfParking: booking.NumberOfParking ?? 0,
                             HandoverType: booking.HandoverType ?? '',
                             RegistrationDate: booking.RegistrationDate,
                             ModeOfPayment: booking.ModeOfPayment ?? '',
                             FlatAlterationRemark: booking.FlatAlterationRemark ?? '',
+                            PaymentRemark: booking.PaymentRemark ?? '',
+                            OtherRemark: booking.OtherRemark ?? '',
                             TermsAndConditionsDescription: booking.TermsAndConditionsDescription ?? '',
                             BookingType: booking.BookingType,
                             OtherChargesDetailJSON: booking.BookingOtherChargesData ? JSON.stringify(booking.BookingOtherChargesData) : null,
+                            PaymentSchedulSchemeMasterId: booking.PaymentSchedulSchemeMasterId ?? 0,
                             PaymentScheduleDetailJSON: booking.BookingPaymentScheduleData ? JSON.stringify(booking.BookingPaymentScheduleData) : null,
                             BookingAmount: booking.BookingAmount ?? 0,
                             ChequeRTGSNumber: booking.ChequeRTGSNumber ?? '',
@@ -577,7 +598,6 @@ export const AddUpdateBooking: React.FC = () => {
                             TenantId: booking.TenantId ?? 0,
                         });
 
-                        setInventoryFlatFloorBasementPodiumWingId(booking.InventoryFlatFloorBasementPodiumWingId || 0);
 
                         if (booking.BookingType?.toUpperCase() === "FLAT") {
 
@@ -615,6 +635,7 @@ export const AddUpdateBooking: React.FC = () => {
 
                         setDropdownLabels({
                             bankName: booking.BankName || '',
+                            paymentSchedulScheme: booking.PaymentSchedulScheme || ""
                         });
 
                         const applicantsWithFiles = (booking?.BookingApplicantData || []).map(a => ({
@@ -1116,51 +1137,6 @@ export const AddUpdateBooking: React.FC = () => {
                     if (!value) return '-';
                     return `₹${Number(value).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 }
-            },
-            {
-                key: 'Actions',
-                label: 'Actions',
-                width: '12',
-                fixed: 'right',
-                align: 'center',
-                render: (_value, row, index) => (
-                    canAction ? (
-                        <div className="flex items-center justify-center gap-2">
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setEditingOtherChargeIndex(index);
-                                    setOtherChargeName(row.ChargeName || '');
-                                    setOtherChargeCalculatedOn(row.CalculatedOn || '');
-                                    setOtherChargeValue(String(row.Value || ''));
-                                    setOtherChargeGSTPercentage(String(row.GSTPercentage || ''));
-                                    setIsOtherChargesModalOpen(true);
-                                }}
-                                color='transparent'
-                                isborderRadius
-                                size='sm'
-                                title="Edit Other Charge"
-                                leftIcon={<Edit className="h-4 w-4" />}
-                            >
-                            </Button>
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    setOtherCharges(prev => prev.filter((_, i) => i !== index));
-                                }}
-                                color="transparent"
-                                isborderRadius
-                                size="sm"
-                                style={{ color: 'red' }}
-                                title="Delete"
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    ) : null
-                )
             }
         ],
         [canAction]
@@ -1583,6 +1559,17 @@ export const AddUpdateBooking: React.FC = () => {
                 formDataToSend.append('CommunicationAddress', formData.CommunicationAddress ?? '');
                 formDataToSend.append('BrokeragePercentage', String(formData.BrokeragePercentage ?? 0));
                 formDataToSend.append('BrokerageAmount', String(formData.BrokerageAmount ?? 0));
+
+
+                formDataToSend.append('ReferelPercentage', String(formData.ReferelPercentage ?? 0));
+                formDataToSend.append('ReferelAmount', String(formData.ReferelAmount ?? 0));
+
+                formDataToSend.append('LoyaltyPercentage', String(formData.LoyaltyPercentage ?? 0));
+                formDataToSend.append('LoyaltyAmount', String(formData.LoyaltyAmount ?? 0));
+
+                formDataToSend.append('EmployeeReferencePercentage', String(formData.EmployeeReferencePercentage ?? 0));
+                formDataToSend.append('EmployeeReferenceAmount', String(formData.EmployeeReferenceAmount ?? 0));
+
                 formDataToSend.append('InventoryFlatId', String(formData.InventoryFlatId ?? 0));
                 formDataToSend.append('AgreementValue', String(formData.AgreementValue ?? 0));
                 formDataToSend.append('AgreementValueTDS', String(formData.AgreementValueTDS ?? 0));
@@ -1592,6 +1579,7 @@ export const AddUpdateBooking: React.FC = () => {
                 formDataToSend.append('StampDutyAmount', String(formData.StampDutyAmount ?? 0));
                 formDataToSend.append('RegistrationFees', String(formData.RegistrationFees ?? 0));
                 formDataToSend.append('ParkingId', formData.ParkingId ?? '');
+                formDataToSend.append('NumberOfParking', String(formData.NumberOfParking ?? 0));
                 formDataToSend.append('HandoverType', formData.HandoverType ?? '');
                 if (formData.RegistrationDate) {
                     const regDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.RegistrationDate);
@@ -1601,6 +1589,8 @@ export const AddUpdateBooking: React.FC = () => {
                 }
                 formDataToSend.append('ModeOfPayment', formData.ModeOfPayment ?? '');
                 formDataToSend.append('FlatAlterationRemark', formData.FlatAlterationRemark ?? '');
+                formDataToSend.append('PaymentRemark', formData.PaymentRemark ?? '');
+                formDataToSend.append('OtherRemark', formData.OtherRemark ?? '');
                 formDataToSend.append('TermsAndConditionsDescription', formData.TermsAndConditionsDescription ?? '');
 
                 formDataToSend.append('BookingType', formData.BookingType ?? '');
@@ -1610,6 +1600,7 @@ export const AddUpdateBooking: React.FC = () => {
                 formDataToSend.append('OtherChargesDetailJSON', otherChargesJSON);
 
                 // Convert payment schedules to JSON
+                formDataToSend.append('PaymentSchedulSchemeMasterId', String(formData.PaymentSchedulSchemeMasterId ?? 0));
                 const paymentScheduleJSON = paymentSchedules.length > 0 ? JSON.stringify(paymentSchedules) : '';
                 formDataToSend.append('PaymentScheduleDetailJSON', paymentScheduleJSON);
                 formDataToSend.append('BookingAmount', String(formData.BookingAmount ?? 0));
@@ -1756,7 +1747,7 @@ export const AddUpdateBooking: React.FC = () => {
                 const params: FilterWithPaginationOtherChargesRequest = {
                     PageNumber: 1,
                     PageSize: 500,
-                    IsCheckPermission:false,
+                    IsCheckPermission: false,
                     ProjectId: Number(projectId),
                 }
 
@@ -1780,6 +1771,53 @@ export const AddUpdateBooking: React.FC = () => {
             },
             undefined,
             'Loading Other Charges'
+        )
+    }
+
+    //#endregion
+
+    //#region FETCH PAYMENT SCHEDULE SCHEME DROPDOWN WITH PROJECT ID
+    const fetchPaymentScheduleScheme = () =>
+        (page: number) =>
+            fetchPaymentScheduleSchemeMasterDropDown(page, {
+                projectId: Number(projectId)
+            });
+    //#endregion
+
+    //#region FETCH PAYMENT SCHEDULE WHEN SELECTED PAYMENT SCHEDULE SCHEME
+    const loadPaymentScheduleByPaymentScheduleSchemeId = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationPaymentScheduleMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: 500,
+                    ProjectId: Number(projectId),
+                    PaymentScheduleSchemeMasterId: Number(formData.PaymentSchedulSchemeMasterId)
+                }
+
+                const response = await paymentScheduleMasterService.apiCallPullPaymentScheduleMaster(params);
+
+                if (E.isRight(response)) {
+
+                    const mappedPaymentSchedule = mapPaymentScheduleToBookingPaymentSchedule(response.right.Data, Number(formData.AgreementValue), Number(formData.AgreementValueGSTPercentage));
+
+                    setPaymentSchedules(mappedPaymentSchedule);
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Loading Payment'
         )
     }
 
@@ -2157,6 +2195,26 @@ export const AddUpdateBooking: React.FC = () => {
 
                                     handleFieldChange('StampDutyAmount', stampDutyAMount.toFixed(2));
 
+                                    /* ================= BROKERAGE  % ================= */
+                                    const brokerageAMount = (agreementValue * Number(formData.BrokeragePercentage)) / 100;
+
+                                    handleFieldChange('BrokerageAmount', brokerageAMount.toFixed(2));
+
+                                    /* ================= REFEREL % ================= */
+                                    const referelAMount = (agreementValue * Number(formData.ReferelPercentage)) / 100;
+
+                                    handleFieldChange('ReferelAmount', referelAMount.toFixed(2));
+
+                                    /* ================= LOYALTY % ================= */
+                                    const loyaltyAMount = (agreementValue * Number(formData.LoyaltyPercentage)) / 100;
+
+                                    handleFieldChange('LoyaltyAmount', loyaltyAMount.toFixed(2));
+
+                                    /* ================= EMPLOYEE REFERENCE % ================= */
+                                    const employeeReferenceAMount = (agreementValue * Number(formData.EmployeeReferencePercentage)) / 100;
+
+                                    handleFieldChange('EmployeeReferenceAmount', employeeReferenceAMount.toFixed(2));
+
                                     // ================= RECALCULATE PAYMENT SCHEDULE AMOUNTS =================
                                     if (paymentSchedules.length > 0) {
                                         setPaymentSchedules(prev => prev.map(schedule => ({
@@ -2184,7 +2242,7 @@ export const AddUpdateBooking: React.FC = () => {
                                     if (otherCharges.length === 0) {
                                         loadOtherCharges();
                                     }
-                                    
+
 
                                 }}
                                 placeholder="Agreement Value"
@@ -2315,13 +2373,126 @@ export const AddUpdateBooking: React.FC = () => {
                         </div>
                     )}
 
+                    {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
+                    {source === 'Direct Walking' && subSource === 'Reference' && (
+                        <div className="space-y-4 pb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Referel Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <Input
+                                    label="Referel (%)"
+                                    value={formData.ReferelPercentage?.toString() ?? ''}
+                                    disabled={Number(formData.AgreementValue) > 0 ? false : true}
+                                    required
+                                    onChange={(e) => {
+                                        const val = allowPercentage(e.target.value);
+                                        if (val !== null) {
+                                            const percentage = filterNumbersWithDecimal(e.target.value);
+                                            handleFieldChange('ReferelPercentage', percentage);
+
+                                            const agreementValue = formData.AgreementValue || 0;
+
+                                            const cstAmount = (agreementValue * Number(percentage)) / 100;
+
+                                            handleFieldChange('ReferelAmount', cstAmount.toFixed(2));
+                                        }
+                                    }}
+                                    placeholder="Referel (%)"
+                                    rightIcon="%"
+                                    error={errors.ReferelPercentage}
+                                />
+                                <Input
+                                    label="Referel Amount (₹)"
+                                    value={formData.ReferelAmount?.toString() ?? ''}
+                                    disabled
+                                    rightIcon="₹"
+                                />
+
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
+                    {source === 'Direct Walking' && subSource === 'Loyalty' && (
+                        <div className="space-y-4 pb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Loyalty Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <Input
+                                    label="Loyalty (%)"
+                                    value={formData.LoyaltyPercentage?.toString() ?? ''}
+                                    disabled={Number(formData.AgreementValue) > 0 ? false : true}
+                                    required
+                                    onChange={(e) => {
+                                        const val = allowPercentage(e.target.value);
+                                        if (val !== null) {
+                                            const percentage = filterNumbersWithDecimal(e.target.value);
+                                            handleFieldChange('LoyaltyPercentage', percentage);
+
+                                            const agreementValue = formData.AgreementValue || 0;
+
+                                            const cstAmount = (agreementValue * Number(percentage)) / 100;
+
+                                            handleFieldChange('LoyaltyAmount', cstAmount.toFixed(2));
+                                        }
+                                    }}
+                                    placeholder="Loyalty (%)"
+                                    rightIcon="%"
+                                    error={errors.LoyaltyPercentage}
+                                />
+                                <Input
+                                    label="Loyalty Amount (₹)"
+                                    value={formData.LoyaltyAmount?.toString() ?? ''}
+                                    disabled
+                                    rightIcon="₹"
+                                />
+
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
+                    {source === 'Direct Walking' && subSource === 'Employee Reference' && (
+                        <div className="space-y-4 pb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Employee Reference Details</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                <Input
+                                    label="Employee Reference (%)"
+                                    value={formData.EmployeeReferencePercentage?.toString() ?? ''}
+                                    disabled={Number(formData.AgreementValue) > 0 ? false : true}
+                                    required
+                                    onChange={(e) => {
+                                        const val = allowPercentage(e.target.value);
+                                        if (val !== null) {
+                                            const percentage = filterNumbersWithDecimal(e.target.value);
+                                            handleFieldChange('EmployeeReferencePercentage', percentage);
+
+                                            const agreementValue = formData.AgreementValue || 0;
+
+                                            const cstAmount = (agreementValue * Number(percentage)) / 100;
+
+                                            handleFieldChange('EmployeeReferenceAmount', cstAmount.toFixed(2));
+                                        }
+                                    }}
+                                    placeholder="Employee Reference (%)"
+                                    rightIcon="%"
+                                    error={errors.EmployeeReferencePercentage}
+                                />
+                                <Input
+                                    label="Employee Reference Amount (₹)"
+                                    value={formData.EmployeeReferenceAmount?.toString() ?? ''}
+                                    disabled
+                                    rightIcon="₹"
+                                />
+
+                            </div>
+                        </div>
+                    )}
+
                     {/* ============================================================= [OTHER DETAILS] ============================================================================================= */}
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Other Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             <MultiSelectPagination
                                 label="Parking"
-                                required
                                 dataFetchCallBack={fetchParkingProjectWise}
                                 selectedValues={parkingDropdown.selectedValues}
                                 options={parkingDropdown.initialOptions}
@@ -2335,6 +2506,19 @@ export const AddUpdateBooking: React.FC = () => {
                                 }}
 
                             />
+                            <div>
+
+                                <div>
+                                    <Input
+                                        label="Number Of Parking"
+                                        placeholder="Enter Number Of Parking"
+
+                                        value={formData.NumberOfParking ?? 0}
+                                        maxLength={2}
+                                        onChange={(e) => handleFieldChange("NumberOfParking", filterNumbers(e.target.value))}
+                                        error={errors.NumberOfParking} />
+                                </div>
+                            </div>
 
                             <div>
                                 <SinglePageSelection
@@ -2367,6 +2551,24 @@ export const AddUpdateBooking: React.FC = () => {
                                 />
                             </div>
                         </div>
+                    </div>
+
+                    <div>
+                        <SingleSelectDropdownWithPagination
+                            label="Payment Schedule Scheme"
+                            title="Select Payment Schedule Scheme"
+                            size="lg"
+                            dataFetchCallBack={fetchPaymentScheduleScheme()}
+                            onSelected={(item) => {
+                                const schemeId = Number(item.value);
+
+                                handleFieldChange("PaymentSchedulSchemeMasterId", schemeId);
+
+                                loadPaymentScheduleByPaymentScheduleSchemeId();
+                            }}
+                            initialValue={createDropdownInitialValue(formData.PaymentSchedulSchemeMasterId, dropdownLabels.paymentSchedulScheme)}
+                            error={errors.SalesAdvisorId}
+                        />
                     </div>
 
                     {/* ============================================================= [PAYMENT SCHEDULE TABLE] ============================================================================================= */}
@@ -2440,26 +2642,7 @@ export const AddUpdateBooking: React.FC = () => {
                                 <h3 className="text-lg font-semibold text-gray-900">Other Charges</h3>
 
                             </div>
-                            {Number(formData.AgreementValue) > 0 && (
 
-                                <Button
-
-                                    type="button"
-                                    onClick={() => {
-                                        setOtherChargeName('');
-                                        setOtherChargeCalculatedOn('');
-                                        setOtherChargeValue('');
-                                        setOtherChargeGSTPercentage('');
-                                        setEditingOtherChargeIndex(null);
-                                        setIsOtherChargesModalOpen(true);
-                                    }}
-                                    color="blue"
-                                    size="sm"
-                                >
-                                    <Plus className="h-4 w-4 mr-2" />
-                                    Add Other Charges
-                                </Button>
-                            )}
                         </div>
                         {otherCharges.length > 0 ? (
                             <DataTable
@@ -2525,15 +2708,33 @@ export const AddUpdateBooking: React.FC = () => {
                     {/* ============================================================= [ADITIONAL DETAILS] ============================================================================================= */}
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Additional Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
                             <div>
                                 <TextArea
                                     label="Flat Alteration Remark"
                                     required
                                     value={formData.FlatAlterationRemark ?? ""}
                                     onChange={(e) => handleFieldChange('FlatAlterationRemark', e.target.value)}
-                                    placeholder="Enter Permanent Address"
+                                    placeholder="Enter Flat Alteration Remark"
                                     error={errors.FlatAlterationRemark}
+                                />
+                            </div>
+                            <div>
+                                <TextArea
+                                    label="Payment Remark"
+                                    value={formData.PaymentRemark ?? ""}
+                                    onChange={(e) => handleFieldChange('PaymentRemark', e.target.value)}
+                                    placeholder="Enter Payment Remark"
+                                    error={errors.PaymentRemark}
+                                />
+                            </div>
+                            <div>
+                                <TextArea
+                                    label="Other Remark"
+                                    value={formData.OtherRemark ?? ""}
+                                    onChange={(e) => handleFieldChange('OtherRemark', e.target.value)}
+                                    placeholder="Enter Other Remark"
+                                    error={errors.OtherRemark}
                                 />
                             </div>
                             <div>
@@ -2550,6 +2751,7 @@ export const AddUpdateBooking: React.FC = () => {
                                     value={formData.TermsAndConditionsDescription ?? ""}
                                     onChange={(html) => handleFieldChange('TermsAndConditionsDescription', html)}
                                     placeholder="Enter Description"
+                                    readOnly
                                 />
 
                             </div>
@@ -2563,7 +2765,6 @@ export const AddUpdateBooking: React.FC = () => {
                 cancelText="Cancel"
                 saveText={isAddMode ? 'Add' : 'Update'}
                 onCancel={() => {
-                    // Navigate back to source page
                     if (sourcePage === 'inventory') {
                         navigate('/inventory');
                     } else if (sourcePage === 'parking') {
@@ -3090,141 +3291,6 @@ export const AddUpdateBooking: React.FC = () => {
                             }}
                             placeholder="Enter Percentage"
                             rightIcon="%"
-                            required
-                        />
-                    </div>
-                </div>
-            </Modal>
-
-            {/* ADD OTHER CHARGES MODAL */}
-            <Modal
-                isOpen={isOtherChargesModalOpen}
-                onClose={() => {
-                    setIsOtherChargesModalOpen(false);
-                    setOtherChargeName('');
-                    setOtherChargeCalculatedOn('');
-                    setOtherChargeValue('');
-                    setOtherChargeGSTPercentage('');
-                    setEditingOtherChargeIndex(null);
-                }}
-                title="Add Other Charges"
-                onSubmit={(e) => {
-                    e.preventDefault();
-
-                    if (!otherChargeName || !otherChargeName.trim()) {
-                        addToast({ type: 'error', title: 'Please enter a charge name' });
-                        return;
-                    }
-
-                    if (!otherChargeValue || Number(otherChargeValue) <= 0) {
-                        addToast({ type: 'error', title: 'Please enter a valid value' });
-                        return;
-                    }
-
-                    if (!otherChargeGSTPercentage || Number(otherChargeGSTPercentage) < 0) {
-                        addToast({ type: 'error', title: 'Please enter a valid GST percentage' });
-                        return;
-                    }
-
-                    // Check for duplicate ChargeName (excluding the item being edited)
-                    const trimmedChargeName = otherChargeName.trim();
-                    const hasDuplicate = otherCharges.some((charge, idx) => {
-                        // Skip the item being edited
-                        if (editingOtherChargeIndex !== null && idx === editingOtherChargeIndex) {
-                            return false;
-                        }
-                        return charge.ChargeName?.trim().toLowerCase() === trimmedChargeName.toLowerCase();
-                    });
-
-                    if (hasDuplicate) {
-                        addToast({ type: 'error', title: 'A charge with this name already exists' });
-                        return;
-                    }
-
-                    const value = Number(otherChargeValue);
-                    const gstPercentage = Number(otherChargeGSTPercentage);
-                    const gstValue = (value * gstPercentage) / 100;
-
-                    const newCharge: AddUpdateBookingOtherChargesRequest = {
-                        BookingOtherChargesId: editingOtherChargeIndex !== null ? otherCharges[editingOtherChargeIndex]?.BookingOtherChargesId ?? null : null,
-                        Uniquekey: editingOtherChargeIndex !== null ? otherCharges[editingOtherChargeIndex]?.Uniquekey ?? null : null,
-                        ChargeName: trimmedChargeName,
-                        CalculatedOn: otherChargeCalculatedOn || null,
-                        Value: value,
-                        GSTPercentage: gstPercentage,
-                        GSTValue: gstValue,
-                    };
-
-                    if (editingOtherChargeIndex !== null) {
-                        setOtherCharges(prev => {
-                            const updated = [...prev];
-                            updated[editingOtherChargeIndex] = newCharge;
-                            return updated;
-                        });
-                    } else {
-                        setOtherCharges(prev => [...prev, newCharge]);
-                    }
-
-                    setIsOtherChargesModalOpen(false);
-                    setOtherChargeName('');
-                    setOtherChargeCalculatedOn('');
-                    setOtherChargeValue('');
-                    setOtherChargeGSTPercentage('');
-                    setEditingOtherChargeIndex(null);
-                    addToast({ type: 'success', title: 'Other charge added successfully' });
-                }}
-                saveText="Add"
-                loading={isLoading}
-                size='md'
-            >
-                <div className="space-y-6">
-                    <div>
-                        <Input
-                            label="Name"
-                            type="text"
-                            value={otherChargeName}
-                            onChange={(e) => setOtherChargeName(e.target.value)}
-                            placeholder="Enter Charge Name"
-                            required
-                        />
-                    </div>
-
-                    <div>
-                        <SinglePageSelection
-                            label="Sq.Ft / Lumpsum"
-                            placeholder="Select Sq.Ft / Lumpsum"
-                            value={otherChargeCalculatedOn}
-                            onChange={(e) => setOtherChargeCalculatedOn(String(e))}
-                            options={UNIT_SQFT_LUMPSUM.map((opt) => ({ label: opt.name, value: opt.id }))}
-                        />
-                    </div>
-
-                    <div>
-                        <Input
-                            label="Value (in ₹)"
-                            value={otherChargeValue}
-                            onChange={(e) => setOtherChargeValue(filterNumbersWithDecimal(e.target.value))}
-                            placeholder="Enter Value"
-                            required
-                            rightIcon="₹"
-                        />
-                    </div>
-
-                    <div>
-                        <Input
-                            label="GST"
-                            value={otherChargeGSTPercentage}
-                            onChange={(e) => {
-                                {
-                                    const val = allowPercentage(e.target.value);
-
-                                    if (val !== null) {
-                                        const gstValue = filterNumbersWithDecimal(e.target.value);
-                                        setOtherChargeGSTPercentage(gstValue);
-                                    }
-                                }
-                            }}
-                            placeholder="Enter GST Percentage"
                             required
                         />
                     </div>

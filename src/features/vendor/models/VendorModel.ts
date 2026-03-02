@@ -49,10 +49,7 @@ export interface VendorData {
     IsFinalized: boolean | false
 
     VendorFinalizationApproval: string | ''
-
-    Message: string | ''
-    TotalRecords: number | 0
-
+    
     MaterialRequisitionQuotationTermsData: any[] | []
     SubMaterialMasterData: any[] | []
     ContractTypeMasterData: any[] | []

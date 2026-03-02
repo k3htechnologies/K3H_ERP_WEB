@@ -76,7 +76,7 @@ export default function ExportImport({
         e.preventDefault();
         handleSubmit();
       }}
-      size="md"
+      size="xl"
     >
       <div className="space-y-6">
 
@@ -114,6 +114,36 @@ export default function ExportImport({
               onChange={() => setMergeExisting("1")}
             />
           </div>
+        </div>
+        <div className="bg-gray-50 border border-gray-200 rounded-md p-4 text-sm text-gray-700 space-y-2">
+          <p className="font-medium text-gray-800">Notes:</p>
+
+          <ul className="list-disc list-inside space-y-1">
+            <li>
+              If <span className="font-medium">Yes</span> is selected, existing records will be kept and new data will be merged.
+            </li>
+            <li>
+              If <span className="font-medium text-red-600">No</span> is selected, all existing records will be permanently deleted before uploading new data.
+            </li>
+            <li>
+              Only <span className="font-medium">.xlsx, .xls, or .csv</span> files are allowed.
+            </li>
+            <li>
+              Maximum one file can be uploaded at a time.
+            </li>
+            <li>
+              Do <span className="font-semibold">not change the column header names</span> in the downloaded sample Excel file.
+            </li>
+            <li>
+              Do <span className="font-semibold">not modify, remove, or add extra columns</span>.
+            </li>
+            <li>
+              Do <span className="font-semibold">not write data outside the provided column boundaries</span>.
+            </li>
+            <li>
+              Blank rows or completely empty columns should not be added.
+            </li>
+          </ul>
         </div>
 
       </div>

@@ -66,8 +66,6 @@ export const EmployeeMaster: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    setPagination({ currentPage: listState.page });
-
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
       loadEmployees(listState.page, { EmployeeName: String(listState.searchTerm).trim() }, listState.sortInfo);
     } else {
@@ -128,12 +126,14 @@ export const EmployeeMaster: React.FC = () => {
         const response = await employeeMasterService.apiCallPullEmployeeMaster(params);
 
         if (E.isRight(response)) {
+
           setEmployeeList(response.right.Data);
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
           });
+          
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
@@ -157,7 +157,6 @@ export const EmployeeMaster: React.FC = () => {
 
     if (searchValue.trim() === '') {
       updateListState({ searchTerm: '', page: 1 });
-      fetchEmployeeList();
       return;
     }
 
@@ -173,7 +172,6 @@ export const EmployeeMaster: React.FC = () => {
     debouncedSearch.cancel?.();
     updateListState({ searchTerm: '', filters: {}, page: 1 });
     setTempFilters({});
-    loadEmployees(1, { EmployeeName: '' }, sortInfo, undefined);
   };
 
   //#endregion
@@ -241,7 +239,6 @@ export const EmployeeMaster: React.FC = () => {
   //#region TABLE CONFIG
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
-    fetchEmployeeList(page, sortInfo);
   }, [sortInfo, updateListState]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {

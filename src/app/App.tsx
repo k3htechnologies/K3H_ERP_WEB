@@ -152,6 +152,7 @@ import EnquiryReport from '@/features/enquiryReport/pages/EnquiryReport';
 import CPEnquiryReport from '@/features/cpEnquiryReport/pages/CPEnquiryReport';
 import PaymentScheduleMaster from '@/features/paymentScheduleMaster/pages/PaymentScheduleMaster';
 import PaymentScheduleTab from '@/features/paymentScheduleMaster/components/PaymentScheduleTab';
+import Target from '@/features/target/pages/Target';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -349,8 +350,9 @@ function App() {
             <Route path="otherCharges" element={<OtherCharges />} />
 
             <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
-            <Route path="paymentScheduleReport" element={<PaymentScheduleTab />} />
+            <Route path="paymentSchedule/paymentScheduleReport" element={<PaymentScheduleTab />} />
 
+            <Route path="target" element={<Target />} />
 
             <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
             <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />

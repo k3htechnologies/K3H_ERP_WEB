@@ -306,7 +306,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             ChannelPartnerTeamMemberName: e.ChannelPartnerTeamMemberName || "",
 
                         });
-                        setSelectedVillageValues(e.VillageName || "")
+                        setSelectedVillageValues(e.VillageMasterId || "")
 
                         const age = calculateAge(e.DateOfBirth || "")
 
@@ -802,6 +802,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                     type="text"
                                     required
                                     label='Mobile Number'
+                                    disabled={Number(formData.EnquiryId) > 0 ? true:false}
                                     leftIcon="+91"
                                     rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                                     value={formData.MobileNumber ?? ""}

@@ -402,6 +402,11 @@ export const getPageInfo = (path: string) => {
                 title: "Channel Partner Enquiry Report",
                 description: "Centralized enquiry management for faster response",
             }
+        case 'target':
+            return {
+                title: "Sales Target",
+                description: "Centralized enquiry management for faster response",
+            }
 
         // MARKETING
         case 'content':
@@ -414,6 +419,12 @@ export const getPageInfo = (path: string) => {
             return {
                 title: "Approved Bank",
                 description: "Profile",
+            }
+        // LITIGATION
+        case 'litigation':
+            return {
+                title: "Litigation",
+                description: "Track & manage project related legal cases",
             }
 
         default:

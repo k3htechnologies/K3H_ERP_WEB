@@ -24,7 +24,7 @@ export const InventoryApis = {
 
     "PULL_PAGINATED_FLATS": "Inventory/PullPaginatedFlats",
     
-    "PULL_INVENTORY_STRUCTURE": '/PaymentScheduleMaster/PullProjectInventoryStructure',
+    "PULL_INVENTORY_STRUCTURE": '/Inventory/PullProjectInventoryStructure',
 }
 
 export type InventoryApiKeys = keyof typeof InventoryApis

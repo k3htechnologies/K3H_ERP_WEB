@@ -884,7 +884,7 @@ const ViewLitigation: React.FC = () => {
                                     </div>
 
                                     <div className="flex justify-end gap-2">
-                                        {(litigationStatus === 'Open' || litigationStatus === 'Reopen') && (
+                                        {(litigationStatus === 'Open' || litigationStatus === 'Reopen') && canAction && (
                                             <Button
                                                 className="w-full sm:w-auto"
                                                 size="sm"
@@ -921,20 +921,19 @@ const ViewLitigation: React.FC = () => {
                                 <div className="flex items-center justify-between">
                                     <h1 className="text-lg font-semibold text-black"> Hearing History</h1>
 
-                                    {(litigationStatus === 'Open' ||
-                                        litigationStatus === 'Reopen') && (
-                                            <Button
-                                                className="w-full"
-                                                size="sm"
-                                                onClick={() =>
-                                                    handleopenHearingModal({
-                                                        LitigationId: litigationData?.LitigationId
-                                                    })
-                                                }
-                                            >
-                                                Add Hearing
-                                            </Button>
-                                        )}
+                                    {(litigationStatus === 'Open' || litigationStatus === 'Reopen') && canAction && (
+                                        <Button
+                                            className="w-full"
+                                            size="sm"
+                                            onClick={() =>
+                                                handleopenHearingModal({
+                                                    LitigationId: litigationData?.LitigationId
+                                                })
+                                            }
+                                        >
+                                            Add Hearing
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
 
@@ -946,44 +945,44 @@ const ViewLitigation: React.FC = () => {
                                         const isLatest = index === 0;
 
                                         const canEditHearing =
-                                            (litigationStatus === 'Open' || litigationStatus === 'Reopen')
+                                            (litigationStatus === 'Open' || litigationStatus === 'Reopen') && canAction
                                                 ? isLatest
                                                 : false;
 
                                         return (
-                                            <div
-                                                key={item.LitigationHearingId}
-                                                className="pb-3"
-                                            >
-                                                <div className="flex items-center gap-2">
+                                            <div key={item.LitigationHearingId} className="pb-3">
+                                                <div className="flex items-center justify-between">
                                                     <span className="font-semibold text-gray-900">
                                                         {formatDate_dd_MonthName_yy(item.HearingDate)}
                                                     </span>
 
                                                     {canEditHearing && (
                                                         <>
-                                                            <Button
-                                                                color="transparent"
-                                                                isborderRadius
-                                                                size="sm"
-                                                                style={{ color: 'blue' }}
-                                                                title="Edit Hearing"
-                                                                onClick={() => handleopenHearingModal(item)}
-                                                                disabled={isLoading}
-                                                                leftIcon={<Edit className="h-4 w-4" />}
-                                                            />
-                                                            <Button
-                                                                color="transparent"
-                                                                isborderRadius
-                                                                size="sm"
-                                                                style={{ color: 'red' }}
-                                                                title="Delete Hearing"
-                                                                onClick={() => handleDeleteHearing(item)}
-                                                                disabled={isLoading}
-                                                                leftIcon={<Trash2 className="h-4 w-4" />}
-                                                            />
+                                                            <div className="flex items-center gap-1">
+                                                                <Button
+                                                                    color="transparent"
+                                                                    isborderRadius
+                                                                    size="sm"
+                                                                    style={{ color: 'blue' }}
+                                                                    title="Edit Hearing"
+                                                                    onClick={() => handleopenHearingModal(item)}
+                                                                    disabled={isLoading}
+                                                                    leftIcon={<Edit className="h-4 w-4" />}
+                                                                />
+                                                                <Button
+                                                                    color="transparent"
+                                                                    isborderRadius
+                                                                    size="sm"
+                                                                    style={{ color: 'red' }}
+                                                                    title="Delete Hearing"
+                                                                    onClick={() => handleDeleteHearing(item)}
+                                                                    disabled={isLoading}
+                                                                    leftIcon={<Trash2 className="h-4 w-4" />}
+                                                                />
+                                                            </div>
                                                         </>
                                                     )}
+                                                    
                                                 </div>
 
                                                 <p className="mt-2 text-sm text-gray-700">

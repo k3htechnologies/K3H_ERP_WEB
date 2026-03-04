@@ -14,11 +14,14 @@ export interface FilterWithPaginationPaymentScheduleSchemeMaster {
 }
 
 export interface PaymentScheduleSchemeMasterData {
-    PaymentScheduleSchemeId: number,
+    PaymentScheduleSchemeMasterId: number,
     Uniquekey: string,
     ProjectId: number | 0,
-    
-    PaymentScheduleSchemeName: string,
+    InventoryBuildingId?: number,
+    InventoryFlatFloorBasementPodiumWingId?: number,
+    BuildingNumber: string,
+    Wing: string,
+    PaymentScheduleScheme: string,
     OrderBy: number | 0,
 
     CreatedById: number | 0,
@@ -31,15 +34,17 @@ export interface PaymentScheduleSchemeMasterData {
 }
 
 export interface AddUpdatePaymentScheduleSchemeMasterRequest {
-    PaymentScheduleSchemeId: number | 0,
+    PaymentScheduleSchemeMasterId: number | 0,
     Uniquekey: string | null
     ProjectId: number | 0,
     PaymentScheduleScheme: string,
+    InventoryBuildingId?: number,
+    InventoryFlatFloorBasementPodiumWingId?: number,
     OrderBy: number | 0,
 }
 
 export interface DeletePaymentScheduleSchemeMasterRequest {
-    PaymentScheduleSchemeId: number,
+    PaymentScheduleSchemeMasterId: number,
     ProjectId: number,
     Uniquekey: string,
 }

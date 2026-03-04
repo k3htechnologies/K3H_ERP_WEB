@@ -7,8 +7,6 @@ export interface FilterWithPaginationPaymentScheduleSchemeMaster {
     IsCheckPermission?: boolean
     PaymentScheduleScheme?: string
     PaymentScheduleSchemeMasterId?: number
-    InventoryBuildingId?: number
-    InventoryFlatFloorBasementPodiumWingId?: number
     SortBy?: string
     ExportType?: "PDF" | "Excel"
 }

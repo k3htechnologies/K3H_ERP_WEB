@@ -249,7 +249,8 @@ export const ViewBooking: React.FC = () => {
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
 
-                                            <FieldItem label="Referral Unit Owner" value={editEnquiryData?.ReferelUnitOwnerName || '-'} />
+                                            <FieldItem label="Referral Name" value={editEnquiryData?.ReferelName || '-'} />
+                                            <FieldItem label="Referral Mobile" value={editEnquiryData?.ReferelMobileNumber ? `+91 ${editEnquiryData?.ReferelMobileNumber}` : '-'} />
                                             <FieldItem label="Referral Project" value={editEnquiryData?.ReferelProjectName || '-'} />
                                             <FieldItem label="Referral Unit No" value={editEnquiryData?.ReferelUnitNumber || '-'} />
 
@@ -264,7 +265,6 @@ export const ViewBooking: React.FC = () => {
 
                                             <FieldItem label="Existing Project" value={editEnquiryData?.LoyaltyExistingProjectName || '-'} />
                                             <FieldItem label="Existing Unit No" value={editEnquiryData?.LoyaltyExistingUnitNumber || '-'} />
-                                            <FieldItem label="Existing Unit Owner" value={editEnquiryData?.LoyaltyExistingUnitOwnerName || '-'} />
 
                                         </div>
                                     </div>
@@ -389,7 +389,7 @@ export const ViewBooking: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Expected Registration Date" value={bookingData.RegistrationDate ? formatDate_dd_MonthName_yy(bookingData.RegistrationDate) : '-'} />
                                         <FieldItem label="Handover Type" value={safe(bookingData.HandoverType)} />
-                                        <FieldItem label="Source Of Funding" value={safe(bookingData.SourceOfFunding)} />
+                                        <FieldItem label="Mode Of Payment" value={safe(bookingData.ModeOfPayment)} />
                                         <FieldItem label="Number Of Parking" value={safe(bookingData.NumberOfParking)} />
                                     </div>
                                 </section>

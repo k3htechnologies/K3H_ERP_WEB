@@ -15,7 +15,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import {  Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -25,7 +25,7 @@ import { ChannelPartnerService } from '@/features/ChannelPartner/services/Channe
 import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
@@ -575,6 +575,37 @@ export const ChannelPartner: React.FC = () => {
       align: 'center',
       render: (value) => value || '-'
     },
+    {
+      key: 'Actions',
+      label: 'Actions',
+      width: '12',
+      fixed: 'right',
+      align: 'center',
+      render: (_value, row) => (
+        false ? (
+          <div className="flex items-center justify-center gap-2">
+
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleConfirmationDialogBoxOpen(row)
+              }}
+              color='transparent'
+              isborderRadius
+              size='sm'
+              style={{
+                color: 'red',
+                padding: '4px 8px'
+              }}
+              title="Delete Channel Partner"
+            >
+              <Trash2 className="h-4 w-4" />
+            </Button>
+          </div>
+        ) : null
+      )
+    }
   ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
   //#endregion
 

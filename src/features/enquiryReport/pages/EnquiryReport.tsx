@@ -18,7 +18,6 @@ import { Input } from "@/ui/components/forms";
 
 type PivotEnquiryRow = {
     EmployeeName: string;
-    DesignationName: string;
     Stage: string;
     [key: string]: number | string;
 };
@@ -129,7 +128,6 @@ const EnquiryReport: React.FC = () => {
                 const row: PivotEnquiryRow = {
 
                     EmployeeName: index === 0 ? employee.FullName || "" : "",
-                    DesignationName: index === 0 ? employee.DesignationName || "" : "",
 
                     Stage: stage
                 };
@@ -175,13 +173,6 @@ const EnquiryReport: React.FC = () => {
                         {value}
                     </span>
                 )
-            },
-             {
-                key: "DesignationName",
-                label: "Designation",
-                fixed: "left",
-                width: "20",
-                render: value => value || ' '
             },
             {
                 key: "Stage",

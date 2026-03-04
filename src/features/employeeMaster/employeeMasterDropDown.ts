@@ -1,6 +1,5 @@
 import * as E from 'fp-ts/Either';
 import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
-import type { EmployeeMasterData } from './models/EmployeeMasterModel';
 
 export const fetchEmployeeMasterDropdown = async (pageNumber: number, params?: { value?: string; departmentName?: string }) => {
     try {
@@ -48,18 +47,4 @@ export const fetchEmployeeMasterById = async (employeeId: number) => {
 
     return responseEither.right.Data?.[0] || null;
 
-};
-
-export const fetchEmployeeMasterByEmployeeId = async (employeeId: number): Promise<EmployeeMasterData | null> => {
-
-    const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
-        PageSize: 1,
-        PageNumber: 1,
-        EmployeeId: employeeId,
-        IsCheckPermission: false,
-    });
-
-    if (E.isLeft(responseEither)) return null;
-
-    return responseEither.right.Data?.[0] ?? null;
 };

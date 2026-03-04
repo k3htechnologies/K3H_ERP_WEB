@@ -476,9 +476,10 @@ const ViewEnquiry: React.FC = () => {
 
                                 {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Reference' && (
                                     <>
+                                        <FieldItem label="Referral Name" value={safe(enquiryData?.ReferelName ?? "")} />
+                                        <FieldItem label="Referral Mobile Number" value={safe(enquiryData?.ReferelMobileNumber) ? `+91 ${safe(enquiryData?.ReferelMobileNumber)}` : '-'} />
                                         <FieldItem label="Referral Project Name" value={safe(enquiryData?.ReferelProjectName ?? "")} />
                                         <FieldItem label="Referral Unit Number" value={safe(enquiryData?.ReferelUnitNumber ?? "")} />
-                                        <FieldItem label="Unit Owner" value={safe(enquiryData?.ReferelUnitOwnerName ?? "")} />
 
                                     </>
                                 )}
@@ -486,14 +487,15 @@ const ViewEnquiry: React.FC = () => {
                                     <>
                                         <FieldItem label="Existing Project Name" value={safe(enquiryData?.LoyaltyExistingProjectName ?? "")} />
                                         <FieldItem label="Existing Unit Number" value={safe(enquiryData?.LoyaltyExistingUnitNumber ?? "")} />
-                                        <FieldItem label="Unit Owner" value={safe(enquiryData?.LoyaltyExistingUnitOwnerName ?? "")} />
 
                                     </>
                                 )}
                                 {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Employee Reference' && (
                                     <>
+
+                                        <FieldItem label="Employee Mobile Number" value={safe(enquiryData?.EmployeeReferenceMobileNumber) ? `+91 ${safe(enquiryData?.EmployeeReferenceMobileNumber)}` : '-'} />
                                         <FieldItem label="Employee Reference Name" value={safe(enquiryData?.EmployeeReferenceName ?? "")} />
-                                        <FieldItem label="Employee Reference Mobile Number" value={safe(enquiryData?.EmployeeReferenceMobileNumber) ? `+91 ${safe(enquiryData?.EmployeeReferenceMobileNumber)}` : '-'} />
+
                                     </>
                                 )}
 

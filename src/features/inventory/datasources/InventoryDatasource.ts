@@ -113,7 +113,6 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
                 PageSize: (params.PageSize ?? 0).toString(),
                 PageNumber: (params.PageNumber ?? 0).toString(),
                 ProjectId: (params.ProjectId ?? 0).toString(),
-                InventoryFlatId: (params.InventoryFlatId ?? 0).toString(),
                 RERACarpetAreaSqFt: (params.RERACarpetAreaSqFt ?? 0).toString(),
             });
 
@@ -124,7 +123,6 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
             if (params.FlatType) queryParams.append('FlatType', params.FlatType);
             if (params.FlatConfiguration) queryParams.append('FlatConfiguration', params.FlatConfiguration);
             if (params.FlatFacing) queryParams.append('FlatFacing', params.FlatFacing);
-            if (params.FlatStatus) queryParams.append('FlatStatus', params.FlatStatus);
 
             return await this.k3hHttpClient.getRequestWithAuthentication(`${InventoryApis.PULL_PAGINATED_FLATS}?${queryParams.toString()}`, { signal });
         } catch (error: any) {

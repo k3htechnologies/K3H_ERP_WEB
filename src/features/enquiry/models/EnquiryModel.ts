@@ -65,24 +65,18 @@ export interface EnquiryData {
     SubSubSource: string | null;
 
     // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-    
+    ReferelName: string | null;
+    ReferelMobileNumber: string | null;
     ReferelProjectName: string | null;
     ReferelUnitNumber: string | null;
-    ReferelProjectId: number | null;
-    ReferelInventoryFlatId: number | null;
-    ReferelUnitOwnerName: number | null;
 
     // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-    LoyaltyProjectId: number | null;
-    LoyaltyInventoryFlatId: number | null;
     LoyaltyExistingProjectName: string | null;
     LoyaltyExistingUnitNumber: string | null;
-    LoyaltyExistingUnitOwnerName: string | null;
 
     // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-    EmployeeReferenceName: string | null;
-    EmployeeReferenceEmployeeId: number | null;
     EmployeeReferenceMobileNumber: string | null;
+    EmployeeReferenceName: string | null;
 
     ChannelPartnerId: number | null;
     ChannelPartnerName: string | null;
@@ -170,15 +164,18 @@ export interface AddUpdateEnquiryRequest {
     SubSubSource?: string | null;
 
     // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-    ReferelProjectId: number | null;
-    ReferelInventoryFlatId: number | null;
+    ReferelName: string | null;
+    ReferelMobileNumber: string | null;
+    ReferelProjectName: string | null;
+    ReferelUnitNumber: string | null;
 
     // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-    LoyaltyProjectId: number | null;
-    LoyaltyInventoryFlatId: number | null;
+    LoyaltyExistingProjectName: string | null;
+    LoyaltyExistingUnitNumber: string | null;
 
     // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-    EmployeeReferenceEmployeeId: number | null;
+    EmployeeReferenceMobileNumber: string | null;
+    EmployeeReferenceName: string | null;
 
     ChannelPartnerTeamMemberId?: number | null;
     ChannelPartnerTeamMemberName?: string | null;

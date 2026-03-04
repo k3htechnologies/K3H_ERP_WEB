@@ -1241,14 +1241,10 @@ const Inventory = () => {
                                 wings={selectedBuilding}
                                 activeWingTab={activeWingTab}
                                 onWingChange={(index) => {
-
                                     setActiveWingTab(String(index));
-
                                     const newWing = selectedBuilding[index];
                                     setSelectedWing(newWing);
-
                                     if (projectId && newWing?.Wing) {
-
                                         localStorage.setItem(`inventorySelectedWing_${projectId}`, newWing.Wing);
                                     }
                                 }}
@@ -1282,11 +1278,8 @@ const Inventory = () => {
 
 
             {activeTab === "Grid" ? (
-                
                 selectedWing && getFilteredFloors.map((floor) => {
-
                     const originalFloorIndex = selectedWing.InventoryFloorData.findIndex(f => f.InventoryFloorId === floor.InventoryFloorId);
-
                     const isLastFloor = originalFloorIndex === (selectedWing.InventoryFloorData?.length || 0) - 1;
 
                     return (

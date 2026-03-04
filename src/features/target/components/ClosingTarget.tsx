@@ -18,7 +18,6 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
 import { Button } from '@/ui/components/forms';
 import { closingTargetService } from '../services/ClosingTargetService';
-import { se } from 'react-day-picker/locale';
 
 export const ClosingTarget: React.FC = () => {
     //#region STATE
@@ -54,13 +53,6 @@ export const ClosingTarget: React.FC = () => {
             debouncedSearch.cancel?.();
         };
     }, [debouncedSearch]);
-
-    useEffect(() => {
-        if (!projectId) return;
-
-        loadClosingTarget(1, sortInfo, searchTerm?.trim());
-
-    }, [projectId]);
 
     //#endregion
 
@@ -98,7 +90,7 @@ export const ClosingTarget: React.FC = () => {
                         totalRecords: response.right.TotalNumberOfRecord,
                         totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize)
                     });
-
+                    
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -185,11 +177,11 @@ export const ClosingTarget: React.FC = () => {
     //#region TABLE CONFIG
     const handlePageChange = useCallback((page: number) => {
         fetchClosingTargetList(page);
-    }, [sortInfo, searchTerm, fromDate, toDate, projectId]);
+    }, [sortInfo,searchTerm, fromDate, toDate, projectId]);
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
-        loadClosingTarget(1, sort,searchTerm?.trim());
+        loadClosingTarget(1, sort);
     }, [searchTerm, fromDate, toDate, projectId]);
 
     const closingTargetPaginationInfo: PaginationInfo = useMemo(
@@ -215,7 +207,6 @@ export const ClosingTarget: React.FC = () => {
             width: '180px',
             fixed: 'left'
         },
-        { key: 'DesignationName', label: 'Designation Name', sortable: false },
         { key: 'WalkinsByCP', label: 'Walkins CP', sortable: false },
         { key: 'WalkinsDirect', label: 'Walkins Direct', sortable: false },
         { key: 'FreshVisits', label: 'Fresh Visits', sortable: false },

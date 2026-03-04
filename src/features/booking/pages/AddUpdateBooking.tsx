@@ -24,7 +24,7 @@ import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { APPLICANT_TYPE, HANDOVER_TYPE, SOURCE_OF_FUNDING_TYPE } from '@/core/constants';
+import { APPLICANT_TYPE, HANDOVER_TYPE, PAYMENT_MODE } from '@/core/constants';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
@@ -54,7 +54,7 @@ import { mapPaymentScheduleToBookingPaymentSchedule } from '../utils/MapPaymentS
 
 const initialFormState = (): AddUpdateBookingRequest => ({
     BookingId: 0,
-    Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+    Uniquekey: null,
     ProjectId: 0,
     EnquiryId: 0,
     PermanentAddress: '',
@@ -82,14 +82,14 @@ const initialFormState = (): AddUpdateBookingRequest => ({
     NumberOfParking: 0,
     HandoverType: '',
     RegistrationDate: null,
-    SourceOfFunding: '',
+    ModeOfPayment: '',
     FlatAlterationRemark: '',
     PaymentRemark: '',
     OtherRemark: '',
     TermsAndConditionsDescription: '',
     BookingType: '',
     OtherChargesDetailJSON: null,
-    PaymentScheduleSchemeMasterId: 0,
+    PaymentSchedulSchemeMasterId: 0,
     PaymentScheduleDetailJSON: null,
     BookingAmount: 0,
     ChequeRTGSNumber: '',
@@ -276,7 +276,7 @@ export const AddUpdateBooking: React.FC = () => {
         buildingName?: string;
         bankName?: string;
         parkingNumber?: string;
-        paymentScheduleScheme?: string;
+        paymentSchedulScheme?: string;
         parkingCategory?: string;
         parkingType?: string;
         parkingSubType?: string;
@@ -320,6 +320,23 @@ export const AddUpdateBooking: React.FC = () => {
     }, [paymentSchedules]);
 
     //#endregion
+
+    useEffect(() => {
+
+        const loadPaymentSchedule = async () => {
+            const flatDataFromState = (location.state as any)?.flatData;
+            const response = await fetchPaymentScheduleDropdown({
+                projectId: Number(projectId),
+                inventoryBuildingId: flatDataFromState.InventoryBuildingId,
+                wing: flatDataFromState.Wing,
+            });
+
+            setPaymentScheduleOptions(response.itemList);
+        };
+
+        loadPaymentSchedule();
+    }, [projectId]);
+
 
     //#region INITIALIZATION
     useEffect(() => {
@@ -564,14 +581,14 @@ export const AddUpdateBooking: React.FC = () => {
                             NumberOfParking: booking.NumberOfParking ?? 0,
                             HandoverType: booking.HandoverType ?? '',
                             RegistrationDate: booking.RegistrationDate,
-                            SourceOfFunding: booking.SourceOfFunding ?? '',
+                            ModeOfPayment: booking.ModeOfPayment ?? '',
                             FlatAlterationRemark: booking.FlatAlterationRemark ?? '',
                             PaymentRemark: booking.PaymentRemark ?? '',
                             OtherRemark: booking.OtherRemark ?? '',
                             TermsAndConditionsDescription: booking.TermsAndConditionsDescription ?? '',
                             BookingType: booking.BookingType,
                             OtherChargesDetailJSON: booking.BookingOtherChargesData ? JSON.stringify(booking.BookingOtherChargesData) : null,
-                            PaymentScheduleSchemeMasterId: booking.PaymentScheduleSchemeMasterId ?? 0,
+                            PaymentSchedulSchemeMasterId: booking.PaymentSchedulSchemeMasterId ?? 0,
                             PaymentScheduleDetailJSON: booking.BookingPaymentScheduleData ? JSON.stringify(booking.BookingPaymentScheduleData) : null,
                             BookingAmount: booking.BookingAmount ?? 0,
                             ChequeRTGSNumber: booking.ChequeRTGSNumber ?? '',
@@ -587,7 +604,7 @@ export const AddUpdateBooking: React.FC = () => {
                             setSelectedFlatData({
                                 InventoryFlatId: booking.InventoryFlatId || 0,
                                 Uniquekey: '',
-                                InventoryBuildingId: booking.InventoryBuildingId || 0,
+                                InventoryBuildingId: 0,
                                 BuildingNumber: booking.BuildingNumber || '',
                                 InventoryFlatFloorBasementPodiumWingId: booking.InventoryFlatFloorBasementPodiumWingId || 0,
                                 Wing: booking.Wing || '',
@@ -618,7 +635,7 @@ export const AddUpdateBooking: React.FC = () => {
 
                         setDropdownLabels({
                             bankName: booking.BankName || '',
-                            paymentScheduleScheme: booking.PaymentScheduleScheme || ""
+                            paymentSchedulScheme: booking.PaymentSchedulScheme || ""
                         });
 
                         const applicantsWithFiles = (booking?.BookingApplicantData || []).map(a => ({
@@ -1169,8 +1186,8 @@ export const AddUpdateBooking: React.FC = () => {
             newErrors.HandoverType = 'Handover Type is required';
         }
 
-        if (!formData.SourceOfFunding) {
-            newErrors.SourceOfFunding = 'Source Of Funding is required';
+        if (!formData.ModeOfPayment) {
+            newErrors.ModeOfPayment = 'Mode Of Payment is required';
         }
 
         if (!formData.RegistrationDate) {
@@ -1533,7 +1550,9 @@ export const AddUpdateBooking: React.FC = () => {
 
                 // Add booking data
                 formDataToSend.append('BookingId', String(formData.BookingId ?? 0));
-                formDataToSend.append('Uniquekey', formData.Uniquekey ?? '3fa85f64-5717-4562-b3fc-2c963f66afa6');
+                if (formData.Uniquekey) {
+                    formDataToSend.append('Uniquekey', formData.Uniquekey);
+                }
                 formDataToSend.append('ProjectId', String(formData.ProjectId ?? 0));
                 formDataToSend.append('EnquiryId', String(enquiryId ?? 0));
                 formDataToSend.append('PermanentAddress', formData.PermanentAddress ?? '');
@@ -1562,8 +1581,13 @@ export const AddUpdateBooking: React.FC = () => {
                 formDataToSend.append('ParkingId', formData.ParkingId ?? '');
                 formDataToSend.append('NumberOfParking', String(formData.NumberOfParking ?? 0));
                 formDataToSend.append('HandoverType', formData.HandoverType ?? '');
-                formDataToSend.append('RegistrationDate', formData.RegistrationDate ?? '');
-                formDataToSend.append('SourceOfFunding', formData.SourceOfFunding ?? '');
+                if (formData.RegistrationDate) {
+                    const regDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.RegistrationDate);
+                    if (regDate) {
+                        formDataToSend.append('RegistrationDate', regDate);
+                    }
+                }
+                formDataToSend.append('ModeOfPayment', formData.ModeOfPayment ?? '');
                 formDataToSend.append('FlatAlterationRemark', formData.FlatAlterationRemark ?? '');
                 formDataToSend.append('PaymentRemark', formData.PaymentRemark ?? '');
                 formDataToSend.append('OtherRemark', formData.OtherRemark ?? '');
@@ -1576,12 +1600,17 @@ export const AddUpdateBooking: React.FC = () => {
                 formDataToSend.append('OtherChargesDetailJSON', otherChargesJSON);
 
                 // Convert payment schedules to JSON
-                formDataToSend.append('PaymentScheduleSchemeMasterId', String(formData.PaymentScheduleSchemeMasterId ?? 0));
+                formDataToSend.append('PaymentSchedulSchemeMasterId', String(formData.PaymentSchedulSchemeMasterId ?? 0));
                 const paymentScheduleJSON = paymentSchedules.length > 0 ? JSON.stringify(paymentSchedules) : '';
                 formDataToSend.append('PaymentScheduleDetailJSON', paymentScheduleJSON);
                 formDataToSend.append('BookingAmount', String(formData.BookingAmount ?? 0));
                 formDataToSend.append('ChequeRTGSNumber', formData.ChequeRTGSNumber ?? '');
-                formDataToSend.append('ChequeRTGSDate', formData.ChequeRTGSDate ?? '');
+                if (formData.ChequeRTGSDate) {
+                    const chequeDate = convert_dd_mm_yyyy_To_Yyyy_mm_dd(formData.ChequeRTGSDate);
+                    if (chequeDate) {
+                        formDataToSend.append('ChequeRTGSDate', chequeDate);
+                    }
+                }
                 formDataToSend.append('BankListMasterId', String(formData.BankListMasterId ?? 0));
                 formDataToSend.append('TransferBookingId', String(formData.TransferBookingId ?? 0));
                 formDataToSend.append('TenantId', String(formData.TenantId ?? 0));
@@ -1649,22 +1678,18 @@ export const AddUpdateBooking: React.FC = () => {
                 const response = await bookingService.apiCallAddUpdateBooking(formDataToSend);
 
                 if (E.isRight(response)) {
-
-                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] || 'Booking saved successfully' });
 
                     updateListState({ bookingId: 0, bookingName: '' });
 
-                    const redirectPage = sourcePage;
-
-                    setSourcePage(null);
-
-                    if (redirectPage === 'inventory') {
+                    if (sourcePage === 'inventory') {
                         navigate('/inventory');
-                    } else if (redirectPage === 'parking') {
+                    } else if (sourcePage === 'parking') {
                         navigate('/parking');
                     } else {
                         navigate('/booking');
                     }
+
                 } else {
 
                     addToast({ type: 'error', title: response.left.message });
@@ -1752,36 +1777,25 @@ export const AddUpdateBooking: React.FC = () => {
     //#endregion
 
     //#region FETCH PAYMENT SCHEDULE SCHEME DROPDOWN WITH PROJECT ID
-    const fetchPaymentScheduleSchemeMaster = () => (page: number) =>
-        fetchPaymentScheduleSchemeMasterDropDown(page, {
-            projectId: Number(projectId),
-            inventoryBuildingId: (location.state as any)?.flatData.InventoryBuildingId,
-            inventoryFlatFloorBasementPodiumWingId: (location.state as any)?.flatData!.InventoryFlatFloorBasementPodiumWingId,
-
-        });
-
+    const fetchPaymentScheduleScheme = () =>
+        (page: number) =>
+            fetchPaymentScheduleSchemeMasterDropDown(page, {
+                projectId: Number(projectId)
+            });
     //#endregion
 
     //#region FETCH PAYMENT SCHEDULE WHEN SELECTED PAYMENT SCHEDULE SCHEME
-    const loadPaymentScheduleByPaymentScheduleSchemeId = async (schemeId: number) => {
+    const loadPaymentScheduleByPaymentScheduleSchemeId = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
 
-                const flatDataFromState = (location.state as any)?.flatData;
-
-                const buildingId = flatDataFromState?.InventoryBuildingId ?? selectedFlatData?.InventoryBuildingId ?? 0;
-
-                const wingId = flatDataFromState?.InventoryFlatFloorBasementPodiumWingId ?? selectedFlatData?.InventoryFlatFloorBasementPodiumWingId ?? 0;
-
                 const params: FilterWithPaginationPaymentScheduleMasterRequest = {
                     PageNumber: 1,
                     PageSize: 500,
                     ProjectId: Number(projectId),
-                    PaymentScheduleSchemeMasterId: schemeId,
-                    InventoryBuildingId: buildingId,
-                    InventoryFlatFloorBasementPodiumWingId: wingId,
+                    PaymentScheduleSchemeMasterId: Number(formData.PaymentSchedulSchemeMasterId)
                 }
 
                 const response = await paymentScheduleMasterService.apiCallPullPaymentScheduleMaster(params);
@@ -1795,7 +1809,6 @@ export const AddUpdateBooking: React.FC = () => {
                 } else {
 
                     addToast({ type: 'error', title: response.left.message });
-
                 }
                 return response
             },
@@ -1810,24 +1823,6 @@ export const AddUpdateBooking: React.FC = () => {
 
     //#endregion
 
-    //#region FETCH PAYMENT SCHEDULE STAGES
-    const loadPaymentSchedule = async () => {
-
-        const flatDataFromState = (location.state as any)?.flatData;
-
-        const buildingId = flatDataFromState?.InventoryBuildingId ?? selectedFlatData?.InventoryBuildingId ?? 0;
-
-        const wingId = flatDataFromState?.InventoryFlatFloorBasementPodiumWingId ?? selectedFlatData?.InventoryFlatFloorBasementPodiumWingId ?? 0;
-
-        const response = await fetchPaymentScheduleDropdown({
-            projectId: Number(projectId),
-            inventoryBuildingId: buildingId,
-            inventoryFlatFloorBasementPodiumWingId: wingId,
-        });
-
-        setPaymentScheduleOptions(response.itemList);
-    };
-    //#endregion
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}>
@@ -2538,42 +2533,41 @@ export const AddUpdateBooking: React.FC = () => {
                             </div>
                             <DatePickerInput
                                 label="Expected Registration Date"
-                                value={formatDate_dd_mm_yyyy(formData.RegistrationDate)}
-                                onChange={(val) => handleFieldChange('RegistrationDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                value={formData.RegistrationDate ? formatDate_dd_mm_yyyy(formData.RegistrationDate) : ''}
+                                onChange={(value) => handleFieldChange('RegistrationDate', value)}
+                                placeholder="DD/MM/YYYY"
                                 required
                                 error={errors.RegistrationDate}
-
                             />
                             <div>
                                 <SinglePageSelection
-                                    label="Source Of Funding"
-                                    placeholder="Select Source Of Funding"
-                                    value={formData.SourceOfFunding ?? ''}
-                                    onChange={(value) => handleFieldChange("SourceOfFunding", value)}
-                                    options={SOURCE_OF_FUNDING_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
-                                    error={errors.SourceOfFunding}
+                                    label="Mode Of Payment"
+                                    required
+                                    value={formData.ModeOfPayment ?? ''}
+                                    onChange={(e) => handleFieldChange('ModeOfPayment', String(e))}
+                                    options={PAYMENT_MODE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                    error={errors.ModeOfPayment}
+                                    placeholder="Select Mode Of Payment"
                                 />
                             </div>
                         </div>
                     </div>
 
-                    <div className='pb-5'>
+                    <div>
                         <SingleSelectDropdownWithPagination
                             label="Payment Schedule Scheme"
                             title="Select Payment Schedule Scheme"
                             size="lg"
-                            dataFetchCallBack={fetchPaymentScheduleSchemeMaster()}
+                            dataFetchCallBack={fetchPaymentScheduleScheme()}
                             onSelected={(item) => {
                                 const schemeId = Number(item.value);
 
-                                handleFieldChange("PaymentScheduleSchemeMasterId", schemeId);
+                                handleFieldChange("PaymentSchedulSchemeMasterId", schemeId);
 
-                                if (schemeId > 0) {
-                                    loadPaymentScheduleByPaymentScheduleSchemeId(schemeId);
-                                }
+                                loadPaymentScheduleByPaymentScheduleSchemeId();
                             }}
-                            initialValue={createDropdownInitialValue(formData.PaymentScheduleSchemeMasterId, dropdownLabels.paymentScheduleScheme)}
-                            error={errors.PaymentScheduleSchemeMasterId}
+                            initialValue={createDropdownInitialValue(formData.PaymentSchedulSchemeMasterId, dropdownLabels.paymentSchedulScheme)}
+                            error={errors.SalesAdvisorId}
                         />
                     </div>
 
@@ -2602,7 +2596,7 @@ export const AddUpdateBooking: React.FC = () => {
                                 </div>
                             )}
 
-                            {Number(formData.AgreementValue) > 0 && formData.PaymentScheduleSchemeMasterId === 0 && (
+                            {Number(formData.AgreementValue) > 0 && (
                                 <Button
                                     type="button"
                                     onClick={() => {
@@ -2612,7 +2606,6 @@ export const AddUpdateBooking: React.FC = () => {
                                         setPaymentSchedulePercentage('');
                                         setEditingPaymentScheduleIndex(null);
                                         setIsPaymentScheduleModalOpen(true);
-                                        loadPaymentSchedule();
                                     }}
                                     color="blue"
                                     size="sm"
@@ -2690,8 +2683,9 @@ export const AddUpdateBooking: React.FC = () => {
                             />
                             <DatePickerInput
                                 label="Cheque / RTGS Date"
-                                value={formatDate_dd_mm_yyyy(formData.ChequeRTGSDate)}
-                                onChange={(val) => handleFieldChange('ChequeRTGSDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                value={formData.ChequeRTGSDate ? formatDate_dd_mm_yyyy(formData.ChequeRTGSDate) : ''}
+                                onChange={(value) => handleFieldChange('ChequeRTGSDate', value)}
+                                placeholder="DD/MM/YYYY"
                             />
                             <div>
                                 <SingleSelectDropdownWithPagination
@@ -2717,20 +2711,20 @@ export const AddUpdateBooking: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
                             <div>
                                 <TextArea
-                                    label="Unit / Modulation / Customization Remark"
+                                    label="Flat Alteration Remark"
                                     required
                                     value={formData.FlatAlterationRemark ?? ""}
                                     onChange={(e) => handleFieldChange('FlatAlterationRemark', e.target.value)}
-                                    placeholder="Enter Unit / Modulation / Customization"
+                                    placeholder="Enter Flat Alteration Remark"
                                     error={errors.FlatAlterationRemark}
                                 />
                             </div>
                             <div>
                                 <TextArea
-                                    label="Payment Related Remark"
+                                    label="Payment Remark"
                                     value={formData.PaymentRemark ?? ""}
                                     onChange={(e) => handleFieldChange('PaymentRemark', e.target.value)}
-                                    placeholder="Enter Payment Related Remark"
+                                    placeholder="Enter Payment Remark"
                                     error={errors.PaymentRemark}
                                 />
                             </div>
@@ -3170,10 +3164,8 @@ export const AddUpdateBooking: React.FC = () => {
                     const newTotal = currentTotal + percentage;
 
                     if (newTotal > 100) {
-
                         addToast({ type: 'error', title: `Total percentage cannot exceed 100%. Current total would be ${newTotal.toFixed(2)}%` });
                         return;
-
                     }
 
                     const amount = (agreementValue * percentage) / 100;

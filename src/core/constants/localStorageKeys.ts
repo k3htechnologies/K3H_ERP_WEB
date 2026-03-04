@@ -74,7 +74,6 @@ export const LOCAL_STORAGE_KEYS = {
     ENQUIRY_SELECTED_COLUMNS: 'enquiry.selectedColumns',
     CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS: 'channelPartnerSourcing.selectedColumns',
     BOOKING_SELECTED_COLUMNS: 'booking.selectedColumns',
-    INCENTIVE_REPORT_COLUMNS: 'incentive_report.selectedColumns',
 
 
 } as const
@@ -94,6 +93,5 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     LEAVE: 'leave.listState',
     OUTDOOR: 'outdoor.listState',
     CHANNEL_PARTNER: 'channelPartner.listState',
-    CHANNEL_PARTNER_SOURCING: 'channelPartnerSourcing.listState',
-    INCENTIVE_REPORT: 'incentive_report.listState',
+    CHANNEL_PARTNER_SOURCING: 'channelPartnerSourcing.listState'
 } as const

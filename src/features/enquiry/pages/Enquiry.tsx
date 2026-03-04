@@ -32,8 +32,6 @@ import { getStatusColor } from "./Status";
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS, SUB_SUB_SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants/staticData";
 
 export const Enquiry: React.FC = () => {
 
@@ -347,7 +345,7 @@ export const Enquiry: React.FC = () => {
                 />
             )
         },
-
+        
         {
             key: 'MobileNumber',
             label: 'Mobile Number',
@@ -363,7 +361,7 @@ export const Enquiry: React.FC = () => {
             width: '12',
             sortable: false,
             align: 'center',
-            render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+            render: (value?: string) =>value ? formatDate_dd_MonthName_yy(value) : '-'
         },
         {
             key: 'EnquiryFollowUpDays',
@@ -506,9 +504,9 @@ export const Enquiry: React.FC = () => {
             width: '14',
             sortable: false,
             align: 'left',
-            render: (value, row) => row?.Source === 'Channel Partner' ? '-' : value || '-'
+            render: (value, row) =>row?.Source === 'Channel Partner' ? '-' : value || '-'
         },
-        {
+          {
             key: 'ChannelPartnerName',
             label: 'Channel Partner Name',
             width: '14',
@@ -582,7 +580,7 @@ export const Enquiry: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
-
+        
         {
             key: 'SalesAdvisor',
             label: 'Sales Advisor',
@@ -607,7 +605,7 @@ export const Enquiry: React.FC = () => {
             align: 'center',
             render: (_value, row) => {
 
-                const canDelete = canAction && row?.FinalStage?.toUpperCase() == "";
+                const canDelete =canAction && row?.FinalStage?.toUpperCase() == "";
 
                 return canDelete ? (
                     <div className="flex items-center justify-center gap-2">
@@ -852,66 +850,16 @@ export const Enquiry: React.FC = () => {
                     </div>
 
                     <div>
-                        <SinglePageSelection
-                            label="Source"
-                            placeholder="Select Source"
-                            value={tempFilters.Source || ''}
-                            onChange={e => handleFilterChange('Source', String(e))}
-                            options={SOURCE_TYPE_OPTIONS.map(opt => ({
-                                label: opt.name,
-                                value: opt.id
-                            }))}
-                        />
-
+                        <Input type="text" label="Source" value={tempFilters?.Source ?? ''} onChange={e => handleFilterChange('Source', e.target.value)} placeholder="Enter Source" />
                     </div>
-                    {/* SUB SOURCE */}
-                    {tempFilters.Source === 'Direct Walking' && (
-                        <div>
-                            <SinglePageSelection
-                                label="Sub Source"
-                                placeholder="Select Sub Source"
-                                value={tempFilters.SubSource || ''}
-                                onChange={e => handleFilterChange('SubSource', String(e))}
-                                options={SUBSOURCE_TYPE_OPTIONS.map(opt => ({
-                                    label: opt.name,
-                                    value: opt.id
-                                }))}
-                            />
-                        </div>
-                    )}
 
-                    {/* SUB SUB SOURCE */}
-                    {tempFilters.Source === 'Direct Walking' &&
-                        tempFilters.SubSource === 'Advertisement' && (
-                            <div>
-                                <SinglePageSelection
-                                    label="Sub Sub Source"
-                                    placeholder="Select Sub Sub Source"
-                                    value={tempFilters.SubSubSource || ''}
-                                    onChange={e => handleFilterChange('SubSubSource', String(e))}
-                                    options={SUB_SUB_SOURCE_TYPE_OPTIONS.map(opt => ({
-                                        label: opt.name,
-                                        value: opt.id
-                                    }))}
-                                />
-                            </div>
-                        )}
+                    <div>
+                        <Input type="text" label="Sub Source" value={tempFilters?.SubSource ?? ''} onChange={e => handleFilterChange('SubSource', e.target.value)} placeholder="Enter Sub Source" />
+                    </div>
 
-                    {/* CHANNEL PARTNER SUB SOURCE */}
-                    {tempFilters.Source === 'Channel Partner' && (
-                        <div>
-                            <SinglePageSelection
-                                label="Sub Source"
-                                placeholder="Select Sub Source"
-                                value={tempFilters.SubSource || ''}
-                                onChange={e => handleFilterChange('SubSource', String(e))}
-                                options={SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS.map(opt => ({
-                                    label: opt.name,
-                                    value: opt.id
-                                }))}
-                            />
-                        </div>
-                    )}
+                    <div>
+                        <Input type="text" label="Sub Sub Source" value={tempFilters?.SubSubSource ?? ''} onChange={e => handleFilterChange('SubSubSource', e.target.value)} placeholder="Enter Sub Sub Source" />
+                    </div>
 
                     <div>
                         <Input type="text" label="Channel Partner Mobile" value={tempFilters?.ChannelPartnerMobileNumber ?? ''} onChange={e => handleFilterChange('ChannelPartnerMobileNumber', e.target.value)} placeholder="Enter Channel Partner Mobile" />

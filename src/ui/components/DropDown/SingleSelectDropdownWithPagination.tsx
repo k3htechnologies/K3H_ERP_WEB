@@ -441,8 +441,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
               style={{
                 position: "fixed",
                 left: portalPos.left, top: portalPos.top,
-                width: portalPos.width,
-                 maxHeight: portalPos.maxHeight,
+                width: portalPos.width, maxHeight: portalPos.maxHeight,
                 overflow: "hidden", margin: 0,
                 border: `1px solid ${theme.colors.border}`,
                 borderTop: portalPos.openUpward ? `1px solid ${theme.colors.border}` : "none",

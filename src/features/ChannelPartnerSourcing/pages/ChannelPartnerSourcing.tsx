@@ -16,7 +16,6 @@ import type { ChannelPartnerData, FilterWithPaginationChannelPartnerRequest } fr
 import { ChannelPartnerService } from '@/features/ChannelPartner/services/ChannelPartnerService';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
-import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 export const ChannelPartnerSourcing: React.FC = () => {
 
@@ -40,8 +39,6 @@ export const ChannelPartnerSourcing: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const { projectId } = useProject();
-
   //#region INIT
   useEffect(() => {
 
@@ -56,7 +53,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
       loadChannelPartner(listState.page, listState.filters, listState.sortInfo);
 
     }
-  }, [projectId,listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   useEffect(() => {
 
@@ -82,7 +79,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         const params: FilterWithPaginationChannelPartnerRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          IsCheckPermission: false,
+          IsCheckPermission:false,
           ChannelPartnerId: filterParams.ChannelPartnerId ? Number(filterParams.ChannelPartnerId) : undefined,
           MobileNumber: searchtext ?? filterParams.Name?.trim() ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, channelPartnerColumns)
@@ -173,12 +170,6 @@ export const ChannelPartnerSourcing: React.FC = () => {
   //#region COLUMNS
 
   const handleNavigateToView = (row: ChannelPartnerData) => {
-
-    if (!projectId) {
-      addToast({ type: 'error', title: 'Please select a project' });
-      return;
-    }
-
     updateListState({
       channelPartnerId: row.ChannelPartnerId,
       channelPartnerName: row.Name

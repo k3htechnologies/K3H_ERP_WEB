@@ -50,10 +50,7 @@ import {
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import {
-  fetchEmployeeMasterByEmployeeId,
-  fetchEmployeeMasterDropdown,
-} from "@/features/employeeMaster/employeeMasterDropDown";
+import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import RadioPill from "@/ui/components/forms/RadioPill";
 import { RangeSelector } from "@/ui/components/forms/RangeSelector";
@@ -76,13 +73,6 @@ import CompleteVerificationSection from "@/ui/components/TwoWayVerification/Comp
 import { Modal } from "@/ui/components/Modal/Modal";
 import { sendOTP } from "@/features/technical/services/OTPService";
 import { getEnquiryVerificationSteps } from "@/features/enquiry/utils/verificationSteps";
-import { fetchProjectDropdown } from "@/features/projectMaster/projectDropdown";
-import {
-  fetchInventoryFlatDetails,
-  fetchPaginatedInventoryFlatDropdown,
-} from "@/features/inventory/InventoryFlatDropdown";
-import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
-import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
   EnquiryId: 0,
@@ -99,20 +89,23 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
   Accommodation: "",
   OccupationType: "",
 
-  Source: "",
-  SubSource: "",
-  SubSubSource: "",
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-  ReferelProjectId: 0,
-  ReferelInventoryFlatId: 0,
+    Source: "",
+    SubSource: "",
+    SubSubSource: "",
 
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+    ReferelName: "",
+    ReferelMobileNumber: "",
+    ReferelProjectName: "",
+    ReferelUnitNumber: "",
 
-  LoyaltyProjectId: 0,
-  LoyaltyInventoryFlatId: 0,
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+    LoyaltyExistingProjectName: "",
+    LoyaltyExistingUnitNumber: "",
 
-  EmployeeReferenceEmployeeId: 0,
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+    EmployeeReferenceMobileNumber: "",
+    EmployeeReferenceName: "",
 
   ChannelPartnerTeamMemberId: 0,
   ChannelPartnerTeamMemberMobileNumber: "",
@@ -171,35 +164,16 @@ export const AddUpdateEnquiry: React.FC = () => {
 
   //SET CHANNEL PARTNER DETAILS
 
-  const [channelPartnerFullName, setChannelPartnerFullName] =
-    useState<string>();
-  const [channelPartnerCompanyName, setChannelPartnerCompanyName] =
-    useState<string>();
-  const [channelPartnerFirmsType, setChannelPartnerFirmsType] =
-    useState<string>();
-  const [channelPartnerPanNumber, setChannelPartnerPanNumber] =
-    useState<string>();
-  const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] =
-    useState<string>();
-  const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] =
-    useState<string>();
-  const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] =
-    useState<string>();
-  const [channelPartnerDesignation, setChannelPartnerDesignation] =
-    useState<string>();
-  const [channelPartnerType, setChannelPartnerType] = useState<string>();
-
-  //SET EMPLOYEE MASTER DETAILS
-  const [employeeDetails, setEmployeeDetails] =
-    useState<EmployeeMasterData | null>(null);
-
-  //SET EMPLOYEE MASTER DETAILS
-  const [referelInventoryFlatData, setReferelInventoryFlatData] =
-    useState<InventoryFlatData | null>(null);
-  const [loyaltyInventoryFlatData, setLoyaltyInventoryFlatData] =
-    useState<InventoryFlatData | null>(null);
-
-  //COMPLETE VERIFICATION
+    const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
+    const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
+    const [channelPartnerFirmsType, setChannelPartnerFirmsType] = useState<string>();
+    const [channelPartnerPanNumber, setChannelPartnerPanNumber] = useState<string>();
+    const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] = useState<string>();
+    const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] = useState<string>();
+    const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<string>();
+    const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
+    const [channelPartnerType, setChannelPartnerType] = useState<string>();
+    //COMPLETE VERIFICATION
 
   const [otp, setOtp] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -209,7 +183,8 @@ export const AddUpdateEnquiry: React.FC = () => {
   // NAVIGATE
   const navigate = useNavigate();
 
-  const { EnquiryId } = useParams<{ EnquiryId?: string }>();
+    // GET VALUE FROM URL ENQUIRY MASTER ID
+    const { EnquiryId } = useParams<{ EnquiryId?: string }>();
 
   const { projectId } = useProject();
 
@@ -217,26 +192,28 @@ export const AddUpdateEnquiry: React.FC = () => {
 
   const isAddMode = enquiryMasterId === 0;
 
-  const [, setNationality] = useState<string>("Indian");
-  const { addToast } = useToast();
-  const { canAction } = useMenuPermissions("/enquiry");
+    const [, setNationality] = useState<string>("Indian");
 
-  const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  //#endregion
+    // TOAST
+    const { addToast } = useToast();
 
-  const [dropdownLabels, setDropdownLabels] = useState<{
-    channelPartnerName?: string;
-    MobileNumber?: string;
-    SalesAdvisor?: string;
-    SourcingManager?: string;
-    VillageName?: string;
-    ChannelPartnerTeamMemberName?: string;
-    referelProjectName?: string;
-    referelInventoryFlat?: string;
-    loyaltyProjectName?: string;
-    loyaltyInventoryFlat?: string;
-    employeeReferenceEmployeeName?: string;
-  }>({});
+    //#region MENU PERMISSIONS
+    const { canAction } = useMenuPermissions('/enquiry');
+    //#endregion
+
+    // ERROR SET UP
+    const [errors, setErrors] = useState<{ [k: string]: string }>({});
+    //#endregion
+
+    const [dropdownLabels, setDropdownLabels] = useState<{
+        channelPartnerName?: string,
+        MobileNumber?: string
+        SalesAdvisor?: string;
+        SourcingManager?: string;
+        VillageName?: string;
+        ChannelPartnerTeamMemberName?: string,
+
+    }>({})
 
   //#region HANDLE FIELD CHANGE EVENT
   const handleFieldChange = (
@@ -267,48 +244,14 @@ export const AddUpdateEnquiry: React.FC = () => {
     }
   }, [EnquiryId]);
 
-  useEffect(() => {
-    if (formData.EnquiryTimeIn === "00:00") {
-      const currentTime = new Date().toTimeString().slice(0, 5);
-      handleFieldChange("EnquiryTimeIn", currentTime);
-    }
-  }, []);
+    useEffect(() => {
+        if (formData.EnquiryTimeIn === "00:00") {
+            const currentTime = new Date().toTimeString().slice(0, 5)
+            handleFieldChange("EnquiryTimeIn", currentTime)
+        }
+    }, [])
 
-  useEffect(() => {
-    if (!formData.EmployeeReferenceEmployeeId) {
-      setEmployeeDetails(null);
-      return;
-    }
-
-    fetchEmployeeMasterByEmployeeId(formData.EmployeeReferenceEmployeeId).then(
-      setEmployeeDetails,
-    );
-  }, [formData.EmployeeReferenceEmployeeId]);
-
-  useEffect(() => {
-    if (!formData.ReferelInventoryFlatId || !formData.ReferelProjectId) {
-      setReferelInventoryFlatData(null);
-      return;
-    }
-
-    fetchInventoryFlatDetails(
-      Number(formData.ReferelProjectId),
-      Number(formData.ReferelInventoryFlatId),
-    ).then(setReferelInventoryFlatData);
-  }, [formData.ReferelProjectId, formData.ReferelInventoryFlatId]);
-
-  useEffect(() => {
-    if (!formData.LoyaltyInventoryFlatId || !formData.LoyaltyProjectId) {
-      setLoyaltyInventoryFlatData(null);
-      return;
-    }
-
-    fetchInventoryFlatDetails(
-      Number(formData.LoyaltyProjectId),
-      Number(formData.LoyaltyInventoryFlatId),
-    ).then(setLoyaltyInventoryFlatData);
-  }, [formData.LoyaltyProjectId, formData.LoyaltyInventoryFlatId]);
-  //#endregion
+    //#endregion
 
   //#region FETCH ENQUIRY  MASTER DETAILS
   const fetchEnquiryDetails = async () => {
@@ -357,20 +300,19 @@ export const AddUpdateEnquiry: React.FC = () => {
               SubSource: e.SubSource ?? prev.SubSource,
               SubSubSource: e.SubSubSource ?? prev.SubSubSource,
 
-              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-              ReferelProjectId: e.ReferelProjectId ?? prev.ReferelProjectId,
-              ReferelInventoryFlatId:
-                e.ReferelInventoryFlatId ?? prev.ReferelInventoryFlatId,
+                            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+                            ReferelName: e.ReferelName ?? prev.ReferelName,
+                            ReferelMobileNumber: e.ReferelMobileNumber ?? prev.ReferelMobileNumber,
+                            ReferelProjectName: e.ReferelProjectName ?? prev.ReferelProjectName,
+                            ReferelUnitNumber: e.ReferelUnitNumber ?? prev.ReferelUnitNumber,
 
-              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-              LoyaltyProjectId: e.LoyaltyProjectId ?? prev.LoyaltyProjectId,
-              LoyaltyInventoryFlatId:
-                e.LoyaltyInventoryFlatId ?? prev.LoyaltyInventoryFlatId,
+                            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+                            LoyaltyExistingProjectName: e.LoyaltyExistingProjectName ?? prev.LoyaltyExistingProjectName,
+                            LoyaltyExistingUnitNumber: e.LoyaltyExistingUnitNumber ?? prev.LoyaltyExistingUnitNumber,
 
-              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-              EmployeeReferenceEmployeeId:
-                e.EmployeeReferenceEmployeeId ??
-                prev.EmployeeReferenceEmployeeId,
+                            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+                            EmployeeReferenceMobileNumber: e.EmployeeReferenceMobileNumber ?? prev.EmployeeReferenceMobileNumber,
+                            EmployeeReferenceName: e.EmployeeReferenceName ?? prev.EmployeeReferenceName,
 
               ChannelPartnerTeamMemberId:
                 e.ChannelPartnerTeamMemberId ?? prev.ChannelPartnerTeamMemberId,
@@ -414,15 +356,8 @@ export const AddUpdateEnquiry: React.FC = () => {
               ChannelPartnerTeamMemberName:
                 e.ChannelPartnerTeamMemberName || "",
 
-              referelProjectName: e.ReferelProjectName || "",
-              referelInventoryFlat: e.ReferelUnitNumber || "",
-
-              loyaltyProjectName: e.LoyaltyExistingProjectName || "",
-              loyaltyInventoryFlat: e.LoyaltyExistingUnitNumber || "",
-
-              employeeReferenceEmployeeName: e.EmployeeReferenceName || "",
-            });
-            setSelectedVillageValues(e.VillageMasterId || "");
+                        });
+                        setSelectedVillageValues(e.VillageMasterId || "")
 
             const age = calculateAge(e.DateOfBirth || "");
 
@@ -516,52 +451,49 @@ export const AddUpdateEnquiry: React.FC = () => {
       }
     }
 
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-    if (
-      formData.Source?.toUpperCase() === "DIRECT WALKING" &&
-      formData.SubSource?.toUpperCase() === "REFERENCE"
-    ) {
-      if (!formData.ReferelProjectId) {
-        newErrors.ReferelProjectId = "Referel Project Name is required";
-      }
-      if (!formData.ReferelInventoryFlatId) {
-        newErrors.ReferelInventoryFlatId = "Referel Unit Number is required";
-      }
-      if (!referelInventoryFlatData?.OwnerName?.trim()) {
-        newErrors.ReferelInventoryFlatId =
-          "Selected unit does not have an Owner";
-      }
-    }
+        // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+        if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE") {
+            if (!formData.ReferelName) {
+                newErrors.ReferelName = 'Referel Name is required';
+            }
+            if (!formData.ReferelMobileNumber) {
+                newErrors.ReferelMobileNumber = 'Referel Mobile Number is required';
+            } else if (!isValidMobile(formData.ReferelMobileNumber.trim())) {
+                newErrors.ReferelMobileNumber = 'Enter a valid 10-Digit Referel Mobile Number'
+            }
 
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-    if (
-      formData.Source?.toUpperCase() === "DIRECT WALKING" &&
-      formData.SubSource?.toUpperCase() === "LOYALTY"
-    ) {
-      if (!formData.LoyaltyProjectId) {
-        newErrors.LoyaltyProjectId =
-          "Loyalty Existing Project Name is required";
-      }
-      if (!formData.LoyaltyInventoryFlatId) {
-        newErrors.LoyaltyInventoryFlatId =
-          "Loyalty Existing Unit Number is required";
-      }
 
-      if (!loyaltyInventoryFlatData?.OwnerName?.trim()) {
-        newErrors.LoyaltyInventoryFlatId =
-          "Selected unit does not have an Owner";
-      }
-    }
+            if (!formData.ReferelProjectName) {
+                newErrors.ReferelProjectName = 'Referel Project Name is required';
+            }
+            if (!formData.ReferelUnitNumber) {
+                newErrors.ReferelUnitNumber = 'Referel Unit Number is required';
+            }
+        }
 
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-    if (
-      formData.Source?.toUpperCase() === "DIRECT WALKING" &&
-      formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE"
-    ) {
-      if (!formData.EmployeeReferenceEmployeeId) {
-        newErrors.EmployeeReferenceEmployeeId = "Employee Name is required";
-      }
-    }
+        // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+        if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "LOYALTY") {
+            if (!formData.LoyaltyExistingProjectName) {
+                newErrors.LoyaltyExistingProjectName = 'Loyalty Existing Project Name is required';
+            }
+            if (!formData.LoyaltyExistingUnitNumber) {
+                newErrors.LoyaltyExistingUnitNumber = 'Loyalty Existing Unit Number is required';
+            }
+        }
+
+        // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+        if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE") {
+
+            if (!formData.EmployeeReferenceMobileNumber) {
+                newErrors.EmployeeReferenceMobileNumber = 'Employee Reference Mobile Number is required';
+            } else if (!isValidMobile(formData.EmployeeReferenceMobileNumber.trim())) {
+                newErrors.EmployeeReferenceMobileNumber = 'Enter a valid 10-Digit Employee Reference Mobile Number'
+            }
+
+            if (!formData.EmployeeReferenceName) {
+                newErrors.EmployeeReferenceName = 'Employee Reference Name is required';
+            }
+        }
 
     if (!formData.CurrentLocation) {
       newErrors.CurrentLocation = "Current Location is required";
@@ -680,22 +612,19 @@ export const AddUpdateEnquiry: React.FC = () => {
           ? String(channelPartnerId)
           : formData.SubSubSource,
 
-      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-      ReferelProjectId: isDirectReference ? formData.ReferelProjectId : 0,
-      ReferelInventoryFlatId: isDirectReference
-        ? formData.ReferelInventoryFlatId
-        : 0,
+            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+            ReferelName: isDirectReference ? formData.ReferelName : '',
+            ReferelMobileNumber: isDirectReference ? formData.ReferelMobileNumber : '',
+            ReferelProjectName: isDirectReference ? formData.ReferelProjectName : '',
+            ReferelUnitNumber: isDirectReference ? formData.ReferelUnitNumber : '',
 
-      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-      LoyaltyProjectId: isDirectLoyalty ? formData.LoyaltyProjectId : 0,
-      LoyaltyInventoryFlatId: isDirectLoyalty
-        ? formData.LoyaltyInventoryFlatId
-        : 0,
+            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+            LoyaltyExistingProjectName: isDirectLoyalty ? formData.LoyaltyExistingProjectName : '',
+            LoyaltyExistingUnitNumber: isDirectLoyalty ? formData.LoyaltyExistingUnitNumber : '',
 
-      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-      EmployeeReferenceEmployeeId: isEmployeeReference
-        ? formData.EmployeeReferenceEmployeeId
-        : 0,
+            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+            EmployeeReferenceMobileNumber: isEmployeeReference ? formData.EmployeeReferenceMobileNumber : '',
+            EmployeeReferenceName: isEmployeeReference ? formData.EmployeeReferenceName : '',
 
       ChannelPartnerTeamMemberId: formData.ChannelPartnerTeamMemberId,
       ChannelPartnerTeamMemberName:
@@ -875,43 +804,14 @@ export const AddUpdateEnquiry: React.FC = () => {
     [channelPartnerCompanyName],
   );
 
-  //#endregion
-  //#region FETCH CHANNEL PARTNER DROPDOWN WITH TEAM MEMBER
-  const villageDropdown = useMultiSelectDropdown({
-    value: selectedVillageValues,
-    fetchCallback: fetchVillageDropdown,
-    autoFetchOptions: true,
-  });
-  //#endregion
-  const fetchReferelInventoryFlats = useCallback(
-    async (pageNumber: number, params?: { value?: string }) => {
-      if (!formData.ReferelProjectId) {
-        return { totalNumberOfRecord: 0, itemList: [] };
-      }
-
-      return fetchPaginatedInventoryFlatDropdown(pageNumber, {
-        projectId: formData.ReferelProjectId,
-        flat: params?.value,
-        flatStatus: "Booked,Alloted",
-      });
-    },
-    [formData.ReferelProjectId],
-  );
-
-  const fetchLoyaltyInventoryFlats = useCallback(
-    async (pageNumber: number, params?: { value?: string }) => {
-      if (!formData.LoyaltyProjectId) {
-        return { totalNumberOfRecord: 0, itemList: [] };
-      }
-
-      return fetchPaginatedInventoryFlatDropdown(pageNumber, {
-        projectId: formData.LoyaltyProjectId,
-        flat: params?.value,
-        flatStatus: "Booked,Alloted",
-      });
-    },
-    [formData.LoyaltyProjectId],
-  );
+    //#endregion
+    //#region FETCH CHANNEL PARTNER DROPDOWN WITH TEAM MEMBER
+    const villageDropdown = useMultiSelectDropdown({
+        value: selectedVillageValues,
+        fetchCallback: fetchVillageDropdown,
+        autoFetchOptions: true
+    });
+    //#endregion
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -957,64 +857,71 @@ export const AddUpdateEnquiry: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <Input
-                  type="text"
-                  required
-                  label="Mobile Number"
-                  disabled={Number(formData.EnquiryId) > 0 ? true : false}
-                  leftIcon="+91"
-                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                  value={formData.MobileNumber ?? ""}
-                  onChange={(e) => {
-                    const mobile = filterMobile(e.target.value);
-                    handleFieldChange("MobileNumber", mobile);
-                  }}
-                  placeholder="Enter Mobile Number"
-                  maxLength={10}
-                  error={errors.MobileNumber}
-                />
-              </div>
-              <div>
-                <Input
-                  label="E-mail ID"
-                  type="text"
-                  value={formData.EmailId ?? ""}
-                  error={errors.EmailId}
-                  rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
-                  onChange={(e) => {
-                    const emailId = filterEmail(e.target.value);
-                    handleFieldChange("EmailId", emailId);
-                  }}
-                  placeholder="Enter Valid E-mail Id"
-                />
-              </div>
-              <div>
-                <DatePickerInput
-                  label="DOB"
-                  value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
-                  onChange={(val) => {
-                    handleFieldChange("DateOfBirth", dob);
+                            <div>
+                                <Input
+                                    type="text"
+                                    required
+                                    label='Mobile Number'
+                                    disabled={Number(formData.EnquiryId) > 0 ? true:false}
+                                    leftIcon="+91"
+                                    rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                    value={formData.MobileNumber ?? ""}
+                                    onChange={(e) => {
+                                        const mobile = filterMobile(e.target.value)
+                                        handleFieldChange("MobileNumber", mobile)
+                                    }
+                                    }
+                                    placeholder="Enter Mobile Number"
+                                    maxLength={10}
+                                    error={errors.MobileNumber}
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label='E-mail ID'
+                                    type="text"
+                                    value={formData.EmailId ?? ""}
+                                    error={errors.EmailId}
+                                    rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
+                                    onChange={(e) => {
+                                        const emailId = filterEmail(e.target.value);
+                                        handleFieldChange('EmailId', emailId)
+                                    }}
+                                    placeholder="Enter Valid E-mail Id"
+                                />
+                            </div>
+                            <div>
+                                <DatePickerInput
+                                    label="DOB"
+                                    value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
+                                    onChange={(val) => {
 
-                    const age = calculateAge(dob || "");
+                                        const dob = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val)
 
-                    setCalculatedAge(age);
-                  }}
-                  error={errors.DateOfBirth}
-                />
-              </div>
-              <div>
-                <Input
-                  type="text"
-                  disabled
-                  label="Age"
-                  value={calculatedAge ?? ""}
-                  onChange={(e) => setCalculatedAge(e.target.value)}
-                  placeholder="System calculated Age"
-                  maxLength={250}
-                  error={errors.Age}
-                />
-              </div>
+                                        handleFieldChange('DateOfBirth', dob)
+
+                                        const age = calculateAge(dob || "")
+
+                                        setCalculatedAge(age)
+                                    }}
+                                    error={errors.DateOfBirth}
+
+                                />
+
+                            </div>
+                            <div>
+                                <Input
+                                    type="text"
+                                    disabled
+                                    label='Age'
+                                    value={calculatedAge ?? ""}
+                                    onChange={(e) => setCalculatedAge(e.target.value)}
+                                    placeholder="System calculated Age"
+                                    maxLength={250}
+                                    error={errors.Age}
+                                />
+
+                            </div>
 
               <div>
                 <SinglePageSelection
@@ -1113,27 +1020,20 @@ export const AddUpdateEnquiry: React.FC = () => {
               )}
             </div>
 
-            {/* ============================================================= [SOURCE] ============================================================================================= */}
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-                Source
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <SinglePageSelection
-                    label="Source"
-                    required
-                    placeholder="Select Source"
-                    value={formData.Source ?? ""}
-                    onChange={(e) => {
-                      handleFieldChange("Source", e);
-                      handleFieldChange("SubSource", "");
-                      handleFieldChange("SubSubSource", "");
-                      handleFieldChange("LoyaltyProjectId", 0);
-                      handleFieldChange("LoyaltyInventoryFlatId", 0);
-                      handleFieldChange("ReferelProjectId", 0);
-                      handleFieldChange("ReferelInventoryFlatId", 0);
-                      handleFieldChange("EmployeeReferenceEmployeeId", 0);
+                        {/* ============================================================= [SOURCE] ============================================================================================= */}
+                        <div className="space-y-4 pb-3">
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Source</h3>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div>
+                                    <SinglePageSelection
+                                        label="Source"
+                                        required
+                                        placeholder="Select Source"
+                                        value={formData.Source ?? ''}
+                                        onChange={(e) => {
+                                            handleFieldChange("Source", e);
+                                            handleFieldChange("SubSource", "");
+                                            handleFieldChange("SubSubSource", "");
 
                       if (e !== "Channel Partner") {
                         clearChannelPartnerAll();
@@ -1147,32 +1047,25 @@ export const AddUpdateEnquiry: React.FC = () => {
                   />
                 </div>
 
-                {formData.Source === "Direct Walking" && (
-                  <div>
-                    <SinglePageSelection
-                      label="Sub Source"
-                      required={
-                        formData.Source === "Direct Walking" ? true : false
-                      }
-                      placeholder="Select Sub Source"
-                      value={formData.SubSource ?? ""}
-                      onChange={(e) => {
-                        handleFieldChange("SubSource", e);
-                        handleFieldChange("SubSubSource", "");
-                        handleFieldChange("LoyaltyProjectId", 0);
-                        handleFieldChange("LoyaltyInventoryFlatId", 0);
-                        handleFieldChange("ReferelProjectId", 0);
-                        handleFieldChange("ReferelInventoryFlatId", 0);
-                        handleFieldChange("EmployeeReferenceEmployeeId", 0);
-                      }}
-                      options={SUBSOURCE_TYPE_OPTIONS.map((opt) => ({
-                        label: opt.name,
-                        value: opt.id,
-                      }))}
-                      error={errors.SubSource}
-                    />
-                  </div>
-                )}
+                                {formData.Source === 'Direct Walking' && (
+                                    <div>
+                                        <SinglePageSelection
+                                            label="Sub Source"
+                                            required={formData.Source === 'Direct Walking' ? true : false}
+                                            placeholder="Select Sub Source"
+                                            value={formData.SubSource ?? ''}
+                                            onChange={(e) => {
+                                                handleFieldChange("SubSource", e);
+                                                handleFieldChange("SubSubSource", "");
+                                            }}
+                                            options={SUBSOURCE_TYPE_OPTIONS.map(opt => ({
+                                                label: opt.name,
+                                                value: opt.id
+                                            }))}
+                                            error={errors.SubSource}
+                                        />
+                                    </div>
+                                )}
 
                 {formData.Source === "Direct Walking" &&
                   formData.SubSource === "Advertisement" && (
@@ -1199,249 +1092,182 @@ export const AddUpdateEnquiry: React.FC = () => {
                     </div>
                   )}
 
-                {formData.Source === "Direct Walking" &&
-                  formData.SubSource === "Reference" && (
-                    <>
-                      <div>
-                        <SingleSelectDropdownWithPagination
-                          label="Project"
-                          required
-                          title="Select Project"
-                          size="lg"
-                          dataFetchCallBack={fetchProjectDropdown}
-                          onSelected={(item) => {
-                            if (!item) {
-                              handleFieldChange("ReferelProjectId", 0);
-                              handleFieldChange("ReferelInventoryFlatId", 0);
-                              setDropdownLabels((prev) => ({
-                                ...prev,
-                                referelInventoryFlat: "",
-                              }));
+                                {formData.Source === 'Direct Walking' && formData.SubSource === 'Reference' && (
+                                    <>
+                                        <Input
+                                            label="Referral Name"
+                                            type="text"
+                                            required
+                                            value={formData.ReferelName ?? ""}
+                                            error={errors.ReferelName}
+                                            onChange={(e) => handleFieldChange("ReferelName", e.target.value)}
+                                            placeholder="Enter Referral Name"
+                                            maxLength={150}
+                                        />
 
-                              return;
-                            }
+                                        <Input
+                                            label="Referral Mobile Number"
+                                            required
+                                            type="text"
+                                            maxLength={10}
+                                            value={formData.ReferelMobileNumber ?? ""}
+                                            error={errors.ReferelMobileNumber}
+                                            leftIcon="+91"
+                                            rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                            onChange={(e) =>
+                                                handleFieldChange(
+                                                    "ReferelMobileNumber",
+                                                    filterMobile(e.target.value)
+                                                )
+                                            }
+                                            placeholder="Enter Referral Mobile Number"
+                                        />
 
-                            handleFieldChange(
-                              "ReferelProjectId",
-                              Number(item.value),
-                            );
-                            handleFieldChange("ReferelInventoryFlatId", 0);
+                                        <Input
+                                            label="Referral Project Name"
+                                            required
+                                            type="text"
+                                            value={formData.ReferelProjectName ?? ""}
+                                            error={errors.ReferelProjectName}
+                                            onChange={(e) =>
+                                                handleFieldChange("ReferelProjectName", e.target.value)
+                                            }
+                                            placeholder="Enter Referral Project Name"
+                                            maxLength={200}
+                                        />
 
-                            setDropdownLabels((prev) => ({
-                              ...prev,
-                              referelInventoryFlat: "",
-                            }));
-                          }}
-                          initialValue={createDropdownInitialValue(
-                            formData.ReferelProjectId,
-                            dropdownLabels.referelProjectName,
-                          )}
-                          error={errors.ReferelProjectId}
-                        />
-                      </div>
-                      <div>
-                        <div>
-                          <SingleSelectDropdownWithPagination
-                            key={`unit-${formData.ReferelProjectId}`}
-                            label="Unit Number"
-                            required
-                            title="Select Unit Number"
-                            size="lg"
-                            dataFetchCallBack={fetchReferelInventoryFlats}
-                            onSelected={(item) => {
-                              if (!item) {
-                                handleFieldChange("ReferelInventoryFlatId", 0);
-                                return;
-                              }
-
-                              handleFieldChange(
-                                "ReferelInventoryFlatId",
-                                Number(item.value),
-                              );
-                            }}
-                            initialValue={createDropdownInitialValue(
-                              formData.ReferelInventoryFlatId,
-                              dropdownLabels.referelInventoryFlat,
-                            )}
-                            error={errors.ReferelInventoryFlatId}
-                          />
-                        </div>
-                      </div>
-                    </>
-                  )}
-                {formData.Source === "Direct Walking" &&
-                  formData.SubSource === "Loyalty" && (
-                    <>
-                      <div>
-                        <SingleSelectDropdownWithPagination
-                          label="Project"
-                          required
-                          title="Select Project"
-                          size="lg"
-                          dataFetchCallBack={fetchProjectDropdown}
-                          onSelected={(item) => {
-                            if (!item) {
-                              handleFieldChange("LoyaltyProjectId", 0);
-                              handleFieldChange("LoyaltyInventoryFlatId", 0);
-                              setDropdownLabels((prev) => ({
-                                ...prev,
-                                loyaltyInventoryFlat: "",
-                              }));
-
-                              return;
-                            }
-
-                            handleFieldChange(
-                              "LoyaltyProjectId",
-                              Number(item.value),
-                            );
-                            handleFieldChange("LoyaltyInventoryFlatId", 0);
-
-                            setDropdownLabels((prev) => ({
-                              ...prev,
-                              loyaltyInventoryFlat: "",
-                            }));
-                          }}
-                          initialValue={createDropdownInitialValue(
-                            formData.LoyaltyProjectId,
-                            dropdownLabels.loyaltyProjectName,
-                          )}
-                          error={errors.LoyaltyProjectId}
-                        />
-                      </div>
-
-                      <div>
-                        <SingleSelectDropdownWithPagination
-                          key={`unit-${formData.LoyaltyProjectId}`}
-                          label="Unit Number"
-                          required
-                          title="Select Unit Number"
-                          size="lg"
-                          dataFetchCallBack={fetchLoyaltyInventoryFlats}
-                          onSelected={(item) => {
-                            if (!item) {
-                              handleFieldChange("LoyaltyInventoryFlatId", 0);
-                              return;
-                            }
-
-                            handleFieldChange(
-                              "LoyaltyInventoryFlatId",
-                              Number(item.value),
-                            );
-                          }}
-                          initialValue={createDropdownInitialValue(
-                            formData.LoyaltyInventoryFlatId,
-                            dropdownLabels.loyaltyInventoryFlat,
-                          )}
-                          error={errors.LoyaltyInventoryFlatId}
-                        />
-                      </div>
-                    </>
-                  )}
-
-                {formData.Source === "Direct Walking" &&
-                  formData.SubSource === "Employee Reference" && (
-                    <>
-                      <div>
-                        <SingleSelectDropdownWithPagination
-                          label="Employee Reference Name"
-                          required
-                          title="Select Employee Reference Name"
-                          size="lg"
-                          dataFetchCallBack={fetchEmployeeMasterDropdown}
-                          onSelected={(item) => {
-                            if (!item) {
-                              handleFieldChange(
-                                "EmployeeReferenceEmployeeId",
-                                0,
-                              );
-                              return;
-                            }
-
-                            handleFieldChange(
-                              "EmployeeReferenceEmployeeId",
-                              Number(item.value),
-                            );
-                          }}
-                          initialValue={createDropdownInitialValue(
-                            formData.EmployeeReferenceEmployeeId,
-                            dropdownLabels.employeeReferenceEmployeeName,
-                          )}
-                          error={errors.EmployeeReferenceEmployeeId}
-                        />
-                      </div>
-                    </>
-                  )}
-
-                {formData.Source === "Channel Partner" && (
-                  <>
-                    <SinglePageSelection
-                      label="Sub Source"
-                      required={
-                        formData.Source === "Channel Partner" ? true : false
-                      }
-                      placeholder="Select Sub Source"
-                      value={formData.SubSource ?? ""}
-                      onChange={(value) =>
-                        handleFieldChange("SubSource", String(value))
-                      }
-                      options={SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS.map(
-                        (opt) => ({
-                          label: opt.name,
-                          value: opt.id,
-                        }),
-                      )}
-                      error={errors.SubSource}
-                    />
-                    <div>
-                      <Input
-                        type="text"
-                        required
-                        label="Channel Partner"
-                        value={channelPartnerSearchByMobileNumber}
-                        maxLength={10}
-                        onChange={(e) => {
-                          handleSearchByChannelPartner(e.target.value);
-                          setChannelPartnerSearchByMobileNumber(e.target.value);
-                        }}
-                        placeholder="Search By Mobile Number"
-                        leftIcon={<Search className="h-4 w-4 text-gray-400" />}
-                        error={errors.ChannelPartnerId}
-                      />
-                    </div>
-                    {channelPartnerFullName != "" && (
-                      <>
-                        {formData.ChannelPartnerTeamMemberName === "" &&
-                          formData.ChannelPartnerTeamMemberMobileNumber ===
-                            "" && (
-                            <div>
-                              <SingleSelectDropdownWithPagination
-                                label="Team Member"
-                                title="Select Team Member"
-                                size="lg"
-                                initialValue={createDropdownInitialValue(
-                                  formData.ChannelPartnerTeamMemberId,
-                                  dropdownLabels.ChannelPartnerTeamMemberName,
+                                        <Input
+                                            label="Referral Unit Number"
+                                            required
+                                            type="text"
+                                            value={formData.ReferelUnitNumber ?? ""}
+                                            error={errors.ReferelUnitNumber}
+                                            onChange={(e) =>
+                                                handleFieldChange("ReferelUnitNumber", e.target.value)
+                                            }
+                                            placeholder="Enter Referral Unit Number"
+                                            maxLength={50}
+                                        />
+                                    </>
                                 )}
-                                dataFetchCallBack={
-                                  fetchChannelPartnerTeamMember
-                                }
-                                onSelected={(item) => {
-                                  if (!item) {
-                                    handleFieldChange(
-                                      "ChannelPartnerTeamMemberId",
-                                      0,
-                                    );
-                                    handleFieldChange(
-                                      "ChannelPartnerTeamMemberName",
-                                      "",
-                                    );
-                                    handleFieldChange(
-                                      "ChannelPartnerTeamMemberMobileNumber",
-                                      "",
-                                    );
-                                    return;
-                                  }
+                                {formData.Source === 'Direct Walking' && formData.SubSource === 'Loyalty' && (
+                                    <>
+                                        <Input
+                                            label="Existing Project Name"
+                                            required
+                                            type="text"
+                                            value={formData.LoyaltyExistingProjectName ?? ""}
+                                            error={errors.LoyaltyExistingProjectName}
+                                            onChange={(e) =>
+                                                handleFieldChange("LoyaltyExistingProjectName", e.target.value)
+                                            }
+                                            placeholder="Enter Existing Project Name"
+                                            maxLength={200}
+                                        />
+
+                                        <Input
+                                            label="Existing Unit Number"
+                                            required
+                                            type="text"
+                                            value={formData.LoyaltyExistingUnitNumber ?? ""}
+                                            error={errors.LoyaltyExistingUnitNumber}
+                                            onChange={(e) =>
+                                                handleFieldChange("LoyaltyExistingUnitNumber", e.target.value)
+                                            }
+                                            placeholder="Enter Existing Unit Number"
+                                            maxLength={50}
+                                        />
+
+                                    </>
+                                )}
+
+                                {formData.Source === 'Direct Walking' && formData.SubSource === 'Employee Reference' && (
+                                    <>
+                                        <Input
+                                            label="Employee Name"
+                                            required
+                                            type="text"
+                                            value={formData.EmployeeReferenceName ?? ""}
+                                            error={errors.EmployeeReferenceName}
+                                            onChange={(e) =>
+                                                handleFieldChange("EmployeeReferenceName", e.target.value)
+                                            }
+                                            placeholder="Enter Employee Name"
+                                            maxLength={150}
+                                        />
+
+                                        <Input
+                                            label="Employee Mobile Number"
+                                            required
+                                            type="text"
+                                            maxLength={10}
+                                            value={formData.EmployeeReferenceMobileNumber ?? ""}
+                                            error={errors.EmployeeReferenceMobileNumber}
+                                            leftIcon="+91"
+                                            rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                            onChange={(e) =>
+                                                handleFieldChange("EmployeeReferenceMobileNumber", filterMobile(e.target.value)
+                                                )
+                                            }
+                                            placeholder="Enter Employee Mobile Number"
+                                        />
+
+
+                                    </>
+                                )}
+
+                                {formData.Source === 'Channel Partner' && (
+                                    <>
+                                        <SinglePageSelection
+                                            label="Sub Source"
+                                            required={formData.Source === 'Channel Partner' ? true : false}
+                                            placeholder="Select Sub Source"
+                                            value={formData.SubSource ?? ''}
+                                            onChange={(value) => handleFieldChange("SubSource", String(value))}
+                                            options={SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS.map(opt => ({
+                                                label: opt.name,
+                                                value: opt.id
+                                            }))}
+                                            error={errors.SubSource}
+                                        />
+                                        <div>
+                                            <Input
+                                                type="text"
+                                                required
+                                                label="Channel Partner"
+                                                value={channelPartnerSearchByMobileNumber}
+                                                maxLength={10}
+                                                onChange={(e) => {
+                                                    handleSearchByChannelPartner(e.target.value);
+                                                    setChannelPartnerSearchByMobileNumber(e.target.value);
+                                                }}
+                                                placeholder="Search By Mobile Number"
+                                                leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+                                                error={errors.ChannelPartnerId}
+
+                                            />
+
+                                        </div>
+                                        {channelPartnerFullName != '' && (
+                                            <>
+                                                {(formData.ChannelPartnerTeamMemberName === "" && formData.ChannelPartnerTeamMemberMobileNumber === "") && (
+                                                    <div>
+                                                        <SingleSelectDropdownWithPagination
+                                                            label="Team Member"
+                                                            title="Select Team Member"
+                                                            size="lg"
+                                                            initialValue={createDropdownInitialValue(
+                                                                formData.ChannelPartnerTeamMemberId,
+                                                                dropdownLabels.ChannelPartnerTeamMemberName
+                                                            )}
+                                                            dataFetchCallBack={fetchChannelPartnerTeamMember}
+                                                            onSelected={(item) => {
+                                                                if (!item) {
+                                                                    handleFieldChange("ChannelPartnerTeamMemberId", null);
+                                                                    handleFieldChange("ChannelPartnerTeamMemberName", "");
+                                                                    handleFieldChange("ChannelPartnerTeamMemberMobileNumber", "");
+                                                                    return;
+                                                                }
 
                                   handleFieldChange(
                                     "ChannelPartnerTeamMemberId",
@@ -1587,173 +1413,8 @@ export const AddUpdateEnquiry: React.FC = () => {
                   </>
                 )}
 
-              {(formData.EmployeeReferenceEmployeeId ?? 0) > 0 && (
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <FieldItem
-                      label="Department"
-                      value={employeeDetails?.Department || "-"}
-                    />
-                    <FieldItem
-                      label="Designation"
-                      value={employeeDetails?.Designation || "-"}
-                    />
-                    <FieldItem
-                      label="Branch"
-                      value={employeeDetails?.Branch || "-"}
-                    />
-                    <FieldItem
-                      label="Reporting Person"
-                      value={employeeDetails?.ReportPersonName || "-"}
-                    />
-                    <FieldItem
-                      label="Email ID"
-                      value={employeeDetails?.EmailId || "-"}
-                    />
-                    <FieldItem
-                      label="Personal Mobile Number"
-                      value={employeeDetails?.PersonalMobileNumber || "-"}
-                    />
-                  </div>
-                </div>
-              )}
 
-              {Number(formData.ReferelInventoryFlatId) != 0 &&
-                Number(formData.ReferelProjectId) != 0 && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <FieldItem
-                        label="Building"
-                        value={referelInventoryFlatData?.BuildingNumber || "-"}
-                      />
-                      <FieldItem
-                        label="Wing"
-                        value={referelInventoryFlatData?.Wing || "-"}
-                      />
-                      <FieldItem
-                        label="Floor"
-                        value={referelInventoryFlatData?.Floor || "-"}
-                      />
-                      <FieldItem
-                        label="Flat Number"
-                        value={referelInventoryFlatData?.Flat || "-"}
-                      />
-                      <FieldItem
-                        label="Carpet Area (SqFt)"
-                        value={
-                          referelInventoryFlatData?.RERACarpetAreaSqFt || "-"
-                        }
-                      />
-                      <FieldItem
-                        label="Flat Type"
-                        value={referelInventoryFlatData?.FlatType || "-"}
-                      />
-                      <FieldItem
-                        label="Configuration"
-                        value={
-                          referelInventoryFlatData?.FlatConfiguration || "-"
-                        }
-                      />
-                      <FieldItem
-                        label="Facing"
-                        value={referelInventoryFlatData?.FlatFacing || "-"}
-                      />
-                      <FieldItem
-                        label="Status"
-                        value={referelInventoryFlatData?.FlatStatus || "-"}
-                      />
-                      <FieldItem
-                        label="Owner Name"
-                        value={referelInventoryFlatData?.OwnerName || "-"}
-                      />
-                      <FieldItem
-                        label="Booked By"
-                        value={
-                          referelInventoryFlatData?.BookingCreatedBy || "-"
-                        }
-                      />
-                      <FieldItem
-                        label="Booking Date"
-                        value={
-                          referelInventoryFlatData?.BookingCreatedDate
-                            ? new Date(
-                                referelInventoryFlatData?.BookingCreatedDate,
-                              ).toLocaleDateString()
-                            : "-"
-                        }
-                      />
-                    </div>
-                  </div>
-                )}
-
-              {Number(formData.LoyaltyInventoryFlatId) != 0 &&
-                Number(formData.LoyaltyProjectId) != 0 && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                      <FieldItem
-                        label="Building"
-                        value={loyaltyInventoryFlatData?.BuildingNumber || "-"}
-                      />
-                      <FieldItem
-                        label="Wing"
-                        value={loyaltyInventoryFlatData?.Wing || "-"}
-                      />
-                      <FieldItem
-                        label="Floor"
-                        value={loyaltyInventoryFlatData?.Floor || "-"}
-                      />
-                      <FieldItem
-                        label="Flat Number"
-                        value={loyaltyInventoryFlatData?.Flat || "-"}
-                      />
-                      <FieldItem
-                        label="Carpet Area (SqFt)"
-                        value={
-                          loyaltyInventoryFlatData?.RERACarpetAreaSqFt || "-"
-                        }
-                      />
-                      <FieldItem
-                        label="Flat Type"
-                        value={loyaltyInventoryFlatData?.FlatType || "-"}
-                      />
-                      <FieldItem
-                        label="Configuration"
-                        value={
-                          loyaltyInventoryFlatData?.FlatConfiguration || "-"
-                        }
-                      />
-                      <FieldItem
-                        label="Facing"
-                        value={loyaltyInventoryFlatData?.FlatFacing || "-"}
-                      />
-                      <FieldItem
-                        label="Status"
-                        value={loyaltyInventoryFlatData?.FlatStatus || "-"}
-                      />
-                      <FieldItem
-                        label="Owner Name"
-                        value={loyaltyInventoryFlatData?.OwnerName || "-"}
-                      />
-                      <FieldItem
-                        label="Booked By"
-                        value={
-                          loyaltyInventoryFlatData?.BookingCreatedBy || "-"
-                        }
-                      />
-                      <FieldItem
-                        label="Booking Date"
-                        value={
-                          loyaltyInventoryFlatData?.BookingCreatedDate
-                            ? new Date(
-                                loyaltyInventoryFlatData?.BookingCreatedDate,
-                              ).toLocaleDateString()
-                            : "-"
-                        }
-                      />
-                    </div>
-                  </div>
-                )}
-            </div>
+                        </div>
 
             {/* ============================================================= [ADDRESS] ============================================================================================= */}
             <div className="space-y-4 pb-3">
@@ -1857,75 +1518,61 @@ export const AddUpdateEnquiry: React.FC = () => {
                       </div>
                     )}
 
-                    <div>
-                      <MultiSelectPagination
-                        label="Location"
-                        dataFetchCallBack={fetchVillageDropdown}
-                        selectedValues={villageDropdown.selectedValues}
-                        options={villageDropdown.initialOptions}
-                        onChange={(values) => {
-                          const { idsString } =
-                            villageDropdown.handleChange(values);
-                          setSelectedVillageValues(idsString || null);
-                          if (errors.VillageMasterId) {
-                            setErrors((prev) => ({
-                              ...prev,
-                              VillageMasterId: "",
-                            }));
-                          }
-                        }}
-                      />
-                    </div>
-                    <div>
-                      <SinglePageSelection
-                        label="Timeline"
-                        placeholder="Select Timeline"
-                        value={formData.Timeline ?? ""}
-                        onChange={(value) =>
-                          handleFieldChange("Timeline", value)
-                        }
-                        options={ENQUIRY_TIMELINE.map((opt) => ({
-                          label: opt.name,
-                          value: opt.id,
-                        }))}
-                        error={errors.Timeline}
-                      />
-                    </div>
-                    <div>
-                      <Input
-                        label="Area Preferred (SqFt)"
-                        error={errors.AreaPreferred}
-                        type="text"
-                        value={formData.AreaPreferred ?? ""}
-                        rightIcon="SqFt"
-                        maxLength={10}
-                        onChange={(e) => {
-                          const digits = e.target.value.replace(/\D/g, "");
-                          handleFieldChange(
-                            "AreaPreferred",
-                            digits === "" ? 0 : Number(digits),
-                          );
-                        }}
-                        placeholder="Enter Area Preferred"
-                      />
-                    </div>
-                    <div>
-                      <SinglePageSelection
-                        label="Desired Floor Band"
-                        placeholder="Select Desired Floor Band"
-                        value={formData.DesiredFloorBand ?? ""}
-                        onChange={(value) =>
-                          handleFieldChange("DesiredFloorBand", value)
-                        }
-                        options={DESIRED_FLOOR_BAND.map((opt) => ({
-                          label: opt.name,
-                          value: opt.id,
-                        }))}
-                        error={errors.DesiredFloorBand}
-                      />
-                    </div>
-                  </div>
-                </div>
+                                        <div>
+                                            <MultiSelectPagination
+                                                label="Location"
+                                                dataFetchCallBack={fetchVillageDropdown}
+                                                selectedValues={villageDropdown.selectedValues}
+                                                options={villageDropdown.initialOptions}
+
+                                                onChange={(values) => {
+                                                    const { idsString } = villageDropdown.handleChange(values);
+                                                    setSelectedVillageValues(idsString || null);
+                                                    if (errors.VillageMasterId) {
+                                                        setErrors((prev) => ({ ...prev, VillageMasterId: '' }));
+                                                    }
+                                                }}
+                                            />
+                                            
+
+                                        </div>
+                                        <div>
+                                            <SinglePageSelection
+                                                label="Timeline"
+                                                placeholder="Select Timeline"
+                                                value={formData.Timeline ?? ''}
+                                                onChange={(value) => handleFieldChange("Timeline", value)}
+                                                options={ENQUIRY_TIMELINE.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.Timeline}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Input
+                                                label='Area Preferred (SqFt)'
+                                                error={errors.AreaPreferred}
+                                                type="text"
+                                                value={formData.AreaPreferred ?? ''}
+                                                rightIcon="SqFt"
+                                                maxLength={10}
+                                                onChange={(e) => {
+                                                    const digits = e.target.value.replace(/\D/g, '');
+                                                    handleFieldChange('AreaPreferred', digits === '' ? 0 : Number(digits));
+                                                }}
+                                                placeholder="Enter Area Preferred"
+                                            />
+                                        </div>
+                                        <div>
+                                            <SinglePageSelection
+                                                label="Desired Floor Band"
+                                                placeholder="Select Desired Floor Band"
+                                                value={formData.DesiredFloorBand ?? ''}
+                                                onChange={(value) => handleFieldChange("DesiredFloorBand", value)}
+                                                options={DESIRED_FLOOR_BAND.map(opt => ({ label: opt.name, value: opt.id }))}
+                                                error={errors.DesiredFloorBand}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
 
                 <div className="space-y-4 pb-3">
                   <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">

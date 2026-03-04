@@ -16,7 +16,7 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useNavigate } from 'react-router-dom';
-import { Input } from '@/ui/components/forms';
+import {  Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
@@ -24,8 +24,6 @@ import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { useBookingListState } from '@/features/booking/context/BookingListStateContext';
-import { SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS, SUB_SUB_SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from '@/core/constants';
-import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 
 export const Booking: React.FC = () => {
     //#region STATE
@@ -78,9 +76,7 @@ export const Booking: React.FC = () => {
                     Wing: filterParams.Wing?.trim() || undefined,
                     Flat: filterParams.Flat?.trim() || undefined,
                     Floor: filterParams.Floor?.trim() || undefined,
-                    Source: filterParams.Source || undefined,
-                    SubSource: filterParams.SubSource || undefined,
-                    SubSubSource: filterParams.SubSubSource || undefined,
+                    Source: filterParams.Source?.trim() || undefined,
                     AgreementValue: filterParams.AgreementValue ? Number(filterParams.AgreementValue) : undefined,
                     BookingType: filterParams.BookingType?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, bookingColumns)
@@ -207,9 +203,7 @@ export const Booking: React.FC = () => {
                     Wing: tempFilters.Wing?.trim() || undefined,
                     Flat: tempFilters.Flat?.trim() || undefined,
                     Floor: tempFilters.Floor?.trim() || undefined,
-                    Source: tempFilters.Source || undefined,
-                    SubSource: tempFilters.SubSource || undefined,
-                    SubSubSource: tempFilters.SubSubSource || undefined,
+                    Source: tempFilters.Source?.trim() || undefined,
                     AgreementValue: tempFilters.AgreementValue ? Number(tempFilters.AgreementValue) : undefined,
                     BookingType: tempFilters.BookingType?.trim() || undefined,
                     SortBy: getSortByParam(null, bookingColumns),
@@ -280,22 +274,6 @@ export const Booking: React.FC = () => {
     const bookingColumns = useMemo<TableColumn[]>(
         () => [
             {
-                key: 'SystemGeneratedCode',
-                label: 'Enquiry Code',
-                width: '20',
-                sortable: true,
-                fixed: 'left',
-                align: 'left',
-                render: value => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="150px"
-                        tooltipThreshold={20}
-                        tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                    />
-                )
-            },
-            {
                 key: 'ApplicantName',
                 label: 'Applicant Name',
                 width: '20',
@@ -365,7 +343,7 @@ export const Booking: React.FC = () => {
                 align: 'center',
                 render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
             },
-
+           
         ],
         [canAction, handleViewBookingDetails]
     );
@@ -565,66 +543,14 @@ export const Booking: React.FC = () => {
                         </div>
 
                         <div>
-                            <SinglePageSelection
-                                label="Source"
-                                placeholder="Select Source"
+                            <Input
+                                label='Source'
+                                type="text"
                                 value={tempFilters.Source || ''}
-                                onChange={e => handleFilterChange('Source', String(e))}
-                                options={SOURCE_TYPE_OPTIONS.map(opt => ({
-                                    label: opt.name,
-                                    value: opt.id
-                                }))}
+                                onChange={e => handleFilterChange('Source', e.target.value)}
+                                placeholder="Enter Source"
                             />
-
                         </div>
-                        {/* SUB SOURCE */}
-                        {tempFilters.Source === 'Direct Walking' && (
-                            <div>
-                                <SinglePageSelection
-                                    label="Sub Source"
-                                    placeholder="Select Sub Source"
-                                    value={tempFilters.SubSource || ''}
-                                    onChange={e => handleFilterChange('SubSource', String(e))}
-                                    options={SUBSOURCE_TYPE_OPTIONS.map(opt => ({
-                                        label: opt.name,
-                                        value: opt.id
-                                    }))}
-                                />
-                            </div>
-                        )}
-
-                        {/* SUB SUB SOURCE */}
-                        {tempFilters.Source === 'Direct Walking' &&
-                            tempFilters.SubSource === 'Advertisement' && (
-                                <div>
-                                    <SinglePageSelection
-                                        label="Sub Sub Source"
-                                        placeholder="Select Sub Sub Source"
-                                        value={tempFilters.SubSubSource || ''}
-                                        onChange={e => handleFilterChange('SubSubSource', String(e))}
-                                        options={SUB_SUB_SOURCE_TYPE_OPTIONS.map(opt => ({
-                                            label: opt.name,
-                                            value: opt.id
-                                        }))}
-                                    />
-                                </div>
-                            )}
-
-                        {/* CHANNEL PARTNER SUB SOURCE */}
-                        {tempFilters.Source === 'Channel Partner' && (
-                            <div>
-                                <SinglePageSelection
-                                    label="Sub Source"
-                                    placeholder="Select Sub Source"
-                                    value={tempFilters.SubSource || ''}
-                                    onChange={e => handleFilterChange('SubSource', String(e))}
-                                    options={SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS.map(opt => ({
-                                        label: opt.name,
-                                        value: opt.id
-                                    }))}
-                                />
-                            </div>
-                        )}
 
                         <div>
                             <Input

@@ -19,13 +19,11 @@ export interface SourcingTargetData {
     ProjectId: number;
     EmployeeId: number;
     EmployeeName: string;
+    DesignationName: string;
 
     WalkinsByCP: number;
-    WalkinsDirect: number;
     FreshVisits: number;
     Revisits: number;
-    BookingByCP: number;
-    BookingDirect: number;
     Bookings: number;
 
     TotalMeetings: number;

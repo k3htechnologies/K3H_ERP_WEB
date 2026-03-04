@@ -4,8 +4,8 @@ import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type Ta
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import type { BookingData, FilterWithPaginationBookingRequest } from '@/features/booking/models/BookingModel';
-import { bookingService } from '@/features/booking/services/BookingService';
+import type { IncentiveReportData, FilterWithPaginationIncentiveReportRequest } from '@/features/incentiveReport/models/IncentiveReportModel';
+import { incentiveReportService } from '@/features/incentiveReport/services/IncentiveReportService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
@@ -22,14 +22,13 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
-import { useBookingListState } from '@/features/booking/context/BookingListStateContext';
-import { SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS, SUB_SUB_SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from '@/core/constants';
+import { useIncentiveReportListState } from '@/features/incentiveReport/context/IncentiveReportListStateContext';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from '@/core/constants';
 
-export const Booking: React.FC = () => {
+export const IncentiveReport: React.FC = () => {
     //#region STATE
-    const [bookingList, setBookingList] = useState<BookingData[]>([]);
+    const [incentiveReportList, setIncentiveReportList] = useState<IncentiveReportData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const navigate = useNavigate();
@@ -42,7 +41,7 @@ export const Booking: React.FC = () => {
 
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-    const [isShowCustomizeBookingColumnsModal, setIsShowCustomizeBookingColumnsModal] = useState(false);
+    const [isShowCustomizeIncentiveReportColumnsModal, setIsShowCustomizeIncentiveReportColumnsModal] = useState(false);
 
     const { canAction, canExport } = useMenuPermissions();
 
@@ -53,20 +52,20 @@ export const Booking: React.FC = () => {
     //#endregion
 
     //#region BOOKING LIST STATE CONTEXT
-    const { listState, updateListState, resetFilters, clearBookingContext } = useBookingListState();
+    const { listState, updateListState, resetFilters, clearIncentiveReportContext } = useIncentiveReportListState();
 
     const { page, filters, sortInfo, searchTerm } = listState;
     //#endregion
 
-    //#region DATA LOAD BOOKING
+    //#region DATA LOAD INCENTIVE REPORT
 
-    const loadBookings = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+    const loadIncentiveReport = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
 
-                const params: FilterWithPaginationBookingRequest = {
+                const params: FilterWithPaginationIncentiveReportRequest = {
                     PageNumber: pageNum,
                     PageSize: pagination.pageSize,
                     BookingId: filterParams.BookingId ? Number(filterParams.BookingId) : undefined,
@@ -83,14 +82,14 @@ export const Booking: React.FC = () => {
                     SubSubSource: filterParams.SubSubSource || undefined,
                     AgreementValue: filterParams.AgreementValue ? Number(filterParams.AgreementValue) : undefined,
                     BookingType: filterParams.BookingType?.trim() || undefined,
-                    SortBy: getSortByParam(sortInfo ?? null, bookingColumns)
+                    SortBy: getSortByParam(sortInfo ?? null, incentiveReportColumns)
                 };
 
-                const response = await bookingService.apiCallPullBooking(params);
+                const response = await incentiveReportService.apiCallPullIncentiveReport(params);
 
                 if (E.isRight(response)) {
 
-                    setBookingList(response.right.Data);
+                    setIncentiveReportList(response.right.Data);
 
                     setPagination({
                         currentPage: pageNum,
@@ -109,7 +108,7 @@ export const Booking: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Booking'
+            'Loading Incentive Report'
         );
     };
 
@@ -120,18 +119,18 @@ export const Booking: React.FC = () => {
 
         if (!projectId) return;
 
-        clearBookingContext();
+        clearIncentiveReportContext();
 
         if (searchTerm && searchTerm.trim()) {
 
-            loadBookings(page, { ApplicantName: searchTerm.trim() }, sortInfo);
+            loadIncentiveReport(page, { ApplicantName: searchTerm.trim() }, sortInfo);
 
         } else {
 
-            loadBookings(page, filters, sortInfo);
+            loadIncentiveReport(page, filters, sortInfo);
 
         }
-    }, [projectId, page, filters, sortInfo, searchTerm, clearBookingContext]);
+    }, [projectId, page, filters, sortInfo, searchTerm, clearIncentiveReportContext]);
 
 
     useEffect(() => {
@@ -148,7 +147,7 @@ export const Booking: React.FC = () => {
 
     //#endregion
 
-    //#region SEARCH BOOKING FILTER
+    //#region SEARCH INCENTIVE REPORT FILTER
 
     const debouncedSearch = useDebouncedCallback((value: string, isSearch: boolean = true) => {
 
@@ -170,7 +169,7 @@ export const Booking: React.FC = () => {
 
     }, 350);
 
-    const searchBookings = (searchValue: string) => {
+    const searchIncentiveReport = (searchValue: string) => {
 
         updateListState({ searchTerm: searchValue });
 
@@ -179,8 +178,8 @@ export const Booking: React.FC = () => {
 
     //#endregion
 
-    //#region CLEAR SEARCH BOOKING
-    const clearSearchBookings = () => {
+    //#region CLEAR SEARCH INCENTIVE REPORT
+    const clearSearchIncentiveReport = () => {
         debouncedSearch.cancel?.();
         resetFilters();
         setTempFilters({});
@@ -189,14 +188,14 @@ export const Booking: React.FC = () => {
     //#endregion
 
     //#region  EXCEL EXPORT TO EXCEL | PDF
-    const handleExportBookings = async (exportType: 'Excel' | 'PDF' | 'BOOKING FORM PDF') => {
+    const handleExportIncentiveReport = async (exportType: 'Excel' | 'PDF' | 'BOOKING FORM PDF') => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
 
 
-                const params: FilterWithPaginationBookingRequest = {
+                const params: FilterWithPaginationIncentiveReportRequest = {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     ProjectId: projectId ?? undefined,
@@ -212,17 +211,17 @@ export const Booking: React.FC = () => {
                     SubSubSource: tempFilters.SubSubSource || undefined,
                     AgreementValue: tempFilters.AgreementValue ? Number(tempFilters.AgreementValue) : undefined,
                     BookingType: tempFilters.BookingType?.trim() || undefined,
-                    SortBy: getSortByParam(null, bookingColumns),
+                    SortBy: getSortByParam(null, incentiveReportColumns),
                     ExportType: exportType
                 };
 
-                const response = await bookingService.apiCallPullBooking(params);
+                const response = await incentiveReportService.apiCallPullIncentiveReport(params);
 
                 if (exportType === 'BOOKING FORM PDF') {
-                    // Handle PDF export differently if needed
-                    handleExportFile(response, 'PDF', 'Booking Form', addToast);
+
+                    handleExportFile(response, 'PDF', 'Incentive Report Form', addToast);
                 } else {
-                    handleExportFile(response, exportType, 'Booking Master', addToast);
+                    handleExportFile(response, exportType, 'Incentive Report', addToast);
                 }
 
                 return response;
@@ -236,8 +235,8 @@ export const Booking: React.FC = () => {
         );
     };
 
-    const handleExportBookingExcel = () => handleExportBookings('Excel');
-    const handleExportBookingPdf = () => handleExportBookings('PDF');
+    const handleExportIncentiveReportExcel = () => handleExportIncentiveReport('Excel');
+    const handleExportIncentiveReportPdf = () => handleExportIncentiveReport('PDF');
 
     //#endregion
 
@@ -250,7 +249,7 @@ export const Booking: React.FC = () => {
         updateListState({ sortInfo: sort, page: 1 });
     }, [updateListState]);
 
-    const bookingPaginationInfo: PaginationInfo = useMemo(
+    const incentiveReportPaginationInfo: PaginationInfo = useMemo(
         () => ({
             currentPage: pagination.currentPage,
             totalPages: pagination.totalPages,
@@ -261,23 +260,23 @@ export const Booking: React.FC = () => {
         [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
     );
 
-    const bookingsForTable = useMemo(() => bookingList, [bookingList]);
+    const incentiveReportForTable = useMemo(() => incentiveReportList, [incentiveReportList]);
     //#endregion
 
-    //#region VIEW BOOKING DETAILS
-    const handleViewBookingDetails = useCallback((row: BookingData) => {
+    //#region VIEW INCENTIVE DETAILS
+    const handleViewIncentiveReportDetails = useCallback((row: IncentiveReportData) => {
         updateListState({
             bookingId: row.BookingId ?? 0,
             bookingName: row.ApplicantName ?? '',
         });
-        navigate('/booking/view');
+        navigate('/incentiveReport/view');
     }, [navigate, updateListState]);
     //#endregion
 
 
 
     //#region TABLE COLUMN
-    const bookingColumns = useMemo<TableColumn[]>(
+    const incentiveReportColumns = useMemo<TableColumn[]>(
         () => [
             {
                 key: 'SystemGeneratedCode',
@@ -310,7 +309,7 @@ export const Booking: React.FC = () => {
                                     text={value || '-'}
                                     maxWidth="260px"
                                     tooltipThreshold={26}
-                                    onClick={() => handleViewBookingDetails(row)}
+                                    onClick={() => handleViewIncentiveReportDetails(row)}
                                 />
                             </div>
                         </div>
@@ -326,10 +325,10 @@ export const Booking: React.FC = () => {
                 render: value => value || '-'
             },
             {
-                key: 'Flat',
-                label: 'Flat',
-                width: '12',
-                sortable: true,
+                key: 'BuildingNumber',
+                label: 'Building',
+                width: '10',
+                sortable: false,
                 align: 'left',
                 render: value => value || '-'
             },
@@ -350,6 +349,30 @@ export const Booking: React.FC = () => {
                 render: value => value || '-'
             },
             {
+                key: 'Flat',
+                label: 'Flat',
+                width: '12',
+                sortable: true,
+                align: 'left',
+                render: value => value || '-'
+            },
+            {
+                key: 'RERACarpetAreaSqFt',
+                label: 'RERA Carpet Area (SqFt )',
+                width: '12',
+                sortable: true,
+                align: 'left',
+                render: value => value || '-'
+            },
+            {
+                key: 'FlatConfiguration',
+                label: 'Flat Configuration',
+                width: '12',
+                sortable: true,
+                align: 'left',
+                render: value => value || '-'
+            },
+            {
                 key: 'AgreementValue',
                 label: 'Agreement Value (₹)',
                 width: '18',
@@ -358,50 +381,91 @@ export const Booking: React.FC = () => {
                 render: value => value ? `₹${Number(value).toLocaleString('en-IN')}` : '-'
             },
             {
-                key: 'RegistrationDate',
-                label: 'Expected Registration Date',
-                width: '16',
-                sortable: true,
-                align: 'center',
-                render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
+                key: 'Brokerage',
+                label: 'Brokerage (%) / Amount (₹)',
+                width: '22',
+                sortable: false,
+                align: 'right',
+                render: (_, row) => {
+                    if (!row.BrokeragePercentage && !row.BrokerageAmount) return '-';
+
+                    return `${Number(row.BrokeragePercentage ?? 0).toFixed(2)}% / ₹${Number(row.BrokerageAmount ?? 0).toLocaleString('en-IN')}`;
+                }
+            },
+            {
+                key: 'Referel',
+                label: 'Referral (%) / Amount (₹)',
+                width: '22',
+                sortable: false,
+                align: 'right',
+                render: (_, row) => {
+                    if (!row.ReferelPercentage && !row.ReferelAmount) return '-';
+
+                    return `${Number(row.ReferelPercentage ?? 0).toFixed(2)}% / ₹${Number(row.ReferelAmount ?? 0).toLocaleString('en-IN')}`;
+                }
+            },
+            {
+                key: 'Loyalty',
+                label: 'Loyalty (%) / Amount (₹)',
+                width: '22',
+                sortable: false,
+                align: 'right',
+                render: (_, row) => {
+                    if (!row.LoyaltyPercentage && !row.LoyaltyAmount) return '-';
+
+                    return `${Number(row.LoyaltyPercentage ?? 0).toFixed(2)}% / ₹${Number(row.LoyaltyAmount ?? 0).toLocaleString('en-IN')}`;
+                }
+            },
+            {
+                key: 'EmployeeReferencePercentage',
+                label: 'Employee Reference (%) / Amount (₹)',
+                width: '22',
+                sortable: false,
+                align: 'right',
+                render: (_, row) => {
+                    if (!row.EmployeeReferencePercentage && !row.EmployeeReferenceAmount) return '-';
+
+                    return `${Number(row.EmployeeReferencePercentage ?? 0).toFixed(2)}% / ₹${Number(row.EmployeeReferenceAmount ?? 0).toLocaleString('en-IN')}`;
+                }
             },
 
+
         ],
-        [canAction, handleViewBookingDetails]
+        [canAction, handleViewIncentiveReportDetails]
     );
     //#endregion
 
     //#region CUSTOMIZE COLUMNS
-    const requiredBookingColumnKeys: string[] = ['ApplicantName', 'Actions'];
+    const requiredIncentiveReportColumnKeys: string[] = ['ApplicantName', 'Actions'];
 
-    const allBookingColumnKeys: string[] = bookingColumns.map(c => c.key);
+    const allIncentiveReportColumnKeys: string[] = incentiveReportColumns.map(c => c.key);
 
-    const [selectedBookingColumnKeys, setSelectedBookingColumnKeys] = useState<string[]>(() => {
+    const [selectedIncentiveReportColumnKeys, setSelectedIncentiveReportColumnKeys] = useState<string[]>(() => {
         try {
-            const saved = LocalStorageHelper.getBookingTableColumns?.();
+            const saved = LocalStorageHelper.getIncentiveReportTableColumns?.();
             if (saved) {
                 const parsed = JSON.parse(saved) as string[];
-                const withRequired = Array.from(new Set([...parsed, ...requiredBookingColumnKeys]));
-                return withRequired.filter(k => allBookingColumnKeys.includes(k));
+                const withRequired = Array.from(new Set([...parsed, ...requiredIncentiveReportColumnKeys]));
+                return withRequired.filter(k => allIncentiveReportColumnKeys.includes(k));
             }
         } catch {
             // ignore
         }
-        return allBookingColumnKeys;
+        return allIncentiveReportColumnKeys;
     });
 
     useEffect(() => {
-        setSelectedBookingColumnKeys(prev =>
-            Array.from(new Set([...prev, ...requiredBookingColumnKeys])).filter(k =>
-                allBookingColumnKeys.includes(k)
+        setSelectedIncentiveReportColumnKeys(prev =>
+            Array.from(new Set([...prev, ...requiredIncentiveReportColumnKeys])).filter(k =>
+                allIncentiveReportColumnKeys.includes(k)
             )
         );
 
-    }, [bookingColumns.length]);
+    }, [incentiveReportColumns.length]);
 
-    const visibleBookingColumns = useMemo(
-        () => bookingColumns.filter(col => selectedBookingColumnKeys.includes(col.key)),
-        [bookingColumns, selectedBookingColumnKeys]
+    const visibleIncentiveReportColumns = useMemo(
+        () => incentiveReportColumns.filter(col => selectedIncentiveReportColumnKeys.includes(col.key)),
+        [incentiveReportColumns, selectedIncentiveReportColumnKeys]
     );
     //#endregion
 
@@ -424,8 +488,8 @@ export const Booking: React.FC = () => {
                 isShowSearchBar
                 searchTerm={searchTerm}
                 searchPlaceholder="Search By Applicant Name"
-                onSearchChange={searchBookings}
-                onClearSearch={clearSearchBookings}
+                onSearchChange={searchIncentiveReport}
+                onClearSearch={clearSearchIncentiveReport}
                 isShowFilterButton
                 filters={tempFilters}
                 onOpenFilter={() => {
@@ -433,22 +497,22 @@ export const Booking: React.FC = () => {
                     setShowFilterPopup(true);
                 }}
                 isShowCustomizeButton
-                onCustomize={() => setIsShowCustomizeBookingColumnsModal(true)}
+                onCustomize={() => setIsShowCustomizeIncentiveReportColumnsModal(true)}
                 // IMPORT
                 isShowImportButton={false}
 
                 // EXPORT
-                isShowExportButton={canExport && bookingsForTable.length > 0}
-                onExportExcel={handleExportBookingExcel}
-                onExportPdf={handleExportBookingPdf}
+                isShowExportButton={canExport && incentiveReportForTable.length > 0}
+                onExportExcel={handleExportIncentiveReportExcel}
+                onExportPdf={handleExportIncentiveReportPdf}
                 exportLoading={isLoading}
             />
 
             <DataTable
-                data={bookingsForTable}
-                columns={visibleBookingColumns}
-                pagination={bookingPaginationInfo}
-                emptyMessage="No Booking Data Found"
+                data={incentiveReportForTable}
+                columns={visibleIncentiveReportColumns}
+                pagination={incentiveReportPaginationInfo}
+                emptyMessage="No Data Found"
                 fixedHeight
                 recordsPerPage={20}
                 className="flex-1"
@@ -457,27 +521,27 @@ export const Booking: React.FC = () => {
             />
 
             <CustomizeColumnsModal
-                isOpen={isShowCustomizeBookingColumnsModal}
-                onClose={() => setIsShowCustomizeBookingColumnsModal(false)}
+                isOpen={isShowCustomizeIncentiveReportColumnsModal}
+                onClose={() => setIsShowCustomizeIncentiveReportColumnsModal(false)}
                 onApply={keys => {
-                    const withRequired = Array.from(new Set([...keys, ...requiredBookingColumnKeys]));
-                    setSelectedBookingColumnKeys(withRequired);
+                    const withRequired = Array.from(new Set([...keys, ...requiredIncentiveReportColumnKeys]));
+                    setSelectedIncentiveReportColumnKeys(withRequired);
                     try {
-                        LocalStorageHelper.storeBookingTableColumns?.(JSON.stringify(withRequired));
+                        LocalStorageHelper.storeIncentiveReportTableColumns?.(JSON.stringify(withRequired));
                     } catch {
                         // ignore
                     }
                 }}
-                columns={bookingColumns}
-                selectedKeys={selectedBookingColumnKeys}
-                requiredKeys={requiredBookingColumnKeys}
+                columns={incentiveReportColumns}
+                selectedKeys={selectedIncentiveReportColumnKeys}
+                requiredKeys={requiredIncentiveReportColumnKeys}
                 title="Customize Table Columns"
             />
 
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Booking"
+                title="Filter - Incentive Report"
                 onSubmit={e => {
                     e.preventDefault();
                     updateListState({ filters: tempFilters, page: 1 });
@@ -585,30 +649,15 @@ export const Booking: React.FC = () => {
                                     placeholder="Select Sub Source"
                                     value={tempFilters.SubSource || ''}
                                     onChange={e => handleFilterChange('SubSource', String(e))}
-                                    options={SUBSOURCE_TYPE_OPTIONS.map(opt => ({
-                                        label: opt.name,
-                                        value: opt.id
-                                    }))}
+                                    options={SUBSOURCE_TYPE_OPTIONS.filter(opt => opt.id !== 'Advertisement' && opt.id !== 'Exhibition' && opt.id !== 'HRR Website' && opt.id !== 'HRR Website' && opt.id !== 'Management Reference' && opt.id !== 'Property Search Portal' && opt.id !== 'SMS' && opt.id !== 'Site Branding' && opt.id !== 'Other')
+                                        .map(opt => ({
+                                            label: opt.name,
+                                            value: opt.id
+                                        }))
+                                    }
                                 />
                             </div>
                         )}
-
-                        {/* SUB SUB SOURCE */}
-                        {tempFilters.Source === 'Direct Walking' &&
-                            tempFilters.SubSource === 'Advertisement' && (
-                                <div>
-                                    <SinglePageSelection
-                                        label="Sub Sub Source"
-                                        placeholder="Select Sub Sub Source"
-                                        value={tempFilters.SubSubSource || ''}
-                                        onChange={e => handleFilterChange('SubSubSource', String(e))}
-                                        options={SUB_SUB_SOURCE_TYPE_OPTIONS.map(opt => ({
-                                            label: opt.name,
-                                            value: opt.id
-                                        }))}
-                                    />
-                                </div>
-                            )}
 
                         {/* CHANNEL PARTNER SUB SOURCE */}
                         {tempFilters.Source === 'Channel Partner' && (
@@ -647,11 +696,11 @@ export const Booking: React.FC = () => {
                         </div>
                     </div>
                 </div>
-            </Modal>
+            </Modal >
         </div >
     );
 };
 
-export default Booking;
+export default IncentiveReport;
 
 

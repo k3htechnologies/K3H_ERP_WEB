@@ -18,6 +18,14 @@ export interface LitigationHearingData {
     HearingDate: string | ''
     HearingAttachementURL: string | ''
     Remark: string | ''
+    CreatedById: number | 0
+    CreatedBy: string | ''
+    CreatedDate: string | null
+    ModifiedById: number | 0
+    ModifiedBy: string | ''
+    ModifiedDate: string | null
+    LastModifiedBy: string | ''
+    LastModifiedDate: string | null
 }
 
 export interface AddUpdateLitigationHearingRequest {

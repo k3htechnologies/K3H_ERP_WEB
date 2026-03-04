@@ -1,7 +1,7 @@
 import * as E from 'fp-ts/Either';
 import { paymentScheduleSchemeMasterService } from '@/features/paymentScheduleSchemeMaster/services/PaymentScheduleSchemeMasterService';
 
-export const fetchPaymentScheduleSchemeMasterDropDown = async (pageNumber: number, params?: { projectId?: number; paymentScheduleScheme?: string}) => {
+export const fetchPaymentScheduleSchemeMasterDropDown = async (pageNumber: number, params?: { projectId?: number; paymentScheduleScheme?: string, inventoryBuildingId?: number, inventoryFlatFloorBasementPodiumWingId?: number }) => {
   try {
 
     const responseEither = await paymentScheduleSchemeMasterService.apiCallPullPaymentScheduleSchemeMaster({
@@ -9,6 +9,8 @@ export const fetchPaymentScheduleSchemeMasterDropDown = async (pageNumber: numbe
       PageNumber: pageNumber,
       ProjectId: params?.projectId || 0,
       PaymentScheduleScheme: params?.paymentScheduleScheme || "",
+      InventoryBuildingId: params?.inventoryBuildingId || 0,
+      InventoryFlatFloorBasementPodiumWingId: params?.inventoryFlatFloorBasementPodiumWingId || 0,
       IsCheckPermission: false,
     });
 
@@ -18,10 +20,16 @@ export const fetchPaymentScheduleSchemeMasterDropDown = async (pageNumber: numbe
 
     const apiResponse = responseEither.right;
 
-    const itemList = (apiResponse?.Data || []).map((d: any) => ({
-      label: d.PaymentScheduleScheme,
-      value: String(d.PaymentScheduleSchemeMasterId)
-    }));
+    const itemList = [
+      ...(apiResponse?.Data || []).map((d: any) => ({
+        label: d.PaymentScheduleScheme,
+        value: String(d.PaymentScheduleSchemeMasterId)
+      })),
+      {
+        label: "Other",
+        value: "0"
+      }
+    ];
 
 
     return {

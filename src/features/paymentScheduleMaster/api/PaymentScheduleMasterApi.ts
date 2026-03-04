@@ -4,10 +4,6 @@ export const PaymentScheduleMasterApi = {
     ADD_UPDATE: '/PaymentScheduleMaster/AddUpdatePaymentScheduleMaster',
     DELETE: '/PaymentScheduleMaster/DeletePaymentScheduleMaster',
 
-    //PAYMENT SCHEDULE REPORT
-    PULL_PAYMENT_SCHEDULE_REPORT: '/PaymentScheduleMaster/PullPaymentScheduleMasterReport',
-    PULL_COST_SHEET_REPORT: '/PaymentScheduleMaster/PullCostSheetReport',
-
 } as const
 
 export type PaymentScheduleMasterApiKeys = keyof typeof PaymentScheduleMasterApi

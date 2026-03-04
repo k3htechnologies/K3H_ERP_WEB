@@ -22,6 +22,7 @@ export class EnquiryReportDatasourceImpl implements EnquiryReportDatasource {
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
                 ProjectId: (params.ProjectId ?? 0).toString(),
+                DepartmentName: params.DepartmentName || 'Sales'
             })
 
             if (params.EmployeeName) queryParams.append('EmployeeName', params.EmployeeName.toString());

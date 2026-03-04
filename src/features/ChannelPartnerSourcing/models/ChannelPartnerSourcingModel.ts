@@ -19,6 +19,7 @@ export interface ChannelPartnerSourcingData {
   SourcingRemark: string;
   Support: string;
   SourcingLocation: string;
+  IsAction: boolean;
   CreatedById: number | null;
   CreatedBy: string;
   CreatedDate: string | null;

@@ -173,7 +173,7 @@ const ViewLitigation: React.FC = () => {
 
     //#region CLOSURE MODAL MANAGEMENT
     const handleopenClosureModal = (item?: LitigationClosureData) => {
-        if (litigationStatus !== 'Open' && litigationStatus !== 'Reopen') return;
+        if (litigationStatus !== 'Open' && litigationStatus !== 'Closed') return;
 
         setErrors({});
         setClosureURLFiles([]);
@@ -261,8 +261,6 @@ const ViewLitigation: React.FC = () => {
 
         if (!closureFormData.ClosureDate?.trim()) {
             newErrors.ClosureDate = 'Closure Date is required.';
-        } else if (new Date(closureFormData.ClosureDate) < new Date()) {
-            newErrors.ClosureDate = 'Closure Date cannot be in the past.';
         }
 
         if (!closureFormData.Conclusion?.trim()) {
@@ -334,6 +332,7 @@ const ViewLitigation: React.FC = () => {
                     setIsClosureModalOpen(false);
                     setClosureURL('');
                     SetRemoveClosureAttachementUrls([]);
+                    fetchLitigationDetails();
                     fetchClouserDetails();
                 }
                 else {
@@ -434,7 +433,7 @@ const ViewLitigation: React.FC = () => {
 
         if (!hearingFormData.HearingDate?.trim()) {
             newErrors.HearingDate = 'Hearing Date is required.';
-        } else if (new Date(hearingFormData.HearingDate) < new Date()) {
+        } else if (hearingFormData.LitigationHearingId === 0 && new Date(hearingFormData.HearingDate) < new Date()) {
             newErrors.HearingDate = 'Hearing Date cannot be in the past.';
         }
 
@@ -459,7 +458,7 @@ const ViewLitigation: React.FC = () => {
         fd.append('Uniquekey', hearingFormData.Uniquekey ?? '');
         fd.append('LitigationId', String(hearingFormData.LitigationId ?? 0));
         fd.append('ProjectId', projectId!.toString());
-        fd.append('HearingDate', `${hearingFormData.HearingDate}T${new Date().toTimeString().slice(0, 8)}`);
+        fd.append('HearingDate', hearingFormData.HearingDate ?? null);
         fd.append('Remark', hearingFormData.Remark ?? '');
 
         hearingURLFiles.forEach(file => {
@@ -774,7 +773,7 @@ const ViewLitigation: React.FC = () => {
                                             closureData.map((item, index) => {
 
                                                 const isLatest = index === 0;
-                                                const isCaseReopen = litigationStatus === 'Reopen';
+                                                const isCaseReopen = litigationStatus === 'Closed';
 
                                                 return (
                                                     <div
@@ -866,18 +865,19 @@ const ViewLitigation: React.FC = () => {
                                                 <FieldItem
                                                     label="Created Date"
                                                     value={litigationData?.CreatedDate ?
-                                                        formatDate_dd_MonthName_yy(litigationData.CreatedDate) : ""} />
+                                                        formatDate_dd_MonthName_yy_hh_mm(litigationData.CreatedDate) : ""} />
                                             </div>
                                         </div>
 
                                         <div className="lg:col-span-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
+                                                <FieldItem label="Modified By" value={litigationData?.ModifiedBy} />
+
                                                 <FieldItem
                                                     label="Modified Date"
                                                     value={litigationData?.ModifiedDate ?
-                                                        formatDate_dd_MonthName_yy(litigationData.ModifiedDate) : ""}
+                                                        formatDate_dd_MonthName_yy_hh_mm(litigationData.ModifiedDate) : ""}
                                                 />
-                                                <FieldItem label="Modified By" value={litigationData?.ModifiedBy} />
 
                                             </div>
                                         </div>
@@ -943,6 +943,7 @@ const ViewLitigation: React.FC = () => {
                                 ) : (
                                     hearingData.map((item, index) => {
                                         const isLatest = index === 0;
+                                        const isModified = !!(item.ModifiedBy && item.ModifiedDate);
 
                                         const canEditHearing =
                                             (litigationStatus === 'Open' || litigationStatus === 'Reopen') && canAction
@@ -951,14 +952,17 @@ const ViewLitigation: React.FC = () => {
 
                                         return (
                                             <div key={item.LitigationHearingId} className="pb-3">
-                                                <div className="flex items-center justify-between">
+                                                 <div className="flex items-center gap-3">
                                                     <span className="font-semibold text-gray-900">
                                                         {formatDate_dd_MonthName_yy(item.HearingDate)}
+                                                    </span>
+                                                    <span className="font-medium text-gray-400 text-sm">
+                                                        {isModified ? item.ModifiedBy : item.CreatedBy}
                                                     </span>
 
                                                     {canEditHearing && (
                                                         <>
-                                                            <div className="flex items-center gap-1">
+                                                            <div className="flex items-center gap-1 ml-auto">
                                                                 <Button
                                                                     color="transparent"
                                                                     isborderRadius
@@ -982,7 +986,7 @@ const ViewLitigation: React.FC = () => {
                                                             </div>
                                                         </>
                                                     )}
-                                                    
+
                                                 </div>
 
                                                 <p className="mt-2 text-sm text-gray-700">
@@ -1014,7 +1018,7 @@ const ViewLitigation: React.FC = () => {
                         onClose={handleClosureModal}
                         onSubmit={handleAddUpdateClosure}
                         cancelText="Cancel"
-                        saveText='Save'
+                        saveText='Close'
                         onCancel={handleClosureModal}
                         loading={isLoading}
                         size="lg"
@@ -1057,16 +1061,18 @@ const ViewLitigation: React.FC = () => {
                             <div>
                                 <TextArea
                                     label="Remarks"
+                                    required
                                     className='thin-scroll'
                                     value={closureFormData.Remark ?? ""}
                                     placeholder="Enter Remarks"
                                     onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                    error={errors.Remarks} />
+                                    error={errors.Remark} />
                             </div>
 
                             <div>
                                 <TextArea
                                     label="Conclusion"
+                                    required
                                     className='thin-scroll'
                                     value={closureFormData.Conclusion ?? ""}
                                     placeholder="Enter Conclusion"
@@ -1084,7 +1090,7 @@ const ViewLitigation: React.FC = () => {
                         onClose={handleHearingModal}
                         onSubmit={handleAddUpdateHearing}
                         cancelText="Cancel"
-                        saveText="Save"
+                        saveText={hearingFormData.LitigationHearingId > 0 ? "Update" : "Add"}
                         onCancel={handleHearingModal}
                         loading={isLoading}
                         size="lg"
@@ -1095,8 +1101,7 @@ const ViewLitigation: React.FC = () => {
                                 <DatePickerInput
                                     label="Hearing Date"
                                     value={formatDate_dd_mm_yyyy(hearingFormData.HearingDate ?? "")}
-                                    onChange={(val) => handleHearingFieldChange('HearingDate',
-                                        convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                    onChange={(val) => handleHearingFieldChange('HearingDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                     required
                                     error={errors.HearingDate}
                                 />
@@ -1128,6 +1133,7 @@ const ViewLitigation: React.FC = () => {
                                 <div>
                                     <TextArea
                                         label="Remark"
+                                        required
                                         className='thin-scroll'
                                         value={hearingFormData.Remark ?? ""}
                                         placeholder="Enter Remarks"

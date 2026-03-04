@@ -5,6 +5,7 @@ export interface FilterWithPaginationEnquiryReportRequest {
   PageNumber: number;
   ProjectId?: number;
   EmployeeName?: string;
+  DepartmentName?: string;
   Stage?: string;
   Year?: number;
   FromDate?: string;
@@ -14,6 +15,7 @@ export interface FilterWithPaginationEnquiryReportRequest {
 export interface ProjectWiseEmployeeList {
   EmployeeId?: number;
   FullName?: string;
+  DesignationName?: string;
   EnquiryStagesData?: EnquiryStages[];
   Message?: string;
   TotalRecords?: number;

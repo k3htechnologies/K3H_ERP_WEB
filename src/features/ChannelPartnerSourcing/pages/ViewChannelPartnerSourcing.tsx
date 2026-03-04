@@ -41,7 +41,7 @@ const initialFormState = (): AddUpdateChannelPartnerSourcingRequest => ({
 const ViewChannelPartnerSourcing: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
-  const { canAction } = useMenuPermissions();
+  const { canAction } = useMenuPermissions('sourcing');
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -160,9 +160,8 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
 
           if (activeTab !== "ALL") {
-            filteredData = filteredData.filter(
-              item => item.IBM_OBM === activeTab
-            );
+
+            filteredData = filteredData.filter(item => item.IBM_OBM === activeTab);
           }
 
           // Always sort (ALL or filtered)
@@ -205,6 +204,8 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   //#endregion
 
   const handleOpenRemarkModal = (item?: ChannelPartnerSourcingData) => {
+    const ibmObmValue = activeTab === "ALL" ? "IBM" : activeTab;
+
     if (item) {
       setFormData({
         ChannelPartnerSourcingId: item.ChannelPartnerSourcingId,
@@ -213,9 +214,9 @@ const ViewChannelPartnerSourcing: React.FC = () => {
         ProjectId: projectId || 0,
         SourcingRemark: item.SourcingRemark || "",
         Support: item.Support || "",
-        IBM_OBM: item.IBM_OBM || activeTab
+        IBM_OBM: item.IBM_OBM || ibmObmValue
       });
-      setIbmObm(item.IBM_OBM || activeTab);
+      setIbmObm(item.IBM_OBM || ibmObmValue);
       setIsEditMode(true);
       setSelectedRemark(item);
     } else {
@@ -226,9 +227,9 @@ const ViewChannelPartnerSourcing: React.FC = () => {
         ProjectId: projectId || 0,
         SourcingRemark: "",
         Support: "",
-        IBM_OBM: activeTab
+        IBM_OBM: ibmObmValue
       });
-      setIbmObm(activeTab);
+      setIbmObm(ibmObmValue);
       setIsEditMode(false);
       setSelectedRemark(null);
     }
@@ -258,8 +259,13 @@ const ViewChannelPartnerSourcing: React.FC = () => {
     if (!formData.SourcingRemark?.trim()) {
       errors.SourcingRemark = "Remark is required";
     }
+
     if (!formData.IBM_OBM?.trim()) {
       errors.IBM_OBM = "IBM / OBM selection is required";
+    }
+
+    if (formData.IBM_OBM?.trim() === "ALL") {
+      addToast({ type: "error", title: "IBM / OBM selection is required" });
     }
 
     setErrors(errors);
@@ -354,8 +360,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       "Deleting Remark"
     );
   };
-
-
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
@@ -487,16 +491,18 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                 <h1 className="text-lg font-semibold text-black">
                   Remark & Activity
                 </h1>
-                <div className="flex items-center gap-2">
-                  <Button
-                    color="blue"
-                    size="sm"
-                    onClick={() => handleOpenRemarkModal()}
-                    title="Add Remark"
-                  >
-                    Add Remark
-                  </Button>
-                </div>
+                {canAction && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      color="blue"
+                      size="sm"
+                      onClick={() => handleOpenRemarkModal()}
+                      title="Add Remark"
+                    >
+                      Add Remark
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -538,6 +544,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
                       {/* RIGHT — CONTENT */}
                       <div>
+
                         <div className="flex items-center gap-3">
 
                           <span className="font-semibold text-gray-900">
@@ -547,10 +554,12 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                           </span>
 
                           <span className="font-medium text-gray-400 text-sm">
+
                             {isModified ? item.ModifiedBy : item.CreatedBy}
+
                           </span>
 
-                          {index === 0 && canAction && isDateWithinPastDays(item.CreatedDate, 2) ? (
+                          {index === 0 && canAction && item.IsAction && isDateWithinPastDays(item.CreatedDate, 2) ? (
 
                             <div className="flex items-center gap-1 ml-auto">
 
@@ -662,6 +671,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                 setIbmObm("IBM");
                 handleFieldChange("IBM_OBM", "IBM");
               }}
+
             />
 
             <RadioPill

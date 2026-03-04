@@ -19,6 +19,8 @@ export interface ClosingTargetData {
     ProjectId: number;
     EmployeeId: number;
     EmployeeName: string;
+    
+    DesignationName: string;
     SalesTargetClosingId: number;
     WalkinsByCP: number;
     WalkinsDirect: number;

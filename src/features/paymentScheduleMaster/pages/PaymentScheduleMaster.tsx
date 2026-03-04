@@ -16,7 +16,6 @@ import { Edit, Plus, Trash2 } from "lucide-react";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { fetchBuildingDropdown, fetchWingDropdown } from "@/features/inventory/InventoryDropdown";
-import { useNavigate } from "react-router-dom";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import { fetchPaymentScheduleDropdown } from "@/features/paymentScheduleMaster/paymentScheduleDropDown";
@@ -29,7 +28,7 @@ const initialFormState = (): AddUpdatePaymentScheduleMasterRequest => ({
   PaymentSchedulePercentage: 0,
   PaymentScheduleCummulativePercentage: 0,
   Stage: '',
-  Wing: '',
+  InventoryFlatFloorBasementPodiumWingId: 0,
 });
 
 export const PaymentScheduleMaster: React.FC = () => {
@@ -55,12 +54,6 @@ export const PaymentScheduleMaster: React.FC = () => {
   const { pagination, setPagination } = usePagination(20);
 
   const { projectId } = useProject();
-
-  const [ratePerSqFt, setRatePerSqFt] = useState<number>(0);
-
-  // USE NAVIGATE
-  const navigate = useNavigate();
-
   // TOAST
   const { addToast } = useToast();
 
@@ -96,7 +89,7 @@ export const PaymentScheduleMaster: React.FC = () => {
           PageSize: pagination.pageSize,
           ProjectId: Number(projectId),
           InventoryBuildingId: filterParams.InventoryBuildingId ? Number(filterParams.InventoryBuildingId) : undefined,
-          Wing: filterParams.Wing ?? undefined,
+          InventoryFlatFloorBasementPodiumWingId: filterParams.InventoryFlatFloorBasementPodiumWingId ? Number(filterParams.InventoryFlatFloorBasementPodiumWingId) : undefined,
           Stage: filterParams.Stage ?? undefined,
           SortBy: getSortByParam(sort ?? null, PaymentScheduleMasterColumns),
         };
@@ -175,7 +168,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
     const res = await fetchWingDropdown({
       projectId: projectId ?? undefined,
-      inventoryBuildingId: inventoryInventoryBuildingId ?? undefined
+      inventoryBuildingId: inventoryInventoryBuildingId ?? 0
     });
 
     setWingOptions(res.itemList);
@@ -185,7 +178,6 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   const handleWingChange = async (wing: string) => {
 
-    setRatePerSqFt(0);
     if (!wing) {
 
       setFormData(prev => ({
@@ -213,7 +205,7 @@ export const PaymentScheduleMaster: React.FC = () => {
     const res = await fetchPaymentScheduleDropdown({
       projectId: projectId ?? undefined,
       inventoryBuildingId: formData.InventoryBuildingId,
-      wing: wing
+      inventoryFlatFloorBasementPodiumWingId: formData.InventoryFlatFloorBasementPodiumWingId
     });
 
     setStageOptions(res.itemList);
@@ -230,7 +222,7 @@ export const PaymentScheduleMaster: React.FC = () => {
         setFormData({
           PaymentScheduleMasterId: editingPaymentScheduleMasterData.PaymentScheduleMasterId ?? 0,
           InventoryBuildingId: formData.InventoryBuildingId,
-          Wing: formData.Wing,
+          InventoryFlatFloorBasementPodiumWingId: formData.InventoryFlatFloorBasementPodiumWingId,
           Uniquekey: editingPaymentScheduleMasterData.Uniquekey ?? initialFormState().Uniquekey,
           Stage: editingPaymentScheduleMasterData.Stage ?? '',
           PaymentSchedulePercentage: editingPaymentScheduleMasterData.PaymentSchedulePercentage ?? '',
@@ -241,7 +233,7 @@ export const PaymentScheduleMaster: React.FC = () => {
         setFormData(prev => ({
           ...initialFormState(),
           InventoryBuildingId: prev.InventoryBuildingId,
-          Wing: prev.Wing,
+          InventoryFlatFloorBasementPodiumWingId: prev.InventoryFlatFloorBasementPodiumWingId,
           ProjectId: Number(projectId),
         }));
       }
@@ -267,7 +259,7 @@ export const PaymentScheduleMaster: React.FC = () => {
   //#region EDIT PAYMENT SCHEDULE
   const handleEditPaymentScheduleMaster = useCallback(async (row: PaymentScheduleMasterData) => {
 
-    const res = await fetchPaymentScheduleDropdown({ projectId: projectId ?? undefined, inventoryBuildingId: row.InventoryBuildingId, wing: row.Wing ?? "" });
+    const res = await fetchPaymentScheduleDropdown({ projectId: projectId ?? undefined, inventoryBuildingId: row.InventoryBuildingId, inventoryFlatFloorBasementPodiumWingId: row.InventoryFlatFloorBasementPodiumWingId });
 
     setStageOptions(res.itemList);
     setEditingPaymentScheduleMasterData(row);
@@ -311,7 +303,7 @@ export const PaymentScheduleMaster: React.FC = () => {
       InventoryBuildingId: Number(formData.InventoryBuildingId) || 0,
       Uniquekey: formData.Uniquekey ?? null,
       Stage: formData.Stage ?? null,
-      Wing: formData.Wing ?? null,
+      InventoryFlatFloorBasementPodiumWingId: formData.InventoryFlatFloorBasementPodiumWingId ?? 0,
       PaymentSchedulePercentage: Number(formData.PaymentSchedulePercentage) || 0,
       PaymentScheduleCummulativePercentage: Number(formData.PaymentScheduleCummulativePercentage) || 0,
       ProjectId: Number(projectId),
@@ -367,10 +359,7 @@ export const PaymentScheduleMaster: React.FC = () => {
                   : item
               )
             )
-            await loadPaymentScheduleMaster(
-              pagination.currentPage,
-              { Wing: formData.Wing ?? '', InventoryBuildingId: formData.InventoryBuildingId ? String(formData.InventoryBuildingId) : "" },
-            );
+
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
           setEditingPaymentScheduleMasterData(null);
@@ -539,12 +528,7 @@ export const PaymentScheduleMaster: React.FC = () => {
             totalRecords: newTotalRecords,
             totalPages: newTotalPages
           });
-          await loadPaymentScheduleMaster(
-            pageToShow, {
-            InventoryBuildingId: formData.InventoryBuildingId ? String(formData.InventoryBuildingId) : "",
-            Wing: formData.Wing ?? ""
-          },
-          );
+
           addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
           setIsConfirmationDialogBoxOpen(false);
@@ -563,19 +547,6 @@ export const PaymentScheduleMaster: React.FC = () => {
   };
   //#endregion
 
-
-  //#region NAVIGATE TO PAYMENT SCHEDULE REPORT
-  const handlePaymentScheduleMasterReport = useCallback(() => {
-    navigate('/paymentSchedule/paymentScheduleReport', {
-      state: {
-        ratePerSqFt,
-        InventoryBuildingId: formData.InventoryBuildingId,
-        Wing: formData.Wing,
-      }
-    });
-  }, [navigate, ratePerSqFt, formData.InventoryBuildingId, formData.Wing, addToast]);
-  //#endregion
-
   //#region HANDLE FIELD CHANGE
   const handleFieldChange = (field: keyof AddUpdatePaymentScheduleMasterRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -583,37 +554,6 @@ export const PaymentScheduleMaster: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
-
-  //#region
-  const validateGenerate = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!ratePerSqFt || ratePerSqFt <= 0) {
-      newErrors.ratePerSqFt = "Rate is required and must be greater than 0";
-    }
-
-    if (!formData.Wing) {
-      newErrors.Wing = "Wing is required";
-    }
-
-    const totalPercentage = PaymentScheduleMasterList.reduce(
-      (sum, item) => sum + Number(item.PaymentSchedulePercentage || 0),
-      0
-    );
-
-    if (totalPercentage !== 100) {
-      addToast({
-        type: "error",
-        title: "Total Payment Schedule Percentage must be exactly 100% to Generate Report",
-      });
-      return false;
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-  //#endregion
-
   //#region
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -640,34 +580,13 @@ export const PaymentScheduleMaster: React.FC = () => {
               label="Wing"
               placeholder="Select Wing"
               options={wingOptions}
-              value={formData.Wing ?? ''}
+              value={formData.InventoryFlatFloorBasementPodiumWingId ?? ''}
               required
               error={errors.Wing}
               onChange={(value) => handleWingChange(String(value))}
             />
           </div>
 
-          {totalPercentage === 100 && (
-            <div>
-              <Input
-                label="Rate Per Sq.Ft"
-                placeholder="Enter Rate"
-                required
-                maxLength={8}
-                value={ratePerSqFt || ''}
-                error={errors.ratePerSqFt}
-                onChange={(e) => {
-                  const digits = e.target.value.replace(/\D/g, '');
-                  const value = digits === '' ? 0 : Number(digits);
-
-                  setRatePerSqFt(value);
-                  if (errors.ratePerSqFt) {
-                    setErrors(prev => ({ ...prev, ratePerSqFt: "" }));
-                  }
-                }}
-              />
-            </div>
-          )}
         </div>
       </div>
 
@@ -705,14 +624,14 @@ export const PaymentScheduleMaster: React.FC = () => {
 
           {totalPercentage < 100 &&
             formData.InventoryBuildingId > 0 &&
-            formData.Wing && (
+            formData.InventoryFlatFloorBasementPodiumWingId && (
               <Button
                 onClick={() => {
                   setEditingPaymentScheduleMasterData(null);
                   setFormData(prev => ({
                     ...initialFormState(),
                     InventoryBuildingId: prev.InventoryBuildingId,
-                    Wing: prev.Wing,
+                    InventoryFlatFloorBasementPodiumWingId: prev.InventoryFlatFloorBasementPodiumWingId,
                     ProjectId: Number(projectId),
                   }));
                   setErrors({});
@@ -740,21 +659,7 @@ export const PaymentScheduleMaster: React.FC = () => {
         />
       </div>
 
-      {/* Generate Button */}
-
-      {totalPercentage === 100 && (
-        <div className="flex justify-end mt-2">
-          <Button
-            className="border border-green-600 text-green-600 hover:bg-green-50 px-3 py-1 rounded-md"
-            onClick={() => {
-              if (!validateGenerate()) return;
-              handlePaymentScheduleMasterReport();
-            }}
-          >
-            Generate Payment Schedule
-          </Button>
-        </div>
-      )}
+      
       {/*ADD UPDATE MODAL */}
 
       <Modal
@@ -766,7 +671,7 @@ export const PaymentScheduleMaster: React.FC = () => {
           setFormData(prev => ({
             ...initialFormState(),
             InventoryBuildingId: prev.InventoryBuildingId,
-            Wing: prev.Wing,
+            InventoryFlatFloorBasementPodiumWingId: prev.InventoryFlatFloorBasementPodiumWingId,
             ProjectId: prev.ProjectId
           }));
           setErrors({});
@@ -778,7 +683,7 @@ export const PaymentScheduleMaster: React.FC = () => {
           setFormData(prev => ({
             ...initialFormState(),
             InventoryBuildingId: prev.InventoryBuildingId,
-            Wing: prev.Wing,
+            InventoryFlatFloorBasementPodiumWingId: prev.InventoryFlatFloorBasementPodiumWingId,
             ProjectId: prev.ProjectId
           }));
 

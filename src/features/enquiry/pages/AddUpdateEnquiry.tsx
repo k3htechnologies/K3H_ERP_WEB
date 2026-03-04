@@ -50,7 +50,10 @@ import {
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
+import {
+  fetchEmployeeMasterByEmployeeId,
+  fetchEmployeeMasterDropdown,
+} from "@/features/employeeMaster/employeeMasterDropDown";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import RadioPill from "@/ui/components/forms/RadioPill";
 import { RangeSelector } from "@/ui/components/forms/RangeSelector";
@@ -73,6 +76,13 @@ import CompleteVerificationSection from "@/ui/components/TwoWayVerification/Comp
 import { Modal } from "@/ui/components/Modal/Modal";
 import { sendOTP } from "@/features/technical/services/OTPService";
 import { getEnquiryVerificationSteps } from "@/features/enquiry/utils/verificationSteps";
+import { fetchProjectDropdown } from "@/features/projectMaster/projectDropdown";
+import {
+  fetchInventoryFlatDetails,
+  fetchPaginatedInventoryFlatDropdown,
+} from "@/features/inventory/InventoryFlatDropdown";
+import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
+import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
   EnquiryId: 0,
@@ -92,20 +102,17 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
   Source: "",
   SubSource: "",
   SubSubSource: "",
-
   // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-  ReferelName: "",
-  ReferelMobileNumber: "",
-  ReferelProjectName: "",
-  ReferelUnitNumber: "",
+  ReferelProjectId: 0,
+  ReferelInventoryFlatId: 0,
 
   // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-  LoyaltyExistingProjectName: "",
-  LoyaltyExistingUnitNumber: "",
 
+  LoyaltyProjectId: 0,
+  LoyaltyInventoryFlatId: 0,
   // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-  EmployeeReferenceMobileNumber: "",
-  EmployeeReferenceName: "",
+
+  EmployeeReferenceEmployeeId: 0,
 
   ChannelPartnerTeamMemberId: 0,
   ChannelPartnerTeamMemberMobileNumber: "",
@@ -181,6 +188,17 @@ export const AddUpdateEnquiry: React.FC = () => {
   const [channelPartnerDesignation, setChannelPartnerDesignation] =
     useState<string>();
   const [channelPartnerType, setChannelPartnerType] = useState<string>();
+
+  //SET EMPLOYEE MASTER DETAILS
+  const [employeeDetails, setEmployeeDetails] =
+    useState<EmployeeMasterData | null>(null);
+
+  //SET EMPLOYEE MASTER DETAILS
+  const [referelInventoryFlatData, setReferelInventoryFlatData] =
+    useState<InventoryFlatData | null>(null);
+  const [loyaltyInventoryFlatData, setLoyaltyInventoryFlatData] =
+    useState<InventoryFlatData | null>(null);
+
   //COMPLETE VERIFICATION
 
   const [otp, setOtp] = useState("");
@@ -191,7 +209,6 @@ export const AddUpdateEnquiry: React.FC = () => {
   // NAVIGATE
   const navigate = useNavigate();
 
-  // GET VALUE FROM URL ENQUIRY MASTER ID
   const { EnquiryId } = useParams<{ EnquiryId?: string }>();
 
   const { projectId } = useProject();
@@ -201,15 +218,9 @@ export const AddUpdateEnquiry: React.FC = () => {
   const isAddMode = enquiryMasterId === 0;
 
   const [, setNationality] = useState<string>("Indian");
-
-  // TOAST
   const { addToast } = useToast();
-
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions("/enquiry");
-  //#endregion
 
-  // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
   //#endregion
 
@@ -220,6 +231,11 @@ export const AddUpdateEnquiry: React.FC = () => {
     SourcingManager?: string;
     VillageName?: string;
     ChannelPartnerTeamMemberName?: string;
+    referelProjectName?: string;
+    referelInventoryFlat?: string;
+    loyaltyProjectName?: string;
+    loyaltyInventoryFlat?: string;
+    employeeReferenceEmployeeName?: string;
   }>({});
 
   //#region HANDLE FIELD CHANGE EVENT
@@ -258,6 +274,40 @@ export const AddUpdateEnquiry: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    if (!formData.EmployeeReferenceEmployeeId) {
+      setEmployeeDetails(null);
+      return;
+    }
+
+    fetchEmployeeMasterByEmployeeId(formData.EmployeeReferenceEmployeeId).then(
+      setEmployeeDetails,
+    );
+  }, [formData.EmployeeReferenceEmployeeId]);
+
+  useEffect(() => {
+    if (!formData.ReferelInventoryFlatId || !formData.ReferelProjectId) {
+      setReferelInventoryFlatData(null);
+      return;
+    }
+
+    fetchInventoryFlatDetails(
+      Number(formData.ReferelProjectId),
+      Number(formData.ReferelInventoryFlatId),
+    ).then(setReferelInventoryFlatData);
+  }, [formData.ReferelProjectId, formData.ReferelInventoryFlatId]);
+
+  useEffect(() => {
+    if (!formData.LoyaltyInventoryFlatId || !formData.LoyaltyProjectId) {
+      setLoyaltyInventoryFlatData(null);
+      return;
+    }
+
+    fetchInventoryFlatDetails(
+      Number(formData.LoyaltyProjectId),
+      Number(formData.LoyaltyInventoryFlatId),
+    ).then(setLoyaltyInventoryFlatData);
+  }, [formData.LoyaltyProjectId, formData.LoyaltyInventoryFlatId]);
   //#endregion
 
   //#region FETCH ENQUIRY  MASTER DETAILS
@@ -308,25 +358,19 @@ export const AddUpdateEnquiry: React.FC = () => {
               SubSubSource: e.SubSubSource ?? prev.SubSubSource,
 
               // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-              ReferelName: e.ReferelName ?? prev.ReferelName,
-              ReferelMobileNumber:
-                e.ReferelMobileNumber ?? prev.ReferelMobileNumber,
-              ReferelProjectName:
-                e.ReferelProjectName ?? prev.ReferelProjectName,
-              ReferelUnitNumber: e.ReferelUnitNumber ?? prev.ReferelUnitNumber,
+              ReferelProjectId: e.ReferelProjectId ?? prev.ReferelProjectId,
+              ReferelInventoryFlatId:
+                e.ReferelInventoryFlatId ?? prev.ReferelInventoryFlatId,
 
               // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-              LoyaltyExistingProjectName:
-                e.LoyaltyExistingProjectName ?? prev.LoyaltyExistingProjectName,
-              LoyaltyExistingUnitNumber:
-                e.LoyaltyExistingUnitNumber ?? prev.LoyaltyExistingUnitNumber,
+              LoyaltyProjectId: e.LoyaltyProjectId ?? prev.LoyaltyProjectId,
+              LoyaltyInventoryFlatId:
+                e.LoyaltyInventoryFlatId ?? prev.LoyaltyInventoryFlatId,
 
               // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-              EmployeeReferenceMobileNumber:
-                e.EmployeeReferenceMobileNumber ??
-                prev.EmployeeReferenceMobileNumber,
-              EmployeeReferenceName:
-                e.EmployeeReferenceName ?? prev.EmployeeReferenceName,
+              EmployeeReferenceEmployeeId:
+                e.EmployeeReferenceEmployeeId ??
+                prev.EmployeeReferenceEmployeeId,
 
               ChannelPartnerTeamMemberId:
                 e.ChannelPartnerTeamMemberId ?? prev.ChannelPartnerTeamMemberId,
@@ -369,8 +413,17 @@ export const AddUpdateEnquiry: React.FC = () => {
               SourcingManager: e.SourcingManager || "",
               ChannelPartnerTeamMemberName:
                 e.ChannelPartnerTeamMemberName || "",
+
+              referelProjectName: e.ReferelProjectName || "",
+              referelInventoryFlat: e.ReferelUnitNumber || "",
+
+              loyaltyProjectName: e.LoyaltyExistingProjectName || "",
+              loyaltyInventoryFlat: e.LoyaltyExistingUnitNumber || "",
+
+              employeeReferenceEmployeeName: e.EmployeeReferenceName || "",
             });
             setSelectedVillageValues(e.VillageMasterId || "");
+
             const age = calculateAge(e.DateOfBirth || "");
 
             setCalculatedAge(age);
@@ -468,21 +521,15 @@ export const AddUpdateEnquiry: React.FC = () => {
       formData.Source?.toUpperCase() === "DIRECT WALKING" &&
       formData.SubSource?.toUpperCase() === "REFERENCE"
     ) {
-      if (!formData.ReferelName) {
-        newErrors.ReferelName = "Referel Name is required";
+      if (!formData.ReferelProjectId) {
+        newErrors.ReferelProjectId = "Referel Project Name is required";
       }
-      if (!formData.ReferelMobileNumber) {
-        newErrors.ReferelMobileNumber = "Referel Mobile Number is required";
-      } else if (!isValidMobile(formData.ReferelMobileNumber.trim())) {
-        newErrors.ReferelMobileNumber =
-          "Enter a valid 10-Digit Referel Mobile Number";
+      if (!formData.ReferelInventoryFlatId) {
+        newErrors.ReferelInventoryFlatId = "Referel Unit Number is required";
       }
-
-      if (!formData.ReferelProjectName) {
-        newErrors.ReferelProjectName = "Referel Project Name is required";
-      }
-      if (!formData.ReferelUnitNumber) {
-        newErrors.ReferelUnitNumber = "Referel Unit Number is required";
+      if (!referelInventoryFlatData?.OwnerName?.trim()) {
+        newErrors.ReferelInventoryFlatId =
+          "Selected unit does not have an Owner";
       }
     }
 
@@ -491,13 +538,18 @@ export const AddUpdateEnquiry: React.FC = () => {
       formData.Source?.toUpperCase() === "DIRECT WALKING" &&
       formData.SubSource?.toUpperCase() === "LOYALTY"
     ) {
-      if (!formData.LoyaltyExistingProjectName) {
-        newErrors.LoyaltyExistingProjectName =
+      if (!formData.LoyaltyProjectId) {
+        newErrors.LoyaltyProjectId =
           "Loyalty Existing Project Name is required";
       }
-      if (!formData.LoyaltyExistingUnitNumber) {
-        newErrors.LoyaltyExistingUnitNumber =
+      if (!formData.LoyaltyInventoryFlatId) {
+        newErrors.LoyaltyInventoryFlatId =
           "Loyalty Existing Unit Number is required";
+      }
+
+      if (!loyaltyInventoryFlatData?.OwnerName?.trim()) {
+        newErrors.LoyaltyInventoryFlatId =
+          "Selected unit does not have an Owner";
       }
     }
 
@@ -506,18 +558,8 @@ export const AddUpdateEnquiry: React.FC = () => {
       formData.Source?.toUpperCase() === "DIRECT WALKING" &&
       formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE"
     ) {
-      if (!formData.EmployeeReferenceMobileNumber) {
-        newErrors.EmployeeReferenceMobileNumber =
-          "Employee Reference Mobile Number is required";
-      } else if (
-        !isValidMobile(formData.EmployeeReferenceMobileNumber.trim())
-      ) {
-        newErrors.EmployeeReferenceMobileNumber =
-          "Enter a valid 10-Digit Employee Reference Mobile Number";
-      }
-
-      if (!formData.EmployeeReferenceName) {
-        newErrors.EmployeeReferenceName = "Employee Reference Name is required";
+      if (!formData.EmployeeReferenceEmployeeId) {
+        newErrors.EmployeeReferenceEmployeeId = "Employee Name is required";
       }
     }
 
@@ -639,28 +681,21 @@ export const AddUpdateEnquiry: React.FC = () => {
           : formData.SubSubSource,
 
       // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-      ReferelName: isDirectReference ? formData.ReferelName : "",
-      ReferelMobileNumber: isDirectReference
-        ? formData.ReferelMobileNumber
-        : "",
-      ReferelProjectName: isDirectReference ? formData.ReferelProjectName : "",
-      ReferelUnitNumber: isDirectReference ? formData.ReferelUnitNumber : "",
+      ReferelProjectId: isDirectReference ? formData.ReferelProjectId : 0,
+      ReferelInventoryFlatId: isDirectReference
+        ? formData.ReferelInventoryFlatId
+        : 0,
 
       // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-      LoyaltyExistingProjectName: isDirectLoyalty
-        ? formData.LoyaltyExistingProjectName
-        : "",
-      LoyaltyExistingUnitNumber: isDirectLoyalty
-        ? formData.LoyaltyExistingUnitNumber
-        : "",
+      LoyaltyProjectId: isDirectLoyalty ? formData.LoyaltyProjectId : 0,
+      LoyaltyInventoryFlatId: isDirectLoyalty
+        ? formData.LoyaltyInventoryFlatId
+        : 0,
 
       // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-      EmployeeReferenceMobileNumber: isEmployeeReference
-        ? formData.EmployeeReferenceMobileNumber
-        : "",
-      EmployeeReferenceName: isEmployeeReference
-        ? formData.EmployeeReferenceName
-        : "",
+      EmployeeReferenceEmployeeId: isEmployeeReference
+        ? formData.EmployeeReferenceEmployeeId
+        : 0,
 
       ChannelPartnerTeamMemberId: formData.ChannelPartnerTeamMemberId,
       ChannelPartnerTeamMemberName:
@@ -848,6 +883,35 @@ export const AddUpdateEnquiry: React.FC = () => {
     autoFetchOptions: true,
   });
   //#endregion
+  const fetchReferelInventoryFlats = useCallback(
+    async (pageNumber: number, params?: { value?: string }) => {
+      if (!formData.ReferelProjectId) {
+        return { totalNumberOfRecord: 0, itemList: [] };
+      }
+
+      return fetchPaginatedInventoryFlatDropdown(pageNumber, {
+        projectId: formData.ReferelProjectId,
+        flat: params?.value,
+        flatStatus: "Booked,Alloted",
+      });
+    },
+    [formData.ReferelProjectId],
+  );
+
+  const fetchLoyaltyInventoryFlats = useCallback(
+    async (pageNumber: number, params?: { value?: string }) => {
+      if (!formData.LoyaltyProjectId) {
+        return { totalNumberOfRecord: 0, itemList: [] };
+      }
+
+      return fetchPaginatedInventoryFlatDropdown(pageNumber, {
+        projectId: formData.LoyaltyProjectId,
+        flat: params?.value,
+        flatStatus: "Booked,Alloted",
+      });
+    },
+    [formData.LoyaltyProjectId],
+  );
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -930,8 +994,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                   label="DOB"
                   value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
                   onChange={(val) => {
-                    const dob = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val);
-
                     handleFieldChange("DateOfBirth", dob);
 
                     const age = calculateAge(dob || "");
@@ -1067,6 +1129,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                       handleFieldChange("Source", e);
                       handleFieldChange("SubSource", "");
                       handleFieldChange("SubSubSource", "");
+                      handleFieldChange("LoyaltyProjectId", 0);
+                      handleFieldChange("LoyaltyInventoryFlatId", 0);
+                      handleFieldChange("ReferelProjectId", 0);
+                      handleFieldChange("ReferelInventoryFlatId", 0);
+                      handleFieldChange("EmployeeReferenceEmployeeId", 0);
 
                       if (e !== "Channel Partner") {
                         clearChannelPartnerAll();
@@ -1092,6 +1159,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                       onChange={(e) => {
                         handleFieldChange("SubSource", e);
                         handleFieldChange("SubSubSource", "");
+                        handleFieldChange("LoyaltyProjectId", 0);
+                        handleFieldChange("LoyaltyInventoryFlatId", 0);
+                        handleFieldChange("ReferelProjectId", 0);
+                        handleFieldChange("ReferelInventoryFlatId", 0);
+                        handleFieldChange("EmployeeReferenceEmployeeId", 0);
                       }}
                       options={SUBSOURCE_TYPE_OPTIONS.map((opt) => ({
                         label: opt.name,
@@ -1130,140 +1202,174 @@ export const AddUpdateEnquiry: React.FC = () => {
                 {formData.Source === "Direct Walking" &&
                   formData.SubSource === "Reference" && (
                     <>
-                      <Input
-                        label="Referral Name"
-                        type="text"
-                        required
-                        value={formData.ReferelName ?? ""}
-                        error={errors.ReferelName}
-                        onChange={(e) =>
-                          handleFieldChange("ReferelName", e.target.value)
-                        }
-                        placeholder="Enter Referral Name"
-                        maxLength={150}
-                      />
+                      <div>
+                        <SingleSelectDropdownWithPagination
+                          label="Project"
+                          required
+                          title="Select Project"
+                          size="lg"
+                          dataFetchCallBack={fetchProjectDropdown}
+                          onSelected={(item) => {
+                            if (!item) {
+                              handleFieldChange("ReferelProjectId", 0);
+                              handleFieldChange("ReferelInventoryFlatId", 0);
+                              setDropdownLabels((prev) => ({
+                                ...prev,
+                                referelInventoryFlat: "",
+                              }));
 
-                      <Input
-                        label="Referral Mobile Number"
-                        required
-                        type="text"
-                        maxLength={10}
-                        value={formData.ReferelMobileNumber ?? ""}
-                        error={errors.ReferelMobileNumber}
-                        leftIcon="+91"
-                        rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            "ReferelMobileNumber",
-                            filterMobile(e.target.value),
-                          )
-                        }
-                        placeholder="Enter Referral Mobile Number"
-                      />
+                              return;
+                            }
 
-                      <Input
-                        label="Referral Project Name"
-                        required
-                        type="text"
-                        value={formData.ReferelProjectName ?? ""}
-                        error={errors.ReferelProjectName}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            "ReferelProjectName",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="Enter Referral Project Name"
-                        maxLength={200}
-                      />
+                            handleFieldChange(
+                              "ReferelProjectId",
+                              Number(item.value),
+                            );
+                            handleFieldChange("ReferelInventoryFlatId", 0);
 
-                      <Input
-                        label="Referral Unit Number"
-                        required
-                        type="text"
-                        value={formData.ReferelUnitNumber ?? ""}
-                        error={errors.ReferelUnitNumber}
-                        onChange={(e) =>
-                          handleFieldChange("ReferelUnitNumber", e.target.value)
-                        }
-                        placeholder="Enter Referral Unit Number"
-                        maxLength={50}
-                      />
+                            setDropdownLabels((prev) => ({
+                              ...prev,
+                              referelInventoryFlat: "",
+                            }));
+                          }}
+                          initialValue={createDropdownInitialValue(
+                            formData.ReferelProjectId,
+                            dropdownLabels.referelProjectName,
+                          )}
+                          error={errors.ReferelProjectId}
+                        />
+                      </div>
+                      <div>
+                        <div>
+                          <SingleSelectDropdownWithPagination
+                            key={`unit-${formData.ReferelProjectId}`}
+                            label="Unit Number"
+                            required
+                            title="Select Unit Number"
+                            size="lg"
+                            dataFetchCallBack={fetchReferelInventoryFlats}
+                            onSelected={(item) => {
+                              if (!item) {
+                                handleFieldChange("ReferelInventoryFlatId", 0);
+                                return;
+                              }
+
+                              handleFieldChange(
+                                "ReferelInventoryFlatId",
+                                Number(item.value),
+                              );
+                            }}
+                            initialValue={createDropdownInitialValue(
+                              formData.ReferelInventoryFlatId,
+                              dropdownLabels.referelInventoryFlat,
+                            )}
+                            error={errors.ReferelInventoryFlatId}
+                          />
+                        </div>
+                      </div>
                     </>
                   )}
                 {formData.Source === "Direct Walking" &&
                   formData.SubSource === "Loyalty" && (
                     <>
-                      <Input
-                        label="Existing Project Name"
-                        required
-                        type="text"
-                        value={formData.LoyaltyExistingProjectName ?? ""}
-                        error={errors.LoyaltyExistingProjectName}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            "LoyaltyExistingProjectName",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="Enter Existing Project Name"
-                        maxLength={200}
-                      />
+                      <div>
+                        <SingleSelectDropdownWithPagination
+                          label="Project"
+                          required
+                          title="Select Project"
+                          size="lg"
+                          dataFetchCallBack={fetchProjectDropdown}
+                          onSelected={(item) => {
+                            if (!item) {
+                              handleFieldChange("LoyaltyProjectId", 0);
+                              handleFieldChange("LoyaltyInventoryFlatId", 0);
+                              setDropdownLabels((prev) => ({
+                                ...prev,
+                                loyaltyInventoryFlat: "",
+                              }));
 
-                      <Input
-                        label="Existing Unit Number"
-                        required
-                        type="text"
-                        value={formData.LoyaltyExistingUnitNumber ?? ""}
-                        error={errors.LoyaltyExistingUnitNumber}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            "LoyaltyExistingUnitNumber",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="Enter Existing Unit Number"
-                        maxLength={50}
-                      />
+                              return;
+                            }
+
+                            handleFieldChange(
+                              "LoyaltyProjectId",
+                              Number(item.value),
+                            );
+                            handleFieldChange("LoyaltyInventoryFlatId", 0);
+
+                            setDropdownLabels((prev) => ({
+                              ...prev,
+                              loyaltyInventoryFlat: "",
+                            }));
+                          }}
+                          initialValue={createDropdownInitialValue(
+                            formData.LoyaltyProjectId,
+                            dropdownLabels.loyaltyProjectName,
+                          )}
+                          error={errors.LoyaltyProjectId}
+                        />
+                      </div>
+
+                      <div>
+                        <SingleSelectDropdownWithPagination
+                          key={`unit-${formData.LoyaltyProjectId}`}
+                          label="Unit Number"
+                          required
+                          title="Select Unit Number"
+                          size="lg"
+                          dataFetchCallBack={fetchLoyaltyInventoryFlats}
+                          onSelected={(item) => {
+                            if (!item) {
+                              handleFieldChange("LoyaltyInventoryFlatId", 0);
+                              return;
+                            }
+
+                            handleFieldChange(
+                              "LoyaltyInventoryFlatId",
+                              Number(item.value),
+                            );
+                          }}
+                          initialValue={createDropdownInitialValue(
+                            formData.LoyaltyInventoryFlatId,
+                            dropdownLabels.loyaltyInventoryFlat,
+                          )}
+                          error={errors.LoyaltyInventoryFlatId}
+                        />
+                      </div>
                     </>
                   )}
 
                 {formData.Source === "Direct Walking" &&
                   formData.SubSource === "Employee Reference" && (
                     <>
-                      <Input
-                        label="Employee Name"
-                        required
-                        type="text"
-                        value={formData.EmployeeReferenceName ?? ""}
-                        error={errors.EmployeeReferenceName}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            "EmployeeReferenceName",
-                            e.target.value,
-                          )
-                        }
-                        placeholder="Enter Employee Name"
-                        maxLength={150}
-                      />
+                      <div>
+                        <SingleSelectDropdownWithPagination
+                          label="Employee Reference Name"
+                          required
+                          title="Select Employee Reference Name"
+                          size="lg"
+                          dataFetchCallBack={fetchEmployeeMasterDropdown}
+                          onSelected={(item) => {
+                            if (!item) {
+                              handleFieldChange(
+                                "EmployeeReferenceEmployeeId",
+                                0,
+                              );
+                              return;
+                            }
 
-                      <Input
-                        label="Employee Mobile Number"
-                        required
-                        type="text"
-                        maxLength={10}
-                        value={formData.EmployeeReferenceMobileNumber ?? ""}
-                        error={errors.EmployeeReferenceMobileNumber}
-                        leftIcon="+91"
-                        rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                        onChange={(e) =>
-                          handleFieldChange(
-                            "EmployeeReferenceMobileNumber",
-                            filterMobile(e.target.value),
-                          )
-                        }
-                        placeholder="Enter Employee Mobile Number"
-                      />
+                            handleFieldChange(
+                              "EmployeeReferenceEmployeeId",
+                              Number(item.value),
+                            );
+                          }}
+                          initialValue={createDropdownInitialValue(
+                            formData.EmployeeReferenceEmployeeId,
+                            dropdownLabels.employeeReferenceEmployeeName,
+                          )}
+                          error={errors.EmployeeReferenceEmployeeId}
+                        />
+                      </div>
                     </>
                   )}
 
@@ -1324,7 +1430,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                   if (!item) {
                                     handleFieldChange(
                                       "ChannelPartnerTeamMemberId",
-                                      null,
+                                      0,
                                     );
                                     handleFieldChange(
                                       "ChannelPartnerTeamMemberName",
@@ -1479,6 +1585,173 @@ export const AddUpdateEnquiry: React.FC = () => {
                       )
                     )}
                   </>
+                )}
+
+              {(formData.EmployeeReferenceEmployeeId ?? 0) > 0 && (
+                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <FieldItem
+                      label="Department"
+                      value={employeeDetails?.Department || "-"}
+                    />
+                    <FieldItem
+                      label="Designation"
+                      value={employeeDetails?.Designation || "-"}
+                    />
+                    <FieldItem
+                      label="Branch"
+                      value={employeeDetails?.Branch || "-"}
+                    />
+                    <FieldItem
+                      label="Reporting Person"
+                      value={employeeDetails?.ReportPersonName || "-"}
+                    />
+                    <FieldItem
+                      label="Email ID"
+                      value={employeeDetails?.EmailId || "-"}
+                    />
+                    <FieldItem
+                      label="Personal Mobile Number"
+                      value={employeeDetails?.PersonalMobileNumber || "-"}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {Number(formData.ReferelInventoryFlatId) != 0 &&
+                Number(formData.ReferelProjectId) != 0 && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <FieldItem
+                        label="Building"
+                        value={referelInventoryFlatData?.BuildingNumber || "-"}
+                      />
+                      <FieldItem
+                        label="Wing"
+                        value={referelInventoryFlatData?.Wing || "-"}
+                      />
+                      <FieldItem
+                        label="Floor"
+                        value={referelInventoryFlatData?.Floor || "-"}
+                      />
+                      <FieldItem
+                        label="Flat Number"
+                        value={referelInventoryFlatData?.Flat || "-"}
+                      />
+                      <FieldItem
+                        label="Carpet Area (SqFt)"
+                        value={
+                          referelInventoryFlatData?.RERACarpetAreaSqFt || "-"
+                        }
+                      />
+                      <FieldItem
+                        label="Flat Type"
+                        value={referelInventoryFlatData?.FlatType || "-"}
+                      />
+                      <FieldItem
+                        label="Configuration"
+                        value={
+                          referelInventoryFlatData?.FlatConfiguration || "-"
+                        }
+                      />
+                      <FieldItem
+                        label="Facing"
+                        value={referelInventoryFlatData?.FlatFacing || "-"}
+                      />
+                      <FieldItem
+                        label="Status"
+                        value={referelInventoryFlatData?.FlatStatus || "-"}
+                      />
+                      <FieldItem
+                        label="Owner Name"
+                        value={referelInventoryFlatData?.OwnerName || "-"}
+                      />
+                      <FieldItem
+                        label="Booked By"
+                        value={
+                          referelInventoryFlatData?.BookingCreatedBy || "-"
+                        }
+                      />
+                      <FieldItem
+                        label="Booking Date"
+                        value={
+                          referelInventoryFlatData?.BookingCreatedDate
+                            ? new Date(
+                                referelInventoryFlatData?.BookingCreatedDate,
+                              ).toLocaleDateString()
+                            : "-"
+                        }
+                      />
+                    </div>
+                  </div>
+                )}
+
+              {Number(formData.LoyaltyInventoryFlatId) != 0 &&
+                Number(formData.LoyaltyProjectId) != 0 && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <FieldItem
+                        label="Building"
+                        value={loyaltyInventoryFlatData?.BuildingNumber || "-"}
+                      />
+                      <FieldItem
+                        label="Wing"
+                        value={loyaltyInventoryFlatData?.Wing || "-"}
+                      />
+                      <FieldItem
+                        label="Floor"
+                        value={loyaltyInventoryFlatData?.Floor || "-"}
+                      />
+                      <FieldItem
+                        label="Flat Number"
+                        value={loyaltyInventoryFlatData?.Flat || "-"}
+                      />
+                      <FieldItem
+                        label="Carpet Area (SqFt)"
+                        value={
+                          loyaltyInventoryFlatData?.RERACarpetAreaSqFt || "-"
+                        }
+                      />
+                      <FieldItem
+                        label="Flat Type"
+                        value={loyaltyInventoryFlatData?.FlatType || "-"}
+                      />
+                      <FieldItem
+                        label="Configuration"
+                        value={
+                          loyaltyInventoryFlatData?.FlatConfiguration || "-"
+                        }
+                      />
+                      <FieldItem
+                        label="Facing"
+                        value={loyaltyInventoryFlatData?.FlatFacing || "-"}
+                      />
+                      <FieldItem
+                        label="Status"
+                        value={loyaltyInventoryFlatData?.FlatStatus || "-"}
+                      />
+                      <FieldItem
+                        label="Owner Name"
+                        value={loyaltyInventoryFlatData?.OwnerName || "-"}
+                      />
+                      <FieldItem
+                        label="Booked By"
+                        value={
+                          loyaltyInventoryFlatData?.BookingCreatedBy || "-"
+                        }
+                      />
+                      <FieldItem
+                        label="Booking Date"
+                        value={
+                          loyaltyInventoryFlatData?.BookingCreatedDate
+                            ? new Date(
+                                loyaltyInventoryFlatData?.BookingCreatedDate,
+                              ).toLocaleDateString()
+                            : "-"
+                        }
+                      />
+                    </div>
+                  </div>
                 )}
             </div>
 

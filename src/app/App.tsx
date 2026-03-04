@@ -114,12 +114,12 @@ import AddUpdateLeave from "@/features/leave/pages/AddUpdateLeave";
 import ViewLeave from "@/features/leave/pages/ViewLeave";
 import ViewEnquiry from "@/features/enquiry/pages/ViewEnquiry";
 import Enquiry from "@/features/enquiry/pages/Enquiry";
-import AddUpdateEnquiry from "@/features/enquiry/pages/AddUpdateEnquiry";
 import { EnquiryListStateProvider } from "@/features/enquiry/context/EnquiryListStateContext";
 import EarningMaster from "@/features/earningMaster/pages/EarningMaster";
 import ProposedPlan from "@/features/proposedOffer/pages/ProposedPlan";
 import ViewChannelPartner from "@/features/ChannelPartner/pages/ViewChannelPartner";
 import EmployeeResignation from "@/features/resignation/pages/EmployeeResignation";
+import PayrollReport from "@/features/payrollReport/pages/PayrollReport";
 import DepartmentMaster from "@/features/departmentMaster/pages/DepartmentMaster";
 import Parking from "@/features/parking/pages/Parking";
 import RedevelopmentDashboard from "@/features/redevelopmentDashboard/pages/RedevelopmentDashboard";
@@ -150,9 +150,9 @@ import SalesDashboard from "@/features/salesDashboard/pages/SalesDashboard";
 import EnquiryReport from "@/features/enquiryReport/pages/EnquiryReport";
 import CPEnquiryReport from "@/features/cpEnquiryReport/pages/CPEnquiryReport";
 import PaymentScheduleMaster from "@/features/paymentScheduleMaster/pages/PaymentScheduleMaster";
-import PaymentScheduleTab from "@/features/paymentScheduleMaster/components/PaymentScheduleTab";
-import { PayrollReport } from "@/features/payrollReport/pages/PayrollReport";
 import Target from "@/features/target/pages/Target";
+import IncentiveReport from "@/features/incentiveReport/pages/IncentiveReport";
+import { IncentiveReportListStateProvider } from "@/features/incentiveReport/context/IncentiveReportListStateContext";
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -722,10 +722,6 @@ function App() {
             <Route path="otherCharges" element={<OtherCharges />} />
 
             <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
-            <Route
-              path="paymentSchedule/paymentScheduleReport"
-              element={<PaymentScheduleTab />}
-            />
 
             <Route path="target" element={<Target />} />
 
@@ -756,6 +752,14 @@ function App() {
 
             <Route path="enquiryReport" element={<EnquiryReport />} />
             <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
+            <Route
+              path="incentiveReport"
+              element={
+                <IncentiveReportListStateProvider>
+                  <IncentiveReport />
+                </IncentiveReportListStateProvider>
+              }
+            />
 
             {/* REDEVELOPMENT */}
 

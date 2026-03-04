@@ -407,6 +407,12 @@ export const getPageInfo = (path: string) => {
                 title: "Sales Target",
                 description: "Centralized enquiry management for faster response",
             }
+        case 'incentiveReport':
+            return {
+                title: "Incentive Report",
+                description: "Centralized enquiry management for faster response",
+            }
+
 
         // MARKETING
         case 'content':

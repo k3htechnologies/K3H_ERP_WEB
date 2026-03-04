@@ -207,14 +207,16 @@ export interface FilterPaginatedFlatsRequest {
     PageSize: number
     PageNumber: number
     ProjectId: number
+    InventoryFlatId?: number
     BuildingNumber?: string
     Wing?: string
     Floor?: string
     Flat?: string
-    RERACarpetAreaSqFt: number
+    RERACarpetAreaSqFt?: number
     FlatType?: string
     FlatConfiguration?: string
     FlatFacing?: string
+    FlatStatus?: string
 }
 
 export interface FilterWithPaginationProjectInventoryStructureRequest {
@@ -228,10 +230,10 @@ export interface FilterWithPaginationProjectInventoryStructureRequest {
 
 export interface ProjectInventoryStructureData {
     inventoryBuildingId: number | 0
-    Uniquekey: string | null
-    ProjectId: number | 0
+    BuildingNumber: string | null
+    InventoryFlatFloorBasementPodiumWingId: number | 0
     Wing: string | null
-    FlatConfiguration: string | null
+    Floor: string | null
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

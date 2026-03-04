@@ -1114,6 +1114,30 @@ export const LocalStorageHelper = {
     },
     //#endregion
 
+    //#region STORE INCENTIVE REPORT COLUMNS
+    storeIncentiveReportTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.INCENTIVE_REPORT_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error INCENTIVE REPORT Columns Details:', error)
+        }
+    },
+    //#endregion
+    //#region GET INCENTIVE REPORT COLUMNS
+    getIncentiveReportTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.INCENTIVE_REPORT_COLUMNS)
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.INCENTIVE_REPORT_COLUMNS);
+            } catch (error) {
+                console.error('Error reading INCENTIVE REPORT Columns Details:', error)
+                return null
+            }
+        }
+        return null
+    },
+    //#endregion
+
     //#region CLEAR LOCAL STORAGE 
     clearLocalStorageData: (): void => {
         try {

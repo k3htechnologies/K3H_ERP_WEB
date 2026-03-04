@@ -41,7 +41,9 @@ export class BookingDatasourceImpl implements BookingDatasource {
             if (params.Wing?.trim()) queryParams.append('Wing', params.Wing.trim());
             if (params.Flat?.trim()) queryParams.append('Flat', params.Flat.trim());
             if (params.Floor?.trim()) queryParams.append('Floor', params.Floor.trim());
-            if (params.Source?.trim()) queryParams.append('Source', params.Source.trim());
+            if (params.Source) queryParams.append('Source', params.Source);
+            if (params.SubSource) queryParams.append('SubSource', params.SubSource);
+            if (params.SubSubSource) queryParams.append('SubSubSource', params.SubSubSource);
             if (params.AgreementValue) queryParams.append('AgreementValue', params.AgreementValue.toString());
             if (params.BookingType?.trim()) queryParams.append('BookingType', params.BookingType.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
@@ -148,8 +150,7 @@ export class BookingDatasourceImpl implements BookingDatasource {
 
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
             if (params.InventoryBuildingId) queryParams.append('InventoryBuildingId', params.InventoryBuildingId.toString());
-
-            if (params.Wing) queryParams.append('Wing', params.Wing.toString());
+            if (params.InventoryFlatFloorBasementPodiumWingId) queryParams.append('InventoryFlatFloorBasementPodiumWingId', params.InventoryFlatFloorBasementPodiumWingId.toString());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(

@@ -17,6 +17,8 @@ export interface FilterWithPaginationBookingRequest {
     Flat?: string;
     Floor?: string;
     Source?: string;
+    SubSource?: string;
+    SubSubSource?: string;
     AgreementValue?: number;
     BookingType?: string;
     SortBy?: string;
@@ -45,7 +47,7 @@ export interface FilterWithPaginationChannelPartnerBookingRequest {
 export interface FilterPaymentScheduleStagesRequest {
     ProjectId?: number;
     InventoryBuildingId?: number;
-    Wing?: string
+    InventoryFlatFloorBasementPodiumWingId?: number;
     ExportType?: 'Excel' | 'PDF';
 }
 
@@ -58,12 +60,14 @@ export interface BookingData {
     Uniquekey: string | null;
     ProjectName: string | null;
     EnquiryId: number | null;
+    SystemGeneratedCode: string | null;
     ApplicantName: string | null;
     BookingType: string | null;
     Flat: string | null;
     ParkingData?: ParkingData[] | null;
     ParkingNumber: string | null;
     InventoryFlatId: number | null;
+    InventoryBuildingId: number | null;
     InventoryFlatFloorBasementPodiumWingId: number | null;
     BuildingNumber: string | null;
     Wing: string | null;
@@ -97,7 +101,7 @@ export interface BookingData {
     ParkingId: string | null;
     NumberOfParking: number | null;
     HandoverType: string | null;
-    ModeOfPayment: string | null;
+    SourceOfFunding: string | null;
     BookingAmount: number | null;
     ChequeRTGSNumber: string | null;
     ChequeRTGSDate: string | null;
@@ -108,8 +112,8 @@ export interface BookingData {
     OtherRemark: string | null;
     TermsAndConditionsDescription: string | null;
     BookingOtherChargesData?: BookingOtherChargesData[] | null;
-    PaymentSchedulSchemeMasterId: number | null;
-    PaymentSchedulScheme: string | null;
+    PaymentScheduleSchemeMasterId: number | null;
+    PaymentScheduleScheme: string | null;
     BookingPaymentScheduleData?: BookingPaymentScheduleData[] | null;
     CreatedById: number | null;
     CreatedBy: string | null;
@@ -227,14 +231,14 @@ export interface AddUpdateBookingRequest {
     NumberOfParking: number | null;
     HandoverType: string | null;
     RegistrationDate: string | null;
-    ModeOfPayment: string | null;
+    SourceOfFunding: string | null;
     FlatAlterationRemark: string | null;
     PaymentRemark: string | null;
     OtherRemark: string | null;
     TermsAndConditionsDescription: string | null;
     BookingType: string | null;
     OtherChargesDetailJSON: string | null;
-    PaymentSchedulSchemeMasterId: number | null;
+    PaymentScheduleSchemeMasterId: number | null;
     PaymentScheduleDetailJSON: string | null;
     BookingAmount: number | null;
     ChequeRTGSNumber: string | null;

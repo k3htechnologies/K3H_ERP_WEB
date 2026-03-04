@@ -151,8 +151,9 @@ import SalesDashboard from '@/features/salesDashboard/pages/SalesDashboard';
 import EnquiryReport from '@/features/enquiryReport/pages/EnquiryReport';
 import CPEnquiryReport from '@/features/cpEnquiryReport/pages/CPEnquiryReport';
 import PaymentScheduleMaster from '@/features/paymentScheduleMaster/pages/PaymentScheduleMaster';
-import PaymentScheduleTab from '@/features/paymentScheduleMaster/components/PaymentScheduleTab';
 import Target from '@/features/target/pages/Target';
+import IncentiveReport from '@/features/incentiveReport/pages/IncentiveReport';
+import { IncentiveReportListStateProvider } from '@/features/incentiveReport/context/IncentiveReportListStateContext';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -350,7 +351,6 @@ function App() {
             <Route path="otherCharges" element={<OtherCharges />} />
 
             <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
-            <Route path="paymentSchedule/paymentScheduleReport" element={<PaymentScheduleTab />} />
 
             <Route path="target" element={<Target />} />
 
@@ -360,6 +360,7 @@ function App() {
 
             <Route path="enquiryReport" element={<EnquiryReport />} />
             <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
+            <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
 
             {/* REDEVELOPMENT */}
 

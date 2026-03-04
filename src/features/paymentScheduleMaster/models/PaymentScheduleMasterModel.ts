@@ -7,8 +7,8 @@ export interface FilterWithPaginationPaymentScheduleMasterRequest {
     PaymentScheduleSchemeMasterId?: number
     PaymentScheduleMasterId?: number
     InventoryBuildingId?: number
+    InventoryFlatFloorBasementPodiumWingId?: number
     Stage?: string
-    Wing?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -18,6 +18,7 @@ export interface PaymentScheduleMasterData {
     Uniquekey: string | null
     ProjectId: number | 0
     InventoryBuildingId: number | 0
+    InventoryFlatFloorBasementPodiumWingId?: number
     Stage: string | null
     Wing: string | null
     FlatConfiguration: string | null
@@ -38,8 +39,8 @@ export interface AddUpdatePaymentScheduleMasterRequest {
     Uniquekey: string | null
     ProjectId: number | 0
     InventoryBuildingId: number | 0
+    InventoryFlatFloorBasementPodiumWingId?: number
     Stage: string | null;
-    Wing: string | null
     PaymentSchedulePercentage: number | null
     PaymentScheduleCummulativePercentage: number
 }
@@ -50,78 +51,7 @@ export interface DeletePaymentScheduleMasterRequest {
     ProjectId: number | null
 }
 
-// PAYMENT SCHEDULE REPORT
-
-export interface FilterWithPaginationPaymentScheduleMasterReportRequest {
-    PageSize: number
-    PageNumber: number
-    ProjectId?: number
-    InventoryBuildingId?: number
-    PaymentScheduleMasterId?: number
-    Rate?: number
-    Wing?: string
-    FlatConfiguration?: string
-    SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
-}
-
-export interface PaymentScheduleMasterReportData {
-    PaymentScheduleMasterId: number | 0
-    Uniquekey: string | null
-    ProjectId: number | 0
-    InventoryBuildingId: number | 0
-    Wing: string | null
-    Name: string | null
-    Rate: number | 0
-    TotalValue: number | 0
-    PaymentSchedulePercentage: number | 0
-    CarpetArea: number | 0
-    FlatConfiguration: string | null
-    CreatedById: number | 0
-    CreatedBy: string | ''
-    CreatedDate: string | null
-    ModifiedById: number | 0
-    ModifiedBy: string | ''
-    ModifiedDate: string | null
-    LastModifiedBy: string | ''
-    LastModifiedDate: string | null
-}
-
-export interface FilterWithPaginationCostSheetReportRequest {
-    PageSize: number
-    PageNumber: number
-    ProjectId?: number
-    InventoryBuildingId?: number
-    PaymentScheduleMasterId?: number
-    Rate?: number
-    Wing?: string
-    FlatConfiguration?: string
-    SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
-}
-
-export interface CostSheetReportData {
-    PaymentScheduleMasterId: number | 0
-    Uniquekey: string | null
-    ProjectId: number | 0
-    InventoryBuildingId: number | 0
-    Wing: string | null
-    Rate: number | 0
-    FlatConfiguration: string | null
-    CreatedById: number | 0
-    CreatedBy: string | ''
-    CreatedDate: string | null
-    ModifiedById: number | 0
-    ModifiedBy: string | ''
-    ModifiedDate: string | null
-    LastModifiedBy: string | ''
-    LastModifiedDate: string | null
-}
 
 export type PaymentScheduleMasterListResponse = ApiResponse<PaymentScheduleMasterData[]>;
 export type PaymentScheduleMasterSaveResponse = ApiResponse<PaymentScheduleMasterData[]>;
 export type PaymentScheduleMasterDeleteResponse = ApiResponse<number[]>;
-
-// PAYMENT SCHEDULE REPORT
-export type PaymentScheduleMasterReportListResponse = ApiResponse<PaymentScheduleMasterReportData[]>;
-export type CostSheetReportListResponse = ApiResponse<CostSheetReportData[]>;

@@ -53,6 +53,14 @@ export const SourcingTarget: React.FC = () => {
             debouncedSearch.cancel?.();
         };
     }, [debouncedSearch]);
+
+
+    useEffect(() => {
+        if (!projectId) return;
+
+        loadSourcingTarget(1, sortInfo, searchTerm?.trim());
+
+    }, [projectId]);
     //#endregion
 
     //#region DATA LOAD
@@ -66,7 +74,6 @@ export const SourcingTarget: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-
 
                 const params: FilterWithPaginationSourcingTargetRequest = {
                     PageNumber: page,
@@ -125,7 +132,7 @@ export const SourcingTarget: React.FC = () => {
     //#endregion
 
     //#region CLAER SERACH EMPLOYEE
-    const clearSearchEmployees= async () => {
+    const clearSearchEmployees = async () => {
         debouncedSearch.cancel?.();
         await loadSourcingTarget(1, sortInfo, undefined)
     };
@@ -179,7 +186,7 @@ export const SourcingTarget: React.FC = () => {
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
-        loadSourcingTarget(1, sort);
+        loadSourcingTarget(1, sort,searchTerm?.trim());
     }, [searchTerm, fromDate, toDate, projectId]);
 
     const sourcingTargetPaginationInfo: PaginationInfo = useMemo(
@@ -199,6 +206,10 @@ export const SourcingTarget: React.FC = () => {
     //#region TABLE COLUMN
     const sourcingTargetColumns: TableColumn[] = [
         { key: 'EmployeeName', label: 'Employee Name', sortable: true, width: '180px', fixed: 'left' },
+        { key: 'DesignationName', label: 'Designation Name', sortable: false },
+        { key: 'WalkinsByCP', label: 'Walkins By CP', sortable: false },
+        { key: 'FreshVisits', label: 'Fresh Visits', sortable: false },
+        { key: 'Revisits', label: 'Revisits', sortable: false },
         { key: 'Bookings', label: 'Bookings', sortable: false },
         { key: 'TotalMeetings', label: 'Total Meetings', sortable: false },
         { key: 'TotalOBM', label: 'Total OBM', sortable: false },
@@ -210,7 +221,6 @@ export const SourcingTarget: React.FC = () => {
         { key: 'NewCP', label: 'New CP', sortable: false },
     ];
     //#endregion
-
     //#region IMPORT EXCEL | DOWNLOAD
 
     const downloadExcelSampleSourcingTarget = async () => {

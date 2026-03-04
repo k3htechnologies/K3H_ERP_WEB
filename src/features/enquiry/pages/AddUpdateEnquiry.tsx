@@ -89,23 +89,23 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
   Accommodation: "",
   OccupationType: "",
 
-    Source: "",
-    SubSource: "",
-    SubSubSource: "",
+  Source: "",
+  SubSource: "",
+  SubSubSource: "",
 
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-    ReferelName: "",
-    ReferelMobileNumber: "",
-    ReferelProjectName: "",
-    ReferelUnitNumber: "",
+  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+  ReferelName: "",
+  ReferelMobileNumber: "",
+  ReferelProjectName: "",
+  ReferelUnitNumber: "",
 
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-    LoyaltyExistingProjectName: "",
-    LoyaltyExistingUnitNumber: "",
+  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+  LoyaltyExistingProjectName: "",
+  LoyaltyExistingUnitNumber: "",
 
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-    EmployeeReferenceMobileNumber: "",
-    EmployeeReferenceName: "",
+  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+  EmployeeReferenceMobileNumber: "",
+  EmployeeReferenceName: "",
 
   ChannelPartnerTeamMemberId: 0,
   ChannelPartnerTeamMemberMobileNumber: "",
@@ -164,16 +164,24 @@ export const AddUpdateEnquiry: React.FC = () => {
 
   //SET CHANNEL PARTNER DETAILS
 
-    const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
-    const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
-    const [channelPartnerFirmsType, setChannelPartnerFirmsType] = useState<string>();
-    const [channelPartnerPanNumber, setChannelPartnerPanNumber] = useState<string>();
-    const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] = useState<string>();
-    const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] = useState<string>();
-    const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<string>();
-    const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
-    const [channelPartnerType, setChannelPartnerType] = useState<string>();
-    //COMPLETE VERIFICATION
+  const [channelPartnerFullName, setChannelPartnerFullName] =
+    useState<string>();
+  const [channelPartnerCompanyName, setChannelPartnerCompanyName] =
+    useState<string>();
+  const [channelPartnerFirmsType, setChannelPartnerFirmsType] =
+    useState<string>();
+  const [channelPartnerPanNumber, setChannelPartnerPanNumber] =
+    useState<string>();
+  const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] =
+    useState<string>();
+  const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] =
+    useState<string>();
+  const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] =
+    useState<string>();
+  const [channelPartnerDesignation, setChannelPartnerDesignation] =
+    useState<string>();
+  const [channelPartnerType, setChannelPartnerType] = useState<string>();
+  //COMPLETE VERIFICATION
 
   const [otp, setOtp] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
@@ -183,8 +191,8 @@ export const AddUpdateEnquiry: React.FC = () => {
   // NAVIGATE
   const navigate = useNavigate();
 
-    // GET VALUE FROM URL ENQUIRY MASTER ID
-    const { EnquiryId } = useParams<{ EnquiryId?: string }>();
+  // GET VALUE FROM URL ENQUIRY MASTER ID
+  const { EnquiryId } = useParams<{ EnquiryId?: string }>();
 
   const { projectId } = useProject();
 
@@ -192,28 +200,27 @@ export const AddUpdateEnquiry: React.FC = () => {
 
   const isAddMode = enquiryMasterId === 0;
 
-    const [, setNationality] = useState<string>("Indian");
+  const [, setNationality] = useState<string>("Indian");
 
-    // TOAST
-    const { addToast } = useToast();
+  // TOAST
+  const { addToast } = useToast();
 
-    //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/enquiry');
-    //#endregion
+  //#region MENU PERMISSIONS
+  const { canAction } = useMenuPermissions("/enquiry");
+  //#endregion
 
-    // ERROR SET UP
-    const [errors, setErrors] = useState<{ [k: string]: string }>({});
-    //#endregion
+  // ERROR SET UP
+  const [errors, setErrors] = useState<{ [k: string]: string }>({});
+  //#endregion
 
-    const [dropdownLabels, setDropdownLabels] = useState<{
-        channelPartnerName?: string,
-        MobileNumber?: string
-        SalesAdvisor?: string;
-        SourcingManager?: string;
-        VillageName?: string;
-        ChannelPartnerTeamMemberName?: string,
-
-    }>({})
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    channelPartnerName?: string;
+    MobileNumber?: string;
+    SalesAdvisor?: string;
+    SourcingManager?: string;
+    VillageName?: string;
+    ChannelPartnerTeamMemberName?: string;
+  }>({});
 
   //#region HANDLE FIELD CHANGE EVENT
   const handleFieldChange = (
@@ -244,14 +251,14 @@ export const AddUpdateEnquiry: React.FC = () => {
     }
   }, [EnquiryId]);
 
-    useEffect(() => {
-        if (formData.EnquiryTimeIn === "00:00") {
-            const currentTime = new Date().toTimeString().slice(0, 5)
-            handleFieldChange("EnquiryTimeIn", currentTime)
-        }
-    }, [])
+  useEffect(() => {
+    if (formData.EnquiryTimeIn === "00:00") {
+      const currentTime = new Date().toTimeString().slice(0, 5);
+      handleFieldChange("EnquiryTimeIn", currentTime);
+    }
+  }, []);
 
-    //#endregion
+  //#endregion
 
   //#region FETCH ENQUIRY  MASTER DETAILS
   const fetchEnquiryDetails = async () => {
@@ -300,19 +307,26 @@ export const AddUpdateEnquiry: React.FC = () => {
               SubSource: e.SubSource ?? prev.SubSource,
               SubSubSource: e.SubSubSource ?? prev.SubSubSource,
 
-                            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-                            ReferelName: e.ReferelName ?? prev.ReferelName,
-                            ReferelMobileNumber: e.ReferelMobileNumber ?? prev.ReferelMobileNumber,
-                            ReferelProjectName: e.ReferelProjectName ?? prev.ReferelProjectName,
-                            ReferelUnitNumber: e.ReferelUnitNumber ?? prev.ReferelUnitNumber,
+              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+              ReferelName: e.ReferelName ?? prev.ReferelName,
+              ReferelMobileNumber:
+                e.ReferelMobileNumber ?? prev.ReferelMobileNumber,
+              ReferelProjectName:
+                e.ReferelProjectName ?? prev.ReferelProjectName,
+              ReferelUnitNumber: e.ReferelUnitNumber ?? prev.ReferelUnitNumber,
 
-                            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-                            LoyaltyExistingProjectName: e.LoyaltyExistingProjectName ?? prev.LoyaltyExistingProjectName,
-                            LoyaltyExistingUnitNumber: e.LoyaltyExistingUnitNumber ?? prev.LoyaltyExistingUnitNumber,
+              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+              LoyaltyExistingProjectName:
+                e.LoyaltyExistingProjectName ?? prev.LoyaltyExistingProjectName,
+              LoyaltyExistingUnitNumber:
+                e.LoyaltyExistingUnitNumber ?? prev.LoyaltyExistingUnitNumber,
 
-                            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-                            EmployeeReferenceMobileNumber: e.EmployeeReferenceMobileNumber ?? prev.EmployeeReferenceMobileNumber,
-                            EmployeeReferenceName: e.EmployeeReferenceName ?? prev.EmployeeReferenceName,
+              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+              EmployeeReferenceMobileNumber:
+                e.EmployeeReferenceMobileNumber ??
+                prev.EmployeeReferenceMobileNumber,
+              EmployeeReferenceName:
+                e.EmployeeReferenceName ?? prev.EmployeeReferenceName,
 
               ChannelPartnerTeamMemberId:
                 e.ChannelPartnerTeamMemberId ?? prev.ChannelPartnerTeamMemberId,
@@ -355,10 +369,8 @@ export const AddUpdateEnquiry: React.FC = () => {
               SourcingManager: e.SourcingManager || "",
               ChannelPartnerTeamMemberName:
                 e.ChannelPartnerTeamMemberName || "",
-
-                        });
-                        setSelectedVillageValues(e.VillageMasterId || "")
-
+            });
+            setSelectedVillageValues(e.VillageMasterId || "");
             const age = calculateAge(e.DateOfBirth || "");
 
             setCalculatedAge(age);
@@ -451,49 +463,63 @@ export const AddUpdateEnquiry: React.FC = () => {
       }
     }
 
-        // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-        if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE") {
-            if (!formData.ReferelName) {
-                newErrors.ReferelName = 'Referel Name is required';
-            }
-            if (!formData.ReferelMobileNumber) {
-                newErrors.ReferelMobileNumber = 'Referel Mobile Number is required';
-            } else if (!isValidMobile(formData.ReferelMobileNumber.trim())) {
-                newErrors.ReferelMobileNumber = 'Enter a valid 10-Digit Referel Mobile Number'
-            }
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+    if (
+      formData.Source?.toUpperCase() === "DIRECT WALKING" &&
+      formData.SubSource?.toUpperCase() === "REFERENCE"
+    ) {
+      if (!formData.ReferelName) {
+        newErrors.ReferelName = "Referel Name is required";
+      }
+      if (!formData.ReferelMobileNumber) {
+        newErrors.ReferelMobileNumber = "Referel Mobile Number is required";
+      } else if (!isValidMobile(formData.ReferelMobileNumber.trim())) {
+        newErrors.ReferelMobileNumber =
+          "Enter a valid 10-Digit Referel Mobile Number";
+      }
 
+      if (!formData.ReferelProjectName) {
+        newErrors.ReferelProjectName = "Referel Project Name is required";
+      }
+      if (!formData.ReferelUnitNumber) {
+        newErrors.ReferelUnitNumber = "Referel Unit Number is required";
+      }
+    }
 
-            if (!formData.ReferelProjectName) {
-                newErrors.ReferelProjectName = 'Referel Project Name is required';
-            }
-            if (!formData.ReferelUnitNumber) {
-                newErrors.ReferelUnitNumber = 'Referel Unit Number is required';
-            }
-        }
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+    if (
+      formData.Source?.toUpperCase() === "DIRECT WALKING" &&
+      formData.SubSource?.toUpperCase() === "LOYALTY"
+    ) {
+      if (!formData.LoyaltyExistingProjectName) {
+        newErrors.LoyaltyExistingProjectName =
+          "Loyalty Existing Project Name is required";
+      }
+      if (!formData.LoyaltyExistingUnitNumber) {
+        newErrors.LoyaltyExistingUnitNumber =
+          "Loyalty Existing Unit Number is required";
+      }
+    }
 
-        // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-        if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "LOYALTY") {
-            if (!formData.LoyaltyExistingProjectName) {
-                newErrors.LoyaltyExistingProjectName = 'Loyalty Existing Project Name is required';
-            }
-            if (!formData.LoyaltyExistingUnitNumber) {
-                newErrors.LoyaltyExistingUnitNumber = 'Loyalty Existing Unit Number is required';
-            }
-        }
+    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+    if (
+      formData.Source?.toUpperCase() === "DIRECT WALKING" &&
+      formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE"
+    ) {
+      if (!formData.EmployeeReferenceMobileNumber) {
+        newErrors.EmployeeReferenceMobileNumber =
+          "Employee Reference Mobile Number is required";
+      } else if (
+        !isValidMobile(formData.EmployeeReferenceMobileNumber.trim())
+      ) {
+        newErrors.EmployeeReferenceMobileNumber =
+          "Enter a valid 10-Digit Employee Reference Mobile Number";
+      }
 
-        // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-        if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE") {
-
-            if (!formData.EmployeeReferenceMobileNumber) {
-                newErrors.EmployeeReferenceMobileNumber = 'Employee Reference Mobile Number is required';
-            } else if (!isValidMobile(formData.EmployeeReferenceMobileNumber.trim())) {
-                newErrors.EmployeeReferenceMobileNumber = 'Enter a valid 10-Digit Employee Reference Mobile Number'
-            }
-
-            if (!formData.EmployeeReferenceName) {
-                newErrors.EmployeeReferenceName = 'Employee Reference Name is required';
-            }
-        }
+      if (!formData.EmployeeReferenceName) {
+        newErrors.EmployeeReferenceName = "Employee Reference Name is required";
+      }
+    }
 
     if (!formData.CurrentLocation) {
       newErrors.CurrentLocation = "Current Location is required";
@@ -612,19 +638,29 @@ export const AddUpdateEnquiry: React.FC = () => {
           ? String(channelPartnerId)
           : formData.SubSubSource,
 
-            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-            ReferelName: isDirectReference ? formData.ReferelName : '',
-            ReferelMobileNumber: isDirectReference ? formData.ReferelMobileNumber : '',
-            ReferelProjectName: isDirectReference ? formData.ReferelProjectName : '',
-            ReferelUnitNumber: isDirectReference ? formData.ReferelUnitNumber : '',
+      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+      ReferelName: isDirectReference ? formData.ReferelName : "",
+      ReferelMobileNumber: isDirectReference
+        ? formData.ReferelMobileNumber
+        : "",
+      ReferelProjectName: isDirectReference ? formData.ReferelProjectName : "",
+      ReferelUnitNumber: isDirectReference ? formData.ReferelUnitNumber : "",
 
-            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-            LoyaltyExistingProjectName: isDirectLoyalty ? formData.LoyaltyExistingProjectName : '',
-            LoyaltyExistingUnitNumber: isDirectLoyalty ? formData.LoyaltyExistingUnitNumber : '',
+      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+      LoyaltyExistingProjectName: isDirectLoyalty
+        ? formData.LoyaltyExistingProjectName
+        : "",
+      LoyaltyExistingUnitNumber: isDirectLoyalty
+        ? formData.LoyaltyExistingUnitNumber
+        : "",
 
-            // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-            EmployeeReferenceMobileNumber: isEmployeeReference ? formData.EmployeeReferenceMobileNumber : '',
-            EmployeeReferenceName: isEmployeeReference ? formData.EmployeeReferenceName : '',
+      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+      EmployeeReferenceMobileNumber: isEmployeeReference
+        ? formData.EmployeeReferenceMobileNumber
+        : "",
+      EmployeeReferenceName: isEmployeeReference
+        ? formData.EmployeeReferenceName
+        : "",
 
       ChannelPartnerTeamMemberId: formData.ChannelPartnerTeamMemberId,
       ChannelPartnerTeamMemberName:
@@ -804,14 +840,14 @@ export const AddUpdateEnquiry: React.FC = () => {
     [channelPartnerCompanyName],
   );
 
-    //#endregion
-    //#region FETCH CHANNEL PARTNER DROPDOWN WITH TEAM MEMBER
-    const villageDropdown = useMultiSelectDropdown({
-        value: selectedVillageValues,
-        fetchCallback: fetchVillageDropdown,
-        autoFetchOptions: true
-    });
-    //#endregion
+  //#endregion
+  //#region FETCH CHANNEL PARTNER DROPDOWN WITH TEAM MEMBER
+  const villageDropdown = useMultiSelectDropdown({
+    value: selectedVillageValues,
+    fetchCallback: fetchVillageDropdown,
+    autoFetchOptions: true,
+  });
+  //#endregion
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -857,71 +893,66 @@ export const AddUpdateEnquiry: React.FC = () => {
                 />
               </div>
 
-                            <div>
-                                <Input
-                                    type="text"
-                                    required
-                                    label='Mobile Number'
-                                    disabled={Number(formData.EnquiryId) > 0 ? true:false}
-                                    leftIcon="+91"
-                                    rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                                    value={formData.MobileNumber ?? ""}
-                                    onChange={(e) => {
-                                        const mobile = filterMobile(e.target.value)
-                                        handleFieldChange("MobileNumber", mobile)
-                                    }
-                                    }
-                                    placeholder="Enter Mobile Number"
-                                    maxLength={10}
-                                    error={errors.MobileNumber}
-                                />
-                            </div>
-                            <div>
-                                <Input
-                                    label='E-mail ID'
-                                    type="text"
-                                    value={formData.EmailId ?? ""}
-                                    error={errors.EmailId}
-                                    rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
-                                    onChange={(e) => {
-                                        const emailId = filterEmail(e.target.value);
-                                        handleFieldChange('EmailId', emailId)
-                                    }}
-                                    placeholder="Enter Valid E-mail Id"
-                                />
-                            </div>
-                            <div>
-                                <DatePickerInput
-                                    label="DOB"
-                                    value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
-                                    onChange={(val) => {
+              <div>
+                <Input
+                  type="text"
+                  required
+                  label="Mobile Number"
+                  disabled={Number(formData.EnquiryId) > 0 ? true : false}
+                  leftIcon="+91"
+                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                  value={formData.MobileNumber ?? ""}
+                  onChange={(e) => {
+                    const mobile = filterMobile(e.target.value);
+                    handleFieldChange("MobileNumber", mobile);
+                  }}
+                  placeholder="Enter Mobile Number"
+                  maxLength={10}
+                  error={errors.MobileNumber}
+                />
+              </div>
+              <div>
+                <Input
+                  label="E-mail ID"
+                  type="text"
+                  value={formData.EmailId ?? ""}
+                  error={errors.EmailId}
+                  rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
+                  onChange={(e) => {
+                    const emailId = filterEmail(e.target.value);
+                    handleFieldChange("EmailId", emailId);
+                  }}
+                  placeholder="Enter Valid E-mail Id"
+                />
+              </div>
+              <div>
+                <DatePickerInput
+                  label="DOB"
+                  value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
+                  onChange={(val) => {
+                    const dob = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val);
 
-                                        const dob = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val)
+                    handleFieldChange("DateOfBirth", dob);
 
-                                        handleFieldChange('DateOfBirth', dob)
+                    const age = calculateAge(dob || "");
 
-                                        const age = calculateAge(dob || "")
-
-                                        setCalculatedAge(age)
-                                    }}
-                                    error={errors.DateOfBirth}
-
-                                />
-
-                            </div>
-                            <div>
-                                <Input
-                                    type="text"
-                                    disabled
-                                    label='Age'
-                                    value={calculatedAge ?? ""}
-                                    onChange={(e) => setCalculatedAge(e.target.value)}
-                                    placeholder="System calculated Age"
-                                    maxLength={250}
-                                    error={errors.Age}
-                                />
-
-                            </div>
+                    setCalculatedAge(age);
+                  }}
+                  error={errors.DateOfBirth}
+                />
+              </div>
+              <div>
+                <Input
+                  type="text"
+                  disabled
+                  label="Age"
+                  value={calculatedAge ?? ""}
+                  onChange={(e) => setCalculatedAge(e.target.value)}
+                  placeholder="System calculated Age"
+                  maxLength={250}
+                  error={errors.Age}
+                />
+              </div>
 
               <div>
                 <SinglePageSelection
@@ -1020,20 +1051,22 @@ export const AddUpdateEnquiry: React.FC = () => {
               )}
             </div>
 
-                        {/* ============================================================= [SOURCE] ============================================================================================= */}
-                        <div className="space-y-4 pb-3">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Source</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                <div>
-                                    <SinglePageSelection
-                                        label="Source"
-                                        required
-                                        placeholder="Select Source"
-                                        value={formData.Source ?? ''}
-                                        onChange={(e) => {
-                                            handleFieldChange("Source", e);
-                                            handleFieldChange("SubSource", "");
-                                            handleFieldChange("SubSubSource", "");
+            {/* ============================================================= [SOURCE] ============================================================================================= */}
+            <div className="space-y-4 pb-3">
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+                Source
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <SinglePageSelection
+                    label="Source"
+                    required
+                    placeholder="Select Source"
+                    value={formData.Source ?? ""}
+                    onChange={(e) => {
+                      handleFieldChange("Source", e);
+                      handleFieldChange("SubSource", "");
+                      handleFieldChange("SubSubSource", "");
 
                       if (e !== "Channel Partner") {
                         clearChannelPartnerAll();
@@ -1047,25 +1080,27 @@ export const AddUpdateEnquiry: React.FC = () => {
                   />
                 </div>
 
-                                {formData.Source === 'Direct Walking' && (
-                                    <div>
-                                        <SinglePageSelection
-                                            label="Sub Source"
-                                            required={formData.Source === 'Direct Walking' ? true : false}
-                                            placeholder="Select Sub Source"
-                                            value={formData.SubSource ?? ''}
-                                            onChange={(e) => {
-                                                handleFieldChange("SubSource", e);
-                                                handleFieldChange("SubSubSource", "");
-                                            }}
-                                            options={SUBSOURCE_TYPE_OPTIONS.map(opt => ({
-                                                label: opt.name,
-                                                value: opt.id
-                                            }))}
-                                            error={errors.SubSource}
-                                        />
-                                    </div>
-                                )}
+                {formData.Source === "Direct Walking" && (
+                  <div>
+                    <SinglePageSelection
+                      label="Sub Source"
+                      required={
+                        formData.Source === "Direct Walking" ? true : false
+                      }
+                      placeholder="Select Sub Source"
+                      value={formData.SubSource ?? ""}
+                      onChange={(e) => {
+                        handleFieldChange("SubSource", e);
+                        handleFieldChange("SubSubSource", "");
+                      }}
+                      options={SUBSOURCE_TYPE_OPTIONS.map((opt) => ({
+                        label: opt.name,
+                        value: opt.id,
+                      }))}
+                      error={errors.SubSource}
+                    />
+                  </div>
+                )}
 
                 {formData.Source === "Direct Walking" &&
                   formData.SubSource === "Advertisement" && (
@@ -1092,182 +1127,215 @@ export const AddUpdateEnquiry: React.FC = () => {
                     </div>
                   )}
 
-                                {formData.Source === 'Direct Walking' && formData.SubSource === 'Reference' && (
-                                    <>
-                                        <Input
-                                            label="Referral Name"
-                                            type="text"
-                                            required
-                                            value={formData.ReferelName ?? ""}
-                                            error={errors.ReferelName}
-                                            onChange={(e) => handleFieldChange("ReferelName", e.target.value)}
-                                            placeholder="Enter Referral Name"
-                                            maxLength={150}
-                                        />
+                {formData.Source === "Direct Walking" &&
+                  formData.SubSource === "Reference" && (
+                    <>
+                      <Input
+                        label="Referral Name"
+                        type="text"
+                        required
+                        value={formData.ReferelName ?? ""}
+                        error={errors.ReferelName}
+                        onChange={(e) =>
+                          handleFieldChange("ReferelName", e.target.value)
+                        }
+                        placeholder="Enter Referral Name"
+                        maxLength={150}
+                      />
 
-                                        <Input
-                                            label="Referral Mobile Number"
-                                            required
-                                            type="text"
-                                            maxLength={10}
-                                            value={formData.ReferelMobileNumber ?? ""}
-                                            error={errors.ReferelMobileNumber}
-                                            leftIcon="+91"
-                                            rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                                            onChange={(e) =>
-                                                handleFieldChange(
-                                                    "ReferelMobileNumber",
-                                                    filterMobile(e.target.value)
-                                                )
-                                            }
-                                            placeholder="Enter Referral Mobile Number"
-                                        />
+                      <Input
+                        label="Referral Mobile Number"
+                        required
+                        type="text"
+                        maxLength={10}
+                        value={formData.ReferelMobileNumber ?? ""}
+                        error={errors.ReferelMobileNumber}
+                        leftIcon="+91"
+                        rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "ReferelMobileNumber",
+                            filterMobile(e.target.value),
+                          )
+                        }
+                        placeholder="Enter Referral Mobile Number"
+                      />
 
-                                        <Input
-                                            label="Referral Project Name"
-                                            required
-                                            type="text"
-                                            value={formData.ReferelProjectName ?? ""}
-                                            error={errors.ReferelProjectName}
-                                            onChange={(e) =>
-                                                handleFieldChange("ReferelProjectName", e.target.value)
-                                            }
-                                            placeholder="Enter Referral Project Name"
-                                            maxLength={200}
-                                        />
+                      <Input
+                        label="Referral Project Name"
+                        required
+                        type="text"
+                        value={formData.ReferelProjectName ?? ""}
+                        error={errors.ReferelProjectName}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "ReferelProjectName",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Enter Referral Project Name"
+                        maxLength={200}
+                      />
 
-                                        <Input
-                                            label="Referral Unit Number"
-                                            required
-                                            type="text"
-                                            value={formData.ReferelUnitNumber ?? ""}
-                                            error={errors.ReferelUnitNumber}
-                                            onChange={(e) =>
-                                                handleFieldChange("ReferelUnitNumber", e.target.value)
-                                            }
-                                            placeholder="Enter Referral Unit Number"
-                                            maxLength={50}
-                                        />
-                                    </>
+                      <Input
+                        label="Referral Unit Number"
+                        required
+                        type="text"
+                        value={formData.ReferelUnitNumber ?? ""}
+                        error={errors.ReferelUnitNumber}
+                        onChange={(e) =>
+                          handleFieldChange("ReferelUnitNumber", e.target.value)
+                        }
+                        placeholder="Enter Referral Unit Number"
+                        maxLength={50}
+                      />
+                    </>
+                  )}
+                {formData.Source === "Direct Walking" &&
+                  formData.SubSource === "Loyalty" && (
+                    <>
+                      <Input
+                        label="Existing Project Name"
+                        required
+                        type="text"
+                        value={formData.LoyaltyExistingProjectName ?? ""}
+                        error={errors.LoyaltyExistingProjectName}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "LoyaltyExistingProjectName",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Enter Existing Project Name"
+                        maxLength={200}
+                      />
+
+                      <Input
+                        label="Existing Unit Number"
+                        required
+                        type="text"
+                        value={formData.LoyaltyExistingUnitNumber ?? ""}
+                        error={errors.LoyaltyExistingUnitNumber}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "LoyaltyExistingUnitNumber",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Enter Existing Unit Number"
+                        maxLength={50}
+                      />
+                    </>
+                  )}
+
+                {formData.Source === "Direct Walking" &&
+                  formData.SubSource === "Employee Reference" && (
+                    <>
+                      <Input
+                        label="Employee Name"
+                        required
+                        type="text"
+                        value={formData.EmployeeReferenceName ?? ""}
+                        error={errors.EmployeeReferenceName}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "EmployeeReferenceName",
+                            e.target.value,
+                          )
+                        }
+                        placeholder="Enter Employee Name"
+                        maxLength={150}
+                      />
+
+                      <Input
+                        label="Employee Mobile Number"
+                        required
+                        type="text"
+                        maxLength={10}
+                        value={formData.EmployeeReferenceMobileNumber ?? ""}
+                        error={errors.EmployeeReferenceMobileNumber}
+                        leftIcon="+91"
+                        rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                        onChange={(e) =>
+                          handleFieldChange(
+                            "EmployeeReferenceMobileNumber",
+                            filterMobile(e.target.value),
+                          )
+                        }
+                        placeholder="Enter Employee Mobile Number"
+                      />
+                    </>
+                  )}
+
+                {formData.Source === "Channel Partner" && (
+                  <>
+                    <SinglePageSelection
+                      label="Sub Source"
+                      required={
+                        formData.Source === "Channel Partner" ? true : false
+                      }
+                      placeholder="Select Sub Source"
+                      value={formData.SubSource ?? ""}
+                      onChange={(value) =>
+                        handleFieldChange("SubSource", String(value))
+                      }
+                      options={SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS.map(
+                        (opt) => ({
+                          label: opt.name,
+                          value: opt.id,
+                        }),
+                      )}
+                      error={errors.SubSource}
+                    />
+                    <div>
+                      <Input
+                        type="text"
+                        required
+                        label="Channel Partner"
+                        value={channelPartnerSearchByMobileNumber}
+                        maxLength={10}
+                        onChange={(e) => {
+                          handleSearchByChannelPartner(e.target.value);
+                          setChannelPartnerSearchByMobileNumber(e.target.value);
+                        }}
+                        placeholder="Search By Mobile Number"
+                        leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+                        error={errors.ChannelPartnerId}
+                      />
+                    </div>
+                    {channelPartnerFullName != "" && (
+                      <>
+                        {formData.ChannelPartnerTeamMemberName === "" &&
+                          formData.ChannelPartnerTeamMemberMobileNumber ===
+                            "" && (
+                            <div>
+                              <SingleSelectDropdownWithPagination
+                                label="Team Member"
+                                title="Select Team Member"
+                                size="lg"
+                                initialValue={createDropdownInitialValue(
+                                  formData.ChannelPartnerTeamMemberId,
+                                  dropdownLabels.ChannelPartnerTeamMemberName,
                                 )}
-                                {formData.Source === 'Direct Walking' && formData.SubSource === 'Loyalty' && (
-                                    <>
-                                        <Input
-                                            label="Existing Project Name"
-                                            required
-                                            type="text"
-                                            value={formData.LoyaltyExistingProjectName ?? ""}
-                                            error={errors.LoyaltyExistingProjectName}
-                                            onChange={(e) =>
-                                                handleFieldChange("LoyaltyExistingProjectName", e.target.value)
-                                            }
-                                            placeholder="Enter Existing Project Name"
-                                            maxLength={200}
-                                        />
-
-                                        <Input
-                                            label="Existing Unit Number"
-                                            required
-                                            type="text"
-                                            value={formData.LoyaltyExistingUnitNumber ?? ""}
-                                            error={errors.LoyaltyExistingUnitNumber}
-                                            onChange={(e) =>
-                                                handleFieldChange("LoyaltyExistingUnitNumber", e.target.value)
-                                            }
-                                            placeholder="Enter Existing Unit Number"
-                                            maxLength={50}
-                                        />
-
-                                    </>
-                                )}
-
-                                {formData.Source === 'Direct Walking' && formData.SubSource === 'Employee Reference' && (
-                                    <>
-                                        <Input
-                                            label="Employee Name"
-                                            required
-                                            type="text"
-                                            value={formData.EmployeeReferenceName ?? ""}
-                                            error={errors.EmployeeReferenceName}
-                                            onChange={(e) =>
-                                                handleFieldChange("EmployeeReferenceName", e.target.value)
-                                            }
-                                            placeholder="Enter Employee Name"
-                                            maxLength={150}
-                                        />
-
-                                        <Input
-                                            label="Employee Mobile Number"
-                                            required
-                                            type="text"
-                                            maxLength={10}
-                                            value={formData.EmployeeReferenceMobileNumber ?? ""}
-                                            error={errors.EmployeeReferenceMobileNumber}
-                                            leftIcon="+91"
-                                            rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                                            onChange={(e) =>
-                                                handleFieldChange("EmployeeReferenceMobileNumber", filterMobile(e.target.value)
-                                                )
-                                            }
-                                            placeholder="Enter Employee Mobile Number"
-                                        />
-
-
-                                    </>
-                                )}
-
-                                {formData.Source === 'Channel Partner' && (
-                                    <>
-                                        <SinglePageSelection
-                                            label="Sub Source"
-                                            required={formData.Source === 'Channel Partner' ? true : false}
-                                            placeholder="Select Sub Source"
-                                            value={formData.SubSource ?? ''}
-                                            onChange={(value) => handleFieldChange("SubSource", String(value))}
-                                            options={SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS.map(opt => ({
-                                                label: opt.name,
-                                                value: opt.id
-                                            }))}
-                                            error={errors.SubSource}
-                                        />
-                                        <div>
-                                            <Input
-                                                type="text"
-                                                required
-                                                label="Channel Partner"
-                                                value={channelPartnerSearchByMobileNumber}
-                                                maxLength={10}
-                                                onChange={(e) => {
-                                                    handleSearchByChannelPartner(e.target.value);
-                                                    setChannelPartnerSearchByMobileNumber(e.target.value);
-                                                }}
-                                                placeholder="Search By Mobile Number"
-                                                leftIcon={<Search className="h-4 w-4 text-gray-400" />}
-                                                error={errors.ChannelPartnerId}
-
-                                            />
-
-                                        </div>
-                                        {channelPartnerFullName != '' && (
-                                            <>
-                                                {(formData.ChannelPartnerTeamMemberName === "" && formData.ChannelPartnerTeamMemberMobileNumber === "") && (
-                                                    <div>
-                                                        <SingleSelectDropdownWithPagination
-                                                            label="Team Member"
-                                                            title="Select Team Member"
-                                                            size="lg"
-                                                            initialValue={createDropdownInitialValue(
-                                                                formData.ChannelPartnerTeamMemberId,
-                                                                dropdownLabels.ChannelPartnerTeamMemberName
-                                                            )}
-                                                            dataFetchCallBack={fetchChannelPartnerTeamMember}
-                                                            onSelected={(item) => {
-                                                                if (!item) {
-                                                                    handleFieldChange("ChannelPartnerTeamMemberId", null);
-                                                                    handleFieldChange("ChannelPartnerTeamMemberName", "");
-                                                                    handleFieldChange("ChannelPartnerTeamMemberMobileNumber", "");
-                                                                    return;
-                                                                }
+                                dataFetchCallBack={
+                                  fetchChannelPartnerTeamMember
+                                }
+                                onSelected={(item) => {
+                                  if (!item) {
+                                    handleFieldChange(
+                                      "ChannelPartnerTeamMemberId",
+                                      null,
+                                    );
+                                    handleFieldChange(
+                                      "ChannelPartnerTeamMemberName",
+                                      "",
+                                    );
+                                    handleFieldChange(
+                                      "ChannelPartnerTeamMemberMobileNumber",
+                                      "",
+                                    );
+                                    return;
+                                  }
 
                                   handleFieldChange(
                                     "ChannelPartnerTeamMemberId",
@@ -1412,9 +1480,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     )}
                   </>
                 )}
-
-
-                        </div>
+            </div>
 
             {/* ============================================================= [ADDRESS] ============================================================================================= */}
             <div className="space-y-4 pb-3">

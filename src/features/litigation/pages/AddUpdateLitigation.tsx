@@ -160,7 +160,7 @@ export const AddUpdateLitigation: React.FC = () => {
             newErrors.CaseType = 'Case Type is required.';
         }
         if (!formData.CaseNumber) {
-            newErrors.CaseNumber = 'Case Number is required.';
+            newErrors.CaseNumber = 'Case / Petition / Dispute Number is required.';
         }
         if (!formData.CourtName) {
             newErrors.CourtName = 'Court Name is required.';
@@ -172,16 +172,22 @@ export const AddUpdateLitigation: React.FC = () => {
             newErrors.CourtType = 'Court Type is required.';
         }
         if (!formData.Plantiff) {
-            newErrors.Plantiff = 'Plantiff is required.';
+            newErrors.Plantiff = ' Plaintiff / Complaint / Petitioner is required.';
         }
         if (!formData.Defendant) {
-            newErrors.Defendant = 'Defendant is required.';
+            newErrors.Defendant = 'Defendant / Opposite Party / Respondent is required.';
         }
         if (!formData.AssignedRepresentative) {
             newErrors.AssignedRepresentative = 'Assigned Representative is required.';
         }
         if (!formData.OpposingRepresentative) {
             newErrors.OpposingRepresentative = 'Opposing Representative is required.';
+        }
+        if (!formData.CaseBrief) {
+            newErrors.CaseBrief = 'Case Brief / Petition / Suit is required.';
+        }
+        if (!formData.Remark) {
+            newErrors.Remark = 'Case Remarks / Comments is required.';
         }
 
         return {
@@ -318,7 +324,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     type="text"
                                     required
                                     label='Case / Petition / Dispute Number'
-                                    value={formData.CaseNumber?.toUpperCase() ?? ""}
+                                    value={formData.CaseNumber ?? ""}
                                     onChange={(e) => handleFieldChange("CaseNumber", e.target.value)}
                                     placeholder="Enter Case Number"
                                     maxLength={250}
@@ -372,10 +378,10 @@ export const AddUpdateLitigation: React.FC = () => {
                                 <Input
                                     type="text"
                                     required
-                                    label='Plainiff'
+                                    label='Plaintiff / Complaint / Petitioner'
                                     value={formData.Plantiff ?? ""}
                                     onChange={(e) => handleFieldChange("Plantiff", e.target.value)}
-                                    placeholder="Enter Plainiff"
+                                    placeholder="Enter Plaintiff / Complaint / Petitioner"
                                     maxLength={250}
                                     error={errors.Plantiff}
                                 />

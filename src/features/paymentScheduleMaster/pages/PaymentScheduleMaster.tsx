@@ -267,7 +267,7 @@ export const PaymentScheduleMaster: React.FC = () => {
   //#region EDIT PAYMENT SCHEDULE
   const handleEditPaymentScheduleMaster = useCallback(async (row: PaymentScheduleMasterData) => {
 
-    const res = await fetchPaymentScheduleDropdown({ projectId: projectId ?? undefined });
+    const res = await fetchPaymentScheduleDropdown({ projectId: projectId ?? undefined, inventoryBuildingId: row.InventoryBuildingId, wing: row.Wing ?? "" });
 
     setStageOptions(res.itemList);
     setEditingPaymentScheduleMasterData(row);
@@ -566,7 +566,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   //#region NAVIGATE TO PAYMENT SCHEDULE REPORT
   const handlePaymentScheduleMasterReport = useCallback(() => {
-    navigate('/paymentMasterReport', {
+    navigate('/paymentSchedule/paymentScheduleReport', {
       state: {
         ratePerSqFt,
         InventoryBuildingId: formData.InventoryBuildingId,

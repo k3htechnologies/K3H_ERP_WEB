@@ -43,6 +43,7 @@ export class PaymentScheduleMasterDatasourceImpl implements PaymentScheduleMaste
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
             if (params.InventoryBuildingId) queryParams.append("InventoryBuildingId", params.InventoryBuildingId.toString());
             if (params.PaymentScheduleMasterId) queryParams.append("PaymentScheduleMasterId", params.PaymentScheduleMasterId.toString());
+            if (params.PaymentScheduleSchemeMasterId) queryParams.append("PaymentScheduleSchemeMasterId", params.PaymentScheduleSchemeMasterId.toString());
             if (params.Stage) queryParams.append('Stage', params.Stage.toString());
             if (params.Wing) queryParams.append('Wing', params.Wing.toString());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
@@ -108,7 +109,7 @@ export class PaymentScheduleMasterDatasourceImpl implements PaymentScheduleMaste
         }
     }
 
-    
+
 
     // PAYMENT SCHEDULE REPORT
 

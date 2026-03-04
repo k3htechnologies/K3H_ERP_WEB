@@ -76,6 +76,16 @@ export interface BookingData {
     CommunicationAddress: string | null;
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
+
+    ReferelPercentage: number | null;
+    ReferelAmount: number | null;
+
+    LoyaltyPercentage: number | null;
+    LoyaltyAmount: number | null;
+
+    EmployeeReferencePercentage: number | null;
+    EmployeeReferenceAmount: number | null;
+    
     RegistrationDate: string | null;
     AgreementValue: number | null;
     AgreementValueTDS: number | null;
@@ -85,6 +95,7 @@ export interface BookingData {
     StampDutyAmount: number | null;
     RegistrationFees: number | null;
     ParkingId: string | null;
+    NumberOfParking: number | null;
     HandoverType: string | null;
     ModeOfPayment: string | null;
     BookingAmount: number | null;
@@ -93,8 +104,12 @@ export interface BookingData {
     BankListMasterId: number | null;
     BankName: string | null;
     FlatAlterationRemark: string | null;
+    PaymentRemark: string | null;
+    OtherRemark: string | null;
     TermsAndConditionsDescription: string | null;
     BookingOtherChargesData?: BookingOtherChargesData[] | null;
+    PaymentSchedulSchemeMasterId: number | null;
+    PaymentSchedulScheme: string | null;
     BookingPaymentScheduleData?: BookingPaymentScheduleData[] | null;
     CreatedById: number | null;
     CreatedBy: string | null;
@@ -190,6 +205,16 @@ export interface AddUpdateBookingRequest {
     CommunicationAddress: string | null;
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
+
+    ReferelPercentage: number | null;
+    ReferelAmount: number | null;
+
+    LoyaltyPercentage: number | null;
+    LoyaltyAmount: number | null;
+
+    EmployeeReferencePercentage: number | null;
+    EmployeeReferenceAmount: number | null;
+
     InventoryFlatId: number | null;
     AgreementValue: number | null;
     AgreementValueTDS: number | null;
@@ -199,13 +224,17 @@ export interface AddUpdateBookingRequest {
     StampDutyAmount: number | null;
     RegistrationFees: number | null;
     ParkingId: string | null;
+    NumberOfParking: number | null;
     HandoverType: string | null;
     RegistrationDate: string | null;
     ModeOfPayment: string | null;
     FlatAlterationRemark: string | null;
+    PaymentRemark: string | null;
+    OtherRemark: string | null;
     TermsAndConditionsDescription: string | null;
     BookingType: string | null;
     OtherChargesDetailJSON: string | null;
+    PaymentSchedulSchemeMasterId: number | null;
     PaymentScheduleDetailJSON: string | null;
     BookingAmount: number | null;
     ChequeRTGSNumber: string | null;

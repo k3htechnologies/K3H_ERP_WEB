@@ -25,8 +25,6 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { SUPPORT_TYPE_OPTIONS } from "@/core/constants";
 import { isDateWithinPastDays } from "@/core/utils/comman";
-import { sendOTP } from "@/features/technical/services/OTPService";
-import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
 
 const initialFormState = (): AddUpdateChannelPartnerSourcingRequest => ({
   ChannelPartnerSourcingId: 0,
@@ -64,13 +62,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   const { listState } = useChannelPartnerSourcingListState();
 
   const { projectId } = useProject();
-
-  //COMPLETE VERIFICATION
-
-  const [otp, setOtp] = useState("");
-  const [isOtpSent, setIsOtpSent] = useState(false);
-  const [isOtpVerified, setIsOtpVerified] = useState(false);
-  const [showOtpSection, setShowOtpSection] = useState(false);
 
   //SET CHANNEL PARTNER DETAILS
   const [channelPartnerId, setChannelPartnerId] = useState<number>();
@@ -285,31 +276,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
     }
 
-    if (formData.ChannelPartnerSourcingId === 0 && !isOtpVerified) {
-
-      if (!isOtpSent) {
-
-        const sent = await sendOTP({
-
-          mobileNumber: channelPartnerMobileNumber || "",
-          module: "CHANNEL PARTNER SOURCING",
-          setIsLoading,
-          setLoadingMessage,
-          addToast
-        });
-
-
-        if (sent) {
-          setShowOtpSection(true);
-          setIsOtpSent(true);
-
-        }
-
-        return;
-      }
-
-    }
-
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -321,8 +287,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
           ProjectId: projectId || 0,
           SourcingRemark: formData.SourcingRemark?.trim() || "",
           Support: formData.Support?.trim() || "",
-          IBM_OBM: formData.IBM_OBM,
-          OTP: otp?.trim()
+          IBM_OBM: formData.IBM_OBM
         };
 
         const response = await ChannelPartnerSourcingService.apiCallAddUpdateChannelPartnerSourcing(params);
@@ -750,49 +715,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
         loading={isLoading}
         pageName='Remark'
       />
-
-      <Modal
-        isOpen={showOtpSection && formData.ChannelPartnerSourcingId === 0}
-        onClose={() => {
-          setOtp("");
-          setIsOtpSent(false);
-          setIsOtpVerified(false);
-          setShowOtpSection(false);
-
-        }}
-        title="Complete Verification"
-        saveText={formData.ChannelPartnerSourcingId ? "Update" : "Verify OTP & Add"}
-        size="md"
-        onSubmit={(e) => {
-
-          e.preventDefault();
-
-          if (!otp) {
-
-            addToast({ type: "error", title: "Please enter OTP" });
-            return;
-          }
-
-          setIsOtpVerified(true);
-
-          handleRemarkFormSubmit(e);
-
-          setShowOtpSection(false);
-
-        }}
-      >
-
-        <CompleteVerificationSection
-          steps={[
-            { id: "basic", label: "Remark", completed: true },
-            { id: "support", label: "Support", completed: formData.Support === "" ? false : true },
-          ]}
-          otp={otp}
-          onOtpChange={setOtp}
-          mobileNumber={channelPartnerMobileNumber ?? ""}
-        />
-
-      </Modal>
     </div>
   );
 };

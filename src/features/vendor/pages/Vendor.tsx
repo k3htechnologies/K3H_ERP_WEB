@@ -22,7 +22,7 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useNavigate } from 'react-router-dom';
 import { useVendorListState } from '@/features/vendor/context/VendorListStateContext';
-import { Trash2 } from 'lucide-react';
+import { AlertTriangle, Trash2 } from 'lucide-react';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import type { FilterMagicLinkWithValidate, FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
@@ -32,6 +32,7 @@ import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import { isVendorComplete } from '@/features/vendor/utils/vendorUtils';
 
 
 export const Vendor: React.FC = () => {
@@ -274,14 +275,29 @@ export const Vendor: React.FC = () => {
         sortable: true,
         fixed: 'left',
         align: 'left',
-        render: (value, row) => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="250px"
-            tooltipThreshold={25}
-            onClick={() => handleViewVendorDetails(row)}
-          />
-        )
+
+        render: (value, row) => {
+          const complete = isVendorComplete(row);
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+
+              <TooltipText
+                text={value || '-'}
+                maxWidth="250px"
+                tooltipThreshold={25}
+                onClick={() => handleViewVendorDetails(row)}
+              />
+
+              {!complete && (
+                <span title="Vendor Profile Incomplete">
+                  <AlertTriangle className="w-4 h-4 text-amber-500 cursor-pointer" />
+                </span>
+              )}
+
+            </div>
+          );
+        }
       },
       {
         key: 'CompanyName',

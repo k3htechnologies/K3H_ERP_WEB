@@ -621,6 +621,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                                     label=" Mobile Number"
                                     required
                                     maxLength={10}
+                                    disabled={Number(formData.ChannelPartnerId) > 0 ? true:false}
                                     value={formData.MobileNumber}
                                     rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                                     onChange={(e) => handleFieldChange("MobileNumber", filterMobile(e.target.value))}

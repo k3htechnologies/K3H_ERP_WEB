@@ -1179,7 +1179,7 @@ const ProjectDocument: React.FC = () => {
         onAdd={handleAddDocumentModal}
 
         // IMPORT
-        isShowImportButton={canAction}
+        isShowImportButton={canAction && Number(projectId) > 0}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleProjectDocument}
         // EXPORT

@@ -77,7 +77,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
 
     // Load week offs with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadWeekOff(listState.page, { WeekOffOffName: String(listState.searchTerm).trim() }, listState.sortInfo);
+      loadWeekOff(listState.page, { WeekOffPolicyName: String(listState.searchTerm).trim() }, listState.sortInfo);
     } else {
       loadWeekOff(listState.page, listState.filters, listState.sortInfo);
     }
@@ -139,15 +139,19 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   //#region SEARCH & CLEAR WEEK OFF MASTER
 
   const searchWeekOff = async (searchValue: string) => {
+
     updateListState({ searchTerm: searchValue });
 
     if (searchValue.trim() === '') {
+
       updateListState({ searchTerm: '', page: 1 });
       fetchWeekOffMasterList();
       return;
+
     }
 
     updateListState({ searchTerm: searchValue, page: 1 });
+
     await loadWeekOff(1, filters, sortInfo, searchValue);
   };
 

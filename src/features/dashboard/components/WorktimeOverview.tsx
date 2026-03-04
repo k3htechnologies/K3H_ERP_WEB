@@ -32,7 +32,6 @@ const WorktimeOverview: React.FC<Props> = ({
   const punchIn = data?.PunchIn ?? "--";
   const punchOut = data?.PunchOut ?? "--";
   const progress = data?.Progress ?? 0;
-  const distance = data?.Distance ?? 0;
 
   const radius = 45;
   const circumference = 2 * Math.PI * radius;

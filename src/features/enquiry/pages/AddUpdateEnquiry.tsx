@@ -994,6 +994,8 @@ export const AddUpdateEnquiry: React.FC = () => {
                   label="DOB"
                   value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
                   onChange={(val) => {
+                    const dob = convert_dd_mm_yyyy_To_Yyyy_mm_dd(val);
+
                     handleFieldChange("DateOfBirth", dob);
 
                     const age = calculateAge(dob || "");

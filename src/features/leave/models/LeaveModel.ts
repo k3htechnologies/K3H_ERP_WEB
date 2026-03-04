@@ -7,8 +7,8 @@ export interface FilterWithPaginationLeaveRequest {
   LeaveId?: number
   LeaveTypeMasterId?: number
   LeaveType?: string
-  StartDate?: string
-  EndDate?: string
+  StartDate?: string | null
+  EndDate?: string | null
   Status?: string
   EmployeeId?: number
   EmployeeName?: string

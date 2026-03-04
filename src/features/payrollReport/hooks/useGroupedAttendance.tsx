@@ -32,6 +32,7 @@ export function useGroupedAttendance(attendanceList: AttendanceData[]) {
                     PunchOutAddress: latest.PunchOutAddress,
                     WorkingHours: latest.WorkingHours,
                     AttendanceStatus: latest.AttendanceStatus,
+                    Polyline: latest.Polyline,
                     _groupedItems: sortedItems,
                     _hasTodayData: hasTodayData,
                 };

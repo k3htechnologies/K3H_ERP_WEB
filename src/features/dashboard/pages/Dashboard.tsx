@@ -30,6 +30,8 @@ const Dashboard: React.FC = () => {
   const [reportingData, setReportingData] = React.useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
+  const [workTimeOverviewTable, setWorkTimeOverviewTable] = React.useState<any[]>([]);
+
 
   const { addToast } = useToast()
 
@@ -56,6 +58,7 @@ const Dashboard: React.FC = () => {
           setHolidayData(e.Table6 || []);
           setBirthdays(e.Table8 || []);
           setReportingData(e.Table10 || []);
+          setWorkTimeOverviewTable(e.Table11 || [])
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
@@ -72,12 +75,12 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
-      
-       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
+      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
       <HeaderSection />
       <div className="grid grid-cols-12 gap-4 ">
         <div className="col-span-4">
-          <WorktimeOverview />
+          <WorktimeOverview workTimeOverviewTable={workTimeOverviewTable} />
         </div>
         <div className="col-span-4">
           <DailyActivities />

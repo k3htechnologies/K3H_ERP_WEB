@@ -306,8 +306,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             ChannelPartnerTeamMemberName: e.ChannelPartnerTeamMemberName || "",
 
                         });
-                        setSelectedVillageValues(e.VillageName || "")
-
+                        setSelectedVillageValues(e.VillageMasterId || "")
                         const age = calculateAge(e.DateOfBirth || "")
 
                         setCalculatedAge(age);
@@ -1387,7 +1386,6 @@ export const AddUpdateEnquiry: React.FC = () => {
                                                 dataFetchCallBack={fetchVillageDropdown}
                                                 selectedValues={villageDropdown.selectedValues}
                                                 options={villageDropdown.initialOptions}
-
                                                 onChange={(values) => {
                                                     const { idsString } = villageDropdown.handleChange(values);
                                                     setSelectedVillageValues(idsString || null);
@@ -1396,7 +1394,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                                     }
                                                 }}
                                             />
-                                            
+
 
                                         </div>
                                         <div>

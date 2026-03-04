@@ -8,7 +8,7 @@ export const STATUS_CONFIG = {
   WEEK_OFF: { color: '#3F5067', text: '#3F5067', badge: { backgroundColor: '#3F5067', color: '#3F5067' } },
   EARLY_LEAVE: { color: '#FFC569', text: '#FFC569', badge: { backgroundColor: '#FFC569', color: '#FFC569' } },
   COMP_OFF: { color: '#5149e5', text: '#5149e5', badge: { backgroundColor: '#5149e5', color: '#5149e5' } },
-  CHECKOUT_MISSING: { color: '#923b54', text: '#923b54', badge: { backgroundColor: '#923b54', color: '#923b54' } },
+  CHECKOUT_MISSING: { color: '#923b54', text: '#923b54', badge: { backgroundColor: '#923b54', color: '#923b54', } },
   DEFAULT: { color: '#6b7280', text: '#6b7280', badge: { backgroundColor: '#6b7280', color: '#6b7280' } },
 } as const;
 
@@ -52,19 +52,13 @@ export const getStatusTextColor = (status?: string): string =>
 export const getStatusBadgeClasses = (status?: string): { backgroundColor: string; color: string } =>
   STATUS_CONFIG[resolveStatus(status)].badge;
 
-/**
- * Get a user-friendly status label for display.
- * Converts values like "CHECKOUT_MISSING" or "checkout missing" to "Checkout Missing".
- */
 export const getStatusLabel = (status?: string | null): string => {
   if (!status) return '-';
   const trimmed = String(status).trim();
   if (!trimmed) return '-';
 
-  // Replace underscores/hyphens with spaces and collapse multiple spaces
   const normalized = trimmed.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').toLowerCase();
 
-  // Title-case each word
   return normalized
     .split(' ')
     .map((w) => (w.length > 0 ? w[0].toUpperCase() + w.slice(1) : w))

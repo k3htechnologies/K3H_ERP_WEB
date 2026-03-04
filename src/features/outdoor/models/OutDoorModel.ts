@@ -4,8 +4,8 @@ export interface FilterWithPaginationOutDoor {
   PageSize: number
   PageNumber: number
   OutdoorId?: number
-  StartDate?: string
-  EndDate?: string
+  StartDate?: string | null
+  EndDate?: string | null
   CompanyName?: string
   Status?: string
   EmployeeId?: number

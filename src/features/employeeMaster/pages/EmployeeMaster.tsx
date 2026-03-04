@@ -41,7 +41,7 @@ export const EmployeeMaster: React.FC = () => {
   const navigate = useNavigate();
 
   const { listState, updateListState } = useEmployeeListState();
-  const { pagination, setPagination } = usePagination(listState.pageSize);
+  const { pagination, setPagination } = usePagination(20);
   const sortInfo = listState.sortInfo;
   const searchTerm = listState.searchTerm;
   const filters = listState.filters;
@@ -66,15 +66,18 @@ export const EmployeeMaster: React.FC = () => {
 
   //#region INIT
   useEffect(() => {
-    setPagination({ currentPage: listState.page });
-
-    if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadEmployees(listState.page, { EmployeeName: String(listState.searchTerm).trim() }, listState.sortInfo);
-    } else {
-      loadEmployees(listState.page, listState.filters, listState.sortInfo);
-    }
-  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
-
+    loadEmployees(
+      listState.page,
+      listState.filters,
+      listState.sortInfo,
+      listState.searchTerm || undefined
+    );
+  }, [
+    listState.page,
+    listState.filters,
+    listState.sortInfo,
+    listState.searchTerm
+  ]);
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.();
@@ -162,7 +165,7 @@ export const EmployeeMaster: React.FC = () => {
     }
 
     updateListState({ searchTerm: searchValue, page: 1 });
-    await loadEmployees(1, filters, sortInfo, searchValue);
+    // await loadEmployees(1, filters, sortInfo, searchValue);
   };
 
 
@@ -173,7 +176,7 @@ export const EmployeeMaster: React.FC = () => {
     debouncedSearch.cancel?.();
     updateListState({ searchTerm: '', filters: {}, page: 1 });
     setTempFilters({});
-    loadEmployees(1, { EmployeeName: '' }, sortInfo, undefined);
+    // loadEmployees(1, { EmployeeName: '' }, sortInfo, undefined);
   };
 
   //#endregion
@@ -241,7 +244,7 @@ export const EmployeeMaster: React.FC = () => {
   //#region TABLE CONFIG
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
-    fetchEmployeeList(page, sortInfo);
+    // fetchEmployeeList(page, sortInfo);
   }, [sortInfo, updateListState]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {

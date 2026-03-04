@@ -111,7 +111,7 @@ export const PayrollReport: React.FC = () => {
           onTabChange={(t) => setActiveTab(t.id as TabId)}
         />
 
-        <div className="mt-6 bg-gray-50 rounded-lg p-4 border border-gray-100">
+        <div className="mt-6">
           <TableActionToolbar
             isShowSearchBar
             searchTerm={searchTerm}

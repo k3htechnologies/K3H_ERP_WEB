@@ -1,8 +1,8 @@
-import React from 'react';
-import { Modal } from '@/ui/components/Modal/Modal';
-import { Input } from '@/ui/components/forms';
-import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
-import type { AddUpdateHolidayMasterRequest } from '@/features/holidayMaster/models/HolidayMasterModel';
+import React from "react";
+import { Modal } from "@/ui/components/Modal/Modal";
+import { Input } from "@/ui/components/forms";
+import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
+import type { AddUpdateHolidayMasterRequest } from "@/features/holidayMaster/models/HolidayMasterModel";
 
 interface HolidayMasterFormModalProps {
   isOpen: boolean;
@@ -31,35 +31,19 @@ export const HolidayMasterFormModal: React.FC<HolidayMasterFormModalProps> = ({
   errors,
   editingData,
   loading,
+  holidayURL,
+
   holidayFiles,
   setHolidayFiles,
   removedHolidayUrls,
-  setRemovedHolidayUrls
+  setRemovedHolidayUrls,
 }) => {
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      onCancel={onCancel}
-      title={editingData ? 'Update Holiday ' : 'Add Holiday'}
-      onSubmit={onSubmit}
-      saveText={editingData ? 'Update' : 'Add'}
-      loading={loading}
-      size="xl"
-    >
+    <Modal isOpen={isOpen} onClose={onClose} onCancel={onCancel} title={editingData ? "Update Holiday " : "Add Holiday"} onSubmit={onSubmit} saveText={editingData ? "Update" : "Add"} loading={loading} size="xl">
       <div className="space-y-6 p-6 bg-blue-100">
-        <div className='space-y-4'>
+        <div className="space-y-4">
           <div>
-            <Input
-              type="text"
-              label='Holiday Name'
-              value={formData.HolidayName ?? ''}
-              onChange={(e) => onFieldChange("HolidayName", e.target.value)}
-              required
-              maxLength={50}
-              placeholder="Enter Holiday Name"
-              error={errors.HolidayName}
-            />
+            <Input type="text" label="Holiday Name" value={formData.HolidayName ?? ""} onChange={(e) => onFieldChange("HolidayName", e.target.value)} required maxLength={50} placeholder="Enter Holiday Name" error={errors.HolidayName} />
           </div>
           <div>
             <MultiFilePicker
@@ -68,12 +52,13 @@ export const HolidayMasterFormModal: React.FC<HolidayMasterFormModalProps> = ({
               required
               error={errors.HolidayURL}
               value={holidayFiles}
+              availableFilesURL={holidayURL ?? ""}
               onChange={setHolidayFiles}
               allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-              maxFiles={5}
+              maxFiles={1}
               maxSizeMB={10}
               onRemoveExisting={(url) => {
-                setRemovedHolidayUrls([...removedHolidayUrls, url])
+                setRemovedHolidayUrls([...removedHolidayUrls, url]);
               }}
             />
           </div>

@@ -93,6 +93,18 @@ export const HolidayMappingMasterTable: React.FC<HolidayMappingMasterTableProps>
           )
         };
       }
+      if (col.key === 'DepartmentName') {
+        return {
+          ...col,
+          render: (value) => (
+            <TooltipText
+              text={value || '-'}
+              maxWidth="200px"
+              tooltipThreshold={20}
+            />
+          )
+        };
+      }
       return col;
     });
   }, [columns, canAction, onView, onDelete]);

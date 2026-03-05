@@ -6,6 +6,7 @@ export const INITIAL_FORM_STATE: AddUpdateHolidayMappingMasterRequest = {
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   HolidayMasterId: 0,
   BranchMasterId: "",
+  DepartmentMasterId: "",
   HolidayDate: ""
 };
 
@@ -27,6 +28,13 @@ export const getHolidayMappingMasterColumns = (): TableColumn[] => [
   {
     key: 'BranchName',
     label: 'Branch Name',
+    width: '25',
+    sortable: false,
+    align: 'left'
+  },
+  {
+    key: 'DepartmentName',
+    label: 'Department Name',
     width: '25',
     sortable: false,
     align: 'left'

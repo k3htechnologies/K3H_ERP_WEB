@@ -99,4 +99,11 @@ export const isDateWithinPastDays = (dateStr: string | null | undefined, pastDay
   
 };
 
+export const format24To12Hour = (hour: string, minute: string) => {
+  const h = Number(hour)
+  const ampm = h >= 12 ? "PM" : "AM"
+  const displayHour = h >= 13 ? h - 12 : h
+  return `${displayHour.toString().padStart(2, "0")}:${minute} ${ampm}`
+}
+
 

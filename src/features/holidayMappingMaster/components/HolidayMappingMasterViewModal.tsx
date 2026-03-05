@@ -56,6 +56,8 @@ export const HolidayMappingMasterViewModal: React.FC<HolidayMappingMasterViewMod
           <FieldItem label="Holiday Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
           <FieldItem label="Holiday Date" value={data.HolidayDate ? formatDate_dd_MonthName_yy(data.HolidayDate) : ""} isRow />
           <FieldItem label="Branch Name" value={data.BranchName} isRow withBorder={true} />
+          <FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={true} />
+          
           <div className="space-y-4">
             <h4 className="text-lg font-semibold pb-2">
               Action Details

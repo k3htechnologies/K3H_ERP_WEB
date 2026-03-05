@@ -42,6 +42,8 @@ export const HolidayMappingMaster: React.FC = () => {
     isShowCustomizeHolidayMappingMasterColumnsModal,
     dropdownLabels,
     dropdownResetKey,
+    branchValueDropdown,
+    departmentValueDropdown,
 
     // Setters
     setSearchTerm,
@@ -174,6 +176,8 @@ export const HolidayMappingMaster: React.FC = () => {
         loading={isLoading}
         dropdownLabels={dropdownLabels}
         dropdownResetKey={dropdownResetKey}
+        branchValueDropdown={branchValueDropdown}
+        departmentValueDropdown={departmentValueDropdown}
       />
 
       <CustomizeColumnsModal
@@ -189,7 +193,7 @@ export const HolidayMappingMaster: React.FC = () => {
         columns={holidayMappingMasterColumns}
         selectedKeys={selectedHolidayMappingMasterColumnKeys}
         requiredKeys={requiredHolidayMappingMasterColumnKeys}
-        title="Customize Master Table Columns"
+        title="Customize Table Columns"
       />
 
       <HolidayMappingMasterFilterModal

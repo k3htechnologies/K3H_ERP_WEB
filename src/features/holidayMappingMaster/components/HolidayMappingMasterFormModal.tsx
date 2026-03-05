@@ -7,6 +7,8 @@ import { fetchBranchMasterDropdown } from '@/features/branchMaster/branchMasterD
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
 import type { AddUpdateHolidayMappingMasterRequest } from '@/features/holidayMappingMaster/models/HolidayMappingMasterModel';
+import MultiSelectPagination from '@/ui/components/DropDown/Multiselectpagination';
+import { fetchDepartmentMasterDropdown } from '@/features/departmentMaster/departmentMasterDropdown';
 
 interface HolidayMappingMasterFormModalProps {
   isOpen: boolean;
@@ -18,8 +20,16 @@ interface HolidayMappingMasterFormModalProps {
   errors: { [k: string]: string };
   editingData: any;
   loading: boolean;
-  dropdownLabels: { branchName?: string; holidayName?: string };
+  dropdownLabels: { branchName?: string; holidayName?: string, departmentName?: string };
   dropdownResetKey: number;
+  branchValueDropdown: {
+    selectedValues: any[]; initialOptions: any[];
+    handleChange: (values: any) => { idsString: string | null };
+  }
+  departmentValueDropdown: {
+    selectedValues: any[]; initialOptions: any[];
+    handleChange: (values: any) => { idsString: string | null };
+  }
 }
 
 export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormModalProps> = ({
@@ -33,7 +43,10 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
   editingData,
   loading,
   dropdownLabels,
-  dropdownResetKey
+  dropdownResetKey,
+  branchValueDropdown,
+  departmentValueDropdown,
+
 }) => {
   return (
     <Modal
@@ -69,6 +82,7 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
               error={errors.HolidayMasterId}
             />
           </div>
+
           <div>
             <DatePickerInput
               label="Holiday Date"
@@ -78,25 +92,33 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
               error={errors.HolidayDate}
             />
           </div>
-          <div>
-            <SingleSelectDropdownWithPagination
-              label="Branch Name"
-              key={dropdownResetKey}
-              title="Select Branch Name"
-              size="lg"
-              dataFetchCallBack={fetchBranchMasterDropdown}
-              onSelected={(item) => {
-                if (!item) {
-                  onFieldChange("BranchMasterId", null);
-                  return;
-                }
 
-                onFieldChange("BranchMasterId", Number(item.value));
+          <div>
+            <MultiSelectPagination
+              label="Branch"
+              dataFetchCallBack={fetchBranchMasterDropdown}
+              selectedValues={branchValueDropdown.selectedValues}
+              options={branchValueDropdown.initialOptions}
+              onChange={(values) => {
+                const { idsString } = branchValueDropdown.handleChange(values);
+                onFieldChange("BranchMasterId", idsString || null);
               }}
-              initialValue={createDropdownInitialValue(formData.BranchMasterId, dropdownLabels.branchName)}
-              error={errors.BranchMasterId}
             />
           </div>
+
+          <div>
+            <MultiSelectPagination
+              label="Department"
+              dataFetchCallBack={fetchDepartmentMasterDropdown}
+              selectedValues={departmentValueDropdown.selectedValues}
+              options={departmentValueDropdown.initialOptions}
+              onChange={(values) => {
+                const { idsString } = departmentValueDropdown.handleChange(values);
+                onFieldChange("DepartmentMasterId", idsString || null);
+              }}
+            />
+          </div>
+          
         </div>
       </div>
     </Modal>

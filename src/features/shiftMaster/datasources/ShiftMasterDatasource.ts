@@ -55,34 +55,9 @@ export class ShiftMasterDatasourceImpl implements ShiftMasterDatasource {
 
         try {
 
-            const payLoad: AddUpdateShiftMasterRequest = {
-                ShiftManagementMasterId: params.ShiftManagementMasterId ?? 0,
-                Uniquekey: params.Uniquekey ?? '',
-
-                ShiftCode: params.ShiftCode?.trim() ?? '',
-                ShiftName: params.ShiftName?.trim() ?? '',
-
-                ShiftBeginTime: params.ShiftBeginTime ?? '',
-                ShiftEndTime: params.ShiftEndTime ?? '',
-                ShiftDurationTime: params.ShiftDurationTime ?? '',
-                ShiftWorkDurationTime: params.ShiftWorkDurationTime ?? '',
-                FirstHalfUpTo: params.FirstHalfUpTo ?? '',
-                AbsentWorkingHours: params.AbsentWorkingHours ?? '',
-                HalfDayWorkingHours: params.HalfDayWorkingHours ?? '',
-                HalfDayInTimeAfter: params.HalfDayInTimeAfter ?? '',
-                HalfDayOutTimeBefore: params.HalfDayOutTimeBefore ?? '',
-
-                BreakBeginTime: params.BreakBeginTime ?? '',
-                BreakEndTime: params.BreakEndTime ?? '',
-                BreakDurationTime: params.BreakDurationTime ?? '',
-                GraceTime: params.GraceTime ?? '',
-
-                Remarks: params.Remarks?.trim() ?? '',
-            }
-
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 ShiftMasterApi.ADD_UPDATE,
-                payLoad
+                params
             )
 
             return response

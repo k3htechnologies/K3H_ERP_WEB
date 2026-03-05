@@ -171,8 +171,8 @@ const ViewShiftMaster: React.FC = () => {
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
 
-                                        <FieldItem label="Calculate Absent if working hours less than" value={editShiftMasterData!.AbsentWorkingHours} />
-                                        <FieldItem label="Calculate Half day working hours less than" value={editShiftMasterData!.HalfDayWorkingHours} />
+                                        <FieldItem label="Mark Absent If Working Hour less than" value={editShiftMasterData!.AbsentWorkingHours} />
+                                        <FieldItem label="Mark Half Day If Working Hour Less than" value={editShiftMasterData!.HalfDayWorkingHours} />
                                     </div>
                                 </div>
 

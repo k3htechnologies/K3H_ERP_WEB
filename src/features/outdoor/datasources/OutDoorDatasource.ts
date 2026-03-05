@@ -38,7 +38,11 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             if (params.StartDate) queryParams.append("StartDate", params.StartDate.trim());
             if (params.EndDate) queryParams.append("EndDate", params.EndDate.trim());
             if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
+            if (params.Status?.trim()) queryParams.append('Status', params.Status.trim());
+            if (params.EmployeeId !== undefined && params.EmployeeId !== null) queryParams.append('EmployeeId', params.EmployeeId.toString());
+            if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
+            if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(`${OutDoorApi.PULL}?${queryParams.toString()}`, { signal })

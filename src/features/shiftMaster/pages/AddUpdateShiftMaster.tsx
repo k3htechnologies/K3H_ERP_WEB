@@ -14,8 +14,8 @@ import { filterNumbers, isEndTimeGreater } from "@/core/utils/fileValidation";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { getTimeDuration, toHHMM, toMinutes } from "@/core/utils/comman";
 import RadioButton from "@/ui/components/forms/RadioButton";
-import { TimePickerModal } from "../../../ui/components/TimePicker/TimePickerModal";
 import { Clock } from "lucide-react";
+import { TimePickerCustomize } from "@/ui/components/TimePicker/TimePickerCustomize";
 
 const initialFormState = (): AddUpdateShiftMasterRequest => ({
   ShiftManagementMasterId: 0,
@@ -706,7 +706,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
         </form>
       </div >
 
-      <TimePickerModal
+      <TimePickerCustomize
         isOpen={isTimePickerOpen}
         title={formatLabel(timePickerField?.field || "")}
         value={timePickerField?.value ?? "00:00"}

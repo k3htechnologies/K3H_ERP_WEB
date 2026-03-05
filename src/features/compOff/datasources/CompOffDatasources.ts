@@ -32,6 +32,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
                 CompOffId: (params.CompOffId ?? 0).toString(),
+            
             })
 
             if (params.StartDate) {
@@ -49,8 +50,11 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
                 queryParams.append('EndDate', end);
             }
             if (params.Reason?.trim()) queryParams.append('Reason', params.Reason.trim());
+            if (params.EmployeeId !== undefined && params.EmployeeId !== null) queryParams.append('EmployeeId', params.EmployeeId.toString());
+            if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+            if(params.IsReport) queryParams.append('IsReport', params.IsReport.toString());
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${CompOffApi.PULL}?${queryParams.toString()}`, { signal }

@@ -80,7 +80,8 @@ export const OutDoor: React.FC = () => {
           StartDate: filterParams.StartDate || undefined,
           EndDate: filterParams.EndDate || undefined,
           CompanyName: filterParams.CompanyName?.trim() || undefined,
-          SortBy: getSortByParam(sortInfo ?? null, [])
+          SortBy: getSortByParam(sortInfo ?? null, []),
+          IsReport: false
         };
 
         const response = await outDoorService.apiCallPullOutDoor(params);
@@ -148,6 +149,7 @@ export const OutDoor: React.FC = () => {
           EndDate: filters.EndDate || undefined,
           CompanyName: filters.CompanyName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, []),
+          IsReport: false,
           ExportType: exportType
         };
 

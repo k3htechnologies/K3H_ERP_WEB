@@ -1,16 +1,12 @@
 import * as E from 'fp-ts/Either';
 import { bookingService } from '@/features/booking/services/BookingService';
 
-export const fetchPaymentScheduleDropdown = async (params?: { 
-    projectId?: number;
-    inventoryBuildingId?: number;
-    wing?: string;
-}) => {
+export const fetchPaymentScheduleDropdown = async (params?: { projectId?: number; inventoryBuildingId?: number; inventoryFlatFloorBasementPodiumWingId?: number; }) => {
     try {
         const responseEither = await bookingService.apiCallPullPaymentScheduleStages({
             ProjectId: Number(params?.projectId),
             InventoryBuildingId: Number(params?.inventoryBuildingId),
-            Wing: params?.wing,
+            InventoryFlatFloorBasementPodiumWingId: params?.inventoryFlatFloorBasementPodiumWingId,
         });
 
         if (E.isLeft(responseEither)) {

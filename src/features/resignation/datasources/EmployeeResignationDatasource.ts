@@ -30,9 +30,13 @@ export class EmployeeResignationDatasourceImpl implements EmployeeResignationDat
 
             if (params.EmployeeResignationId) queryParams.append('EmployeeResignationId', params.EmployeeResignationId.toString());
             if (params.EmployeeId) queryParams.append('EmployeeId', params.EmployeeId.toString());
+            if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.ResignationDateFrom) queryParams.append('ResignationDateFrom', params.ResignationDateFrom);
             if (params.ResignationDateTo) queryParams.append('ResignationDateTo', params.ResignationDateTo);
+            if (params.Status?.trim()) queryParams.append('Status', params.Status.trim());
+            if (params.ApprovalStatus?.trim()) queryParams.append('ApprovalStatus', params.ApprovalStatus.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
+            if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(

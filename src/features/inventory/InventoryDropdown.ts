@@ -4,26 +4,24 @@ import { inventoryService } from '@/features/inventory/services/InventoryService
 export const fetchBuildingDropdown = async (params?: { projectId?: number; }) => {
   try {
 
-    const responseEither = await inventoryService.apiCallPullProjectInventoryStructure({
-      ProjectId: Number(params?.projectId),
-    });
+    const responseEither = await inventoryService.apiCallPullProjectInventoryStructure({ ProjectId: Number(params?.projectId) });
 
     if (E.isLeft(responseEither)) {
+
       return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: number }[] };
+
     }
 
     const apiResponse = responseEither.right;
 
-    const uniqueBuildings = Array.from(
-      new Map(
-        (apiResponse?.Data || []).map((d: any) => [
-          d.InventoryBuildingId,
-          {
-            label: d.BuildingNumber,
-            value: d.InventoryBuildingId
-          }])
-      ).values()
-    );
+    const uniqueBuildings = Array.from(new Map(
+      (apiResponse?.Data || []).map((d: any) => [
+        d.InventoryBuildingId,
+        {
+          label: d.BuildingNumber,
+          value: d.InventoryBuildingId
+        }])
+    ).values());
 
     return {
       totalNumberOfRecord: uniqueBuildings.length,
@@ -37,31 +35,27 @@ export const fetchBuildingDropdown = async (params?: { projectId?: number; }) =>
 };
 
 // Wing
-export const fetchWingDropdown = async (params?: {
-  projectId?: number;
-  inventoryBuildingId?: number;
-}) => {
+export const fetchWingDropdown = async (params?: { projectId?: number; inventoryBuildingId?: number }) => {
   try {
-    const responseEither = await inventoryService.apiCallPullProjectInventoryStructure({
-      ProjectId: Number(params?.projectId),
-      InventoryBuildingId: Number(params?.inventoryBuildingId),
-    });
+
+    const responseEither = await inventoryService.apiCallPullProjectInventoryStructure({ ProjectId: Number(params?.projectId), InventoryBuildingId: Number(params?.inventoryBuildingId) });
 
     if (E.isLeft(responseEither)) {
+
       return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
+
     }
 
     const apiResponse = responseEither.right;
 
-    const uniqueWings = Array.from(
-      new Set((apiResponse?.Data || [])
-        .map((d: any) => d.Wing)
-        .filter((wing: string) => wing))
-
-    ).map((wing) => ({
-      label: wing,
-      value: wing,
-    }));
+    const uniqueWings = Array.from(new Map(
+      (apiResponse?.Data || []).map((d: any) => [
+        d.InventoryBuildingId,
+        {
+          label: d.Wing,
+          value: d.InventoryFlatFloorBasementPodiumWingId
+        }])
+    ).values());
 
     return {
       totalNumberOfRecord: uniqueWings.length,

@@ -4,10 +4,14 @@ export interface FilterWithPaginationOutDoor {
   PageSize: number
   PageNumber: number
   OutdoorId?: number
-  StartDate?: string
-  EndDate?: string
+  StartDate?: string | null
+  EndDate?: string | null
   CompanyName?: string
+  Status?: string
+  EmployeeId?: number
+  EmployeeName?: string
   SortBy?: string
+  IsReport?: boolean
   ExportType?: 'Excel' | 'PDF'
 }
 

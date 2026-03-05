@@ -5,10 +5,8 @@ export interface SingleSelectWithPaginationProps {
   variant?: 'default' | 'outlined' | 'filled'
   color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'
   onChange?: (value: string | number) => void
-  dataFetchCallBack?: (
-    pageNumber: number,
-    params?: { value?: string }
-  ) => Promise<{ totalNumberOfRecord: number; itemList: { label: string; value: string | number }[] }>
+  dataFetchCallBack?: ( pageNumber: number, params?: { value?: string } ) => Promise<{ totalNumberOfRecord: number;
+  itemList: { label: string; value: string | number }[] }>
   onSelected: (item: { label: string; value: string | number | null }) => void
   title?: string
   label?: string

@@ -416,6 +416,11 @@ export const getPageInfo = (path: string) => {
                 title: "Payment Schedule",
                 description: "Single source of truth for channel partner information",
             }
+        case 'paymentScheduleScheme':
+            return {
+                title: "Payment Schedule Scheme",
+                description: "Single source of truth for channel partner information",
+            }
         case 'paymentScheduleReport':
             return {
                 title: "Payment Schedule Report",
@@ -431,6 +436,17 @@ export const getPageInfo = (path: string) => {
                 title: "Channel Partner Enquiry Report",
                 description: "Centralized enquiry management for faster response",
             }
+        case 'target':
+            return {
+                title: "Sales Target",
+                description: "Centralized enquiry management for faster response",
+            }
+        case 'incentiveReport':
+            return {
+                title: "Incentive Report",
+                description: "Centralized enquiry management for faster response",
+            }
+
 
         // MARKETING
         case 'content':
@@ -443,6 +459,12 @@ export const getPageInfo = (path: string) => {
             return {
                 title: "Approved Bank",
                 description: "Profile",
+            }
+        // LITIGATION
+        case 'litigation':
+            return {
+                title: "Litigation",
+                description: "Track & manage project related legal cases",
             }
 
         default:

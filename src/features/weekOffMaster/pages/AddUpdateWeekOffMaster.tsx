@@ -364,13 +364,16 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
                 </div>
               )}
               <div>
+
                 <MultiSelectDropdown
+                  placeholder="Select Not Applicable Months"
                   label="Not Applicable For Months"
                   options={MONTHS_OPTIONS.map(m => ({ label: m.name, value: m.id }))}
-                  selectedValues={Array.isArray(formData.NotApplicableForMonths) ? formData.NotApplicableForMonths : []}
-                  onChange={(values) => handleFieldChange("NotApplicableForMonths", values)}
+                  selectedValues={formData.NotApplicableForMonths ? formData.NotApplicableForMonths.split(",") : []}
+                  onChange={(values) => handleFieldChange("NotApplicableForMonths", values.join(","))}
                   error={errors.NotApplicableForMonths}
                 />
+
 
               </div>
             </div>

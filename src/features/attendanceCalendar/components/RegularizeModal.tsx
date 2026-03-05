@@ -3,7 +3,8 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { TimePicker } from '@/ui/components/TimePicker/TimePicker';
 import { TextArea } from '@/ui/components/forms/Textarea';
-import { getStatusTextColor, extractTimeFromDateTime } from '../utils/attendanceUtils';
+import { getStatusTextColor, extractTimeFromDateTime, getStatusLabel } from '../utils/attendanceUtils';
+import { formatTimeFromDateTime } from '@/core/utils/dateFormat';
 import type { AttendanceData } from '../models/AttendanceModel';
 
 export interface RegularizeFormData {
@@ -42,6 +43,9 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
     () => selectedAttendance ? getStatusTextColor(selectedAttendance.AttendanceStatus) : '',
     [selectedAttendance]
   );
+  const statusLabel = useMemo(() => {
+    return selectedAttendance?.AttendanceStatus ? getStatusLabel(selectedAttendance.AttendanceStatus) : '-';
+  }, [selectedAttendance]);
 
   const reasonCharCount = useMemo(
     () => formData.Reason ? 255 - formData.Reason.length : 0,
@@ -101,6 +105,10 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
       }
     }
 
+    // Prefer centralized formatter to include AM/PM and proper UTC -> local conversion
+    const formattedWithAmPm = formatTimeFromDateTime(String(selectedAttendance.PunchIn));
+    if (formattedWithAmPm && formattedWithAmPm.trim() !== '') return formattedWithAmPm;
+
     return extractedTime || selectedAttendance.PunchIn || '-';
   }, [selectedAttendance]);
 
@@ -153,7 +161,7 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
                     <div className="text-sm text-[#1D1D1D80] text-center select-none">:</div>
                     <div className="text-sm text-[#1D1D1D] font-medium break-words min-w-0">
                       <span style={{ color: statusTextColor }}>
-                        {selectedAttendance.AttendanceStatus || '-'}
+                        {statusLabel}
                       </span>
                     </div>
                   </div>

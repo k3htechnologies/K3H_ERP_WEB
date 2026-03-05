@@ -1160,7 +1160,7 @@ const ApprovalDocument: React.FC = () => {
         onAdd={handleAddDocumentModal}
 
         // IMPORT
-        isShowImportButton={true}
+        isShowImportButton={canAction && Number(projectId) > 0}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleApprovalDocument}
         // EXPORT

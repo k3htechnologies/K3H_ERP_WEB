@@ -127,6 +127,8 @@ export const Litigation: React.FC = () => {
                     PageSize: pagination.pageSize,
                     LitigationId: filterParams.LitigationId ? Number(filterParams.LitigationId) : undefined,
                     Title: searchtext ?? filterParams.Title ?? undefined,
+                    CaseNumber: filterParams.CaseNumber ?? undefined,
+                    CourtName: filterParams.CourtName ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, LitigationColumns),
                     ProjectId: Number(projectId),
                 };
@@ -179,6 +181,8 @@ export const Litigation: React.FC = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     Title: filters.Title?.trim() || undefined,
+                    CaseNumber: filters.CaseNumber ?? undefined,
+                    CourtName: filters.CourtName ?? undefined,
                     ProjectId: Number(projectId),
                     SortBy: getSortByParam(sortInfo ?? null, LitigationColumns),
                     ExportType: exportType
@@ -187,6 +191,7 @@ export const Litigation: React.FC = () => {
                 const response = await litigationService.apiCallPullLitigation(params);
 
                 handleExportFile(response, exportType, 'Litigation', addToast);
+
                 return response;
             },
             undefined,
@@ -220,9 +225,10 @@ export const Litigation: React.FC = () => {
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange
         }),
-        [pagination, handlePageChange]
+       [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize]
     );
     const LitigationForTable = useMemo(() => litigationList, [litigationList]);
+
     //#endregion
 
     //#region NAVIGATE TO  VIEW LITIGATION
@@ -674,7 +680,7 @@ export const Litigation: React.FC = () => {
                             label='Court Name'
                             value={tempFilters?.CourtName ?? ''}
                             onChange={e => handleFilterChange('CourtName', e.target.value)}
-                            placeholder="Enter CourtName" />
+                            placeholder="Enter Court Name" />
                     </div>
                 </div>
             </Modal>

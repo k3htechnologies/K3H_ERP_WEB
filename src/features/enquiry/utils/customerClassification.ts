@@ -8,9 +8,7 @@ interface ClassificationInput {
   Timeline?: string;
 }
 
-export const getCustomerClassification = (
-  input: ClassificationInput
-): CustomerClassification => {
+export const getCustomerClassification = (input: ClassificationInput): CustomerClassification => {
 
   const filledCount = [
     input.Budget,
@@ -26,7 +24,7 @@ export const getCustomerClassification = (
   if (filledCount >= 3 && input.Timeline === "Beyond 1 Month") {
     return "Warm";
   }
-  
+
   if (filledCount === 3) {
     return "Warm";
   }

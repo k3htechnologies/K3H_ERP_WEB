@@ -1,13 +1,13 @@
-import React from 'react';
-import { Modal } from '@/ui/components/Modal/Modal';
-import { Input } from '@/ui/components/forms';
-import type { FilterInfo } from '@/ui/components/DataTable/DataTable';
+import React from "react";
+import { Modal } from "@/ui/components/Modal/Modal";
+import { Input } from "@/ui/components/forms";
+import type { FilterInfo } from "@/ui/components/DataTable/DataTable";
 
 interface FilterField {
   key: string;
   label: string;
   placeholder?: string;
-  type?: 'text';
+  type?: "text";
 }
 
 interface HolidayMappingMasterFilterModalProps {
@@ -28,10 +28,10 @@ export const HolidayMappingMasterFilterModal: React.FC<HolidayMappingMasterFilte
   tempFilters,
   onFilterChange,
   filterFields = [
-    { key: 'HolidayName', label: 'Holiday Name', placeholder: 'Enter Holiday Name' },
-    { key: 'BranchName', label: 'Branch Name', placeholder: 'Enter Branch Name' },
-    { key: 'DepartmentName', label: 'Department Name', placeholder: 'Enter Department Name' }
-  ]
+    { key: "HolidayName", label: "Holiday Name", placeholder: "Enter Holiday Name" },
+    { key: "BranchName", label: "Branch Name", placeholder: "Enter Branch Name" },
+    { key: "DepartmentName", label: "Department Name", placeholder: "Enter Department Name" },
+  ],
 }) => {
   return (
     <Modal
@@ -50,16 +50,9 @@ export const HolidayMappingMasterFilterModal: React.FC<HolidayMappingMasterFilte
       <div className="space-y-6">
         {filterFields.map((field) => (
           <div key={field.key} className="mb-5">
-            <Input
-              label={field.label}
-              type={field.type}
-              value={tempFilters[field.key] ?? ''}
-              onChange={(e) => onFilterChange(field.key, e.target.value)}
-              placeholder={field.placeholder || ''}
-            />
+            <Input label={field.label} type={field.type} value={tempFilters[field.key] ?? ""} onChange={(e) => onFilterChange(field.key, e.target.value)} placeholder={field.placeholder || ""} />
           </div>
         ))}
-
       </div>
     </Modal>
   );

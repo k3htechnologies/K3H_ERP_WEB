@@ -1,36 +1,31 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { usePagination } from '@/core/hooks/usePagination';
-import type { SortInfo, TableColumn } from '@/ui/components/DataTable/DataTable';
-import { runApiWithLoader } from '@/core/utils';
-import * as E from 'fp-ts/Either';
-import { useToast } from '@/core/hooks/useToast';
-import type {
-  AddUpdateHolidayMasterRequest,
-  DeleteHolidayMasterRequest,
-  HolidayMasterData,
-  FilterWithPaginationHolidayMasterRequest
-} from '@/features/holidayMaster/models/HolidayMasterModel';
-import { holidayMasterService } from '@/features/holidayMaster/services/HolidayMasterService';
-import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
-import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import { handleExportFile } from '@/core/utils/exportFile';
-import { getInitialFormState, getHolidayMasterColumns } from '@/features/holidayMaster/constants/holidayMasterConstants';
-import { getSortByParam } from '@/core/constants/sortingColumnDetails';
-import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePagination } from "@/core/hooks/usePagination";
+import type { SortInfo, TableColumn } from "@/ui/components/DataTable/DataTable";
+import { runApiWithLoader } from "@/core/utils";
+import * as E from "fp-ts/Either";
+import { useToast } from "@/core/hooks/useToast";
+import type { AddUpdateHolidayMasterRequest, DeleteHolidayMasterRequest, HolidayMasterData, FilterWithPaginationHolidayMasterRequest } from "@/features/holidayMaster/models/HolidayMasterModel";
+import { holidayMasterService } from "@/features/holidayMaster/services/HolidayMasterService";
+import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { handleExportFile } from "@/core/utils/exportFile";
+import { getInitialFormState, getHolidayMasterColumns } from "@/features/holidayMaster/constants/holidayMasterConstants";
+import { getSortByParam } from "@/core/constants/sortingColumnDetails";
+import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 export const useHolidayMaster = () => {
   //#region STATE MANAGEMENT
   const [holidayMasterList, setHolidayMasterList] = useState<HolidayMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState("");
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-  const { addToast } = useToast()
-  const [searchTerm, setSearchTerm] = useState('')
+  const { addToast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchHolidays(value)
-  }, 350)
-  const [viewHolidayMasterDetailsData, setViewHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null)
+    searchHolidays(value);
+  }, 350);
+  const [viewHolidayMasterDetailsData, setViewHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   //ERROR SET UP
@@ -39,6 +34,7 @@ export const useHolidayMaster = () => {
   // ADD UPDATE HOLIDAY URL
   const [holidayFiles, setHolidayFiles] = useState<(File | string)[]>([]);
   const [removedHolidayURLs, setRemovedHolidayURLs] = useState<string[]>([]);
+
   const [holidayURL, setHolidayURL] = useState<string>();
 
   // EDIT HOLIDAY MASTER
@@ -49,8 +45,8 @@ export const useHolidayMaster = () => {
   const [formData, setFormData] = useState<AddUpdateHolidayMasterRequest>(() => getInitialFormState());
 
   //DELETE HOLIDAY MASTER STATES
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-  const [deleteHolidayMasterDetailsData, setDeleteHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null)
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+  const [deleteHolidayMasterDetailsData, setDeleteHolidayMasterDetailsData] = useState<HolidayMasterData | null>(null);
 
   //#endregion
 
@@ -59,20 +55,20 @@ export const useHolidayMaster = () => {
   //#endregion
 
   //#region INITIALIZATION
-  const hasFetchedInitialHolidays = useRef(false)
+  const hasFetchedInitialHolidays = useRef(false);
 
   useEffect(() => {
-    if (hasFetchedInitialHolidays.current) return
+    if (hasFetchedInitialHolidays.current) return;
     hasFetchedInitialHolidays.current = true;
-    fetchHolidayList()
-  }, [])
+    fetchHolidayList();
+  }, []);
 
   //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
-      debouncedSearch.cancel?.()
-    }
-  }, [debouncedSearch])
+      debouncedSearch.cancel?.();
+    };
+  }, [debouncedSearch]);
 
   useEffect(() => {
     if (isAddUpdateModalOpen) {
@@ -82,12 +78,12 @@ export const useHolidayMaster = () => {
           Uniquekey: editingHolidayMasterData.Uniquekey || getInitialFormState().Uniquekey,
           HolidayName: editingHolidayMasterData.HolidayName || "",
           HolidayURL: null,
-          RemoveHolidayURL: '',
+          RemoveHolidayURL: "",
         });
-        setHolidayFiles([])
-        setHolidayURL(editingHolidayMasterData.HolidayURL || '');
-        setRemovedHolidayURLs([]);
 
+        setHolidayURL(editingHolidayMasterData.HolidayURL || "");
+        setHolidayFiles([]);
+        setRemovedHolidayURLs([]);
       } else {
         setFormData(getInitialFormState());
         setHolidayFiles([]);
@@ -102,30 +98,26 @@ export const useHolidayMaster = () => {
 
   //#region TABLE COLUMN DEFINITION
 
-  const holidayMasterColumns = useMemo<TableColumn[]>(
-    () => getHolidayMasterColumns(),
-    []
-  )
+  const holidayMasterColumns = useMemo<TableColumn[]>(() => getHolidayMasterColumns(), []);
   //#endregion
 
-  //#region DATA LOADING | FETCH |  LOAD | SEARCH 
+  //#region DATA LOADING | FETCH |  LOAD | SEARCH
 
   const fetchHolidayList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadHolidays(page, "", sort);
-  }
+  };
 
   const loadHolidays = async (page: number, searchValue?: string, sortInfo?: SortInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-
         const params: FilterWithPaginationHolidayMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           HolidayName: searchValue?.trim() || undefined,
-          SortBy: getSortByParam(sortInfo ?? null, holidayMasterColumns)
-        }
+          SortBy: getSortByParam(sortInfo ?? null, holidayMasterColumns),
+        };
 
         const response = await holidayMasterService.apiCallPullHolidayMaster(params);
 
@@ -137,44 +129,44 @@ export const useHolidayMaster = () => {
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
         } else {
-          addToast({ type: 'error', title: response.left.message });
+          addToast({ type: "error", title: response.left.message });
         }
 
-        return response
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      'Loading Holiday'
-    )
-  }
+      "Loading Holiday",
+    );
+  };
   //#endregion
 
-  //#region SEARCH HOLIDAY MASTER 
+  //#region SEARCH HOLIDAY MASTER
   const searchHolidays = async (searchValue: string) => {
     setSearchTerm(searchValue);
 
-    if (searchValue.trim() === '') {
+    if (searchValue.trim() === "") {
       fetchHolidayList();
-      return
+      return;
     }
 
-    await loadHolidays(1, searchValue)
-  }
+    await loadHolidays(1, searchValue);
+  };
   //#endregion
 
-  //#region CLEAR SEARCH HOLIDAY MASTER 
+  //#region CLEAR SEARCH HOLIDAY MASTER
   const clearsearchHolidays = () => {
-    setSearchTerm('');
+    setSearchTerm("");
     debouncedSearch.cancel?.();
-    loadHolidays(1, '');
-  }
+    loadHolidays(1, "");
+  };
   //#endregion
 
   //#region EXPORT EXCEL | PDF
-  const handleExportHolidays = async (exportType: 'Excel' | 'PDF') => {
+  const handleExportHolidays = async (exportType: "Excel" | "PDF") => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -183,24 +175,24 @@ export const useHolidayMaster = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           SortBy: getSortByParam(sortInfo ?? null, holidayMasterColumns),
-          ExportType: exportType
-        }
+          ExportType: exportType,
+        };
 
         const response = await holidayMasterService.apiCallPullHolidayMaster(params);
-        handleExportFile(response, exportType, 'Holiday Master', addToast)
+        handleExportFile(response, exportType, "Holiday Master", addToast);
         return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' })
+        addToast({ type: "error", title: error.message || "Export failed" });
       },
       undefined,
-      'Preparing Export'
-    )
-  }
+      "Preparing Export",
+    );
+  };
 
-  const handleExportHolidayExcel = () => handleExportHolidays('Excel')
-  const handleExportHolidayPdf = () => handleExportHolidays('PDF')
+  const handleExportHolidayExcel = () => handleExportHolidays("Excel");
+  const handleExportHolidayPdf = () => handleExportHolidays("PDF");
   //#endregion
 
   //#region HANDLE PAGE CHANGE EVENT
@@ -210,34 +202,37 @@ export const useHolidayMaster = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    loadHolidays(1, searchTerm || undefined, sort);
-  }, [searchTerm]);
+  const handleSortColumn = useCallback(
+    (sort: SortInfo) => {
+      setSortInfo(sort);
+      loadHolidays(1, searchTerm || undefined, sort);
+    },
+    [searchTerm],
+  );
   //#endregion
 
   //#region VIEW EDIT
   const handleViewHolidayDetails = useCallback((row: HolidayMasterData) => {
-    setViewHolidayMasterDetailsData(row)
-    setIsViewModalOpen(true)
-  }, [])
+    setViewHolidayMasterDetailsData(row);
+    setIsViewModalOpen(true);
+  }, []);
   //#endregion
 
   //#region EDIT HOLIDAY  MASTER
   const handleEditHolidayMaster = useCallback((row: HolidayMasterData) => {
     setEditingHolidayMasterData({
       ...row,
-      HolidayName: row.HolidayName || '',
-    })
+      HolidayName: row.HolidayName || "",
+    });
     setIsAddUpdateModalOpen(true);
-  }, [])
+  }, []);
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: HolidayMasterData) => {
-    setDeleteHolidayMasterDetailsData(row)
-    setIsConfirmationDialogBoxOpen(true)
-  }, [])
+    setDeleteHolidayMasterDetailsData(row);
+    setIsConfirmationDialogBoxOpen(true);
+  }, []);
   //#endregion
 
   //#region ADD UPDATE EDIT HOLIDAY MASTER
@@ -252,22 +247,22 @@ export const useHolidayMaster = () => {
     setEditingHolidayMasterData(null);
     setFormData(getInitialFormState());
     setHolidayFiles([]);
-    setHolidayURL('')
+    setHolidayURL("");
     setRemovedHolidayURLs([]);
     setErrors({});
     setIsAddUpdateModalOpen(true);
-  }
+  };
 
   const validateAddHolidayMasterForm = (): {
-    isValid: boolean
-    errors: { [key: string]: string }
+    isValid: boolean;
+    errors: { [key: string]: string };
   } => {
-    const newErrors: { [key: string]: string } = {}
+    const newErrors: { [key: string]: string } = {};
 
     if (!formData.HolidayName?.trim()) {
       newErrors.HolidayName = "Holiday name is required";
     } else if (formData.HolidayName.trim().length > 50) {
-      newErrors.HolidayName = 'Holiday Name must be at most 50 characters'
+      newErrors.HolidayName = "Holiday Name must be at most 50 characters";
     }
 
     if (!hasAnyDocumentFile(holidayFiles, holidayURL, removedHolidayURLs)) {
@@ -278,33 +273,23 @@ export const useHolidayMaster = () => {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors,
     };
-  }
-  //#endregion
+  };
 
   const PushHolidayFormData = (): FormData => {
 
     const fd = new FormData();
+    fd.append("HolidayMasterId", formData.HolidayMasterId.toString());
+    fd.append("Uniquekey", formData.Uniquekey ?? "");
+    fd.append("HolidayName", formData.HolidayName.trim() ?? "");
 
-    fd.append('HolidayMasterId', formData.HolidayMasterId.toString());
-    fd.append('Uniquekey', formData.Uniquekey ?? '');
-    fd.append('HolidayName', formData.HolidayName.trim() ?? '');
-
-    holidayFiles.forEach(file => {
+    holidayFiles.forEach((file) => {
       if (file instanceof File) {
-        fd.append('HolidayURL', file);
+        fd.append("HolidayURL", file);
       }
     });
 
-    const existingNames = holidayFiles
-      .filter(x => typeof x === 'string' && String(x).trim().length > 0)
-      .map(x => String(x).trim())
-      .join(',');
+    fd.append("RemoveHolidayURL", removedHolidayURLs.join(","));
 
-    if (existingNames) {
-      fd.append('HolidayURL', existingNames);
-    }
-
-    fd.append('RemoveHolidayURL', removedHolidayURLs.join(','));
     return fd;
   };
   //#endregion
@@ -329,27 +314,21 @@ export const useHolidayMaster = () => {
         if (E.isRight(response)) {
           setIsAddUpdateModalOpen(false);
 
-          const isAdd = formData.HolidayMasterId === 0
+          const isAdd = formData.HolidayMasterId === 0;
 
           if (isAdd) {
-            const newRecord = response.right.Data[0] as HolidayMasterData
-            setHolidayMasterList(prevData => [newRecord, ...prevData]);
+            const newRecord = response.right.Data[0] as HolidayMasterData;
+            setHolidayMasterList((prevData) => [newRecord, ...prevData]);
             setPagination({
               currentPage: pagination.currentPage,
               totalRecords: pagination.totalRecords + 1,
-              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize),
             });
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+            addToast({ type: "success", title: response.right.SuccessMessage[0] });
           } else {
             const updatedRecord = response.right.Data[0] as HolidayMasterData;
-            setHolidayMasterList(prevData =>
-              prevData.map(item =>
-                item.HolidayMasterId === formData.HolidayMasterId
-                  ? updatedRecord
-                  : item
-              )
-            )
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+            setHolidayMasterList((prevData) => prevData.map((item) => (item.HolidayMasterId === formData.HolidayMasterId ? updatedRecord : item)));
+            addToast({ type: "success", title: response.right.SuccessMessage[0] });
           }
 
           setIsAddUpdateModalOpen(false);
@@ -358,18 +337,18 @@ export const useHolidayMaster = () => {
           setRemovedHolidayURLs([])
           setHolidayURL('')
         } else {
-          addToast({ type: 'error', title: response.left.message });
+          addToast({ type: "error", title: response.left.message });
         }
 
-        return response
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Operation failed' })
+        addToast({ type: "error", title: error.message || "Operation failed" });
       },
       undefined,
-      formData.HolidayMasterId === 0 ? 'Add Holiday' : 'Update Holiday'
-    )
+      formData.HolidayMasterId === 0 ? "Add Holiday" : "Update Holiday",
+    );
   };
   //#endregion
 
@@ -377,7 +356,7 @@ export const useHolidayMaster = () => {
   const handleDeleteHolidayMaster = async () => {
     setIsConfirmationDialogBoxOpen(false);
 
-    if (!deleteHolidayMasterDetailsData) return
+    if (!deleteHolidayMasterDetailsData) return;
 
     await runApiWithLoader(
       setIsLoading,
@@ -385,8 +364,8 @@ export const useHolidayMaster = () => {
       async () => {
         const params: DeleteHolidayMasterRequest = {
           HolidayMasterId: deleteHolidayMasterDetailsData.HolidayMasterId,
-          UniqueKey: deleteHolidayMasterDetailsData.Uniquekey ?? ""
-        }
+          UniqueKey: deleteHolidayMasterDetailsData.Uniquekey ?? "",
+        };
 
         const response = await holidayMasterService.apiCallDeleteHolidayMaster(params);
 
@@ -404,29 +383,29 @@ export const useHolidayMaster = () => {
           setPagination({
             currentPage: pageToShow,
             totalRecords: newTotalRecords,
-            totalPages: newTotalPages
+            totalPages: newTotalPages,
           });
 
           await loadHolidays(pageToShow);
 
-          addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+          addToast({ type: "success", title: response.right.SuccessMessage[0] });
           setIsConfirmationDialogBoxOpen(false);
           setDeleteHolidayMasterDetailsData(null);
         } else {
-          addToast({ type: 'error', title: response.left.message });
+          addToast({ type: "error", title: response.left.message });
           setIsConfirmationDialogBoxOpen(false);
         }
 
-        return response
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      'Delete Holiday Master'
-    )
-  }
+      "Delete Holiday Master",
+    );
+  };
   //#endregion
 
   return {
@@ -480,5 +459,5 @@ export const useHolidayMaster = () => {
     handleExportHolidayPdf,
     debouncedSearch,
     clearsearchHolidays,
-  }
-}
+  };
+};

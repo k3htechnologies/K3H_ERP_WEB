@@ -180,7 +180,7 @@ export const ViewBooking: React.FC = () => {
             <HeaderActionBar
                 titleText={'Booking Details : '}
                 subTitleText={bookingData.ApplicantName ?? bookingName}
-                subSubTitleText={bookingData.BookingType ??""}
+                subSubTitleText={bookingData.BookingType ?? ""}
                 cancelText="Back"
                 EditText="Edit"
                 onCancel={() => {
@@ -249,8 +249,7 @@ export const ViewBooking: React.FC = () => {
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
 
-                                            <FieldItem label="Referral Name" value={editEnquiryData?.ReferelName || '-'} />
-                                            <FieldItem label="Referral Mobile" value={editEnquiryData?.ReferelMobileNumber ? `+91 ${editEnquiryData?.ReferelMobileNumber}` : '-'} />
+                                            <FieldItem label="Referral Unit Owner" value={editEnquiryData?.ReferelUnitOwnerName || '-'} />
                                             <FieldItem label="Referral Project" value={editEnquiryData?.ReferelProjectName || '-'} />
                                             <FieldItem label="Referral Unit No" value={editEnquiryData?.ReferelUnitNumber || '-'} />
 
@@ -265,6 +264,7 @@ export const ViewBooking: React.FC = () => {
 
                                             <FieldItem label="Existing Project" value={editEnquiryData?.LoyaltyExistingProjectName || '-'} />
                                             <FieldItem label="Existing Unit No" value={editEnquiryData?.LoyaltyExistingUnitNumber || '-'} />
+                                            <FieldItem label="Existing Unit Owner" value={editEnquiryData?.LoyaltyExistingUnitOwnerName || '-'} />
 
                                         </div>
                                     </div>
@@ -389,7 +389,8 @@ export const ViewBooking: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Expected Registration Date" value={bookingData.RegistrationDate ? formatDate_dd_MonthName_yy(bookingData.RegistrationDate) : '-'} />
                                         <FieldItem label="Handover Type" value={safe(bookingData.HandoverType)} />
-                                        <FieldItem label="Mode Of Payment" value={safe(bookingData.ModeOfPayment)} />
+                                        <FieldItem label="Source Of Funding" value={safe(bookingData.SourceOfFunding)} />
+                                        <FieldItem label="Number Of Parking" value={safe(bookingData.NumberOfParking)} />
                                     </div>
                                 </section>
 
@@ -401,6 +402,27 @@ export const ViewBooking: React.FC = () => {
                                         </h4>
                                         <div className="grid grid-cols-1 gap-4">
                                             <FieldItem label="Remarks" value={safe(bookingData.FlatAlterationRemark)} />
+                                        </div>
+                                    </section>
+                                )}
+                                {bookingData.PaymentRemark && (
+                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                            Payment Remarks
+                                        </h4>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <FieldItem label="Remarks" value={safe(bookingData.PaymentRemark)} />
+                                        </div>
+                                    </section>
+                                )}
+
+                                {bookingData.OtherRemark && (
+                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                            Other Remarks
+                                        </h4>
+                                        <div className="grid grid-cols-1 gap-4">
+                                            <FieldItem label="Remarks" value={safe(bookingData.OtherRemark)} />
                                         </div>
                                     </section>
                                 )}
@@ -434,8 +456,30 @@ export const ViewBooking: React.FC = () => {
                                         <FieldItem label="Stamp Duty (₹)" value={formatCurrency(bookingData.StampDutyAmount)} isRow />
                                         <FieldItem label="Registration Fees (₹)" value={formatCurrency(bookingData.RegistrationFees)} isRow />
                                         <FieldItem label="Booking Amount (₹)" value={formatCurrency(bookingData.BookingAmount)} isRow />
-                                        <FieldItem label="Brokerage (%)" value={safe(bookingData.BrokeragePercentage)} isRow />
-                                        <FieldItem label="Brokerage Amount (₹)" value={formatCurrency(bookingData.BrokerageAmount)} isRow />
+                                        {editEnquiryData?.Source?.toUpperCase() === 'CHANNEL PARTNER' && (
+                                            <>
+                                                <FieldItem label="Brokerage (%)" value={safe(bookingData.BrokeragePercentage)} isRow />
+                                                <FieldItem label="Brokerage Amount (₹)" value={formatCurrency(bookingData.BrokerageAmount)} isRow />
+                                            </>
+                                        )}
+                                        {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Reference' && (
+                                            <>
+                                                <FieldItem label="Referel (%)" value={safe(bookingData.ReferelAmount)} isRow />
+                                                <FieldItem label="Referel Amount (₹)" value={formatCurrency(bookingData.ReferelAmount)} isRow />
+                                            </>
+                                        )}
+                                        {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Loyalty' && (
+                                            <>
+                                                <FieldItem label="Loyalty (%)" value={safe(bookingData.LoyaltyPercentage)} isRow />
+                                                <FieldItem label="Loyalty Amount (₹)" value={formatCurrency(bookingData.LoyaltyAmount)} isRow />
+                                            </>
+                                        )}
+                                        {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Employee Reference' && (
+                                            <>
+                                                <FieldItem label="Employee Reference (%)" value={safe(bookingData.EmployeeReferencePercentage)} isRow />
+                                                <FieldItem label="Employee Reference Amount (₹)" value={formatCurrency(bookingData.EmployeeReferenceAmount)} isRow />
+                                            </>
+                                        )}
                                     </div>
                                 </section>
 

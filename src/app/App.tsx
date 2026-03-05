@@ -154,8 +154,10 @@ import SalesDashboard from '@/features/salesDashboard/pages/SalesDashboard';
 import EnquiryReport from '@/features/enquiryReport/pages/EnquiryReport';
 import CPEnquiryReport from '@/features/cpEnquiryReport/pages/CPEnquiryReport';
 import PaymentScheduleMaster from '@/features/paymentScheduleMaster/pages/PaymentScheduleMaster';
-import PaymentScheduleTab from '@/features/paymentScheduleMaster/components/PaymentScheduleTab';
-import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
+import Target from '@/features/target/pages/Target';
+import IncentiveReport from '@/features/incentiveReport/pages/IncentiveReport';
+import { IncentiveReportListStateProvider } from '@/features/incentiveReport/context/IncentiveReportListStateContext';
+import PaymentScheduleSchemeMaster from '@/features/paymentScheduleSchemeMaster/pages/PaymentScheduleSchemeMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -190,7 +192,7 @@ function App() {
   useEffect(() => {
     const token = LocalStorageHelper.getStoredTokenData()
     if (!token) {
-      // Token validation could be added here if needed
+      
     }
   }, [])
 
@@ -353,8 +355,9 @@ function App() {
             <Route path="otherCharges" element={<OtherCharges />} />
 
             <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
-            <Route path="paymentScheduleReport" element={<PaymentScheduleTab />} />
+             <Route path="paymentScheduleScheme" element={<PaymentScheduleSchemeMaster />} />
 
+            <Route path="target" element={<Target />} />
 
             <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
             <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />
@@ -362,6 +365,7 @@ function App() {
 
             <Route path="enquiryReport" element={<EnquiryReport />} />
             <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
+            <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
 
             {/* REDEVELOPMENT */}
 

@@ -267,6 +267,7 @@ export const useLeaveEncashmentMaster = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
+  
 
   const handleAddLeaveEncashmentMasterModal = () => {
     setEditingLeaveEncashmentMasterData(null);

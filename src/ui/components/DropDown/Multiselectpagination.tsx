@@ -53,7 +53,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     const pageRef = useRef(1);
     const SIZE_MAP = {
         sm: { fontSize: 12, paddingY: 6, paddingX: 12, height: 38, dropdownHeight: 150 },
-        md: { fontSize: 14, paddingY: 8, paddingX: 16, height: 46, dropdownHeight: 200 },
+        md: { fontSize: 16, paddingY: 8, paddingX: 16, height: 46, dropdownHeight: 200 },
         lg: { fontSize: 16, paddingY: 10, paddingX: 20, height: 54, dropdownHeight: 250 },
     };
 
@@ -289,7 +289,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     const displayTitle =
         selectedLabels.length > 0
             ? selectedLabels.join(", ")
-            : title || "Select...";
+            : title || "select " + label;
 
     return (
         <div
@@ -348,7 +348,6 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                     ...style,
                 }}
             >
-                {/* <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" ,  title={selectedLabels.join(", ")}}}> */}
                 <div
                     style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }}
                     title={selectedLabels.join(", ")}
@@ -439,7 +438,6 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                         background: theme.colors.background,
                     }}
                 >
-                    {/* Search input inside dropdown, above Select All / Clear All */}
                     <div
                         style={{
                             padding: `${currentSize.paddingY}px ${currentSize.paddingX - 1}px`,
@@ -466,8 +464,6 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                             }}
                         />
                     </div>
-
-                    {/* Action links: Select All (left) and Clear All (right) */}
                     <div
                         style={{
                             display: "grid",

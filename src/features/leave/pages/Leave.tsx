@@ -194,7 +194,8 @@ export const Leave: React.FC = () => {
           LeaveTypeMasterId: filterParams.LeaveTypeMasterId ? Number(filterParams.LeaveTypeMasterId) : undefined,
           StartDate: filterParams.StartDate?.trim() || undefined,
           EndDate: filterParams.EndDate?.trim() || undefined,
-          SortBy: getSortByParam(sortInfo ?? null, [])
+          SortBy: getSortByParam(sortInfo ?? null, []),
+          IsReport: false
         };
 
         const response = await LeaveService.apiCallPullLeave(params);
@@ -313,6 +314,7 @@ export const Leave: React.FC = () => {
           StartDate: filters.StartDate?.trim() || undefined,
           EndDate: filters.EndDate?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, []),
+          IsReport: false,
           ExportType: exportType
         };
 

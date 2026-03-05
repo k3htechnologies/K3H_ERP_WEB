@@ -43,7 +43,7 @@ export const MASTER_DATA = {
 
   businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use'],
 
-  documentStatus: [ 'Applied', 'Doc Missing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable', 'Paid', 'Payment Due', 'Rejected'],
+  documentStatus: ['Applied', 'Doc Missing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable', 'Paid', 'Payment Due', 'Rejected'],
 
   bankAccountType: ['Current', 'DEMAT', 'Fixed', 'Salary', 'Saving'],
 
@@ -51,7 +51,7 @@ export const MASTER_DATA = {
 
   flat_unit_Type: ['Commercial', 'Gym', 'Residential', 'Void'],
 
-  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '1 + 1 JODI', '2 + 1 JODI', '2 + 2 JODI', '2 + 3 JODI', 'PENTHOUSE'],
+  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK','5 BHK','6 BHK','7 BHK','8 BHK', '1 + 1 JODI', '2 + 1 JODI', '2 + 2 JODI', '2 + 3 JODI', 'PENTHOUSE'],
 
   commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
@@ -103,9 +103,9 @@ export const MASTER_DATA = {
 
   subSubsource_channelPartner: ['Channel Partner Data Calling', 'Channel Partner Walked IN', 'Digital Activity'],
 
-  finalStage: ['Booking Done', 'Blocked', 'Cancelled', 'Negotiation', 'Lost', 'Retention', 'Re - Visit Scheduled', 'Re - Visit Proposed', 'Site Visit', 'Unit Selection / Blocked'],
-
-  finalStageDetail: ['TimeLine Issue', 'Location Issue', 'Low Budget', 'Did Not Like Project', 'Other Issues'],
+  finalStage: ['Site Visit', 'Re - Visit Proposed', 'Re - Visit Scheduled', 'Negotiation', 'Unit Selection / Blocked','Booking Done','Blocked','Cancelled','Retention','Lost'],
+  
+  finalStageDetail: ['Purchased with competition', 'Purchased somewhere else', 'Not connected calls >7', 'Low Budget', 'Ready Posession', 'Location', 'Product Issue', 'Pricing Issue', 'Payment Issue', 'Loan Issue', 'Inventory Issue', 'General Enquiry', 'Wrong Number', 'Dropped The Idea Of Buying', 'Booked Somewhere Else'],
 
   age: ['21-25', '26-35', '36-45', '46-55', '56-65', '>65'],
 
@@ -256,7 +256,7 @@ export const MASTER_DATA = {
 
   courtType: ['Civil Court', 'District Court', 'High Court', 'Session Court', 'Supreme Court'],
 
-  paymentMode: ['Cash', 'Cheque', 'Demand Draft', 'IMPS', 'NEFT', 'Online Transfer', 'RTGS', 'UPI'],
+  paymentMode: ['Cheque', 'Demand Draft', 'IMPS', 'NEFT', 'Online Transfer', 'RTGS', 'UPI'],
 
   paymentType: ['Advance', 'Late Fee', 'Penalty', 'Regular'],
 
@@ -276,7 +276,7 @@ export const MASTER_DATA = {
 
   year: ['2025', '2026', '2027', '2028', '2029', '2030', '2031', '2032', '2033', '2034', '2035', '2036', '2037', '2038', '2039', '2040', '2041', '2042'],
 
-  monthsShots :[ 'Jan','Feb','Mar','Apr','May','Jun',  'Jul','Aug','Sep','Oct','Nov','Dec'],
+  monthsShots: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 
 } as const
 

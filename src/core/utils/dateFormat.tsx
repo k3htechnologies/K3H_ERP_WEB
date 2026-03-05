@@ -4,107 +4,128 @@
  * @param timeString - Time string in HH:MM format (optional)
  * @returns Formatted date and time string (e.g., "07 July 2025 2:30 PM")
  */
-export const formatDate_dd_MonthName_yy_hh_mm = (dateString: string, timeString?: string): string => {
-  if (!dateString || dateString.trim() === '') {
-    return ''
+export const formatDate_dd_MonthName_yy_hh_mm = (
+  dateString: string,
+  timeString?: string,
+): string => {
+  if (!dateString || dateString.trim() === "") {
+    return "";
   }
 
   try {
-    let date: Date
+    let date: Date;
 
     // If timeString is provided, combine date and time
-    if (timeString && timeString.trim() !== '') {
-      const combinedDateTime = `${dateString}T${timeString}`
-      date = new Date(combinedDateTime)
+    if (timeString && timeString.trim() !== "") {
+      const combinedDateTime = `${dateString}T${timeString}`;
+      date = new Date(combinedDateTime);
     } else {
-      date = new Date(dateString)
+      date = new Date(dateString);
     }
 
     // Check if date is valid
     if (isNaN(date.getTime())) {
-      return ''
+      return "";
     }
 
-    const day = date.getDate().toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, "0");
     const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ]
-    const month = monthNames[date.getMonth()]
-    const year = date.getFullYear()
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
 
     // Format time to 12-hour format with AM/PM
-    let hours = date.getHours()
-    const minutes = date.getMinutes()
-    const ampm = hours >= 12 ? 'PM' : 'AM'
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
 
     // Convert to 12-hour format
-    hours = hours % 12
-    hours = hours ? hours : 12 // 0 should be 12
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12
 
-    const formattedTime = `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`
+    const formattedTime = `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
 
-    return `${day} ${month} ${year} ${formattedTime}`
+    return `${day} ${month} ${year} ${formattedTime}`;
   } catch (error) {
-    console.error('Error formatting date and time:', error)
-    return ''
+    console.error("Error formatting date and time:", error);
+    return "";
   }
-}
-
+};
 
 /**
  * Format date string to "DD Month YYYY" format
  * @param dateString - Date string in YYYY-MM-DD format
  * @returns Formatted date string (e.g., "07 July 2025")
  */
-export const formatDate_dd_MonthName_yy = (dateString: string | Date): string => {
-  if (!dateString || dateString === '') {
-    return ''
+export const formatDate_dd_MonthName_yy = (
+  dateString: string | Date,
+): string => {
+  if (!dateString || dateString === "") {
+    return "";
   }
 
   try {
-
-    const date = new Date(dateString)
+    const date = new Date(dateString);
 
     // Check if date is valid
     if (isNaN(date.getTime())) {
-      return ''
+      return "";
     }
 
-    const day = date.getDate().toString().padStart(2, '0')
+    const day = date.getDate().toString().padStart(2, "0");
     const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ]
-    const month = monthNames[date.getMonth()]
-    const year = date.getFullYear()
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
 
-    return `${day} ${month} ${year}`
+    return `${day} ${month} ${year}`;
   } catch (error) {
-    console.error('Error formatting date:', error)
-    return ''
+    console.error("Error formatting date:", error);
+    return "";
   }
-}
+};
 
 /**
  * CONVERT "YYYY-MM-DD" → "DD-MM-YYYY"
  * Handles null, undefined, empty and invalid date safely.
  */
 export const formatDate_dd_mm_yyyy = (dateString?: string | null): string => {
-
-  if (!dateString) return '';
+  if (!dateString) return "";
 
   const trimmed = dateString.trim();
-  if (!trimmed) return '';
+  if (!trimmed) return "";
 
   // supports YYYY-MM-DD or YYYY-MM-DDTHH:mm:ss...
   const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(trimmed);
-  if (!match) return '';
+  if (!match) return "";
 
   const [, yyyy, mm, dd] = match;
 
   return `${dd}-${mm}-${yyyy}`;
-
 };
 /**
  * Extract time string (HH:MM) from ISO datetime string
@@ -120,6 +141,17 @@ export const parseTimeFromISO = (isoString: string): string => {
   return timeMatch ? `${timeMatch[1]}:${timeMatch[2]}` : "00:00";
 };
 
+/**
+ * Get today's date in DD-MM-YYYY format
+ * @returns Today's date string in DD-MM-YYYY format (e.g., "15-01-2025")
+ */
+export const getTodayDate_dd_mm_yyyy = (): string => {
+  const today = new Date();
+  const dd = String(today.getDate()).padStart(2, "0");
+  const mm = String(today.getMonth() + 1).padStart(2, "0");
+  const yyyy = today.getFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+};
 
 export const isToday = (date: Date): boolean => {
   const today = new Date();
@@ -135,11 +167,11 @@ export const isPreviousDate = (date: Date): boolean => {
   const todayYear = today.getFullYear();
   const todayMonth = today.getMonth();
   const todayDay = today.getDate();
-  
+
   const dateYear = date.getFullYear();
   const dateMonth = date.getMonth();
   const dateDay = date.getDate();
-  
+
   return (
     dateYear < todayYear ||
     (dateYear === todayYear && dateMonth < todayMonth) ||
@@ -148,7 +180,7 @@ export const isPreviousDate = (date: Date): boolean => {
 };
 
 export const convert_dd_mm_yyyy_To_Yyyy_mm_dd = (
-  value?: string | null
+  value?: string | null,
 ): string | null => {
   if (!value) return null;
 
@@ -162,7 +194,6 @@ export const convert_dd_mm_yyyy_To_Yyyy_mm_dd = (
   return `${yyyy}-${mm}-${dd}`;
 };
 
-
 export const convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd = (date?: string | null) => {
   if (!date) return "";
   return date.split("T")[0];
@@ -173,16 +204,22 @@ export const convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd = (date?: string | null) => {
  * @param utcDateTimeString - UTC DateTime string in ISO format (e.g., "2025-12-03T15:26:50.513Z" or "2025-12-03T15:26:50.513")
  * @returns Local Date object or null if invalid
  */
-export const convertUtcToLocal = (utcDateTimeString?: string | null): Date | null => {
-  if (!utcDateTimeString || typeof utcDateTimeString !== 'string' || utcDateTimeString.trim() === '') {
+export const convertUtcToLocal = (
+  utcDateTimeString?: string | null,
+): Date | null => {
+  if (
+    !utcDateTimeString ||
+    typeof utcDateTimeString !== "string" ||
+    utcDateTimeString.trim() === ""
+  ) {
     return null;
   }
 
   try {
     const trimmed = utcDateTimeString.trim();
-    
+
     // If it already has timezone info (Z or offset), parse directly
-    if (trimmed.includes('Z') || trimmed.match(/[+-]\d{2}:\d{2}$/)) {
+    if (trimmed.includes("Z") || trimmed.match(/[+-]\d{2}:\d{2}$/)) {
       const date = new Date(trimmed);
       if (!isNaN(date.getTime())) {
         return date; // Date object automatically converts UTC to local time
@@ -192,9 +229,20 @@ export const convertUtcToLocal = (utcDateTimeString?: string | null): Date | nul
 
     // If no timezone indicator, treat as UTC by appending 'Z'
     // Parse the ISO string and manually create UTC date
-    const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.(\d+))?/);
+    const isoMatch = trimmed.match(
+      /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?(?:\.(\d+))?/,
+    );
     if (isoMatch) {
-      const [, year, month, day, hour, minute, second = '00', millisecond = '000'] = isoMatch;
+      const [
+        ,
+        year,
+        month,
+        day,
+        hour,
+        minute,
+        second = "00",
+        millisecond = "000",
+      ] = isoMatch;
       // Create UTC date using Date.UTC, then convert to local
       const utcTime = Date.UTC(
         parseInt(year, 10),
@@ -203,7 +251,7 @@ export const convertUtcToLocal = (utcDateTimeString?: string | null): Date | nul
         parseInt(hour, 10),
         parseInt(minute, 10),
         parseInt(second, 10),
-        parseInt(millisecond.padEnd(3, '0').substring(0, 3), 10) // Ensure 3 digits for milliseconds
+        parseInt(millisecond.padEnd(3, "0").substring(0, 3), 10), // Ensure 3 digits for milliseconds
       );
       return new Date(utcTime); // This creates a local Date object from UTC timestamp
     }
@@ -216,7 +264,7 @@ export const convertUtcToLocal = (utcDateTimeString?: string | null): Date | nul
 
     return null;
   } catch (error) {
-    console.error('Error converting UTC to local time:', error);
+    console.error("Error converting UTC to local time:", error);
     return null;
   }
 };
@@ -227,58 +275,26 @@ export const convertUtcToLocal = (utcDateTimeString?: string | null): Date | nul
  * @param dateTimeString - DateTime string in ISO format (e.g., "2025-12-03T15:26:50.513" or "2025-12-03T15:26:50.513Z")
  * @returns Formatted time string (e.g., "3:26 PM") or empty string if invalid
  */
-export const formatTimeFromDateTime = (dateTimeString?: string | null): string => {
-  if (!dateTimeString || typeof dateTimeString !== 'string' || dateTimeString.trim() === '') {
-    return '';
-  }
+export const formatTimeFromDateTime = (
+  dateTimeString?: string | null,
+): string => {
+  if (!dateTimeString || typeof dateTimeString !== "string") return "";
 
-  try {
-    const trimmed = dateTimeString.trim();
+  const trimmed = dateTimeString.trim();
 
-    // If already in HH:MM format, return as is
-    if (/^\d{2}:\d{2}$/.test(trimmed)) {
-      return trimmed;
-    }
+  if (/^\d{2}:\d{2}$/.test(trimmed)) return trimmed;
 
-    // Check if it's an ISO datetime string (contains 'T')
-    const isIsoDateTime = trimmed.includes('T');
-    
-    if (isIsoDateTime) {
-      // Treat ISO datetime strings as UTC and convert to local time
-      // This handles both "2025-12-03T15:26:50.513Z" and "2025-12-03T15:26:50.513" (assumed UTC from API)
-      const localDate = convertUtcToLocal(trimmed);
-      if (localDate) {
-        let hours = localDate.getHours();
-        const minutes = localDate.getMinutes();
-        const ampm = hours >= 12 ? 'PM' : 'AM';
+  const date = new Date(trimmed);
+  if (isNaN(date.getTime())) return "";
 
-        hours = hours % 12;
-        hours = hours ? hours : 12;
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
 
-        return `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-      }
-    }
+  hours = hours % 12 || 12;
 
-    // Fallback: try parsing as Date (will use local time)
-    const date = new Date(trimmed);
-    if (!isNaN(date.getTime())) {
-      let hours = date.getHours();
-      const minutes = date.getMinutes();
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-
-      hours = hours % 12;
-      hours = hours ? hours : 12;
-
-      return `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-    }
-
-    return '';
-  } catch (error) {
-    console.error('Error formatting time from datetime:', error);
-    return '';
-  }
+  return `${hours}:${minutes.toString().padStart(2, "0")} ${ampm}`;
 };
-
 
 /**
  * Format date string to "DD Month YYYY" format
@@ -286,29 +302,38 @@ export const formatTimeFromDateTime = (dateTimeString?: string | null): string =
  * @returns Formatted date string (e.g., "July 2025")
  */
 export const formatDate_MonthName_yy = (dateString: string | Date): string => {
-  if (!dateString || dateString === '') {
-    return ''
+  if (!dateString || dateString === "") {
+    return "";
   }
 
   try {
-
-    const date = new Date(dateString)
+    const date = new Date(dateString);
 
     // Check if date is valid
     if (isNaN(date.getTime())) {
-      return ''
+      return "";
     }
 
     const monthNames = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
-    ]
-    const month = monthNames[date.getMonth()]
-    const year = date.getFullYear()
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    const month = monthNames[date.getMonth()];
+    const year = date.getFullYear();
 
-    return `${month} ${year}`
+    return `${month} ${year}`;
   } catch (error) {
-    console.error('Error formatting date:', error)
-    return ''
+    console.error("Error formatting date:", error);
+    return "";
   }
-}
+};

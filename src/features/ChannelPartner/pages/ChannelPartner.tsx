@@ -15,7 +15,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Button, Input } from '@/ui/components/forms';
+import {  Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -25,13 +25,14 @@ import { ChannelPartnerService } from '@/features/ChannelPartner/services/Channe
 import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
-import { Trash2 } from 'lucide-react';
+import { AlertTriangle } from 'lucide-react';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { useChannelPartnerListState } from '@/features/ChannelPartner/context/ChannelPartnerListStateContext';
+import { isChannelPartnerComplete } from '@/features/ChannelPartner/utils/channelPartnerUtils';
 
 
 export const ChannelPartner: React.FC = () => {
@@ -377,14 +378,28 @@ export const ChannelPartner: React.FC = () => {
       sortable: true,
       fixed: 'left',
       align: 'left',
-      render: value => (
-        <TooltipText
-          text={value || '-'}
-          maxWidth="150px"
-          tooltipThreshold={20}
-          tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-        />
-      )
+      render: (value, row) => {
+        const complete = isChannelPartnerComplete(row);
+
+        return (
+          <div className="flex items-center justify-center gap-2">
+
+            <TooltipText
+              text={value || '-'}
+              maxWidth="150px"
+              tooltipThreshold={20}
+              tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+            />
+
+            {!complete && (
+              <span title="Channel Partner Profile Incomplete">
+                <AlertTriangle className="w-4 h-4 text-amber-500 cursor-pointer" />
+              </span>
+            )}
+
+          </div>
+        );
+      }
     },
     {
       key: 'Name',
@@ -560,42 +575,11 @@ export const ChannelPartner: React.FC = () => {
       align: 'center',
       render: (value) => value || '-'
     },
-    {
-      key: 'actions',
-      label: 'Actions',
-      width: '12',
-      fixed: 'right',
-      align: 'center',
-      render: (_value, row) => (
-        canAction ? (
-          <div className="flex items-center justify-center gap-2">
-
-            <Button
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                handleConfirmationDialogBoxOpen(row)
-              }}
-              color='transparent'
-              isborderRadius
-              size='sm'
-              style={{
-                color: 'red',
-                padding: '4px 8px'
-              }}
-              title="Delete Channel Partner"
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : null
-      )
-    }
   ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
-  const requiredChannelPartnerColumnKeys: string[] = ['Name', 'actions'];
+  const requiredChannelPartnerColumnKeys: string[] = ['Name', 'Actions'];
 
   const allChannelPartnerColumnKeys: string[] = ChannelPartnerColumns.map(c => c.key);
 

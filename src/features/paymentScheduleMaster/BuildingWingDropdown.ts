@@ -1,10 +1,10 @@
 import * as E from 'fp-ts/Either';
-import { paymentScheduleMasterService } from './services/PaymentScheduleMasterService';
+import { inventoryService } from '../inventory/services/InventoryServices';
 
 export const fetchBuildingDropdown = async (params?: {   projectId?: number; }) => {
   try {
     
-    const responseEither = await paymentScheduleMasterService.apiCallPullProjectInventoryStructure({
+    const responseEither = await inventoryService.apiCallPullProjectInventoryStructure({
       ProjectId: Number(params?.projectId),
     });
 
@@ -42,9 +42,9 @@ export const fetchWingDropdown = async (params?: {
   buildingId?: number;
 }) => {
   try {
-    const responseEither = await paymentScheduleMasterService.apiCallPullProjectInventoryStructure({
+    const responseEither = await inventoryService.apiCallPullProjectInventoryStructure({
       ProjectId: Number(params?.projectId),
-      BuildingId: Number(params?.buildingId),
+      InventoryBuildingId: Number(params?.buildingId),
     });
 
     if (E.isLeft(responseEither)) {

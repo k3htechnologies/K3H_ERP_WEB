@@ -11,6 +11,7 @@ import {
 } from "@/features/otherCharges/components";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
 
 export const OtherCharges: React.FC = () => {
 

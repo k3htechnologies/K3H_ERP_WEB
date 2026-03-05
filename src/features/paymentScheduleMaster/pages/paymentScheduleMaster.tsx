@@ -143,9 +143,9 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   // ================= BUILDING CHANGE =================
 
-  const handleBuildingChange = async (inventoryInventoryBuildingId: number) => {
+  const handleBuildingChange = async (InventoryBuildingId: number) => {
 
-    if (!inventoryInventoryBuildingId) {
+    if (!InventoryBuildingId) {
       setFormData(prev => ({
         ...prev,
         InventoryBuildingId: 0,
@@ -168,14 +168,14 @@ export const PaymentScheduleMaster: React.FC = () => {
 
     setFormData(prev => ({
       ...prev,
-      InventoryBuildingId: inventoryInventoryBuildingId,
+      InventoryBuildingId: InventoryBuildingId,
       Wing: '',
       Stage: ''
     }));
 
     const res = await fetchWingDropdown({
       projectId: projectId ?? undefined,
-      inventoryBuildingId: inventoryInventoryBuildingId ?? undefined
+      inventoryBuildingId: InventoryBuildingId ?? undefined
     });
 
     setWingOptions(res.itemList);
@@ -267,7 +267,10 @@ export const PaymentScheduleMaster: React.FC = () => {
   //#region EDIT PAYMENT SCHEDULE
   const handleEditPaymentScheduleMaster = useCallback(async (row: PaymentScheduleMasterData) => {
 
-    const res = await fetchPaymentScheduleDropdown({ projectId: projectId ?? undefined });
+    const res = await fetchPaymentScheduleDropdown({
+      projectId: projectId ?? undefined, inventoryBuildingId: formData.InventoryBuildingId,
+      wing: formData.Wing ?? undefined,
+    });
 
     setStageOptions(res.itemList);
     setEditingPaymentScheduleMasterData(row);
@@ -566,7 +569,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   //#region NAVIGATE TO PAYMENT SCHEDULE REPORT
   const handlePaymentScheduleMasterReport = useCallback(() => {
-    navigate('/paymentMasterReport', {
+    navigate('/paymentScheduleReport', {
       state: {
         ratePerSqFt,
         InventoryBuildingId: formData.InventoryBuildingId,

@@ -38,7 +38,7 @@ export const useHolidayMaster = () => {
 
   // ADD UPDATE HOLIDAY URL
   const [holidayFiles, setHolidayFiles] = useState<(File | string)[]>([]);
-  const [removedHolidayUrls, setRemovedHolidayUrls] = useState<string[]>([]);
+  const [removedHolidayURLs, setRemovedHolidayURLs] = useState<string[]>([]);
   const [holidayURL, setHolidayURL] = useState<string>();
 
   // EDIT HOLIDAY MASTER
@@ -84,16 +84,15 @@ export const useHolidayMaster = () => {
           HolidayURL: null,
           RemoveHolidayURL: '',
         });
-
-        setHolidayURL(editingHolidayMasterData.HolidayURL);
-        setHolidayFiles(editingHolidayMasterData.HolidayURL ? [editingHolidayMasterData.HolidayURL] : []);
-        setRemovedHolidayUrls([]);
+        setHolidayFiles([])
+        setHolidayURL(editingHolidayMasterData.HolidayURL || '');
+        setRemovedHolidayURLs([]);
 
       } else {
         setFormData(getInitialFormState());
         setHolidayFiles([]);
         setHolidayURL("");
-        setRemovedHolidayUrls([]);
+        setRemovedHolidayURLs([]);
       }
       setErrors({});
     }
@@ -170,7 +169,7 @@ export const useHolidayMaster = () => {
   const clearsearchHolidays = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
-    loadHolidays(1,'');
+    loadHolidays(1, '');
   }
   //#endregion
 
@@ -254,7 +253,7 @@ export const useHolidayMaster = () => {
     setFormData(getInitialFormState());
     setHolidayFiles([]);
     setHolidayURL('')
-    setRemovedHolidayUrls([]);
+    setRemovedHolidayURLs([]);
     setErrors({});
     setIsAddUpdateModalOpen(true);
   }
@@ -271,7 +270,7 @@ export const useHolidayMaster = () => {
       newErrors.HolidayName = 'Holiday Name must be at most 50 characters'
     }
 
-    if (!hasAnyDocumentFile(holidayFiles, holidayURL, removedHolidayUrls)) {
+    if (!hasAnyDocumentFile(holidayFiles, holidayURL, removedHolidayURLs)) {
       newErrors.HolidayURL = "File is required.";
     }
 
@@ -280,9 +279,12 @@ export const useHolidayMaster = () => {
       errors: newErrors,
     };
   }
+  //#endregion
 
   const PushHolidayFormData = (): FormData => {
+
     const fd = new FormData();
+
     fd.append('HolidayMasterId', formData.HolidayMasterId.toString());
     fd.append('Uniquekey', formData.Uniquekey ?? '');
     fd.append('HolidayName', formData.HolidayName.trim() ?? '');
@@ -293,10 +295,19 @@ export const useHolidayMaster = () => {
       }
     });
 
-    fd.append('RemoveHolidayURL', removedHolidayUrls.join(','));
+    const existingNames = holidayFiles
+      .filter(x => typeof x === 'string' && String(x).trim().length > 0)
+      .map(x => String(x).trim())
+      .join(',');
 
+    if (existingNames) {
+      fd.append('HolidayURL', existingNames);
+    }
+
+    fd.append('RemoveHolidayURL', removedHolidayURLs.join(','));
     return fd;
   };
+  //#endregion
 
   const handleAddUpdateHolidayMaster = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -343,6 +354,9 @@ export const useHolidayMaster = () => {
 
           setIsAddUpdateModalOpen(false);
           setEditingHolidayMasterData(null);
+          setHolidayFiles([])
+          setRemovedHolidayURLs([])
+          setHolidayURL('')
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
@@ -434,7 +448,7 @@ export const useHolidayMaster = () => {
     canExport,
     holidayMasterColumns,
     holidayFiles,
-    removedHolidayUrls,
+    removedHolidayURLs,
     holidayURL,
 
     // Setters
@@ -448,7 +462,7 @@ export const useHolidayMaster = () => {
     setIsConfirmationDialogBoxOpen,
     setDeleteHolidayMasterDetailsData,
     setHolidayFiles,
-    setRemovedHolidayUrls,
+    setRemovedHolidayURLs,
     setHolidayURL,
 
     // Actions

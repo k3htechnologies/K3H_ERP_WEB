@@ -76,8 +76,9 @@ export class ShiftMasterDatasourceImpl implements ShiftMasterDatasource {
                 BreakEndTime: params.BreakEndTime ?? '',
                 BreakDurationTime: params.BreakDurationTime ?? '',
                 GraceTime: params.GraceTime ?? '',
-
                 Remarks: params.Remarks?.trim() ?? '',
+
+                LateArrivalAction: params.LateArrivalAction ?? ''
             }
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(

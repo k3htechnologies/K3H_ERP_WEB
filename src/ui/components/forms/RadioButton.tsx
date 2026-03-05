@@ -66,7 +66,7 @@ export const RadioButton = forwardRef<HTMLInputElement, RadioButtonProps>(
       display: "inline-block",
       margin: 0,
       cursor: disabled ? "not-allowed" : "pointer",
-      accentColor: theme.colors.primary
+      accentColor: theme.colors.primary1
     };
 
     const helperStyle: React.CSSProperties = {

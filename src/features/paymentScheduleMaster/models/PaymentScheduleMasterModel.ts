@@ -5,6 +5,7 @@ export interface FilterWithPaginationPaymentScheduleMasterRequest {
     PageNumber: number
     ProjectId?: number
     PaymentScheduleMasterId?: number
+    IsCheckPermission?: boolean
     InventoryBuildingId?: number
     Stage?: string
     Wing?: string

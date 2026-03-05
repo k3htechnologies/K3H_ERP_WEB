@@ -31,6 +31,7 @@ export const HolidayMasterFormModal: React.FC<HolidayMasterFormModalProps> = ({
   errors,
   editingData,
   loading,
+  holidayURL,
   holidayFiles,
   setHolidayFiles,
   removedHolidayUrls,
@@ -61,6 +62,7 @@ export const HolidayMasterFormModal: React.FC<HolidayMasterFormModalProps> = ({
               error={errors.HolidayName}
             />
           </div>
+
           <div>
             <MultiFilePicker
               label="Holiday Photo"
@@ -68,9 +70,10 @@ export const HolidayMasterFormModal: React.FC<HolidayMasterFormModalProps> = ({
               required
               error={errors.HolidayURL}
               value={holidayFiles}
+              availableFilesURL={holidayURL ?? ""}
               onChange={setHolidayFiles}
               allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-              maxFiles={5}
+              maxFiles={1}
               maxSizeMB={10}
               onRemoveExisting={(url) => {
                 setRemovedHolidayUrls([...removedHolidayUrls, url])

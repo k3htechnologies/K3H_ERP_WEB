@@ -32,6 +32,7 @@ export class HolidayMappingMasterDatasourceImpl implements HolidayMappingMasterD
             if (params.HolidayMappingMasterId) queryParams.append('HolidayMappingMasterId', params.HolidayMappingMasterId.toString());
             if (params.BranchName?.trim()) queryParams.append('BranchName', params.BranchName.trim());
             if (params.HolidayName?.trim()) queryParams.append('HolidayName', params.HolidayName.trim());
+            if (params.DepartmentName?.trim()) queryParams.append('DepartmentName', params.DepartmentName.trim());
             if (params.FromHolidayDate?.trim()) queryParams.append('FromHolidayDate', params.FromHolidayDate.trim());
             if (params.ToHolidayDate?.trim()) queryParams.append('ToHolidayDate', params.ToHolidayDate.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());

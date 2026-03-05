@@ -31,6 +31,8 @@ export interface ShiftMasterData {
     BreakDurationTime: string | ''  // TimeSpan
     GraceTime: string | ''          // TimeSpan
 
+    LateArrivalAction: string | ''
+
     Remarks: string | ''
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -62,9 +64,10 @@ export interface AddUpdateShiftMasterRequest {
     BreakBeginTime: string | ''           // TimeSpan
     BreakEndTime: string | ''             // TimeSpan
     BreakDurationTime: string | ''        // TimeSpan
-    GraceTime: string | ''                
-
+    GraceTime: string | ''
     Remarks: string | ''
+
+    LateArrivalAction: string | ''
 }
 
 export interface DeleteShiftMasterRequest {

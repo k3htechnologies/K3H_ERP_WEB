@@ -29,7 +29,8 @@ export const HolidayMappingMasterFilterModal: React.FC<HolidayMappingMasterFilte
   onFilterChange,
   filterFields = [
     { key: 'HolidayName', label: 'Holiday Name', placeholder: 'Enter Holiday Name' },
-    { key: 'BranchName', label: 'Branch Name', placeholder: 'Enter Branch Name' }
+    { key: 'BranchName', label: 'Branch Name', placeholder: 'Enter Branch Name' },
+    { key: 'DepartmentName', label: 'Department Name', placeholder: 'Enter Department Name' }
   ]
 }) => {
   return (

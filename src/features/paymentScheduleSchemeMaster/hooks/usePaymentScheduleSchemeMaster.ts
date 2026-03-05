@@ -14,6 +14,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { fetchBuildingDropdown, fetchWingDropdown } from "@/features/inventory/InventoryDropdown";
+import { updateFilter } from "@/core/utils/filterHelper";
 
 export const usePaymentScheduleSchemeMaster = () => {
   //#region STATE MANAGEMENT
@@ -23,7 +24,12 @@ export const usePaymentScheduleSchemeMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const { addToast } = useToast();
+
+  //FILTER STATES
+  const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
+  const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
   const [searchTerm, setSearchTerm] = useState("");
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
@@ -39,7 +45,7 @@ export const usePaymentScheduleSchemeMaster = () => {
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchPaymentScheduleSchemeMaster(value);
   }, 350);
-  const { canAction, canExport } = useMenuPermissions('/paymentScheduleScheme');
+  const { canAction, canExport } = useMenuPermissions("/paymentScheduleScheme");
   const { projectId } = useProject();
 
   useEffect(() => {
@@ -199,19 +205,13 @@ export const usePaymentScheduleSchemeMaster = () => {
               totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize),
             });
 
-            addToast({
-              type: "success",
-              title: response.right.SuccessMessage[0],
-            });
+            addToast({ type: "success", title: response.right.SuccessMessage[0] });
           } else {
             const updatedRecord = response.right.Data[0] as PaymentScheduleSchemeMasterData;
 
             setPaymentScheduleSchemeMasterList((prevData) => prevData.map((item) => (item.PaymentScheduleSchemeMasterId === formData.PaymentScheduleSchemeMasterId ? updatedRecord : item)));
 
-            addToast({
-              type: "success",
-              title: response.right.SuccessMessage[0],
-            });
+            addToast({ type: "success", title: response.right.SuccessMessage[0] });
           }
           setEditingPaymentScheduleSchemeMasterData(null);
         } else {
@@ -224,6 +224,7 @@ export const usePaymentScheduleSchemeMaster = () => {
         addToast({ type: "error", title: error.message });
       },
       undefined,
+      Number(formData.PaymentScheduleSchemeMasterId) === 0 ? "Add Scheme" : "Update Scheme",
     );
   };
   // #endregion
@@ -238,6 +239,7 @@ export const usePaymentScheduleSchemeMaster = () => {
       await runApiWithLoader(
         setIsLoading,
         setLoadingMessage,
+
         async () => {
           const params: FilterWithPaginationPaymentScheduleSchemeMaster = {
             PageNumber: page,
@@ -246,6 +248,8 @@ export const usePaymentScheduleSchemeMaster = () => {
             ProjectId: Number(projectId),
             PaymentScheduleSchemeMasterId: filterParams.PaymentScheduleSchemeMasterId ? Number(filterParams.PaymentScheduleSchemeMasterId) : 0,
             PaymentScheduleScheme: searchtext ?? filterParams.PaymentScheduleScheme ?? undefined,
+            BuildingNumber: filterParams.BuildingNumber?.trim() || undefined,
+            Wing: filterParams.Wing?.trim() || undefined,
             SortBy: getSortByParam(sortInfo ?? null, paymentScheduleSchemeMasterColumns),
           };
 
@@ -327,6 +331,29 @@ export const usePaymentScheduleSchemeMaster = () => {
     setDeletePaymentScheduleSchemeMasterDetailsData(row);
     setIsConfirmationDialogBoxOpen(true);
   }, []);
+  //#endregion
+
+  //#region FILTER MODAL HELPERS
+  const applyFilters = () => {
+    setFilters(tempFilters);
+    loadPaymentScheduleSchemeMaster(1, tempFilters);
+    setShowFilterPopup(false);
+  };
+  //#endregion
+
+  //#region Clear
+  const clearFilters = () => {
+    setTempFilters({});
+    setFilters({});
+    loadPaymentScheduleSchemeMaster(1, {});
+  };
+  //#endregion
+
+  //#region HANDLE FILTER CHANGE
+  const handleFilterChange = (key: string, value: string) => {
+    setTempFilters((prev) => updateFilter(prev, key, value));
+  };
+  //#endregion
 
   //#region EXPORT EXCEL | PDF
   const handleExportPaymentScheduleSchemeMaster = async (exportType: "Excel" | "PDF") => {
@@ -340,6 +367,8 @@ export const usePaymentScheduleSchemeMaster = () => {
           IsCheckPermission: true,
           ProjectId: Number(projectId),
           PaymentScheduleScheme: filters.PaymentScheduleScheme?.trim() || undefined,
+          BuildingNumber: filters.BuildingNumber?.trim() || undefined,
+          Wing: filters.Wing?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, paymentScheduleSchemeMasterColumns),
           ExportType: exportType,
         };
@@ -441,7 +470,6 @@ export const usePaymentScheduleSchemeMaster = () => {
 
   return {
     paymentScheduleSchemeMasterList,
-    fetchPaymentScheduleSchemeMasterList,
     isLoading,
     canExport,
     pagination,
@@ -453,41 +481,50 @@ export const usePaymentScheduleSchemeMaster = () => {
     selectedPaymentScheduleSchemeMasterColumnKeys,
     requiredPaymentScheduleSchemeMasterColumnKeys,
     isShowCustomizePaymentScheduleSchemeMasterColumnsModal,
+    debouncedSearch,
+    isViewModalOpen,
+    isConfirmationDialogBoxOpen,
+    viewPaymentScheduleSchemeMasterDetailsData,
+    deletePaymentScheduleSchemeMasterDetailsData,
+    buildingOptions,
+    wingOptions,
+    isAddUpdateModalOpen,
+    formData,
+    errors,
+    editingPaymentScheduleSchemeMasterData,
+    showFilterPopup,
+    filters,
+    tempFilters,
+    loadingMessage,
+
+    fetchPaymentScheduleSchemeMasterList,
     setIsShowCustomizePaymentScheduleSchemeMasterColumnsModal,
     setSelectedPaymentScheduleSchemeMasterColumnKeys,
     handleSortColumn,
     handlePageChange,
     setSearchTerm,
-    debouncedSearch,
     clearsearchPaymentScheduleSchemeMaster,
     handleExportPaymentScheduleSchemeMasterExcel,
     handleExportPaymentScheduleSchemeMasterPdf,
     setIsViewModalOpen,
-    isViewModalOpen,
     handleViewPaymentScheduleSchemeMasterDetails,
-    viewPaymentScheduleSchemeMasterDetailsData,
     setViewPaymentScheduleSchemeMasterDetailsData,
-    isConfirmationDialogBoxOpen,
     setIsConfirmationDialogBoxOpen,
-    deletePaymentScheduleSchemeMasterDetailsData,
+    applyFilters,
+    clearFilters,
+    handleFilterChange,
     setDeletePaymentScheduleSchemeMasterDetailsData,
     handleConfirmationDialogBoxOpen,
     handleDeletePaymentScheduleSchemeMaster,
     handleAddPaymentScheduleSchemeMasterModal,
     handleEditPaymentScheduleSchemeMasterDetails,
-    buildingOptions,
-    wingOptions,
     handleBuildingChange,
-    isAddUpdateModalOpen,
     setIsAddUpdateModalOpen,
-    formData,
     setFormData,
     handleFieldChange,
-    errors,
-    editingPaymentScheduleSchemeMasterData,
     handleAddEditPaymentScheduleSchemeMaster,
-    filters,
+    setShowFilterPopup,
+    setTempFilters,
     setFilters,
-    loadingMessage,
   };
 };

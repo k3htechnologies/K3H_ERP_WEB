@@ -23,7 +23,8 @@ export const fetchPaymentScheduleSchemeMasterDropDown = async (pageNumber: numbe
     const itemList = [
       ...(apiResponse?.Data || []).map((d: any) => ({
         label: d.PaymentScheduleScheme,
-        value: String(d.PaymentScheduleSchemeMasterId)
+        value: String(d.PaymentScheduleSchemeMasterId),
+        
       })),
       {
         label: "Other",

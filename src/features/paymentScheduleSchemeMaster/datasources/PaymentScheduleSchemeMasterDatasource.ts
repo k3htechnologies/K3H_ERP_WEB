@@ -27,6 +27,8 @@ export class PaymentScheduleSchemeMasterDatasourceImpl implements PaymentSchedul
       if (params.InventoryBuildingId) queryParams.append("InventoryBuildingId", params.InventoryBuildingId.toString());
       if (params.InventoryFlatFloorBasementPodiumWingId) queryParams.append("InventoryFlatFloorBasementPodiumWingId", params.InventoryFlatFloorBasementPodiumWingId.toString());
       if (params.PaymentScheduleScheme?.trim()) queryParams.append("PaymentScheduleScheme", params.PaymentScheduleScheme.trim());
+      if (params.BuildingNumber?.trim()) queryParams.append("BuildingNumber", params.BuildingNumber.trim());
+      if (params.Wing?.trim()) queryParams.append("Wing", params.Wing.trim());
       if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
       if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
@@ -45,9 +47,9 @@ export class PaymentScheduleSchemeMasterDatasourceImpl implements PaymentSchedul
   }
   async addUpdatePaymentScheduleSchemeMaster(params: AddUpdatePaymentScheduleSchemeMasterRequest): Promise<PaymentScheduleSchemeMasterSaveReponse> {
     try {
-      const response = await this.k3hHttpClient.postRequestWithAuthentication(PaymentScheduleSchemeMasterApi.ADD_UPDATE, params);
 
-      return response;
+      return await this.k3hHttpClient.postRequestWithAuthentication(PaymentScheduleSchemeMasterApi.ADD_UPDATE, params);
+
     } catch (error) {
       console.error("ERROR: ADD UPDATE PAYMENT SCHEDULE SCHEME MASTER :", error);
 
@@ -59,6 +61,7 @@ export class PaymentScheduleSchemeMasterDatasourceImpl implements PaymentSchedul
   }
 
   async deletePaymentScheduleSchemeMaster(params: DeletePaymentScheduleSchemeMasterRequest): Promise<PaymentScheduleSchemeMasterDeleteResponse> {
+   
     try {
       const queryParams = new URLSearchParams({
         PaymentScheduleSchemeMasterId: (params.PaymentScheduleSchemeMasterId ?? 0).toString(),
@@ -66,15 +69,12 @@ export class PaymentScheduleSchemeMasterDatasourceImpl implements PaymentSchedul
         ProjectId: (params.ProjectId ?? 0).toString(),
       });
 
-      const response = await this.k3hHttpClient.deleteRequestWithAuthentication(`${PaymentScheduleSchemeMasterApi.DELETE}?${queryParams.toString()}`);
+      return await this.k3hHttpClient.deleteRequestWithAuthentication(`${PaymentScheduleSchemeMasterApi.DELETE}?${queryParams.toString()}`);
 
-      return response;
     } catch (error) {
-
       console.error("ERROR: DELETE PAYMENT SCHEDULE SCHEME MASTER :", error);
 
       if (error === TokenExpiredException) {
-        
         await this.deletePaymentScheduleSchemeMaster(params);
       }
 

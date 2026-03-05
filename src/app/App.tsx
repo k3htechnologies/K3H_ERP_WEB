@@ -189,7 +189,7 @@ function App() {
   useEffect(() => {
     const token = LocalStorageHelper.getStoredTokenData()
     if (!token) {
-      // Token validation could be added here if needed
+      
     }
   }, [])
 

@@ -35,7 +35,7 @@ export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
       if (col.key === 'Actions') {
 
         return {
-
+          
           ...col,
 
           render: (_value, row: DepartmentMasterData) => (

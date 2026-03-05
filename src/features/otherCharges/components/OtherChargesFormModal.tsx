@@ -69,7 +69,7 @@ export const OtherChargesFormModal: React.FC<OtherChargesFormModalProps> = ({
               rightIcon="₹"
               maxLength={10}
               placeholder="Enter Value "
-            />
+            />  
           </div>
 
           <div>

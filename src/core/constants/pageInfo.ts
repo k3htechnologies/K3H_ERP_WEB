@@ -355,6 +355,11 @@ export const getPageInfo = (path: string) => {
                 title: "Enquiry",
                 description: "Centralized enquiry management for faster response",
             }
+        case 'paymentScheduleSchemeMaster':
+            return {
+                title: "Payment Schedule Scheme",
+                description: "Payment Schedule Scheme",
+            }
         case 'channelPartner':
             return {
                 title: "Channel Partner",

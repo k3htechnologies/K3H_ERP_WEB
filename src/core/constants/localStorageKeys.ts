@@ -76,6 +76,10 @@ export const LOCAL_STORAGE_KEYS = {
     BOOKING_SELECTED_COLUMNS: 'booking.selectedColumns',
 
 
+    // PAYMENT SCHEDULE SCHEME MASTER
+    PAYMENT_SCHEDULE_SCHEME_MASTER_SELECTED_COLUMNS: 'paymentScheduleSchemeMaster.selectedColumns',
+
+
 } as const
 
 export const LOCAL_STORAGE_FOR_STATE_KEYS = {

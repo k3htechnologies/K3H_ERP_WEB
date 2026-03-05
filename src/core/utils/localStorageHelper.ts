@@ -136,6 +136,29 @@ export const LocalStorageHelper = {
         return null
     },
     //#endregion
+    //#region STORE PAYMENT SCHEDULE SCHEME MASTER COLUMNS
+    storePaymentScheduleSchemeMasterTableColumns: (columns: string): void => {
+        try {
+            localStorage.setItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_SELECTED_COLUMNS, columns);
+        } catch (error) {
+            console.error('Error Payment Schedule Scheme Master Columns Details:', error);
+        }
+    },
+    //#endregion
+    //#region GET PAYMENT SCHEDULE SCHEME MASTER COLUMNS
+    getPaymentScheduleSchemeMasterTableColumns: (): string | null => {
+        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_SELECTED_COLUMNS);
+        if (stored) {
+            try {
+                return localStorage.getItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_SELECTED_COLUMNS);
+            } catch (error) {
+                console.error('Error reading Payment Schedule Scheme Master Columns Details:', error);
+                return null;
+            }
+        }
+        return null;
+    },
+    //#endregion
     //#region STORE DESIGNATION MASTER COLUMNS
     storeDesignationMasterTableColumns: (columns: string): void => {
         try {
@@ -1153,7 +1176,7 @@ export const LocalStorageHelper = {
             localStorage.removeItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
             localStorage.removeItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
-             localStorage.removeItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
+            localStorage.removeItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
 
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
             localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);

@@ -24,13 +24,13 @@ export class PaymentScheduleSchemeMasterDatasourceImpl implements PaymentSchedul
             })
 
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
-            if (params.PaymentScheduleSchemeId) queryParams.append('PaymentScheduleSchemeId', params.PaymentScheduleSchemeId.toString());
+            if (params.PaymentScheduleSchemeMasterId) queryParams.append('PaymentScheduleSchemeMasterId', params.PaymentScheduleSchemeMasterId.toString());
             if (params.PaymentScheduleScheme?.trim()) queryParams.append('PaymentScheduleScheme', params.PaymentScheduleScheme.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication( `${PaymentScheduleSchemeMasterApi.PULL}?${queryParams.toString()}`, { signal })
-            
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(`${PaymentScheduleSchemeMasterApi.PULL}?${queryParams.toString()}`, { signal })
+
             return response;
         } catch (error: any) {
 
@@ -66,7 +66,7 @@ export class PaymentScheduleSchemeMasterDatasourceImpl implements PaymentSchedul
     async deletePaymentScheduleSchemeMaster(params: DeletePaymentScheduleSchemeMasterRequest): Promise<PaymentScheduleSchemeMasterDeleteResponse> {
         try {
             const queryParams = new URLSearchParams({
-                PaymentScheduleSchemeId: (params.PaymentScheduleSchemeId ?? 0).toString(),
+                PaymentScheduleSchemeMasterId: (params.PaymentScheduleSchemeMasterId ?? 0).toString(),
                 Uniquekey: params.Uniquekey ?? '',
                 ProjectId: (params.ProjectId ?? 0).toString()
             })

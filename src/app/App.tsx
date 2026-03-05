@@ -151,6 +151,7 @@ import SalesDashboard from '@/features/salesDashboard/pages/SalesDashboard';
 import EnquiryReport from '@/features/enquiryReport/pages/EnquiryReport';
 import CPEnquiryReport from '@/features/cpEnquiryReport/pages/CPEnquiryReport';
 import PaymentScheduleMaster from '@/features/paymentScheduleMaster/pages/PaymentScheduleMaster';
+import PaymentScheduleSchemeMaster from '@/features/paymentScheduleSchemeMaster/pages/PaymentScheduleSchemeMaster';
 import PaymentScheduleTab from '@/features/paymentScheduleMaster/components/PaymentScheduleTab';
 import Target from '@/features/target/pages/Target';
 
@@ -351,6 +352,8 @@ function App() {
 
             <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
             <Route path="paymentSchedule/paymentScheduleReport" element={<PaymentScheduleTab />} />
+            <Route path="paymentScheduleReport" element={<PaymentScheduleTab />} />
+            <Route path="paymentScheduleSchemeMaster" element={<PaymentScheduleSchemeMaster />} />
 
             <Route path="target" element={<Target />} />
 

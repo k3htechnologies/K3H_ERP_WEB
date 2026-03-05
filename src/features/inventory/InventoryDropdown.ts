@@ -48,20 +48,18 @@ export const fetchWingDropdown = async (params?: {
     });
 
     if (E.isLeft(responseEither)) {
-      return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
+      return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: number }[] };
     }
 
     const apiResponse = responseEither.right;
 
     const uniqueWings = Array.from(
-      new Set((apiResponse?.Data || [])
-        .map((d: any) => d.Wing)
-        .filter((wing: string) => wing))
-
-    ).map((wing) => ({
-      label: wing,
-      value: wing,
-    }));
+      new Map(
+        (apiResponse?.Data || [])
+          .filter((d: any) => d.Wing)
+          .map((d: any) => [d.Wing, { label: d.Wing, value: d.InventoryFlatFloorBasementPodiumWingId }])
+      ).values()
+    );
 
     return {
       totalNumberOfRecord: uniqueWings.length,
@@ -69,7 +67,6 @@ export const fetchWingDropdown = async (params?: {
     };
 
   } catch (err) {
-    console.error('FETCH WING DROPDOWN ERROR', err);
-    return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
+    return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: number }[] };
   }
 };

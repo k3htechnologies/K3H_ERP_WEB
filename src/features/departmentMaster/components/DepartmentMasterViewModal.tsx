@@ -5,7 +5,7 @@ import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import type { DepartmentMasterData } from '@/features/departmentMaster/models/DepartmentMasterModel';
 
-interface DepartmentMasterViewModalProps {
+interface   DepartmentMasterViewModalProps {
   isOpen: boolean;
   onClose: () => void;
   data: DepartmentMasterData | null;

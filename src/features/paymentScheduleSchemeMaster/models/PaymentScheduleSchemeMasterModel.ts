@@ -12,32 +12,36 @@ export interface FilterWithPaginationPaymentScheduleSchemeMaster {
 }
 
 export interface PaymentScheduleSchemeMasterData {
-    PaymentScheduleSchemeId: number,
-    Uniquekey: string,
-    ProjectId: number | 0,
-    
-    PaymentScheduleSchemeName: string,
-    OrderBy: number | 0,
-
-    CreatedById: number | 0,
-    CreatedBy: string | '',
-    CreatedDate: string | null,
-
-    ModifiedById: number | 0,
-    ModifiedBy: string | '',
-    ModifiedDate: string | null,
+    PaymentScheduleSchemeMasterId: number
+    Uniquekey: string
+    ProjectId: number
+    PaymentScheduleScheme: string
+    InventoryBuildingId: number
+    BuildingNumber: string
+    Wing: string
+    InventoryFlatFloorBasementPodiumWingId: number
+    OrderBy: number
+    CreatedById: number
+    CreatedBy: string
+    CreatedDate: string | null
+    ModifiedById: number
+    ModifiedBy: string
+    ModifiedDate: string | null
 }
 
 export interface AddUpdatePaymentScheduleSchemeMasterRequest {
-    PaymentScheduleSchemeId: number | 0,
+    PaymentScheduleSchemeMasterId: number | 0,
     Uniquekey: string | null
     ProjectId: number | 0,
+    InventoryBuildingId: number | 0,
     PaymentScheduleScheme: string,
     OrderBy: number | 0,
+    InventoryFlatFloorBasementPodiumWingId: number | 0,
+    Wing: string,
 }
 
 export interface DeletePaymentScheduleSchemeMasterRequest {
-    PaymentScheduleSchemeId: number,
+    PaymentScheduleSchemeMasterId: number,
     ProjectId: number,
     Uniquekey: string,
 }

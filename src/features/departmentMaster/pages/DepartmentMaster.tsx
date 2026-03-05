@@ -103,7 +103,7 @@ export const DepartmentMaster: React.FC = () => {
 
   const handleViewModalClose = useCallback(() => {
 
-    setIsViewModalOpen(false);
+    setIsViewModalOpen(false);  
 
     setViewDepartmentMasterDetailsData(null);
 

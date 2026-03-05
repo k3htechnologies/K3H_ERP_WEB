@@ -1,4 +1,5 @@
 import React from "react";
+import noData from '@/assets/images/noData.gif';
 
 interface NoDataViewProps {
   message?: string;
@@ -8,8 +9,9 @@ interface NoDataViewProps {
 }
 
 const NoDataView: React.FC<NoDataViewProps> = ({
+  
   message = "No data found",
-  iconUrl = "https://cdn-icons-png.flaticon.com/512/4076/4076549.png",
+  iconUrl = noData,
   className = "",
   iconClassName = "",
 }) => {

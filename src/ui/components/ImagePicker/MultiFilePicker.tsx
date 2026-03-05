@@ -1,15 +1,6 @@
-import React, { useEffect, useRef, useState, useCallback, useLayoutEffect } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
-import {
-  Eye,
-  Trash2,
-  File as FileIcon,
-  FileText,
-  Image as ImageIcon,
-  List,
-  InfoIcon,
-  Upload,
-} from "lucide-react";
+import { Eye, Trash2, File as FileIcon, FileText, Image as ImageIcon, List, InfoIcon, Upload } from "lucide-react";
 import { MultiImageViewer } from "@/ui/components/ImageViewer/ImageViewer";
 import useToast from "@/core/hooks/useToast";
 import { THEME } from "@/core/constants";
@@ -27,25 +18,28 @@ interface MultiFilePickerProps {
   onChange: (files: FileValue[]) => void;
   placeholder?: string;
   error?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   onRemoveExisting?: (url: string) => void;
+  disabled?: boolean;
 }
-
 
 /* ================= Helpers ================= */
 
-const normalizeAvailableFiles = (
-  input?: string | (string | File)[] | null,
-): string[] | undefined => {
+const normalizeAvailableFiles = (input?: string | (string | File)[] | null): string[] | undefined => {
   if (!input) return undefined;
 
   if (typeof input === "string") {
     const t = input.trim();
-    return t ? t.split(",").map(s => s.trim()).filter(Boolean) : undefined;
+    return t
+      ? t
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+      : undefined;
   }
 
   if (Array.isArray(input)) {
-    const onlyStrings = input.filter(i => typeof i === "string") as string[];
+    const onlyStrings = input.filter((i) => typeof i === "string") as string[];
     return onlyStrings.length ? onlyStrings : undefined;
   }
 
@@ -54,56 +48,31 @@ const normalizeAvailableFiles = (
 
 /* ================= Component ================= */
 
-export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
-  label,
-  required,
-  allowedTypes = [
-    "image/jpeg",
-    "image/png",
-    "image/webp",
-    "image/gif",
-    "application/pdf",
-    "application/vnd.ms-excel",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    "application/octet-stream",
-    "text/csv"
-  ],
-
-
-
-  maxFiles = 100,
-  value,
-  availableFilesURL,
-  onChange,
-  placeholder = "Select file(s)...",
-  error,
-  size = 'md',
-  onRemoveExisting
-}) => {
+export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({ label, required, allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/octet-stream", "text/csv"], maxFiles = 100, value, availableFilesURL, onChange, placeholder = "Select file(s)...", error, size = "md", onRemoveExisting, disabled = false }) => {
   const theme = THEME;
 
   const sizeConfig = {
     sm: {
-      height: '36px',
+      height: "36px",
       padding: `${theme.spacing.sm} ${theme.spacing.md}`,
       fontSize: theme.fontSize.sm,
-      iconSize: '16px',
+      iconSize: "16px",
     },
     md: {
-      height: '44px',
+      height: "44px",
       padding: `${theme.spacing.md} ${theme.spacing.lg}`,
       fontSize: theme.fontSize.md,
-      iconSize: '20px',
+      iconSize: "20px",
     },
     lg: {
-      height: '52px',
+      height: "52px",
       padding: `${theme.spacing.lg} ${theme.spacing.xl}`,
       fontSize: theme.fontSize.lg,
-      iconSize: '24px',
+      iconSize: "24px",
     },
-  }
+  };
 
-  const currentSize = sizeConfig[size]
+  const currentSize = sizeConfig[size];
 
   const anchorRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -132,21 +101,6 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
       width: rect.width,
     });
   }, []);
-
-  useLayoutEffect(() => {
-    if (!isListOpen) return;
-
-    updatePortalPosition();
-
-    const onUpdate = () => updatePortalPosition();
-    window.addEventListener("resize", onUpdate);
-    window.addEventListener("scroll", onUpdate, true);
-
-    return () => {
-      window.removeEventListener("resize", onUpdate);
-      window.removeEventListener("scroll", onUpdate, true);
-    };
-  }, [isListOpen, updatePortalPosition]);
 
   useEffect(() => {
     if (!isListOpen) return;
@@ -186,7 +140,6 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
     return () => document.removeEventListener("mousedown", close);
   }, []);
 
-
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
@@ -211,11 +164,9 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
     e.target.value = "";
   };
 
-  const getUrl = (item: FileValue | string) =>
-    typeof item === "string" ? item : URL.createObjectURL(item);
+  const getUrl = (item: FileValue | string) => (typeof item === "string" ? item : URL.createObjectURL(item));
 
-  const getFileLabel = (item: FileValue | string) =>
-    typeof item === "string" ? item.split("/").pop() || item : item.name;
+  const getFileLabel = (item: FileValue | string) => (typeof item === "string" ? item.split("/").pop() || item : item.name);
 
   const guessMimeFromUrl = (url: string) => {
     const l = url.toLowerCase();
@@ -266,32 +217,39 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
           backgroundColor: theme.colors.backgroundSecondary,
           fontSize: currentSize.fontSize,
           fontWeight: theme.fontWeight.normal,
-          outline: 'none',
+          outline: "none",
           transition: theme.transitions.normal,
-          boxSizing: 'border-box' as const,
+          boxSizing: "border-box" as const,
         }}
       >
         <span
           style={{ fontSize: 15, color: totalCount ? "#000" : "#888", cursor: "pointer" }}
-          onClick={() => inputRef.current?.click()}
+          onClick={() => {
+            if (!disabled) inputRef.current?.click();
+          }}
         >
           {totalCount ? `${totalCount} file(s)` : placeholder}
         </span>
 
         <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Upload size={18} onClick={() => inputRef.current?.click()} />
-          {totalCount > 0 && <List size={18} onClick={() => setIsListOpen(p => !p)} />}
+          <Upload
+            size={18}
+            onClick={() => {
+              if (!disabled) inputRef.current?.click();
+            }}
+          />
+          {totalCount > 0 && (
+            <List
+              size={18}
+              onClick={() => {
+                setIsListOpen((p) => !p);
+              }}
+            />
+          )}
         </span>
       </div>
 
-      <input
-        ref={inputRef}
-        type="file"
-        multiple
-        style={{ display: "none" }}
-        onChange={handleFileSelect}
-        accept={allowedTypes.join(",")}
-      />
+      <input ref={inputRef} type="file" multiple disabled={disabled} style={{ display: "none" }} onChange={handleFileSelect} accept={allowedTypes.join(",")} />
 
       {/* ===== PORTAL DRAWER (UI SAME) ===== */}
       {isListOpen &&
@@ -299,7 +257,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
         typeof document !== "undefined" &&
         createPortal(
           <div
-            onMouseDown={e => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
             style={{
               position: "absolute",
               left: portalPos.left,
@@ -331,29 +289,38 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
               {existingUrls.map((url, i) => (
                 <div key={i} style={{ display: "flex", padding: 8, gap: 8 }}>
                   {getFileIcon(guessMimeFromUrl(url))}
-                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {getFileLabel(url)}
-                  </span>
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>{getFileLabel(url)}</span>
                   <MultiImageViewer title={label} images={[url]} isIcon={false} triggerLabel={<Eye size={18} />} />
-                  <Trash2
-                    size={18}
-                    color="red"
-                    onClick={() => {
-                      onRemoveExisting?.(existingUrls[i]);   // <-- notify parent
-                      setExistingUrls(p => p.filter((_, x) => x !== i));
-                    }}
-                  />
+                  {!disabled && (
+                    <Trash2
+                      size={18}
+                      color="red"
+                      onClick={() => {
+                        if (disabled) return;
+                        onRemoveExisting?.(existingUrls[i]); // <-- notify parent
+                        setExistingUrls((p) => p.filter((_, x) => x !== i));
+                      }}
+                    />
+                  )}
                 </div>
               ))}
 
               {value.map((item, i) => (
                 <div key={i} style={{ display: "flex", padding: 8, gap: 8 }}>
                   {getFileIcon(typeof item === "string" ? guessMimeFromUrl(item) : item.type)}
-                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>
-                    {getFileLabel(item)}
-                  </span>
+                  <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis" }}>{getFileLabel(item)}</span>
                   <MultiImageViewer title={label} images={[getUrl(item)]} isIcon={false} triggerLabel={<Eye size={18} />} />
-                  <Trash2 size={18} color="red" onClick={() => onChange(value.filter((_, x) => x !== i))} />
+                  {!disabled && (
+                    <Trash2
+                      size={18}
+                      color="red"
+                      onClick={() => {
+                        if (disabled) return;
+
+                        onChange(value.filter((_, x) => x !== i));
+                      }}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -361,7 +328,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
           document.body,
         )}
 
-      {(error) && (
+      {error && (
         <div
           style={{
             marginTop: theme.spacing.sm,
@@ -376,7 +343,7 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
             style={{
               fontSize: theme.fontSize.xs,
               color: error ? theme.colors.error : theme.colors.textSecondary,
-              height: 14
+              height: 14,
             }}
           />
 
@@ -388,4 +355,3 @@ export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({
 };
 
 export default MultiFilePicker;
-

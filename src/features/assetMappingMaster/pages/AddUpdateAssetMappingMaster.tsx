@@ -20,6 +20,7 @@ import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
+import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
 
 const initialFormState = (): AddUpdateAssetMappingMasterRequest => ({
   AssetMasterMappingId: 0,
@@ -34,11 +35,10 @@ const initialFormState = (): AddUpdateAssetMappingMasterRequest => ({
 });
 
 export const AddUpdateAssetMappingMaster: React.FC = () => {
-
   //#region STATE MANAGEMENT
   const [formData, setFormData] = useState<AddUpdateAssetMappingMasterRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState("");
 
   const [assetCode, setAssetCode] = useState<string>();
   const [assetName, setAssetName] = useState<string>();
@@ -47,20 +47,12 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
   const [assetBrand, setAssetBrand] = useState<string>();
   const [serialNumber, setSerialNumber] = useState<string>();
 
-  const [departmentName, setDepartmentName] = useState<string>();
-  const [designationName, setDesignationName] = useState<string>();
-  const [branchName, setBranchName] = useState<string>();
-  const [reportingPersonName, setReportingPersonName] = useState<string>();
-  const [emailId, setEmailId] = useState<string>();
-  const [personalMobileNumber, setPersonalMobileNumber] = useState<string>();
+  const [employeeDetails, setEmployeeDetails] = useState<EmployeeMasterData | null>(null);
   const [joiningDate, setJoiningDate] = useState<string>();
 
   const [isReturnAsset, setIsReturnAsset] = useState(false);
 
-  // NAVIGATE
   const navigate = useNavigate();
-
-  // GET VALUE FROM URL ASSET MAPPING MASTER ID
   const { AssetMasterMappingId } = useParams<{ AssetMasterMappingId?: string }>();
   const AssetMappingId = AssetMasterMappingId ? Number(AssetMasterMappingId) : 0;
   const isAddMode = AssetMappingId === 0;
@@ -69,7 +61,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
   const { addToast } = useToast();
 
   //#region MENU PERMISSIONS
-  const { canAction } = useMenuPermissions('/assetMappingMaster');
+  const { canAction } = useMenuPermissions("/assetMappingMaster");
   //#endregion
 
   // ERROR SET UP
@@ -101,7 +93,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
   useEffect(() => {
     if (!formData.AssetMasterId) return;
 
-    fetchAssetById(formData.AssetMasterId).then(asset => {
+    fetchAssetById(formData.AssetMasterId).then((asset) => {
       if (!asset) return;
 
       setAssetCode(asset.AssetCode ?? "");
@@ -113,48 +105,29 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
     });
   }, [formData.AssetMasterId]);
 
-  useEffect(() => {
-    if (!formData.EmployeeId) return;
-
-    fetchEmployeeMasterById(formData.EmployeeId).then(employee => {
-      if (!employee) return;
-
-      setDepartmentName(employee.Department ?? "");
-      setDesignationName(employee.Designation ?? "");
-      setBranchName(employee.Branch ?? "");
-      setReportingPersonName(employee.ReportPersonName ?? "");
-      setEmailId(employee.EmailId ?? "");
-      setPersonalMobileNumber(employee.PersonalMobileNumber ?? "");
-      setJoiningDate(formatDate_dd_mm_yyyy(employee.JoiningDate ?? ""));
-    });
-  }, [formData.EmployeeId]);
-
   //#endregion
 
   //#region FETCH ASSET MAPPING MASTER DETAILS
   const fetchAssetMappingMasterDetails = async () => {
     await runApiWithLoader(
-
       setIsLoading,
 
       setLoadingMessage,
 
       async () => {
-
         const params: FilterWithPaginationAssetMappingMasterRequest = {
           PageNumber: 1,
           PageSize: 1,
-          AssetMasterMappingId: AssetMappingId
+          AssetMasterMappingId: AssetMappingId,
         };
 
         const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
 
         if (E.isRight(response)) {
-
           const e = response.right.Data?.[0];
 
           if (e) {
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
               AssetMasterMappingId: e.AssetMasterMappingId ?? prev.AssetMasterMappingId,
               Uniquekey: e.Uniquekey ?? prev.Uniquekey,
@@ -164,51 +137,56 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
               ReturnDate: e.ReturnDate ? e.ReturnDate.split("T")[0] : "",
               ConditionOnIssue: e.ConditionOnIssue ?? prev.ConditionOnIssue,
               ConditionOnReturn: e.ConditionOnReturn ?? prev.ConditionOnReturn,
-              Remarks: e.Remarks ?? prev.Remarks
+              Remarks: e.Remarks ?? prev.Remarks,
             }));
+
+            if (e.EmployeeId) {
+              fetchEmployeeMasterById(e.EmployeeId).then((employee) => {
+                if (!employee) return;
+                setEmployeeDetails(employee);
+                setJoiningDate(formatDate_dd_mm_yyyy(employee.JoiningDate ?? ""));
+              });
+            }
 
             setDropdownLabels({
               employeeName: e.EmployeeName || "",
-              assetName: e.AssetName || ""
+              assetName: e.AssetName || "",
             });
-
           }
         } else {
-          addToast({ type: 'error', title: response.left.message });
+          addToast({ type: "error", title: response.left.message });
         }
 
         return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message });
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      'Loading Asset Mapping'
+      "Loading Asset Mapping",
     );
   };
   //#endregion
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddAssetMappingMasterForm = (): {
+    isValid: boolean;
 
-    isValid: boolean
-
-    errors: { [key: string]: string }
-
+    errors: { [key: string]: string };
   } => {
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.AssetMasterId) {
-      newErrors.AssetMasterId = 'Asset is required';
+      newErrors.AssetMasterId = "Asset is required";
     }
 
     if (!formData.EmployeeId) {
-      newErrors.EmployeeId = 'Employee Name is required';
+      newErrors.EmployeeId = "Employee Name is required";
     }
 
     if (!formData.ConditionOnIssue?.trim()) {
-      newErrors.ConditionOnIssue = 'Condition On Issue is required';
+      newErrors.ConditionOnIssue = "Condition On Issue is required";
     }
 
     if (isReturnAsset === true && !formData.ConditionOnReturn?.trim()) {
@@ -220,13 +198,12 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
     }
 
     if (!formData.AssignedDate?.trim()) {
-      newErrors.AssignedDate = 'Assigned Date is required';
+      newErrors.AssignedDate = "Assigned Date is required";
     }
 
     if (formData.AssignedDate && !isToDateGreaterOrEqualFromDate(joiningDate || "", formData.AssignedDate!)) {
       newErrors.AssignedDate = "Assigned Date must be greater than or equal to Joining Date";
     }
-
 
     if (isReturnAsset === true && formData.ReturnDate && !isToDateGreaterOrEqualFromDate(formData.AssignedDate!, formData.ReturnDate!)) {
       newErrors.ReturnDate = "Return Date must be greater than or equal to Assigned Date";
@@ -234,7 +211,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
     return {
       isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors
+      errors: newErrors,
     };
   };
   //#endregion
@@ -250,27 +227,24 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
       ReturnDate: formData.ReturnDate === "" ? "1997-01-01" : formData.ReturnDate,
       ConditionOnIssue: formData.ConditionOnIssue,
       ConditionOnReturn: formData.ConditionOnReturn ?? "",
-      Remarks: formData.Remarks
+      Remarks: formData.Remarks,
     };
-  }
+  };
   //#endregion
 
   //#region HANDLE ADD AND UPDATE ASSET MAPPING MASTER
   const handleAddUpdateAssetMappingMaster = async () => {
-
     setErrors({});
 
     const validation = validateAddAssetMappingMasterForm();
 
     if (!validation.isValid) {
-
       setErrors(validation.errors);
 
       return;
     }
 
     await runApiWithLoader(
-
       setIsLoading,
 
       setLoadingMessage,
@@ -281,12 +255,9 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
         const response = await assetMappingMasterService.apiCallAddUpdateAssetMappingMaster(payload);
 
         if (E.isRight(response)) {
-
-
           addToast({ type: "success", title: isReturnAsset === true ? "Asset returned successfully" : response.right.SuccessMessage[0] });
 
           navigate("/assetMappingMaster");
-
         } else {
           addToast({ type: "error", title: response.left?.message });
         }
@@ -295,33 +266,28 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message });
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      isAddMode ? 'Add Asset' : 'Update Asset'
+      isAddMode ? "Add Asset" : "Update Asset",
     );
   };
   //#endregion
 
-
-
   return (
-
-
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-
       {/* Loader */}
 
-      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>
+        {" "}
+        <div></div>{" "}
+      </Loader>
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
-
         <div className="space-y-4 pb-3">
-
           <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Asset Details & Mapping</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
             {/* ================= ASSET COLUMN ================= */}
             <div>
               <SingleSelectDropdownWithPagination
@@ -344,22 +310,19 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
                   handleFieldChange("AssetMasterId", Number(item.value));
                 }}
-                initialValue={createDropdownInitialValue(
-                  formData.AssetMasterId,
-                  dropdownLabels.assetName
-                )}
+                initialValue={createDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
                 error={errors.AssetMasterId}
               />
 
-              {(formData.AssetMasterId != 0 && formData.AssetMasterId != null) && (
+              {formData.AssetMasterId != 0 && formData.AssetMasterId != null && (
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <FieldItem label="Asset Code" value={assetCode || '-'} />
-                    <FieldItem label="Asset Name" value={assetName || '-'} />
-                    <FieldItem label="Asset Type" value={assetType || '-'} />
-                    <FieldItem label="Asset Model" value={assetModel || '-'} />
-                    <FieldItem label="Asset Brand" value={assetBrand || '-'} />
-                    <FieldItem label="Serial Number" value={serialNumber || '-'} />
+                    <FieldItem label="Asset Code" value={assetCode || "-"} />
+                    <FieldItem label="Asset Name" value={assetName || "-"} />
+                    <FieldItem label="Asset Type" value={assetType || "-"} />
+                    <FieldItem label="Asset Model" value={assetModel || "-"} />
+                    <FieldItem label="Asset Brand" value={assetBrand || "-"} />
+                    <FieldItem label="Serial Number" value={serialNumber || "-"} />
                   </div>
                 </div>
               )}
@@ -375,77 +338,47 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                 dataFetchCallBack={fetchEmployeeMasterDropdown}
                 onSelected={(item) => {
                   if (!item) {
-                    handleFieldChange("EmployeeId", null);
-                    setDepartmentName("");
-                    setDesignationName("");
-                    setBranchName("");
-                    setReportingPersonName("");
-                    setEmailId("");
-                    setPersonalMobileNumber("");
-                    setJoiningDate(undefined);
+                    handleFieldChange("EmployeeId", 0);
+                    setEmployeeDetails(null);
+                    setJoiningDate("");
                     return;
                   }
-
+                  setEmployeeDetails(item as unknown as EmployeeMasterData);
+                  setJoiningDate(formatDate_dd_mm_yyyy(item.JoiningDate ?? ""));
                   handleFieldChange("EmployeeId", Number(item.value));
                 }}
-                initialValue={createDropdownInitialValue(
-                  formData.EmployeeId,
-                  dropdownLabels.employeeName
-                )}
+                initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
                 error={errors.EmployeeId}
               />
 
-              {(formData.EmployeeId != 0 && formData.EmployeeId != null) && (
+              {employeeDetails && (
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <FieldItem label="Department" value={departmentName || '-'} />
-                    <FieldItem label="Designation" value={designationName || '-'} />
-                    <FieldItem label="Branch" value={branchName || '-'} />
-                    <FieldItem label="Reporting Person" value={reportingPersonName || '-'} />
-                    <FieldItem label="Email ID" value={emailId || '-'} />
-                    <FieldItem label="Personal Mobile Number" value={personalMobileNumber || '-'} />
-                    <FieldItem label="Joining Date" value={joiningDate || '-'} />
+                    <FieldItem label="Department" value={employeeDetails?.Department || "-"} />
+                    <FieldItem label="Designation" value={employeeDetails?.Designation || "-"} />
+                    <FieldItem label="Branch" value={employeeDetails?.Branch || "-"} />
+                    <FieldItem label="Reporting Person" value={employeeDetails?.ReportPersonName || "-"} />
+                    <FieldItem label="Email ID" value={employeeDetails?.EmailId || "-"} />
+                    <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber || "-"} />
+                    <FieldItem label="Joining Date" value={formatDate_dd_mm_yyyy(employeeDetails?.JoiningDate || "-")} />
                   </div>
                 </div>
               )}
             </div>
-
           </div>
-
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <Input
-                type="text"
-                required
-                label='Condition On Issue'
-                value={formData.ConditionOnIssue ?? ""}
-                onChange={(e) => handleFieldChange("ConditionOnIssue", e.target.value)}
-                placeholder="Enter Condition On Issue"
-                maxLength={250}
-                error={errors.ConditionOnIssue}
-              />
+              <Input type="text" required label="Condition On Issue" value={formData.ConditionOnIssue ?? ""} onChange={(e) => handleFieldChange("ConditionOnIssue", e.target.value)} placeholder="Enter Condition On Issue" maxLength={250} error={errors.ConditionOnIssue} />
             </div>
             <div>
-              <DatePickerInput
-                label="Assigned Date"
-                value={formatDate_dd_mm_yyyy(formData.AssignedDate)}
-                onChange={(val) => handleFieldChange('AssignedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                required
-                error={errors.AssignedDate}
-              />
+              <DatePickerInput label="Assigned Date" value={formatDate_dd_mm_yyyy(formData.AssignedDate)} onChange={(val) => handleFieldChange("AssignedDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.AssignedDate} />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
             <div>
-              <TextArea
-                label="Remarks"
-                className='thin-scroll'
-                value={formData.Remarks ?? ""}
-                placeholder="Enter Remarks"
-                onChange={(e) => handleFieldChange("Remarks", e.target.value)}
-                error={errors.Remarks} />
+              <TextArea label="Remarks" className="thin-scroll" value={formData.Remarks ?? ""} placeholder="Enter Remarks" onChange={(e) => handleFieldChange("Remarks", e.target.value)} error={errors.Remarks} />
             </div>
           </div>
 
@@ -464,31 +397,16 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
               {isReturnAsset && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Input
-                      type="text"
-                      label='Condition On Return'
-                      value={formData.ConditionOnReturn ?? ""}
-                      onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)}
-                      placeholder="Enter Condition On Return"
-                      maxLength={250}
-                      error={errors.ConditionOnReturn}
-                    />
+                    <Input type="text" label="Condition On Return" value={formData.ConditionOnReturn ?? ""} onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)} placeholder="Enter Condition On Return" maxLength={250} error={errors.ConditionOnReturn} />
                   </div>
                   <div>
-                    <DatePickerInput
-                      label="Return Date"
-                      value={formatDate_dd_mm_yyyy(formData.ReturnDate)}
-                      onChange={(val) => handleFieldChange('ReturnDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                      error={errors.ReturnDate}
-                    />
+                    <DatePickerInput label="Return Date" value={formatDate_dd_mm_yyyy(formData.ReturnDate)} onChange={(val) => handleFieldChange("ReturnDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} error={errors.ReturnDate} />
                   </div>
                 </div>
               )}
             </>
           )}
-
         </div>
-
       </div>
 
       <BottomActionBar

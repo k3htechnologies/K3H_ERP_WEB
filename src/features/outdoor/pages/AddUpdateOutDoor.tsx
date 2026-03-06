@@ -21,6 +21,7 @@ import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { TextArea } from "@/ui/components/forms/Textarea";
+import type { DropdownItem } from "@/core/types/DropdownItem";
 
 const initialFormState = (): AddUpdateOutDoor => ({
   OutdoorId: 0,
@@ -213,9 +214,9 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
 
   //#region HANDLE DEPARTMENT SELECTED
-  const handleDepartmentSelected = useCallback((item: { label: string; value: string | number | null }) => {
-    const departmentId = item.value ? Number(item.value) : 0;
-    const departmentName = item.label || "";
+  const handleDepartmentSelected = useCallback((item: DropdownItem | null) => {
+    const departmentId = item?.value ? Number(item.value) : 0;
+    const departmentName = item?.label || "";
 
     handleFieldChange("DepartmentId", departmentId);
     setSelectedDepartmentName(departmentName);

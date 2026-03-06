@@ -50,7 +50,7 @@ export const fetchWingDropdown = async (params?: { projectId?: number; inventory
 
     const uniqueWings = Array.from(new Map(
       (apiResponse?.Data || []).map((d: any) => [
-        d.InventoryBuildingId,
+        d.InventoryFlatFloorBasementPodiumWingId,
         {
           label: d.Wing,
           value: d.InventoryFlatFloorBasementPodiumWingId

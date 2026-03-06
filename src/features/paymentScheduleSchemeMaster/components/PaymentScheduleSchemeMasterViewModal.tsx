@@ -14,7 +14,14 @@ interface PaymentScheduleSchemeMasterViewModalProps {
   onDelete: (data: PaymentScheduleSchemeMasterData) => void;
 }
 
-export const PaymentScheduleSchemeMasterViewModal: React.FC<PaymentScheduleSchemeMasterViewModalProps> = ({ isOpen, onClose, data, canAction, onEdit, onDelete }) => {
+export const PaymentScheduleSchemeMasterViewModal: React.FC<PaymentScheduleSchemeMasterViewModalProps> = ({
+  isOpen,
+  onClose,
+  data,
+  canAction,
+  onEdit,
+  onDelete,
+}) => {
   if (!data) return null;
 
   const handleEdit = (e: React.MouseEvent) => {
@@ -56,16 +63,35 @@ export const PaymentScheduleSchemeMasterViewModal: React.FC<PaymentScheduleSchem
         <div className="space-y-4">
           <h4 className="text-lg font-semibold pb-2">Action Details</h4>
 
-          <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + " - " + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || "-")} withBorder={data.ModifiedBy !== "" ? true : false} />
+          <FieldItem
+            label="Created By / Date"
+            isRow={true}
+            value={data.CreatedBy + " - " + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || "-")}
+            withBorder={data.ModifiedBy !== "" ? true : false}
+          />
 
-          {data.ModifiedBy !== "" ? <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + " - " + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || "-")} withBorder={false} /> : ""}
+          {data.ModifiedBy !== "" ? (
+            <FieldItem
+              label="Modified By / Date"
+              isRow={true}
+              value={data.ModifiedBy + " - " + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || "-")}
+              withBorder={false}
+            />
+          ) : (
+            ""
+          )}
         </div>
+
         <div className="flex justify-between items-center pt-4">
           {canAction && (
             <>
-              <Button color="red" variant="solid" colorMode="light" size="md" onClick={handleDelete}>
-                Delete
-              </Button>
+              {(!data.IsExistsPaymentScheduleScheme || 0) === 0 ? (
+                <Button color="red" variant="solid" colorMode="light" size="md" onClick={handleDelete}>
+                  Delete
+                </Button>
+              ) : (
+                <div style={{ width: "120px", height: "44px" }}></div>
+              )}
 
               <Button color="blue" size="md" onClick={handleEdit}>
                 Edit

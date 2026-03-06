@@ -1,65 +1,55 @@
-import * as E from 'fp-ts/Either';
-import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
-import type { EmployeeMasterData } from './models/EmployeeMasterModel';
+import * as E from "fp-ts/Either";
+import { employeeMasterService } from "@/features/employeeMaster/services/EmployeeMasterService";
 
 export const fetchEmployeeMasterDropdown = async (pageNumber: number, params?: { value?: string; departmentName?: string }) => {
-    try {
-        const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
-            PageSize: 20,
-            PageNumber: pageNumber,
-            EmployeeName: params?.value || "",
-            DepartmentName: params?.departmentName || "",
-            IsCheckPermission: false,
-        });
+  try {
+    const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
+      PageSize: 20,
+      PageNumber: pageNumber,
+      EmployeeName: params?.value || "",
+      DepartmentName: params?.departmentName || "",
+      IsCheckPermission: false,
+    });
 
-        if (E.isLeft(responseEither)) {
-            return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
-        }
-
-        const apiResponse = responseEither.right;
-
-        const itemList = (apiResponse?.Data || []).map((d: any) => ({
-            label: d.FullName,
-            value: String(d.EmployeeId)
-        }));
-
-
-        return {
-            totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? itemList.length,
-            itemList
-        };
-
-    } catch (err) {
-        console.error('FETCH EMPLOYEE MASTER DROPDOWN ERROR', err);
-        return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
+    if (E.isLeft(responseEither)) {
+      return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
     }
+
+    const apiResponse = responseEither.right;
+
+    const itemList = (apiResponse?.Data || []).map((d: any) => ({
+      label: d.FullName,
+      value: String(d.EmployeeId),
+      Department: d.Department,
+      Designation: d.Designation,
+      Branch: d.Branch,
+      ReportPersonName: d.ReportPersonName,
+      EmailId: d.EmailId,
+      PersonalMobileNumber: d.PersonalMobileNumber,
+      JoiningDate: d.JoiningDate,
+    }));
+
+    return {
+      totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? itemList.length,
+      itemList,
+    };
+  } catch (err) {
+    console.error("FETCH EMPLOYEE MASTER DROPDOWN ERROR", err);
+    return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
+  }
 };
 
 export const fetchEmployeeMasterById = async (employeeId: number) => {
+  const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
+    PageSize: 1,
+    PageNumber: 1,
+    EmployeeId: employeeId,
+    IsCheckPermission: false,
+  });
 
-    const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
-        PageSize: 1,
-        PageNumber: 1,
-        EmployeeId: employeeId,
-        IsCheckPermission: false,
-    });
+  if (E.isLeft(responseEither)) return null;
 
-    if (E.isLeft(responseEither)) return null;
-
-    return responseEither.right.Data?.[0] || null;
-
+  return responseEither.right.Data?.[0] || null;
 };
 
-export const fetchEmployeeMasterByEmployeeId = async (employeeId: number): Promise<EmployeeMasterData | null> => {
 
-    const responseEither = await employeeMasterService.apiCallPullEmployeeMaster({
-        PageSize: 1,
-        PageNumber: 1,
-        EmployeeId: employeeId,
-        IsCheckPermission: false,
-    });
-
-    if (E.isLeft(responseEither)) return null;
-
-    return responseEither.right.Data?.[0] ?? null;
-};

@@ -6,20 +6,45 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
-import type { AddUpdateChannelPartnerRequest, FilterWithPaginationChannelPartnerRequest } from "@/features/ChannelPartner/models/ChannelPartnerModel";
+import type {
+  AddUpdateChannelPartnerRequest,
+  FilterWithPaginationChannelPartnerRequest,
+} from "@/features/ChannelPartner/models/ChannelPartnerModel";
 import { ChannelPartnerService } from "@/features/ChannelPartner/services/ChannelPartnerService";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { IdCard, Mail, Phone } from "lucide-react";
-import { filterAadhaar, filterEmail, filterGST, filterMobile, filterPAN, filterRERA, hasAnyDocumentFile, isValidAadhaar, isValidGST, isValidMobile, isValidPAN, isValidRERA } from "@/core/utils/fileValidation";
+import {
+  filterAadhaar,
+  filterEmail,
+  filterGST,
+  filterMobile,
+  filterPAN,
+  filterRERA,
+  hasAnyDocumentFile,
+  isValidAadhaar,
+  isValidGST,
+  isValidMobile,
+  isValidPAN,
+  isValidRERA,
+} from "@/core/utils/fileValidation";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { CHANNE_PARTNER_DESIGNATION, CHANNE_PARTNER_TYPE, COMPANY_TYPE_OPTIONS, FIRMS_TYPE_OPTIONS, SPECIALITY_TYPE } from "@/core/constants";
+import {
+  CHANNE_PARTNER_DESIGNATION,
+  CHANNE_PARTNER_TYPE,
+  COMPANY_TYPE_OPTIONS,
+  FIRMS_TYPE_OPTIONS,
+  SPECIALITY_TYPE,
+} from "@/core/constants";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { fetchChannelPartnerById, fetchChannelPartnerCompanyDropdown } from "@/features/ChannelPartner/channelPartnerDropDown";
+import {
+  fetchChannelPartnerById,
+  fetchChannelPartnerCompanyDropdown,
+} from "@/features/ChannelPartner/channelPartnerDropDown";
 import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { sendOTP } from "@/features/technical/services/OTPService";
@@ -66,7 +91,9 @@ const initialFormState = (): AddUpdateChannelPartnerRequest => ({
 
 export const AddUpdateChannelPartner: React.FC = () => {
   //#region STATE MANAGEMENT
-  const [formData, setFormData] = useState<AddUpdateChannelPartnerRequest>(() => initialFormState());
+  const [formData, setFormData] = useState<AddUpdateChannelPartnerRequest>(() =>
+    initialFormState(),
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
 
@@ -77,15 +104,23 @@ export const AddUpdateChannelPartner: React.FC = () => {
   const [removePanCardUrls, setRemovePanCardUrls] = useState<string[]>([]);
 
   // AADHAR CARD URL
-  const [aadharCardURLFiles, setAadharCardURLFiles] = useState<(File | string)[]>([]);
+  const [aadharCardURLFiles, setAadharCardURLFiles] = useState<
+    (File | string)[]
+  >([]);
   const [aadharCardURL, setAadharCardURL] = useState<string>();
-  const [removeAadharCardUrls, setRemoveAadharCardUrls] = useState<string[]>([]);
+  const [removeAadharCardUrls, setRemoveAadharCardUrls] = useState<string[]>(
+    [],
+  );
 
   // GST CERTIFICATE URL
 
-  const [gSTCertificateURLFiles, setGSTCertificateURLFiles] = useState<(File | string)[]>([]);
+  const [gSTCertificateURLFiles, setGSTCertificateURLFiles] = useState<
+    (File | string)[]
+  >([]);
   const [gSTCertificateURL, setGSTCertificateURL] = useState<string>();
-  const [removeGSTCertificateUrls, setRemoveGSTCertificateUrls] = useState<string[]>([]);
+  const [removeGSTCertificateUrls, setRemoveGSTCertificateUrls] = useState<
+    string[]
+  >([]);
 
   //COMPLETE VERIFICATION
   const [otp, setOtp] = useState("");
@@ -115,13 +150,30 @@ export const AddUpdateChannelPartner: React.FC = () => {
   //#endregion
 
   //#region COUNTRY STATE CITY DISTRICT
-  const { isLoading: isLocationLoading, countries, statesByCountryId, districtsByStateId, citiesByDistrictId, villagesByCityId } = useCountryStateCityDistrictVillageData();
+  const {
+    isLoading: isLocationLoading,
+    countries,
+    statesByCountryId,
+    districtsByStateId,
+    citiesByDistrictId,
+    villagesByCityId,
+  } = useCountryStateCityDistrictVillageData();
 
-  const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1);
-  const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null);
-  const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null);
-  const [selectedCityId, setSelectedCityId] = React.useState<number | null>(null);
-  const [selectedVillageId, setSelectedVillageId] = React.useState<number | null>(null);
+  const [selectedCountryId, setSelectedCountryId] = React.useState<
+    number | null
+  >(1);
+  const [selectedStateId, setSelectedStateId] = React.useState<number | null>(
+    null,
+  );
+  const [selectedDistrictId, setSelectedDistrictId] = React.useState<
+    number | null
+  >(null);
+  const [selectedCityId, setSelectedCityId] = React.useState<number | null>(
+    null,
+  );
+  const [selectedVillageId, setSelectedVillageId] = React.useState<
+    number | null
+  >(null);
 
   const countryOptions = countries.map((c) => ({ label: c.name, value: c.id }));
 
@@ -160,7 +212,10 @@ export const AddUpdateChannelPartner: React.FC = () => {
   //#endregion
 
   //#region HANDLE FIELD CHANGE EVENT
-  const handleFieldChange = (field: keyof AddUpdateChannelPartnerRequest, value: any) => {
+  const handleFieldChange = (
+    field: keyof AddUpdateChannelPartnerRequest,
+    value: any,
+  ) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (errors[field]) {
@@ -189,10 +244,13 @@ export const AddUpdateChannelPartner: React.FC = () => {
         const params: FilterWithPaginationChannelPartnerRequest = {
           PageNumber: 1,
           PageSize: 1,
-          ChannelPartnerId: ChannelPartnerId ? Number(ChannelPartnerId) : undefined,
+          ChannelPartnerId: ChannelPartnerId
+            ? Number(ChannelPartnerId)
+            : undefined,
         };
 
-        const response = await ChannelPartnerService.apiCallPullChannelPartner(params);
+        const response =
+          await ChannelPartnerService.apiCallPullChannelPartner(params);
 
         if (E.isRight(response)) {
           const e = response.right.Data?.[0];
@@ -209,7 +267,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
               Designation: e.Designation ?? prev.Designation ?? "",
               EmailId: e.EmailId ?? prev.EmailId,
               MobileNumber: e.MobileNumber ?? prev.MobileNumber,
-              AlternativeMobileNumber: e.AlternativeMobileNumber ?? prev.AlternativeMobileNumber,
+              AlternativeMobileNumber:
+                e.AlternativeMobileNumber ?? prev.AlternativeMobileNumber,
               AadharCardNumber: e.AadharCardNumber ?? prev.AadharCardNumber,
               PanNumber: e.PanNumber ?? prev.PanNumber,
               AadharCardURL: null,
@@ -283,7 +342,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     if (formData.AlternativeMobileNumber?.trim()) {
       if (!isValidMobile(formData.AlternativeMobileNumber.trim())) {
-        newErrors.AlternativeMobileNumber = "Enter a valid 10-digit Alternative Mobile Number";
+        newErrors.AlternativeMobileNumber =
+          "Enter a valid 10-digit Alternative Mobile Number";
       }
     }
 
@@ -311,25 +371,48 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     if (formData.IsRERANumber === 1 && !formData.RERANumber) {
       newErrors.RERANumber = " RERA Number is required";
-    } else if (formData.IsRERANumber === 1 && !isValidRERA(formData.RERANumber.trim())) {
+    } else if (
+      formData.IsRERANumber === 1 &&
+      !isValidRERA(formData.RERANumber.trim())
+    ) {
       newErrors.RERANumber = "Enter a valid RERA Number";
     }
 
-    if (formData.AadharCardNumber !== "" && !formData.AadharCardNumber?.trim()) {
-      newErrors.AadharCardNumber = "Please enter a valid 12-digit Aadhaar number";
-    } else if (formData.AadharCardNumber !== "" && !isValidAadhaar(formData.AadharCardNumber.trim())) {
+    if (
+      formData.AadharCardNumber !== "" &&
+      !formData.AadharCardNumber?.trim()
+    ) {
+      newErrors.AadharCardNumber =
+        "Please enter a valid 12-digit Aadhaar number";
+    } else if (
+      formData.AadharCardNumber !== "" &&
+      !isValidAadhaar(formData.AadharCardNumber.trim())
+    ) {
       newErrors.AadharCardNumber = "Enter a valid Aadhar Card Number.";
     }
-    if (formData.AadharCardNumber !== "" && !hasAnyDocumentFile(aadharCardURLFiles, aadharCardURL, removeAadharCardUrls)) {
+    if (
+      formData.AadharCardNumber !== "" &&
+      !hasAnyDocumentFile(
+        aadharCardURLFiles,
+        aadharCardURL,
+        removeAadharCardUrls,
+      )
+    ) {
       newErrors.AadharCardURL = "Aadhaar card file is required.";
     }
 
     if (formData.PanNumber !== "" && !formData.PanNumber?.trim()) {
       newErrors.PanNumber = "PAN Number is required.";
-    } else if (formData.PanNumber !== "" && !isValidPAN(formData.PanNumber?.trim())) {
+    } else if (
+      formData.PanNumber !== "" &&
+      !isValidPAN(formData.PanNumber?.trim())
+    ) {
       newErrors.PanNumber = "Enter a valid PAN Number.";
     }
-    if (formData.PanNumber !== "" && !hasAnyDocumentFile(panCardURLFiles, panCardURL, removePanCardUrls)) {
+    if (
+      formData.PanNumber !== "" &&
+      !hasAnyDocumentFile(panCardURLFiles, panCardURL, removePanCardUrls)
+    ) {
       newErrors.PanCardURL = "PAN card file is required.";
     }
 
@@ -339,7 +422,14 @@ export const AddUpdateChannelPartner: React.FC = () => {
       newErrors.GSTNumber = "Valid GST Number is required";
     }
 
-    if (formData.GSTNumber !== "" && !hasAnyDocumentFile(gSTCertificateURLFiles, gSTCertificateURL, removeGSTCertificateUrls)) {
+    if (
+      formData.GSTNumber !== "" &&
+      !hasAnyDocumentFile(
+        gSTCertificateURLFiles,
+        gSTCertificateURL,
+        removeGSTCertificateUrls,
+      )
+    ) {
       newErrors.GSTCertificateURL = "GST Certificate file is required.";
     }
 
@@ -379,7 +469,10 @@ export const AddUpdateChannelPartner: React.FC = () => {
     fd.append("Designation", formData.Designation ?? "");
     fd.append("EmailId", formData.EmailId ?? "");
     fd.append("MobileNumber", formData.MobileNumber ?? "");
-    fd.append("AlternativeMobileNumber", formData.AlternativeMobileNumber ?? "");
+    fd.append(
+      "AlternativeMobileNumber",
+      formData.AlternativeMobileNumber ?? "",
+    );
     fd.append("AadharCardNumber", formData.AadharCardNumber ?? "");
     fd.append("PanNumber", formData.PanNumber ?? "");
     fd.append("RERANumber", formData.RERANumber ?? "");
@@ -463,10 +556,14 @@ export const AddUpdateChannelPartner: React.FC = () => {
       async () => {
         const payload = PushChannelPartnerFormData();
 
-        const response = await ChannelPartnerService.apiCallAddUpdateChannelPartner(payload);
+        const response =
+          await ChannelPartnerService.apiCallAddUpdateChannelPartner(payload);
 
         if (E.isRight(response)) {
-          addToast({ type: "success", title: response.right.SuccessMessage[0] });
+          addToast({
+            type: "success",
+            title: response.right.SuccessMessage[0],
+          });
 
           navigate("/channelPartner");
         } else {
@@ -486,6 +583,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
   //#endregion
 
   const applyExistingCompanyData = (channelPartner: any) => {
+    
     if (!channelPartner) return;
 
     setFormData((prev) => ({
@@ -503,7 +601,9 @@ export const AddUpdateChannelPartner: React.FC = () => {
       VillageMasterId: channelPartner.VillageMasterId ?? 0,
     }));
 
-    (setGSTCertificateURLFiles([]), setGSTCertificateURL(channelPartner.GSTCertificateURL), setRemoveGSTCertificateUrls([]));
+    (setGSTCertificateURLFiles([]),
+      setGSTCertificateURL(channelPartner.GSTCertificateURL),
+      setRemoveGSTCertificateUrls([]));
 
     setSelectedCountryId(channelPartner.CountryMasterId ?? null);
     setSelectedStateId(channelPartner.StateMasterId ?? null);
@@ -519,7 +619,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
       FirmsType: "",
       RERANumber: "",
       IsRERANumber: 0,
-      GSTNumber:"", 
+      GSTNumber: "",
 
       StateMasterId: 0,
       DistrictMasterId: 0,
@@ -531,7 +631,9 @@ export const AddUpdateChannelPartner: React.FC = () => {
     setSelectedDistrictId(null);
     setSelectedCityId(null);
     setSelectedVillageId(null);
-    (setGSTCertificateURLFiles([]), setGSTCertificateURL(""), setRemoveGSTCertificateUrls([]));
+    (setGSTCertificateURLFiles([]),
+      setGSTCertificateURL(""),
+      setRemoveGSTCertificateUrls([]));
   };
 
   return (
@@ -548,11 +650,22 @@ export const AddUpdateChannelPartner: React.FC = () => {
           {/* Basic ChannelPartner Details */}
 
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Basic Details</h3>
+            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
+              Basic Details
+            </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
-                <Input type="text" required label="Full Name" value={formData.Name ?? ""} onChange={(e) => handleFieldChange("Name", e.target.value)} placeholder="Enter Full Name" maxLength={250} error={errors.Name} />
+                <Input
+                  type="text"
+                  required
+                  label="Full Name"
+                  value={formData.Name ?? ""}
+                  onChange={(e) => handleFieldChange("Name", e.target.value)}
+                  placeholder="Enter Full Name"
+                  maxLength={250}
+                  error={errors.Name}
+                />
               </div>
 
               <div>
@@ -571,10 +684,42 @@ export const AddUpdateChannelPartner: React.FC = () => {
               </div>
 
               <div>
-                <Input leftIcon="+91" label=" Mobile Number" required maxLength={10} disabled={Number(formData.ChannelPartnerId) > 0 ? true : false} value={formData.MobileNumber} rightIcon={<Phone className="h-4 w-4 text-gray-400" />} onChange={(e) => handleFieldChange("MobileNumber", filterMobile(e.target.value))} placeholder="Enter Mobile Number" error={errors.MobileNumber} />
+                <Input
+                  leftIcon="+91"
+                  label=" Mobile Number"
+                  required
+                  maxLength={10}
+                  disabled={
+                    Number(formData.ChannelPartnerId) > 0 ? true : false
+                  }
+                  value={formData.MobileNumber}
+                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "MobileNumber",
+                      filterMobile(e.target.value),
+                    )
+                  }
+                  placeholder="Enter Mobile Number"
+                  error={errors.MobileNumber}
+                />
               </div>
               <div>
-                <Input leftIcon="+91" label="Alternative Mobile Number" maxLength={10} value={formData.AlternativeMobileNumber} rightIcon={<Phone className="h-4 w-4 text-gray-400" />} onChange={(e) => handleFieldChange("AlternativeMobileNumber", filterMobile(e.target.value))} placeholder="Enter Alternative Mobile Number" error={errors.AlternativeMobileNumber} />
+                <Input
+                  leftIcon="+91"
+                  label="Alternative Mobile Number"
+                  maxLength={10}
+                  value={formData.AlternativeMobileNumber}
+                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "AlternativeMobileNumber",
+                      filterMobile(e.target.value),
+                    )
+                  }
+                  placeholder="Enter Alternative Mobile Number"
+                  error={errors.AlternativeMobileNumber}
+                />
               </div>
 
               {Number(formData.ChannelPartnerId || 0) === 0 && (
@@ -596,18 +741,46 @@ export const AddUpdateChannelPartner: React.FC = () => {
                         resetExistingCompanyData();
                       }
                     }}
-                    options={COMPANY_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                    options={COMPANY_TYPE_OPTIONS.map((opt) => ({
+                      label: opt.name,
+                      value: opt.id,
+                    }))}
                   />
                 </div>
               )}
 
               {Number(formData.ChannelPartnerId || 0) > 0 ? (
                 <div>
-                  <Input type="text" required label="Company Name" value={formData.CompanyName ?? ""} onChange={(e) => handleFieldChange("CompanyName", e.target.value)} placeholder="Enter Company Name" maxLength={250} error={errors.CompanyName} />
+                  <Input
+                    type="text"
+                    required
+                    label="Company Name"
+                    value={formData.CompanyName ?? ""}
+                    onChange={(e) =>
+                      handleFieldChange("CompanyName", e.target.value)
+                    }
+                    placeholder="Enter Company Name"
+                    maxLength={250}
+                    error={errors.CompanyName}
+                  />
                 </div>
               ) : (
                 <div>
-                  <Input type="text" readOnly={formData.CompanyType === "New Company" ? false : true} required label="Company Name" value={formData.CompanyName ?? ""} onChange={(e) => handleFieldChange("CompanyName", e.target.value)} placeholder="Enter Company Name" maxLength={250} error={errors.CompanyName} />
+                  <Input
+                    type="text"
+                    readOnly={
+                      formData.CompanyType === "New Company" ? false : true
+                    }
+                    required
+                    label="Company Name"
+                    value={formData.CompanyName ?? ""}
+                    onChange={(e) =>
+                      handleFieldChange("CompanyName", e.target.value)
+                    }
+                    placeholder="Enter Company Name"
+                    maxLength={250}
+                    error={errors.CompanyName}
+                  />
                 </div>
               )}
 
@@ -620,8 +793,11 @@ export const AddUpdateChannelPartner: React.FC = () => {
                   dataFetchCallBack={fetchChannelPartnerCompanyDropdown}
                   onSelected={async (item) => {
                     if (!item) {
+
                       handleFieldChange("CompanyName", null);
+                      resetExistingCompanyData();
                       return;
+                      
                     }
 
                     const companyId = Number(item.value);
@@ -651,7 +827,10 @@ export const AddUpdateChannelPartner: React.FC = () => {
                   onChange={(e) => {
                     handleFieldChange("FirmsType", String(e));
                   }}
-                  options={FIRMS_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  options={FIRMS_TYPE_OPTIONS.map((opt) => ({
+                    label: opt.name,
+                    value: opt.id,
+                  }))}
                 />
               </div>
               <div>
@@ -664,7 +843,10 @@ export const AddUpdateChannelPartner: React.FC = () => {
                   onChange={(e) => {
                     handleFieldChange("Designation", String(e));
                   }}
-                  options={CHANNE_PARTNER_DESIGNATION.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  options={CHANNE_PARTNER_DESIGNATION.map((opt) => ({
+                    label: opt.name,
+                    value: opt.id,
+                  }))}
                 />
               </div>
               <div>
@@ -677,7 +859,10 @@ export const AddUpdateChannelPartner: React.FC = () => {
                   onChange={(e) => {
                     handleFieldChange("Type", String(e));
                   }}
-                  options={CHANNE_PARTNER_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                  options={CHANNE_PARTNER_TYPE.map((opt) => ({
+                    label: opt.name,
+                    value: opt.id,
+                  }))}
                 />
               </div>
             </div>
@@ -721,18 +906,33 @@ export const AddUpdateChannelPartner: React.FC = () => {
             </div>
           </div>
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Speciality</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Speciality
+            </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <SinglePageSelection label="Speciality" placeholder="Select Speciality" required value={formData.Speciality} onChange={(e) => handleFieldChange("Speciality", String(e))} options={SPECIALITY_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))} error={errors.Speciality} />
+                <SinglePageSelection
+                  label="Speciality"
+                  placeholder="Select Speciality"
+                  required
+                  value={formData.Speciality}
+                  onChange={(e) => handleFieldChange("Speciality", String(e))}
+                  options={SPECIALITY_TYPE.map((opt) => ({
+                    label: opt.name,
+                    value: opt.id,
+                  }))}
+                  error={errors.Speciality}
+                />
               </div>
             </div>
           </div>
           {/* ============================================================= [DOCUMENT DETAILS] ============================================================================================= */}
 
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Document Details
+            </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
@@ -742,7 +942,10 @@ export const AddUpdateChannelPartner: React.FC = () => {
                   value={formData.AadharCardNumber ?? ""}
                   onChange={(e) => {
                     const digits = e.target.value.replace(/\D/g, "");
-                    handleFieldChange("AadharCardNumber", filterAadhaar(digits));
+                    handleFieldChange(
+                      "AadharCardNumber",
+                      filterAadhaar(digits),
+                    );
                   }}
                   placeholder="Enter Aadhaar Number"
                   rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
@@ -767,7 +970,21 @@ export const AddUpdateChannelPartner: React.FC = () => {
                 />
               </div>
               <div>
-                <Input type="text" label="PAN Number" value={formData.PanNumber.toUpperCase() ?? ""} rightIcon={<IdCard className="h-4 w-4 text-gray-400" />} onChange={(e) => handleFieldChange("PanNumber", filterPAN(e.target.value).toUpperCase())} placeholder="Enter Pan Number" maxLength={10} error={errors.PanNumber} />
+                <Input
+                  type="text"
+                  label="PAN Number"
+                  value={formData.PanNumber.toUpperCase() ?? ""}
+                  rightIcon={<IdCard className="h-4 w-4 text-gray-400" />}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "PanNumber",
+                      filterPAN(e.target.value).toUpperCase(),
+                    )
+                  }
+                  placeholder="Enter Pan Number"
+                  maxLength={10}
+                  error={errors.PanNumber}
+                />
               </div>
 
               <div>
@@ -823,7 +1040,9 @@ export const AddUpdateChannelPartner: React.FC = () => {
           </div>
 
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Address Details
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <SinglePageSelection
@@ -993,7 +1212,18 @@ export const AddUpdateChannelPartner: React.FC = () => {
               </div>
             </div>
             <div>
-              <TextArea required label="Office Address" className="thin-scroll" value={formData.OfficeAddress ?? ""} onChange={(e) => handleFieldChange("OfficeAddress", e.target.value)} placeholder="Enter Office Address" maxLength={500} error={errors.OfficeAddress} />
+              <TextArea
+                required
+                label="Office Address"
+                className="thin-scroll"
+                value={formData.OfficeAddress ?? ""}
+                onChange={(e) =>
+                  handleFieldChange("OfficeAddress", e.target.value)
+                }
+                placeholder="Enter Office Address"
+                maxLength={500}
+                error={errors.OfficeAddress}
+              />
             </div>
           </div>
         </form>

@@ -1,6 +1,11 @@
 import { runApiWithLoader } from "@/core/utils";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { PaymentScheduleMasterData, FilterWithPaginationPaymentScheduleMasterRequest, AddUpdatePaymentScheduleMasterRequest, DeletePaymentScheduleMasterRequest } from "@/features/paymentScheduleMaster/models/PaymentScheduleMasterModel";
+import type {
+  PaymentScheduleMasterData,
+  FilterWithPaginationPaymentScheduleMasterRequest,
+  AddUpdatePaymentScheduleMasterRequest,
+  DeletePaymentScheduleMasterRequest,
+} from "@/features/paymentScheduleMaster/models/PaymentScheduleMasterModel";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import usePagination from "@/core/hooks/usePagination";
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
@@ -20,7 +25,7 @@ import { allowPercentage, filterNumbersWithDecimal } from "@/core/utils/fileVali
 import { fetchPaymentScheduleDropdown } from "@/features/paymentScheduleMaster/paymentScheduleDropDown";
 import { fetchPaymentScheduleSchemeMasterDropDown } from "@/features/paymentScheduleSchemeMaster/PaymentScheduleSchemeMasterDropdown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 const initialFormState = (): AddUpdatePaymentScheduleMasterRequest => ({
   PaymentScheduleMasterId: 0,
@@ -35,58 +40,59 @@ const initialFormState = (): AddUpdatePaymentScheduleMasterRequest => ({
 });
 
 export const PaymentScheduleMaster: React.FC = () => {
-  // STATE
   const [PaymentScheduleMasterList, setPaymentScheduleMasterList] = useState<PaymentScheduleMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+
   const [stageOptions, setStageOptions] = useState<{ label: string; value: string }[]>([]);
 
-  //DELETE PAYMENT SCHEDULE DATA
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
   const [deletePaymentScheduleMasterData, setDeletePaymentScheduleMasterData] = useState<PaymentScheduleMasterData | null>(null);
 
-  // EDIT PAYMENT SCHEDULE DATA
   const [editingPaymentScheduleMasterData, setEditingPaymentScheduleMasterData] = useState<PaymentScheduleMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
   const [formData, setFormData] = useState<AddUpdatePaymentScheduleMasterRequest>(() => initialFormState());
 
-  // PAGINATION
+  const [buildingName, setBuildingName] = useState<string>();
+  const [wingName, setWingName] = useState<string>();
+
   const { pagination, setPagination } = usePagination(20);
 
   const { projectId } = useProject();
-  // TOAST
+
   const { addToast } = useToast();
 
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
   const { canAction } = useMenuPermissions();
 
-  const [dropdownLabels, setDropdownLabels] = useState<{
-    paymentScheduleScheme?: string;
-  }>({});
+  const fetchPaymentScheduleSchemeMaster = () => (page: number) =>
+    fetchPaymentScheduleSchemeMasterDropDown(page, {
+      projectId: Number(projectId),
+      isReuiredOthersOption: false,
+    });
 
-  const calculateCumulative = (currentPercentage: number) => {
-    const totalExisting = PaymentScheduleMasterList.reduce((sum, item) => sum + (editingPaymentScheduleMasterData && item.PaymentScheduleMasterId === editingPaymentScheduleMasterData.PaymentScheduleMasterId ? 0 : Number(item.PaymentSchedulePercentage || 0)), 0);
-
-    return totalExisting + currentPercentage;
-  };
-  //#endregion
-
-  //#region LOAD PAYMENT SCHEDULE DATA
   const loadPaymentScheduleMaster = useCallback(
-    async (page: number = pagination.currentPage, filterParams: FilterInfo = {}, sort?: SortInfo, paymentScheduleMasterId?: number) => {
+    async (
+      page: number = pagination.currentPage,
+      filterParams: FilterInfo = {},
+      sort?: SortInfo,
+      schemeId?: number,
+      buildingId?: number,
+      wingId?: number,
+    ) => {
       await runApiWithLoader(
         setIsLoading,
         setLoadingMessage,
+
         async () => {
           const params: FilterWithPaginationPaymentScheduleMasterRequest = {
             PageNumber: page,
             PageSize: pagination.pageSize,
             ProjectId: Number(projectId),
-            PaymentScheduleMasterId: paymentScheduleMasterId,
-            InventoryBuildingId: filterParams.InventoryBuildingId ? Number(filterParams.InventoryBuildingId) : undefined,
-            InventoryFlatFloorBasementPodiumWingId: filterParams.InventoryFlatFloorBasementPodiumWingId ? Number(filterParams.InventoryFlatFloorBasementPodiumWingId) : undefined,
+            PaymentScheduleSchemeMasterId: Number(schemeId) ?? formData.PaymentScheduleSchemeMasterId,
+            InventoryBuildingId: buildingId ?? formData.InventoryBuildingId,
+            InventoryFlatFloorBasementPodiumWingId: wingId ?? formData.InventoryFlatFloorBasementPodiumWingId,
             Stage: filterParams.Stage ?? undefined,
             SortBy: getSortByParam(sort ?? null, PaymentScheduleMasterColumns),
           };
@@ -112,14 +118,30 @@ export const PaymentScheduleMaster: React.FC = () => {
     },
     [projectId, formData.PaymentScheduleMasterId, pagination.currentPage, pagination.pageSize, addToast, setPagination],
   );
-  //#endregion
 
-  //#region INIT
   useEffect(() => {
     setFormData(initialFormState());
+
     setStageOptions([]);
+
+    setPaymentScheduleMasterList([]);
+
+    setBuildingName("");
+
+    setWingName("");
+
+    setPagination({
+      currentPage: 1,
+      totalRecords: 0,
+      totalPages: 1,
+    });
   }, [projectId]);
-  //#endregion
+
+  useEffect(() => {
+    if (isAddUpdateModalOpen) {
+      fetchPaymentSchedulestage();
+    }
+  }, [isAddUpdateModalOpen]);
 
   useEffect(() => {
     if (isAddUpdateModalOpen) {
@@ -135,12 +157,10 @@ export const PaymentScheduleMaster: React.FC = () => {
           ProjectId: Number(projectId),
           PaymentScheduleSchemeMasterId: editingPaymentScheduleMasterData.PaymentScheduleSchemeMasterId ?? null,
         });
-        setDropdownLabels({
-          paymentScheduleScheme: editingPaymentScheduleMasterData.PaymentScheduleScheme || "",
-        });
       } else {
         setFormData((prev) => ({
           ...initialFormState(),
+          PaymentScheduleSchemeMasterId: prev.PaymentScheduleSchemeMasterId,
           InventoryBuildingId: prev.InventoryBuildingId,
           InventoryFlatFloorBasementPodiumWingId: prev.InventoryFlatFloorBasementPodiumWingId,
           ProjectId: Number(projectId),
@@ -149,31 +169,46 @@ export const PaymentScheduleMaster: React.FC = () => {
       setErrors({});
     }
   }, [isAddUpdateModalOpen, editingPaymentScheduleMasterData, projectId]);
-  //#endregion
 
   const handlePageChange = (page: number) => {
     setPagination({ currentPage: page });
     loadPaymentScheduleMaster(1, {});
   };
-  //#endregion
 
-  //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: PaymentScheduleMasterData) => {
     setDeletePaymentScheduleMasterData(row);
     setIsConfirmationDialogBoxOpen(true);
   }, []);
-  //#endregion
 
-  //#region EDIT PAYMENT SCHEDULE
+  const fetchPaymentSchedulestage = async () => {
+    const res = await fetchPaymentScheduleDropdown({
+      projectId: projectId ?? undefined,
+      inventoryBuildingId: formData.InventoryBuildingId,
+      inventoryFlatFloorBasementPodiumWingId: formData.InventoryFlatFloorBasementPodiumWingId,
+    });
+
+    setStageOptions(res.itemList);
+  };
+
+  const calculateCumulative = (currentPercentage: number) => {
+    const totalExisting = PaymentScheduleMasterList.reduce(
+      (sum, item) =>
+        sum +
+        (editingPaymentScheduleMasterData && item.PaymentScheduleMasterId === editingPaymentScheduleMasterData.PaymentScheduleMasterId
+          ? 0
+          : Number(item.PaymentSchedulePercentage || 0)),
+      0,
+    );
+
+    return totalExisting + currentPercentage;
+  };
+
+  const totalPercentage = useMemo(() => {
+    return PaymentScheduleMasterList.reduce((sum, item) => sum + Number(item.PaymentSchedulePercentage || 0), 0);
+  }, [PaymentScheduleMasterList]);
+
   const handleEditPaymentScheduleMaster = useCallback(
     async (row: PaymentScheduleMasterData) => {
-      const res = await fetchPaymentScheduleDropdown({
-        projectId: projectId ?? undefined,
-        inventoryBuildingId: row.InventoryBuildingId,
-        inventoryFlatFloorBasementPodiumWingId: row.InventoryFlatFloorBasementPodiumWingId,
-      });
-
-      setStageOptions(res.itemList);
       setEditingPaymentScheduleMasterData(row);
       setIsAddUpdateModalOpen(true);
     },
@@ -193,6 +228,9 @@ export const PaymentScheduleMaster: React.FC = () => {
     }
 
     if (!formData.PaymentSchedulePercentage) {
+      newErrors.PaymentSchedulePercentage = "Percentage is required";
+    }
+    if (Number(formData.PaymentSchedulePercentage) === 0) {
       newErrors.PaymentSchedulePercentage = "Percentage is required";
     }
 
@@ -257,6 +295,7 @@ export const PaymentScheduleMaster: React.FC = () => {
               totalRecords: pagination.totalRecords + 1,
               totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize),
             });
+
             addToast({
               type: "success",
               title: response.right.SuccessMessage[0],
@@ -264,13 +303,18 @@ export const PaymentScheduleMaster: React.FC = () => {
           } else {
             const updatedRecord = response.right.Data[0] as PaymentScheduleMasterData;
 
-            setPaymentScheduleMasterList((prevData) => prevData.map((item) => (item.PaymentScheduleMasterId === formData.PaymentScheduleMasterId ? updatedRecord : item)));
+            setPaymentScheduleMasterList((prevData) =>
+              prevData.map((item) => (item.PaymentScheduleMasterId === formData.PaymentScheduleMasterId ? updatedRecord : item)),
+            );
 
             addToast({
               type: "success",
               title: response.right.SuccessMessage[0],
             });
           }
+
+          totalPercentage;
+
           setEditingPaymentScheduleMasterData(null);
         } else {
           addToast({ type: "error", title: response.left?.message });
@@ -282,7 +326,7 @@ export const PaymentScheduleMaster: React.FC = () => {
         addToast({ type: "error", title: error.message });
       },
       undefined,
-      "Update Payment Schdule",
+      Number(formData.PaymentScheduleMasterId) === 0 ? "Adding Payment Schedule" : "Updating Payment Schedule",
     );
   };
   //#endregion
@@ -301,7 +345,7 @@ export const PaymentScheduleMaster: React.FC = () => {
       },
       {
         key: "PaymentSchedulePercentage",
-        label: "Percentage",
+        label: "Percentage (%)",
         width: "25",
         sortable: false,
         align: "center",
@@ -309,12 +353,15 @@ export const PaymentScheduleMaster: React.FC = () => {
       },
       {
         key: "PaymentScheduleCummulativePercentage",
-        label: "Cumulative Percentage",
+        label: "Cumulative Percentage (%)",
         width: "15",
         sortable: false,
         align: "center",
         render: (_value, _row, rowIndex) => {
-          const cumulative = PaymentScheduleMasterList.slice(0, rowIndex + 1).reduce((sum, item) => sum + Number(item.PaymentSchedulePercentage || 0), 0);
+          const cumulative = PaymentScheduleMasterList.slice(0, rowIndex + 1).reduce(
+            (sum, item) => sum + Number(item.PaymentSchedulePercentage || 0),
+            0,
+          );
 
           return `${cumulative}%`;
         },
@@ -381,9 +428,6 @@ export const PaymentScheduleMaster: React.FC = () => {
   );
   const PaymentScheduleMasterForTable = useMemo(() => PaymentScheduleMasterList, [PaymentScheduleMasterList]);
 
-  const totalPercentage = useMemo(() => {
-    return PaymentScheduleMasterList.reduce((sum, item) => sum + Number(item.PaymentSchedulePercentage || 0), 0);
-  }, [PaymentScheduleMasterList]);
   //#endregion
 
   //#region DELETE PAYMENT SCHEDULE DATA
@@ -424,6 +468,8 @@ export const PaymentScheduleMaster: React.FC = () => {
             totalPages: newTotalPages,
           });
 
+          await loadPaymentScheduleMaster(pageToShow);
+
           addToast({
             type: "success",
             title: response.right.SuccessMessage?.[0],
@@ -454,13 +500,6 @@ export const PaymentScheduleMaster: React.FC = () => {
   };
   //#region
 
-  //#region FETCH PAYMENT SCHEDULE SCHEME DROPDOWN WITH PROJECT ID
-  const fetchPaymentScheduleSchemeMaster = () => (page: number) =>
-    fetchPaymentScheduleSchemeMasterDropDown(page, {
-      projectId: Number(projectId),
-    });
-
-  //#endregion
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
       <Loader loading={isLoading} title={loadingMessage}>
@@ -468,52 +507,101 @@ export const PaymentScheduleMaster: React.FC = () => {
         <div />{" "}
       </Loader>
 
-      <div className="my-6 p-4">
+      <div className="p-4">
         <div className="grid grid-cols-3 gap-4">
           <div>
             <SingleSelectDropdownWithPagination
+              key={projectId}
               label="Payment Schedule Scheme"
               title="Select Payment Schedule Scheme"
               size="lg"
               dataFetchCallBack={fetchPaymentScheduleSchemeMaster()}
               onSelected={(item) => {
+                if (!item) {
+                  setFormData((prev) => ({
+                    ...prev,
+                    InventoryBuildingId: 0,
+                    InventoryFlatFloorBasementPodiumWingId: 0,
+                    PaymentScheduleSchemeMasterId: 0,
+                  }));
 
-                const schemeId = Number(item.value);
+                  handleFieldChange("PaymentScheduleSchemeMasterId", 0);
+
+                  setBuildingName("");
+                  setWingName("");
+
+                  setPaymentScheduleMasterList([]);
+
+                  return;
+                }
+
+                const schemeId = Number(item?.value);
+                const buildingId = item?.inventoryBuildingId;
+                const wingId = item?.inventoryFlatFloorBasementPodiumWingId;
+
+                setFormData((prev) => ({
+                  ...prev,
+                  InventoryBuildingId: buildingId ?? 0,
+                  InventoryFlatFloorBasementPodiumWingId: wingId ?? 0,
+                  PaymentScheduleSchemeMasterId: schemeId,
+                }));
+
+                setBuildingName(item?.buildingName || "");
+                setWingName(item?.wingName || "");
 
                 handleFieldChange("PaymentScheduleSchemeMasterId", schemeId);
 
-                loadPaymentScheduleMaster(1, {}, undefined, schemeId);
+                setPaymentScheduleMasterList([]);
 
+                loadPaymentScheduleMaster(1, {}, undefined, schemeId, buildingId, wingId);
               }}
-              
-              initialValue={createDropdownInitialValue(formData.PaymentScheduleSchemeMasterId, dropdownLabels.paymentScheduleScheme)}
               error={errors.PaymentScheduleSchemeMasterId}
             />
           </div>
         </div>
       </div>
+      {Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
+      <div className="p-4">
+      <div className="space-y-4 p-4  bg-blue-50 rounded-lg border border-blue-200">
+        <div className="grid grid-cols-1 md:grid-cols-3">
+          <FieldItem label="Building" value={buildingName || "-"} />
+          <FieldItem label="Wing" value={wingName || "-"} />
+          <FieldItem
+            label="Total"
+            value={
+              <div className="flex items-center">
+                <span className={`font-bold ${totalPercentage === 100 ? "text-green-600" : "text-red-600"}`}>
+                  {totalPercentage.toFixed(2)}%
+                </span>
 
+                {totalPercentage !== 100 && (
+                  <span className="text-xs text-red-600 ml-2">
+                    {totalPercentage < 100
+                      ? `Missing ${(100 - totalPercentage).toFixed(2)}%`
+                      : `Exceeds ${(totalPercentage - 100).toFixed(2)}%`}
+                  </span>
+                )}
+              </div>
+            }
+          />
+        </div>
+      </div>
+      </div>
+      )}
       {/* TOTAL SUMMARY */}
-
-      <div className="space-y-4 pb-5">
+      <div className="space-y-4 p-4 pb-5">
         <div className="flex items-center justify-between border-b border-gray-300 pb-2">
           <div className="flex items-center gap-30">
             <h3 className="text-lg font-semibold text-gray-900">Payment Schedule List</h3>
-
-            <div className="text-sm">
-              <span className="font-semibold text-gray-700">Total: </span>
-              <span className={`font-bold ${totalPercentage === 100 ? "text-green-600" : "text-red-600"}`}>{totalPercentage.toFixed(2)}%</span>
-
-              {totalPercentage !== 100 && <span className="text-xs text-red-600 ml-2">{totalPercentage < 100 ? `Missing ${(100 - totalPercentage).toFixed(2)}%` : `Exceeds ${(totalPercentage - 100).toFixed(2)}%`}</span>}
-            </div>
           </div>
-
-          {totalPercentage < 100 && Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
+          
+          {canAction && totalPercentage < 100 && Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
             <Button
               onClick={() => {
                 setEditingPaymentScheduleMasterData(null);
                 setFormData((prev) => ({
                   ...initialFormState(),
+                  PaymentScheduleSchemeMasterId: prev.PaymentScheduleSchemeMasterId,
                   InventoryBuildingId: prev.InventoryBuildingId,
                   InventoryFlatFloorBasementPodiumWingId: prev.InventoryFlatFloorBasementPodiumWingId,
                   ProjectId: Number(projectId),
@@ -532,7 +620,15 @@ export const PaymentScheduleMaster: React.FC = () => {
 
         {/* DATA TABLE */}
 
-        <DataTable data={PaymentScheduleMasterForTable} columns={PaymentScheduleMasterColumns} pagination={PaymentScheduleMasterPaginationInfo} emptyMessage="No Payment Schedule Data Found" fixedHeight={true} recordsPerPage={20} className="flex-1" />
+        <DataTable
+          data={PaymentScheduleMasterForTable}
+          columns={PaymentScheduleMasterColumns}
+          pagination={PaymentScheduleMasterPaginationInfo}
+          emptyMessage="No Payment Schedule Data Found"
+          fixedHeight={true}
+          recordsPerPage={20}
+          className="flex-1"
+        />
       </div>
 
       {/*ADD UPDATE MODAL */}
@@ -545,6 +641,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
           setFormData((prev) => ({
             ...initialFormState(),
+            PaymentScheduleSchemeMasterId: prev.PaymentScheduleSchemeMasterId,
             InventoryBuildingId: prev.InventoryBuildingId,
             InventoryFlatFloorBasementPodiumWingId: prev.InventoryFlatFloorBasementPodiumWingId,
             ProjectId: prev.ProjectId,
@@ -557,6 +654,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
           setFormData((prev) => ({
             ...initialFormState(),
+            PaymentScheduleSchemeMasterId: prev.PaymentScheduleSchemeMasterId,
             InventoryBuildingId: prev.InventoryBuildingId,
             InventoryFlatFloorBasementPodiumWingId: prev.InventoryFlatFloorBasementPodiumWingId,
             ProjectId: prev.ProjectId,
@@ -564,9 +662,9 @@ export const PaymentScheduleMaster: React.FC = () => {
 
           setErrors({});
         }}
-        title={editingPaymentScheduleMasterData ? "Update Schedule" : "Add Payment Schedule"}
+        title={editingPaymentScheduleMasterData ? "Update Payment Schedule" : "Add Payment Schedule"}
         onSubmit={handleAddEditPaymentScheduleMaster}
-        saveText={editingPaymentScheduleMasterData ? "Update Schedule" : "Add Schedule"}
+        saveText={editingPaymentScheduleMasterData ? "Update" : "Add"}
         loading={isLoading}
         size="xl"
       >
@@ -591,7 +689,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
             <div>
               <Input
-                label="Percentage%"
+                label="Percentage (%)"
                 value={formData.PaymentSchedulePercentage?.toString() ?? ""}
                 required
                 onChange={(e) => {
@@ -620,6 +718,7 @@ export const PaymentScheduleMaster: React.FC = () => {
                   }
                 }}
                 placeholder="Percentage"
+                rightIcon="%"
                 error={errors.PaymentSchedulePercentage}
               />
             </div>

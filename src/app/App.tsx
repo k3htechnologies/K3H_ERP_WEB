@@ -155,6 +155,7 @@ import Target from '@/features/target/pages/Target';
 import IncentiveReport from '@/features/incentiveReport/pages/IncentiveReport';
 import { IncentiveReportListStateProvider } from '@/features/incentiveReport/context/IncentiveReportListStateContext';
 import PaymentScheduleSchemeMaster from '@/features/paymentScheduleSchemeMaster/pages/PaymentScheduleSchemeMaster';
+import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -403,6 +404,8 @@ function App() {
             <Route path='litigation/add/:LitigationId?' element={<LitigationListStateProvider><AddUpdateLitigation /></LitigationListStateProvider>} />
             <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
             <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
+            <Route path="legalDashboard" element={<LitigationDashboard />} />
+
 
             {/* PROJECT */}
             <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />

@@ -41,6 +41,7 @@ export const PaymentScheduleSchemeMaster: React.FC = () => {
     showFilterPopup,
     filters,
     tempFilters,
+    isEditing,
 
     handlePageChange,
     handleSortColumn,
@@ -132,9 +133,29 @@ export const PaymentScheduleSchemeMaster: React.FC = () => {
 
       <PaymentScheduleSchemeMasterTable data={paymentScheduleSchemeMasterListForTable} columns={visiblePaymentScheduleSchemeMasterColumns} pagination={paymentScheduleSchemeMasterPaginationInfo} sortInfo={sortInfo} onSort={handleSortColumn} canAction={canAction} loading={isLoading} onView={handleViewPaymentScheduleSchemeMasterDetails} onEdit={() => {}} onDelete={handleConfirmationDialogBoxOpen} />
 
-      <PaymentScheduleSchemeMasterViewModal isOpen={isViewModalOpen} onClose={handleViewModalClose} data={viewPaymentScheduleSchemeMasterDetailsData} canAction={canAction} onEdit={() => viewPaymentScheduleSchemeMasterDetailsData && handleEditPaymentScheduleSchemeMasterDetails(viewPaymentScheduleSchemeMasterDetailsData)} onDelete={handleConfirmationDialogBoxOpen} />
+      <PaymentScheduleSchemeMasterViewModal 
+      isOpen={isViewModalOpen} 
+      onClose={handleViewModalClose} 
+      data={viewPaymentScheduleSchemeMasterDetailsData} 
+      canAction={canAction} 
+      onEdit={() => viewPaymentScheduleSchemeMasterDetailsData && handleEditPaymentScheduleSchemeMasterDetails(viewPaymentScheduleSchemeMasterDetailsData)} 
+      onDelete={handleConfirmationDialogBoxOpen} />
 
-      <PaymentScheduleSchemeMasterFormModal isOpen={isAddUpdateModalOpen} onClose={() => setIsAddUpdateModalOpen(false)} onCancel={() => setIsAddUpdateModalOpen(false)} onSubmit={handleAddEditPaymentScheduleSchemeMaster} formData={formData} onFieldChange={handleFieldChange} errors={errors} editingData={editingPaymentScheduleSchemeMasterData} loading={isLoading} buildingOptions={buildingOptions} wingOptions={wingOptions} handleBuildingChange={handleBuildingChange} />
+      <PaymentScheduleSchemeMasterFormModal 
+        isOpen={isAddUpdateModalOpen}
+        onClose={() => setIsAddUpdateModalOpen(false)} 
+        onCancel={() => setIsAddUpdateModalOpen(false)} 
+        onSubmit={handleAddEditPaymentScheduleSchemeMaster} 
+        formData={formData} 
+        onFieldChange={handleFieldChange} 
+        errors={errors} 
+        editingData={editingPaymentScheduleSchemeMasterData} 
+        loading={isLoading} 
+        buildingOptions={buildingOptions} 
+        wingOptions={wingOptions} 
+        handleBuildingChange={handleBuildingChange} 
+        isEditing={isEditing}
+      />
 
       <PaymentScheduleSchemeMasterFilterModal
         isOpen={showFilterPopup}

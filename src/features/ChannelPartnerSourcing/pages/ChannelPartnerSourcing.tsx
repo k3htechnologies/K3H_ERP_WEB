@@ -313,13 +313,16 @@ export const ChannelPartnerSourcing: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="150px"
-            tooltipThreshold={15}
-          />
-        )
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.GSTCertificateURL)}
+              title="GST Document"
+              triggerLabel={value || '-'}
+              isWrap={false}
+            />
+          );
+        }
       },
       {
         key: 'RERANumber',

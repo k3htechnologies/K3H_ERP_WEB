@@ -1,36 +1,32 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { usePagination } from '@/core/hooks/usePagination';
-import type { SortInfo, TableColumn } from '@/ui/components/DataTable/DataTable';
-import { runApiWithLoader } from '@/core/utils';
-import * as E from 'fp-ts/Either';
-import { useToast } from '@/core/hooks/useToast';
-import type {
-  AddUpdateBranchAssociationsMasterRequest,
-  BranchAssociationsMasterData,
-  DeleteBranchAssociationsRequest,
-  FilterWithPaginationBranchAssociationsMasterRequest
-} from '@/features/branchAssociationsMaster/models/BranchAssociationsMasterModel';
-import { branchAssociationsService } from '@/features/branchAssociationsMaster/services/BranchAssociationsMasterService';
-import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
-import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import { handleExportFile } from '@/core/utils/exportFile';
-import { getInitialFormState, getBranchAssociationsMasterColumns } from '@/features/branchAssociationsMaster/constants/branchAssociationsMasterConstants';
-import { getSortByParam } from '@/core/constants/sortingColumnDetails';
-import { fetchEmployeeMasterById } from '@/features/employeeMaster/employeeMasterDropDown';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePagination } from "@/core/hooks/usePagination";
+import type { SortInfo, TableColumn } from "@/ui/components/DataTable/DataTable";
+import { runApiWithLoader } from "@/core/utils";
+import * as E from "fp-ts/Either";
+import { useToast } from "@/core/hooks/useToast";
+import type { AddUpdateBranchAssociationsMasterRequest, BranchAssociationsMasterData, DeleteBranchAssociationsRequest, FilterWithPaginationBranchAssociationsMasterRequest } from "@/features/branchAssociationsMaster/models/BranchAssociationsMasterModel";
+import { branchAssociationsService } from "@/features/branchAssociationsMaster/services/BranchAssociationsMasterService";
+import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { handleExportFile } from "@/core/utils/exportFile";
+import { getInitialFormState, getBranchAssociationsMasterColumns } from "@/features/branchAssociationsMaster/constants/branchAssociationsMasterConstants";
+import { getSortByParam } from "@/core/constants/sortingColumnDetails";
+import { fetchEmployeeMasterById } from "@/features/employeeMaster/employeeMasterDropDown";
+import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
 
 export const useBranchAssociationsMaster = () => {
   //#region STATE MANAGEMENT
   const [branchAssociationsMasterList, setBranchAssociationsMasterList] = useState<BranchAssociationsMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState("");
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-  const { addToast } = useToast()
-  const [searchTerm, setSearchTerm] = useState('')
+  const { addToast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchBranchAssociations(value)
-  }, 350)
-  const [viewBranchAssociationsMasterDetailsData, setViewBranchAssociationsMasterDetailsData] = useState<BranchAssociationsMasterData | null>(null)
+    searchBranchAssociations(value);
+  }, 350);
+  const [viewBranchAssociationsMasterDetailsData, setViewBranchAssociationsMasterDetailsData] = useState<BranchAssociationsMasterData | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   //ERROR SET UP
@@ -44,16 +40,11 @@ export const useBranchAssociationsMaster = () => {
   const [formData, setFormData] = useState<AddUpdateBranchAssociationsMasterRequest>(() => getInitialFormState());
 
   //DELETE BRANCH ASSOCIATIONS MASTER STATES
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-  const [deleteBranchAssociationsData, setDeleteBranchAssociationsData] = useState<BranchAssociationsMasterData | null>(null)
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+  const [deleteBranchAssociationsData, setDeleteBranchAssociationsData] = useState<BranchAssociationsMasterData | null>(null);
 
-//SET UP EMPLOYEE DETAILS STATES
-  const [departmentName, setDepartmentName] = useState("");
-  const [designationName, setDesignationName] = useState("");
-  const [branchName, setBranchName] = useState("");
-  const [reportingPersonName, setReportingPersonName] = useState("");
-  const [emailId, setEmailId] = useState("");
-  const [personalMobileNumber, setPersonalMobileNumber] = useState("");
+  //SET UP EMPLOYEE DETAILS STATES
+  const [employeeDetails, setEmployeeDetails] = useState<EmployeeMasterData | null>(null);
 
   //DROPDOWN STATES
   const [dropdownLabels, setDropdownLabels] = useState<{
@@ -70,20 +61,20 @@ export const useBranchAssociationsMaster = () => {
 
   //#region INITIALIZATION
 
-  const hasFetchedInitialBranchAssociations = useRef(false)
+  const hasFetchedInitialBranchAssociations = useRef(false);
 
   useEffect(() => {
-    if (hasFetchedInitialBranchAssociations.current) return
+    if (hasFetchedInitialBranchAssociations.current) return;
     hasFetchedInitialBranchAssociations.current = true;
-    fetchBranchAssociationsList()
-  }, [])
+    fetchBranchAssociationsList();
+  }, []);
 
   //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
-      debouncedSearch.cancel?.()
-    }
-  }, [debouncedSearch])
+      debouncedSearch.cancel?.();
+    };
+  }, [debouncedSearch]);
 
   useEffect(() => {
     if (isAddUpdateModalOpen) {
@@ -91,131 +82,103 @@ export const useBranchAssociationsMaster = () => {
         setFormData({
           BranchAssociationsId: editingBranchAssociationMasterData.BranchAssociationsId,
           Uniquekey: editingBranchAssociationMasterData.Uniquekey || getInitialFormState().Uniquekey,
-          BranchMasterId: editingBranchAssociationMasterData.BranchMasterId || '',
-          EmployeeId: editingBranchAssociationMasterData.EmployeeId || 0
+          BranchMasterId: editingBranchAssociationMasterData.BranchMasterId || "",
+          EmployeeId: editingBranchAssociationMasterData.EmployeeId || 0,
         });
 
         setDropdownLabels({
           branchName: editingBranchAssociationMasterData.BranchName || "",
-          employeeName: editingBranchAssociationMasterData.EmployeeName || ""
+          employeeName: editingBranchAssociationMasterData.EmployeeName || "",
         });
+
+        if (editingBranchAssociationMasterData.EmployeeId) {
+          fetchEmployeeMasterById(editingBranchAssociationMasterData.EmployeeId).then((employee) => {
+            if (!employee) return;
+            setEmployeeDetails(employee);
+          });
+        }
+
       } else {
         setFormData(getInitialFormState());
+        setEmployeeDetails(null);
       }
       setErrors({});
     }
   }, [isAddUpdateModalOpen, editingBranchAssociationMasterData]);
 
-  useEffect(() => {
-    let mounted = true;
-
-    const loadEmployeeDetails = async () => {
-      if (!formData.EmployeeId) {
-        setDepartmentName("");
-        setDesignationName("");
-        setBranchName("");
-        setReportingPersonName("");
-        setEmailId("");
-        setPersonalMobileNumber("");
-        return;
-      }
-
-      const employee = await fetchEmployeeMasterById(formData.EmployeeId);
-
-      if (!employee || !mounted) return;
-
-      setDepartmentName(employee.Department ?? "");
-      setDesignationName(employee.Designation ?? "");
-      setBranchName(employee.Branch ?? "");
-      setReportingPersonName(employee.ReportPersonName ?? "");
-      setEmailId(employee.EmailId ?? "");
-      setPersonalMobileNumber(employee.PersonalMobileNumber ?? "");
-    };
-
-    loadEmployeeDetails();
-
-    return () => {
-      mounted = false;
-    };
-  }, [formData.EmployeeId]);
-
-
   //#endregion
 
   //#region TABLE COLUMN DEFINITION
 
-  const branchAssociationsMasterColumns = useMemo<TableColumn[]>(
-    () => getBranchAssociationsMasterColumns(),
-    []
-  )
+  const branchAssociationsMasterColumns = useMemo<TableColumn[]>(() => getBranchAssociationsMasterColumns(), []);
   //#endregion
 
-  //#region DATA LOADING | FETCH |  LOAD | SEARCH 
+  //#region DATA LOADING | FETCH |  LOAD | SEARCH
 
   const fetchBranchAssociationsList = async (page: number = pagination.currentPage) => {
     return await loadBranchAssociations(page);
-  }
+  };
 
   const loadBranchAssociations = async (page: number, sortInfo?: SortInfo, searchValue?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-
         const params: FilterWithPaginationBranchAssociationsMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
           EmployeeName: searchValue || undefined,
-          SortBy: getSortByParam(sortInfo ?? null, branchAssociationsMasterColumns)
-        }
+          SortBy: getSortByParam(sortInfo ?? null, branchAssociationsMasterColumns),
+        };
 
         const response = await branchAssociationsService.apiCallPullBranchAssociations(params);
 
         if (E.isRight(response)) {
           setBranchAssociationsMasterList(response.right.Data);
+
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
         } else {
-          addToast({ type: 'error', title: response.left.message });
+          addToast({ type: "error", title: response.left.message });
         }
 
-        return response
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      'Loading Branch Associations.'
-    )
-  }
+      "Loading Branch Associations.",
+    );
+  };
   //#endregion
 
-  //#region SEARCH BRANCH ASSOCIATIONS 
+  //#region SEARCH BRANCH ASSOCIATIONS
   const searchBranchAssociations = async (searchValue: string) => {
     setSearchTerm(searchValue);
 
-    if (searchValue.trim() === '') {
+    if (searchValue.trim() === "") {
       fetchBranchAssociationsList();
-      return
+      return;
     }
-    await loadBranchAssociations(1, sortInfo, searchValue)
-  }
+    await loadBranchAssociations(1, sortInfo, searchValue);
+  };
   //#endregion
 
-  //#region CLEAR SEARCH BRANCH ASSOCIATIONS 
+  //#region CLEAR SEARCH BRANCH ASSOCIATIONS
   const clearsearchBranchAssociations = () => {
-    setSearchTerm('');
+    setSearchTerm("");
     debouncedSearch.cancel?.();
     fetchBranchAssociationsList();
-  }
+  };
   //#endregion
 
   //#region EXPORT EXCEL | PDF
-  const handleExportBranchAssociations = async (exportType: 'Excel' | 'PDF') => {
+  const handleExportBranchAssociations = async (exportType: "Excel" | "PDF") => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -224,24 +187,24 @@ export const useBranchAssociationsMaster = () => {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
           SortBy: getSortByParam(sortInfo ?? null, branchAssociationsMasterColumns),
-          ExportType: exportType
-        }
+          ExportType: exportType,
+        };
 
         const response = await branchAssociationsService.apiCallPullBranchAssociations(params);
-        handleExportFile(response, exportType, 'Branch Associations Master', addToast)
+        handleExportFile(response, exportType, "Branch Associations Master", addToast);
         return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' })
+        addToast({ type: "error", title: error.message || "Export failed" });
       },
       undefined,
-      'Preparing Export'
-    )
-  }
+      "Preparing Export",
+    );
+  };
 
-  const handleExportBranchAssociationsExcel = () => handleExportBranchAssociations('Excel')
-  const handleExportBranchAssociationsPdf = () => handleExportBranchAssociations('PDF')
+  const handleExportBranchAssociationsExcel = () => handleExportBranchAssociations("Excel");
+  const handleExportBranchAssociationsPdf = () => handleExportBranchAssociations("PDF");
   //#endregion
 
   //#region HANDLE PAGE CHANGE EVENT
@@ -251,38 +214,39 @@ export const useBranchAssociationsMaster = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sort: SortInfo) => {
+  const handleSortColumn = useCallback(
+    (sort: SortInfo) => {
+      setSortInfo(sort);
 
-    setSortInfo(sort);
-
-    loadBranchAssociations(1, sort, searchTerm || undefined);
-
-  }, [searchTerm]);
+      loadBranchAssociations(1, sort, searchTerm || undefined);
+    },
+    [searchTerm],
+  );
   //#endregion
 
   //#region VIEW EDIT
   const handleViewBranchAssociationsDetails = useCallback((row: BranchAssociationsMasterData) => {
-    setViewBranchAssociationsMasterDetailsData(row)
-    setIsViewModalOpen(true)
-  }, [])
+    setViewBranchAssociationsMasterDetailsData(row);
+    setIsViewModalOpen(true);
+  }, []);
   //#endregion
 
   //#region EDIT BRANCH ASSOCIATIONS  MASTER
   const handleEditBranchAssociationsMaster = useCallback((row: BranchAssociationsMasterData) => {
     setEditingBranchAssociationMasterData({
       ...row,
-      BranchMasterId: row.BranchMasterId || '',
-      EmployeeId: row.EmployeeId || 0
-    })
+      BranchMasterId: row.BranchMasterId || "",
+      EmployeeId: row.EmployeeId || 0,
+    });
     setIsAddUpdateModalOpen(true);
-  }, [])
+  }, []);
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: BranchAssociationsMasterData) => {
-    setDeleteBranchAssociationsData(row)
-    setIsConfirmationDialogBoxOpen(true)
-  }, [])
+    setDeleteBranchAssociationsData(row);
+    setIsConfirmationDialogBoxOpen(true);
+  }, []);
   //#endregion
 
   //#region ADD UPDATE EDIT BRANCH ASSOCIATION MASTER
@@ -298,7 +262,7 @@ export const useBranchAssociationsMaster = () => {
     setFormData(getInitialFormState());
     setDropdownLabels({});
     setErrors({});
-    setDropdownResetKey(prev => prev + 1);
+    setDropdownResetKey((prev) => prev + 1);
   };
 
   const handleAddBranchAssociationsMaster = () => {
@@ -306,16 +270,16 @@ export const useBranchAssociationsMaster = () => {
     setFormData(getInitialFormState());
     setErrors({});
     setIsAddUpdateModalOpen(true);
-  }
+  };
 
   const validateAddBranchAssociationsMasterForm = (): {
-    isValid: boolean
-    errors: { [key: string]: string }
+    isValid: boolean;
+    errors: { [key: string]: string };
   } => {
-    const newErrors: { [key: string]: string } = {}
+    const newErrors: { [key: string]: string } = {};
 
     if (!formData.BranchMasterId) {
-      newErrors.BranchMasterId = "Branch is required"
+      newErrors.BranchMasterId = "Branch is required";
     }
 
     if (!formData.EmployeeId) {
@@ -324,29 +288,29 @@ export const useBranchAssociationsMaster = () => {
 
     return {
       isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors
-    }
-  }
+      errors: newErrors,
+    };
+  };
 
   const PushBranchAssociationsMasterFormData = (): AddUpdateBranchAssociationsMasterRequest => {
     return {
       BranchAssociationsId: formData.BranchAssociationsId,
       Uniquekey: formData.Uniquekey,
       BranchMasterId: formData.BranchMasterId ? String(formData.BranchMasterId) : "",
-      EmployeeId: formData.EmployeeId
+      EmployeeId: formData.EmployeeId,
     };
   };
 
   const handleAddUpdateBranchAssociationsMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setErrors({})
+    setErrors({});
 
-    const validation = validateAddBranchAssociationsMasterForm()
+    const validation = validateAddBranchAssociationsMasterForm();
 
     if (!validation.isValid) {
-      setErrors(validation.errors)
-      return
+      setErrors(validation.errors);
+      return;
     }
 
     await runApiWithLoader(
@@ -362,24 +326,18 @@ export const useBranchAssociationsMaster = () => {
           const isAdd = formData.BranchAssociationsId === 0;
 
           if (isAdd) {
-            const newRecord = response.right.Data[0] as BranchAssociationsMasterData
-            setBranchAssociationsMasterList(prevData => [newRecord, ...prevData]);
+            const newRecord = response.right.Data[0] as BranchAssociationsMasterData;
+            setBranchAssociationsMasterList((prevData) => [newRecord, ...prevData]);
             setPagination({
               currentPage: pagination.currentPage,
               totalRecords: pagination.totalRecords + 1,
-              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize),
             });
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+            addToast({ type: "success", title: response.right.SuccessMessage[0] });
           } else {
             const updatedRecord = response.right.Data[0] as BranchAssociationsMasterData;
-            setBranchAssociationsMasterList(prevData =>
-              prevData.map(item =>
-                item.BranchAssociationsId === formData.BranchAssociationsId
-                  ? updatedRecord
-                  : item
-              )
-            )
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+            setBranchAssociationsMasterList((prevData) => prevData.map((item) => (item.BranchAssociationsId === formData.BranchAssociationsId ? updatedRecord : item)));
+            addToast({ type: "success", title: response.right.SuccessMessage[0] });
           }
 
           setEditingBranchAssociationMasterData(null);
@@ -390,11 +348,11 @@ export const useBranchAssociationsMaster = () => {
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      Number(formData.BranchAssociationsId) === 0 ? 'Add Branch Association' : 'Update Branch Association'
-    )
+      Number(formData.BranchAssociationsId) === 0 ? "Add Branch Association" : "Update Branch Association",
+    );
   };
   //#endregion
 
@@ -410,7 +368,7 @@ export const useBranchAssociationsMaster = () => {
       async () => {
         const params: DeleteBranchAssociationsRequest = {
           BranchAssociationsId: deleteBranchAssociationsData.BranchAssociationsId || 0,
-          UniqueKey: deleteBranchAssociationsData.Uniquekey || ""
+          UniqueKey: deleteBranchAssociationsData.Uniquekey || "",
         };
 
         const response = await branchAssociationsService.apiCallDeleteBranchAssociations(params);
@@ -429,16 +387,16 @@ export const useBranchAssociationsMaster = () => {
           setPagination({
             currentPage: pageToShow,
             totalRecords: newTotalRecords,
-            totalPages: newTotalPages
+            totalPages: newTotalPages,
           });
 
           await loadBranchAssociations(pageToShow);
 
-          addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
+          addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
           setIsConfirmationDialogBoxOpen(false);
           setDeleteBranchAssociationsData(null);
         } else {
-          addToast({ type: 'error', title: response.left.message });
+          addToast({ type: "error", title: response.left.message });
           setIsConfirmationDialogBoxOpen(false);
         }
         return response;
@@ -446,7 +404,7 @@ export const useBranchAssociationsMaster = () => {
       undefined,
       (error: any) => addToast({ type: "error", title: error.message }),
       undefined,
-      "Deleting Branch Associations"
+      "Deleting Branch Associations",
     );
   };
   //#endregion
@@ -472,12 +430,7 @@ export const useBranchAssociationsMaster = () => {
     dropdownLabels,
     dropdownResetKey,
 
-    departmentName,
-    designationName,
-    branchName,
-    reportingPersonName,
-    emailId,
-    personalMobileNumber,
+    employeeDetails,
 
     // Setters
     setSearchTerm,
@@ -491,7 +444,7 @@ export const useBranchAssociationsMaster = () => {
     setDeleteBranchAssociationsData,
     setDropdownLabels,
     setDropdownResetKey,
-
+    setEmployeeDetails,
     // Actions
     fetchBranchAssociationsList,
     handlePageChange,
@@ -508,5 +461,5 @@ export const useBranchAssociationsMaster = () => {
     handleResetForm,
     debouncedSearch,
     clearsearchBranchAssociations,
-  }
-}
+  };
+};

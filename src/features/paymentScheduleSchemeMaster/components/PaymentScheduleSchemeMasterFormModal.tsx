@@ -17,6 +17,7 @@ interface PaymentScheduleSchemeMasterFormModalProps {
     buildingOptions: { label: string; value: number }[];
     wingOptions: { label: string; value: number }[];
     handleBuildingChange: (inventoryBuildingId: number) => void;
+    isEditing: boolean;
 }
 
 export const PaymentScheduleSchemeMasterFormModal: React.FC<PaymentScheduleSchemeMasterFormModalProps> = ({
@@ -31,7 +32,8 @@ export const PaymentScheduleSchemeMasterFormModal: React.FC<PaymentScheduleSchem
     loading,
     buildingOptions,
     wingOptions,
-    handleBuildingChange
+    handleBuildingChange,
+    isEditing,
 }) => {
     return (
         <Modal
@@ -55,6 +57,7 @@ export const PaymentScheduleSchemeMasterFormModal: React.FC<PaymentScheduleSchem
                             required
                             error={errors.InventoryBuildingId}
                             onChange={(value) => handleBuildingChange(Number(value))}
+                            disabled={isEditing}
                         />
                     </div>
 
@@ -67,6 +70,7 @@ export const PaymentScheduleSchemeMasterFormModal: React.FC<PaymentScheduleSchem
                             required
                             error={errors.InventoryFlatFloorBasementPodiumWingId}
                             onChange={(value) => onFieldChange('InventoryFlatFloorBasementPodiumWingId', Number(value))}
+                            disabled={isEditing}
                         />
                     </div>
                     <div>

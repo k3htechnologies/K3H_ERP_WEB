@@ -3,8 +3,8 @@ interface OverviewCardData {
     LostLeadsToday: number;
     Message: string;
     NewLeadsThisMonth: number;
-    TodayBookingValue: number;
-    TodayBookings: number;
+    TotalBookingValue: number;
+    TotalBookings: number;
     TodayClosed: number;
     TodayConnected: number;
     TodayNotConnected: number;
@@ -61,20 +61,20 @@ export default function OverviewCards({ overViewCardData }: Props) {
         {
             title: 'Lost Enquiry',
             value: data.LostLeadsToday || 0,
-            subLabel: 'High Alert',
+            subLabel: data.LostLeadsToday > 10 ? 'High Alert' : '-',
             subColor: 'text-red-500',
         },
         {
             title: 'Total Bookings',
-            value: data.TodayBookings || 0,
+            value: data.TotalBookings || 0,
             subValue: `${data.TotalBookingConversion}%`,
             subLabel: 'conversion up',
             subColor: 'text-green-500',
         },
         {
             title: 'Total Booking Value',
-            value: data.TodayBookingValue || 0,
-            subLabel: `Avg ${data.AverageBookingValue}L`,
+            value: data.TotalBookingValue || 0,
+            subLabel: `Avg ${data.AverageBookingValue}`,
             subColor: 'text-blue-500',
         },
         {

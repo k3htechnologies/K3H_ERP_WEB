@@ -2225,7 +2225,7 @@ export const AddUpdateBooking: React.FC = () => {
               size="lg"
               dataFetchCallBack={fetchPaymentScheduleSchemeMaster()}
               onSelected={(item) => {
-                const schemeId = Number(item.value);
+                const schemeId = Number(item?.value);
 
                 handleFieldChange("PaymentScheduleSchemeMasterId", schemeId);
 
@@ -2338,7 +2338,7 @@ export const AddUpdateBooking: React.FC = () => {
                 <TextArea label="Other Remark" value={formData.OtherRemark ?? ""} onChange={(e) => handleFieldChange("OtherRemark", e.target.value)} placeholder="Enter Other Remark" error={errors.OtherRemark} />
               </div>
               <div>
-                <SingleSelectDropdownWithPagination label="Term & Conditional" title="Term & Conditional" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item.value)} />
+                <SingleSelectDropdownWithPagination label="Term & Conditional" title="Term & Conditional" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)} />
               </div>
               <div>
                 <RichTextEditor value={formData.TermsAndConditionsDescription ?? ""} onChange={(html) => handleFieldChange("TermsAndConditionsDescription", html)} placeholder="Enter Description" readOnly />

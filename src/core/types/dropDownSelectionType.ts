@@ -1,18 +1,19 @@
+import type { DropdownItem } from "./DropdownItem"
+
 export interface SingleSelectWithPaginationProps {
-  options?: { label: string; value: string | number }[]
+  options?: DropdownItem[]
   value?: string | number
   size?: 'sm' | 'md' | 'lg'
   variant?: 'default' | 'outlined' | 'filled'
   color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'
   onChange?: (value: string | number) => void
-  dataFetchCallBack?: ( pageNumber: number, params?: { value?: string } ) => Promise<{ totalNumberOfRecord: number;
-  itemList: { label: string; value: string | number }[] }>
-  onSelected: (item: { label: string; value: string | number | null }) => void
+  dataFetchCallBack?: ( pageNumber: number, params?: { value?: string } ) => Promise<{ totalNumberOfRecord: number;itemList: DropdownItem[]}>
+  onSelected: (item: DropdownItem | null) => void
   title?: string
   label?: string
   validator?: (value?: string | number | null) => string | undefined
-  initialValue?: { label: string; value: string | number } | null
-  dataList?: { label: string; value: string | number }[]
+  initialValue?: DropdownItem | null
+  dataList?: DropdownItem[]
   pageSize?: number
   disabled?: boolean
   hasSubmitted?: boolean,

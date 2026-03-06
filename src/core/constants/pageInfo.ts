@@ -438,6 +438,13 @@ export const getPageInfo = (path: string) => {
                 description: "Track & manage project related legal cases",
             }
 
+        case 'legalDashboard':
+            return {
+                title: "Legal Dashboard",
+                description: "Track & manage project related legal cases",
+            }
+            
+
         default:
             return {
                 title: 'Dashboard',

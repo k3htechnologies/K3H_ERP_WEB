@@ -1365,7 +1365,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                 : []
                           }
                           error={errors.Residential}
-                        />l̥
+                        />
                       </div>
                     )}
 

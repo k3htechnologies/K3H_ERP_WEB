@@ -417,6 +417,11 @@ export const getPageInfo = (path: string) => {
                 title: "Incentive Report",
                 description: "Centralized enquiry management for faster response",
             }
+        case 'classificationParameter':
+            return {
+                title: "Classification Parameter",
+                description: "Manage classification parameters for the system",
+            }
 
 
         // MARKETING

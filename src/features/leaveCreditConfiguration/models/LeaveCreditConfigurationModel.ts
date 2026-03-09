@@ -49,8 +49,8 @@ export interface AddUpdateLeaveCreditConfigurationRequest {
     LeaveCreditConfigurationId?: number
     Uniquekey?: string
     LeavePeriodMode?: string
-    StartDate?: string | null
-    EndDate?: string | null
+    FinancialYearStartDate?: string | null
+    FinancialYearEndDate?: string | null
     DepartmentMasterId?: number
     DesignationId?: string
     LeaveTypebalanceJSONList?: string

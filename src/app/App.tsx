@@ -155,6 +155,7 @@ import Target from '@/features/target/pages/Target';
 import IncentiveReport from '@/features/incentiveReport/pages/IncentiveReport';
 import { IncentiveReportListStateProvider } from '@/features/incentiveReport/context/IncentiveReportListStateContext';
 import PaymentScheduleSchemeMaster from '@/features/paymentScheduleSchemeMaster/pages/PaymentScheduleSchemeMaster';
+import ClassificationParameter from '@/features/classificationParameter/pages/ClassificationParameter';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -352,7 +353,8 @@ function App() {
             <Route path="otherCharges" element={<OtherCharges />} />
 
             <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
-             <Route path="paymentScheduleScheme" element={<PaymentScheduleSchemeMaster />} />
+            <Route path="paymentScheduleScheme" element={<PaymentScheduleSchemeMaster />} />
+            <Route path="classificationParameter" element={<ClassificationParameter />} />
 
             <Route path="target" element={<Target />} />
 

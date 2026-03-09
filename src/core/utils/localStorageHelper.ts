@@ -1133,6 +1133,23 @@ export const LocalStorageHelper = {
   },
   //#endregion
 
+  //#region GET CLASSIFICATION PARAMETER COLUMNS
+  getClassificationParameterTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS);
+      } catch (error) {
+        console.error("Error reading PAYMENT SCHEDULE SCHEME MASTER Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
+
+
+
   //#region CLEAR LOCAL STORAGE
   clearLocalStorageData: (): void => {
     try {

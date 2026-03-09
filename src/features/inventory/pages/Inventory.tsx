@@ -1293,6 +1293,7 @@ const Inventory = () => {
                         <FloorCard
                             key={floor.InventoryFloorId}
                             floor={floor}
+                            slabHeight={floor.SlabHeight || 0}
                             projectId={inventory[0]?.ProjectId || 0}
                             building={inventory[selectedBuildingIndex || 0]}
                             wing={selectedWing}

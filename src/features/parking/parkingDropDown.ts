@@ -1,13 +1,14 @@
 import * as E from 'fp-ts/Either';
 import { parkingService } from '@/features/parking/services/ParkingService';
 
-export const fetchParkingDropdown = async (pageNumber: number, params?: { value?: string; projectId?: number }) => {
+export const fetchParkingDropdown = async (pageNumber: number, params?: { value?: string; projectId?: number,displayParkingId?: string }) => {
     try {
         const responseEither = await parkingService.apiCallPullParkingWithPagination({
             PageSize: 20,
             PageNumber: pageNumber,
             ProjectId: params?.projectId || 0,
-            ParkingNumber: params?.value || ""
+            ParkingNumber: params?.value || "",
+            DisplayParkingId: params?.displayParkingId || ""
         });
 
         if (E.isLeft(responseEither)) {

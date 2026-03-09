@@ -48,7 +48,7 @@ const normalizeAvailableFiles = (input?: string | (string | File)[] | null): str
 
 /* ================= Component ================= */
 
-export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({ label, required, allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/octet-stream", "text/csv"], maxFiles = 100, value, availableFilesURL, onChange, placeholder = "Select file(s)...", error, size = "md", onRemoveExisting, disabled = false }) => {
+export const MultiFilePicker: React.FC<MultiFilePickerProps> = ({ label, required, allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif", "application/pdf", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "application/octet-stream", "text/csv"], maxFiles = 100, value, availableFilesURL, onChange, placeholder = "Select Excel File(s)", error, size = "md", onRemoveExisting, disabled = false }) => {
   const theme = THEME;
 
   const sizeConfig = {

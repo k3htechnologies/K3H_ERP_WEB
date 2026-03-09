@@ -87,6 +87,7 @@ const Parking = () => {
   const { projectId } = useProject()
 
   const { canAction, canExport } = useMenuPermissions();
+  const { canAction: canBookingAction } = useMenuPermissions('/booking');
 
   //#region INIT
 
@@ -629,11 +630,12 @@ const Parking = () => {
         onExportPdf={handleExportParkingPdf}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleInventory}
-        canExport={canExport}
+        canExport={canExport  && Number(projectId) > 0}
         exportLoading={isLoading}
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
         onClearSearch={handleClearSearch}
+        canAction={canAction && Number(projectId) > 0}
       />
 
       <ExportImport
@@ -734,6 +736,8 @@ const Parking = () => {
                 parking={parking}
                 onEdit={handleEditParking}
                 canAction={canAction}
+                canBookingAction={canBookingAction}
+                
               />
             ))}
           </div>

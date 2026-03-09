@@ -250,7 +250,7 @@ export const MASTER_DATA = {
 
   parkingStatus: ['Available', 'Block', 'Hold', 'Member'],
 
-  unitLayout: ['Living / Dining', 'Passage', 'Kitchen', 'Toilet', 'Master Bed Room', 'Main Door JAMB', 'KIT / Bed Door Jamb', 'Toilet Door Jamb'],
+  unitLayout: ['Entire Flat','Living / Dining', 'Passage', 'Kitchen', 'Toilet', 'Master Bed Room', 'Main Door JAMB', 'KIT / Bed Door Jamb', 'Toilet Door Jamb'],
 
   caseType: ['Civil', 'Criminal'],
 

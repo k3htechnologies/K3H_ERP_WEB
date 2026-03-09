@@ -70,7 +70,7 @@ export default function ExportImport({
     <Modal
       isOpen={open}
       onClose={onClose}
-      title="Upload Option"
+      title="Upload Excel File"
       saveText="Upload"
       onSubmit={(e) => {
         e.preventDefault();

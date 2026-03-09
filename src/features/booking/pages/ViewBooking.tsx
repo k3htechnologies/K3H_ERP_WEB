@@ -75,7 +75,8 @@ export const ViewBooking: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 1,
                     EnquiryId: enquiryIdToFetch,
-                    ProjectId: Number(projectId)
+                    ProjectId: Number(projectId),
+                    IsCheckPermission: sourcePage === 'inventory' ? false : true
                 };
 
                 const response = await EnquiryService.apiCallPullEnquiry(params);
@@ -113,7 +114,8 @@ export const ViewBooking: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 1,
                     BookingId: bookingId,
-                    ProjectId: Number(projectId)
+                    ProjectId: Number(projectId),
+                 IsCheckPermission:  sourcePage === 'inventory' ? false : true
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);

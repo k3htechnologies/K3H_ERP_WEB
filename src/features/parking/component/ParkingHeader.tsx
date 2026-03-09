@@ -13,6 +13,7 @@ interface ParkingHeaderProps {
     searchTerm?: string;
     onSearchChange?: (value: string) => void;
     onClearSearch?: () => void;
+    canAction?: boolean;
 }
 
 const parkingTabList = [
@@ -32,6 +33,7 @@ export const ParkingHeader = ({
     searchTerm = '',
     onSearchChange,
     onClearSearch,
+    canAction
 }: ParkingHeaderProps) => {
     return (
         <div className="flex flex-col w-full h-[150px]  rounded-tr-[15px] rounded-tl-[15px]   border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
@@ -54,7 +56,7 @@ export const ParkingHeader = ({
                 isShowExportButton={canExport}
                 onExportExcel={onExportExcel}
                 onExportPdf={onExportPdf}
-                isShowImportButton={true}
+                isShowImportButton={canAction}
                 onUploadExcel={onUploadExcel}
                 onDownloadSampleExcel={onDownloadSampleExcel}
                 exportLoading={exportLoading}

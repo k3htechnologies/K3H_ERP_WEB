@@ -7,6 +7,7 @@ import type { ParkingData } from "@/features/parking/models/ParkingModel";
 export interface FilterWithPaginationBookingRequest {
     PageSize: number;
     PageNumber: number;
+    IsCheckPermission?: boolean;
     BookingId?: number;
     ProjectId?: number;
     ApplicantMobileNumber?: string;

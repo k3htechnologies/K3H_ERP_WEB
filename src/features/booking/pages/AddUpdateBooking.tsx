@@ -1604,7 +1604,7 @@ export const AddUpdateBooking: React.FC = () => {
 
            const rERACarpetAreaSqFt = flatDataFromState?.RERACarpetAreaSqFt  ?? selectedFlatData?.RERACarpetAreaSqFt ?? 0;
 
-           const mappedCharges = mapOtherChargesToBookingOtherCharges(formData.AgreementValue??0,rERACarpetAreaSqFt ,response.right.Data);
+           const mappedCharges = mapOtherChargesToBookingOtherCharges(rERACarpetAreaSqFt ,response.right.Data);
 
           setOtherCharges(mappedCharges);
         } else {
@@ -2009,7 +2009,7 @@ export const AddUpdateBooking: React.FC = () => {
                      const flatDataFromState = (location.state as any)?.flatData;
 
                        const rERACarpetAreaSqFt = flatDataFromState?.RERACarpetAreaSqFt  ?? selectedFlatData?.RERACarpetAreaSqFt ?? 0;
-                     const mappedCharges = mapOtherChargesToBookingOtherCharges(Number(formData.AgreementValue??0), Number(rERACarpetAreaSqFt), otherChargesData);
+                     const mappedCharges = mapOtherChargesToBookingOtherCharges(Number(rERACarpetAreaSqFt), otherChargesData);
                     setOtherCharges(mappedCharges);
                   }
                 }}

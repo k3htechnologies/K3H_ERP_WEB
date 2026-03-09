@@ -4,8 +4,7 @@ interface SalesAdvisorLeaderBoardItem {
   FullName: string;
   Designation: string;
   TotalBookings: number;
-  BookingValueInCr: number;
-  ConversionRate: number | Record<string, any>;
+  TotalBookingValue: number;
 }
 
 interface Props {
@@ -39,11 +38,6 @@ export default function Leaderboard({
 
           {leaderBoardData.map((advisor, index) => {
 
-            const conversionRate =
-              typeof advisor.ConversionRate === "number"
-                ? `${advisor.ConversionRate}%`
-                : "0%";
-
             return (
               <div
                 key={index}
@@ -75,18 +69,10 @@ export default function Leaderboard({
                       Booking Value
                     </p>
                     <p className="text-gray-900 font-bold">
-                      ₹{formatToKLCr(advisor.BookingValueInCr)}
+                      ₹{formatToKLCr(advisor.TotalBookingValue)}
                     </p>
                   </div>
 
-                  <div>
-                    <p className="text-gray-400 text-xs uppercase tracking-wide">
-                      Conversion Rate
-                    </p>
-                    <p className="text-green-600 font-bold">
-                      {conversionRate}
-                    </p>
-                  </div>
                 </div>
               </div>
             );

@@ -14,13 +14,9 @@ interface EnquiryLeadFunnelData {
 }
 
 interface EnquiryHotWarmColdData {
-    TotalEnquiries: number;
     ColdLeads: number;
     WarmLeads: number;
     HotLeads: number;
-    ColdRate: number;
-    WarmRate: number;
-    HotRate: number;
 }
 
 interface Props {

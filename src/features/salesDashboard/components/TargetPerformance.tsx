@@ -1,14 +1,12 @@
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from 'recharts';
-import { formatToKLCr } from "@/core/utils/comman";
 
 interface TargetPerformanceItem {
-    AchievedAmount: number;
+    AchievedBooking: number;
     AchievementPercent: number;
     FullName: string;
     PerformanceStatus: string;
-    TargetAmount: number;
+    TargetBooking: number;
     TotalBookings: number;
-    BookingFromEnquiry: number;
     Designation: string;
 
 }
@@ -68,15 +66,15 @@ export default function TargetPerformance({ targetPerformanceData }: Props) {
                         <div className="grid grid-cols-3 text-sm">
                             <div>
                                 <p className="text-[10px] text-gray-400 font-bold uppercase">Target</p>
-                                <p className="font-bold text-gray-800">₹{formatToKLCr(item.TargetAmount)}</p>
+                                <p className="font-bold text-gray-800">{(item.TargetBooking)}</p>
                             </div>
                             <div className="text-center">
                                 <p className="text-[10px] text-gray-400 font-bold uppercase">Achieved</p>
-                                <p className={`font-bold ${getStatusTextColor(item.PerformanceStatus)}`}>₹{formatToKLCr(item.AchievedAmount)}</p>
+                                <p className={`font-bold ${getStatusTextColor(item.PerformanceStatus)}`}>{(item.AchievedBooking)}</p>
                             </div>
                             <div className="text-right">
                                 <p className="text-[10px] text-gray-400 font-bold uppercase">Bookings</p>
-                                <p className="font-bold text-gray-800">{item.TotalBookings}/{item.BookingFromEnquiry}</p>
+                                <p className="font-bold text-gray-800">{item.TotalBookings}/{item.TargetBooking}</p>
                             </div>
                         </div>
 

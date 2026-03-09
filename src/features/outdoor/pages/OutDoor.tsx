@@ -328,7 +328,7 @@ export const OutDoor: React.FC = () => {
               return (
                 <ExpandableCard
                   key={item.OutdoorId}
-                  expandedheight={310}
+                  expandedheight={320}
                   title={
                     <div className="flex items-center justify-between w-full gap-4">
                       <div className="flex-1 min-w-0">

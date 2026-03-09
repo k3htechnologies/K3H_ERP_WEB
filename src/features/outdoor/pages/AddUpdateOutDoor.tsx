@@ -382,7 +382,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                   value={formatDate_dd_mm_yyyy(outdoorFormData.OutDoorDate)}
                   onChange={(val) => handleFieldChange('OutDoorDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
                   required
-                  disabled={!!outdoorFormData.PunchIn}
+                  disabled={!!outdoorFormData.Conclusion}
                   error={errors.OutDoorDate}
                 />
               </div>
@@ -398,7 +398,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                     setSelectedTime(val);
                     handleFieldChange("OutDoorTime", val);
                   }}
-                  disabled={!!outdoorFormData.PunchIn}
+                  disabled={!!outdoorFormData.Conclusion}
                   error={errors.OutDoorTime}
                 />
               </div>
@@ -413,7 +413,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                   initialValue={createDropdownInitialValue(outdoorFormData.DepartmentId, dropdownLabels.departmentName)}
                   error={errors.DepartmentId}
                   required
-                  disabled={!!outdoorFormData.PunchIn}
+                  disabled={!!outdoorFormData.Conclusion}
                 />
               </div>
 
@@ -433,7 +433,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                       setErrors((prev) => ({ ...prev, AccompaniedById: '' }));
                     }
                   }}
-                  disabled={!!outdoorFormData.PunchIn || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
+                  disabled={!!outdoorFormData.Conclusion || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
                 />
 
               </div>
@@ -447,7 +447,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                   value={outdoorFormData.CompanyName}
                   onChange={(e) => handleFieldChange('CompanyName', e.target.value)}
                   error={errors.CompanyName}
-                  disabled={!!outdoorFormData.PunchIn}
+                  disabled={!!outdoorFormData.Conclusion}
                 />
               </div>
               <div>
@@ -472,7 +472,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                   label="Company Address"
                   required
                   value={outdoorFormData.CompanyAddress}
-                  disabled={!!outdoorFormData.PunchIn}
+                  disabled={!!outdoorFormData.Conclusion}
                   onChange={(e) => handleFieldChange("CompanyAddress", e.target.value)}
                   error={errors.CompanyAddress}
                 />

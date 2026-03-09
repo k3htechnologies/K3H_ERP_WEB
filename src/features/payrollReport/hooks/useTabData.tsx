@@ -410,7 +410,7 @@ export function useTabData(
           EndDate: filterParams.EndDate || undefined,
           Reason: filterParams.Reason?.trim() || undefined,
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS["Comp-Off"]),
-          IsReport: false,
+          IsReport: true,
         };
 
         const response = await compOffService.apiCallPullCompOff(params);
@@ -460,6 +460,7 @@ export function useTabData(
           EmployeeName: empName(filterParams),
           ...dateParams(filterParams),
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS.Leave),
+          IsReport:true
         };
 
         const response = await LeaveService.apiCallPullLeave(params);
@@ -509,6 +510,7 @@ export function useTabData(
           EmployeeName: empName(filterParams),
           ...dateParams(filterParams),
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS.Outdoor),
+          IsReport:true
         };
 
         const response = await outDoorService.apiCallPullOutDoor(params);

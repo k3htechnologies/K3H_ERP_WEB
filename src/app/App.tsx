@@ -158,6 +158,9 @@ import Target from '@/features/target/pages/Target';
 import IncentiveReport from '@/features/incentiveReport/pages/IncentiveReport';
 import { IncentiveReportListStateProvider } from '@/features/incentiveReport/context/IncentiveReportListStateContext';
 import PaymentScheduleSchemeMaster from '@/features/paymentScheduleSchemeMaster/pages/PaymentScheduleSchemeMaster';
+import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
+import PerformanceReport from '@/features/performanceReport/pages/PerformanceReport';
+import ViewPerformanceReport from '@/features/performanceReport/pages/ViewPerformanceReport';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -192,7 +195,7 @@ function App() {
   useEffect(() => {
     const token = LocalStorageHelper.getStoredTokenData()
     if (!token) {
-      
+
     }
   }, [])
 
@@ -355,7 +358,7 @@ function App() {
             <Route path="otherCharges" element={<OtherCharges />} />
 
             <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
-             <Route path="paymentScheduleScheme" element={<PaymentScheduleSchemeMaster />} />
+            <Route path="paymentScheduleScheme" element={<PaymentScheduleSchemeMaster />} />
 
             <Route path="target" element={<Target />} />
 
@@ -366,7 +369,9 @@ function App() {
             <Route path="enquiryReport" element={<EnquiryReport />} />
             <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
-
+            <Route path="performance" element={<PerformanceReport />} />
+            <Route path="performance/view/:EmployeeId" element={<ViewPerformanceReport />} />
+            
             {/* REDEVELOPMENT */}
 
             <Route path="redevelopmentDashboard" element={<RedevelopmentDashboard />} />
@@ -402,12 +407,12 @@ function App() {
 
 
             {/* LITIGATION */}
+            <Route path="litigationDashboard" element={<LitigationDashboard />} />
+
             <Route path='litigation' element={<LitigationListStateProvider><Litigation /></LitigationListStateProvider>} />
             <Route path='litigation/add/:LitigationId?' element={<LitigationListStateProvider><AddUpdateLitigation /></LitigationListStateProvider>} />
             <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
             <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
-
-            <Route path="litigationDashboard" element={<LitigationDashboard />} />
 
             {/* PROJECT */}
             <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />

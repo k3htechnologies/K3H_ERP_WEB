@@ -1,21 +1,40 @@
-import * as E from 'fp-ts/Either';
-import { paymentScheduleSchemeMasterService } from '@/features/paymentScheduleSchemeMaster/services/PaymentScheduleSchemeMasterService';
+import * as E from "fp-ts/Either";
+import { paymentScheduleSchemeMasterService } from "@/features/paymentScheduleSchemeMaster/services/PaymentScheduleSchemeMasterService";
 
-export const fetchPaymentScheduleSchemeMasterDropDown = async (pageNumber: number, params?: { projectId?: number; paymentScheduleScheme?: string, inventoryBuildingId?: number, inventoryFlatFloorBasementPodiumWingId?: number }) => {
+export const fetchPaymentScheduleSchemeMasterDropDown = async (
+  pageNumber: number,
+  params?: {
+    projectId?: number;
+    paymentScheduleScheme?: string;
+    inventoryBuildingId?: number;
+    inventoryFlatFloorBasementPodiumWingId?: number;
+  }
+) => {
   try {
-
-    const responseEither = await paymentScheduleSchemeMasterService.apiCallPullPaymentScheduleSchemeMaster({
-      PageSize: 40,
-      PageNumber: pageNumber,
-      ProjectId: params?.projectId || 0,
-      PaymentScheduleScheme: params?.paymentScheduleScheme || "",
-      InventoryBuildingId: params?.inventoryBuildingId || 0,
-      InventoryFlatFloorBasementPodiumWingId: params?.inventoryFlatFloorBasementPodiumWingId || 0,
-      IsCheckPermission: false,
-    });
+    const responseEither =
+      await paymentScheduleSchemeMasterService.apiCallPullPaymentScheduleSchemeMaster(
+        {
+          PageSize: 40,
+          PageNumber: pageNumber,
+          ProjectId: params?.projectId || 0,
+          PaymentScheduleScheme: params?.paymentScheduleScheme || "",
+          InventoryBuildingId: params?.inventoryBuildingId || 0,
+          InventoryFlatFloorBasementPodiumWingId:
+            params?.inventoryFlatFloorBasementPodiumWingId || 0,
+          IsCheckPermission: false,
+        }
+      );
 
     if (E.isLeft(responseEither)) {
-      return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
+      return {
+        totalNumberOfRecord: 0,
+        itemList: [] as {
+          label: string;
+          value: string;
+          inventoryBuildingId?: number;
+          inventoryFlatFloorBasementPodiumWingId?: number;
+        }[],
+      };
     }
 
     const apiResponse = responseEither.right;
@@ -24,22 +43,31 @@ export const fetchPaymentScheduleSchemeMasterDropDown = async (pageNumber: numbe
       ...(apiResponse?.Data || []).map((d: any) => ({
         label: d.PaymentScheduleScheme,
         value: String(d.PaymentScheduleSchemeMasterId),
-        
+        inventoryBuildingId: d.InventoryBuildingId,
+        inventoryFlatFloorBasementPodiumWingId:d.InventoryFlatFloorBasementPodiumWingId,
       })),
       {
         label: "Other",
-        value: "0"
-      }
+        value: "0",
+        inventoryBuildingId: 0,
+        inventoryFlatFloorBasementPodiumWingId: 0,
+      },
     ];
-
+    console.log('item', itemList)
+    return {
+      totalNumberOfRecord:
+        apiResponse?.TotalNumberOfRecord ?? itemList.length,
+      itemList,
+    };
+  } catch (err) {
+    console.error(
+      "FETCH PAYMENT SCHEDULE SCHEME DROPDOWN ERROR",
+      err
+    );
 
     return {
-      totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? itemList.length,
-      itemList
+      totalNumberOfRecord: 0,
+      itemList: [] as { label: string; value: string }[],
     };
-
-  } catch (err) {
-    console.error('FETCH PAYMENT SCHEDULE SCHEME DROPDOWN ERROR', err);
-    return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: number }[] };
   }
 };

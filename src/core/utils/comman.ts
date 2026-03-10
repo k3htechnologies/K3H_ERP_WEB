@@ -1,3 +1,4 @@
+
 export function getTimeDuration(startTime: string, endTime: string): string {
   if (!startTime || !endTime) return "";
 
@@ -106,4 +107,56 @@ export const format24To12Hour = (hour: string, minute: string) => {
   return `${displayHour.toString().padStart(2, "0")}:${minute} ${ampm}`
 }
 
+export const getMonthDateRange = (date: Date) => {
 
+  const fromDate = new Date(date.getFullYear(), date.getMonth(), 1);
+  const toDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+
+  fromDate.setHours(0, 0, 0, 0);
+  toDate.setHours(23, 59, 59, 999);
+
+  return { fromDate, toDate };
+};
+
+export const getTodayDateRange = () => {
+
+  const today = new Date();
+
+  const fromDate = new Date(today);
+  const toDate = new Date(today);
+
+  fromDate.setHours(0, 0, 0, 0);
+  toDate.setHours(23, 59, 59, 999);
+
+  return { fromDate, toDate };
+};
+
+export const getWeekToDateRange = () => {
+
+  const today = new Date();
+
+  const firstDay = new Date(today);
+  const day = today.getDay();
+  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
+
+  const fromDate = new Date(firstDay.setDate(diff));
+  const toDate = new Date(today);
+
+  fromDate.setHours(0, 0, 0, 0);
+  toDate.setHours(23, 59, 59, 999);
+
+  return { fromDate, toDate };
+};
+
+export const getYearToDateRange = () => {
+
+  const today = new Date();
+
+  const fromDate = new Date(today.getFullYear(), 0, 1);
+  const toDate = new Date(today);
+
+  fromDate.setHours(0, 0, 0, 0);
+  toDate.setHours(23, 59, 59, 999);
+
+  return { fromDate, toDate };
+};

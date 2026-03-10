@@ -10,7 +10,7 @@ export default function UpComingHearing({ upComingHearingData = [] }: Props) {
         Upcoming Hearings
       </h2>
 
-      <div className="bg-white rounded p-4 space-y-4 shadow-sm">
+      <div className="bg-white rounded p-4 space-y-4 shadow-sm h-[396px]">
         {upComingHearingData.map((item, index) => (
           <div
             key={index}

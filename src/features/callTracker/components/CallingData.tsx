@@ -309,14 +309,6 @@ export const CallingData: React.FC = () => {
             align: 'left',
             render: (value, row) => value ? formatDate_dd_MonthName_yy(row.CreatedDate) : '-'
         },
-        {
-            key: 'Address',
-            label: 'Address',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-        },
     ], []);
     //#endregion
 

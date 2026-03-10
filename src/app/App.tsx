@@ -161,6 +161,7 @@ import PaymentScheduleSchemeMaster from '@/features/paymentScheduleSchemeMaster/
 import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
 import PerformanceReport from '@/features/performanceReport/pages/PerformanceReport';
 import ViewPerformanceReport from '@/features/performanceReport/pages/ViewPerformanceReport';
+import Brokerage from '@/features/brokerage/pages/Brokerage';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -371,7 +372,11 @@ function App() {
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
             <Route path="performance" element={<PerformanceReport />} />
             <Route path="performance/view/:EmployeeId" element={<ViewPerformanceReport />} />
+
+            {/* CRM */}
             
+            <Route path="brokerage" element={<Brokerage />} />
+
             {/* REDEVELOPMENT */}
 
             <Route path="redevelopmentDashboard" element={<RedevelopmentDashboard />} />

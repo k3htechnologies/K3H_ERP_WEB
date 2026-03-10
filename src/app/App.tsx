@@ -157,6 +157,7 @@ import { IncentiveReportListStateProvider } from '@/features/incentiveReport/con
 import PaymentScheduleSchemeMaster from '@/features/paymentScheduleSchemeMaster/pages/PaymentScheduleSchemeMaster';
 import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
 import ClassificationParameter from '@/features/classificationParameter/pages/ClassificationParameter';
+import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -409,6 +410,9 @@ function App() {
             <Route path="legalDashboard" element={<LitigationDashboard />} />
 
 
+            {/*INWARD - OUTWARD */}
+            <Route path='inwardOutward' element={<InwardOutward/>}/>
+            
             {/* PROJECT */}
             <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />
             <Route path='approvedBank/approvedBankFile/:ApprovedBankFolderId?' element={<ApprovedBankListStateProvider><ApprovedBankFile /></ApprovedBankListStateProvider>} />

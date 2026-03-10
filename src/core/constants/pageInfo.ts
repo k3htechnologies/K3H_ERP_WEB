@@ -423,6 +423,12 @@ export const getPageInfo = (path: string) => {
                 description: "Manage classification parameters for the system",
             }
 
+        // INWARD - OUTWARD
+        case 'inwardOutward':
+            return {
+                title: 'InwardOutward',
+                description: "Inward Outward for the system"
+            }
 
         // MARKETING
         case 'content':

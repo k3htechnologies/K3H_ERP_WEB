@@ -47,26 +47,19 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { useLitigationListState } from "@/features/litigation/context/LitigationListStateContext";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import Tabs from "@/ui/components/Tab/Tab";
-import type {
-  FilterWithPaginationLitigationDocumentRequest,
-  LitigationDocumentData,
-} from "../models/LitigationDocumentModel";
-import { litigationDocumentService } from "../services/LitigationDocumentServices";
+import type { FilterWithPaginationLitigationDocumentRequest, LitigationDocumentData } from "../models/LitigationDocumentModel";
+import { litigationDocumentService } from "@/features/litigation/services/LitigationDocumentServices";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const ViewLitigation: React.FC = () => {
   // EDIT LITIGATION DATA FROM STATE
   const { LitigationId } = useParams<{ LitigationId?: string }>();
   const { listState } = useLitigationListState();
-  const currentLitigationId = LitigationId
-    ? Number(LitigationId)
-    : listState.LitigationId;
+  const currentLitigationId = LitigationId ? Number(LitigationId) : listState.LitigationId;
 
   // PROJECT CONTEXT
   const projectContext = useProject();
-  const projectId = projectContext?.projectId
-    ? Number(projectContext.projectId)
-    : 0;
+  const projectId = projectContext?.projectId ? Number(projectContext.projectId) : 0;
 
   const initialClosureFormData: AddUpdateLitigationClosureRequest = {
     LitigationClosureId: 0,
@@ -92,18 +85,12 @@ const ViewLitigation: React.FC = () => {
   });
 
   //#region STATE MANAGEMENT
-  const [litigationData, setLitigationData] = useState<LitigationData | null>(
-    null,
-  );
+  const [litigationData, setLitigationData] = useState<LitigationData | null>(null);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isLitigationReopenDialogOpen, setIsLitigationReopenDialogOpen] =
-    useState(false);
-  const [selectedLitigationItem, setSelectedLitigationItem] =
-    useState<LitigationReopenData | null>(null);
-  const [litigationDocumentList, setLitigationDocumentList] = useState<
-    LitigationDocumentData[]
-  >([]);
+  const [isLitigationReopenDialogOpen, setIsLitigationReopenDialogOpen] = useState(false);
+  const [selectedLitigationItem, setSelectedLitigationItem] = useState<LitigationReopenData | null>(null);
+  const [litigationDocumentList, setLitigationDocumentList] = useState<LitigationDocumentData[]>([]);
 
   const [closureData, setClosureData] = useState<LitigationClosureData[]>([]);
   const [isClosureModalOpen, setIsClosureModalOpen] = useState(false);
@@ -112,26 +99,20 @@ const ViewLitigation: React.FC = () => {
   const [isHearingModalOpen, setIsHearingModalOpen] = useState(false);
 
   // DELETE HEARING STATE
-  const [isDeleteHearingDialogOpen, setIsDeleteHearingDialogOpen] =
-    useState(false);
-  const [selectedHearingItem, setSelectedHearingItem] =
-    useState<LitigationHearingData | null>(null);
+  const [isDeleteHearingDialogOpen, setIsDeleteHearingDialogOpen] = useState(false);
+  const [selectedHearingItem, setSelectedHearingItem] = useState<LitigationHearingData | null>(null);
 
   // HEARING ATTACHMENT URL FILES
   const [hearingURLFiles, setHearingURLFiles] = useState<(File | string)[]>([]);
-  const [removeHearingAttachementUrls, SetRemoveHearingAttachementUrls] =
-    useState<string[]>([]);
+  const [removeHearingAttachementUrls, SetRemoveHearingAttachementUrls] = useState<string[]>([]);
   const [hearingURL, setHearingURL] = useState<string>();
 
   // CLOSURE ATTACHMENT URL FILES
   const [closureURLFiles, setClosureURLFiles] = useState<(File | string)[]>([]);
-  const [removeClosureAttachementUrls, SetRemoveClosureAttachementUrls] =
-    useState<string[]>([]);
+  const [removeClosureAttachementUrls, SetRemoveClosureAttachementUrls] = useState<string[]>([]);
   const [closureURL, setClosureURL] = useState<string>();
-  const [closureFormData, setClosureFormData] =
-    useState<AddUpdateLitigationClosureRequest>(() => initialClosureFormData);
-  const [hearingFormData, setHearingFormData] =
-    useState<AddUpdateLitigationHearingRequest>(() => initialHearingFormData());
+  const [closureFormData, setClosureFormData] = useState<AddUpdateLitigationClosureRequest>(() => initialClosureFormData);
+  const [hearingFormData, setHearingFormData] = useState<AddUpdateLitigationHearingRequest>(() => initialHearingFormData());
 
   // NAVIGATE
   const navigate = useNavigate();
@@ -144,8 +125,7 @@ const ViewLitigation: React.FC = () => {
   const { addToast } = useToast();
 
   const litigationStatus = litigationData?.Status;
-  const isEditable =
-    canAction && (litigationStatus === "Open" || litigationStatus === "Reopen");
+  const isEditable = canAction && (litigationStatus === "Open" || litigationStatus === "Reopen");
 
   //#region ERROR STATE MANAGEMENT
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -157,7 +137,7 @@ const ViewLitigation: React.FC = () => {
   ];
 
   const [activeTab, setActiveTab] = useState<string>(litigationTabList[0].id);
-  const isEditDisabled = !isEditable || activeTab === "Document";
+  const isEditDisabled = !isEditable;
 
   //#region USE EFFECT TO FETCH CLOSURE DETAILS
   useEffect(() => {
@@ -204,7 +184,6 @@ const ViewLitigation: React.FC = () => {
 
   //#region CLOSURE MODAL MANAGEMENT
   const handleopenClosureModal = (item?: LitigationClosureData) => {
-    
     setErrors({});
     setClosureURLFiles([]);
     SetRemoveClosureAttachementUrls([]);
@@ -236,10 +215,7 @@ const ViewLitigation: React.FC = () => {
   //endregion
 
   //#region HANDLE FIELD CHANGE EVENT
-  const handleFieldChange = (
-    field: keyof AddUpdateLitigationClosureRequest,
-    value: any,
-  ) => {
+  const handleFieldChange = (field: keyof AddUpdateLitigationClosureRequest, value: any) => {
     setClosureFormData((prev) => ({ ...prev, [field]: value }));
 
     if (errors[field]) {
@@ -260,8 +236,7 @@ const ViewLitigation: React.FC = () => {
           LitigationId: currentLitigationId,
         };
 
-        const response =
-          await litigationClosureService.apiCallPullLitigationClosure(params);
+        const response = await litigationClosureService.apiCallPullLitigationClosure(params);
 
         if (E.isRight(response)) {
           setClosureData(response.right.Data);
@@ -299,13 +274,7 @@ const ViewLitigation: React.FC = () => {
       newErrors.Remark = "Remark is required.";
     }
 
-    if (
-      !hasAnyDocumentFile(
-        closureURLFiles,
-        closureURL,
-        removeClosureAttachementUrls,
-      )
-    ) {
+    if (!hasAnyDocumentFile(closureURLFiles, closureURL, removeClosureAttachementUrls)) {
       newErrors.ClosureAttachementURL = "File is required.";
     }
     return {
@@ -318,10 +287,7 @@ const ViewLitigation: React.FC = () => {
   //#region PUSH FORM DATA
   const PushClosureFormData = (): FormData => {
     const fd = new FormData();
-    fd.append(
-      "LitigationClosureId",
-      closureFormData.LitigationClosureId.toString(),
-    );
+    fd.append("LitigationClosureId", closureFormData.LitigationClosureId.toString());
     fd.append("Uniquekey", closureFormData.Uniquekey ?? "");
     fd.append("LitigationId", currentLitigationId.toString());
     fd.append("ProjectId", projectId!.toString());
@@ -335,10 +301,7 @@ const ViewLitigation: React.FC = () => {
       }
     });
 
-    fd.append(
-      "RemoveClosureAttachementURL",
-      removeClosureAttachementUrls.join(","),
-    );
+    fd.append("RemoveClosureAttachementURL", removeClosureAttachementUrls.join(","));
     return fd;
   };
   //#endregion
@@ -361,10 +324,7 @@ const ViewLitigation: React.FC = () => {
       async () => {
         const payload = PushClosureFormData();
 
-        const response =
-          await litigationClosureService.apiCallAddUpdateLitigationClosure(
-            payload,
-          );
+        const response = await litigationClosureService.apiCallAddUpdateLitigationClosure(payload);
 
         if (E.isRight(response)) {
           addToast({
@@ -386,9 +346,7 @@ const ViewLitigation: React.FC = () => {
         addToast({ type: "error", title: error.message });
       },
       undefined,
-      closureFormData.LitigationClosureId
-        ? "Updating Closure"
-        : "Adding Closure",
+      closureFormData.LitigationClosureId ? "Updating Closure" : "Adding Closure",
     );
   };
   //#endregion
@@ -426,10 +384,7 @@ const ViewLitigation: React.FC = () => {
   //#endregion
 
   //HEARING HANDLE CHANGE
-  const handleHearingFieldChange = (
-    field: keyof AddUpdateLitigationHearingRequest,
-    value: any,
-  ) => {
+  const handleHearingFieldChange = (field: keyof AddUpdateLitigationHearingRequest, value: any) => {
     setHearingFormData((prev) => ({ ...prev, [field]: value }));
 
     if (errors[field]) {
@@ -449,8 +404,7 @@ const ViewLitigation: React.FC = () => {
           ProjectId: Number(projectId),
           LitigationId: currentLitigationId,
         };
-        const response =
-          await litigationHearingService.apiCallPullLitigationHearing(params);
+        const response = await litigationHearingService.apiCallPullLitigationHearing(params);
 
         if (E.isRight(response)) {
           setHearingData(response.right.Data);
@@ -476,7 +430,10 @@ const ViewLitigation: React.FC = () => {
 
     if (!hearingFormData.HearingDate?.trim()) {
       newErrors.HearingDate = "Hearing Date is required.";
-    } else if (hearingFormData.LitigationHearingId === 0 && new Date(hearingFormData.HearingDate) < new Date(litigationData?.DateOfFilling || new Date())) {
+    } else if (
+      hearingFormData.LitigationHearingId === 0 &&
+      new Date(hearingFormData.HearingDate) < new Date(litigationData?.DateOfFilling || new Date())
+    ) {
       newErrors.HearingDate = "Hearing Date cannot be in the past.";
     }
 
@@ -484,13 +441,7 @@ const ViewLitigation: React.FC = () => {
       newErrors.Remark = "Remark is required.";
     }
 
-    if (
-      !hasAnyDocumentFile(
-        hearingURLFiles,
-        hearingURL,
-        removeHearingAttachementUrls,
-      )
-    ) {
+    if (!hasAnyDocumentFile(hearingURLFiles, hearingURL, removeHearingAttachementUrls)) {
       newErrors.HearingAttachementURL = "File is required.";
     }
     return {
@@ -503,10 +454,7 @@ const ViewLitigation: React.FC = () => {
   //#region PUSH HEARING DATA
   const PushHearingFormData = (): FormData => {
     const fd = new FormData();
-    fd.append(
-      "LitigationHearingId",
-      String(hearingFormData.LitigationHearingId ?? 0),
-    );
+    fd.append("LitigationHearingId", String(hearingFormData.LitigationHearingId ?? 0));
     fd.append("Uniquekey", hearingFormData.Uniquekey ?? "");
     fd.append("LitigationId", String(hearingFormData.LitigationId ?? 0));
     fd.append("ProjectId", projectId!.toString());
@@ -518,10 +466,7 @@ const ViewLitigation: React.FC = () => {
         fd.append("HearingAttachementURL", file);
       }
     });
-    fd.append(
-      "RemoveHearingAttachementURL",
-      removeHearingAttachementUrls.join(","),
-    );
+    fd.append("RemoveHearingAttachementURL", removeHearingAttachementUrls.join(","));
     return fd;
   };
   //#endregion
@@ -543,10 +488,7 @@ const ViewLitigation: React.FC = () => {
       async () => {
         const payload = PushHearingFormData();
 
-        const response =
-          await litigationHearingService.apiCallAddUpdateLitigationHearing(
-            payload,
-          );
+        const response = await litigationHearingService.apiCallAddUpdateLitigationHearing(payload);
 
         if (E.isRight(response)) {
           addToast({
@@ -568,9 +510,7 @@ const ViewLitigation: React.FC = () => {
         addToast({ type: "error", title: error.message });
       },
       undefined,
-      hearingFormData.LitigationHearingId
-        ? "Updating Hearing"
-        : "Adding Hearing",
+      hearingFormData.LitigationHearingId ? "Updating Hearing" : "Adding Hearing",
     );
   };
 
@@ -593,8 +533,7 @@ const ViewLitigation: React.FC = () => {
           LitigationId: currentLitigationId,
           ProjectId: Number(projectId),
         };
-        const response =
-          await litigationHearingService.apiCallDeleteLitigationHearing(params);
+        const response = await litigationHearingService.apiCallDeleteLitigationHearing(params);
 
         if (E.isRight(response)) {
           addToast({
@@ -625,6 +564,12 @@ const ViewLitigation: React.FC = () => {
     navigate(`/litigation/add/${row.LitigationId}`);
   };
   //#endregion
+  //#region EDIT DOCUMENT
+  const handleEditLitigationDocument = (row: LitigationDocumentData) => {
+    if (!row?.LitigationId) return;
+    navigate(`/litigation/document`);
+  };
+  //#endregion
 
   //#region BACK PROJECT PAGE
   const handleBackToListLitigation = () => {
@@ -646,8 +591,7 @@ const ViewLitigation: React.FC = () => {
           ProjectId: Number(projectId),
         };
 
-        const response =
-          await litigationService.apiCallUpdateLitigationReopen(payload);
+        const response = await litigationService.apiCallUpdateLitigationReopen(payload);
 
         if (E.isRight(response)) {
           addToast({
@@ -655,9 +599,7 @@ const ViewLitigation: React.FC = () => {
             title: response.right.SuccessMessage[0],
           });
 
-          setLitigationData((prev) =>
-            prev ? { ...prev, Status: "Reopen" } : prev,
-          );
+          setLitigationData((prev) => (prev ? { ...prev, Status: "Reopen" } : prev));
         } else {
           addToast({ type: "error", title: response.left.message });
         }
@@ -686,8 +628,7 @@ const ViewLitigation: React.FC = () => {
           ProjectId: Number(projectId),
           LitigationId: currentLitigationId,
         };
-        const response =
-          await litigationDocumentService.apiCallPullLitigationDocument(params);
+        const response = await litigationDocumentService.apiCallPullLitigationDocument(params);
 
         if (E.isRight(response)) {
           setLitigationDocumentList(response.right.Data);
@@ -708,9 +649,7 @@ const ViewLitigation: React.FC = () => {
 
   //#region CHECK DOCUMENT URL EXISTS
   const docsWithUrls = litigationDocumentList.filter((d) => {
-    const urls = parseDocumentUrls(d.DocumentURL ?? "").filter(
-      (x) => x?.trim()?.length,
-    );
+    const urls = parseDocumentUrls(d.DocumentURL ?? "").filter((x) => x?.trim()?.length);
 
     return urls.length > 0;
   });
@@ -737,6 +676,10 @@ const ViewLitigation: React.FC = () => {
         onEdit={() => {
           if (activeTab === "Overview" && litigationData) {
             handleEditLitigation(litigationData);
+          } else if (activeTab === "Document" && litigationData) {
+            handleEditLitigationDocument({
+              LitigationId: litigationData.LitigationId,
+            } as LitigationDocumentData);
           }
         }}
         isLoading={false}
@@ -766,86 +709,46 @@ const ViewLitigation: React.FC = () => {
             <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
               {/* ================= CASE DETAILS ================= */}
               <section className="bg-white border-b border-[#135bec2e] px-4 pt-1 pb-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                  Case Details
-                </h4>
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Case Details</h4>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                   <FieldItem label="Case Title" value={litigationData?.Title} />
                   <FieldItem
                     label="Date Of Filling"
-                    value={
-                      litigationData?.DateOfFilling
-                        ? formatDate_dd_MonthName_yy(
-                            litigationData.DateOfFilling,
-                          )
-                        : ""
-                    }
+                    value={litigationData?.DateOfFilling ? formatDate_dd_MonthName_yy(litigationData.DateOfFilling) : ""}
                   />
-                  <FieldItem
-                    label="Case Type"
-                    value={litigationData?.CaseType}
-                  />
-                  <FieldItem
-                    label="Case / Petiton / Dispute Number"
-                    value={litigationData?.CaseNumber}
-                  />
+                  <FieldItem label="Case Type" value={litigationData?.CaseType} />
+                  <FieldItem label="Case / Petiton / Dispute Number" value={litigationData?.CaseNumber} />
                 </div>
               </section>
 
               {/* ================= COURT DETAILS ================= */}
               <section className="bg-white border-b border-[#135bec2e] p-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                  {" "}
-                  Court Details
-                </h4>
+                <h4 className="text-lg font-semibold text-gray-900 mb-4"> Court Details</h4>
                 <div className="lg:col-span-3 pb-1">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                    <FieldItem
-                      label="Court Type"
-                      value={litigationData?.CourtType}
-                    />
-                    <FieldItem
-                      label="Court Name"
-                      value={litigationData?.CourtName}
-                    />
-                    <FieldItem
-                      label="Court Location"
-                      value={litigationData?.CourtLocation}
-                    />
+                    <FieldItem label="Court Type" value={litigationData?.CourtType} />
+                    <FieldItem label="Court Name" value={litigationData?.CourtName} />
+                    <FieldItem label="Court Location" value={litigationData?.CourtLocation} />
                   </div>
                 </div>
               </section>
 
               {/* ================= PARTIES DETAILS ================= */}
               <section className="bg-white p-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                  Parties Details{" "}
-                </h4>
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">Parties Details </h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
                   <div className="lg:col-span-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                      <FieldItem
-                        label="Plaintiff"
-                        value={litigationData?.Plantiff}
-                      />
-                      <FieldItem
-                        label="Defendant / Opposite Party / Respondent"
-                        value={litigationData?.Defendant}
-                      />
+                      <FieldItem label="Plaintiff" value={litigationData?.Plantiff} />
+                      <FieldItem label="Defendant / Opposite Party / Respondent" value={litigationData?.Defendant} />
                     </div>
                   </div>
 
                   <div className="lg:col-span-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                      <FieldItem
-                        label="Assigned Representative"
-                        value={litigationData?.AssignedRepresentative}
-                      />
-                      <FieldItem
-                        label="Opposing Representative"
-                        value={litigationData?.OpposingRepresentative}
-                      />
+                      <FieldItem label="Assigned Representative" value={litigationData?.AssignedRepresentative} />
+                      <FieldItem label="Opposing Representative" value={litigationData?.OpposingRepresentative} />
                     </div>
                   </div>
                 </div>
@@ -854,36 +757,23 @@ const ViewLitigation: React.FC = () => {
 
             {/* ================= CLOSURE DETAILS ================= */}
 
-            {(litigationStatus === "Closed" ||
-              litigationStatus === "Reopen") && (
+            {(litigationStatus === "Closed" || litigationStatus === "Reopen") && (
               <div className="col-span-7">
                 <div className="bg-white rounded-lg border border-[#135bec2e] shadow-sm p-4 mt-2">
                   <section>
-                    <h4 className="text-lg font-semibold text-gray-900 pb-2">
-                      Closure Details
-                    </h4>
+                    <h4 className="text-lg font-semibold text-gray-900 pb-2">Closure Details</h4>
 
                     {closureData.length === 0 ? (
-                      <p className="text-gray-500 text-sm">
-                        No closure history found.
-                      </p>
+                      <p className="text-gray-500 text-sm">No closure history found.</p>
                     ) : (
                       closureData.map((item, index) => {
                         const isLatest = index === 0;
                         const isCaseReopen = litigationStatus === "Closed";
 
                         return (
-                          <div
-                            key={item.LitigationClosureId}
-                            className="mb-4 pb-4 border-b border-gray-300 last:border-b-0 last:pb-0"
-                          >
+                          <div key={item.LitigationClosureId} className="mb-4 pb-4 border-b border-gray-300 last:border-b-0 last:pb-0">
                             <div className="flex pb-2 justify-between">
-                              <FieldItem
-                                label="Closure Date"
-                                value={formatDate_dd_MonthName_yy(
-                                  item.ClosureDate,
-                                )}
-                              />
+                              <FieldItem label="Closure Date" value={formatDate_dd_MonthName_yy(item.ClosureDate)} />
                               {isLatest && isCaseReopen && (
                                 <Button
                                   color="transparent"
@@ -899,18 +789,10 @@ const ViewLitigation: React.FC = () => {
                             </div>
 
                             <div className="grid grid-cols-1 gap-4 ">
-                              <FieldItem
-                                label="Remark"
-                                value={item.Remark || "-"}
-                              />
-                              <FieldItem
-                                label="Conclusion"
-                                value={item.Conclusion || "-"}
-                              />
+                              <FieldItem label="Remark" value={item.Remark || "-"} />
+                              <FieldItem label="Conclusion" value={item.Conclusion || "-"} />
                               <MultiImageViewer
-                                images={parseDocumentUrls(
-                                  item.ClosureAttachementURL,
-                                )}
+                                images={parseDocumentUrls(item.ClosureAttachementURL)}
                                 title="Closure Document"
                                 isIcon={false}
                                 triggerLabel="Document"
@@ -929,9 +811,7 @@ const ViewLitigation: React.FC = () => {
 
             <div className="col-span-7">
               <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
-                <h4 className="text-lg font-semibold text-gray-900 pb-2">
-                  Case Brief / Petition / Suit
-                </h4>
+                <h4 className="text-lg font-semibold text-gray-900 pb-2">Case Brief / Petition / Suit</h4>
                 <div className="lg:col-span-3 pt-1">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                     <p>{litigationData?.CaseBrief}</p>
@@ -944,9 +824,7 @@ const ViewLitigation: React.FC = () => {
 
             <div className="col-span-7">
               <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
-                <h4 className="text-lg font-semibold text-gray-900 pb-2">
-                  Case Remarks / Comments
-                </h4>
+                <h4 className="text-lg font-semibold text-gray-900 pb-2">Case Remarks / Comments</h4>
                 <div className="lg:col-span-3 pt-1">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                     <p>{litigationData?.Remark}</p>
@@ -960,61 +838,36 @@ const ViewLitigation: React.FC = () => {
             <div className="col-span-7">
               <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mt-2">
                 <section className="bg-white p-4 flex flex-col">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                    Action Details
-                  </h4>
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Action Details</h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
                     <div className="lg:col-span-3">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                        <FieldItem
-                          label="Created By"
-                          value={litigationData?.CreatedBy}
-                        />
+                        <FieldItem label="Created By" value={litigationData?.CreatedBy} />
                         <FieldItem
                           label="Created Date"
-                          value={
-                            litigationData?.CreatedDate
-                              ? formatDate_dd_MonthName_yy_hh_mm(
-                                  litigationData.CreatedDate,
-                                )
-                              : ""
-                          }
+                          value={litigationData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(litigationData.CreatedDate) : ""}
                         />
                       </div>
                     </div>
 
                     <div className="lg:col-span-3">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                        <FieldItem
-                          label="Modified By"
-                          value={litigationData?.ModifiedBy}
-                        />
+                        <FieldItem label="Modified By" value={litigationData?.ModifiedBy} />
 
                         <FieldItem
                           label="Modified Date"
-                          value={
-                            litigationData?.ModifiedDate
-                              ? formatDate_dd_MonthName_yy_hh_mm(
-                                  litigationData.ModifiedDate,
-                                )
-                              : ""
-                          }
+                          value={litigationData?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(litigationData.ModifiedDate) : ""}
                         />
                       </div>
                     </div>
                   </div>
 
                   <div className="flex justify-end gap-2">
-                    {(litigationStatus === "Open" ||
-                      litigationStatus === "Reopen") &&
-                      canAction && (
-                        <Button
-                          size="sm"
-                          onClick={() => handleopenClosureModal()}
-                        >
-                          Close Case
-                        </Button>
-                      )}
+                    {(litigationStatus === "Open" || litigationStatus === "Reopen") && canAction && (
+                      <Button size="sm" onClick={() => handleopenClosureModal()}>
+                        Close Case
+                      </Button>
+                    )}
 
                     {litigationStatus === "Closed" && (
                       <Button
@@ -1038,55 +891,39 @@ const ViewLitigation: React.FC = () => {
             <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
               <div className="border-b pb-2 mt-1">
                 <div className="flex items-center justify-between">
-                  <h1 className="text-lg font-semibold text-black">
-                    {" "}
-                    Hearing History
-                  </h1>
+                  <h1 className="text-lg font-semibold text-black"> Hearing History</h1>
 
-                  {(litigationStatus === "Open" ||
-                    litigationStatus === "Reopen") &&
-                    canAction && (
-                      <Button
-                        className="w-full"
-                        size="sm"
-                        onClick={() =>
-                          handleopenHearingModal({
-                            LitigationId: litigationData?.LitigationId,
-                          })
-                        }
-                      >
-                        Add Hearing
-                      </Button>
-                    )}
+                  {(litigationStatus === "Open" || litigationStatus === "Reopen") && canAction && (
+                    <Button
+                      className="w-full"
+                      size="sm"
+                      onClick={() =>
+                        handleopenHearingModal({
+                          LitigationId: litigationData?.LitigationId,
+                        })
+                      }
+                    >
+                      Add Hearing
+                    </Button>
+                  )}
                 </div>
               </div>
 
               <div className="mt-4 space-y-4">
                 {hearingData.length === 0 ? (
-                  <p className="text-gray-500 text-sm">
-                    No hearing history found.
-                  </p>
+                  <p className="text-gray-500 text-sm">No hearing history found.</p>
                 ) : (
                   hearingData.map((item, index) => {
                     const isLatest = index === 0;
                     const isModified = !!(item.ModifiedBy && item.ModifiedDate);
 
-                    const canEditHearing =
-                      (litigationStatus === "Open" ||
-                        litigationStatus === "Reopen") &&
-                      canAction
-                        ? isLatest
-                        : false;
+                    const canEditHearing = (litigationStatus === "Open" || litigationStatus === "Reopen") && canAction ? isLatest : false;
 
                     return (
                       <div key={item.LitigationHearingId} className="pb-3">
                         <div className="flex items-center gap-3">
-                          <span className="font-semibold text-gray-900">
-                            {formatDate_dd_MonthName_yy(item.HearingDate)}
-                          </span>
-                          <span className="font-medium text-gray-400 text-sm">
-                            {isModified ? item.ModifiedBy : item.CreatedBy}
-                          </span>
+                          <span className="font-semibold text-gray-900">{formatDate_dd_MonthName_yy(item.HearingDate)}</span>
+                          <span className="font-medium text-gray-400 text-sm">{isModified ? item.ModifiedBy : item.CreatedBy}</span>
 
                           {canEditHearing && (
                             <>
@@ -1116,16 +953,12 @@ const ViewLitigation: React.FC = () => {
                           )}
                         </div>
 
-                        <p className="mt-2 text-sm text-gray-700">
-                          {item.Remark || "-"}
-                        </p>
+                        <p className="mt-2 text-sm text-gray-700">{item.Remark || "-"}</p>
 
                         <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
                           <p>Document</p>
                           <MultiImageViewer
-                            images={parseDocumentUrls(
-                              item.HearingAttachementURL,
-                            )}
+                            images={parseDocumentUrls(item.HearingAttachementURL)}
                             title="Hearing Document"
                             isIcon={false}
                             triggerLabel="Document"
@@ -1154,15 +987,8 @@ const ViewLitigation: React.FC = () => {
               <div>
                 <DatePickerInput
                   label="Closure Date"
-                  value={formatDate_dd_mm_yyyy(
-                    closureFormData.ClosureDate ?? "",
-                  )}
-                  onChange={(val) =>
-                    handleFieldChange(
-                      "ClosureDate",
-                      convert_dd_mm_yyyy_To_Yyyy_mm_dd(val),
-                    )
-                  }
+                  value={formatDate_dd_mm_yyyy(closureFormData.ClosureDate ?? "")}
+                  onChange={(val) => handleFieldChange("ClosureDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                   required
                   error={errors.ClosureDate}
                 />
@@ -1177,12 +1003,7 @@ const ViewLitigation: React.FC = () => {
                   value={closureURLFiles}
                   onChange={setClosureURLFiles}
                   availableFilesURL={closureURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "image/jpg",
-                    "application/pdf",
-                  ]}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                   maxFiles={5}
                   maxSizeMB={50}
                   onRemoveExisting={(url) => {
@@ -1210,9 +1031,7 @@ const ViewLitigation: React.FC = () => {
                   className="thin-scroll"
                   value={closureFormData.Conclusion ?? ""}
                   placeholder="Enter Conclusion"
-                  onChange={(e) =>
-                    handleFieldChange("Conclusion", e.target.value)
-                  }
+                  onChange={(e) => handleFieldChange("Conclusion", e.target.value)}
                   error={errors.Conclusion}
                 />
               </div>
@@ -1226,9 +1045,7 @@ const ViewLitigation: React.FC = () => {
             title={"Add Hearing"}
             onClose={handleHearingModal}
             onSubmit={handleAddUpdateHearing}
-            saveText={
-              hearingFormData.LitigationHearingId > 0 ? "Update" : "Add"
-            }
+            saveText={hearingFormData.LitigationHearingId > 0 ? "Update" : "Add"}
             loading={isLoading}
             size="lg"
           >
@@ -1236,15 +1053,8 @@ const ViewLitigation: React.FC = () => {
               <div>
                 <DatePickerInput
                   label="Hearing Date"
-                  value={formatDate_dd_mm_yyyy(
-                    hearingFormData.HearingDate ?? "",
-                  )}
-                  onChange={(val) =>
-                    handleHearingFieldChange(
-                      "HearingDate",
-                      convert_dd_mm_yyyy_To_Yyyy_mm_dd(val),
-                    )
-                  }
+                  value={formatDate_dd_mm_yyyy(hearingFormData.HearingDate ?? "")}
+                  onChange={(val) => handleHearingFieldChange("HearingDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                   required
                   error={errors.HearingDate}
                 />
@@ -1259,12 +1069,7 @@ const ViewLitigation: React.FC = () => {
                   value={hearingURLFiles}
                   onChange={setHearingURLFiles}
                   availableFilesURL={hearingURL ?? ""}
-                  allowedTypes={[
-                    "image/jpeg",
-                    "image/png",
-                    "image/jpg",
-                    "application/pdf",
-                  ]}
+                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                   maxFiles={5}
                   maxSizeMB={50}
                   onRemoveExisting={(url) => {
@@ -1281,9 +1086,7 @@ const ViewLitigation: React.FC = () => {
                     className="thin-scroll"
                     value={hearingFormData.Remark ?? ""}
                     placeholder="Enter Remarks"
-                    onChange={(e) =>
-                      handleHearingFieldChange("Remark", e.target.value)
-                    }
+                    onChange={(e) => handleHearingFieldChange("Remark", e.target.value)}
                     error={errors.Remark}
                   />
                 </div>
@@ -1332,28 +1135,17 @@ const ViewLitigation: React.FC = () => {
             )}
 
             {docsWithUrls.map((d) => {
-              const urls = parseDocumentUrls(d.DocumentURL ?? "").filter(
-                (x) => x?.trim()?.length,
-              );
+              const urls = parseDocumentUrls(d.DocumentURL ?? "").filter((x) => x?.trim()?.length);
 
               return (
                 <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
                   <div className="flex items-start justify-between p-2 gap-2">
                     <div className="flex flex-col">
-                      <span className="line-clamp-2 break-words font-medium text-gray-900">
-                        {d.DocumentName}
-                      </span>
-                      <span className="text-sm text-gray-500 mt-1">
-                        Document Count : {urls.length}
-                      </span>
+                      <span className="line-clamp-2 break-words font-medium text-gray-900">{d.DocumentName}</span>
+                      <span className="text-sm text-gray-500 mt-1">Document Count : {urls.length}</span>
                     </div>
 
-                    <MultiImageViewer
-                      images={urls}
-                      title={d.DocumentName ?? "Document"}
-                      triggerLabel="View"
-                      isIcon={false}
-                    />
+                    <MultiImageViewer images={urls} title={d.DocumentName ?? "Document"} triggerLabel="View" isIcon={false} />
                   </div>
 
                   <div className="bg-gray-50 p-2 mt-auto">

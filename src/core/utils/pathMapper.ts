@@ -82,6 +82,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/paymentschedulescheme':'/paymentScheduleScheme',
         '/legaldashboard':'/legalDashboard',
         '/classificationparameter':'/classificationParameter',
+        '/performance': '/performance',
 
     }
 

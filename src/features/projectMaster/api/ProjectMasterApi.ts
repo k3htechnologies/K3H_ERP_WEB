@@ -4,6 +4,7 @@ export const ProjectMasterApi = {
     PULL_PROJECT_SUMMARY: '/Project/PullProjectSummary',
 
     PULL_PROJECT_WITH_EMPLOYEE: '/Project/PullProjectWithEmployee',
+    PULL_PAGINATION_PROJECT_WITH_EMPLOYEE: '/Project/PullPaginationProjectWithEmployee',
     ADD_UPDATE_PROJECT_WITH_EMPLOYEE: '/Project/AddUpdateProjectEmployee',
     DELETE_PROJECT_WITH_EMPLOYEE: '/Project/DeleteProjectWithEmployee',
 

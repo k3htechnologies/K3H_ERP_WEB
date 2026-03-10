@@ -157,6 +157,9 @@ import { IncentiveReportListStateProvider } from '@/features/incentiveReport/con
 import PaymentScheduleSchemeMaster from '@/features/paymentScheduleSchemeMaster/pages/PaymentScheduleSchemeMaster';
 import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
 import ClassificationParameter from '@/features/classificationParameter/pages/ClassificationParameter';
+import Approval from '@/features/projectMaster/pages/Approval';
+import PerformanceReport from '@/features/performanceReport/pages/PerformanceReport';
+import ViewPerformanceReport from '@/features/performanceReport/pages/ViewPerformanceReport';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -191,7 +194,7 @@ function App() {
   useEffect(() => {
     const token = LocalStorageHelper.getStoredTokenData()
     if (!token) {
-      
+
     }
   }, [])
 
@@ -248,6 +251,7 @@ function App() {
             <Route path="projectMaster/employee" element={<ProjectMasterListStateProvider><Employee /></ProjectMasterListStateProvider>} />
             <Route path="projectMaster/bank" element={<ProjectMasterListStateProvider><Bank /></ProjectMasterListStateProvider>} />
             <Route path="projectMaster/Company" element={<ProjectMasterListStateProvider><Company /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/Approval" element={<ProjectMasterListStateProvider><Approval /></ProjectMasterListStateProvider>} />
 
             {/* SETTING -> COMPANY SETUP -> VENDOR */}
             <Route path="vendor" element={<VendorListStateProvider><Vendor /></VendorListStateProvider>} />
@@ -357,7 +361,7 @@ function App() {
             <Route path="paymentScheduleScheme" element={<PaymentScheduleSchemeMaster />} />
 
             <Route path="target" element={<Target />} />
-             <Route path="classificationParameter" element={<ClassificationParameter />} />
+            <Route path="classificationParameter" element={<ClassificationParameter />} />
 
             <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
             <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />
@@ -366,6 +370,10 @@ function App() {
             <Route path="enquiryReport" element={<EnquiryReport />} />
             <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
+
+            <Route path="performance" element={<PerformanceReport />} />
+            <Route path="performance/view/:EmployeeId" element={<ViewPerformanceReport />} />
+
 
             {/* REDEVELOPMENT */}
 

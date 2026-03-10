@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
-import { Tabs } from '@/ui/components/Tab/Tab';
+import { Tabs, type TabItem } from '@/ui/components/Tab/Tab';
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData, ProjectWithBankDetails } from '@/features/projectMaster/models/ProjectMasterModel';
 import ImageCarousel from '@/ui/components/ImageViewer/ImageCarousel';
 import { runApiWithLoader } from '@/core/utils';
@@ -18,6 +18,9 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
+import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService';
+import type { FilterModulesWorkflowApprovalRequest, ModulesWorkflowApprovalData } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
+import { Mail, Phone } from 'lucide-react';
 
 
 export const ViewProjectMaster: React.FC = () => {
@@ -36,6 +39,12 @@ export const ViewProjectMaster: React.FC = () => {
     const [compantMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
 
     const [projectWithBankDetailsList, setProjectWithBankDetailsList] = useState<ProjectWithBankDetails[]>([]);
+
+    const [modulesWorkflowApprovalList, setModulesWorkflowApprovalList] = useState<ModulesWorkflowApprovalData[]>([]);
+
+    const [activeModuleTab, setActiveModuleTab] = useState<string>("");
+
+    const [activeTabForModulesWorkflowApproval, setActiveTabForModulesWorkflowApproval] = useState<TabItem[]>([]);
 
     // TOAST
     const { addToast } = useToast()
@@ -57,7 +66,8 @@ export const ViewProjectMaster: React.FC = () => {
         { id: "Project Overview", label: 'Project Overview' },
         { id: "Employee", label: 'Employee' },
         { id: "Bank Details", label: 'Bank Details' },
-        { id: "Company", label: 'Company' }
+        { id: "Company", label: 'Company' },
+        { id: "Approval", label: 'Approval' }
     ];
 
 
@@ -85,6 +95,9 @@ export const ViewProjectMaster: React.FC = () => {
         }
         else if (activeTab === 'Company') {
             loadProjectMasterWithCompany(editProjectData.ProjectId);
+        }
+        else if (activeTab === 'Approval') {
+            loadModulesWorkflowApproval(editProjectData.ProjectId);
         }
     }, [activeTab, editProjectData]);
 
@@ -146,7 +159,6 @@ export const ViewProjectMaster: React.FC = () => {
             'Loading Employee'
         );
     };
-
 
     //#region SERACH EMPLOYEE NAME 
     const searchEmployeeName = async (searchValue: string) => {
@@ -220,6 +232,53 @@ export const ViewProjectMaster: React.FC = () => {
         );
     };
 
+    const loadModulesWorkflowApproval = async (ProjectId: number) => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterModulesWorkflowApprovalRequest = {
+                    ProjectId: ProjectId,
+                };
+
+                const response = await modulesWorkflowApprovalService.apiCallPullModulesWorkflowApproval(params);
+
+                if (E.isRight(response)) {
+
+                    const items = Array.isArray(response?.right.Data) ? response.right.Data : [];
+
+                    setModulesWorkflowApprovalList(items);
+
+                    const tabs: TabItem[] = Array.from(
+                        new Map(
+                            items
+                                .filter(x => x.ModulesMasterId && x.ModuleName)
+                                .map(x => [x.ModulesMasterId, x])
+                        ).values()
+                    ).map(x => ({
+                        id: String(x.ModulesMasterId),
+                        label: x.ModuleName!,
+                    }));
+
+                    setActiveTabForModulesWorkflowApproval(tabs);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Bank Details'
+        );
+    };
+
+
     //#endregion 
 
     //#region BACK VIEW PROJECT PAGE TO TABLE PROJECT MASTER
@@ -257,8 +316,24 @@ export const ViewProjectMaster: React.FC = () => {
     };
     //#endregion
 
+    //#region EDIT PROJECT WITH EMPLOYEE
+    const handleEditApproval = (row: ProjectMasterData) => {
+        if (!row?.ProjectId) return;
+        navigate('/projectMaster/approval');
+    };
     //#endregion
 
+    //#endregion
+
+    useEffect(() => {
+        if (activeTabForModulesWorkflowApproval.length > 0 && !activeModuleTab) {
+            setActiveModuleTab(activeTabForModulesWorkflowApproval[0].id);
+        }
+    }, [activeTabForModulesWorkflowApproval]);
+
+    const filteredApprovalList = modulesWorkflowApprovalList.filter(
+        x => String(x.ModulesMasterId) === activeModuleTab
+    );
 
     return (
 
@@ -293,7 +368,10 @@ export const ViewProjectMaster: React.FC = () => {
                     else if (activeTab === 'Company') {
 
                         if (editProjectData) handleEditProjectMasterWithCompany(editProjectData);
+                    }
+                    else if (activeTab === 'Approval') {
 
+                        if (editProjectData) handleEditApproval(editProjectData);
                     }
                 }}
                 isLoading={isLoading}
@@ -657,6 +735,104 @@ export const ViewProjectMaster: React.FC = () => {
                             <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                                 <NoDataView message="No Company's Found" />
                             </section>
+                        )}
+
+                    </div>
+                )}
+
+                {activeTab === "Approval" && (
+                    <div className="space-y-4 p-4">
+
+                        <Tabs
+                            tabs={activeTabForModulesWorkflowApproval}
+                            defaultActive={activeModuleTab}
+                            isChips={true}
+                            onTabChange={(tab: TabItem) => {
+                                setActiveModuleTab(tab.id);
+                            }}
+                        />
+
+                        {filteredApprovalList?.length ? (
+
+                            filteredApprovalList.map((item, i) => (
+
+                                <section
+                                    key={i}
+                                    className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]"
+                                >
+
+                                    {/* Module Name */}
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+                                        <FieldItem
+                                            label=""
+                                            value={item.SubSubModuleName ?? "-"}
+                                        />
+                                    </div>
+
+                                    {/* Employee List */}
+                                    {item.EmployeeData && item.EmployeeData.length > 0 ? (
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+
+                                            {item.EmployeeData.map((member, index) => (
+
+                                                <div
+                                                    key={index}
+                                                    className="border border-gray-200 rounded-lg p-3 hover:shadow transition"
+                                                >
+
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <h5 className="text-sm font-semibold text-gray-900 truncate">
+                                                            {member.FullName || '-'}
+                                                        </h5>
+
+                                                        <span className="text-xs text-gray-500 whitespace-nowrap">
+                                                            {member.Designation || '—'}
+                                                        </span>
+                                                    </div>
+
+                                                    <div className="mt-2 space-y-1">
+
+                                                        <p className="text-xs text-gray-600 flex items-center gap-2">
+                                                            <Phone className="h-4 w-4 text-gray-400 shrink-0" />
+                                                            <span>
+                                                                {member.PersonalMobileNumber
+                                                                    ? `+91 ${member.PersonalMobileNumber}`
+                                                                    : '-'}
+                                                            </span>
+                                                        </p>
+
+                                                        <p className="text-xs text-gray-600 flex items-center gap-2 break-all">
+                                                            <Mail className="h-4 w-4 text-gray-400 shrink-0" />
+                                                            <span>{member.EmailId || '-'}</span>
+                                                        </p>
+
+                                                    </div>
+
+                                                </div>
+
+                                            ))}
+
+                                        </div>
+
+                                    ) : (
+
+                                        <div className="text-xs text-gray-500">
+                                            No Employee Assigned
+                                        </div>
+
+                                    )}
+
+                                </section>
+
+                            ))
+
+                        ) : (
+
+                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <NoDataView message="No Approval Found" />
+                            </section>
+
                         )}
 
                     </div>

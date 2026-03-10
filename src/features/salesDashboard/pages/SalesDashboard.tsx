@@ -1,11 +1,4 @@
 import React, { useCallback, useEffect, useState } from "react";
-import OverviewCards from "@/features/salesDashboard/components/OverviewCards";
-import EnquiryLeadFunnel from "@/features/salesDashboard/components/EnquiryLeadFunnel";
-import TargetPerformance from "@/features/salesDashboard/components/TargetPerformance";
-import CallTracker from "@/features/salesDashboard/components/CallTracker";
-import BookingOverview from "@/features/salesDashboard/components/BookingOverview";
-import ChannelPartner from "@/features/salesDashboard/components/ChannelPartner";
-import SalesAdvisorLeaderboard from "@/features/salesDashboard/components/SalesAdvisorLeaderboard";
 import { runApiWithLoader } from '@/core/utils'
 import { salesDashboardService } from '@/features/salesDashboard/services/SalesDashboardServices';
 import { useToast } from '@/core/hooks/useToast';
@@ -15,27 +8,14 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import GenerateReport from "@/features/salesDashboard/components/GenerateReport";
 import Enquiries from "@/features/salesDashboard/components/Enquiries";
 import FollowUp from "@/features/salesDashboard/components/FollowUp";
+import ReportsSection from "../components/ReportGridSection";
 
 
 const SalesDashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-    const [overViewCardData, setOverviewCardData] = useState<any[]>([]);
-    const [enquiryLeadFunnelData, setEnquiryLeadFunnelData] = useState<any[]>([]);
-    const [targetPerfomanceData, setTargetPerformanceData] = useState<any[]>([]);
-    const [enquiryHotWarmColdData, setEnquiryHotWarmColdData] = useState<any[]>([]);
-    const [callTrackerData, setCallTrackerData] = useState<any[]>([]);
-    const [salesDashboardData, setSalesDashboardData] = useState<any[]>([]);
-    const [topCallersTodayData, setTopCallersTodayData] = useState<any[]>([]);
-    const [bookingOverviewData, setBookingOverviewData] = useState<any[]>([]);
-    const [bookingConversionRate, setBookingConversionRate] = useState<any[]>([]);
-    const [sourceWiseDistribution, setSourceWiseDistribution] = useState<any[]>([]);
-    const [residentialData, setResidentialData] = useState<any[]>([]);
-    const [channelPartnerName, setChannelPartnerName] = useState<any[]>([]);
-    const [budgetWiseDistribution, setBudgetWiseDistribution] = useState<any[]>([]);
-    const [channelPartnerIBMOBMdata, setChannelPartnerIBMOBMdata] = useState<any[]>([]);
-    const [commercialData, setCommercialData] = useState<any[]>([]);
     const [enquiryModel, setEnquiryModel] = useState<any[]>([]);
+    const [enquiryFollowUp, setEnquiryFollowUp] = useState<any[]>([]);
 
 
     const { addToast } = useToast();
@@ -54,24 +34,11 @@ const SalesDashboard: React.FC = () => {
             async () => {
                 const response = await salesDashboardService.apiCallPullSalesDashboard(Number(projectId));
                 if (E.isRight(response)) {
+
                     const e = response.right.Data;
-                    setOverviewCardData(e.Table0 || []);
-                    setEnquiryLeadFunnelData(e.Table1 || []);
-                    setTargetPerformanceData(e.Table3 || []);
-                    setEnquiryHotWarmColdData(e.Table2 || []);
-                    setCallTrackerData(e.Table6 || []);
-                    setSalesDashboardData(e.Table4 || []);
-                    setTopCallersTodayData(e.Table8 || []);
-                    setBookingOverviewData(e.Table9 || []);
-                    setBookingConversionRate(e.Table15 || []);
-                    setSourceWiseDistribution(e.Table12 || []);
-                    setResidentialData(e.Table13 || []);
-                    setChannelPartnerName(e.Table17 || []);
-                    setBudgetWiseDistribution(e.Table10 || []);
-                    setChannelPartnerIBMOBMdata(e.Table18 || []);
-                    setCommercialData(e.Table13 || []);
-                    // Will be changed
-                    setEnquiryModel(e.Table14 || []);
+
+                    setEnquiryModel(e.Table0 || []);
+                    setEnquiryFollowUp(e.Table1 || []);
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -92,33 +59,23 @@ const SalesDashboard: React.FC = () => {
 
     return (
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
+
             <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
+            
             <GenerateReport />
-            <div>
-                <OverviewCards overViewCardData={overViewCardData} />
-            </div>
-            <div className="mt-6 grid grid-cols-2 gap-5">
-                <EnquiryLeadFunnel enquiryLeadFunnelData={enquiryLeadFunnelData} enquiryHotWarmColdData={enquiryHotWarmColdData} />
-                <TargetPerformance targetPerformanceData={targetPerfomanceData} />
-            </div>
-            <div className=" flex flex-row gap-5 items-stretch w-full min-w-0">
+           
+            <div className=" mt-8 flex flex-row gap-5 items-stretch w-full min-w-0">
                 <div className="w-2/3 min-w-0">
                     <Enquiries enquiryData={enquiryModel} />
                 </div>
                 <div className="w-1/3 min-w-0">
-                    <FollowUp />
+                    <FollowUp enquiryFollowUpData={enquiryFollowUp} />
                 </div>
             </div>
             <div className="mt-8">
-                <CallTracker callTrackerData={callTrackerData} topCallersTodayData={topCallersTodayData} overviewCardData={overViewCardData} />
+                <ReportsSection />
             </div>
-            <div>
-                <BookingOverview bookingOverviewData={bookingOverviewData} sourceWiseDistribution={sourceWiseDistribution} bookingConversionRate={bookingConversionRate} residentialData={residentialData} budgetWiseDistribution={budgetWiseDistribution} commercialData={commercialData} />
-            </div>
-            <div className="grid grid-cols-2 gap-5 mt-6">
-                <ChannelPartner channelPartnerData={channelPartnerName} channelPartnerIBMOBMdata={channelPartnerIBMOBMdata} />
-                <SalesAdvisorLeaderboard leaderBoardData={salesDashboardData} />
-            </div>
+            
         </div>
     )
 }

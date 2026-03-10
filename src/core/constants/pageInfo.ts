@@ -422,6 +422,12 @@ export const getPageInfo = (path: string) => {
                 title: "Classification Parameter",
                 description: "Manage classification parameters for the system",
             }
+        case 'performance':
+            return {
+                title: "Performance",
+                description: "Manage performance-related informationss",
+            }
+
 
 
         // MARKETING
@@ -448,7 +454,7 @@ export const getPageInfo = (path: string) => {
                 title: "Legal Dashboard",
                 description: "Track & manage project related legal cases",
             }
-            
+
 
         default:
             return {

@@ -735,6 +735,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                       handleFieldChange("CompanyName", "");
 
                       if (value === "Existing Company") {
+                        resetExistingCompanyData();
                         setIsReadOnly(true);
                       } else {
                         setIsReadOnly(false);

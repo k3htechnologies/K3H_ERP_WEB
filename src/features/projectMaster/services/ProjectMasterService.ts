@@ -60,6 +60,18 @@ export const projectMasterService = {
         }
     },
 
+    apiCallPullPaginationProjectMasterWithEmployee: async (PageSize: number, PageNumber: number, ProjectId: number, FullName?: string): Promise<E.Either<Failure, ProjectMasterWithEmployeeResponse>> => {
+        try {
+
+            return E.right(await projectMasterDatasource.pullPaginationProjectMasterWithEmployee(PageSize, PageNumber, ProjectId, FullName));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
     apiCallAddUpdateProjectMasterWithEmployee: async (params: AddUpdateProjectMasterWithEmployeeRequest): Promise<E.Either<Failure, ProjectMasterWithEmployeeSaveResponse>> => {
         try {
 

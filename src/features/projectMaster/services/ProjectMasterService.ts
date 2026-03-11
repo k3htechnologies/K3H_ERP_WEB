@@ -60,10 +60,10 @@ export const projectMasterService = {
         }
     },
 
-    apiCallPullPaginationProjectMasterWithEmployee: async (PageSize: number, PageNumber: number, ProjectId: number, FullName?: string): Promise<E.Either<Failure, ProjectMasterWithEmployeeResponse>> => {
+    apiCallPullPaginationProjectMasterWithEmployee: async (PageSize: number, PageNumber: number, ProjectId: number, FullName?: string,DepartmentName?: string): Promise<E.Either<Failure, ProjectMasterWithEmployeeResponse>> => {
         try {
 
-            return E.right(await projectMasterDatasource.pullPaginationProjectMasterWithEmployee(PageSize, PageNumber, ProjectId, FullName));
+            return E.right(await projectMasterDatasource.pullPaginationProjectMasterWithEmployee(PageSize, PageNumber, ProjectId, FullName,DepartmentName));
 
         } catch (error: any) {
 

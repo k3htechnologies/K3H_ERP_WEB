@@ -59,6 +59,7 @@ import { fetchProjectDropdown } from "@/features/projectMaster/projectDropdown";
 import { fetchInventoryFlatDetails, fetchPaginatedInventoryFlatDropdown } from "@/features/inventory/InventoryFlatDropdown";
 import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
 import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
+import { fetchPaginationProjectWithEmployeeDropdown } from "@/features/projectMaster/projectWiseEmployeeDropdown";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
   EnquiryId: 0,
@@ -207,11 +208,16 @@ export const AddUpdateEnquiry: React.FC = () => {
   //#endregion
 
   //#region FETCH EMPLOYEE DROPDOWN WITH DEPARTMENT
-  const fetchEmployeesByDept = (dept: string) => (page: number, params?: { value?: string }) =>
-    fetchEmployeeMasterDropdown(page, {
-      value: params?.value || "",
-      departmentName: dept,
-    });
+    const fetchEmployeeDropdown = useCallback(
+        async (pageNumber: number, params?: { value?: string }) => {
+          return fetchPaginationProjectWithEmployeeDropdown(pageNumber, {
+            projectId: projectId || 0,
+            value: params?.value || "",
+            departmentName:"Sales"
+          });
+        },
+        [projectId]
+      );
   //#endregion
 
   //#region INITIALIZATION
@@ -1524,11 +1530,11 @@ export const AddUpdateEnquiry: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2"> Sales Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
                 <div>
-                  <SingleSelectDropdownWithPagination label="Sales Advisor" title="Select Advisor" size="lg" dataFetchCallBack={fetchEmployeesByDept("Sale")} onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.SalesAdvisor)} error={errors.SalesAdvisorId} />
+                  <SingleSelectDropdownWithPagination label="Sales Advisor" title="Select Advisor" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.SalesAdvisor)} error={errors.SalesAdvisorId} />
                 </div>
 
                 <div>
-                  <SingleSelectDropdownWithPagination label="Sourcing Manager" title="Select Sourcing Manager" size="lg" dataFetchCallBack={fetchEmployeesByDept("Sale")} onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.SourcingManager)} error={errors.SourcingManagerId} />
+                  <SingleSelectDropdownWithPagination label="Sourcing Manager" title="Select Sourcing Manager" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.SourcingManager)} error={errors.SourcingManagerId} />
                 </div>
                 <div>
                   <TimePicker label="Customer Time Out" size="md" format={24} value={formData.EnquiryTimeOut || ""} onChange={(val) => handleFieldChange("EnquiryTimeOut", val)} error={errors.EnquiryTimeOut} />

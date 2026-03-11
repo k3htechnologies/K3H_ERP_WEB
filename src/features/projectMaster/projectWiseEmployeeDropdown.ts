@@ -1,9 +1,9 @@
 import * as E from 'fp-ts/Either';
 import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService';
 
-export const fetchPaginationProjectWithEmployeeDropdown = async (pageNumber?: number, params?: { projectId?: number, value?: string }) => {
+export const fetchPaginationProjectWithEmployeeDropdown = async (pageNumber?: number, params?: { projectId?: number, value?: string,departmentName?:string }) => {
   try {
-    const responseEither = await projectMasterService.apiCallPullPaginationProjectMasterWithEmployee(50, pageNumber ?? 1, params?.projectId ?? 0, params?.value || "");
+    const responseEither = await projectMasterService.apiCallPullPaginationProjectMasterWithEmployee(50, pageNumber ?? 1, params?.projectId ?? 0, params?.value || "",params?.departmentName ||"");
 
     if (E.isLeft(responseEither)) {
 

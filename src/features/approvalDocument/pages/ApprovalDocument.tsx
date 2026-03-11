@@ -17,7 +17,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { Button, Input } from '@/ui/components/forms';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
-import { CheckCircle, Edit, Plus, Trash2, XCircle, History } from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { DatePickerInput } from '@/ui/components/forms/Datepicker';

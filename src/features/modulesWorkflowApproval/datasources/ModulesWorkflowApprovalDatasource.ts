@@ -28,12 +28,12 @@ export abstract class ModulesWorkflowApprovalDatasource {
   abstract updateModulesWorkflowApproval(data: UpdateModulesWorkflowApprovalRequest): Promise<UpdateModulesWorkflowApprovalResponse>;
 
   abstract pullModuleApprovalStatus(
-    params: ModulesWorkflowApprovalSummaryRequest,
+    params: ModulesApprovalStatusRequest,
     signal?: AbortSignal,
   ): Promise<ModulesApprovalStatusListResponse>;
   
   abstract pullModulesWorkflowApprovalSummary(
-    params: ModulesApprovalStatusRequest,
+    params: ModulesWorkflowApprovalSummaryRequest,
     signal?: AbortSignal,
   ): Promise<ModulesWorkflowApprovalSummaryListResponse>;
 }
@@ -127,12 +127,17 @@ export class ModulesWorkflowApprovalDatasourceImpl implements ModulesWorkflowApp
   }
 
   async pullModuleApprovalStatus(
-    params: ModulesWorkflowApprovalSummaryRequest,
+    params: ModulesApprovalStatusRequest,
     signal?: AbortSignal,
   ): Promise<ModulesApprovalStatusListResponse> {
+
     try {
       const queryParams = new URLSearchParams({
         Id: String(params.Id ?? 0),
+        SubId: String(params.SubId ?? 0),
+        SubSubId: String(params.SubSubId ?? 0),
+        SubSubSubId: String(params.SubSubSubId ?? 0),
+        ProjectId: String(params.ProjectId ?? 0),
       });
 
       if (params.ModuleName?.trim()) queryParams.append("ModuleName", params.ModuleName.trim());
@@ -152,14 +157,10 @@ export class ModulesWorkflowApprovalDatasourceImpl implements ModulesWorkflowApp
     }
   }
 
-  async pullModulesWorkflowApprovalSummary(params: ModulesApprovalStatusRequest, signal?: AbortSignal): Promise<ModulesWorkflowApprovalSummaryListResponse> {
+  async pullModulesWorkflowApprovalSummary(params: ModulesWorkflowApprovalSummaryRequest, signal?: AbortSignal): Promise<ModulesWorkflowApprovalSummaryListResponse> {
     try {
       const queryParams = new URLSearchParams({
-        Id: String(params.Id ?? 0),
-        SubId: String(params.SubId ?? 0),
-        SubSubId: String(params.SubSubId ?? 0),
-        SubSubSubId: String(params.SubSubSubId ?? 0),
-        ProjectId: String(params.ProjectId ?? 0),
+         Id: String(params.Id ?? 0),
       });
 
       if (params.ModuleName?.trim()) queryParams.append("ModuleName", params.ModuleName.trim());

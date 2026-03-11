@@ -66,7 +66,7 @@ export const modulesWorkflowApprovalService = {
 
         }
     },
-    apiCallPullModuleApprovalStatus: async (params: ModulesWorkflowApprovalSummaryRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ModulesApprovalStatusListResponse>> => {
+    apiCallPullModuleApprovalStatus: async (params: ModulesApprovalStatusRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ModulesApprovalStatusListResponse>> => {
 
         try {
             return E.right(await ModulesWorkflowApprovalDatasource.pullModuleApprovalStatus(params, options?.signal));
@@ -77,7 +77,7 @@ export const modulesWorkflowApprovalService = {
         }
     },
 
-    apiCallPullModulesWorkflowApprovalSummary: async (params: ModulesApprovalStatusRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ModulesWorkflowApprovalSummaryListResponse>> => {
+    apiCallPullModulesWorkflowApprovalSummary: async (params: ModulesWorkflowApprovalSummaryRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ModulesWorkflowApprovalSummaryListResponse>> => {
 
         try {
             return E.right(await ModulesWorkflowApprovalDatasource.pullModulesWorkflowApprovalSummary(params, options?.signal));

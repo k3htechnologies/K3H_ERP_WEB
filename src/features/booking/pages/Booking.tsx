@@ -26,6 +26,11 @@ import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { useBookingListState } from '@/features/booking/context/BookingListStateContext';
 import { SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS, SUB_SUB_SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from '@/core/constants';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
+import ApprovalActions from '@/features/modulesWorkflowApproval/components/ApprovalActionsButton';
+import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService';
+import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/ApprovalLogModal';
+import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
 
 export const Booking: React.FC = () => {
     //#region STATE
@@ -45,6 +50,16 @@ export const Booking: React.FC = () => {
     const [isShowCustomizeBookingColumnsModal, setIsShowCustomizeBookingColumnsModal] = useState(false);
 
     const { canAction, canExport } = useMenuPermissions();
+
+    // APPROVAL LOG MODAL
+    const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+    const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+
+    // APPROVAL ACTION MODAL
+    const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
+    const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
+    const [approvalRowData, setApprovalRowData] = useState<BookingData | null>(null);
 
     //#endregion
 
@@ -277,6 +292,28 @@ export const Booking: React.FC = () => {
 
 
     //#region TABLE COLUMN
+
+
+    const handleApprovalLog = (row: BookingData) => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "BOOKING APPROVAL",
+            Id: row.BookingId ?? 0,
+            ProjectId: row.ProjectId ?? 0,
+        };
+        setApprovalDocumentName(`Applicant : ${row.ApplicantName}  Wing : ${row?.Wing}  Unit : ${row?.Flat}`);
+        setApprovalLogRequest(request);
+        setIsApprovalLogModalOpen(true);
+    };
+
+    const handleApproveRejectDocument = (row: BookingData, approvalType: "approve" | "reject") => {
+
+        setApprovalRowData(row);
+        setApprovalDocumentName(`Applicant : ${row.ApplicantName}  Wing : ${row?.Wing}  Unit : ${row?.Flat}`);
+        setApprovalActionType(approvalType);
+        setIsApprovalActionModalOpen(true);
+
+    };
+
     const bookingColumns = useMemo<TableColumn[]>(
         () => [
             {
@@ -365,9 +402,28 @@ export const Booking: React.FC = () => {
                 align: 'center',
                 render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
             },
+            {
+                key: "ApprovalStatus",
+                label: "Approval Status",
+                width: "18",
+                sortable: false,
+                align: "left",
+                render: (value, row) => (
+
+                    <ApprovalActions
+                        approvalStatus={value || "-"}
+                        showApproval={row.IsApproval}
+                        isIcons={true}
+                        onHistory={() => handleApprovalLog(row)}
+                        onApprove={() => handleApproveRejectDocument(row, "approve")}
+                        onReject={() => handleApproveRejectDocument(row, "reject")}
+                    />
+
+                )
+            },
 
         ],
-        [canAction, handleViewBookingDetails]
+        [canAction, handleViewBookingDetails,handleApprovalLog, handleApproveRejectDocument]
     );
     //#endregion
 
@@ -412,6 +468,50 @@ export const Booking: React.FC = () => {
     };
 
     //#endregion
+
+     const handleApprovalSubmit = async (remark: string) => {
+    
+        if (!approvalRowData) return;
+    
+        const payload: UpdateModulesWorkflowApprovalRequest = {
+          ModuleName: "BOOKING APPROVAL",
+          Id: approvalRowData.BookingId ?? 0,
+          ProjectId: approvalRowData.ProjectId ??0,
+          IsApproved: approvalActionType === "approve",
+          Remarks: remark ?? null
+        };
+    
+        await runApiWithLoader(
+          setIsLoading,
+          setLoadingMessage,
+          async () => {
+    
+            const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+    
+            if (E.isRight(response)) {
+    
+              addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+    
+              setIsApprovalActionModalOpen(false);
+              
+              await loadBookings(page, filters, sortInfo);
+              
+            } else {
+    
+              addToast({ type: "error", title: response.left.message });
+    
+            }
+    
+            return response;
+          },
+          undefined,
+          (error: any) => {
+            addToast({ type: "error", title: error.message });
+          },
+          undefined,
+          approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
+        );
+      };
 
 
     return (
@@ -648,6 +748,23 @@ export const Booking: React.FC = () => {
                     </div>
                 </div>
             </Modal>
+
+            
+      <ApprovalLogModal
+        isOpen={isApprovalLogModalOpen}
+        documentName={approvalDocumentName ?? ""}
+        onClose={() => setIsApprovalLogModalOpen(false)}
+        request={approvalLogRequest} />
+
+      <ApprovalActionModal
+        title="Booking"
+        isOpen={isApprovalActionModalOpen}
+        onClose={() => setIsApprovalActionModalOpen(false)}
+        actionType={approvalActionType}
+        documentName={approvalDocumentName ?? ""}
+        onSubmit={handleApprovalSubmit}
+        loading={isLoading}
+      />
         </div >
     );
 };

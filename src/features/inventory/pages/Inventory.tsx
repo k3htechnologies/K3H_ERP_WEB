@@ -30,6 +30,10 @@ import { Edit, Eye, Trash } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 import { colorsForFlatComponent } from "@/features/inventory/utils/flatColors"
 
+import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal"
+import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
+import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal"
 
 const Inventory = () => {
     //#region STATE MANAGEMENT
@@ -81,6 +85,16 @@ const Inventory = () => {
 
     // SEARCH STATE
     const [searchTerm, setSearchTerm] = useState<string>('');
+
+    // APPROVAL LOG MODAL
+    const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+    const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+
+    // APPROVAL ACTION MODAL
+    const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
+    const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
+
 
     //#region TAB ACTIVITY
     // Preserve tab state in localStorage
@@ -1181,6 +1195,94 @@ const Inventory = () => {
 
     //#endregion
 
+
+    //#endregion
+
+    //#region APPROVAL LOG HISTORY
+    const handleApprovalLog = () => {
+
+        if (selectedBuildingIndex === null || !selectedWing) return;
+
+        const building = inventory[selectedBuildingIndex];
+
+        if (!building) return;
+
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "INVENTORY APPROVAL",
+            Id: building.InventoryBuildingId,
+            SubId: selectedWing?.InventoryFlatFloorBasementPodiumWingId,
+            ProjectId: building.ProjectId,
+        };
+
+        setApprovalDocumentName(`${building.BuildingNumber} - Wing ${selectedWing?.Wing}`);
+
+        setApprovalLogRequest(request);
+        setIsApprovalLogModalOpen(true);
+    };
+
+    const handleApproveRejectDocument = (type: "approve" | "reject") => {
+
+        setApprovalActionType(type);
+
+         if (selectedBuildingIndex === null || !selectedWing) return;
+
+        const building = inventory[selectedBuildingIndex];
+
+        if (!building) return;
+
+        setApprovalDocumentName(`${building.BuildingNumber} - Wing ${selectedWing?.Wing}`);
+
+        setIsApprovalActionModalOpen(true);
+    };
+
+    const handleApprovalSubmit = async (remark: string) => {
+
+        if (selectedBuildingIndex === null || !selectedWing) return;
+
+        const building = inventory[selectedBuildingIndex];
+
+        const payload: UpdateModulesWorkflowApprovalRequest = {
+            ModuleName: "INVENTORY APPROVAL",
+            Id: building.InventoryBuildingId,
+            SubId: selectedWing.InventoryFlatFloorBasementPodiumWingId,
+            ProjectId: building.ProjectId,
+            IsApproved: approvalActionType === "approve",
+            Remarks: remark ?? null
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsApprovalActionModalOpen(false);
+
+                    await fetchInventory();
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
+
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            approvalActionType === "approve"
+                ? "Approving Inventory"
+                : "Rejecting Inventory"
+        );
+    };
     //#endregion
     return (
         <>
@@ -1202,6 +1304,12 @@ const Inventory = () => {
                 searchTerm={searchTerm}
                 onSearchChange={handleSearchChange}
                 onClearSearch={handleClearSearch}
+
+                approvalStatus={selectedWing?.ApprovalStatus ?? ""}
+                showApprovalActions={selectedWing?.IsApproval === true}
+                onApprovalLog={handleApprovalLog}
+                onApprove={() => handleApproveRejectDocument("approve")}
+                onReject={() => handleApproveRejectDocument("reject")}
             />
 
             <div className="flex flex-col w-full h-[120px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
@@ -1282,7 +1390,7 @@ const Inventory = () => {
 
 
             {activeTab === "Grid" ? (
-                
+
                 selectedWing && getFilteredFloors.map((floor) => {
 
                     const originalFloorIndex = selectedWing.InventoryFloorData.findIndex(f => f.InventoryFloorId === floor.InventoryFloorId);
@@ -1540,6 +1648,24 @@ const Inventory = () => {
                 loading={isLoading}
                 pageName="floor"
                 message={`Are you sure you want to delete floor "${floorToDelete?.floor.Floor}"? This action cannot be undone.`}
+            />
+            {/* Approval Log History */}
+            <ApprovalLogModal
+                isOpen={isApprovalLogModalOpen}
+                documentName={approvalDocumentName ?? ""}
+                onClose={() => setIsApprovalLogModalOpen(false)}
+                request={approvalLogRequest}
+            />
+
+            {/* Approval Action Modal */}
+            <ApprovalActionModal
+                title="Inventory"
+                isOpen={isApprovalActionModalOpen}
+                onClose={() => setIsApprovalActionModalOpen(false)}
+                actionType={approvalActionType}
+                documentName={approvalDocumentName ?? ""}
+                onSubmit={handleApprovalSubmit}
+                loading={isLoading}
             />
         </>
     )

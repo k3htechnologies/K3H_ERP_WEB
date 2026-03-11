@@ -1,3 +1,4 @@
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 import { Button } from "@/ui/components/forms";
 import Tabs from "@/ui/components/Tab/Tab";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
@@ -18,6 +19,13 @@ interface InventoryHeaderProps {
     searchTerm?: string;
     onSearchChange?: (value: string) => void;
     onClearSearch?: () => void;
+
+    // NEW
+    onApprovalLog?: () => void;
+    onApprove?: () => void;
+    onReject?: () => void;
+    approvalStatus?: string,
+    showApprovalActions?: boolean;
 }
 
 const inventoryTabList = [
@@ -41,16 +49,39 @@ export const InventoryHeader = ({
     searchTerm = '',
     onSearchChange,
     onClearSearch,
+
+    onApprovalLog,
+    onApprove,
+    onReject,
+    approvalStatus,
+    showApprovalActions,
+
 }: InventoryHeaderProps) => {
     return (
         <div className="flex flex-col w-full h-[150px]  rounded-tr-[15px] rounded-tl-[15px]   border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
-            <div className="flex justify-between pt-5 pb-3">
+            <div className="flex justify-between items-center pt-5 pb-3">
+
                 <Tabs
                     tabs={inventoryTabList}
                     defaultActive={activeTab}
                     islarge={true}
                     onTabChange={(t) => onTabChange(t.id)}
                 />
+
+                {approvalStatus && (
+                    <div className="flex items-center gap-2">
+
+                        <ApprovalActions
+                            approvalStatus={approvalStatus}
+                            showApproval={showApprovalActions}
+                            onHistory={onApprovalLog}
+                            onApprove={onApprove}
+                            onReject={onReject}
+                        />
+                    </div>
+                )}
+
+
             </div>
 
             <TableActionToolbar
@@ -60,7 +91,7 @@ export const InventoryHeader = ({
                 onSearchChange={onSearchChange}
                 onClearSearch={onClearSearch}
                 isShowAddButton={canAction}
-                onAdd={() => {}}
+                onAdd={() => { }}
                 showMoreAddOptions={
                     <div className="flex flex-col w-[150px] bg-white rounded-md border-[1px] border-gray-200 shadow-lg">
                         <Button

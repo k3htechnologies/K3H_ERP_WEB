@@ -22,7 +22,7 @@ const NoDataView: React.FC<NoDataViewProps> = ({
         alt="No Data"
         className={`w-32 h-32 opacity-80 ${iconClassName}`}
       />
-      <p className="mt-4 text-gray-600 text-sm">{message}</p>
+      <p className="text-gray-600 text-sm">{message}</p>
     </div>
   );
 };

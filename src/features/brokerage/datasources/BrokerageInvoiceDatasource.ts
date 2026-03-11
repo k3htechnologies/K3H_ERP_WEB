@@ -3,15 +3,23 @@ import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 import { BrokerageInvoiceApi } from "@/features/brokerage/api/BrokerageInvoiceApi";
 import type {
     BrokerageBookingListResponse,
-    FilterWithPaginationBrokerageBookingRequest
+    BrokerageInvoiceDeleteResponse,
+    BrokerageInvoiceListResponse,
+    BrokerageInvoiceSaveResponse,
+    DeleteBrokerageInvoiceRequest,
+    FilterWithPaginationBrokerageBookingRequest,
+    FilterWithPaginationBrokerageInvoiceRequest
 } from "@/features/brokerage/models/BrokerageInvoiceModel";
 
-export abstract class BrokerageBookingDatasource {
+export abstract class BrokerageInvoiceDatasource {
 
     abstract pullBrokerageBooking(params: FilterWithPaginationBrokerageBookingRequest, signal?: AbortSignal): Promise<BrokerageBookingListResponse>;
+    abstract pullBrokerageInvoice(params: FilterWithPaginationBrokerageInvoiceRequest, signal?: AbortSignal): Promise<BrokerageInvoiceListResponse>;
+    abstract addUpdateBrokerageInvoice(data: FormData): Promise<BrokerageInvoiceSaveResponse>;
+    abstract deleteBrokerageInvoice(params: DeleteBrokerageInvoiceRequest): Promise<BrokerageInvoiceDeleteResponse>;
 }
 
-export class BrokerageDatasourceImpl implements BrokerageBookingDatasource {
+export class BrokerageInvoiceDatasourceImpl implements BrokerageInvoiceDatasource {
     private get k3hHttpClient() {
         return baseClient;
     }
@@ -51,6 +59,82 @@ export class BrokerageDatasourceImpl implements BrokerageBookingDatasource {
                 await this.pullBrokerageBooking(params);
             }
             throw error;
+        }
+    }
+
+    async pullBrokerageInvoice(params: FilterWithPaginationBrokerageInvoiceRequest, signal?: AbortSignal): Promise<BrokerageInvoiceListResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                pageSize: String(params.PageSize ?? 10),
+                pageNumber: String(params.PageNumber ?? 1),
+            });
+
+            if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
+            if (params.BookingId) queryParams.append('BookingId', params.BookingId.toString());
+            if (params.BrokerageInvoiceId) queryParams.append('BrokerageInvoiceId', params.BrokerageInvoiceId.toString());
+            if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
+            if (params.ExportType) queryParams.append("ExportType", params.ExportType);
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${BrokerageInvoiceApi.PULL}?${queryParams.toString()}`, { signal }
+            )
+            return response
+
+        } catch (error: any) {
+
+            console.error("ERROR: PULL BROKERAGE INVOICE :", error);
+
+            if (error === TokenExpiredException) {
+
+                await this.pullBrokerageInvoice(params);
+            }
+            throw error;
+        }
+    }
+
+    async addUpdateBrokerageInvoice(formData: FormData): Promise<BrokerageInvoiceListResponse> {
+
+        try {
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
+                BrokerageInvoiceApi.ADD_UPDATE,
+                formData
+            )
+
+            return response
+        } catch (error) {
+
+            console.error('ERROR: ADD BROKERAGE INVOICE:', error)
+
+            if (error === TokenExpiredException) {
+                await this.addUpdateBrokerageInvoice(formData);
+            }
+            throw error
+        }
+    }
+
+    async deleteBrokerageInvoice(params: DeleteBrokerageInvoiceRequest): Promise<BrokerageInvoiceDeleteResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                BrokerageInvoiceId: (params.BrokerageInvoiceId ?? 0).toString(),
+                BookingId: (params.BookingId ?? 0).toString(),
+                ProjectId: (params.ProjectId ?? 0).toString(),
+                UniqueKey: params.Uniquekey ?? '',
+            })
+
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${BrokerageInvoiceApi.DELETE}?${queryParams.toString()}`
+            )
+
+            return response
+
+        } catch (error) {
+            if (error === TokenExpiredException) {
+
+                console.error('ERROR: DELETE BROKERAGE INVOICE:', error);
+
+                await this.deleteBrokerageInvoice(params);
+            }
+            throw error
         }
     }
 

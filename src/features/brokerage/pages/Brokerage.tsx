@@ -17,7 +17,8 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useNavigate } from "react-router-dom";
 import type { BrokerageBookingData, FilterWithPaginationBrokerageBookingRequest } from "../models/BrokerageInvoiceModel";
-import { BrokerageService } from "../services/BrokerageInvoiceService";
+import { brokerageInvoiceService } from "../services/BrokerageInvoiceService";
+import { Button } from "@/ui/components/forms";
 
 export const Brokerage: React.FC = () => {
 
@@ -47,6 +48,10 @@ export const Brokerage: React.FC = () => {
     // USE NAVIGATE
     const navigate = useNavigate();
 
+    //#region MENU PERMISSIONS
+    const { canAction } = useMenuPermissions();
+    //#endregion
+
     // TOAST
     const { addToast } = useToast();
 
@@ -67,7 +72,7 @@ export const Brokerage: React.FC = () => {
                     SortBy: getSortByParam(sort ?? null, BrokerageBookingColumns),
                 };
 
-                const response = await BrokerageService.apiCallPullBrokerageBooking(params);
+                const response = await brokerageInvoiceService.apiCallPullBrokerageBooking(params);
 
                 if (E.isRight(response)) {
                     setBrokerageBookingList(response.right.Data);
@@ -130,11 +135,11 @@ export const Brokerage: React.FC = () => {
     }, [searchTerm]);
     //#endregion
 
-    //#region NAVIGATE TO VIEW Brokerage Booking
-    // const handleViewBrokerageBookingDetails = useCallback((row: BrokerageBookingData) => {
-    //     navigate(`/performance/view/${row.}`);
+    //#region NAVIGATE TO VIEW BROKERAGE BOOKING
+    const handleViewBrokerageBookingDetails = useCallback((row: BrokerageBookingData) => {
+        navigate(`/brokerageInvoice/view/${row.BookingId}`);
 
-    // }, [navigate]);
+    }, [navigate]);
     //#endregion
 
     //#region EXPORT / IMPORT EXCEL AND PDF
@@ -152,7 +157,7 @@ export const Brokerage: React.FC = () => {
                     SortBy: getSortByParam(sortInfo ?? null, BrokerageBookingColumns),
                     ExportType: exportType
                 };
-                const response = await BrokerageService.apiCallPullBrokerageBooking(params);
+                const response = await brokerageInvoiceService.apiCallPullBrokerageBooking(params);
 
                 handleExportFile(response, exportType, 'Brokerage Booking', addToast);
 
@@ -172,7 +177,7 @@ export const Brokerage: React.FC = () => {
     //#region BROKERAGE BOOKING TABLE COLUMNS
     const BrokerageBookingColumns = useMemo<TableColumn[]>(() => [
         {
-            key: 'Broker Name',
+            key: 'ChannelPartnerName',
             label: 'Broker Name',
             width: '15',
             sortable: true,
@@ -183,13 +188,53 @@ export const Brokerage: React.FC = () => {
                     text={value || '-'}
                     maxWidth="250px"
                     tooltipThreshold={25}
-                // onClick={() => handleViewBrokerageBookingDetails(row)}
+                    onClick={() => handleViewBrokerageBookingDetails(row)}
                 />
             )
         },
         {
             key: 'ApplicantMobileNumber',
             label: 'Contact No.',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'Flat',
+            label: 'Flat No',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'Category',
+            label: 'Category',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'BrokerageAmount',
+            label: 'Brokerage Amount',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'PaidBrokerageAmount',
+            label: 'Paid Amount',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'OutstandingAmount',
+            label: 'Outstanding Amount',
             width: '25',
             sortable: false,
             align: 'center',
@@ -203,8 +248,32 @@ export const Brokerage: React.FC = () => {
             align: 'center',
             render: value => value || '-'
         },
-    ], []);
-    // ], [handleViewBrokerageBookingDetails]);
+        {
+            key: 'Actions',
+            label: 'Actions',
+            width: '12',
+            fixed: 'right',
+            align: 'center',
+            render: (_value, row) => (
+                <div className="flex items-center justify-center">
+                    {canAction && (
+                        <>
+                            <Button
+                                color="blue"
+                                size="sm"
+
+                                onClick={() => {
+                                    handleViewBrokerageBookingDetails(row)
+                                }}
+                            >
+                                Invoices
+                            </Button>
+                        </>
+                    )}
+                </div>
+            )
+        },
+    ], [handleViewBrokerageBookingDetails]);
     //#endregion
 
     //#region FILTER MODAL HELPERS

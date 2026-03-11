@@ -8,6 +8,7 @@ import type {
     DeleteOtherChargesRequest,
     FilterWithPaginationOtherChargesRequest,
     AddUpdateOtherChargesRequest,
+    OtherChargesSaveResponse,
     
 } from "@/features/otherCharges/models/OtherChargesModel";
 import { OtherChargesApi } from "@/features/otherCharges/api/OtherChargesApi";
@@ -15,7 +16,7 @@ import { OtherChargesApi } from "@/features/otherCharges/api/OtherChargesApi";
 export abstract class OtherChargesDatasource {
 
     abstract pullOtherCharges(params: FilterWithPaginationOtherChargesRequest, signal?: AbortSignal): Promise<OtherChargesListResponse>;
-    abstract addUpdateOtherCharges(data: AddUpdateOtherChargesRequest): Promise<OtherChargesListResponse>;
+    abstract addUpdateOtherCharges(data: AddUpdateOtherChargesRequest): Promise<OtherChargesSaveResponse>;
     abstract deleteOtherCharges(params: DeleteOtherChargesRequest): Promise<OtherChargesDeleteResponse>;
 }
 
@@ -54,7 +55,7 @@ export class OtherChargesDatasourceImpl implements OtherChargesDatasource {
         }
     }
 
-    async addUpdateOtherCharges(params: AddUpdateOtherChargesRequest): Promise<OtherChargesListResponse> {
+    async addUpdateOtherCharges(params: AddUpdateOtherChargesRequest): Promise<OtherChargesSaveResponse> {
 
         try {
             const response = await this.k3hHttpClient.postRequestWithAuthentication(

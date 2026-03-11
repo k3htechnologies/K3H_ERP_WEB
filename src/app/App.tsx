@@ -162,6 +162,9 @@ import LitigationDashboard from '@/features/litigationDashboard/pages/litigation
 import PerformanceReport from '@/features/performanceReport/pages/PerformanceReport';
 import ViewPerformanceReport from '@/features/performanceReport/pages/ViewPerformanceReport';
 import Brokerage from '@/features/brokerage/pages/Brokerage';
+import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoice';
+import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
+import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokerageSettlement';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -374,8 +377,11 @@ function App() {
             <Route path="performance/view/:EmployeeId" element={<ViewPerformanceReport />} />
 
             {/* CRM */}
-            
+
             <Route path="brokerage" element={<Brokerage />} />
+            <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
+            <Route path="brokerageInvoice/add/:BookingId?" element={<AddUpdateBrokerageInvoice />} />
+            <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
 
             {/* REDEVELOPMENT */}
 

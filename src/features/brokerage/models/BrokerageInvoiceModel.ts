@@ -20,6 +20,7 @@ export interface FilterWithPaginationBrokerageBookingRequest {
 
 export interface BrokerageBookingData {
     ProjectId: number | 0
+    BookingId: number | 0
     ApplicantMobileNumber: number | 0
     ChannelPartnerName: string | null
     ApplicantName: string | null
@@ -66,6 +67,7 @@ export interface BrokerageInvoiceData {
     InvoiceAmount: number | 0
     DueDate: string | null
     Remark: string | null
+    BankName: string | null
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -86,6 +88,7 @@ export interface AddUpdateBrokerageInvoiceRequest {
     UploadInvoiceURL: string | null
     RemoveUploadInvoiceURL: string | ''
     BankListMasterId: number | 0
+    BankName: string | ''
     AccountName: string | ''
     AccountNumber: number | 0
     IFSCCode: string | ''

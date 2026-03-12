@@ -143,6 +143,10 @@ const InventorySpecification: React.FC = () => {
       newErrors.Flat = "Unit is required";
     }
 
+    if (totalUnitArea === 0) {
+      newErrors.RERACarpetAreaSqFt = "RERA Carpet Area is required";
+    }
+
     if (!formDataInventoryFlat.FlatType?.trim()) {
       newErrors.FlatType = "Unit Type is required";
     }
@@ -239,7 +243,7 @@ const InventorySpecification: React.FC = () => {
     const validation = validateInventoryFlatSpecificationForm();
 
     if (!validation.isValid) {
-      
+
       setErrorsInventoryFlatSpecification(validation.errors);
 
       return;
@@ -527,9 +531,28 @@ const InventorySpecification: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Input
+                label="Building Number"
+                value={flatData?.BuildingNumber}
+                disabled
+              />
+
+              <Input
+                label="Wing"
+                value={flatData?.Wing}
+                disabled
+              />
+
+              <Input
+                label="Floor"
+                value={flatData?.Floor}
+                disabled
+              />
+
+              <Input
                 label="Unit"
                 placeholder="Enter Unit"
                 required
+                maxLength={10}
                 value={formDataInventoryFlat.Flat.replace(/^[A-Za-z\s]+-\s*/, "")}
                 onChange={(e) => handleFieldChangeInventoryFlat("Flat", e.target.value)}
                 disabled={disabled}
@@ -539,7 +562,7 @@ const InventorySpecification: React.FC = () => {
               <Input
                 label="Unit Area (SqFt)"
                 type="text"
-                value={totalUnitArea?.toString() || ""}
+                value={totalUnitArea?.toString() || 0}
                 onChange={(e) =>
                   handleFieldChangeInventoryFlat("RERACarpetAreaSqFt", e.target.value === "" ? null : Number(e.target.value))
                 }
@@ -609,7 +632,25 @@ const InventorySpecification: React.FC = () => {
 
               <SinglePageSelection
                 label="Status"
-                options={INVENTORY_FLAT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                options={
+                  INVENTORY_FLAT_STATUS
+                    .filter((opt) => {
+
+                      if (formDataInventoryFlat.FlatStatus === "Booked") {
+                        return opt.id === "Booked";
+                      }
+                      if (formDataInventoryFlat.FlatStatus === "Alloted") {
+                        return opt.id === "Alloted";
+                      }
+
+                      return !["Booked", "Alloted"].includes(opt.id);
+                    })
+                    .map((opt) => ({
+                      label: opt.name,
+                      value: opt.id,
+                    }))
+                }
+                // options={INVENTORY_FLAT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
                 value={formDataInventoryFlat.FlatStatus}
                 onChange={(value) => handleFieldChangeInventoryFlat("FlatStatus", value as InventoryFlatData["FlatStatus"])}
                 placeholder="Select Status"

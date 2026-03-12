@@ -34,11 +34,14 @@ import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal"
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal"
+import { useBookingListState } from "@/features/booking/context/BookingListStateContext"
+import TooltipText from "@/ui/components/Tooltip/TooltipText"
 
 const Inventory = () => {
     //#region STATE MANAGEMENT
 
     const navigate = useNavigate();
+    const { updateListState } = useBookingListState();
     const [inventory, setInventory] = useState<InventoryData[]>([]);
     const [selectedBuilding, setSelectedBuilding] = useState<InventoryFlatFloorBasementPodiumWingData[] | undefined>(undefined)
     const [selectedBuildingIndex, setSelectedBuildingIndex] = useState<number | null>(null)
@@ -1117,7 +1120,7 @@ const Inventory = () => {
                 const statusColors = colorsForFlatComponent[value as keyof typeof colorsForFlatComponent] || colorsForFlatComponent.Available;
 
                 return (
-                    <span className={`px-3 py-1 rounded text-sm font-medium ${statusColors.Button} ${statusColors.buttonText}`}>
+                    <span className={`px-3 py-1 rounded-[15px] text-sm font-medium ${statusColors.Button} ${statusColors.buttonText}`}>
                         {value}
                     </span>
                 );
@@ -1131,15 +1134,31 @@ const Inventory = () => {
         },
         {
             key: 'OwnerName',
-            label: 'Owner/Alloted',
+            label: 'Owner / Alloted',
             width: '200px',
             sortable: false,
-            render: (value: string) => {
+            render: (value: string, row: any) => {
                 if (!value) return '-';
+                const flat = row.flatData as InventoryFlatData;
+                const handleBook = () => {
+
+                    if (flat.BookingId && flat.BookingId > 0) {
+                        updateListState({
+                            bookingId: flat.BookingId,
+                            bookingName: flat.OwnerName || '',
+                        });
+                        navigate('/booking/view', {
+                            state: { sourcePage: 'inventory' }
+                        });
+                    }
+                };
                 return (
-                    <span className="text-[#135BEC] font-semibold">
-                        {value}
-                    </span>
+                    <TooltipText
+                        text={value || '-'}
+                        maxWidth="250px"
+                        tooltipThreshold={25}
+                        onClick={() => handleBook()}
+                    />
                 );
             },
         },
@@ -1172,7 +1191,7 @@ const Inventory = () => {
                                 />
                             </div>
                         )}
-                        {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
+                        {canAction && (flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
                             <div title="Edit">
                                 <Edit
                                     className="cursor-pointer text-blue-600 hover:text-blue-800"
@@ -1181,7 +1200,7 @@ const Inventory = () => {
                                 />
                             </div>
                         )}
-                        {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
+                        {canAction && (flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
                             <div title="Delete">
                                 <Trash
                                     onClick={() => handleDeleteFlat(flat)}
@@ -1323,6 +1342,7 @@ const Inventory = () => {
 
                     <BuildingTabs
                         inventory={inventory}
+                        canAction={canAction}
                         selectedBuildingIndex={selectedBuildingIndex}
                         onBuildingSelect={(index) => {
                             setSelectedBuilding(inventory[index].InventoryFlatFloorBasementPodiumWingData);
@@ -1349,9 +1369,9 @@ const Inventory = () => {
                 <div className="flex justify-between items-center pt-2 pb-2">
 
                     <div className="flex-1">
-                        {selectedBuilding && isInventoryAvailable && (
+                        {selectedBuilding && isInventoryAvailable===true && (
                             <WingTabs
-
+                                canAction={canAction}
                                 wings={selectedBuilding}
                                 activeWingTab={activeWingTab}
                                 onWingChange={(index) => {
@@ -1397,7 +1417,7 @@ const Inventory = () => {
 
             {activeTab === "Grid" ? (
 
-                selectedWing && isInventoryAvailable && getFilteredFloors.map((floor) => {
+                selectedWing && isInventoryAvailable===true && getFilteredFloors.map((floor) => {
 
                     const originalFloorIndex = selectedWing.InventoryFloorData.findIndex(f => f.InventoryFloorId === floor.InventoryFloorId);
 

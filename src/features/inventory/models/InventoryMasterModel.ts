@@ -19,7 +19,7 @@ export interface InventoryData {
     NoOfWings: number;
     CreatedById: number;
     CreatedBy: string;
-    CreatedDate: Date;
+    CreatedDate: string;
     ModifiedById: number;
     ModifiedBy: string;
     ModifiedDate: null;
@@ -64,6 +64,13 @@ export interface InventoryFlatData {
     FlatConfiguration: string;
     FlatStatus: 'Alloted' | "Available" | "Booked" | "Blocked" | "Hold";
     FlatFacing: string;
+    CreatedById: number;
+    CreatedBy: string;
+    CreatedDate: string;
+    ModifiedById: number;
+    ModifiedBy: string;
+    ModifiedDate: null;
+
     InventoryFlatSpecificationData: InventoryFlatSpecificationData[];
     OwnerName: string;
     BookingId: number;

@@ -1,10 +1,11 @@
 import { useNavigate } from 'react-router-dom';
-import { Edit, Eye, Trash, BookOpen } from "lucide-react";
+import { Edit, Eye, Trash } from "lucide-react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { Button } from "@/ui/components/forms";
 import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
 import { colorsForFlatComponent } from "@/features/inventory/utils/flatColors";
 import { useBookingListState } from "@/features/booking/context/BookingListStateContext";
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 interface FlatCardProps {
     flat: InventoryFlatData;
@@ -65,7 +66,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                     BuildingNumber: buildingNumber || flat.BuildingNumber,
                     PageName: "UNIT BOOK",
                     InventoryFlatFloorBasementPodiumWingId: flat.InventoryFlatFloorBasementPodiumWingId,
-                    InventoryBuildingId:flat.InventoryBuildingId
+                    InventoryBuildingId: flat.InventoryBuildingId
                 }
             }
         });
@@ -74,6 +75,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
     const getOwnerLabel = () => {
         if (flat.FlatStatus === "Booked") return "Owner : ";
         if (flat.FlatStatus === "Alloted") return "Alloted : ";
+        if (flat.FlatStatus === "Blocked") return "Blocked By : ";
         return "";
     };
 
@@ -91,7 +93,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
 
     return (
         <div
-            className={`flex flex-col justify-evenly ${flat.FlatStatus === "Available" ? "min-h-[240px]" : "h-[240px]"} w-[250px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`}
+            className={`flex flex-col justify-evenly ${flat.FlatStatus === "Available" ? "min-h-[240px]" : "h-[240px]"} w-[260px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`}
             style={gradientStyle}
         >
             <FieldItem label="Unit No " value={flat.Flat} isRow={true} isUsedForInventoryFlat={true} />
@@ -120,12 +122,12 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                             <Edit className="cursor-pointer" onClick={handleEdit} size={16} />
                         )}
 
-                        {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
+                        {(flat.FlatStatus === "Available") && (
                             <Trash onClick={handleDelete} color="red" size={16} />
                         )}
                     </>
-                ) 
-                :canBookingAction ? (
+                )
+                    : canBookingAction ? (
                         <>
                             {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
                                 <Edit className="cursor-pointer" onClick={handleEdit} size={16} />
@@ -144,11 +146,11 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                         size="sm"
                         className="w-full"
                     >
-                        <BookOpen className="h-4 w-4 mr-2" />
                         Book
                     </Button>
                 </div>
             )}
+
 
             {flat.OwnerName && (flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") ? (
                 <p
@@ -158,11 +160,17 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                 >
                     {getOwnerLabel()}{flat.OwnerName}
                 </p>
+            ) : flat.FlatStatus === "Blocked" || flat.FlatStatus === "Hold" ? (
+                <p className={`text-center ${colorsForFlatComponent[flat.FlatStatus].buttonText}`}>
+                    {flat.FlatStatus} by {flat.CreatedBy} on {formatDate_dd_MonthName_yy_hh_mm(flat.CreatedDate ?? "-")}
+                </p>
             ) : (
                 <p className="text-center text-[#135BEC] font-semibold">
-                    {getOwnerLabel()}{flat.OwnerName}
+
                 </p>
             )}
+
+
         </div>
     );
 };

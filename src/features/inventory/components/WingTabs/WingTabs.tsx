@@ -6,9 +6,10 @@ interface WingTabsProps {
     activeWingTab: string;
     onWingChange: (index: number) => void;
     onDeleteWing?: (wing: InventoryFlatFloorBasementPodiumWingData) => void;
+    canAction?:boolean
 }
 
-export const WingTabs = ({ wings, activeWingTab, onWingChange, onDeleteWing }: WingTabsProps) => {
+export const WingTabs = ({ wings, activeWingTab, onWingChange, onDeleteWing,canAction }: WingTabsProps) => {
     const handleTabClick = (index: number) => {
         onWingChange(index);
     };
@@ -45,7 +46,7 @@ export const WingTabs = ({ wings, activeWingTab, onWingChange, onDeleteWing }: W
                                 {wing.Wing}
                             </span>
                             
-                            {onDeleteWing && isActive && (
+                            {onDeleteWing && canAction && isActive && (
                                 <button
                                     onClick={(e) => handleDeleteClick(e, wing)}
                                     className="ml-1 p-0.5 rounded-full hover:bg-gray-200 transition-colors"

@@ -248,7 +248,7 @@ export const MASTER_DATA = {
 
   parkingSize: ['Big', 'Small'],
 
-  parkingStatus: ['Available', 'Block', 'Hold', 'Member'],
+  parkingStatus: ['Available', 'Blocked', 'Hold', 'Member'],
 
   // unitLayout: ['Entire Flat','Living / Dining', 'Passage', 'Kitchen', 'Toilet', 'Master Bed Room', 'Main Door JAMB', 'KIT / Bed Door Jamb', 'Toilet Door Jamb'],
 

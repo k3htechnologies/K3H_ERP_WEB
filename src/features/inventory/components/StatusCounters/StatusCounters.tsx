@@ -19,7 +19,7 @@ export const StatusCounters = ({
         <div className="flex gap-5">
             <ColorDotWithData data={availableCount} color="#22C55E" title="Available" />
             <ColorDotWithData data={holdCount} color="#C4C41D" title="Hold"  />
-            <ColorDotWithData data={memberCount} color="#8A38F5" title="Member"  />
+            <ColorDotWithData data={memberCount} color="#8A38F5" title="Alloted"  />
             <ColorDotWithData data={bookedCount} color="#FF0000" title="BOOKED"  />
             <ColorDotWithData data={blockedCount} color="#1D1D1D" title="Blocked" />
         </div>

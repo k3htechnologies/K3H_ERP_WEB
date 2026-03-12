@@ -5,15 +5,16 @@ import { Edit, Eye, BookOpen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/ui/components/forms";
 import { useBookingListState } from "@/features/booking/context/BookingListStateContext";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 
 interface ParkingCardProps {
   parking: ParkingData;
   onEdit: (parking: ParkingData) => void;
   canAction?: boolean
-    canBookingAction?: boolean;
+  canBookingAction?: boolean;
 }
 
-export const ParkingCard = ({ parking, onEdit, canAction,canBookingAction }: ParkingCardProps) => {
+export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction }: ParkingCardProps) => {
   const navigate = useNavigate();
   const { updateListState } = useBookingListState();
 
@@ -97,7 +98,7 @@ export const ParkingCard = ({ parking, onEdit, canAction,canBookingAction }: Par
 
       </div>
 
-      {parking.ParkingStatus === "Available" && parking.ParkingNumber !== "" && parking.ParkingCategory  !== ""  && canBookingAction && (
+      {parking.ParkingStatus === "Available"  && parking.ParkingNumber !== "" && parking.ParkingCategory !== "" && canBookingAction && (
         <div className="flex items-center justify-center mt-2">
           <Button
             onClick={handleBook}
@@ -111,13 +112,23 @@ export const ParkingCard = ({ parking, onEdit, canAction,canBookingAction }: Par
         </div>
       )}
 
-      {parking.OwnerName && (parking.ParkingStatus === "Booked" || parking.ParkingStatus === "Member") && (
-        <p 
-          className="text-center text-[#135BEC] font-semibold cursor-pointer hover:underline mt-2"
+
+
+      {parking.OwnerName && (parking.ParkingStatus === "Booked" || parking.ParkingStatus === "Member") ? (
+        <p
+          className="text-center text-[#135BEC] font-semibold cursor-pointer hover:underline"
           onClick={handleOwnerNameClick}
           title="Click to view booking details"
         >
           Owner : {parking.OwnerName}
+        </p>
+      ) : parking.ParkingStatus === "Blocked" || parking.ParkingStatus === "Hold" ? (
+        <p className={`text-center ${colorsForParkingComponent[parking.ParkingStatus].buttonText}`}>
+          {parking.ParkingStatus} by {parking.CreatedBy} on {formatDate_dd_MonthName_yy_hh_mm(parking.CreatedDate ?? "-")}
+        </p>
+      ) : (
+        <p className="text-center text-[#135BEC] font-semibold">
+
         </p>
       )}
 

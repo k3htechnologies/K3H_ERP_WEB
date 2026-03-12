@@ -151,8 +151,7 @@ const InventorySpecification: React.FC = () => {
       (formDataInventoryFlat.FlatType?.trim().toUpperCase() === "RESIDENTIAL" ||
         formDataInventoryFlat.FlatType?.trim().toUpperCase() === "COMMERCIAL") &&
       !formDataInventoryFlat.FlatConfiguration?.trim()
-    ) 
-    {
+    ) {
       newErrors.FlatConfiguration = "Unit Configuration is required";
     }
 
@@ -232,6 +231,7 @@ const InventorySpecification: React.FC = () => {
   }, [specificationToDelete, specifications, addToast]);
 
   const handleSaveModal = async (e: React.FormEvent) => {
+
     e.preventDefault();
 
     setErrorsInventoryFlatSpecification({});
@@ -239,10 +239,25 @@ const InventorySpecification: React.FC = () => {
     const validation = validateInventoryFlatSpecificationForm();
 
     if (!validation.isValid) {
+      
       setErrorsInventoryFlatSpecification(validation.errors);
 
       return;
     }
+
+    const layoutExists = specifications.some((spec, index) => {
+
+      if (editingSpec && editingSpec.index === index) return false;
+
+      return spec.FlatLayout === formDataInventoryFlatSpecification.FlatLayout;
+
+    });
+
+    if (layoutExists) {
+      addToast({ type: "error", title: "This Unit Layout already exists" });
+      return;
+    }
+
 
     const newSpec: AddInventoryFlatSpecificationData = {
       InventoryFlatSpecificationId: editingSpec?.row.InventoryFlatSpecificationId ?? 0,
@@ -518,7 +533,7 @@ const InventorySpecification: React.FC = () => {
                 value={formDataInventoryFlat.Flat.replace(/^[A-Za-z\s]+-\s*/, "")}
                 onChange={(e) => handleFieldChangeInventoryFlat("Flat", e.target.value)}
                 disabled={disabled}
-                 error={errorsInventoryFlat.Flat}
+                error={errorsInventoryFlat.Flat}
               />
 
               <Input

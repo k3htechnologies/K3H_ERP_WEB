@@ -13,26 +13,23 @@ import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Loader } from "@/core/utils/loader";
 import { performanceReportService } from "@/features/performanceReport/services/PerformanceReportService";
 import * as E from 'fp-ts/Either';
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { useNavigate } from "react-router-dom";
 import Tabs from "@/ui/components/Tab/Tab";
 import { getMonthDateRange, getWeekToDateRange, getYearToDateRange } from "@/core/utils/comman";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 
 export const PerformanceReport: React.FC = () => {
 
-    // STATE
     const [PerformanceReportClosingList, setPerformanceReportClosingList] = useState<PerformanceReportClosingData[]>([]);
     const [PerformanceReportSourcingList, setPerformanceReportSourcingList] = useState<PerformanceReportSourcingData[]>([]);
+
     const [searchTerm, setSearchTerm] = useState('');
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
-    //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [filters, setFilters] = useState<FilterInfo>({});
@@ -44,22 +41,12 @@ export const PerformanceReport: React.FC = () => {
 
     const [targetActiveTab, setTargetActiveTab] = useState(TargetTabList[0].id);
 
-
-    //#region MENU PERMISSIONS
     const { canExport } = useMenuPermissions();
-    //#endregion
 
-    // PAGINATION
     const { pagination, setPagination } = usePagination(20);
 
-    //#region PROJECT SELECTION GET ID
     const { projectId } = useProject();
-    //#endregion
 
-    // USE NAVIGATE
-    const navigate = useNavigate();
-
-    // TOAST
     const { addToast } = useToast();
 
     const PerformanceReportTabList = [
@@ -69,9 +56,6 @@ export const PerformanceReport: React.FC = () => {
     ];
 
     const [activeTab, setActiveTab] = useState(PerformanceReportTabList[0].id);
-    //#endregion
-
-    //#region DATA LOADING | FETCH |  LOAD | SEARCH
 
     useEffect(() => {
         if (!projectId) return;
@@ -90,8 +74,8 @@ export const PerformanceReport: React.FC = () => {
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     EmployeeName: searchText?.trim() ?? undefined,
-                    FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
-                    ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
+                    FromDate: filterParams.FromDate || undefined,
+                    ToDate: filterParams.ToDate || undefined,
                     ReportType: targetActiveTab,
                     SortBy: getSortByParam(sort ?? null, targetActiveTab === "Closing" ? PerformanceReportClosingColumns : PerformanceReportSourcingColumns),
                 };
@@ -114,8 +98,11 @@ export const PerformanceReport: React.FC = () => {
                 else if (targetActiveTab === "Sourcing") {
 
                     const response = await performanceReportService.apiCallPullPerformanceReportSourcing(params);
+
                     if (E.isRight(response)) {
+
                         setPerformanceReportSourcingList(response.right.Data);
+
                         setPagination({
                             currentPage: page,
                             totalRecords: response.right.TotalNumberOfRecord,
@@ -133,58 +120,39 @@ export const PerformanceReport: React.FC = () => {
             undefined,
             'Loading Performance Report'
         );
-    },
-        [targetActiveTab, projectId, pagination.pageSize, addToast, setPagination]);
-    //#endregion
+    }, [targetActiveTab, projectId, pagination.pageSize, addToast, setPagination, sortInfo, searchTerm]);
 
-    //#region INIT
     useEffect(() => {
         if (!projectId) return;
 
         setPagination({ currentPage: 1 });
         loadPerformanceReport(1, filters, sortInfo, searchTerm);
     }, [projectId]);
-    //#endregion
 
-    //#region SEARCH HANDLERS
     const handleSearchChange = (value: string) => {
         setSearchTerm(value);
         setPagination({ currentPage: 1 });
         loadPerformanceReport(1, filters, sortInfo, value);
     };
-    //#endregion
 
-    //#region CLEAR HANDLERS
     const handleClearSearch = () => {
         setSearchTerm('');
         setPagination({ currentPage: 1 });
         loadPerformanceReport(1, filters, sortInfo, '');
     };
-    //#endregion
 
     const handlePageChange = (page: number) => {
         setPagination({ currentPage: page });
         loadPerformanceReport(page, filters, sortInfo, searchTerm);
     };
-    //#endregion
 
-    //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
 
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
         loadPerformanceReport(1, filters, sort, searchTerm);
     }, [searchTerm]);
-    //#endregion
 
-    //#region NAVIGATE TO VIEW PERFORMANCE REPORT
-    const handleViewPerformanceReportDetails = useCallback((row: PerformanceReportClosingData) => {
-        navigate(`/performance/view/${row.EmployeeId}`);
-
-    }, [navigate]);
-    //#endregion
-
-    //#region EXPORT / IMPORT EXCEL AND PDF
     const handleExportPerformanceReport = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -196,14 +164,30 @@ export const PerformanceReport: React.FC = () => {
                     PageSize: pagination.totalRecords,
                     ProjectId: Number(projectId),
                     EmployeeName: filters.EmployeeName?.trim() || undefined,
+                    FromDate: filters.FromDate || undefined,
+                    ToDate: filters.ToDate || undefined,
+                    ReportType: targetActiveTab,
                     SortBy: getSortByParam(sortInfo ?? null, targetActiveTab === "Closing" ? PerformanceReportClosingColumns : PerformanceReportSourcingColumns),
                     ExportType: exportType
                 };
-                const response = await performanceReportService.apiCallPullPerformanceReportClosing(params);
 
-                handleExportFile(response, exportType, 'Performance Report', addToast);
+                if (targetActiveTab === "Closing") {
 
-                return response;
+                    const response = await performanceReportService.apiCallPullPerformanceReportClosing(params);
+
+                    handleExportFile(response, exportType, 'Closing Performance Report', addToast);
+
+                    return response;
+
+                } else if (targetActiveTab === "Sourcing") {
+
+                    const response = await performanceReportService.apiCallPullPerformanceReportSourcing(params);
+
+                    handleExportFile(response, exportType, 'Sourcing Performance Report', addToast);
+
+                    return response;
+
+                }
             },
             undefined,
             (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
@@ -214,9 +198,8 @@ export const PerformanceReport: React.FC = () => {
 
     const handleExportPerformanceReportExcel = () => handleExportPerformanceReport('Excel')
     const handleExportPerformanceReportPdf = () => handleExportPerformanceReport('PDF')
-    //#endregion
 
-    //#region PERFORMANCE REPORT TABLE COLUMNS CLOSING
+
     const PerformanceReportClosingColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'EmployeeName',
@@ -225,13 +208,10 @@ export const PerformanceReport: React.FC = () => {
             sortable: true,
             fixed: 'left',
             align: 'left',
-            render: (value, row) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                    onClick={() => handleViewPerformanceReportDetails(row)}
-                />
+            render: (value) => (
+                <span className="text-blue-600 font-semibold">
+                    {value}
+                </span>
             )
         },
         {
@@ -254,8 +234,6 @@ export const PerformanceReport: React.FC = () => {
                 { key: "PerformanceWalkinsByCP", label: "P", align: "center", render: (v: number) => `${v}%` || "0%" }
             ]
         },
-
-        // Walkins Direct
         {
             key: "WalkinsDirectGroup",
             label: "Walkins Direct",
@@ -266,8 +244,6 @@ export const PerformanceReport: React.FC = () => {
                 { key: "PerformanceWalkinsDirect", label: "P", align: "center", render: (v: number) => `${v}%` || "0%" }
             ]
         },
-
-        // Fresh Visits
         {
             key: "FreshVisitsGroup",
             label: "Fresh Visits",
@@ -279,7 +255,6 @@ export const PerformanceReport: React.FC = () => {
             ]
         },
 
-        // Revisits
         {
             key: "RevisitsGroup",
             label: "Revisits",
@@ -290,8 +265,6 @@ export const PerformanceReport: React.FC = () => {
                 { key: "PerformanceRevisits", label: "P", align: "center", render: (v: number) => `${v}%` || "0%" }
             ]
         },
-
-        // Booking By CP
         {
             key: "BookingByCPGroup",
             label: "Booking By CP",
@@ -302,8 +275,6 @@ export const PerformanceReport: React.FC = () => {
                 { key: "PerformanceBookingByCP", label: "P", align: "center", render: (v: number) => `${v}%` || "0%" }
             ]
         },
-
-        // Booking Direct
         {
             key: "BookingDirectGroup",
             label: "Booking Direct",
@@ -315,33 +286,26 @@ export const PerformanceReport: React.FC = () => {
             ]
         }
 
-    ], [handleViewPerformanceReportDetails]);
-    //#endregion
+    ], []);
 
-    //#region PERFORMANCE REPORT TABLE COLUMNS CLOSING
     const PerformanceReportSourcingColumns = useMemo<TableColumn[]>(() => [
 
         {
             key: 'EmployeeName',
             label: 'Employee Name',
-            width: '15',
             sortable: true,
             fixed: 'left',
             align: 'left',
-            render: (value, row) => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="250px"
-                    tooltipThreshold={25}
-                    onClick={() => handleViewPerformanceReportDetails(row)}
-                />
+            render: (value) => (
+                <span className="text-blue-600 font-semibold">
+                    {value}
+                </span>
             )
         },
 
         {
             key: 'DesignationName',
             label: 'Designation Name',
-            width: '25',
             sortable: false,
             align: 'center',
             render: value => value || '-'
@@ -474,10 +438,8 @@ export const PerformanceReport: React.FC = () => {
             ]
         }
 
-    ], [handleViewPerformanceReportDetails])
-    //#endregion
+    ], [])
 
-    //#region FILTER MODAL HELPERS
     const applyFilters = () => {
         setFilters(tempFilters);
         setPagination({ currentPage: 1 });
@@ -485,9 +447,7 @@ export const PerformanceReport: React.FC = () => {
         loadPerformanceReport(1, tempFilters);
         setShowFilterPopup(false);
     };
-    //#endregion
 
-    //#region Clear
     const clearFilters = () => {
         setTempFilters({});
         setFilters({});
@@ -495,11 +455,9 @@ export const PerformanceReport: React.FC = () => {
         loadPerformanceReport(1, {}, sortInfo, searchTerm);
     };
 
-    //#region HANDLE FILTER CHNAGE
     const handleFilterChange = (key: string, value: string) => {
         setTempFilters(prev => updateFilter(prev, key, value));
     }
-    //#endregion
 
     const handleTabChange = (tabId: string) => {
 
@@ -528,20 +486,23 @@ export const PerformanceReport: React.FC = () => {
             toDate = range.toDate;
         }
 
+        const formatDate = (date?: Date) =>
+            date ? date.toISOString().split("T")[0] : "";
+
         const updatedFilters: FilterInfo = {
             ...filters,
-            FromDate: fromDate ? fromDate.toLocaleDateString("en-GB") : "",
-            ToDate: toDate ? toDate.toLocaleDateString("en-GB") : "",
+            FromDate: formatDate(fromDate),
+            ToDate: formatDate(toDate),
         };
 
         setFilters(updatedFilters);
+        setTempFilters(updatedFilters);
+
         setPagination({ currentPage: 1 });
+
         loadPerformanceReport(1, updatedFilters, sortInfo, searchTerm);
-
     };
-    //#endregion
 
-    //#region PERFORMANCE REPORT TABLE PAGINATION INFO
     const PerformanceReportPaginationInfo: PaginationInfo = useMemo(
         () => ({
             currentPage: pagination.currentPage,
@@ -558,9 +519,7 @@ export const PerformanceReport: React.FC = () => {
             ? PerformanceReportClosingList
             : PerformanceReportSourcingList;
     }, [targetActiveTab, PerformanceReportClosingList, PerformanceReportSourcingList]);
-    //#endregion
 
-    //#region
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -597,7 +556,7 @@ export const PerformanceReport: React.FC = () => {
                 exportLoading={isLoading}
             />
 
-            <div className="pt-3">
+            <div className="pt-3 flex items-center justify-between">
                 <Tabs
                     tabs={TargetTabList}
                     defaultActive={targetActiveTab}
@@ -607,6 +566,11 @@ export const PerformanceReport: React.FC = () => {
                         setPagination({ currentPage: 1 })
                     }}
                 />
+                <div className="flex items-center gap-2 text-xs text-gray-600 whitespace-nowrap">
+                    <span className="px-2 py-1 bg-gray-100 rounded">T : Target</span>
+                    <span className="px-2 py-1 bg-gray-100 rounded">A : Actual</span>
+                    <span className="px-2 py-1 bg-gray-100 rounded">P : Performance</span>
+                </div>
             </div>
 
             {/* DATA TABLE */}
@@ -643,17 +607,17 @@ export const PerformanceReport: React.FC = () => {
 
                     <div>
                         <DatePickerInput
-                            label='From Date'
-                            value={tempFilters.FromDate || ''}
-                            onChange={(value) => handleFilterChange('FromDate', value || '')}
+                            label="From Date"
+                            value={formatDate_dd_mm_yyyy(tempFilters.FromDate)}
+                            onChange={(val) => handleFilterChange('FromDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || "")}
                         />
                     </div>
 
                     <div>
                         <DatePickerInput
-                            label='To Date'
-                            value={tempFilters.ToDate || ''}
-                            onChange={(value) => handleFilterChange('ToDate', value || '')}
+                            label="To Date"
+                            value={formatDate_dd_mm_yyyy(tempFilters.ToDate)}
+                            onChange={(val) => handleFilterChange('ToDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || "")}
                         />
                     </div>
                 </div>

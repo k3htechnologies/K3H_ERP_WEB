@@ -159,7 +159,6 @@ import LitigationDashboard from '@/features/litigationDashboard/pages/litigation
 import ClassificationParameter from '@/features/classificationParameter/pages/ClassificationParameter';
 import Approval from '@/features/projectMaster/pages/Approval';
 import PerformanceReport from '@/features/performanceReport/pages/PerformanceReport';
-import ViewPerformanceReport from '@/features/performanceReport/pages/ViewPerformanceReport';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -372,7 +371,6 @@ function App() {
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
 
             <Route path="performance" element={<PerformanceReport />} />
-            <Route path="performance/view/:EmployeeId" element={<ViewPerformanceReport />} />
 
 
             {/* REDEVELOPMENT */}

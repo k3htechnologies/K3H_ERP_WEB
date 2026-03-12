@@ -82,7 +82,7 @@ export const isToDateGreaterOrEqualFromDate = (
 //Common Validation: Allow Only Past N Days (Including Today)
 
 export const isDateWithinPastDays = (dateStr: string | null | undefined, pastDays: number): boolean => {
-  
+
   if (!dateStr) return false;
 
   const inputDate = new Date(dateStr);
@@ -96,7 +96,7 @@ export const isDateWithinPastDays = (dateStr: string | null | undefined, pastDay
   minAllowedDate.setDate(today.getDate() - pastDays);
 
   return inputDate >= minAllowedDate && inputDate <= today;
-  
+
 };
 export const format24To12Hour = (hour: string, minute: string) => {
   const h = Number(hour)
@@ -106,7 +106,7 @@ export const format24To12Hour = (hour: string, minute: string) => {
 }
 export const getMonthDateRange = (date: Date) => {
 
-  const fromDate = new Date(date.getFullYear(), date.getMonth(), 1);
+  const fromDate = new Date(date.getFullYear(), date.getMonth(), 2);
   const toDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
   fromDate.setHours(0, 0, 0, 0);

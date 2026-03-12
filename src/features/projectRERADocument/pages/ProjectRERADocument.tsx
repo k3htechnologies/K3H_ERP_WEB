@@ -1224,6 +1224,7 @@ const ProjectRERADocument: React.FC = () => {
             <div>
               <MultiFilePicker
                 label="Files"
+                placeholder='Select File'
                 required={formData.ProjectRERADocumentStatus?.toUpperCase() === "ISSUED" ? true : false}
                 value={projectRERADocumentFiles}
                 onChange={setProjectRERADocumentFiles}
@@ -1240,6 +1241,7 @@ const ProjectRERADocument: React.FC = () => {
             <div>
               <MultiFilePicker
                 label="Screenshot"
+                placeholder='Select Screenshot'
                 value={rERAPortalScreenShotFiles}
                 onChange={setRERAPortalScreenShotFiles}
                 availableFilesURL={rERAPortalScreenShotURL ?? ""}

@@ -12,6 +12,7 @@ interface InventoryHeaderProps {
     onDownloadSampleExcel: () => void;
     canExport: boolean;
     canAction: boolean;
+    canImport: boolean;
     exportLoading: boolean;
     onAddBuilding?: () => void;
     onAddWing?: () => void;
@@ -42,6 +43,7 @@ export const InventoryHeader = ({
     onDownloadSampleExcel,
     canExport,
     canAction,
+    canImport,
     exportLoading,
     onAddBuilding,
     onAddWing,
@@ -147,7 +149,7 @@ export const InventoryHeader = ({
                 isShowExportButton={canExport}
                 onExportExcel={onExportExcel}
                 onExportPdf={onExportPdf}
-                isShowImportButton={canAction}
+                isShowImportButton={canImport}
                 onUploadExcel={onUploadExcel}
                 onDownloadSampleExcel={onDownloadSampleExcel}
                 exportLoading={exportLoading}

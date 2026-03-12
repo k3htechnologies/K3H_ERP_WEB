@@ -45,6 +45,7 @@ const Inventory = () => {
     const [selectedWing, setSelectedWing] = useState<InventoryFlatFloorBasementPodiumWingData | undefined>(undefined);
 
     const [activeWingTab, setActiveWingTab] = useState<string>('0');
+    const [isInventoryAvailable, setIsInventoryAvailable] = useState<boolean>(false);
 
     const { addToast } = useToast()
     const [isLoading, setIsLoading] = useState(false);
@@ -128,7 +129,7 @@ const Inventory = () => {
     useEffect(() => {
 
         if (!projectId) {
-
+            setIsInventoryAvailable(false)
             setInventory([]);
             setSelectedBuilding(undefined);
             setSelectedBuildingIndex(null);
@@ -305,6 +306,7 @@ const Inventory = () => {
     //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
     const fetchInventory = useCallback(async () => {
+        setIsInventoryAvailable(false)
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -316,6 +318,8 @@ const Inventory = () => {
                 const response = await inventoryService.apiCallpullInventory(params);
 
                 if (E.isRight(response)) {
+
+                    setIsInventoryAvailable(response.right.Data.length > 0 ? true : false)
 
                     setInventory(response.right.Data);
 
@@ -1224,7 +1228,7 @@ const Inventory = () => {
 
         setApprovalActionType(type);
 
-         if (selectedBuildingIndex === null || !selectedWing) return;
+        if (selectedBuildingIndex === null || !selectedWing) return;
 
         const building = inventory[selectedBuildingIndex];
 
@@ -1295,8 +1299,9 @@ const Inventory = () => {
                 onExportPdf={handleExportInventoryPdf}
                 onUploadExcel={() => setShowImportModal(true)}
                 onDownloadSampleExcel={handleDownloadExcelSampleInventory}
-                canExport={canExport && Number(projectId) > 0}
+                canExport={canExport && Number(projectId) > 0 && inventory.length > 0}
                 canAction={canAction && Number(projectId) > 0}
+                canImport={canExport && Number(projectId) > 0 && inventory.length > 0}
                 exportLoading={isLoading}
                 onAddBuilding={handleOpenAddBuildingModal}
                 onAddWing={handleOpenAddWingModal}
@@ -1344,8 +1349,9 @@ const Inventory = () => {
                 <div className="flex justify-between items-center pt-2 pb-2">
 
                     <div className="flex-1">
-                        {selectedBuilding && (
+                        {selectedBuilding && isInventoryAvailable && (
                             <WingTabs
+
                                 wings={selectedBuilding}
                                 activeWingTab={activeWingTab}
                                 onWingChange={(index) => {
@@ -1391,7 +1397,7 @@ const Inventory = () => {
 
             {activeTab === "Grid" ? (
 
-                selectedWing && getFilteredFloors.map((floor) => {
+                selectedWing && isInventoryAvailable && getFilteredFloors.map((floor) => {
 
                     const originalFloorIndex = selectedWing.InventoryFloorData.findIndex(f => f.InventoryFloorId === floor.InventoryFloorId);
 
@@ -1402,7 +1408,7 @@ const Inventory = () => {
                             key={floor.InventoryFloorId}
                             floor={floor}
                             slabHeight={floor.SlabHeight || 0}
-                            projectId={inventory[0]?.ProjectId || 0}
+                            projectId={projectId || 0}
                             building={inventory[selectedBuildingIndex || 0]}
                             wing={selectedWing}
                             onDelete={handleDeleteFlat}

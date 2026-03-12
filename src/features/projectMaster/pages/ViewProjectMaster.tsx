@@ -406,6 +406,12 @@ export const ViewProjectMaster: React.FC = () => {
                                         <FieldItem label="Project Name" value={editProjectData?.ProjectName ?? '-'} />
 
                                         <FieldItem label="Business Category" value={editProjectData?.BussinessCategory ?? '-'} />
+                                        <FieldItem label="File Number" value={editProjectData?.FileNumber ?? '-'} />
+                                        <FieldItem label="Architect Name" value={editProjectData?.ArchitectName ?? '-'} />
+                                        <FieldItem label="Architect Mobile Number" value={editProjectData?.ArchitectMobileNumber
+                                                                                    ? `+91 ${editProjectData?.ArchitectMobileNumber}`
+                                                                                    : '-'}
+                                                                                />
 
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
@@ -439,6 +445,7 @@ export const ViewProjectMaster: React.FC = () => {
                                         <FieldItem label="State" value={editProjectData?.StateName ?? '-'} />
                                         <FieldItem label="District" value={editProjectData?.DistrictName ?? '-'} />
                                         <FieldItem label="City" value={editProjectData?.CityName ?? '-'} />
+                                        <FieldItem label="Village" value={editProjectData?.VillageName ?? '-'} />
                                         <FieldItem label="PIN Code" value={editProjectData?.ZipCode ?? '-'} />
                                     </div>
                                 </section>

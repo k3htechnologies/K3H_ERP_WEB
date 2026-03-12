@@ -41,10 +41,6 @@ export interface PerformanceReportClosingData {
     BookingDirect: number | null
     ActualBookingDirect: number | null
     PerformanceBookingDirect: number | null
-
-    PerformanceWalkinsData: [] | null
-    PerformanceBookingData: [] | null
-    PerformanceRatioData: [] | null
 }
 
 export interface PerformanceReportSourcingData {
@@ -99,10 +95,6 @@ export interface PerformanceReportSourcingData {
     NewCP: number | null
     ActualNewCP: number | null
     PerformanceNewCP: number | null
-
-    PerformanceWalkinsData: [] | null
-    PerformanceBookingData: [] | null
-    PerformanceRatioData: [] | null
 }
 
 export type PerformanceReportClosingListResponse = ApiResponse<PerformanceReportClosingData[]>;

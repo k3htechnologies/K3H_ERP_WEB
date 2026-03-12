@@ -12,6 +12,7 @@ interface TabsProps {
   onTabChange?: (tab: TabItem) => void;
   islarge?: boolean
   isChips?: boolean;
+
 }
 
 export const Tabs: React.FC<TabsProps> = ({

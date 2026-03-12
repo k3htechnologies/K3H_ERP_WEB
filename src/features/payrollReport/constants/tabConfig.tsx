@@ -11,6 +11,10 @@ export type TabId =
     | 'Outdoor'
     | 'Resignation';
 
+export type SubTabId =
+    | 'Reports'
+    | 'Approval';
+    
 export const TAB_LIST: Array<{ id: TabId; label: string }> = [
     { id: 'Attendance', label: 'Attendance' },
     { id: 'Attendance Regularization', label: 'Attendance Regularization' },
@@ -19,7 +23,11 @@ export const TAB_LIST: Array<{ id: TabId; label: string }> = [
     { id: 'Outdoor', label: 'Outdoor' },
     { id: 'Resignation', label: 'Resignation' },
 ];
-
+export const SUBTAB_LIST: Array<{ id: SubTabId; label: string }> = [
+    { id: 'Reports', label: 'Reports' },
+    { id: 'Approval', label: 'Approval' },
+    
+];
 // ─── Week date helper─────────────────────────────
 
 export const getCurrentWeekDates = (): { startDate: string; endDate: string } => {

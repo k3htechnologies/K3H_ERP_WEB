@@ -206,7 +206,12 @@ export const Brokerage: React.FC = () => {
             width: '25',
             sortable: false,
             align: 'center',
-            render: value => value || '-'
+            render: (value, row) => row ? (
+                <div style={{ textAlign: 'center' }}>
+                    <div >{value || '-'}</div>
+                    <div>{row.ProjectName}</div>
+                </div>
+            ) : value || '-'
         },
         {
             key: 'Category',
@@ -214,31 +219,12 @@ export const Brokerage: React.FC = () => {
             width: '25',
             sortable: false,
             align: 'center',
-            render: value => value || '-'
-        },
-        {
-            key: 'BrokerageAmount',
-            label: 'Brokerage Amount',
-            width: '25',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-        },
-        {
-            key: 'PaidBrokerageAmount',
-            label: 'Paid Amount',
-            width: '25',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-        },
-        {
-            key: 'OutstandingAmount',
-            label: 'Outstanding Amount',
-            width: '25',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
+            render: (value, row) => row ? (
+                <div style={{ textAlign: 'center' }}>
+                    <div >{row.FlatType}</div>
+                    <div>{row.FlatConfiguration} - {row.RERACarpetAreaSqFt} sq.ft</div>
+                </div>
+            ) : value || '-'
         },
         {
             key: 'AgreementValue',
@@ -246,7 +232,36 @@ export const Brokerage: React.FC = () => {
             width: '25',
             sortable: false,
             align: 'center',
-            render: value => value || '-'
+            render: value => value ? `₹ ${value.toFixed(2)}` : '-'
+        },
+        {
+            key: 'BrokerageAmount',
+            label: 'Brokerage Amount',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: (value, row) => value ? `₹ ${value.toFixed(2)} - ${row.BrokeragePercentage}%` : '-'
+        },
+        {
+            key: 'PaidBrokerageAmount',
+            label: 'Paid Amount',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: value => value ? `₹ ${value.toFixed(2)}` : '0.00'
+        },
+        {
+            key: 'OutstandingAmount',
+            label: 'Outstanding Amount',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: (_value, row) => {
+                const brokerageAmount = Number(row.BrokerageAmount) || 0
+                const paidBrokerageAmount = Number(row.PaidBrokerageAmount) || 0
+                const outstandingAmount = brokerageAmount - paidBrokerageAmount
+                return `₹ ${outstandingAmount.toFixed(2)}`
+            }
         },
         {
             key: 'Actions',

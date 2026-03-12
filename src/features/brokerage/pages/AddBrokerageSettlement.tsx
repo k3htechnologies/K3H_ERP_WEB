@@ -14,6 +14,8 @@ import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
+import { PAYMENT_MODE, PAYMENT_TYPE } from "@/core/constants";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 
 const initialFormState = (): AddUpdatePaidBrokerageBookingRequest => ({
     PaidBrokerageBookingId: 0,
@@ -81,6 +83,8 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     //SET DROP DOWN 
     const [dropdownLabels, setDropdownLabels] = useState<{
         bankName?: string;
+        paymentMode?: string
+        paymentType?: string
     }>({});
     //#endregion
 
@@ -133,6 +137,8 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                     }
                     setDropdownLabels({
                         bankName: formData.BankName || "",
+                        paymentMode: formData.PaymentMode || "",
+                        paymentType: formData.PaymentType || "",
                     });
                     setTransactionReceiptURL('')
                 } else {
@@ -188,7 +194,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         fd.append("BankListMasterId", formData.BankListMasterId.toString());
         fd.append("BrokerageInvoiceId", formData.BrokerageInvoiceId.toString());
         fd.append("PaymentMode", formData.PaymentMode ?? "");
-        fd.append("PaymentType", formData.PaymentType.toString());
+        fd.append("PaymentType", formData.PaymentType ?? "");
         fd.append("TDSAmount", formData.TDSAmount.toString());
         fd.append("AmountPaid", formData.AmountPaid.toString());
         fd.append("TransactionNumber", formData.TransactionNumber ?? "");
@@ -264,18 +270,17 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                     {/* Basic Brokerage Settlement Details */}
 
                     <div className="space-y-4 pb-3">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Brokerage Settlement</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Make Payment</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                             <div>
-                                <Input
-                                    type="text"
+                                <SinglePageSelection
+                                    label="Payment Mode"
                                     required
-                                    label='Payment Mode'
-                                    value={formData.PaymentMode ?? ""}
-                                    onChange={(e) => handleFieldChange("PaymentMode", e.target.value)}
-                                    placeholder="Enter Payment Mode"
-                                    maxLength={250}
+                                    placeholder='Select Payment Mode'
+                                    value={formData.PaymentMode || ''}
+                                    onChange={(e) => handleFieldChange('PaymentMode', String(e))}
+                                    options={PAYMENT_MODE.map((opt) => ({ label: opt.name, value: opt.id }))}
                                     error={errors.PaymentMode}
                                 />
                             </div>
@@ -301,13 +306,13 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                             </div>
 
                             <div>
-                                <Input
-                                    type="text"
-                                    required
+                                <SinglePageSelection
                                     label="Payment Type"
-                                    value={formData.PaymentType ?? ""}
-                                    onChange={(e) => handleFieldChange("PaymentType", e.target.value)}
-                                    placeholder="Enter Payment Type"
+                                    placeholder='Select Payment Type'
+                                    required
+                                    value={formData.PaymentType || ''}
+                                    onChange={(e) => handleFieldChange('PaymentType', String(e))}
+                                    options={PAYMENT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
                                     error={errors.PaymentType}
                                 />
                             </div>
@@ -317,27 +322,30 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
 
                             <div>
                                 <Input
+                                    label='Amount (₹)'
                                     type="text"
-                                    required
-                                    label='Amount'
-                                    value={formData.AmountPaid ?? ""}
-                                    onChange={(e) => handleFieldChange("AmountPaid", e.target.value)}
-                                    placeholder="Enter Amount"
-                                    maxLength={250}
-                                    error={errors.AmountPaid}
+                                    value={formData.AmountPaid ?? ''}
+                                    maxLength={15}
+                                    onChange={(e) => {
+                                        const digits = e.target.value.replace(/\D/g, '');
+                                        const amount = digits === '' ? 0 : Number(digits);
+                                        const tds = parseFloat((amount * 0.10).toFixed(2));
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            AmountPaid: amount,
+                                            TDSAmount: tds
+                                        }))
+                                    }}
                                 />
                             </div>
 
                             <div>
                                 <Input
+                                    label='TDS Amount (₹)'
                                     type="text"
-                                    required
-                                    label='TDS Amount'
-                                    value={formData.TDSAmount ?? ""}
+                                    value={formData.TDSAmount ? Number(formData.TDSAmount).toFixed(2) : '0.00'}
                                     onChange={(e) => handleFieldChange("TDSAmount", e.target.value)}
-                                    placeholder="Enter TDS Amount"
-                                    maxLength={250}
-                                    error={errors.TDSAmount}
+                                    readOnly
                                 />
                             </div>
 
@@ -349,7 +357,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                     value={formData.TransactionNumber ?? ""}
                                     onChange={(e) => handleFieldChange("TransactionNumber", e.target.value)}
                                     placeholder="Enter Transaction Number"
-                                    maxLength={250}
+                                    maxLength={15}
                                     error={errors.TransactionNumber}
                                 />
                             </div>
@@ -362,7 +370,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                     onChange={setTransactionReceiptURLFiles}
                                     availableFilesURL={transactionReceiptURL ?? ""}
                                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                    maxFiles={5}
+                                    maxFiles={1}
                                     maxSizeMB={10}
                                     onRemoveExisting={(url) => {
                                         SetRemoveTransactionReceiptURLUrls((prev) => [...prev, url])

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import useToast from "@/core/hooks/useToast";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -17,6 +17,8 @@ import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
+import { filterIFSC, filterNumbers, isValidAccount, isValidIFSC } from "@/core/utils/fileValidation";
+import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateBrokerageInvoiceRequest => ({
     BrokerageInvoiceId: 0,
@@ -68,6 +70,9 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     const { canAction } = useMenuPermissions('/brokerage');
     //#endregion
 
+    // const location = useLocation();
+    // const brokerageAmount = location.state?.brokerageAmount || 0;
+
     //#region HANDLE FIELD CHANGE EVENT
     const handleFieldChange = (field: keyof AddUpdateBrokerageInvoiceRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -85,16 +90,16 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     //#endregion
 
     //#region INITIALIZATION
-   useEffect(() => {
-    if (!projectId) return;
+    useEffect(() => {
+        if (!projectId) return;
 
-    setFormData(prev => ({
-        ...prev,
-        BookingId: currentBookingId,
-        ProjectId: Number(projectId)
-    }));
+        setFormData(prev => ({
+            ...prev,
+            BookingId: currentBookingId,
+            ProjectId: Number(projectId)
+        }));
 
-}, [currentBookingId, projectId]);
+    }, [currentBookingId, projectId]);
     //#endregion
 
     //#region FETCH BROKERAGE INVOICE DETAILS
@@ -168,6 +173,32 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
             newErrors.Remark = 'Case Remarks is required.';
         }
 
+        if (!formData.IFSCCode?.trim()) {
+            newErrors.IFSCCode = 'IFSC Code is required.'
+        }
+
+        else if (formData.IFSCCode.trim().length > 12) {
+            newErrors.IFSCCode = 'IFSC Code must be at most 50 characters'
+        }
+        else if (!isValidIFSC(formData.IFSCCode.trim())) {
+            newErrors.IFSCCode = 'Enter a valid IFSC Code'
+        }
+        if (!formData.AccountNumber) {
+            newErrors.AccountNumber = 'Account Number is required.';
+        } else if (!isValidAccount(formData.AccountNumber.toString())) {
+            newErrors.AccountNumber = "Enter a valid Account Number (6–18 digits)";
+        }
+
+        if (!formData.InvoiceDate) {
+            newErrors.InvoiceDate = 'Invoice Date is required.';
+        }
+        if (!formData.DueDate) {
+            newErrors.DueDate = 'Due Date is required.';
+
+        } else if (formData.InvoiceDate != null && formData.InvoiceDate !== "" && !isToDateGreaterOrEqualFromDate(formData.InvoiceDate, formData.DueDate)) {
+            newErrors.DueDate = "Due Date must be greater to Invoice Date";
+        }
+       
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -291,13 +322,13 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                             </div>
                             <div>
                                 <MultiFilePicker
-                                    label="upload Invoice"
+                                    label="Upload Invoice"
                                     required
                                     value={uploadInvoiceURLFiles}
                                     onChange={setUploadInvoiceURLFiles}
                                     availableFilesURL={uploadInvoiceURL ?? ""}
                                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                    maxFiles={5}
+                                    maxFiles={3}
                                     maxSizeMB={10}
                                     onRemoveExisting={(url) => {
                                         SetRemoveUploadInvoiceURLUrls((prev) => [...prev, url])
@@ -334,34 +365,27 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     value={formData.AccountName ?? ""}
                                     onChange={(e) => handleFieldChange("AccountName", e.target.value)}
                                     placeholder="Enter Account Name"
-                                    maxLength={250}
+                                    maxLength={50}
                                     error={errors.AccountName}
                                 />
                             </div>
 
-                            <div>
-                                <Input
-                                    type="text"
-                                    required
-                                    label='IFSCCode'
-                                    value={formData.IFSCCode ?? ""}
-                                    onChange={(e) => handleFieldChange("IFSCCode", e.target.value)}
-                                    placeholder="Enter IFSCCode"
-                                    maxLength={250}
-                                    error={errors.IFSCCode}
-                                />
-                            </div>
+                            <Input
+                                label="IFSC Code"
+                                placeholder="Enter IFSC Code"
+                                required
+                                value={formData.IFSCCode}
+                                onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
+                                error={errors.IFSCCode} />
 
                             <div>
                                 <Input
-                                    type="text"
-                                    required
-                                    label='Account Number'
-                                    value={formData.AccountNumber ?? ""}
-                                    onChange={(e) => handleFieldChange("AccountNumber", e.target.value)}
-                                    placeholder="Enter Account Number"
-                                    maxLength={250}
+                                    label="Account Number"
+                                    value={formData.AccountNumber || ''}
+                                    onChange={(e) => handleFieldChange('AccountNumber', filterNumbers(e.target.value))}
                                     error={errors.AccountNumber}
+                                    placeholder="Enter Account Number"
+                                    required
                                 />
                             </div>
 
@@ -373,7 +397,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     value={formData.InvoiceAmount ?? ""}
                                     onChange={(e) => handleFieldChange("InvoiceAmount", e.target.value)}
                                     placeholder="Enter Invoice Amount"
-                                    maxLength={250}
+                                    maxLength={15}
                                     error={errors.InvoiceAmount}
                                 />
                             </div>

@@ -31,6 +31,7 @@ export interface BrokerageBookingData {
     Floor: string | null
     Source: string | null
     AgreementValue: number | 0
+    BrokerageAmount: number | 0
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

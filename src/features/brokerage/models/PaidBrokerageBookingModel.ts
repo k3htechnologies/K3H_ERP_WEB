@@ -19,9 +19,12 @@ export interface PaidBrokerageBookingData {
     BrokerageInvoiceId: number | 0
     PaymentMode: string | null
     BankListMasterId: number | 0
-    BankName:string| null
+    BankName: string | null
     PaymentType: string | null
     AmountPaid: number | 0
+    AccountNumber: string | null
+    IFSCCode: string | null
+    OutstandingAmount: string | null
     TDSAmount: number | 0
     TransactionNumber: string | null
     TransactionReceiptURL: string | null

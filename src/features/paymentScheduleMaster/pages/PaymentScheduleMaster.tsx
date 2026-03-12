@@ -73,9 +73,19 @@ export const PaymentScheduleMaster: React.FC = () => {
   };
   //#endregion
 
+  const loadStageOptions = async () => {
+    const res = await fetchPaymentScheduleDropdown({
+      projectId: projectId ?? undefined,
+      inventoryBuildingId: formData.InventoryBuildingId,
+      inventoryFlatFloorBasementPodiumWingId: formData.InventoryFlatFloorBasementPodiumWingId,
+    });
+    setStageOptions(res.itemList);
+  };
+
+
   //#region LOAD PAYMENT SCHEDULE DATA
   const loadPaymentScheduleMaster = useCallback(
-    async (page: number = pagination.currentPage, filterParams: FilterInfo = {}, sort?: SortInfo, paymentScheduleMasterId?: number) => {
+    async (page: number = pagination.currentPage, inventoryBuildingId?: number, inventoryFlatFloorBasementPodiumWingId?: number, filterParams: FilterInfo = {}, sort?: SortInfo) => {
       await runApiWithLoader(
         setIsLoading,
         setLoadingMessage,
@@ -84,9 +94,9 @@ export const PaymentScheduleMaster: React.FC = () => {
             PageNumber: page,
             PageSize: pagination.pageSize,
             ProjectId: Number(projectId),
-            PaymentScheduleMasterId: paymentScheduleMasterId,
-            InventoryBuildingId: filterParams.InventoryBuildingId ? Number(filterParams.InventoryBuildingId) : undefined,
-            InventoryFlatFloorBasementPodiumWingId: filterParams.InventoryFlatFloorBasementPodiumWingId ? Number(filterParams.InventoryFlatFloorBasementPodiumWingId) : undefined,
+            PaymentScheduleSchemeMasterId: filterParams.PaymentScheduleSchemeMasterId ? Number(filterParams.PaymentScheduleSchemeMasterId) : undefined,
+            InventoryBuildingId: inventoryBuildingId,
+            InventoryFlatFloorBasementPodiumWingId: inventoryFlatFloorBasementPodiumWingId,
             Stage: filterParams.Stage ?? undefined,
             SortBy: getSortByParam(sort ?? null, PaymentScheduleMasterColumns),
           };
@@ -95,6 +105,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
           if (E.isRight(response)) {
             setPaymentScheduleMasterList(response.right.Data);
+
             setPagination({
               currentPage: page,
               totalRecords: response.right.TotalNumberOfRecord,
@@ -110,7 +121,7 @@ export const PaymentScheduleMaster: React.FC = () => {
         "Loading Data ",
       );
     },
-    [projectId, formData.PaymentScheduleMasterId, pagination.currentPage, pagination.pageSize, addToast, setPagination],
+    [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination],
   );
   //#endregion
 
@@ -153,7 +164,10 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   const handlePageChange = (page: number) => {
     setPagination({ currentPage: page });
-    loadPaymentScheduleMaster(1, {});
+
+    loadPaymentScheduleMaster(
+      page, formData.InventoryBuildingId, formData.InventoryFlatFloorBasementPodiumWingId,
+    );
   };
   //#endregion
 
@@ -456,10 +470,11 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   //#region FETCH PAYMENT SCHEDULE SCHEME DROPDOWN WITH PROJECT ID
   const fetchPaymentScheduleSchemeMaster = () => (page: number) =>
-    fetchPaymentScheduleSchemeMasterDropDown(page, {
-      projectId: Number(projectId),
-    });
-
+  fetchPaymentScheduleSchemeMasterDropDown(page, {
+    projectId: Number(projectId),
+    inventoryBuildingId: formData.InventoryBuildingId,
+    inventoryFlatFloorBasementPodiumWingId: formData.InventoryFlatFloorBasementPodiumWingId,
+  });
   //#endregion
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
@@ -476,16 +491,23 @@ export const PaymentScheduleMaster: React.FC = () => {
               title="Select Payment Schedule Scheme"
               size="lg"
               dataFetchCallBack={fetchPaymentScheduleSchemeMaster()}
-              onSelected={(item) => {
-
+              onSelected={(item: any) => {
                 const schemeId = Number(item.value);
+                const InventoryBuildingId = (item.inventoryBuildingId ?? formData.InventoryBuildingId ?? 0);
+                const InventoryFlatFloorBasementPodiumWingId = Number(item.inventoryFlatFloorBasementPodiumWingId ?? formData.InventoryFlatFloorBasementPodiumWingId ?? 0);
 
-                handleFieldChange("PaymentScheduleSchemeMasterId", schemeId);
+                setFormData((prev) => ({
+                  ...prev,
+                  PaymentScheduleSchemeMasterId: schemeId,
+                  InventoryBuildingId: InventoryBuildingId,
+                  InventoryFlatFloorBasementPodiumWingId: InventoryFlatFloorBasementPodiumWingId,
+                }));
 
-                loadPaymentScheduleMaster(1, {}, undefined, schemeId);
-
+                loadPaymentScheduleMaster(
+                  1, InventoryBuildingId, InventoryFlatFloorBasementPodiumWingId,
+                  { PaymentScheduleSchemeMasterId: schemeId.toString() }
+                );
               }}
-              
               initialValue={createDropdownInitialValue(formData.PaymentScheduleSchemeMasterId, dropdownLabels.paymentScheduleScheme)}
               error={errors.PaymentScheduleSchemeMasterId}
             />
@@ -510,14 +532,17 @@ export const PaymentScheduleMaster: React.FC = () => {
 
           {totalPercentage < 100 && Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
             <Button
-              onClick={() => {
+              onClick={async () => {
                 setEditingPaymentScheduleMasterData(null);
+
+                await loadStageOptions();
                 setFormData((prev) => ({
                   ...initialFormState(),
                   InventoryBuildingId: prev.InventoryBuildingId,
                   InventoryFlatFloorBasementPodiumWingId: prev.InventoryFlatFloorBasementPodiumWingId,
                   ProjectId: Number(projectId),
                 }));
+
                 setErrors({});
                 setIsAddUpdateModalOpen(true);
               }}

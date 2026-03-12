@@ -17,6 +17,7 @@ export class SourcingTargetDatasourceImpl implements SourcingTargetDatasource {
     }
 
     async pullSourcingTarget(params: FilterWithPaginationSourcingTargetRequest, signal?: AbortSignal): Promise<SourcingTargetListResponse> {
+       
         try {
             const queryParams = new URLSearchParams({
                 pageSize: String(params.PageSize ?? 10),
@@ -28,8 +29,7 @@ export class SourcingTargetDatasourceImpl implements SourcingTargetDatasource {
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
             if (params.EmployeeId) queryParams.append("EmployeeId", params.EmployeeId.toString());
             if (params.EmployeeName?.trim()) queryParams.append("EmployeeName", params.EmployeeName.trim());
-            if (params.FromDate) queryParams.append('FromDate', params.FromDate.toString());
-            if (params.ToDate) queryParams.append('ToDate', params.ToDate.toString());
+             if (params.MonthYear) queryParams.append('MonthYear', params.MonthYear.toString());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 

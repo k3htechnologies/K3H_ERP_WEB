@@ -6,7 +6,6 @@ import ActiveCases from "@/features/litigationDashboard/components/ActiveCases";
 import UpComingHearing from "@/features/litigationDashboard/components/UpComingHearing";
 import UploadedDocument from "@/features/litigationDashboard/components/UploadedDocumnet";
 import CaseAnalysis from "@/features/litigationDashboard/components/CaseAnalysis";
-import { useNavigate } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useToast } from "@/core/hooks/useToast";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
@@ -17,7 +16,6 @@ import { Loader } from "@/core/utils/loader";
 
 const LitigationDashboard: React.FC = () => {
 
-    const navigate = useNavigate();
     const { addToast } = useToast();
     const { projectId } = useProject();
 
@@ -75,7 +73,7 @@ const LitigationDashboard: React.FC = () => {
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
 
-            <div className="cursor-pointer" onClick={() => navigate("/litigation")}>
+            <div className="cursor-pointer">
                 <OverviewCards overViewData={overViewData} />
 
                 <div className="grid grid-cols-[0.8fr_1.2fr] gap-4">

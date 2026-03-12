@@ -8,8 +8,7 @@ export interface FilterWithPaginationClosingTargetRequest {
     ProjectId?: number
     EmployeeId?: string
     EmployeeName?: string
-    FromDate?: string
-    ToDate?: string
+    MonthYear?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -26,8 +25,7 @@ export interface ClosingTargetData {
     Revisits: number;
     BookingByCP: number;
     BookingDirect: number;
-    FromDate: string;
-    ToDate: string;
+    MonthYear: string;
     CreatedById: number;
     CreatedBy: string;
     CreatedDate: string;

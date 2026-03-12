@@ -6,14 +6,19 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { useEffect, useState } from "react";
 import React from "react";
-import type { AddUpdateShiftMasterRequest, FilterWithPaginationShiftMasterRequest } from "../models/ShiftMasterModel";
+import type {
+  AddUpdateShiftMasterRequest,
+  FilterWithPaginationShiftMasterRequest,
+} from "@/features/shiftMaster/models/ShiftMasterModel";
 import { shiftMasterService } from "@/features/shiftMaster/services/ShiftMasterService";
-import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { filterNumbers, isEndTimeGreater } from "@/core/utils/fileValidation";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { getTimeDuration, toHHMM, toMinutes } from "@/core/utils/comman";
+import RadioButton from "@/ui/components/forms/RadioButton";
+import { Clock } from "lucide-react";
+import { TimePickerCustomize } from "@/ui/components/TimePicker/TimePickerCustomize";
 
 const initialFormState = (): AddUpdateShiftMasterRequest => ({
   ShiftManagementMasterId: 0,
@@ -33,47 +38,90 @@ const initialFormState = (): AddUpdateShiftMasterRequest => ({
   BreakEndTime: "00:00",
   BreakDurationTime: "00:00",
   GraceTime: "",
-  Remarks: ""
+  Remarks: "",
+  LateArrivalAction: "",
+  LateCount: 0,
 });
 
 export const AddUpdateShiftMaster: React.FC = () => {
-
   //#region STATE MANAGEMENT
-  const [formData, setFormData] = useState<AddUpdateShiftMasterRequest>(() => initialFormState());
+  const [formData, setFormData] = useState<AddUpdateShiftMasterRequest>(() =>
+    initialFormState(),
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState("");
+  const [timePickerField, setTimePickerField] = useState<{
+    field: keyof AddUpdateShiftMasterRequest;
+    value: string;
+  } | null>(null);
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
 
   // NAVIGATE
   const navigate = useNavigate();
 
   // GET VALUE FROM URL SHIFT ID
-  const { ShiftManagementMasterId } = useParams<{ ShiftManagementMasterId?: string }>();
+  const { ShiftManagementMasterId } = useParams<{
+    ShiftManagementMasterId?: string;
+  }>();
+
   const ShiftId = ShiftManagementMasterId ? Number(ShiftManagementMasterId) : 0;
   const isAddMode = ShiftId === 0;
 
   // TOAST
   const { addToast } = useToast();
 
-
   //#region MENU PERMISSIONS
-  const { canAction } = useMenuPermissions('/ShiftMaster');
+  const { canAction } = useMenuPermissions("/ShiftMaster");
   //#endregion
 
   // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
   //#endregion
 
+  const [minuteValues, setMinuteValues] = useState({
+    AbsentWorkingHours: "",
+    HalfDayWorkingHours: "",
+    HalfDayInTimeAfter: "",
+    HalfDayOutTimeBefore: "",
+  });
+
+  const isWithinShift = (time: string) =>
+    isEndTimeGreater(formData.ShiftBeginTime, time) &&
+    isEndTimeGreater(time, formData.ShiftEndTime);
+
+  const formatLabel = (value: string) =>
+    value
+      .split(/(?=[A-Z])/)
+      .join(" ")
+      .trim();
+
+  //#region CONVERT MINUTES TO HOUR
+  const handleMinuteFieldChange = (
+    field: keyof AddUpdateShiftMasterRequest,
+    value: string,
+  ) => {
+    const minutes = filterNumbers(value) || "0";
+    setMinuteValues((prev) => ({
+      ...prev,
+      [field]: minutes,
+    }));
+
+    handleFieldChange(field, toHHMM(Number(minutes)));
+  };
+  //#endregion
 
   //#region HANDLE FIELD CHANGE EVENT
-  const handleFieldChange = (field: keyof AddUpdateShiftMasterRequest, value: any) => {
+  const handleFieldChange = (
+    field: keyof AddUpdateShiftMasterRequest,
+    value: any,
+  ) => {
     setFormData((prev) => {
       const updated = { ...prev, [field]: value };
-
 
       if (field === "ShiftBeginTime" || field === "ShiftEndTime") {
         const duration = getTimeDuration(
           updated.ShiftBeginTime,
-          updated.ShiftEndTime
+          updated.ShiftEndTime,
         );
 
         updated.ShiftDurationTime = duration;
@@ -88,7 +136,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
       if (field === "BreakBeginTime" || field === "BreakEndTime") {
         const breakDuration = getTimeDuration(
           updated.BreakBeginTime,
-          updated.BreakEndTime
+          updated.BreakEndTime,
         );
 
         updated.BreakDurationTime = breakDuration;
@@ -99,8 +147,6 @@ export const AddUpdateShiftMaster: React.FC = () => {
         const workMins = Math.max(shiftMins - breakMins, 0);
         updated.ShiftWorkDurationTime = toHHMM(workMins);
       }
-
-
       return updated;
     });
 
@@ -118,21 +164,18 @@ export const AddUpdateShiftMaster: React.FC = () => {
   }, [ShiftId]);
   //#endregion
 
-
   //#region FETCH  SHIFT MASTER DETAILS
   const fetchShiftMasterDetails = async () => {
     await runApiWithLoader(
-
       setIsLoading,
 
       setLoadingMessage,
 
       async () => {
-
         const params: FilterWithPaginationShiftMasterRequest = {
           PageNumber: 1,
           PageSize: 1,
-          ShiftManagementMasterId: ShiftId
+          ShiftManagementMasterId: ShiftId,
         };
 
         const response = await shiftMasterService.apiCallPullShiftMaster(params);
@@ -142,100 +185,140 @@ export const AddUpdateShiftMaster: React.FC = () => {
           const e = response.right.Data?.[0];
 
           if (e) {
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
-              ShiftManagementMasterId: e.ShiftManagementMasterId ?? prev.ShiftManagementMasterId,
+              ShiftManagementMasterId:
+                e.ShiftManagementMasterId ?? prev.ShiftManagementMasterId,
               Uniquekey: e.Uniquekey ?? prev.Uniquekey,
               ShiftCode: e.ShiftCode ?? prev.ShiftCode,
               ShiftName: e.ShiftName ?? prev.ShiftName,
               ShiftBeginTime: e.ShiftBeginTime ?? prev.ShiftBeginTime,
               ShiftEndTime: e.ShiftEndTime ?? prev.ShiftEndTime,
               ShiftDurationTime: e.ShiftDurationTime ?? prev.ShiftDurationTime,
-              ShiftWorkDurationTime: e.ShiftWorkDurationTime ?? prev.ShiftWorkDurationTime,
+              ShiftWorkDurationTime:
+                e.ShiftWorkDurationTime ?? prev.ShiftWorkDurationTime,
               FirstHalfUpTo: e.FirstHalfUpTo ?? prev.FirstHalfUpTo,
-              AbsentWorkingHours: e.AbsentWorkingHours ?? prev.AbsentWorkingHours,
-              HalfDayWorkingHours: e.HalfDayWorkingHours ?? prev.HalfDayWorkingHours,
-              HalfDayInTimeAfter: e.HalfDayInTimeAfter ?? prev.HalfDayInTimeAfter,
-              HalfDayOutTimeBefore: e.HalfDayOutTimeBefore ?? prev.HalfDayOutTimeBefore,
+              AbsentWorkingHours:
+                e.AbsentWorkingHours ?? prev.AbsentWorkingHours,
+              HalfDayWorkingHours:
+                e.HalfDayWorkingHours ?? prev.HalfDayWorkingHours,
+              HalfDayInTimeAfter:
+                e.HalfDayInTimeAfter ?? prev.HalfDayInTimeAfter,
+              HalfDayOutTimeBefore:
+                e.HalfDayOutTimeBefore ?? prev.HalfDayOutTimeBefore,
               BreakBeginTime: e.BreakBeginTime ?? prev.BreakBeginTime,
               BreakEndTime: e.BreakEndTime ?? prev.BreakEndTime,
               BreakDurationTime: e.BreakDurationTime ?? prev.BreakDurationTime,
               GraceTime: e.GraceTime ?? prev.GraceTime,
-              Remarks: e.Remarks ?? prev.Remarks
+              Remarks: e.Remarks ?? prev.Remarks,
+              LateArrivalAction: e.LateArrivalAction ?? prev.LateArrivalAction,
+              LateCount: e.LateCount ?? prev.LateCount,
             }));
-
+            setMinuteValues({
+              AbsentWorkingHours: e.AbsentWorkingHours
+                ? String(toMinutes(e.AbsentWorkingHours))
+                : "",
+              HalfDayWorkingHours: e.HalfDayWorkingHours
+                ? String(toMinutes(e.HalfDayWorkingHours))
+                : "",
+              HalfDayInTimeAfter: e.HalfDayInTimeAfter
+                ? String(toMinutes(e.HalfDayInTimeAfter))
+                : "",
+              HalfDayOutTimeBefore: e.HalfDayOutTimeBefore
+                ? String(toMinutes(e.HalfDayOutTimeBefore))
+                : "",
+            });
           }
         } else {
-          addToast({ type: 'error', title: response.left.message });
+          addToast({ type: "error", title: response.left.message });
         }
 
         return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message });
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      'Loading Shift'
+      "Loading Shift",
     );
   };
   //#endregion
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddShiftMasterForm = (): {
+    isValid: boolean;
 
-    isValid: boolean
-
-    errors: { [key: string]: string }
-
+    errors: { [key: string]: string };
   } => {
     const newErrors: { [key: string]: string } = {};
 
     if (!formData.ShiftName) {
-      newErrors.ShiftName = 'Shift Name is required.';
+      newErrors.ShiftName = "Shift Name is required.";
     } else if (formData.ShiftName.trim().length > 50) {
-      newErrors.ShiftName = 'Shift Name must be at most 50 characters'
+      newErrors.ShiftName = "Shift Name must be at most 50 characters";
     }
 
     if (!formData.ShiftCode) {
-      newErrors.ShiftCode = 'Shift Code is required.';
+      newErrors.ShiftCode = "Shift Code is required.";
     }
 
     if (!formData.ShiftBeginTime || formData.ShiftBeginTime === "00:00") {
-      newErrors.ShiftBeginTime = 'Shift Begin Time is required.';
+      newErrors.ShiftBeginTime = "Shift Begin Time is required.";
     }
 
     if (!formData.ShiftEndTime || formData.ShiftEndTime === "00:00") {
-      newErrors.ShiftEndTime = 'Shift End Time is required.';
-    } else if (!isEndTimeGreater(formData.ShiftBeginTime, formData.ShiftEndTime)) {
+      newErrors.ShiftEndTime = "Shift End Time is required.";
+    } else if (
+      !isEndTimeGreater(formData.ShiftBeginTime, formData.ShiftEndTime)
+    ) {
       newErrors.ShiftEndTime = "End time must be greater than start time.";
     }
 
     if (!formData.FirstHalfUpTo || formData.FirstHalfUpTo === "00:00") {
-      newErrors.FirstHalfUpTo = 'First Half Up To is required.';
+      newErrors.FirstHalfUpTo = "First Half Up To is required.";
+    } else if (!isWithinShift(formData.FirstHalfUpTo)) {
+      newErrors.FirstHalfUpTo = "First Half time must be within Shift time.";
     }
 
     if (!isEndTimeGreater(formData.ShiftBeginTime, formData.BreakBeginTime)) {
-      newErrors.BreakBeginTime = "Break Begin time must be greater than Shift start time.";
+      newErrors.BreakBeginTime =
+        "Break Begin time must be greater than Shift start time.";
     }
 
     if (!formData.BreakBeginTime || formData.BreakBeginTime === "00:00") {
-      newErrors.BreakBeginTime = 'Break Begin Time is required.';
+      newErrors.BreakBeginTime = "Break Begin Time is required.";
+    } else if (!isWithinShift(formData.BreakBeginTime)) {
+      newErrors.BreakBeginTime = "Break Begin Time must be within Shift time.";
+    }
+
+    if (!formData.BreakBeginTime || formData.BreakBeginTime === "00:00") {
+      newErrors.BreakBeginTime = "Break Begin Time is required.";
+    } else if (!isWithinShift(formData.BreakBeginTime)) {
+      newErrors.BreakBeginTime = "Break Begin Time must be within Shift time.";
     }
 
     if (!formData.BreakEndTime || formData.BreakEndTime === "00:00") {
-      newErrors.BreakEndTime = 'Break End Time is required.';
-    } else if (!isEndTimeGreater(formData.BreakBeginTime, formData.BreakEndTime)) {
-      newErrors.BreakEndTime = "Break End time must be greater than start time.";
+      newErrors.BreakEndTime = "Break End Time is required.";
+    } else if (!isWithinShift(formData.BreakEndTime)) {
+      newErrors.BreakEndTime = "Break End Time must be within Shift time.";
+    } else if (
+      formData.BreakBeginTime &&
+      formData.BreakBeginTime !== "00:00" &&
+      isWithinShift(formData.BreakBeginTime) &&
+      !isEndTimeGreater(formData.BreakBeginTime, formData.BreakEndTime)
+    ) {
+      newErrors.BreakEndTime =
+        "Break End Time must be greater than Break Begin Time.";
     }
 
     if (!formData.GraceTime) {
-      newErrors.GraceTime = 'Grace Time is required.';
+      newErrors.GraceTime = "Grace Time is required.";
     }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors
+      errors: newErrors,
     };
   };
   //#endregion
@@ -260,42 +343,46 @@ export const AddUpdateShiftMaster: React.FC = () => {
       BreakEndTime: formData.BreakEndTime,
       BreakDurationTime: formData.BreakDurationTime,
       GraceTime: formData.GraceTime,
-      Remarks: formData.Remarks
+      Remarks: formData.Remarks,
+      LateArrivalAction: formData.LateArrivalAction,
+      LateCount: formData.LateCount || 0,
     };
-  }
+  };
   //#endregion
 
   //#region HANDLE ADD AND UPDATE SHIFT MASTER
   const handleAddUpdateShiftMaster = async () => {
-
     setErrors({});
 
     const validation = validateAddShiftMasterForm();
 
     if (!validation.isValid) {
-
       setErrors(validation.errors);
 
+      addToast({ type: "error", title: "Please fill the required filed" });
       return;
     }
 
     await runApiWithLoader(
-
       setIsLoading,
 
       setLoadingMessage,
 
       async () => {
-
         const payload = PushShiftMasterFormData();
-        console.log("payload", payload);
-        const response = await shiftMasterService.apiCallAddUpdateShiftMaster(payload);
+
+        const response =
+          await shiftMasterService.apiCallAddUpdateShiftMaster(payload);
 
         if (E.isRight(response)) {
-          addToast({ type: "success", title: isAddMode ? "Shift added successfully" : "Shift updated successfully" });
+          addToast({
+            type: "success",
+            title: isAddMode
+              ? "Shift added successfully"
+              : "Shift updated successfully",
+          });
 
           navigate("/shiftMaster");
-
         } else {
           addToast({ type: "error", title: response.left?.message });
         }
@@ -304,38 +391,41 @@ export const AddUpdateShiftMaster: React.FC = () => {
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message });
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      isAddMode ? 'Add Shift' : 'Update Shift'
+      isAddMode ? "Add Shift" : "Update Shift",
     );
   };
   //#endregion
 
   return (
-
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-
       {/* Loader */}
 
-      <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>
+        {" "}
+        <div></div>{" "}
+      </Loader>
 
       <div className="flex-1 space-y-2 px-6 py-3  overflow-y-auto thin-scroll ">
-
         <form onSubmit={handleAddUpdateShiftMaster}>
-
           {/* Basic Shift Details */}
 
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Shift Details</h3>
+            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
+              Shift Details
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <Input
                   type="text"
                   required
-                  label='Shift Name'
+                  label="Shift Name"
                   value={formData.ShiftName ?? ""}
-                  onChange={(e) => handleFieldChange("ShiftName", e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange("ShiftName", e.target.value)
+                  }
                   placeholder="Enter Shift Name"
                   maxLength={250}
                   error={errors.ShiftName}
@@ -346,9 +436,11 @@ export const AddUpdateShiftMaster: React.FC = () => {
                 <Input
                   type="text"
                   required
-                  label='Shift Code '
+                  label="Shift Code "
                   value={formData.ShiftCode.toUpperCase() ?? ""}
-                  onChange={(e) => handleFieldChange("ShiftCode", e.target.value)}
+                  onChange={(e) =>
+                    handleFieldChange("ShiftCode", e.target.value)
+                  }
                   placeholder="Enter Shift Code"
                   maxLength={4}
                   error={errors.ShiftCode}
@@ -357,196 +449,377 @@ export const AddUpdateShiftMaster: React.FC = () => {
             </div>
           </div>
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Time Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Time Details
+            </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
-                <TimePicker
-                  label="Shift Begin Time (24 hours Format)"
+                <Input
+                  label="Shift Begin Time"
                   required
-                  size="md"
-                  format={24}
                   value={formData.ShiftBeginTime || ""}
-                  onChange={(val) => handleFieldChange("ShiftBeginTime", val)}
+                  onClick={() => {
+                    setTimePickerField({
+                      field: "ShiftBeginTime",
+                      value: formData.ShiftBeginTime,
+                    });
+                    setIsTimePickerOpen(true);
+                  }}
+                  leftIcon={<Clock className="h-8 w-8" />}
                   error={errors.ShiftBeginTime}
                 />
               </div>
 
               <div>
-                <TimePicker
-                  label="Shift End Time (24 hours Format)"
+                <Input
+                  label="Shift End Time"
                   required
-                  size="md"
-                  format={24}
                   value={formData.ShiftEndTime || ""}
-                  onChange={(val) => handleFieldChange("ShiftEndTime", val)}
+                  onClick={() => {
+                    setTimePickerField({
+                      field: "ShiftEndTime",
+                      value: formData.ShiftEndTime,
+                    });
+                    setIsTimePickerOpen(true);
+                  }}
+                  leftIcon={<Clock className="h-8 w-8" />}
                   error={errors.ShiftEndTime}
                 />
               </div>
 
               <div>
-                <TimePicker
+                <Input
                   label="Shift Duration (24 hours Format)"
                   disabled
                   size="md"
-                  format={24}
                   value={formData.ShiftDurationTime || ""}
-                  onChange={(val) => handleFieldChange("ShiftDurationTime", val)}
+                  onChange={(val) =>
+                    handleFieldChange("ShiftDurationTime", val)
+                  }
+                  leftIcon={<Clock className="h-8 w-8" />}
                   error={errors.ShiftDurationTime}
                 />
               </div>
 
               <div>
-                <TimePicker
+                <Input
                   label="Shift Work Duration (24 hours Format)"
                   disabled
                   size="md"
-                  format={24}
                   value={formData.ShiftWorkDurationTime || ""}
-                  onChange={(val) => handleFieldChange("ShiftWorkDurationTime", val)}
+                  onChange={(val) =>
+                    handleFieldChange("ShiftWorkDurationTime", val)
+                  }
+                  leftIcon={<Clock className="h-8 w-8" />}
                   error={errors.ShiftWorkDurationTime}
                 />
               </div>
             </div>
           </div>
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Break Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Break Details
+            </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
-                <TimePicker
+                <Input
                   label="Break Begin Time (24 hours Format)"
                   required
                   size="md"
-                  format={24}
                   value={formData.BreakBeginTime || ""}
-                  onChange={(val) => handleFieldChange("BreakBeginTime", val)}
+                  onClick={() => {
+                    setTimePickerField({
+                      field: "BreakBeginTime",
+                      value: formData.BreakBeginTime,
+                    });
+                    setIsTimePickerOpen(true);
+                  }}
+                  leftIcon={<Clock className="h-8 w-8" />}
                   error={errors.BreakBeginTime}
                 />
               </div>
+
               <div>
-                <TimePicker
+                <Input
                   label="Break End Time (24 hours Format)"
                   required
                   size="md"
-                  format={24}
                   value={formData.BreakEndTime || ""}
-                  onChange={(val) => handleFieldChange("BreakEndTime", val)}
+                  onClick={() => {
+                    setTimePickerField({
+                      field: "BreakEndTime",
+                      value: formData.BreakEndTime,
+                    });
+                    setIsTimePickerOpen(true);
+                  }}
+                  leftIcon={<Clock className="h-8 w-8" />}
                   error={errors.BreakEndTime}
                 />
               </div>
 
               <div>
-                <TimePicker
+                <Input
                   label="Break Duration Time (24 hours Format)"
                   disabled
                   size="md"
-                  format={24}
                   value={formData.BreakDurationTime || ""}
-                  onChange={(val) => handleFieldChange("BreakDurationTime", val)}
+                  onChange={(val) =>
+                    handleFieldChange("BreakDurationTime", val)
+                  }
+                  leftIcon={<Clock className="h-8 w-8" />}
                   error={errors.BreakDurationTime}
                 />
               </div>
             </div>
           </div>
+
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Advance Setting</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Advance Setting
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-6">
               <div>
-                <TimePicker
+                <Input
                   label="First Half Upto (24 hours Format)"
                   required
                   size="md"
-                  format={24}
                   value={formData.FirstHalfUpTo || ""}
-                  onChange={(val) => handleFieldChange("FirstHalfUpTo", val)}
+                  onClick={() => {
+                    setTimePickerField({
+                      field: "FirstHalfUpTo",
+                      value: formData.FirstHalfUpTo,
+                    });
+                    setIsTimePickerOpen(true);
+                  }}
+                  leftIcon={<Clock className="h-8 w-8" />}
                   error={errors.FirstHalfUpTo}
                 />
               </div>
 
-              <div>
-                <TimePicker
-                  label="Calculate Absent if working hours less than (24 hours Format)"
-                  size="md"
-                  format={24}
-                  value={formData.AbsentWorkingHours || ""}
-                  onChange={(val) => handleFieldChange("AbsentWorkingHours", val)}
-                  error={errors.AbsentWorkingHours}
-                />
-              </div>
-              <div>
-                <TimePicker
-                  label="Calculate Half day working hours less than"
-                  size="md"
-                  format={24}
-                  value={formData.HalfDayWorkingHours || ""}
-                  onChange={(val) => handleFieldChange("HalfDayWorkingHours", val)}
-                  error={errors.HalfDayWorkingHours}
-                />
-              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Absent Working Hours */}
+                <div>
+                  <Input
+                    label="Mark Absent If Working Hour less than (in Minutes)"
+                    type="text"
+                    value={minuteValues.AbsentWorkingHours}
+                    onChange={(e) =>
+                      handleMinuteFieldChange(
+                        "AbsentWorkingHours",
+                        e.target.value,
+                      )
+                    }
+                    placeholder="Enter Minutes"
+                  />
+                </div>
 
-              <div>
-                <TimePicker
-                  label="Mark Half Day if Intime After"
-                  size="md"
-                  format={24}
-                  value={formData.HalfDayInTimeAfter || ""}
-                  onChange={(val) => handleFieldChange("HalfDayInTimeAfter", val)}
-                  error={errors.HalfDayInTimeAfter}
-                />
-              </div>
+                <div>
+                  <Input
+                    label="Mark Absent If Working Hour Less than (in Hours)"
+                    type="text"
+                    value={formData.AbsentWorkingHours}
+                    disabled
+                  />
+                </div>
 
-              <div>
-                <TimePicker
-                  label="Mark Half Day if Outtime Before"
-                  size="md"
-                  format={24}
-                  value={formData.HalfDayOutTimeBefore || ""}
-                  onChange={(val) => handleFieldChange("HalfDayOutTimeBefore", val)}
-                  error={errors.HalfDayOutTimeBefore}
-                />
+                {/* Half Day Working Hours */}
+                <div>
+                  <Input
+                    label="Mark Half Day If Working Hour Less than (in Minutes)"
+                    type="text"
+                    value={minuteValues.HalfDayWorkingHours}
+                    onChange={(e) =>
+                      handleMinuteFieldChange(
+                        "HalfDayWorkingHours",
+                        e.target.value,
+                      )
+                    }
+                    placeholder="Enter Minutes"
+                  />
+                </div>
+
+                <div>
+                  <Input
+                    label="Mark Half Day If Working Hour Less than (in Hours)"
+                    type="text"
+                    value={formData.HalfDayWorkingHours}
+                    disabled
+                  />
+                </div>
+
+                {/* Half Day In Time After */}
+                <div>
+                  <Input
+                    label="Mark Half Day if Intime After (in Minutes)"
+                    type="text"
+                    value={minuteValues.HalfDayInTimeAfter}
+                    onChange={(e) =>
+                      handleMinuteFieldChange(
+                        "HalfDayInTimeAfter",
+                        e.target.value,
+                      )
+                    }
+                    placeholder="Enter Minutes"
+                  />
+                </div>
+
+                <div>
+                  <Input
+                    label="Mark Half Day if Intime After (in Hours)"
+                    type="text"
+                    value={formData.HalfDayInTimeAfter}
+                    disabled
+                  />
+                </div>
+
+                {/* Half Day Out Time Before */}
+                <div>
+                  <Input
+                    label="Mark Half Day if Outtime Before (in Minutes)"
+                    type="text"
+                    value={minuteValues.HalfDayOutTimeBefore}
+                    onChange={(e) =>
+                      handleMinuteFieldChange(
+                        "HalfDayOutTimeBefore",
+                        e.target.value,
+                      )
+                    }
+                    placeholder="Enter Minutes"
+                  />
+                </div>
+
+                <div>
+                  <Input
+                    label="Mark Half Day if Outtime Before (in Hours)"
+                    type="text"
+                    value={formData.HalfDayOutTimeBefore}
+                    disabled
+                  />
+                </div>
               </div>
             </div>
           </div>
 
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Time Allowed for Late Entry Details</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Time Allowed for Late Entry Details
+            </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <Input
                   type="text"
                   required
-                  label='Grace Time In Minutes'
+                  label="Grace Time In Minutes"
                   value={formData.GraceTime ?? ""}
                   maxLength={2}
-                  onChange={(e) => handleFieldChange("GraceTime", filterNumbers(e.target.value))}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "GraceTime",
+                      filterNumbers(e.target.value),
+                    )
+                  }
                   placeholder="Enter Grace Time"
                   error={errors.GraceTime}
                 />
-
               </div>
             </div>
+
+            <h3 className="text-lg font-semibold text-gray-900 pb-1">
+              Late Arrival Action
+            </h3>
+
+            <div>
+              <RadioButton
+                label="Count As Late (No Deduction)"
+                checked={formData.LateArrivalAction === "Count As Late (No Deduction)"? true : false}
+                onChange={() =>
+                  handleFieldChange("LateArrivalAction", "Count As Late (No Deduction)")
+                }
+              />
+            </div>
+
+            <div>
+              <RadioButton
+                label="Deduct Salary Automatically"
+                checked={formData.LateArrivalAction === "Deduct Salary Automatically"? true : false}
+                onChange={() =>
+                  handleFieldChange("LateArrivalAction", "Deduct Salary Automatically")
+                }
+              />
+            </div>
+
+            <div>
+              <RadioButton
+                label="Mark As Half Day"
+                checked={formData.LateArrivalAction === "Mark As Half Day" ? true : false}
+                onChange={() =>
+                  handleFieldChange("LateArrivalAction", "Mark As Half Day")
+                }
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+              {(formData.LateArrivalAction === "Count As Late (No Deduction)" ||
+                formData.LateArrivalAction === "Deduct Salary Automatically" ||
+                formData.LateArrivalAction === "Mark As Half Day") && (
+                <Input
+                  type="text"
+                  label="Late Count"
+                  value={formData.LateCount ?? ""}
+                  maxLength={2}
+                  onChange={(e) =>
+                    handleFieldChange(
+                      "LateCount",
+                      filterNumbers(e.target.value),
+                    )
+                  }
+                  placeholder="Enter Late Count"
+                  error={errors.LateCount}
+                />
+              )}
+            </div>
           </div>
+
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Remarks</h3>
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Remarks
+            </h3>
 
             <div className="grid grid-cols-1 md:grid-cols-1  gap-6">
-
               <div>
                 <TextArea
                   label="Remarks"
                   placeholder="Enter Remarks"
-                  className='thin-scroll'
+                  className="thin-scroll"
                   value={formData.Remarks}
                   onChange={(e) => handleFieldChange("Remarks", e.target.value)}
-                  error={errors.Remarks} />
-
+                  error={errors.Remarks}
+                />
               </div>
             </div>
           </div>
         </form>
-      </div >
+      </div>
+
+      <TimePickerCustomize
+        isOpen={isTimePickerOpen}
+        title={formatLabel(timePickerField?.field || "")}
+        value={timePickerField?.value ?? "00:00"}
+        onClose={() => {
+          setIsTimePickerOpen(false);
+          setTimePickerField(null);
+        }}
+        onConfirm={(time) => {
+          if (timePickerField) {
+            handleFieldChange(timePickerField.field, time);
+          }
+          setIsTimePickerOpen(false);
+          setTimePickerField(null);
+        }}
+      />
 
       <BottomActionBar
         cancelText="Cancel"
@@ -558,31 +831,8 @@ export const AddUpdateShiftMaster: React.FC = () => {
         }}
         isLoading={isLoading}
       />
-    </div >
+    </div>
   );
 };
 
 export default AddUpdateShiftMaster;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

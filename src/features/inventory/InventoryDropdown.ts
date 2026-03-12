@@ -53,15 +53,14 @@ export const fetchWingDropdown = async (params?: {
 
     const apiResponse = responseEither.right;
 
-    const uniqueWings = Array.from(
-      new Set((apiResponse?.Data || [])
-        .map((d: any) => d.Wing)
-        .filter((wing: string) => wing))
-
-    ).map((wing) => ({
-      label: wing,
-      value: wing,
-    }));
+    const uniqueWings = Array.from(new Map(
+      (apiResponse?.Data || []).map((d: any) => [
+        d.InventoryFlatFloorBasementPodiumWingId,
+        {
+          label: d.Wing,
+          value: d.InventoryFlatFloorBasementPodiumWingId
+        }])
+    ).values());
 
     return {
       totalNumberOfRecord: uniqueWings.length,

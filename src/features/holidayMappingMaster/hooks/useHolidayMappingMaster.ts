@@ -18,6 +18,9 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { getInitialFormState, getHolidayMappingMasterColumns, REQUIRED_COLUMN_KEYS } from '@/features/holidayMappingMaster/constants/holidayMappingMasterConstants';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
+import { fetchBranchMasterDropdown } from '@/features/branchMaster/branchMasterDropDown';
+import { fetchDepartmentMasterDropdown } from '@/features/departmentMaster/departmentMasterDropdown';
 
 export const useHolidayMappingMaster = () => {
   //#region STATE MANAGEMENT
@@ -38,6 +41,8 @@ export const useHolidayMappingMaster = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [filters, setFilters] = useState<FilterInfo>({});
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+  const [branchValue, setBranchValue] = useState<string | number | null>(null);
+  const [departmentValue, setDepartmentValue] = useState<string | number | null>(null);
 
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -63,10 +68,21 @@ export const useHolidayMappingMaster = () => {
   const [dropdownLabels, setDropdownLabels] = useState<{
     branchName?: string;
     holidayName?: string;
+    departmentName?: string
   }>({});
   //#endregion
 
-  //#endregion
+  const branchValueDropdown = useMultiSelectDropdown({
+    value: branchValue,
+    fetchCallback: fetchBranchMasterDropdown,
+    autoFetchOptions: true,
+  });
+
+  const departmentValueDropdown = useMultiSelectDropdown({
+    value: departmentValue,
+    fetchCallback: fetchDepartmentMasterDropdown,
+    autoFetchOptions: true,
+  });
 
   //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
@@ -96,11 +112,15 @@ export const useHolidayMappingMaster = () => {
           Uniquekey: editingHolidayMappingMasterData.Uniquekey || getInitialFormState().Uniquekey,
           HolidayMasterId: editingHolidayMappingMasterData.HolidayMasterId || 0,
           BranchMasterId: editingHolidayMappingMasterData.BranchMasterId || '',
+          DepartmentMasterId: editingHolidayMappingMasterData.DepartmentMasterId || '',
           HolidayDate: editingHolidayMappingMasterData.HolidayDate || '',
         });
+        setBranchValue(editingHolidayMappingMasterData.BranchMasterId || null);
+        setDepartmentValue(editingHolidayMappingMasterData.DepartmentMasterId || null);
         setDropdownLabels({
           branchName: editingHolidayMappingMasterData.BranchName || "",
           holidayName: editingHolidayMappingMasterData.HolidayName || "",
+          departmentName: editingHolidayMappingMasterData.DepartmentName || ""
         });
       } else {
         setFormData(getInitialFormState());
@@ -136,6 +156,7 @@ export const useHolidayMappingMaster = () => {
           PageSize: pagination.pageSize,
           HolidayMappingMasterId: filterParams.HolidayMappingMasterId ? Number(filterParams.HolidayMappingMasterId) : undefined,
           BranchName: filterParams.BranchName?.trim() || undefined,
+          DepartmentName: filterParams.DepartmentName?.trim() || undefined,
           HolidayName: searchtext ?? filterParams.HolidayName?.trim() ?? undefined,
           FromHolidayDate: filterParams.FromHolidayDate?.trim() || undefined,
           ToHolidayDate: filterParams.ToHolidayDate?.trim() || undefined,
@@ -196,6 +217,7 @@ export const useHolidayMappingMaster = () => {
           PageSize: pagination.totalRecords,
           BranchName: filters.BranchName?.trim() || undefined,
           HolidayName: filters.HolidayName?.trim() || undefined,
+          DepartmentName: filters.DepartmentName?.trim() || undefined,
           FromHolidayDate: filters.FromHolidayDate?.trim() || undefined,
           ToHolidayDate: filters.ToHolidayDate?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, holidayMappingMasterColumns),
@@ -277,6 +299,7 @@ export const useHolidayMappingMaster = () => {
       ...row,
       HolidayMasterId: row.HolidayMasterId || 0,
       BranchMasterId: row.BranchMasterId || '',
+      DepartmentMasterId: row.DepartmentMasterId || '',
       HolidayDate: row.HolidayDate || ''
     })
     setIsAddUpdateModalOpen(true);
@@ -353,6 +376,7 @@ export const useHolidayMappingMaster = () => {
       Uniquekey: formData.Uniquekey,
       HolidayMasterId: formData.HolidayMasterId,
       BranchMasterId: formData.BranchMasterId ? String(formData.BranchMasterId) : "",
+      DepartmentMasterId: formData.DepartmentMasterId ? String(formData.DepartmentMasterId) : "",
       HolidayDate: formData.HolidayDate
     };
   };
@@ -511,6 +535,8 @@ export const useHolidayMappingMaster = () => {
     allHolidayMappingMasterColumnKeys,
     dropdownLabels,
     dropdownResetKey,
+    branchValueDropdown,
+    departmentValueDropdown,
 
     // Setters
     setSearchTerm,
@@ -529,6 +555,8 @@ export const useHolidayMappingMaster = () => {
     setSelectedHolidayMappingMasterColumnKeys,
     setDropdownLabels,
     setDropdownResetKey,
+    setBranchValue,
+    setDepartmentValue,
 
     // Actions
     fetchHolidayMappingList,

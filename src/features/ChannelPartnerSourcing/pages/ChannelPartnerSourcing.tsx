@@ -180,22 +180,6 @@ export const ChannelPartnerSourcing: React.FC = () => {
   const channelPartnerColumns = useMemo<TableColumn[]>(
     () => [
       {
-        key: 'Name',
-        label: 'Name',
-        width: '20',
-        sortable: true,
-        fixed: 'left',
-        align: 'left',
-        render: (value, row) => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="250px"
-            tooltipThreshold={25}
-            onClick={() => handleNavigateToView(row)}
-          />
-        )
-      },
-      {
         key: 'SystemGeneratedCode',
         label: 'Unique Code',
         width: '20',
@@ -208,6 +192,22 @@ export const ChannelPartnerSourcing: React.FC = () => {
             maxWidth="150px"
             tooltipThreshold={20}
             tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+          />
+        )
+      },
+      {
+        key: 'Name',
+        label: 'Name',
+        width: '20',
+        sortable: true,
+        fixed: 'left',
+        align: 'left',
+        render: (value, row) => (
+          <TooltipText
+            text={value || '-'}
+            maxWidth="250px"
+            tooltipThreshold={25}
+            onClick={() => handleNavigateToView(row)}
           />
         )
       },
@@ -304,13 +304,16 @@ export const ChannelPartnerSourcing: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'center',
-        render: (value) => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="150px"
-            tooltipThreshold={15}
-          />
-        )
+        render: (value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.GSTCertificateURL)}
+              title="GST Document"
+              triggerLabel={value || '-'}
+              isWrap={false}
+            />
+          );
+        }
       },
       {
         key: 'RERANumber',

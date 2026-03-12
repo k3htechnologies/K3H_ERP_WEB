@@ -649,7 +649,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
         loading={isLoading}
         size="xl"
       >
-        <div className="space-y-4">
+        <div className="space-y-6 p-6 bg-blue-100">
 
           <div className="flex gap-3">
 

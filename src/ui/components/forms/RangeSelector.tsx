@@ -24,7 +24,7 @@ export const RangeSelector: React.FC<RangeSelectorProps> = ({
 }) => {
 
   const index = Math.max(
-    options.findIndex(o => o.id === value || o.name === value),
+    options.findIndex((o) => o.id === value || o.name === value),
     0
   );
 
@@ -45,17 +45,24 @@ export const RangeSelector: React.FC<RangeSelectorProps> = ({
         step={1}
         value={index}
         onChange={(e) => onChange(options[Number(e.target.value)].id)}
-        className="w-full mt-2 accent-blue-600"
+        className="w-full mt-2 accent-blue-600 cursor-pointer"
       />
 
-      <div className="flex justify-between text-xs md:text-sm mt-2 text-gray-800">
-        {options.map((o) => (
-          <span key={o.id}>{o.name}</span>
+      {/* Labels aligned with slider steps */}
+      <div className="relative w-full mt-3 text-xs md:text-sm text-gray-800 h-4">
+        {options.map((o, i) => (
+          <span
+            key={o.id}
+            className="absolute -translate-x-1/2"
+            style={{ left: `${(i / (options.length - 1)) * 100}%` }}
+          >
+            {o.name}
+          </span>
         ))}
       </div>
 
       {error && (
-        <p className="text-red-500 text-xs mt-1">{error}</p>
+        <p className="text-red-500 text-xs mt-2">{error}</p>
       )}
     </div>
   );

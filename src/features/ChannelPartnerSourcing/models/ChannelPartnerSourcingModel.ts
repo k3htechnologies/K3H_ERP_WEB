@@ -10,7 +10,6 @@ export interface FilterWithPaginationChannelPartnerSourcingRequest {
 }
 
 export interface ChannelPartnerSourcingData {
-
   ChannelPartnerSourcingId: number;
   Uniquekey: string;
   ChannelPartnerId: number;
@@ -37,7 +36,7 @@ export interface AddUpdateChannelPartnerSourcingRequest {
   SourcingRemark: string;
   Support: string;
   IBM_OBM?: string;
-   OTP?: string | null;
+  OTP?: string | null;
 }
 
 export interface DeleteChannelPartnerSourcingRequest {
@@ -48,5 +47,3 @@ export interface DeleteChannelPartnerSourcingRequest {
 export type ChannelPartnerSourcingListResponse = ApiResponse<ChannelPartnerSourcingData[]>;
 export type ChannelPartnerSourcingSaveResponse = ApiResponse<ChannelPartnerSourcingData[]>;
 export type ChannelPartnerSourcingDeleteResponse = ApiResponse<string>;
-
-

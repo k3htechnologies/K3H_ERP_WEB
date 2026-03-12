@@ -10,9 +10,10 @@ interface ParkingCardProps {
   parking: ParkingData;
   onEdit: (parking: ParkingData) => void;
   canAction?: boolean
+    canBookingAction?: boolean;
 }
 
-export const ParkingCard = ({ parking, onEdit, canAction }: ParkingCardProps) => {
+export const ParkingCard = ({ parking, onEdit, canAction,canBookingAction }: ParkingCardProps) => {
   const navigate = useNavigate();
   const { updateListState } = useBookingListState();
 
@@ -96,7 +97,7 @@ export const ParkingCard = ({ parking, onEdit, canAction }: ParkingCardProps) =>
 
       </div>
 
-      {parking.ParkingStatus === "Available" && parking.ParkingNumber !== "" && parking.ParkingCategory  !== ""  && (
+      {parking.ParkingStatus === "Available" && parking.ParkingNumber !== "" && parking.ParkingCategory  !== ""  && canBookingAction && (
         <div className="flex items-center justify-center mt-2">
           <Button
             onClick={handleBook}

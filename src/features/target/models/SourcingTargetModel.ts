@@ -8,8 +8,7 @@ export interface FilterWithPaginationSourcingTargetRequest {
     ProjectId?: number
     EmployeeId?: string
     EmployeeName?: string
-    FromDate?: string
-    ToDate?: string
+    MonthYear?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -38,8 +37,7 @@ export interface SourcingTargetData {
     ActiveCP: number;
     NewCP: number;
 
-    FromDate: string;
-    ToDate: string;
+    MonthYear?: string
 
     CreatedBy: string;
     CreatedDate: string;

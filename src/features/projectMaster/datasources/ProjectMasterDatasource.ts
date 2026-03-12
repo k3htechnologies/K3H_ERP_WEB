@@ -26,6 +26,7 @@ export abstract class ProjectMasterDatasource {
     abstract addUpdateProjectMaster(formData: FormData): Promise<ProjectMasterSaveResponse>;
 
     abstract pullProjectMasterWithEmployee(ProjectId: number, FullName?: string, signal?: AbortSignal): Promise<ProjectMasterWithEmployeeResponse>;
+    abstract pullPaginationProjectMasterWithEmployee(PageSize: number, PageNumber: number, ProjectId: number, FullName?: string,DepartmentName?: string): Promise<ProjectMasterWithEmployeeResponse>;
     abstract addUpdateProjectMasterWithEmployee(params: AddUpdateProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeSaveResponse>;
     abstract deleteProjectMasterWithEmployee(params: DeleteProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeDeleteResponse>;
 
@@ -114,6 +115,33 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
             if (error === TokenExpiredException) {
 
                 await this.pullProjectMasterWithEmployee(Number(ProjectId));
+            }
+
+            throw error
+        }
+    }
+
+    async pullPaginationProjectMasterWithEmployee(PageSize: number, PageNumber: number, ProjectId: number, FullName?: string,DepartmentName?: string): Promise<ProjectMasterWithEmployeeResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                ProjectId: (ProjectId ?? 0).toString(),
+                PageSize: (PageSize ?? 20).toString(),
+                PageNumber: (PageNumber ?? 1).toString()
+            })
+            if (FullName) queryParams.append('FullName', FullName.trim());
+             if (DepartmentName) queryParams.append('DepartmentName', DepartmentName.trim());
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${ProjectMasterApi.PULL_PAGINATION_PROJECT_WITH_EMPLOYEE}?${queryParams.toString()}`, {signal: undefined }
+            )
+            return response;
+        } catch (error: any) {
+
+            console.error('ERROR: PULL PAGINATION PROJECT MASTER WITH EMPLOYEE:', error);
+
+            if (error === TokenExpiredException) {
+
+                await this.pullPaginationProjectMasterWithEmployee(PageSize, PageNumber, Number(ProjectId));
             }
 
             throw error

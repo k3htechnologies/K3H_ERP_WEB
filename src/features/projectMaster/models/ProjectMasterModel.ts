@@ -30,6 +30,10 @@ export interface ProjectMasterData {
     NumberOfEmployee: number | 0;
     IsRedevelopment: boolean | false;
 
+    FileNumber: string | '';
+    ArchitectName: string | '';
+    ArchitectMobileNumber: string | '';
+
     // ADVANCE DETAILS
     BussinessCategory: string | '';
     ProjectShortName: string | '';
@@ -45,6 +49,10 @@ export interface ProjectMasterData {
 
     CityMasterId: number | 0;
     CityName: string | '';
+
+    VillageMasterId: number | 0;
+    VillageName: string | '';
+
     ZipCode: string | '';
 
     ProjectScope: string | '';
@@ -118,6 +126,9 @@ export interface AddUpdateProjectMasterRequest {
     RemoveProjectPhotoURL: string | '';
     CTSNumber: string | '';
     IsRedevelopment: number | 0;
+    FileNumber: string | '';
+    ArchitectName: string | '';
+    ArchitectMobileNumber: string | '';
 
     // ADVANCE DETAILS
     BussinessCategory: string | '';
@@ -126,6 +137,7 @@ export interface AddUpdateProjectMasterRequest {
     DistrictMasterId: number | 0;
     StateMasterId: number | 0;
     CityMasterId: number | 0;
+    VillageMasterId: number | 0;
 
     ZipCode: string | '';
     ProjectScope: string | '';

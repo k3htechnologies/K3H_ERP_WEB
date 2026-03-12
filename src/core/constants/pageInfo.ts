@@ -387,6 +387,11 @@ export const getPageInfo = (path: string) => {
                 title: "Payment Schedule",
                 description: "Single source of truth for channel partner information",
             }
+        case 'paymentScheduleScheme':
+            return {
+                title: "Payment Schedule Scheme",
+                description: "Single source of truth for channel partner information",
+            }
         case 'paymentScheduleReport':
             return {
                 title: "Payment Schedule Report",
@@ -407,6 +412,23 @@ export const getPageInfo = (path: string) => {
                 title: "Sales Target",
                 description: "Centralized enquiry management for faster response",
             }
+        case 'incentiveReport':
+            return {
+                title: "Incentive Report",
+                description: "Centralized enquiry management for faster response",
+            }
+        case 'classificationParameter':
+            return {
+                title: "Classification Parameter",
+                description: "Manage classification parameters for the system",
+            }
+        case 'performance':
+            return {
+                title: "Performance",
+                description: "Manage performance-related informationss",
+            }
+
+
 
         // MARKETING
         case 'content':
@@ -426,6 +448,13 @@ export const getPageInfo = (path: string) => {
                 title: "Litigation",
                 description: "Track & manage project related legal cases",
             }
+
+        case 'legalDashboard':
+            return {
+                title: "Legal Dashboard",
+                description: "Track & manage project related legal cases",
+            }
+
 
         default:
             return {

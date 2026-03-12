@@ -6,6 +6,7 @@ export interface FilterWithPaginationHolidayMappingMasterRequest {
     HolidayMappingMasterId?: number
     BranchName?: string
     HolidayName?: string
+    DepartmentName?: string
     FromHolidayDate?: string
     ToHolidayDate?: string
     SortBy?: string
@@ -20,6 +21,8 @@ export interface HolidayMappingMasterData {
     HolidayDate: string | null
     BranchName: string | ''
     BranchMasterId: string | ''
+    DepartmentName: string | ''
+    DepartmentMasterId: string | ''
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -33,10 +36,9 @@ export interface HolidayMappingMasterData {
 export interface AddUpdateHolidayMappingMasterRequest {
     HolidayMappingMasterId: number | 0
     Uniquekey: string | null
-
     HolidayMasterId: number | 0
     BranchMasterId: string | ''
-
+    DepartmentMasterId: string | ''
     HolidayDate: string | null
 }
 

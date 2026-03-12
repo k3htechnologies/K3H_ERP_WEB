@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
 import { FlatCard } from "../FlatCard";
 import { Modal } from "@/ui/components/Modal/Modal";
-import { Input } from "@/ui/components/forms";
+import { Button, Input } from "@/ui/components/forms";
 import { inventoryService } from "@/features/inventory/services/InventoryServices";
 import { runApiWithLoader } from "@/core/utils";
 import * as E from 'fp-ts/Either';
@@ -18,6 +18,7 @@ import type {
 
 interface FloorCardProps {
     floor: InventoryFloorData;
+    slabHeight: number;
     projectId: number;
     building: InventoryData;
     wing: InventoryFlatFloorBasementPodiumWingData;
@@ -29,7 +30,7 @@ interface FloorCardProps {
     canBookingAction?: boolean;
 }
 
-export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkingUpdate, onDeleteFloor, isLastFloor, canAction, canBookingAction }: FloorCardProps) => {
+export const FloorCard = ({ floor,slabHeight,projectId, building, wing, onDelete, onParkingUpdate, onDeleteFloor, isLastFloor, canAction, canBookingAction }: FloorCardProps) => {
     const navigate = useNavigate();
     const { addToast } = useToast();
 
@@ -133,11 +134,12 @@ export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkin
         <div className="pt-2">
             <ExpandableCard
                 key={floor.InventoryFloorId}
-                title={floor.Floor}
+                title={floor.Floor}       
                 showline={true}
                 defaultOpen={true}
                 customizedIcon={
                     <div className="flex items-center gap-2">
+                        <span className="text-sm text-gray-600">{`Slab Height: ${slabHeight} ft`}</span>
                         {canAction && (
                             <>
                                 <div
@@ -157,16 +159,17 @@ export const FloorCard = ({ floor, projectId, building, wing, onDelete, onParkin
                                     }}
                                 />
                                 {onDeleteFloor && isLastFloor && wing.Wing.toUpperCase() !== 'BGP' && (
-                                    <button
+                                    <Button
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             onDeleteFloor(floor, wing, building);
                                         }}
-                                        className="p-1.5 cursor-pointer hover:bg-red-100 rounded transition-colors"
+                                        color='transparent'
                                         title="Delete Floor"
+                                        
                                     >
                                         <Trash color="red" className="text-red-600" size={20} />
-                                    </button>
+                                    </Button>
                                 )}
                             </>
                         )}

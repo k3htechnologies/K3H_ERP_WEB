@@ -34,6 +34,12 @@ import { getDocumentStatusColor } from '@/features/projectDocument/pages/Project
 import { TextArea } from '@/ui/components/forms/Textarea';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
+import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService';
+import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/ApprovalLogModal';
+import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
+import ApprovalActions from '@/features/modulesWorkflowApproval/components/ApprovalActionsButton';
+import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 
 
 const initialFormState = (): AddUpdateApprovalDocumentRequest => ({
@@ -117,6 +123,16 @@ const ApprovalDocument: React.FC = () => {
 
   //EXCEL IMPORT 
   const [showImportModal, setShowImportModal] = useState(false);
+
+  // APPROVAL LOG MODAL
+  const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+  const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+  const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+
+  // APPROVAL ACTION MODAL
+  const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
+  const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
+  const [approvalRowData, setApprovalRowData] = useState<ApprovalDocumentData | null>(null);
 
   //#endregion
 
@@ -557,6 +573,25 @@ const ApprovalDocument: React.FC = () => {
 
   //#region TABLE COLUMN DOCUMENT DETAILS
 
+  const handleApprovalLog = (row: ApprovalDocumentData) => {
+    const request: ModulesApprovalStatusRequest = {
+      ModuleName: "APPROVAL DOCUMENT APPROVAL",
+      Id: row.ApprovalDocumentId,
+      ProjectId: row.ProjectId,
+    };
+    setApprovalDocumentName(row.ApprovalDocumentName)
+    setApprovalLogRequest(request);
+    setIsApprovalLogModalOpen(true);
+  };
+
+  const handleApproveRejectDocument = (row: ApprovalDocumentData, approvalType: "approve" | "reject") => {
+
+    setApprovalRowData(row);
+    setApprovalActionType(approvalType);
+    setIsApprovalActionModalOpen(true);
+
+  };
+
   const approvalDocumentDetailsColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -623,6 +658,23 @@ const ApprovalDocument: React.FC = () => {
         )
       },
       {
+        key: "ApprovalDocumentApprovalStatus",
+        label: "Approval Status",
+        width: "18",
+        sortable: false,
+        align: "left",
+        render: (value, row) => (
+          <ApprovalActions
+            approvalStatus={value || "-"}
+            showApproval={row.IsApproval}
+            isIcons={true}
+            onHistory={() => handleApprovalLog(row)}
+            onApprove={() => handleApproveRejectDocument(row, "approve")}
+            onReject={() => handleApproveRejectDocument(row, "reject")}
+          />
+        )
+      },
+      {
         key: 'ModifiedBy',
         label: 'Last Modified By',
         width: '33',
@@ -650,13 +702,13 @@ const ApprovalDocument: React.FC = () => {
               : '-'
       },
       {
-        key: 'actions',
+        key: 'Actions',
         label: 'Actions',
         width: '12',
         align: 'center',
         fixed: 'right',
         render: (_value, row) => {
-          const showEdit = canAction ? true : false;
+          const showEdit = canAction && row.ApprovalDocumentApprovalStatus !== "Approved" ? true : false;
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
               {/* RIGHT SIDE — Fixed Edit Button */}
@@ -710,7 +762,7 @@ const ApprovalDocument: React.FC = () => {
 
     ],
     // dependencies: include everything used inside that might change
-    [canAction, handleEditApprovalDocument]
+    [canAction, handleEditApprovalDocument, handleApprovalLog, handleApproveRejectDocument]
   )
   //#endregion
 
@@ -786,6 +838,11 @@ const ApprovalDocument: React.FC = () => {
       newErrors.ApprovalDocumentStatus = "Status is required"
     }
 
+    if (formData.ApprovalDocumentStatus?.toUpperCase() === "ISSUED" && !hasAnyDocumentFile(approvalDocumentFiles, approvalDocumentURL, RemoveApprovalDocumentUrls)) {
+      newErrors.ApprovalDocumentURL = "File is required.";
+    }
+
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
@@ -811,7 +868,7 @@ const ApprovalDocument: React.FC = () => {
   const PushDocumentDetailsFormData = (): FormData => {
     const fd = new FormData();
 
-      fd.append('ApprovalDocumentId', editingDocumentData ? String(formData.ApprovalDocumentId) : String(expandHeaderApprovalDocumentId ?? 0)),
+    fd.append('ApprovalDocumentId', editingDocumentData ? String(formData.ApprovalDocumentId) : String(expandHeaderApprovalDocumentId ?? 0)),
       fd.append('Uniquekey', formData.Uniquekey ?? ''),
       fd.append('ApprovalDocumentName', expandHeaderApprovalDocumentName ?? ""),
       fd.append('ProjectId', String(projectId)),
@@ -1136,6 +1193,64 @@ const ApprovalDocument: React.FC = () => {
 
   //#endregion
 
+  const handleApprovalSubmit = async (remark: string) => {
+
+    if (!approvalRowData) return;
+
+    const payload: UpdateModulesWorkflowApprovalRequest = {
+      ModuleName: "APPROVAL DOCUMENT APPROVAL",
+      Id: approvalRowData.ApprovalDocumentId ?? 0,
+      ProjectId: approvalRowData.ProjectId ?? 0,
+      IsApproved: approvalActionType === "approve",
+      Remarks: remark ?? null
+    };
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+          setIsApprovalActionModalOpen(false);
+
+          const parentId = expandedParentId;
+
+          await fetchApprovalDocumentList(pagination.currentPage);
+
+          // collapse all first
+          if (dtRef.current) {
+            dtRef.current.collapseAll?.();
+          }
+
+          // reopen after table renders
+          setTimeout(() => {
+            if (parentId) {
+              dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
+            }
+          }, 50);
+
+        } else {
+
+          addToast({ type: "error", title: response.left.message });
+
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: "error", title: error.message });
+      },
+      undefined,
+      approvalActionType === "approve" ? "Approving Document" : "Rejecting Document"
+    );
+  };
+
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -1325,7 +1440,7 @@ const ApprovalDocument: React.FC = () => {
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(0, e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-       
+
         loading={isLoading}
         size='xl'
       >
@@ -1345,7 +1460,7 @@ const ApprovalDocument: React.FC = () => {
                 : ""}
 
             </div>
-             <div>
+            <div>
               <SinglePageSelection
                 label="Status"
                 placeholder='Select Status'
@@ -1360,6 +1475,7 @@ const ApprovalDocument: React.FC = () => {
               <MultiFilePicker
                 label="Files"
                 placeholder='Select Files'
+                required={formData.ApprovalDocumentStatus?.toUpperCase() === "ISSUED" ? true : false}
                 value={approvalDocumentFiles}
                 onChange={setApprovalDocumentFiles}
                 availableFilesURL={approvalDocumentURL ?? ""}
@@ -1414,6 +1530,22 @@ const ApprovalDocument: React.FC = () => {
           setShowImportModal(false);
           uploadExcel(file, mergeExisting);
         }}
+      />
+
+      <ApprovalLogModal
+        isOpen={isApprovalLogModalOpen}
+        documentName={approvalDocumentName ?? ""}
+        onClose={() => setIsApprovalLogModalOpen(false)}
+        request={approvalLogRequest} />
+
+      <ApprovalActionModal
+        title='Document'
+        isOpen={isApprovalActionModalOpen}
+        onClose={() => setIsApprovalActionModalOpen(false)}
+        actionType={approvalActionType}
+        documentName={approvalRowData?.ApprovalDocumentName ?? ""}
+        onSubmit={handleApprovalSubmit}
+        loading={isLoading}
       />
     </div>
   );

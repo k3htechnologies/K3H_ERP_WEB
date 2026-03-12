@@ -33,12 +33,7 @@ export const BranchAssociationsMaster: React.FC = () => {
     dropdownLabels,
     dropdownResetKey,
 
-    departmentName,
-    designationName,
-    branchName,
-    reportingPersonName,
-    emailId,
-    personalMobileNumber,
+    employeeDetails,
 
     // Setters
     setSearchTerm,
@@ -52,6 +47,7 @@ export const BranchAssociationsMaster: React.FC = () => {
     setDeleteBranchAssociationsData,
     setDropdownLabels,
     setDropdownResetKey,
+    setEmployeeDetails,
 
     // Actions
     handlePageChange,
@@ -158,13 +154,9 @@ export const BranchAssociationsMaster: React.FC = () => {
         loading={isLoading}
         dropdownLabels={dropdownLabels}
         dropdownResetKey={dropdownResetKey}
+        employeeDetails={employeeDetails}
+        setEmployeeDetails={setEmployeeDetails}
 
-        departmentName={departmentName}
-        designationName={designationName}
-        branchName={branchName}
-        reportingPersonName={reportingPersonName}
-        emailId={emailId}
-        personalMobileNumber={personalMobileNumber}
       />
 
       <DeleteDialog

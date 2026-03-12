@@ -43,13 +43,8 @@ export const ShiftMappingMaster: React.FC = () => {
     dropdownLabels,
     dropdownResetKey,
     mappingShift,
+    employeeDetails,
 
-    departmentName,
-    designationName,
-    branchName,
-    reportingPersonName,
-    emailId,
-    personalMobileNumber,
 
     // Setters
     setSearchTerm,
@@ -68,6 +63,7 @@ export const ShiftMappingMaster: React.FC = () => {
     setDropdownLabels,
     setDropdownResetKey,
     setMappingShift,
+    setEmployeeDetails,
 
     // Actions
     handlePageChange,
@@ -187,12 +183,8 @@ export const ShiftMappingMaster: React.FC = () => {
         mappingShift={mappingShift}
         onApplicableTypeChange={handleApplicableTypeChange}
 
-        departmentName={departmentName}
-        designationName={designationName}
-        branchName={branchName}
-        reportingPersonName={reportingPersonName}
-        emailId={emailId}
-        personalMobileNumber={personalMobileNumber}
+        employeeDetails={employeeDetails}
+        setEmployeeDetails={setEmployeeDetails}
       />
 
       <CustomizeColumnsModal

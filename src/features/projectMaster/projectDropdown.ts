@@ -11,6 +11,7 @@ export const fetchProjectDropdown = async (pageNumber: number, params?: { value?
         });
 
         if (E.isLeft(responseEither)) {
+            
             return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
         }
 
@@ -28,7 +29,9 @@ export const fetchProjectDropdown = async (pageNumber: number, params?: { value?
         };
 
     } catch (err) {
+
         console.error('FETCH PROJECT MASTER  DROPDOWN ERROR', err);
+
         return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
     }
 };

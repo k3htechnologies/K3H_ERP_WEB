@@ -1,38 +1,34 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { usePagination } from '@/core/hooks/usePagination';
-import type { FilterInfo, SortInfo, TableColumn } from '@/ui/components/DataTable/DataTable';
-import { runApiWithLoader } from '@/core/utils';
-import * as E from 'fp-ts/Either';
-import { useToast } from '@/core/hooks/useToast';
-import type {
-  AddUpdateShiftMappingMasterRequest,
-  DeleteShiftMappingMasterRequest,
-  ShiftMappingMasterData,
-  FilterWithPaginationShiftMappingMasterRequest
-} from '@/features/shiftMappingMaster/models/ShiftMappingMasterModel';
-import { shiftMappingMasterService } from '@/features/shiftMappingMaster/services/ShiftMappingMasterService';
-import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
-import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
-import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { updateFilter } from '@/core/utils/filterHelper';
-import { handleExportFile } from '@/core/utils/exportFile';
-import { getInitialFormState, getShiftMappingMasterColumns, REQUIRED_COLUMN_KEYS } from '@/features/shiftMappingMaster/constants/shiftMappingMasterConstants';
-import { getSortByParam } from '@/core/constants/sortingColumnDetails';
-import { fetchEmployeeMasterById } from '@/features/employeeMaster/employeeMasterDropDown';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePagination } from "@/core/hooks/usePagination";
+import type { FilterInfo, SortInfo, TableColumn } from "@/ui/components/DataTable/DataTable";
+import { runApiWithLoader } from "@/core/utils";
+import * as E from "fp-ts/Either";
+import { useToast } from "@/core/hooks/useToast";
+import type { AddUpdateShiftMappingMasterRequest, DeleteShiftMappingMasterRequest, ShiftMappingMasterData, FilterWithPaginationShiftMappingMasterRequest } from "@/features/shiftMappingMaster/models/ShiftMappingMasterModel";
+import { shiftMappingMasterService } from "@/features/shiftMappingMaster/services/ShiftMappingMasterService";
+import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import { updateFilter } from "@/core/utils/filterHelper";
+import { handleExportFile } from "@/core/utils/exportFile";
+import { getInitialFormState, getShiftMappingMasterColumns, REQUIRED_COLUMN_KEYS } from "@/features/shiftMappingMaster/constants/shiftMappingMasterConstants";
+import { getSortByParam } from "@/core/constants/sortingColumnDetails";
+import { fetchEmployeeMasterById } from "@/features/employeeMaster/employeeMasterDropDown";
+import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
 
 export const useShiftMappingMaster = () => {
   //#region STATE MANAGEMENT
   const [shiftMappingMasterList, setShiftMappingMasterList] = useState<ShiftMappingMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState("");
   const { pagination, setPagination } = usePagination(20);
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-  const { addToast } = useToast()
-  const [searchTerm, setSearchTerm] = useState('')
+  const { addToast } = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebouncedCallback((value: string) => {
-    searchShiftMappings(value)
-  }, 350)
-  const [viewShiftMappingMasterDetailsData, setViewShiftMappingMasterDetailsData] = useState<ShiftMappingMasterData | null>(null)
+    searchShiftMappings(value);
+  }, 350);
+  const [viewShiftMappingMasterDetailsData, setViewShiftMappingMasterDetailsData] = useState<ShiftMappingMasterData | null>(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   //FILTER STATES
@@ -48,19 +44,14 @@ export const useShiftMappingMaster = () => {
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
   //SET UP EMPLOYEE DETAILS STATES
-  const [departmentName, setDepartmentName] = useState("");
-  const [designationName, setDesignationName] = useState("");
-  const [branchName, setBranchName] = useState("");
-  const [reportingPersonName, setReportingPersonName] = useState("");
-  const [emailId, setEmailId] = useState("");
-  const [personalMobileNumber, setPersonalMobileNumber] = useState("");
+  const [employeeDetails, setEmployeeDetails] = useState<EmployeeMasterData | null>(null);
 
   //ADD UPDATE SHIFT MAPPING MASTER
   const [formData, setFormData] = useState<AddUpdateShiftMappingMasterRequest>(() => getInitialFormState());
 
   //DELETE SHIFT MAPPING MASTER
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-  const [deleteShiftMappingMasterDetailsData, setDeleteShiftMappingMasterDetailsData] = useState<ShiftMappingMasterData | null>(null)
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+  const [deleteShiftMappingMasterDetailsData, setDeleteShiftMappingMasterDetailsData] = useState<ShiftMappingMasterData | null>(null);
 
   //DROP DOWN RESET KEY
   const [dropdownResetKey, setDropdownResetKey] = useState(0);
@@ -72,7 +63,7 @@ export const useShiftMappingMaster = () => {
   const [dropdownLabels, setDropdownLabels] = useState<{
     departmentName?: string;
     EmployeeName?: string;
-    shiftName?: string
+    shiftName?: string;
   }>({});
 
   //RADIO PILL STATE
@@ -86,20 +77,20 @@ export const useShiftMappingMaster = () => {
   //#endregion
 
   //#region INITIALIZATION
-  const hasFetchedInitialShiftMappings = useRef(false)
+  const hasFetchedInitialShiftMappings = useRef(false);
 
   useEffect(() => {
-    if (hasFetchedInitialShiftMappings.current) return
+    if (hasFetchedInitialShiftMappings.current) return;
     hasFetchedInitialShiftMappings.current = true;
-    fetchShiftMappingList()
-  }, [])
+    fetchShiftMappingList();
+  }, []);
 
   //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
-      debouncedSearch.cancel?.()
-    }
-  }, [debouncedSearch])
+      debouncedSearch.cancel?.();
+    };
+  }, [debouncedSearch]);
 
   useEffect(() => {
     if (isAddUpdateModalOpen) {
@@ -108,79 +99,49 @@ export const useShiftMappingMaster = () => {
           ShiftManagementMasterMappingId: editingShiftMappingMasterData.ShiftManagementMasterMappingId,
           Uniquekey: editingShiftMappingMasterData.Uniquekey || getInitialFormState().Uniquekey,
           ShiftManagementMasterId: editingShiftMappingMasterData?.ShiftManagementMasterId || 0,
-          DepartmentMasterId: editingShiftMappingMasterData.DepartmentMasterId || '',
-          EmployeeId: editingShiftMappingMasterData.EmployeeId || '',
+          DepartmentMasterId: editingShiftMappingMasterData.DepartmentMasterId || "",
+          EmployeeId: editingShiftMappingMasterData.EmployeeId || "",
         });
-        setMappingShift(editingShiftMappingMasterData.DepartmentMasterId ? 'Department' : 'Employee')
+        setMappingShift(editingShiftMappingMasterData.DepartmentMasterId ? "Department" : "Employee");
         setDropdownLabels({
           departmentName: editingShiftMappingMasterData.DepartmentName || "",
           EmployeeName: editingShiftMappingMasterData.EmployeeName || "",
-          shiftName: editingShiftMappingMasterData.ShiftName || ""
+          shiftName: editingShiftMappingMasterData.ShiftName || "",
         });
+
+        if (editingShiftMappingMasterData.EmployeeId) {
+          fetchEmployeeMasterById(Number(editingShiftMappingMasterData.EmployeeId)).then((employee) => {
+            if (!employee) return;
+            setEmployeeDetails(employee);
+          });
+        }
       } else {
         setFormData(getInitialFormState());
         setMappingShift("Department");
+        setEmployeeDetails(null);
       }
       setErrors({});
     }
   }, [isAddUpdateModalOpen, editingShiftMappingMasterData]);
 
-  useEffect(() => {
-    let mounted = true;
-
-    const loadEmployeeDetails = async () => {
-      if (!formData.EmployeeId) {
-        setDepartmentName("");
-        setDesignationName("");
-        setBranchName("");
-        setReportingPersonName("");
-        setEmailId("");
-        setPersonalMobileNumber("");
-        return;
-      }
-
-      const employee = await fetchEmployeeMasterById(Number(formData.EmployeeId));
-
-      if (!employee || !mounted) return;
-
-      setDepartmentName(employee.Department ?? "");
-      setDesignationName(employee.Designation ?? "");
-      setBranchName(employee.Branch ?? "");
-      setReportingPersonName(employee.ReportPersonName ?? "");
-      setEmailId(employee.EmailId ?? "");
-      setPersonalMobileNumber(employee.PersonalMobileNumber ?? "");
-    };
-
-    loadEmployeeDetails();
-
-    return () => {
-      mounted = false;
-    };
-  }, [formData.EmployeeId]);
-
-
   //#endregion
 
   //#region TABLE COLUMN DEFINITION
 
-  const shiftMappingMasterColumns = useMemo<TableColumn[]>(
-    () => getShiftMappingMasterColumns(),
-    []
-  )
+  const shiftMappingMasterColumns = useMemo<TableColumn[]>(() => getShiftMappingMasterColumns(), []);
   //#endregion
 
-  //#region DATA LOADING | FETCH |  LOAD | SEARCH 
+  //#region DATA LOADING | FETCH |  LOAD | SEARCH
 
   const fetchShiftMappingList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadShiftMappings(page, filters, sort);
-  }
+  };
 
   const loadShiftMappings = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-
         const params: FilterWithPaginationShiftMappingMasterRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
@@ -188,8 +149,8 @@ export const useShiftMappingMaster = () => {
           ShiftName: searchtext ?? filterParams.ShiftName?.trim() ?? undefined,
           DepartmentName: filterParams.DepartmentName?.trim() || undefined,
           EmployeeName: filterParams.EmployeeName?.trim() || undefined,
-          SortBy: getSortByParam(sortInfo ?? null, shiftMappingMasterColumns)
-        }
+          SortBy: getSortByParam(sortInfo ?? null, shiftMappingMasterColumns),
+        };
 
         const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
 
@@ -201,42 +162,42 @@ export const useShiftMappingMaster = () => {
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
         } else {
-          addToast({ type: 'error', title: response.left.message });
+          addToast({ type: "error", title: response.left.message });
         }
-        return response
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      'Loading Shift Mapping'
-    )
-  }
+      "Loading Shift Mapping",
+    );
+  };
   //#endregion
 
-  //#region SEARCH SHIFT MAPPING 
+  //#region SEARCH SHIFT MAPPING
   const searchShiftMappings = async (searchValue: string) => {
     setSearchTerm(searchValue);
 
-    if (searchValue.trim() === '') {
+    if (searchValue.trim() === "") {
       fetchShiftMappingList();
-      return
+      return;
     }
-    await loadShiftMappings(1, filters, sortInfo, searchValue)
-  }
+    await loadShiftMappings(1, filters, sortInfo, searchValue);
+  };
   //#endregion
 
   //#region CLEAR SEARCH SHIFT MAPPING
   const clearsearchShiftMappings = () => {
-    setSearchTerm('');
+    setSearchTerm("");
     debouncedSearch.cancel?.();
-    loadShiftMappings(1, { ShiftName: '' }, sortInfo, undefined);
-  }
+    loadShiftMappings(1, { ShiftName: "" }, sortInfo, undefined);
+  };
   //#endregion
 
   //#region EXPORT EXCEL | PDF
-  const handleExportShiftMappings = async (exportType: 'Excel' | 'PDF') => {
+  const handleExportShiftMappings = async (exportType: "Excel" | "PDF") => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -248,24 +209,24 @@ export const useShiftMappingMaster = () => {
           DepartmentName: filters.DepartmentName?.trim() || undefined,
           EmployeeName: filters.EmployeeName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, shiftMappingMasterColumns),
-          ExportType: exportType
-        }
+          ExportType: exportType,
+        };
 
         const response = await shiftMappingMasterService.apiCallPullShiftMappingMaster(params);
-        handleExportFile(response, exportType, 'Shift Mapping Master', addToast)
+        handleExportFile(response, exportType, "Shift Mapping Master", addToast);
         return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message || 'Export failed' })
+        addToast({ type: "error", title: error.message || "Export failed" });
       },
       undefined,
-      'Preparing Export'
-    )
-  }
+      "Preparing Export",
+    );
+  };
 
-  const handleExportShiftMappingExcel = () => handleExportShiftMappings('Excel')
-  const handleExportShiftMappingPdf = () => handleExportShiftMappings('PDF')
+  const handleExportShiftMappingExcel = () => handleExportShiftMappings("Excel");
+  const handleExportShiftMappingPdf = () => handleExportShiftMappings("PDF");
   //#endregion
 
   //#region HANDLE PAGE CHANGE EVENT
@@ -275,45 +236,45 @@ export const useShiftMappingMaster = () => {
   //#endregion
 
   //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback((sort: SortInfo) => {
-    setSortInfo(sort);
-    loadShiftMappings(1, filters, sort, searchTerm || undefined);
-  }, [filters, searchTerm]);
+  const handleSortColumn = useCallback(
+    (sort: SortInfo) => {
+      setSortInfo(sort);
+      loadShiftMappings(1, filters, sort, searchTerm || undefined);
+    },
+    [filters, searchTerm],
+  );
   //#endregion
 
   //#region CUSTOMIZE TABLE COLUMNS
   const requiredShiftMappingMasterColumnKeys: string[] = REQUIRED_COLUMN_KEYS;
 
-  const allShiftMappingMasterColumnKeys: string[] = shiftMappingMasterColumns.map(c => c.key)
+  const allShiftMappingMasterColumnKeys: string[] = shiftMappingMasterColumns.map((c) => c.key);
 
   const [selectedShiftMappingMasterColumnKeys, setSelectedShiftMappingMasterColumnKeys] = useState<string[]>(() => {
     try {
       const saved = LocalStorageHelper.getShiftMappingMasterTableColumns();
       if (saved) {
-        const parsed = JSON.parse(saved) as string[]
+        const parsed = JSON.parse(saved) as string[];
         const withRequired = Array.from(new Set([...parsed, ...requiredShiftMappingMasterColumnKeys]));
-        return withRequired.filter(k => allShiftMappingMasterColumnKeys.includes(k));
+        return withRequired.filter((k) => allShiftMappingMasterColumnKeys.includes(k));
       }
-    } catch { }
-    return allShiftMappingMasterColumnKeys
-  })
+    } catch {}
+    return allShiftMappingMasterColumnKeys;
+  });
 
   useEffect(() => {
-    setSelectedShiftMappingMasterColumnKeys(prev => Array.from(new Set([...prev, ...requiredShiftMappingMasterColumnKeys])).filter(k => allShiftMappingMasterColumnKeys.includes(k)));
+    setSelectedShiftMappingMasterColumnKeys((prev) => Array.from(new Set([...prev, ...requiredShiftMappingMasterColumnKeys])).filter((k) => allShiftMappingMasterColumnKeys.includes(k)));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [shiftMappingMasterColumns.length])
+  }, [shiftMappingMasterColumns.length]);
 
-  const visibleShiftMappingMasterColumns = useMemo(
-    () => shiftMappingMasterColumns.filter(col => selectedShiftMappingMasterColumnKeys.includes(col.key)),
-    [shiftMappingMasterColumns, selectedShiftMappingMasterColumnKeys]
-  )
+  const visibleShiftMappingMasterColumns = useMemo(() => shiftMappingMasterColumns.filter((col) => selectedShiftMappingMasterColumnKeys.includes(col.key)), [shiftMappingMasterColumns, selectedShiftMappingMasterColumnKeys]);
   //#endregion
 
   //#region VIEW EDIT
   const handleViewShiftMappingDetails = useCallback((row: ShiftMappingMasterData) => {
-    setViewShiftMappingMasterDetailsData(row)
-    setIsViewModalOpen(true)
-  }, [])
+    setViewShiftMappingMasterDetailsData(row);
+    setIsViewModalOpen(true);
+  }, []);
   //#endregion
 
   //#region EDIT SHIFT MAPPING MASTER
@@ -321,39 +282,39 @@ export const useShiftMappingMaster = () => {
     setEditingShiftMappingMasterData({
       ...row,
       ShiftManagementMasterId: row.ShiftManagementMasterId || 0,
-      DepartmentMasterId: row.DepartmentMasterId || '',
-      EmployeeId: row.EmployeeId || ''
-    })
+      DepartmentMasterId: row.DepartmentMasterId || "",
+      EmployeeId: row.EmployeeId || "",
+    });
     setIsAddUpdateModalOpen(true);
-  }, [])
+  }, []);
   //#endregion
 
   //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: ShiftMappingMasterData) => {
-    setDeleteShiftMappingMasterDetailsData(row)
-    setIsConfirmationDialogBoxOpen(true)
-  }, [])
+    setDeleteShiftMappingMasterDetailsData(row);
+    setIsConfirmationDialogBoxOpen(true);
+  }, []);
   //#endregion
 
   //#region FILTER MODAL HELPERS
   const applyFilters = () => {
-    setFilters(tempFilters)
-    loadShiftMappings(1, tempFilters)
-    setShowFilterPopup(false)
-  }
+    setFilters(tempFilters);
+    loadShiftMappings(1, tempFilters);
+    setShowFilterPopup(false);
+  };
   //#endregion
 
-  //#region Clear 
+  //#region Clear
   const clearFilters = () => {
-    setTempFilters({})
-    setFilters({})
-    loadShiftMappings(1, {})
-  }
+    setTempFilters({});
+    setFilters({});
+    loadShiftMappings(1, {});
+  };
   //#endregion
 
   //#region HANDLE FILTER CHANGE
   const handleFilterChange = (key: string, value: string) => {
-    setTempFilters(prev => updateFilter(prev, key, value));
+    setTempFilters((prev) => updateFilter(prev, key, value));
   };
   //#endregion
 
@@ -380,13 +341,13 @@ export const useShiftMappingMaster = () => {
     setMappingShift("Department");
     setErrors({});
     setIsAddUpdateModalOpen(true);
-  }
+  };
 
   const validateAddShiftMappingMasterForm = (): {
-    isValid: boolean
-    errors: { [key: string]: string }
+    isValid: boolean;
+    errors: { [key: string]: string };
   } => {
-    const newErrors: { [key: string]: string } = {}
+    const newErrors: { [key: string]: string } = {};
 
     if (mappingShift === "Department" && !formData.DepartmentMasterId) {
       newErrors.DepartmentMasterId = "Department Name is required.";
@@ -402,9 +363,9 @@ export const useShiftMappingMaster = () => {
 
     return {
       isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors
-    }
-  }
+      errors: newErrors,
+    };
+  };
 
   const PushShiftMappingFormData = (): AddUpdateShiftMappingMasterRequest => {
     return {
@@ -412,20 +373,20 @@ export const useShiftMappingMaster = () => {
       Uniquekey: formData.Uniquekey,
       ShiftManagementMasterId: formData.ShiftManagementMasterId,
       DepartmentMasterId: mappingShift === "Department" ? formData.DepartmentMasterId : "",
-      EmployeeId: mappingShift === "Employee" ? formData.EmployeeId : ""
+      EmployeeId: mappingShift === "Employee" ? formData.EmployeeId : "",
     };
   };
 
   const handleAddUpdateShiftMappingMaster = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    setErrors({})
+    setErrors({});
 
-    const validation = validateAddShiftMappingMasterForm()
+    const validation = validateAddShiftMappingMasterForm();
 
     if (!validation.isValid) {
-      setErrors(validation.errors)
-      return
+      setErrors(validation.errors);
+      return;
     }
 
     await runApiWithLoader(
@@ -441,24 +402,18 @@ export const useShiftMappingMaster = () => {
           const isAdd = formData.ShiftManagementMasterMappingId === 0;
 
           if (isAdd) {
-            const newRecord = response.right.Data[0] as ShiftMappingMasterData
-            setShiftMappingMasterList(prevData => [newRecord, ...prevData]);
+            const newRecord = response.right.Data[0] as ShiftMappingMasterData;
+            setShiftMappingMasterList((prevData) => [newRecord, ...prevData]);
             setPagination({
               currentPage: pagination.currentPage,
               totalRecords: pagination.totalRecords + 1,
-              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+              totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize),
             });
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+            addToast({ type: "success", title: response.right.SuccessMessage[0] });
           } else {
             const updatedRecord = response.right.Data[0] as ShiftMappingMasterData;
-            setShiftMappingMasterList(prevData =>
-              prevData.map(item =>
-                item.ShiftManagementMasterMappingId === formData.ShiftManagementMasterMappingId
-                  ? updatedRecord
-                  : item
-              )
-            )
-            addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+            setShiftMappingMasterList((prevData) => prevData.map((item) => (item.ShiftManagementMasterMappingId === formData.ShiftManagementMasterMappingId ? updatedRecord : item)));
+            addToast({ type: "success", title: response.right.SuccessMessage[0] });
           }
 
           setEditingShiftMappingMasterData(null);
@@ -469,11 +424,11 @@ export const useShiftMappingMaster = () => {
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      Number(formData.ShiftManagementMasterMappingId) === 0 ? 'Add Shift Mapping' : 'Update Shift Mapping'
-    )
+      Number(formData.ShiftManagementMasterMappingId) === 0 ? "Add Shift Mapping" : "Update Shift Mapping",
+    );
   };
   //#endregion
 
@@ -481,7 +436,7 @@ export const useShiftMappingMaster = () => {
   const handleDeleteShiftMappingMaster = async () => {
     setIsConfirmationDialogBoxOpen(false);
 
-    if (!deleteShiftMappingMasterDetailsData) return
+    if (!deleteShiftMappingMasterDetailsData) return;
 
     await runApiWithLoader(
       setIsLoading,
@@ -489,8 +444,8 @@ export const useShiftMappingMaster = () => {
       async () => {
         const params: DeleteShiftMappingMasterRequest = {
           ShiftManagementMasterMappingId: deleteShiftMappingMasterDetailsData.ShiftManagementMasterMappingId,
-          UniqueKey: deleteShiftMappingMasterDetailsData.Uniquekey || ""
-        }
+          UniqueKey: deleteShiftMappingMasterDetailsData.Uniquekey || "",
+        };
 
         const response = await shiftMappingMasterService.apiCallDeleteShiftMappingMaster(params);
 
@@ -508,29 +463,29 @@ export const useShiftMappingMaster = () => {
           setPagination({
             currentPage: pageToShow,
             totalRecords: newTotalRecords,
-            totalPages: newTotalPages
+            totalPages: newTotalPages,
           });
 
           await loadShiftMappings(pageToShow, filters, sortInfo);
 
-          addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+          addToast({ type: "success", title: response.right.SuccessMessage[0] });
           setIsConfirmationDialogBoxOpen(false);
           setDeleteShiftMappingMasterDetailsData(null);
         } else {
-          addToast({ type: 'error', title: response.left.message });
+          addToast({ type: "error", title: response.left.message });
           setIsConfirmationDialogBoxOpen(false);
         }
 
-        return response
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      'Delete Shift Mapping'
-    )
-  }
+      "Delete Shift Mapping",
+    );
+  };
   //#endregion
 
   return {
@@ -563,12 +518,7 @@ export const useShiftMappingMaster = () => {
     dropdownResetKey,
     mappingShift,
 
-    departmentName,
-    designationName,
-    branchName,
-    reportingPersonName,
-    emailId,
-    personalMobileNumber,
+    employeeDetails,
 
     // Setters
     setSearchTerm,
@@ -588,6 +538,7 @@ export const useShiftMappingMaster = () => {
     setDropdownLabels,
     setDropdownResetKey,
     setMappingShift,
+    setEmployeeDetails,
 
     // Actions
     fetchShiftMappingList,
@@ -608,5 +559,5 @@ export const useShiftMappingMaster = () => {
     handleExportShiftMappingPdf,
     debouncedSearch,
     clearsearchShiftMappings,
-  }
-}
+  };
+};

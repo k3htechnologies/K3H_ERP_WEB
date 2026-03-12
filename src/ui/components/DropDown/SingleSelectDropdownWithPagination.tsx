@@ -10,6 +10,7 @@ import { THEME } from "@/core/constants/theme";
 import { InfoIcon, Search, X } from "lucide-react";
 import type { SingleSelectWithPaginationProps } from "@/core/types/dropDownSelectionType";
 import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
+import type { DropdownItem } from "@/core/types/DropdownItem";
 
 export const SingleSelectDropdownWithPagination = forwardRef<
   HTMLDivElement,
@@ -137,8 +138,8 @@ export const SingleSelectDropdownWithPagination = forwardRef<
     }, [isOpen, handleScroll]);
 
     // ─── Select item ──────────────────────────────────────────────────────────
-    const handleSelect = (item: { label: string; value: string | number }) => {
-      const selectedItemObj = { label: item.label, value: item.value };
+    const handleSelect = (item: DropdownItem) => {
+      const selectedItemObj = item;
       setSelectedItem(selectedItemObj);
       userSelectedRef.current = true;
       prevInitialValueRef.current = selectedItemObj;
@@ -301,8 +302,10 @@ export const SingleSelectDropdownWithPagination = forwardRef<
       let openUpward = false;
 
       if (hasEnoughSpaceBelow) {
+
         top = rect.bottom;
-        maxHeight = calculatedHeight;
+        maxHeight = calculatedHeight + 15;
+
       } else if (hasMoreSpaceAbove && availableSpaceAbove >= minHeight) {
         openUpward = true;
         maxHeight = Math.min(calculatedHeight, Math.max(minHeight, availableSpaceAbove));
@@ -441,7 +444,8 @@ export const SingleSelectDropdownWithPagination = forwardRef<
               style={{
                 position: "fixed",
                 left: portalPos.left, top: portalPos.top,
-                width: portalPos.width, maxHeight: portalPos.maxHeight,
+                width: portalPos.width,
+                maxHeight: portalPos.maxHeight,
                 overflow: "hidden", margin: 0,
                 border: `1px solid ${theme.colors.border}`,
                 borderTop: portalPos.openUpward ? `1px solid ${theme.colors.border}` : "none",

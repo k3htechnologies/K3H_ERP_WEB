@@ -31,7 +31,7 @@ export const HolidayMaster: React.FC = () => {
     canExport,
     holidayMasterColumns,
     holidayFiles,
-    removedHolidayUrls,
+    removedHolidayURLs,
     holidayURL,
 
     // Setters
@@ -45,7 +45,7 @@ export const HolidayMaster: React.FC = () => {
     setIsConfirmationDialogBoxOpen,
     setDeleteHolidayMasterDetailsData,
     setHolidayFiles,
-    setRemovedHolidayUrls,
+    setRemovedHolidayURLs,
     setHolidayURL,
 
     // Actions
@@ -78,8 +78,8 @@ export const HolidayMaster: React.FC = () => {
   );
 
   const handleFormReset = useCallback(
-    createFormResetHandler(setIsAddUpdateModalOpen, setEditingHolidayMasterData, setFormData, setErrors, setHolidayFiles, setHolidayURL, setRemovedHolidayUrls),
-    [setIsAddUpdateModalOpen, setEditingHolidayMasterData, setFormData, setErrors, setHolidayFiles, setHolidayURL, setRemovedHolidayUrls]
+    createFormResetHandler(setIsAddUpdateModalOpen, setEditingHolidayMasterData, setFormData, setErrors, setHolidayFiles, setHolidayURL, setRemovedHolidayURLs),
+    [setIsAddUpdateModalOpen, setEditingHolidayMasterData, setFormData, setErrors, setHolidayFiles, setHolidayURL, setRemovedHolidayURLs]
   );
 
   const handleViewModalClose = useCallback(() => {
@@ -155,8 +155,8 @@ export const HolidayMaster: React.FC = () => {
         holidayFiles={holidayFiles}
         setHolidayFiles={setHolidayFiles}
         holidayURL={holidayURL}
-        removedHolidayUrls={removedHolidayUrls}
-        setRemovedHolidayUrls={setRemovedHolidayUrls}
+        removedHolidayUrls={removedHolidayURLs}
+        setRemovedHolidayUrls={setRemovedHolidayURLs}
       />
 
       <DeleteDialog

@@ -17,6 +17,7 @@ import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import type { EnquiryData, FilterWithPaginationEnquiryRequest } from '@/features/enquiry/models/EnquiryModel';
 import { EnquiryService } from '@/features/enquiry/services/EnquiryServices';
 import RichTextEditor from '@/ui/components/forms/RichTextEditor';
+import { handleExportFile } from '@/core/utils/exportFile';
 
 export const ViewBooking: React.FC = () => {
 
@@ -75,7 +76,8 @@ export const ViewBooking: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 1,
                     EnquiryId: enquiryIdToFetch,
-                    ProjectId: Number(projectId)
+                    ProjectId: Number(projectId),
+                    IsCheckPermission: sourcePage === 'inventory' ? false : true
                 };
 
                 const response = await EnquiryService.apiCallPullEnquiry(params);
@@ -113,7 +115,8 @@ export const ViewBooking: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 1,
                     BookingId: bookingId,
-                    ProjectId: Number(projectId)
+                    ProjectId: Number(projectId),
+                    IsCheckPermission: sourcePage === 'inventory' ? false : true
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);
@@ -143,6 +146,38 @@ export const ViewBooking: React.FC = () => {
             'Loading Booking Data'
         );
     };
+
+    const handleExportBookings = async (exportType: 'Excel' | 'PDF' | 'BOOKING FORM PDF') => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationBookingRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    BookingId: bookingId,
+                    ProjectId: Number(projectId),
+                    ExportType: exportType
+                };
+
+                const response = await bookingService.apiCallPullBooking(params);
+
+                const pdfName = `Booking Form - ${bookingData?.ProjectName ?? ''} - ${bookingData?.ApplicantName ?? ''} - ${bookingData?.Flat ?? ''}`;
+                handleExportFile(response, 'PDF', pdfName, addToast);
+
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message || 'Export failed' });
+            },
+            undefined,
+            'Preparing Export PDF'
+        );
+    };
+
 
     //#endregion
 
@@ -178,13 +213,13 @@ export const ViewBooking: React.FC = () => {
             </Loader>
 
             <HeaderActionBar
-                titleText={'Booking Details : '}
-                subTitleText={bookingData.ApplicantName ?? bookingName}
-                subSubTitleText={bookingData.BookingType ?? ""}
+                titleText={`Booking Details : ${bookingData.ApplicantName ?? bookingName}`}
+                subTitleText={bookingData.BookingType ?? ""}
+                subSubTitleText={bookingData.Flat ?? ""}
                 cancelText="Back"
                 EditText="Edit"
                 onCancel={() => {
-                    // Navigate back to source page
+
                     if (sourcePage === 'inventory') {
                         navigate('/inventory');
                     } else if (sourcePage === 'parking') {
@@ -195,6 +230,8 @@ export const ViewBooking: React.FC = () => {
                 }}
                 canAction={canAction && sourcePage === 'booking' ? true : false}
                 onEdit={() => navigate('/booking/add')}
+                ExtraButtonText="PDF"
+                onExtraButton={() => handleExportBookings("BOOKING FORM PDF")}
                 isLoading={isLoading}
             />
 

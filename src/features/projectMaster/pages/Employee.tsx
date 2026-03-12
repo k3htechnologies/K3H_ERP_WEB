@@ -415,6 +415,7 @@ const Employee: React.FC = () => {
           PageNumber: page,
           PageSize: employeePagination.pageSize,
           EmployeeName: filterParams.EmployeeName?.trim() || undefined,
+          IsCheckPermission:false
         }
 
         const response = await employeeMasterService.apiCallPullEmployeeMaster(params);

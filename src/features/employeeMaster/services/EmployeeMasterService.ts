@@ -7,7 +7,9 @@ import type {
 
     LocationResponse,
     EmployeeMPINRequestResponse,
-    SetEmployeeMPINRequest
+    SetEmployeeMPINRequest,
+    UpdateEmployeeMasterRequest,
+    EmployeeMasterSaveResponse
 } from '@/features/employeeMaster/models/EmployeeMasterModel';
 
 import * as E from 'fp-ts/Either';
@@ -41,6 +43,18 @@ export const employeeMasterService = {
         try {
 
             return E.right(await employeeMasterDatasource.addUpdateEmployeeMaster(data));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallUpdateEmployeeMaster: async (data: UpdateEmployeeMasterRequest): Promise<E.Either<Failure,EmployeeMasterSaveResponse>> => {
+        try {
+
+            return E.right(await employeeMasterDatasource.updateEmployeeMaster(data));
 
         } catch (error: any) {
 

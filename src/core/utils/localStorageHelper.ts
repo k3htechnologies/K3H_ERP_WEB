@@ -1015,155 +1015,178 @@ export const LocalStorageHelper = {
   },
   //#endregion
 
-    //#region STORE CALLING DATA COLUMNS
-    storeCallingDataTableColumns: (columns: string): void => {
-        try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS, columns);
-        } catch (error) {
-            console.error('Error Calling Data Columns Details:', error)
-        }
-    },
-    //#endregion
-    //#region GET CALLING DATA COLUMNS
-    getCallingDataTableColumns: (): string | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS)
-        if (stored) {
-            try {
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
-            } catch (error) {
-                console.error('Error reading Calling Data Columns Details:', error)
-                return null
-            }
-        }
+  //#region STORE CALLING DATA COLUMNS
+  storeCallingDataTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Calling Data Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET CALLING DATA COLUMNS
+  getCallingDataTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Calling Data Columns Details:', error)
         return null
-    },
-    //#endregion
-    //#region STORE CALL LOG COLUMNS
-    storeCallLogTableColumns: (columns: string): void => {
-        try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS, columns);
-        } catch (error) {
-            console.error('Error Call Log Columns Details:', error)
-        }
-    },
-    //#endregion
-    //#region GET CALL LOG COLUMNS
-    getCallLogTableColumns: (): string | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS)
-        if (stored) {
-            try {
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
-            } catch (error) {
-                console.error('Error reading Call Log Columns Details:', error)
-                return null
-            }
-        }
+      }
+    }
+    return null
+  },
+  //#endregion
+  //#region STORE CALL LOG COLUMNS
+  storeCallLogTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Call Log Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET CALL LOG COLUMNS
+  getCallLogTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Call Log Columns Details:', error)
         return null
-    },
-    //#endregion
-    //#region STORE OTHER CHARGES COLUMNS
-    storeOtherChargesTableColumns: (columns: string): void => {
-        try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS, columns);
-        } catch (error) {
-            console.error('Error Other Charges Columns Details:', error)
-        }
-    },
-    //#endregion
-    //#region GET OTHER CHARGES COLUMNS
-    getOtherChargesTableColumns: (): string | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS)
-        if (stored) {
-            try {
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS);
-            } catch (error) {
-                console.error('Error reading Other Charges Columns Details:', error)
-                return null
-            }
-        }
+      }
+    }
+    return null
+  },
+  //#endregion
+  //#region STORE OTHER CHARGES COLUMNS
+  storeOtherChargesTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Other Charges Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET OTHER CHARGES COLUMNS
+  getOtherChargesTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.OTHER_CHARGES_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Other Charges Columns Details:', error)
         return null
-    },
-    //#endregion
-    //#region STORE BOOKING COLUMNS
-    storeBookingTableColumns: (columns: string): void => {
-        try {
-            localStorage.setItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS, columns);
-        } catch (error) {
-            console.error('Error BOOKING Columns Details:', error)
-        }
-    },
-    //#endregion
-    //#region GET BOOKING COLUMNS
-    getBookingTableColumns: (): string | null => {
-        const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS)
-        if (stored) {
-            try {
-                return localStorage.getItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
-            } catch (error) {
-                console.error('Error reading Booking Columns Details:', error)
-                return null
-            }
-        }
+      }
+    }
+    return null
+  },
+  //#endregion
+  //#region STORE BOOKING COLUMNS
+  storeBookingTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error BOOKING Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET BOOKING COLUMNS
+  getBookingTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Booking Columns Details:', error)
         return null
-    },
-    //#endregion
-    //#region CLEAR LOCAL STORAGE 
-    clearLocalStorageData: (): void => {
-        try {
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE)
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN)
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.LAST_VISITED_PAGE);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.BRANCH_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.BRANCH_ASSOCIATIONS_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.ASSET_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.ASSET_MAPPING_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.DEDUCTION_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.EARNING_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.VENDOR_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.BANK_LIST_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.HOLIDAY_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_TYPE_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.COMP_OFF_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.SHIFT_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.SHIFT_MAPPING_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.TNC_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.SUB_MATERIAL_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.UOM_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
-            localStorage.removeItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
-             localStorage.removeItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
+      }
+    }
+    return null
+  },
+  //#endregion
+  //#region STORE BROKERAGE BOOKING COLUMNS
+  storeBrokerageBookingTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Brokerage Booking Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET BROKERAGE BOOKING COLUMNS
+  getBrokerageBookingTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Brokerage Booking Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+  //#endregion
+  //#region CLEAR LOCAL STORAGE 
+  clearLocalStorageData: (): void => {
+    try {
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE)
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN)
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LAST_VISITED_PAGE);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.BRANCH_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.BRANCH_ASSOCIATIONS_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ASSET_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ASSET_MAPPING_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.DEDUCTION_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.EARNING_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.VENDOR_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.BANK_LIST_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.HOLIDAY_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_TYPE_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.COMP_OFF_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.SHIFT_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.SHIFT_MAPPING_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TNC_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.SUB_MATERIAL_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.UOM_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
 
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.VENDOR);
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_MASTER);
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.ASSET_MASTER);
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.ASSET_MAPPING_MASTER);
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.DEDUCTION_MASTER);
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.SHIFT_MASTER);
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.WEEK_OFF_MASTER);
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.LITIGATION);
-            localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.CHANNEL_PARTNER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.VENDOR);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PROJECT_MASTER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.ASSET_MASTER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.ASSET_MAPPING_MASTER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.DEDUCTION_MASTER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.SHIFT_MASTER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.WEEK_OFF_MASTER);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.LITIGATION);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.CHANNEL_PARTNER);
 
 
-        } catch (error) {
-            console.error('ERROR : CLEARING LOCAL STORAGE:', error)
-        }
-    },
-    //#endregion
+    } catch (error) {
+      console.error('ERROR : CLEARING LOCAL STORAGE:', error)
+    }
+  },
+  //#endregion
 }

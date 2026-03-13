@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import useToast from '@/core/hooks/useToast';
 import { runApiWithLoader } from '@/core/utils/apiLoaderHelper';
-import type { EmployeeMasterData, EmployeeReportingCycle, FilterWithPaginationEmployeeMasterRequest } from '@/features/employeeMaster/models/EmployeeMasterModel';
+import type { EmployeeMasterData, EmployeeReportingCycle, FilterWithPaginationEmployeeMasterRequest, UpdateEmployeeMasterRequest } from '@/features/employeeMaster/models/EmployeeMasterModel';
 import * as E from 'fp-ts/Either';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
 import { Loader } from '@/core/utils/loader';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { useNavigate } from 'react-router-dom';
 import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
@@ -39,6 +39,7 @@ import type { BranchAssociationsMasterData, FilterWithPaginationBranchAssociatio
 import { branchAssociationsService } from '@/features/branchAssociationsMaster/services/BranchAssociationsMasterService';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
+import DatePickerInput from '@/ui/components/forms/Datepicker';
 
 export const Profile: React.FC = () => {
 
@@ -66,8 +67,10 @@ export const Profile: React.FC = () => {
     // Modal states
     const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
     const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(false);
+    const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
     const [isEditEducationMode, setIsEditEducationMode] = useState(false);
     const [isEditExperienceMode, setIsEditExperienceMode] = useState(false);
+    const [isEditEmployeeMode, setIsEditEmployeeMode] = useState(false);
 
     // Delete confirmation states
     const [isDeleteEducationDialogOpen, setIsDeleteEducationDialogOpen] = useState(false);
@@ -103,6 +106,36 @@ export const Profile: React.FC = () => {
         CompanyName?: string;
         Role?: string;
         Tenure?: string;
+    }>({});
+
+    // Employee form state
+    const [employeeFormData, setEmployeeFormData] = useState<UpdateEmployeeMasterRequest>({
+        EmployeeId: 0,
+        FirstName: '',
+        MiddleName: '',
+        LastName: '',
+        Gender: '',
+        MaritalStatus: '',
+        BloodGroup: '',
+        DateOfBirth: '',
+        EmailId: '',
+        PersonalMobileNumber: '',
+        CommunicationAddress: '',
+        UniqueKey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        PermanentAddress: '',
+    });
+    const [employeeFormErrors, setEmployeeFormErrors] = useState<{
+        FFirstName?: string;
+        LastName?: string;
+        MiddleName?: string
+        BloodGroup?: string;
+        Gender?: string;
+        MaritalStatus?: string;
+        DateOfBirth?: string;
+        EmailId?: string;
+        PersonalMobileNumber?: string;
+        PermanentAddress?: string;
+        CommunicationAddress?: string
     }>({});
 
     // TOAST
@@ -827,6 +860,155 @@ export const Profile: React.FC = () => {
 
     //#endregion
 
+    //#region EMPLOYEE MODAL HANDLERS
+    const handleOpenEmployeeModal = (item?: EmployeeMasterData) => {
+        if (item) {
+            // Edit mode
+            setEmployeeFormData({
+                EmployeeId: item.EmployeeId,
+                UniqueKey: item.UniqueKey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                FirstName: item.FirstName || '',
+                LastName: item.LastName || '',
+                MiddleName: item.MiddleName || '',
+                BloodGroup: item.BloodGroup || '',
+                Gender: item.Gender || '',
+                MaritalStatus: item.MaritalStatus || '',
+                DateOfBirth: item.DateOfBirth || '',
+                EmailId: item.EmailId || '',
+                PersonalMobileNumber: item.PersonalMobileNumber || '',
+                CommunicationAddress: item.CommunicationAddress || '',
+                PermanentAddress: item.PermanentAddress || '',
+            });
+            setIsEditEmployeeMode(true);
+        }
+        setEmployeeFormErrors({});
+        setIsEmployeeModalOpen(true);
+    };
+
+    const handleCloseEmployeeModal = () => {
+        setIsEmployeeModalOpen(false);
+        setIsEditEmployeeMode(false);
+        setEmployeeFormData({
+            EmployeeId: 0,
+            FirstName: '',
+            MiddleName: '',
+            LastName: '',
+            BloodGroup: '',
+            Gender: '',
+            MaritalStatus: '',
+            DateOfBirth: '',
+            EmailId: '',
+            PersonalMobileNumber: '',
+            CommunicationAddress: '',
+            PermanentAddress: '',
+            UniqueKey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        });
+        setEmployeeFormErrors({});
+    };
+
+    const validateEmployeeForm = (): boolean => {
+        const errors: {
+            FirstName?: string;
+            LastName?: string;
+            BloodGroup?: string;
+            MiddleName?: string;
+            MaritalStatus?: string;
+            DateOfBirth?: string;
+            EmailId?: string;
+            PersonalMobileNumber?: string;
+            CommunicationAddress?: string;
+            PermanentAddress?: string;
+            Gender?: string
+        } = {};
+
+        if (!employeeFormData.FirstName?.trim()) {
+            errors.FirstName = 'First Name is required';
+        }
+        if (!employeeFormData.LastName?.trim()) {
+            errors.LastName = 'Last Name is required';
+        }
+        if (!employeeFormData.MiddleName?.trim()) {
+            errors.MiddleName = 'Middle Name is required';
+        }
+        if (!employeeFormData.MaritalStatus?.trim()) {
+            errors.MaritalStatus = 'Marital Status is required';
+        }
+        if (!employeeFormData.DateOfBirth) {
+            errors.DateOfBirth = 'Date Of Birth is required';
+        }
+        if (!employeeFormData.BloodGroup) {
+            errors.BloodGroup = 'Blood Group is required';
+        }
+        if (!employeeFormData.EmailId?.trim()) {
+            errors.EmailId = 'Email Id is required';
+        }
+        if (!employeeFormData.PersonalMobileNumber?.trim()) {
+            errors.PersonalMobileNumber = 'Personal Mobile Number is required';
+        }
+        if (!employeeFormData.CommunicationAddress?.trim()) {
+            errors.CommunicationAddress = 'Communication Address is required';
+        }
+        if (!employeeFormData.PermanentAddress?.trim()) {
+            errors.PermanentAddress = 'Permanent Address is required';
+        }
+        if (!employeeFormData.Gender?.trim()) {
+            errors.Gender = 'Gender is required';
+        }
+        setEmployeeFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleEmployeeFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!validateEmployeeForm()) {
+            return;
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: UpdateEmployeeMasterRequest = {
+                    EmployeeId: employeeFormData.EmployeeId,
+                    UniqueKey: employeeFormData.UniqueKey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                    FirstName: employeeFormData.FirstName?.trim() || '',
+                    MiddleName: employeeFormData.MiddleName?.trim() || '',
+                    LastName: employeeFormData.LastName?.trim() || '',
+                    MaritalStatus: employeeFormData.MaritalStatus?.trim() || '',
+                    DateOfBirth: employeeFormData.DateOfBirth || '',
+                    EmailId: employeeFormData.EmailId?.trim() || '',
+                    PersonalMobileNumber: employeeFormData.PersonalMobileNumber?.trim() || '',
+                    CommunicationAddress: employeeFormData.CommunicationAddress?.trim() || '',
+                    PermanentAddress: employeeFormData.PermanentAddress?.trim() || '',
+                    BloodGroup: employeeFormData.BloodGroup?.trim() || '',
+                    Gender: employeeFormData.Gender?.trim() || '',
+                };
+
+                const response = await employeeMasterService.apiCallUpdateEmployeeMaster(params);
+
+                if (E.isRight(response)) {
+                    addToast({
+                        type: 'success', title: response.right.SuccessMessage[0]
+                    });
+                    handleCloseEmployeeModal();
+                    loadEmployee();
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Update Employee Details'
+        );
+    };
+
+    //#endregion
 
     const employeeData = employeeMasterList.length > 0 ? employeeMasterList[0] : null
 
@@ -894,9 +1076,20 @@ export const Profile: React.FC = () => {
 
                                 {/* ================== BASIC DETAILS ================== */}
                                 <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Basic Details
-                                    </h4>
+                                    <div className='flex justify-between'>
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                            Basic Details
+                                        </h4>
+
+                                        <Button
+                                            color="transparent"
+                                            size="sm"
+                                            style={{ color: "blue", padding: "0px 8px" }}
+                                            onClick={() => handleOpenEmployeeModal(employeeData)}
+                                            leftIcon={<Edit className="h-4 w-4" />}
+                                        />
+                                    </div>
+
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                         <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
@@ -1795,6 +1988,115 @@ export const Profile: React.FC = () => {
                         error={experienceFormErrors.Tenure}
                         placeholder="Enter Tenure"
                     />
+                </div>
+            </Modal>
+
+            {/* Employee Details Modal */}
+            <Modal
+                isOpen={isEmployeeModalOpen}
+                onClose={handleCloseEmployeeModal}
+                title={isEditEmployeeMode ? "Update Basic Details" : "Add Basic Details"}
+                onSubmit={handleEmployeeFormSubmit}
+                saveText={isEditEmployeeMode ? "Update" : "Add"}
+                cancelText="Cancel"
+                onCancel={handleCloseEmployeeModal}
+                loading={isLoading}
+                size="xl"
+            >
+                <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        <Input
+                            label="First Name"
+                            value={employeeFormData.FirstName || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, FirstName: e.target.value })}
+                            required
+                            placeholder="Enter First Name"
+                        />
+                        <Input
+                            label="Middle Name"
+                            value={employeeFormData.MiddleName || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, MiddleName: e.target.value })}
+                            required
+                            error={employeeFormErrors.MiddleName || ''}
+                            placeholder="Enter Middle Name"
+                        />
+                        <Input
+                            label="Last Name"
+                            value={employeeFormData.LastName || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, LastName: e.target.value })}
+                            required
+                            error={employeeFormErrors.LastName || ''}
+                            placeholder="Enter Last Name"
+                        />
+                        <Input
+                            label="Gender"
+                            value={employeeFormData.Gender || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, Gender: e.target.value })}
+                            required
+                            error={employeeFormErrors.Gender}
+                            placeholder="Enter Gender"
+                        />
+                        <Input
+                            label="Marital Status"
+                            value={employeeFormData.MaritalStatus || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, MaritalStatus: e.target.value })}
+                            required
+                            error={employeeFormErrors.MaritalStatus}
+                            placeholder="Enter Marital Status"
+                        />
+                        <Input
+                            label="Blood Group"
+                            value={employeeFormData.BloodGroup || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, BloodGroup: e.target.value })}
+                            required
+                            error={employeeFormErrors.BloodGroup}
+                            placeholder="Enter Blood Group"
+                        />
+                        <DatePickerInput
+                            label="DOB"
+                            value={employeeFormData.DateOfBirth ? formatDate_dd_mm_yyyy(employeeFormData.DateOfBirth) : ''}
+                            onChange={(val) => setEmployeeFormData(prev => ({ ...prev, DateOfBirth: val ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) ?? '' : '' }))}
+                            required
+                            error={employeeFormErrors.DateOfBirth}
+                        />
+                        <Input
+                            label="Email Id"
+                            value={employeeFormData.EmailId || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, EmailId: e.target.value })}
+                            required
+                            error={employeeFormErrors.EmailId || ''}
+                            placeholder="Enter Email Id"
+                        />
+                        <Input
+                            label="Personal Mobile No"
+                            value={employeeFormData.PersonalMobileNumber || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, PersonalMobileNumber: e.target.value })}
+                            required
+                            error={employeeFormErrors.PersonalMobileNumber}
+                            placeholder="Enter Personal Mobile Number"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-2">
+
+                        <Input
+                            label="Communication Address"
+                            value={employeeFormData.CommunicationAddress || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, CommunicationAddress: e.target.value })}
+                            required
+                            error={employeeFormErrors.CommunicationAddress}
+                            placeholder="Enter Communication Address"
+                        />
+                        <Input
+                            label="Permanent Address"
+                            value={employeeFormData.PermanentAddress || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, PermanentAddress: e.target.value })}
+                            required
+                            error={employeeFormErrors.PermanentAddress}
+                            placeholder="Enter Permanent Address"
+                        />
+                    </div>
                 </div>
             </Modal>
 

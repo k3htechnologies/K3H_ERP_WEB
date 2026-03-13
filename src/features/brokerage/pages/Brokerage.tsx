@@ -18,7 +18,9 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useNavigate } from "react-router-dom";
 import type { BrokerageBookingData, FilterWithPaginationBrokerageBookingRequest } from "../models/BrokerageInvoiceModel";
 import { brokerageInvoiceService } from "../services/BrokerageInvoiceService";
-import { Button } from "@/ui/components/forms";
+import { Button, Input } from "@/ui/components/forms";
+import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 
 export const Brokerage: React.FC = () => {
 
@@ -55,6 +57,9 @@ export const Brokerage: React.FC = () => {
     // TOAST
     const { addToast } = useToast();
 
+    //CUSTOMIZE COLUMN MODAL
+    const [isShowCustomizeBrokerageBookingColumnsModal, setIsShowCustomizeBrokerageBookingColumnsModal] = useState(false);
+
     //#region DATA LOADING | FETCH |  LOAD | SEARCH
     const loadBrokerageBooking = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
 
@@ -67,6 +72,7 @@ export const Brokerage: React.FC = () => {
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     ChannelPartnerName: searchText?.trim() ?? undefined,
+                    ApplicantMobileNumber: filterParams.ApplicantMobileNumber?.trim() || undefined,
                     FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
                     ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
                     SortBy: getSortByParam(sort ?? null, BrokerageBookingColumns),
@@ -135,7 +141,7 @@ export const Brokerage: React.FC = () => {
     }, [searchTerm]);
     //#endregion
 
-    //#region NAVIGATE TO VIEW BROKERAGE BOOKING
+    //#region NAVIGATE TO VIEW BROKERAGE INVOICE
     const handleViewBrokerageBookingDetails = useCallback((row: BrokerageBookingData) => {
         navigate(`/brokerageInvoice/view/${row.BookingId}`);
 
@@ -193,6 +199,14 @@ export const Brokerage: React.FC = () => {
             )
         },
         {
+            key: 'ApplicantName',
+            label: 'Applicant Name',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
             key: 'ApplicantMobileNumber',
             label: 'Contact No.',
             width: '25',
@@ -201,30 +215,52 @@ export const Brokerage: React.FC = () => {
             render: value => value || '-'
         },
         {
-            key: 'Flat',
-            label: 'Flat No',
+            key: 'BuildingNumber',
+            label: 'Building',
             width: '25',
             sortable: false,
             align: 'center',
-            render: (value, row) => row ? (
-                <div style={{ textAlign: 'center' }}>
-                    <div >{value || '-'}</div>
-                    <div>{row.ProjectName}</div>
-                </div>
-            ) : value || '-'
+            render: value => value || '-'
         },
         {
-            key: 'Category',
-            label: 'Category',
+            key: 'Wing',
+            label: 'Wing',
             width: '25',
             sortable: false,
             align: 'center',
-            render: (value, row) => row ? (
-                <div style={{ textAlign: 'center' }}>
-                    <div >{row.FlatType}</div>
-                    <div>{row.FlatConfiguration} - {row.RERACarpetAreaSqFt} sq.ft</div>
-                </div>
-            ) : value || '-'
+            render: value => value || '-'
+        },
+        {
+            key: 'Flat',
+            label: 'Flat',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'FlatType',
+            label: 'Flat Type',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'FlatConfiguration',
+            label: 'Flat Configuration',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'RERACarpetAreaSqFt',
+            label: 'RERA Carpet Area SqFt',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: (value) => value ? `${value} Sq ft` : '-'
         },
         {
             key: 'AgreementValue',
@@ -240,7 +276,15 @@ export const Brokerage: React.FC = () => {
             width: '25',
             sortable: false,
             align: 'center',
-            render: (value, row) => value ? `₹ ${value.toFixed(2)} - ${row.BrokeragePercentage}%` : '-'
+            render: (value) => value ? `₹ ${value.toFixed(2)}` : '-'
+        },
+        {
+            key: 'BrokeragePercentage',
+            label: 'Brokerage Percentage',
+            width: '25',
+            sortable: false,
+            align: 'center',
+            render: (value) => value ? `${value}%` : '-'
         },
         {
             key: 'PaidBrokerageAmount',
@@ -248,7 +292,7 @@ export const Brokerage: React.FC = () => {
             width: '25',
             sortable: false,
             align: 'center',
-            render: value => value ? `₹ ${value.toFixed(2)}` : '0.00'
+            render: value => value ? `₹ ${value.toFixed(2)}` : '-'
         },
         {
             key: 'OutstandingAmount',
@@ -290,6 +334,38 @@ export const Brokerage: React.FC = () => {
         },
     ], [handleViewBrokerageBookingDetails]);
     //#endregion
+
+    //#region BROKERAGE BOOKING COLUMN CUSTOMIZATION
+    const requiredBrokerageBookingColumnKeys: string[] = ['ChannelPartnerName', 'Actions'];
+
+    const allBrokerageBookingColumnKeys: string[] = BrokerageBookingColumns.map(c => c.key);
+
+    const [selectedBrokerageBookingColumnKeys, setSelectedBrokerageBookingColumnKeys] = useState<string[]>(() => {
+        try {
+
+            const saved = LocalStorageHelper.getBrokerageBookingTableColumns?.();
+
+            if (saved) {
+
+                const parsed = JSON.parse(saved) as string[]
+
+                const withRequired = Array.from(new Set([
+                    ...parsed, ...requiredBrokerageBookingColumnKeys]));
+
+                return withRequired.filter(k => allBrokerageBookingColumnKeys.includes(k));
+            }
+        } catch { }
+        return allBrokerageBookingColumnKeys;
+    });
+
+    useEffect(() => {
+        setSelectedBrokerageBookingColumnKeys(prev => Array.from(new Set([...prev, ...requiredBrokerageBookingColumnKeys])).filter(k => allBrokerageBookingColumnKeys.includes(k)));
+    }, [BrokerageBookingColumns.length])
+
+    const visibleBrokerageBookingColumns = useMemo(
+        () => BrokerageBookingColumns.filter(col => selectedBrokerageBookingColumnKeys.includes(col.key)),
+        [BrokerageBookingColumns, selectedBrokerageBookingColumnKeys]
+    );
 
     //#region FILTER MODAL HELPERS
     const applyFilters = () => {
@@ -350,6 +426,11 @@ export const Brokerage: React.FC = () => {
                     setShowFilterPopup(true);
                 }}
 
+                isShowCustomizeButton
+                onCustomize={() => {
+                    setIsShowCustomizeBrokerageBookingColumnsModal(true);
+                }}
+
                 // EXPORT
                 isShowExportButton={canExport && BrokerageBookingForTable.length > 0}
                 onExportExcel={handleExportBrokerageBookingExcel}
@@ -361,7 +442,7 @@ export const Brokerage: React.FC = () => {
 
             <DataTable
                 data={BrokerageBookingForTable}
-                columns={BrokerageBookingColumns}
+                columns={visibleBrokerageBookingColumns}
                 pagination={BrokerageBookingPaginationInfo}
                 emptyMessage="No Brokerage Booking Data Found"
                 fixedHeight={true}
@@ -369,6 +450,29 @@ export const Brokerage: React.FC = () => {
                 className="flex-1"
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}
+            />
+
+            {/* BROKERAGE BOOKING CUSTOMIZE COLUMNS MODAL */}
+
+            <CustomizeColumnsModal
+                isOpen={isShowCustomizeBrokerageBookingColumnsModal}
+                onClose={() => setIsShowCustomizeBrokerageBookingColumnsModal(false)}
+                onApply={keys => {
+                    const withRequired = Array.from(
+                        new Set([...keys, ...requiredBrokerageBookingColumnKeys])
+                    );
+                    setSelectedBrokerageBookingColumnKeys(withRequired);
+
+                    try {
+                        LocalStorageHelper.storeBrokerageBookingTableColumns?.(
+                            JSON.stringify(withRequired)
+                        );
+                    } catch { }
+                }}
+                columns={BrokerageBookingColumns}
+                selectedKeys={selectedBrokerageBookingColumnKeys}
+                requiredKeys={requiredBrokerageBookingColumnKeys}
+                title="Customize Table Columns"
             />
 
             {/* FILTER MODAL FOR BROKERAGE BOOKING */}
@@ -404,9 +508,17 @@ export const Brokerage: React.FC = () => {
                             onChange={(value) => handleFilterChange('ToDate', value || '')}
                         />
                     </div>
+
+                    <div>
+                        <Input type="text"
+                            label='Mobile Number'
+                            value={tempFilters?.ApplicantMobileNumber ?? ''}
+                            onChange={e => handleFilterChange('ApplicantMobileNumber', e.target.value)}
+                            placeholder="Enter Mobile Number" />
+                    </div>
                 </div>
-            </Modal>
-        </div>
+            </Modal >
+        </div >
     );
 }
 export default Brokerage;

@@ -377,11 +377,6 @@ export const getPageInfo = (path: string) => {
                 title: "Call Tracker",
                 description: "Track, manage, and follow up every sales call with ease.",
             }
-        case 'otherCharges':
-            return {
-                title: "Other Charges",
-                description: "Manage and track additional charges for projects",
-            }
             {/* CHANNEL PARTNER */ }
 
         case 'channelPartner':
@@ -445,26 +440,6 @@ export const getPageInfo = (path: string) => {
             return {
                 title: "Incentive Report",
                 description: "Centralized enquiry management for faster response",
-            }
-
-
-        // MARKETING
-        case 'content':
-            return {
-                title: "Content",
-                description: "Profile",
-            }
-        // PROJECT
-        case 'approvedBank':
-            return {
-                title: "Approved Bank",
-                description: "Profile",
-            }
-        // LITIGATION
-        case 'litigation':
-            return {
-                title: "Litigation",
-                description: "Track & manage project related legal cases",
             }
 
         default:

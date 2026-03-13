@@ -81,6 +81,8 @@ export const LOCAL_STORAGE_KEYS = {
     INCENTIVE_REPORT_COLUMNS: 'incentive_report.selectedColumns',
     PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS: 'paymentScheduleSchemeMaster.selectedColumns',
 
+    BROKERAGE_BOOKING_SELECTED_COLUMNS:'brokerage.selectedColumns'
+    
 } as const
 
 export const LOCAL_STORAGE_FOR_STATE_KEYS = {

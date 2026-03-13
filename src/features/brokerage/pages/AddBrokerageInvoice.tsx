@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import useToast from "@/core/hooks/useToast";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -53,10 +53,12 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     // NAVIGATE
     const navigate = useNavigate();
 
-    // GET VALUE FROM URL BROKERAGE INVOICE  ID
-    const { BookingId } = useParams<{ BookingId?: string }>();
-
+    // GET BROKERAGE INVOICE ID
+    const { BookingId, BrokerageInvoiceId } = useParams<{ BookingId?: string, BrokerageInvoiceId?: string }>();
     const currentBookingId = BookingId ? Number(BookingId) : 0;
+    const brokerageInvoiceId = BrokerageInvoiceId ? Number(BrokerageInvoiceId) : 0;
+
+    const isAddMode = brokerageInvoiceId === 0;
 
     // ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -69,9 +71,6 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/brokerage');
     //#endregion
-
-    // const location = useLocation();
-    // const brokerageAmount = location.state?.brokerageAmount || 0;
 
     //#region HANDLE FIELD CHANGE EVENT
     const handleFieldChange = (field: keyof AddUpdateBrokerageInvoiceRequest, value: any) => {
@@ -98,15 +97,16 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
             BookingId: currentBookingId,
             ProjectId: Number(projectId)
         }));
-
-    }, [currentBookingId, projectId]);
+        if (!isAddMode) {
+            fetchBrokerageInvoiceDetails();
+        }
+    }, [currentBookingId, projectId,brokerageInvoiceId]);
     //#endregion
 
     //#region FETCH BROKERAGE INVOICE DETAILS
     const fetchBrokerageInvoiceDetails = async () => {
 
         await runApiWithLoader(
-
             setIsLoading,
             setLoadingMessage,
             async () => {
@@ -116,6 +116,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                     PageSize: 20,
                     BookingId: Number(currentBookingId),
                     ProjectId: Number(projectId),
+                    BrokerageInvoiceId: Number(BrokerageInvoiceId)
                 };
 
                 const response = await brokerageInvoiceService.apiCallPullBrokerageInvoice(params);
@@ -130,13 +131,24 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                             BrokerageInvoiceId: e.BrokerageInvoiceId ?? prev.BrokerageInvoiceId,
                             Uniquekey: e.Uniquekey ?? prev.Uniquekey,
                             ProjectId: e.ProjectId ?? prev.ProjectId,
+                            BankListMasterId: e.BankListMasterId ?? prev.BankListMasterId,
+                            InvoiceNumber: e.InvoiceNumber ?? prev.InvoiceNumber,
+                            InvoiceDate: e.InvoiceDate ?? prev.InvoiceDate,
+                            AccountName: e.AccountName ?? prev.AccountName,
+                            BankName: e.BankName ?? prev.BankName,
+                            AccountNumber: e.AccountNumber ?? prev.AccountNumber,
+                            IFSCCode: e.IFSCCode ?? prev.IFSCCode,
+                            InvoiceAmount: e.InvoiceAmount ?? prev.InvoiceAmount,
+                            DueDate: e.DueDate ?? prev.DueDate,
                             Remark: e.Remark ?? prev.Remark,
                         }));
                     }
                     setDropdownLabels({
-                        bankName: formData.BankName || "",
+                        bankName: e.BankName || "",
                     });
                     setUploadInvoiceURL('')
+                    setUploadInvoiceURLFiles([])
+                    SetRemoveUploadInvoiceURLUrls([])
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -198,7 +210,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         } else if (formData.InvoiceDate != null && formData.InvoiceDate !== "" && !isToDateGreaterOrEqualFromDate(formData.InvoiceDate, formData.DueDate)) {
             newErrors.DueDate = "Due Date must be greater to Invoice Date";
         }
-       
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -213,15 +225,12 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         fd.append("Uniquekey", formData.Uniquekey ?? "");
         fd.append("ProjectId", projectId!.toString());
         fd.append("BookingId", currentBookingId.toString());
-
         fd.append("InvoiceNumber", formData.InvoiceNumber.toString());
         fd.append("InvoiceDate", formData.InvoiceDate ?? "");
         fd.append("BankListMasterId", formData.BankListMasterId.toString());
-
         fd.append("AccountName", formData.AccountName ?? "");
         fd.append("AccountNumber", formData.AccountNumber.toString());
         fd.append("IFSCCode", formData.IFSCCode ?? "");
-
         fd.append("InvoiceAmount", formData.InvoiceAmount.toString());
         fd.append("DueDate", formData.DueDate ?? "");
         fd.append("Remark", formData.Remark ?? "");
@@ -263,7 +272,6 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-
                     navigate(`/brokerageInvoice/view/${currentBookingId}`);
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -275,7 +283,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Add Brokerage Invoice'
+            isAddMode ? 'Add Brokerage Invoice' : 'Update Brokerage Invoice'
         );
     };
     //#endregion
@@ -307,7 +315,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     value={formData.InvoiceNumber ?? ""}
                                     onChange={(e) => handleFieldChange("InvoiceNumber", e.target.value)}
                                     placeholder="Enter Invoice Number"
-                                    maxLength={250}
+                                    maxLength={15}
                                     error={errors.InvoiceNumber}
                                 />
                             </div>
@@ -324,6 +332,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                 <MultiFilePicker
                                     label="Upload Invoice"
                                     required
+                                    placeholder='Select Files'
                                     value={uploadInvoiceURLFiles}
                                     onChange={setUploadInvoiceURLFiles}
                                     availableFilesURL={uploadInvoiceURL ?? ""}
@@ -357,6 +366,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     error={errors.BankListMasterId}
                                 />
                             </div>
+
                             <div>
                                 <Input
                                     type="text"
@@ -386,6 +396,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     error={errors.AccountNumber}
                                     placeholder="Enter Account Number"
                                     required
+                                    maxLength={15}
                                 />
                             </div>
 

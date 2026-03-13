@@ -6,7 +6,9 @@ import type {
     EmployeeMasterListResponse,
     LocationResponse,
     SetEmployeeMPINRequest,
-    EmployeeMPINRequestResponse
+    EmployeeMPINRequestResponse,
+    UpdateEmployeeMasterRequest,
+    EmployeeMasterSaveResponse
 } from '@/features/employeeMaster/models/EmployeeMasterModel'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 
@@ -14,6 +16,7 @@ export abstract class EmployeeMasterDatasource {
 
     abstract pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
     abstract addUpdateEmployeeMaster(params: AddUpdateEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
+    abstract updateEmployeeMaster(params: UpdateEmployeeMasterRequest): Promise<EmployeeMasterSaveResponse>;
 }
 
 export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
@@ -142,15 +145,32 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
         }
     }
 
-    async setEmployeeMPIN(params: SetEmployeeMPINRequest): Promise<EmployeeMPINRequestResponse> {
+    async updateEmployeeMaster(params: UpdateEmployeeMasterRequest): Promise<EmployeeMasterSaveResponse> {
 
+        try {
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                EmployeeMasterApi.UPDATE,
+                params
+            )
+            return response
+        } catch (error) {
+
+            console.error('ERROR: UPDATE Employee Master:', error)
+
+            if (error === TokenExpiredException) {
+                await this.updateEmployeeMaster(params);
+            }
+            throw error
+        }
+    }
+
+    async setEmployeeMPIN(params: SetEmployeeMPINRequest): Promise<EmployeeMPINRequestResponse> {
         try {
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 EmployeeMasterApi.SET_EMPLOYEE_MPIN,
                 params
             )
-
             return response
         } catch (error) {
 
@@ -159,10 +179,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
             if (error === TokenExpiredException) {
                 await this.setEmployeeMPIN(params);
             }
-
-
             throw error
         }
     }
-
 }

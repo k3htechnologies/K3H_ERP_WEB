@@ -534,7 +534,7 @@ const ViewLitigation: React.FC = () => {
     if (!row?.LitigationId) return;
     navigate(`/litigation/add/${row.LitigationId}`);
   };
-  //#endregion
+  // #endregion
 
   //#region BACK PROJECT PAGE
   const handleBackToListLitigation = () => {

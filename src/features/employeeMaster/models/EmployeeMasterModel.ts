@@ -136,6 +136,22 @@ export interface AddUpdateEmployeeMasterRequest {
   CityMasterId: number | null;
 }
 
+export interface UpdateEmployeeMasterRequest {
+  EmployeeId: number;
+  UniqueKey: string | null;
+  FirstName: string;
+  MiddleName: string;
+  LastName: string;
+  Gender: string
+  MaritalStatus:string
+  DateOfBirth:string
+  EmailId:string
+  PersonalMobileNumber:string
+  CommunicationAddress:string
+  PermanentAddress:string
+  BloodGroup:string
+}
+
 export interface FilterWithPaginationLocationRequest {
   countryId?: number;
   StateName: string;

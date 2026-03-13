@@ -1,5 +1,4 @@
 export const BrokerageInvoiceApi = {
-
     PULL_BOOKING: '/Brokerage/PullBrokerageBooking',
 
     PULL: '/Brokerage/PullBrokerageInvoice',

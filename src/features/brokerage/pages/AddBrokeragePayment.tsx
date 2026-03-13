@@ -48,7 +48,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     // NAVIGATE
     const navigate = useNavigate();
 
-    // GET VALUE FROM URL PAID BROKERAGE BOOKING ID
+    // GET BROKERAGE INVOICE ID
     const { BookingId, BrokerageInvoiceId } = useParams<{
         BookingId?: string;
         BrokerageInvoiceId?: string;
@@ -141,6 +141,8 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                         paymentType: formData.PaymentType || "",
                     });
                     setTransactionReceiptURL('')
+                    setTransactionReceiptURLFiles([])
+                    SetRemoveTransactionReceiptURLUrls([])
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -151,13 +153,13 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Loading Brokerage Settlement '
+            'Loading Paid Amount '
         );
     };
     //#endregion
 
     // ============================================================= [VALIDATION FUNCTION] =============================================================================================
-    const validateAddPaidBrokerageBookingForm = (): {
+    const validateAddPaidBrokerageForm = (): {
 
         isValid: boolean
 
@@ -176,7 +178,9 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         if (!formData.TransactionNumber) {
             newErrors.TransactionNumber = 'Transaction Number is required.';
         }
-
+        if ((Number(formData.TDSAmount) || 0) >= (Number(formData.AmountPaid) || 0)) {
+            newErrors.TDSAmount = 'TDS amount cannot be greater than Paid Amount.';
+        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -210,20 +214,17 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     };
     //#endregion
 
-    //#region HANDLE ADD UPDATE PAID BROKERAGE BOOKING
+    //#region HANDLE ADD UPDATE PAID AMOUNT
     const handleAddUpdatePaidBrokerageBooking = async () => {
         setErrors({});
 
-        const validation = validateAddPaidBrokerageBookingForm();
+        const validation = validateAddPaidBrokerageForm();
 
         if (!validation.isValid) {
-
             setErrors(validation.errors);
-
             return;
         }
         await runApiWithLoader(
-
             setIsLoading,
             setLoadingMessage,
 
@@ -267,7 +268,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
 
                 <form onSubmit={handleAddUpdatePaidBrokerageBooking}>
 
-                    {/* Basic Brokerage Settlement Details */}
+                    {/* Paid Amount Details */}
 
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Make Payment</h3>
@@ -328,14 +329,9 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                     maxLength={15}
                                     onChange={(e) => {
                                         const digits = e.target.value.replace(/\D/g, '');
-                                        const amount = digits === '' ? 0 : Number(digits);
-                                        const tds = parseFloat((amount * 0.10).toFixed(2));
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            AmountPaid: amount,
-                                            TDSAmount: tds
-                                        }))
+                                        handleFieldChange("AmountPaid", (digits));
                                     }}
+                                    error={errors.AmountPaid}
                                 />
                             </div>
 
@@ -343,9 +339,13 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                 <Input
                                     label='TDS Amount (₹)'
                                     type="text"
-                                    value={formData.TDSAmount ? Number(formData.TDSAmount).toFixed(2) : '0.00'}
-                                    onChange={(e) => handleFieldChange("TDSAmount", e.target.value)}
-                                    readOnly
+                                    value={formData.TDSAmount ?? ''}
+                                    maxLength={15}
+                                    onChange={(e) => {
+                                        const digits = e.target.value.replace(/\D/g, '');
+                                        handleFieldChange("TDSAmount", (digits));
+                                    }}
+                                    error={errors.TDSAmount}
                                 />
                             </div>
 

@@ -13,12 +13,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Button } from "@/ui/components/forms";
-import { Trash2 } from "lucide-react";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { Edit, Trash2 } from "lucide-react";
 import Tabs from "@/ui/components/Tab/Tab";
 import type { FilterWithPaginationPaidBrokerageBookingRequest, PaidBrokerageBookingData } from "../models/PaidBrokerageBookingModel";
 import { PaidBrokerageBookingService } from "../services/PaidBrokerageBookingService";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 export const ViewBrokerageInvoice: React.FC = () => {
 
@@ -44,12 +44,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
     // PAGINATION
     const { pagination, setPagination } = usePagination(20);
 
-    //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions();
-    //#endregion
-
     const { BookingId, } = useParams<{ BookingId?: string; }>();
-
     const currentBookingId = BookingId ? Number(BookingId) : 0;
 
     //#region TAB ACTIVITY
@@ -70,7 +65,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 10,
                     ProjectId: Number(projectId),
-                    BookingId: currentBookingId
+                    BookingId: currentBookingId,
                 };
 
                 const response = await brokerageInvoiceService.apiCallPullBrokerageInvoice(params);
@@ -91,7 +86,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
     };
     //#endregion
 
-    //#region FETCH PAID BROKERAGE BOOKING LIST
+    //#region FETCH PAID BROKERAGE AMOUNT LIST
     const fetchPaidBrokerageBookingList = async (brokerageInvoiceId: number) => {
         await runApiWithLoader(
             setIsLoading,
@@ -118,7 +113,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            "Loading Brokerage Settlement",
+            "Loading Paid Amount",
         );
     };
     //#endregion
@@ -138,8 +133,8 @@ export const ViewBrokerageInvoice: React.FC = () => {
     };
     //#endregion
 
-    const handleAddBrokerageInvoice = (BookingId: number) => {
-        navigate(`/brokerageInvoice/add/${BookingId}`);
+    const handleAddBrokerageInvoice = (BookingId: number, BrokerageInvoiceId: number) => {
+        navigate(`/brokerageInvoice/add/${BookingId}/${BrokerageInvoiceId}`);
     };
 
     const handleAddPaidBrokerageBooking = (BookingId: number, BrokerageInvoiceId: number) => {
@@ -229,17 +224,18 @@ export const ViewBrokerageInvoice: React.FC = () => {
             />
 
             {activeTab === 'Invoice' && (
-                <div className="flex justify-end">
+                <div className="flex justify-end ">
                     <Button
                         color="blue"
                         size="sm"
-                        onClick={() => handleAddBrokerageInvoice(currentBookingId)}                >
+                        onClick={() => handleAddBrokerageInvoice(currentBookingId, 0)}
+                    >
                         ADD
                     </Button>
                 </div>
             )}
 
-            <div className="pt-2 ">
+            <div className="pt-2">
                 <Tabs
                     tabs={brokerageTabList}
                     defaultActive={activeTab}
@@ -262,19 +258,22 @@ export const ViewBrokerageInvoice: React.FC = () => {
                     {BrokerageInvoiceList.map((data) => (
                         <ExpandableCard
                             key={data.BrokerageInvoiceId}
-                            showline={true}
+                            showline={false}
                             title={
-                                <div className="flex items-center justify-between w-full ">
-                                    <div className="space-y-0 p-2">
-                                        <div className="grid grid-cols-4 gap-6 w-full">
+                                <div className="flex items-center justify-between w-full pt-6">
+                                    <div className="space-y-6 p-2">
+                                        <div className="grid grid-cols-4 gap-x-34 gap-y-2 pb-2">
                                             <FieldItem label="Invoice Number" value={data.InvoiceNumber} />
                                             <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(data.InvoiceDate ?? '')} />
-                                            <FieldItem label="Bank Name" value={data.BankName} />
+                                            <FieldItem
+                                                label="Bank Name"
+                                                value={<TooltipText text={data.BankName ?? ''} />}
+                                            />
                                             <FieldItem label="Account Name" value={data.AccountName} />
                                         </div>
                                     </div>
 
-                                    <div className="">
+                                    <div className="flex justify-between pb-8">
                                         <Button
                                             color="transparent"
                                             size="sm"
@@ -285,6 +284,16 @@ export const ViewBrokerageInvoice: React.FC = () => {
                                                 handleConfirmationDialogBoxOpen(data);
                                             }}
                                             leftIcon={<Trash2 className="h-4 w-4" />}
+                                        />
+
+                                        <Button
+                                            color="transparent"
+                                            size="sm"
+                                            style={{ color: "blue", padding: "0px 8px" }}
+                                            onClick={() => {
+                                                handleAddBrokerageInvoice(currentBookingId, data.BrokerageInvoiceId);
+                                            }}
+                                            leftIcon={<Edit className="h-4 w-4" />}
                                         />
                                     </div>
                                 </div>
@@ -322,33 +331,39 @@ export const ViewBrokerageInvoice: React.FC = () => {
 
             {activeTab === 'Payment' && (
                 <div className="pt-2 space-y-4">
-                    {paidBrokerageBookingList.map((data) => (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                    {paidBrokerageBookingList.map((data) => {
+                        const invoice = BrokerageInvoiceList.find(
+                            inv => inv.BrokerageInvoiceId === data.BrokerageInvoiceId,
+                        );
+                        const invoiceAmount = invoice?.InvoiceAmount ?? 0;
+                        const outstanding = invoiceAmount - Number(data.AmountPaid);
 
-                                <div className="lg:col-span-5  pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="BankName" value={data.BankName} />
-                                        <FieldItem label="Payment Type" value={data.PaymentType} />
-                                        <FieldItem label="Payment Mode" value={data.PaymentMode} />
-                                        <FieldItem label="Account Number" value={data.AccountNumber} />
-                                        <FieldItem label="IFSC Code" value={data.IFSCCode} />
-                                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '')} />
+                        return (
+                            <section key={data.PaidBrokerageBookingId} className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                    <div className="lg:col-span-5 pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Bank Name" value={data.BankName} />
+                                            <FieldItem label="Payment Type" value={data.PaymentType} />
+                                            <FieldItem label="Payment Mode" value={data.PaymentMode} />
+                                            <FieldItem label="Account Number" value={data.AccountNumber} />
+                                            <FieldItem label="IFSC Code" value={data.IFSCCode} />
+                                            <FieldItem label="Date" value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '')} />
+                                        </div>
+                                    </div>
+
+                                    <div className="lg:col-span-5 pb-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Transaction Number" value={data.TransactionNumber} />
+                                            <FieldItem label="Amount Paid" value={`₹${data.AmountPaid.toFixed(2)}`} />
+                                            <FieldItem label="TDS Amount" value={`₹${data.TDSAmount.toFixed(2)}`} />
+                                            <FieldItem label="Outstanding Amount" value={`₹${outstanding.toFixed(2)}`} />
+                                        </div>
                                     </div>
                                 </div>
-
-                                <div className="lg:col-span-3 pb-3 pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Transaction Number" value={data.TransactionNumber} />
-                                        <FieldItem label="Amount Paid" value={`₹${data.AmountPaid.toFixed(2) ?? ''}`} />
-                                        <FieldItem label="TDS Amount" value={`₹${data.TDSAmount.toFixed(2) ?? ''}`} />
-                                        <FieldItem label="Outstanding Amount" value={`₹${data.OutstandingAmount ?? ''}`} />
-
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-                    ))}
+                            </section>
+                        )
+                    })}
                 </div>
             )}
 

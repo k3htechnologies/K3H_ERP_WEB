@@ -103,7 +103,7 @@ export class BrokerageInvoiceDatasourceImpl implements BrokerageInvoiceDatasourc
             return response
         } catch (error) {
 
-            console.error('ERROR: ADD BROKERAGE INVOICE:', error)
+            console.error('ERROR: ADD UPDATE BROKERAGE INVOICE:', error)
 
             if (error === TokenExpiredException) {
                 await this.addUpdateBrokerageInvoice(formData);

@@ -1,6 +1,7 @@
 export const EmployeeMasterApi = {
     PULL: '/Employee/PullEmployee',
     ADD_UPDATE: '/Employee/AddUpdateEmployee',
+    UPDATE:'/Employee/UpdateEmployee',
 
     PULL_EMPLOYEE_DOCUMENT: '/EmployeeDocument/PullEmployeeDocument',
     ADD_UPDATE_EMPLOYEE_DOCUMENT: '/EmployeeDocument/AddUpdateEmployeeDocument',

@@ -64,7 +64,7 @@ export class PaidBrokerageBookingDatasourceImpl implements PaidBrokerageBookingD
             return response
         } catch (error) {
 
-            console.error('ERROR: ADD PAID BROKERAGE BOOKING:', error)
+            console.error('ERROR: ADD UPDATE PAID BROKERAGE BOOKING:', error)
 
             if (error === TokenExpiredException) {
                 await this.addUpdatePaidBrokerageBooking(formData);

@@ -153,7 +153,6 @@ import PayrollDashboard from '@/features/payrollDashboard/pages/PayrollDashboard
 import SalesDashboard from '@/features/salesDashboard/pages/SalesDashboard';
 import EnquiryReport from '@/features/enquiryReport/pages/EnquiryReport';
 import CPEnquiryReport from '@/features/cpEnquiryReport/pages/CPEnquiryReport';
-import PaymentScheduleMaster from '@/features/paymentScheduleMaster/pages/PaymentScheduleMaster';
 import Target from '@/features/target/pages/Target';
 import IncentiveReport from '@/features/incentiveReport/pages/IncentiveReport';
 import { IncentiveReportListStateProvider } from '@/features/incentiveReport/context/IncentiveReportListStateContext';
@@ -164,7 +163,8 @@ import ViewPerformanceReport from '@/features/performanceReport/pages/ViewPerfor
 import Brokerage from '@/features/brokerage/pages/Brokerage';
 import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoice';
 import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
-import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokerageSettlement';
+import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
+import PaymentScheduleMaster from '@/features/paymentScheduleMaster/pages/paymentScheduleMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -380,7 +380,7 @@ function App() {
 
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
-            <Route path="brokerageInvoice/add/:BookingId?" element={<AddUpdateBrokerageInvoice />} />
+            <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
             <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
 
             {/* REDEVELOPMENT */}

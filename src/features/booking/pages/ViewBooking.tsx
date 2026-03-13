@@ -419,6 +419,7 @@ export const ViewBooking: React.FC = () => {
                                         </div>
                                     </section>
                                 )}
+
                                 <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                         Booking Details
@@ -431,51 +432,7 @@ export const ViewBooking: React.FC = () => {
                                     </div>
                                 </section>
 
-                                {/* Flat Alteration Remarks */}
-                                {bookingData.FlatAlterationRemark && (
-                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                            Flat Alteration Remarks
-                                        </h4>
-                                        <div className="grid grid-cols-1 gap-4">
-                                            <FieldItem label="Remarks" value={safe(bookingData.FlatAlterationRemark)} />
-                                        </div>
-                                    </section>
-                                )}
-                                {bookingData.PaymentRemark && (
-                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                            Payment Remarks
-                                        </h4>
-                                        <div className="grid grid-cols-1 gap-4">
-                                            <FieldItem label="Remarks" value={safe(bookingData.PaymentRemark)} />
-                                        </div>
-                                    </section>
-                                )}
 
-                                {bookingData.OtherRemark && (
-                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                            Other Remarks
-                                        </h4>
-                                        <div className="grid grid-cols-1 gap-4">
-                                            <FieldItem label="Remarks" value={safe(bookingData.OtherRemark)} />
-                                        </div>
-                                    </section>
-                                )}
-
-                                {/* Terms & Conditions */}
-                                {bookingData.TermsAndConditionsDescription && (
-                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                            Terms & Conditions
-                                        </h4>
-                                        <div className="grid grid-cols-1 gap-4">
-                                            <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
-
-                                        </div>
-                                    </section>
-                                )}
                             </div>
 
                             {/* Right side summary card */}
@@ -485,8 +442,9 @@ export const ViewBooking: React.FC = () => {
                                         Booking Summary
                                     </h4>
                                     <div className="grid grid-cols-1 gap-4">
-                                        <FieldItem label="Agreement Value (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />
+                                        <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />
                                         <FieldItem label="TDS (₹)" value={formatCurrency(bookingData.AgreementValueTDS)} isRow />
+                                        <FieldItem label="Agreement Value (Without TDS)" value={formatCurrency((bookingData?.AgreementValue ?? 0) - (bookingData?.AgreementValueTDS ?? 0))} isRow />
                                         <FieldItem label="GST (%)" value={safe(bookingData.AgreementValueGSTPercentage)} isRow />
                                         <FieldItem label="GST (₹)" value={formatCurrency(bookingData.AgreementValueGSTAmount)} isRow />
                                         <FieldItem label="Stamp Duty (%)" value={safe(bookingData.StampDutyPercentage)} isRow />
@@ -517,42 +475,6 @@ export const ViewBooking: React.FC = () => {
                                                 <FieldItem label="Employee Reference Amount (₹)" value={formatCurrency(bookingData.EmployeeReferenceAmount)} isRow />
                                             </>
                                         )}
-                                    </div>
-                                </section>
-
-                                {/* Action / User Details card */}
-
-                                <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Action Details
-                                    </h4>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
-                                        <FieldItem label="Created By" value={safe(bookingData.CreatedBy)} />
-                                        <FieldItem
-                                            label="Created Date"
-                                            value={
-                                                bookingData.CreatedDate
-                                                    ? formatDate_dd_MonthName_yy_hh_mm(bookingData.CreatedDate)
-                                                    : '-'
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
-                                        <FieldItem label="Modified By" value={safe(bookingData.ModifiedBy)} />
-                                        <FieldItem
-                                            label="Modified Date"
-                                            value={
-                                                bookingData.ModifiedDate
-                                                    ? formatDate_dd_MonthName_yy_hh_mm(bookingData.ModifiedDate)
-                                                    : '-'
-                                            }
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 gap-4 pt-4">
-                                        <FieldItem label="Approval Status" value={safe(bookingData.ApprovalStatus)} />
                                     </div>
                                 </section>
 
@@ -734,6 +656,96 @@ export const ViewBooking: React.FC = () => {
                         </div>
                     </div>
                 )}
+                
+                <div className='pt-5'>
+                    {/* Flat Alteration Remarks */}
+                    {bookingData.FlatAlterationRemark && (
+                        <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Flat Alteration Remarks
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <FieldItem label="Remarks" value={safe(bookingData.FlatAlterationRemark)} />
+                            </div>
+                        </section>
+                    )}
+                </div>
+
+                <div className='pt-5'>
+                    {bookingData.PaymentRemark && (
+                        <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Payment Remarks
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <FieldItem label="Remarks" value={safe(bookingData.PaymentRemark)} />
+                            </div>
+                        </section>
+                    )}
+                </div>
+
+                <div className='pt-5'>
+                    {bookingData.OtherRemark && (
+                        <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Other Remarks
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <FieldItem label="Remarks" value={safe(bookingData.OtherRemark)} />
+                            </div>
+                        </section>
+                    )}
+                </div>
+
+                <div className='pt-5'>
+                    {bookingData.TermsAndConditionsDescription && (
+                        <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Terms & Conditions
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
+
+                            </div>
+                        </section>
+                    )}
+                </div>
+
+                <div className='pt-5'>
+                    <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            Action Details
+                        </h4>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                            <FieldItem label="Created By" value={safe(bookingData.CreatedBy)} />
+                            <FieldItem
+                                label="Created Date"
+                                value={
+                                    bookingData.CreatedDate
+                                        ? formatDate_dd_MonthName_yy_hh_mm(bookingData.CreatedDate)
+                                        : '-'
+                                }
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                            <FieldItem label="Modified By" value={safe(bookingData.ModifiedBy)} />
+                            <FieldItem
+                                label="Modified Date"
+                                value={
+                                    bookingData.ModifiedDate
+                                        ? formatDate_dd_MonthName_yy_hh_mm(bookingData.ModifiedDate)
+                                        : '-'
+                                }
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 gap-4 pt-4">
+                            <FieldItem label="Approval Status" value={safe(bookingData.ApprovalStatus)} />
+                        </div>
+                    </section>
+                </div>
             </div>
         </div>
     );

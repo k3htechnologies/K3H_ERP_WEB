@@ -202,6 +202,7 @@ export function SignIn() {
                                 </div>
 
                                 <Input
+                                    autoFocus
                                     type="tel"
                                     label="Mobile Number"
                                     placeholder="Enter Mobile Number"
@@ -314,6 +315,7 @@ export function SignIn() {
                                 </div>
 
                                 <Input
+                                autoFocus
                                     type="text"
                                     placeholder="Enter MPIN"
                                     value={otp}

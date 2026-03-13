@@ -7,7 +7,7 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import type { AddUpdateBookingRequest, FilterWithPaginationBookingRequest, AddUpdateBookingApplicantRequest, BookingApplicantData, AddUpdateBookingPaymentScheduleRequest, AddUpdateBookingOtherChargesRequest } from "../models/BookingModel";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -51,6 +51,8 @@ import { fetchPaymentScheduleSchemeMasterDropDown } from "@/features/paymentSche
 import type { FilterWithPaginationPaymentScheduleMasterRequest } from "@/features/paymentScheduleMaster/models/PaymentScheduleMasterModel";
 import { paymentScheduleMasterService } from "@/features/paymentScheduleMaster/services/PaymentScheduleMasterService";
 import { mapPaymentScheduleToBookingPaymentSchedule } from "../utils/MapPaymentSchedule";
+import type { EnquiryData } from "@/features/enquiry/models/EnquiryModel";
+import { DataTableDraggable } from "@/ui/components/DataTable/DataTableDraggable";
 
 const initialFormState = (): AddUpdateBookingRequest => ({
   BookingId: 0,
@@ -171,45 +173,9 @@ export const AddUpdateBooking: React.FC = () => {
   //#endregion
 
   //#region ENQUIRY DETAILS
+  const [enquiryList, setEnquiryMasterList] = useState<EnquiryData | null>(null)
   const [enquiryUniqueCode, setEnquiryUniqueCode] = useState<string>();
   const [enquiryId, setEnquiryId] = useState<number | null>(null);
-
-  const [mobileNumber, setMobileNumber] = useState<string | null>(null);
-  const [name, setName] = useState<string | null>(null);
-
-  const [source, setSource] = useState<string | null>(null);
-  const [subSource, setSubSource] = useState<string | null>(null);
-  const [subSubSource, setSubSubSource] = useState<string | null>(null);
-
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-  const [referelName, setReferelName] = useState<string | null>(null);
-  const [referelMobileNumber, setReferelMobileNumber] = useState<string | null>(null);
-  const [referelProjectName, setReferelProjectName] = useState<string | null>(null);
-  const [referelUnitNumber, setReferelUnitNumber] = useState<string | null>(null);
-
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-  const [loyaltyExistingProjectName, setLoyaltyExistingProjectName] = useState<string | null>(null);
-
-  const [loyaltyExistingUnitNumber, setLoyaltyExistingUnitNumber] = useState<string | null>(null);
-
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-  const [employeeReferenceName, setEmployeeReferenceName] = useState<string | null>(null);
-
-  const [employeeReferenceMobileNumber, setEmployeeReferenceMobileNumber] = useState<string | null>(null);
-
-  const [channelPartnerName, setChannelPartnerName] = useState<string | null>(null);
-
-  const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<number | null>(null);
-
-  const [channelPartnerTeamMemberName, setChannelPartnerTeamMemberName] = useState<string | null>(null);
-
-  const [channelPartnerTeamMemberMobileNumber, setChannelPartnerTeamMemberMobileNumber] = useState<string | null>(null);
-
-  const [currentLocation, setCurrentLocation] = useState<string>("");
-
-  const [salesAdvisor, setSalesAdvisor] = useState<string>("");
-
-  const [sourcingManager, setSourcingManager] = useState<string>("");
 
   //#endregion
 
@@ -328,7 +294,9 @@ export const AddUpdateBooking: React.FC = () => {
     const parkingDataFromState = (location.state as any)?.parkingData;
 
     if (flatDataFromState && flatDataFromState.PageName === "UNIT BOOK") {
+
       setSourcePage("inventory");
+
       setFormData((prev) => ({
         ...prev,
         ProjectId: Number(projectId),
@@ -353,6 +321,12 @@ export const AddUpdateBooking: React.FC = () => {
         FlatFacing: "",
         InventoryFlatSpecificationData: [],
         OwnerName: "",
+        CreatedById: 0,
+        CreatedBy: "",
+        CreatedDate: "",
+        ModifiedById: 0,
+        ModifiedBy: "0",
+        ModifiedDate: "",
         BookingId: 0,
         BookingCreatedById: 0,
         BookingCreatedBy: "",
@@ -399,38 +373,9 @@ export const AddUpdateBooking: React.FC = () => {
 
   //#region HANDLE SEARCH CHANGE EVENT CHANNEL PARTNER
 
-  const clearEnquiryDetails = () => {
-    setEnquiryId(null);
-
-    setName(null);
-    setMobileNumber(null);
-
-    setSource(null);
-    setSubSource(null);
-    setSubSubSource(null);
-
-    setReferelName(null);
-    setReferelMobileNumber(null);
-    setReferelProjectName(null);
-    setReferelUnitNumber(null);
-
-    setLoyaltyExistingProjectName(null);
-    setLoyaltyExistingUnitNumber(null);
-
-    setEmployeeReferenceName(null);
-    setEmployeeReferenceMobileNumber(null);
-
-    setChannelPartnerName(null);
-    setChannelPartnerMobileNumber(null);
-    setChannelPartnerTeamMemberName(null);
-    setChannelPartnerTeamMemberMobileNumber(null);
-
-    setCurrentLocation("");
-    setSalesAdvisor("");
-    setSourcingManager("");
-  };
 
   useEffect(() => {
+
     const code = enquiryUniqueCode?.trim();
     const hasEnquiryId = Number(enquiryId) > 0;
     const hasValidCode = code && code.length === 18;
@@ -444,57 +389,11 @@ export const AddUpdateBooking: React.FC = () => {
       fetchEnquiryBySystemGeneratedCode(code, Number(projectId), 0).then(handleEnquiryResponse);
       return;
     }
-
-    clearEnquiryDetails();
   }, [enquiryUniqueCode, projectId, enquiryId]);
 
   const handleEnquiryResponse = (enquiry: any) => {
-    if (!enquiry) {
-      clearEnquiryDetails();
-      return;
-    }
-
-    if (enquiry.SystemGeneratedCode) {
-      setEnquiryUniqueCode(enquiry.SystemGeneratedCode);
-    }
-
-    setEnquiryId(enquiry.EnquiryId);
-    setName(enquiry.Name);
-    setMobileNumber(enquiry.MobileNumber);
-
-    // Source
-    setSource(enquiry.Source);
-    setSubSource(enquiry.SubSource);
-    setSubSubSource(enquiry.SubSubSource);
-
-    // Reference
-    setReferelName(enquiry.ReferelName);
-    setReferelMobileNumber(enquiry.ReferelMobileNumber);
-    setReferelProjectName(enquiry.ReferelProjectName);
-    setReferelUnitNumber(enquiry.ReferelUnitNumber);
-
-    // Loyalty
-    setLoyaltyExistingProjectName(enquiry.LoyaltyExistingProjectName);
-    setLoyaltyExistingUnitNumber(enquiry.LoyaltyExistingUnitNumber);
-
-    // Employee Reference
-    setEmployeeReferenceName(enquiry.EmployeeReferenceName);
-    setEmployeeReferenceMobileNumber(enquiry.EmployeeReferenceMobileNumber);
-
-    // Channel Partner
-    setChannelPartnerName(enquiry.ChannelPartnerName);
-    setChannelPartnerMobileNumber(enquiry.ChannelPartnerMobileNumber);
-    setChannelPartnerTeamMemberName(enquiry.ChannelPartnerTeamMemberName);
-    setChannelPartnerTeamMemberMobileNumber(enquiry.ChannelPartnerTeamMemberMobileNumber);
-
-    // Location & Sales
-    const location = enquiry.CurrentLocation ?? "";
-    setCurrentLocation(location);
-    formData.PermanentAddress = location;
-    formData.CommunicationAddress = location;
-
-    setSalesAdvisor(enquiry.SalesAdvisor ?? "");
-    setSourcingManager(enquiry.SourcingManager ?? "");
+    setEnquiryId(enquiry?.EnquiryId);
+    setEnquiryMasterList(enquiry);
   };
 
   //#endregion
@@ -565,7 +464,10 @@ export const AddUpdateBooking: React.FC = () => {
               TenantId: booking.TenantId ?? 0,
             });
 
+            setEnquiryUniqueCode(booking.SystemGeneratedCode ?? "");
+
             if (booking.BookingType?.toUpperCase() === "FLAT") {
+
               setSelectedFlatData({
                 InventoryFlatId: booking.InventoryFlatId || 0,
                 Uniquekey: "",
@@ -583,6 +485,12 @@ export const AddUpdateBooking: React.FC = () => {
                 FlatFacing: "",
                 InventoryFlatSpecificationData: [],
                 OwnerName: "",
+                CreatedById: 0,
+                CreatedBy: "",
+                CreatedDate: "",
+                ModifiedById: 0,
+                ModifiedBy: "0",
+                ModifiedDate: "",
                 BookingId: 0,
                 BookingCreatedById: 0,
                 BookingCreatedBy: "",
@@ -629,6 +537,8 @@ export const AddUpdateBooking: React.FC = () => {
             }));
 
             setPaymentSchedules(paymentSchedulesMapped);
+
+            loadPaymentSchedule();
 
             const otherChargesMapped: AddUpdateBookingOtherChargesRequest[] = (booking?.BookingOtherChargesData || []).map((charge) => ({
               BookingOtherChargesId: charge.BookingOtherChargesId ?? 0,
@@ -873,7 +783,6 @@ export const AddUpdateBooking: React.FC = () => {
       {
         key: "Type",
         label: "Type",
-        width: "12",
         sortable: false,
         align: "center",
         render: (value) => value || "-",
@@ -881,13 +790,17 @@ export const AddUpdateBooking: React.FC = () => {
       {
         key: "Date",
         label: "Date / Stage",
-        width: "20",
         sortable: false,
         align: "left",
+
         render: (_value, row) => {
+
           if (row.Type === "Date" && row.Date) {
-            return formatDate_dd_mm_yyyy(row.Date);
+
+            return formatDate_dd_MonthName_yy(row.Date);
+
           } else if (row.Type === "Stage" && row.Name) {
+
             return row.Name;
           }
           return "-";
@@ -896,7 +809,6 @@ export const AddUpdateBooking: React.FC = () => {
       {
         key: "PaymentSchedulePercentage",
         label: "Percentage (%)",
-        width: "12",
         sortable: false,
         align: "center",
         render: (value) => `${value || 0}%`,
@@ -904,7 +816,6 @@ export const AddUpdateBooking: React.FC = () => {
       {
         key: "Cumulative",
         label: "Cumulative (%)",
-        width: "15",
         sortable: false,
         align: "center",
         render: (_value, _row, index) => {
@@ -914,7 +825,6 @@ export const AddUpdateBooking: React.FC = () => {
       {
         key: "PaymentScheduleAmount",
         label: "Amount (₹)",
-        width: "18",
         sortable: false,
         align: "right",
         render: (value) => {
@@ -925,7 +835,6 @@ export const AddUpdateBooking: React.FC = () => {
       {
         key: "PaymentScheduleGSTAmount",
         label: "GST Amount (₹)",
-        width: "18",
         sortable: false,
         align: "right",
         render: (value) => {
@@ -936,7 +845,6 @@ export const AddUpdateBooking: React.FC = () => {
       {
         key: "PaymentScheduleTDSAmount",
         label: "TDS Amount (₹)",
-        width: "18",
         sortable: false,
         align: "right",
         render: (value) => {
@@ -945,58 +853,57 @@ export const AddUpdateBooking: React.FC = () => {
         },
       },
       ...(formData.PaymentScheduleSchemeMasterId !== 0 ? [] : [
-      {
-        key: "actions",
-        label: "Actions",
-        width: "12",
-        render: (_value:any, row:any, index:number) =>
-          canAction ? (
-            <div className="flex items-center justify-center gap-2">
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setEditingPaymentScheduleIndex(index);
-                  setPaymentScheduleType(row.Type === "Date" || row.Type === "Stage" ? row.Type : "Date");
-                  setPaymentScheduleDate(row.Date ? formatDate_dd_mm_yyyy(row.Date) : "");
+        {
+          key: "actions",
+          label: "Actions",
+          render: (_value: any, row: any, index: number) =>
+            canAction ? (
+              <div className="flex items-center justify-center gap-2">
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setEditingPaymentScheduleIndex(index);
+                    setPaymentScheduleType(row.Type === "Date" || row.Type === "Stage" ? row.Type : "Date");
+                    setPaymentScheduleDate(row.Date ? formatDate_dd_mm_yyyy(row.Date) : "");
 
-                  const stageExists = paymentScheduleOptions.some((opt) => opt.value === row.Name);
-                  if (row.Type === "Stage" && row.Name && !stageExists) {
-                    setPaymentScheduleStage("Other");
-                    setPaymentScheduleStageOther(row.Name || "");
-                  } else {
-                    setPaymentScheduleStage(row.Name || "");
-                    setPaymentScheduleStageOther("");
-                  }
+                    const stageExists = paymentScheduleOptions.some((opt) => opt.value === row.Name);
+                    if (row.Type === "Stage" && row.Name && !stageExists) {
+                      setPaymentScheduleStage("Other");
+                      setPaymentScheduleStageOther(row.Name || "");
+                    } else {
+                      setPaymentScheduleStage(row.Name || "");
+                      setPaymentScheduleStageOther("");
+                    }
 
-                  setPaymentSchedulePercentage(String(row.PaymentSchedulePercentage || ""));
-                  setIsPaymentScheduleModalOpen(true);
-                }}
-                color="transparent"
-                isborderRadius
-                size="sm"
-                title="Edit Payment Schedule"
-                leftIcon={<Edit className="h-4 w-4" />}
-              ></Button>
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  setPaymentSchedules((prev) => prev.filter((_, i) => i !== index));
-                }}
-                color="transparent"
-                isborderRadius
-                size="sm"
-                style={{ color: "red" }}
-                title="Delete"
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          ) : null,
-      },
+                    setPaymentSchedulePercentage(String(row.PaymentSchedulePercentage || ""));
+                    setIsPaymentScheduleModalOpen(true);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                  title="Edit Payment Schedule"
+                  leftIcon={<Edit className="h-4 w-4" />}
+                ></Button>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setPaymentSchedules((prev) => prev.filter((_, i) => i !== index));
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                  style={{ color: "red" }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : null,
+        },
       ]),
-      
+
     ],
     [cumulativePercentages, canAction, paymentScheduleOptions],
   );
@@ -1073,6 +980,9 @@ export const AddUpdateBooking: React.FC = () => {
     if (!formData.ProjectId || formData.ProjectId === 0) {
       newErrors.ProjectId = "Project is required";
     }
+    if (!formData.EnquiryId || formData.EnquiryId === 0) {
+      newErrors.EnquiryId = "Enquiry Code is required";
+    }
 
     if (!formData.PermanentAddress) {
       newErrors.PermanentAddress = "Permanent Address is required";
@@ -1103,6 +1013,9 @@ export const AddUpdateBooking: React.FC = () => {
     if (!formData.SourceOfFunding) {
       newErrors.SourceOfFunding = "Source Of Funding is required";
     }
+    if (!formData.PaymentScheduleSchemeMasterId) {
+      newErrors.PaymentScheduleSchemeMasterId = "Payment Schedule Scheme is required";
+    }
 
     if (!formData.RegistrationDate) {
       newErrors.RegistrationDate = "Registration Date is required";
@@ -1110,6 +1023,11 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (applicantList.length === 0) {
       addToast({ type: "error", title: "At least one applicant is required" });
+      return { isValid: false, errors: newErrors };
+    }
+
+    if (paymentSchedules.length === 0) {
+      addToast({ type: "error", title: "Payment schedule is required" });
       return { isValid: false, errors: newErrors };
     }
 
@@ -1338,6 +1256,7 @@ export const AddUpdateBooking: React.FC = () => {
 
   //#region DELETE BOOKING APPLICANT
   const handleDeleteApplicant = () => {
+
     if (!deleteBookingApplicantData) return;
 
     const removeIndex = deleteBookingApplicantData.index;
@@ -1360,13 +1279,11 @@ export const AddUpdateBooking: React.FC = () => {
   const handleSubmit = async () => {
     setErrors({});
 
-    // Validate payment schedule total percentage
     if (paymentSchedules.length > 0 && totalPercentage !== 100) {
       addToast({ type: "error", title: `Payment schedule total must be exactly 100%. Current total is ${totalPercentage.toFixed(2)}%` });
       return;
     }
 
-    // Validate Flat/Parking based on BookingType
     if (formData.BookingType === "FLAT" && (!formData.InventoryFlatId || formData.InventoryFlatId === 0)) {
       addToast({ type: "error", title: "Flat is required" });
       return;
@@ -1377,9 +1294,15 @@ export const AddUpdateBooking: React.FC = () => {
       return;
     }
 
+    if (formData.BookingId === 0 && enquiryList?.FinalStage === "Booking Done") {
+      addToast({ type: "error", title: "Booking already done for this enquiry" });
+      return;
+    }
+
     const validation = validateForm();
 
     if (!validation.isValid) {
+
       setErrors(validation.errors);
 
       addToast({ type: "error", title: "Please fill the required filed" });
@@ -1524,6 +1447,7 @@ export const AddUpdateBooking: React.FC = () => {
         const response = await bookingService.apiCallAddUpdateBooking(formDataToSend);
 
         if (E.isRight(response)) {
+
           addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
           updateListState({ bookingId: 0, bookingName: "" });
@@ -1534,10 +1458,15 @@ export const AddUpdateBooking: React.FC = () => {
 
           if (redirectPage === "inventory") {
             navigate("/inventory");
+
           } else if (redirectPage === "parking") {
+
             navigate("/parking");
+
           } else {
+
             navigate("/booking");
+
           }
         } else {
           addToast({ type: "error", title: response.left.message });
@@ -1561,7 +1490,7 @@ export const AddUpdateBooking: React.FC = () => {
       ...params,
       value: params?.value || "",
       projectId: projectId || 0,
-      displayParkingId:parkingId ||"",
+      displayParkingId: parkingId || "",
     });
   }, [projectId, parkingId]);
 
@@ -1600,11 +1529,11 @@ export const AddUpdateBooking: React.FC = () => {
 
           setOtherChargesData(response.right.Data);
 
-           const flatDataFromState = (location.state as any)?.flatData;
+          const flatDataFromState = (location.state as any)?.flatData;
 
-           const rERACarpetAreaSqFt = flatDataFromState?.RERACarpetAreaSqFt  ?? selectedFlatData?.RERACarpetAreaSqFt ?? 0;
+          const rERACarpetAreaSqFt = flatDataFromState?.RERACarpetAreaSqFt ?? selectedFlatData?.RERACarpetAreaSqFt ?? 0;
 
-           const mappedCharges = mapOtherChargesToBookingOtherCharges(rERACarpetAreaSqFt ,response.right.Data);
+          const mappedCharges = mapOtherChargesToBookingOtherCharges(rERACarpetAreaSqFt, response.right.Data);
 
           setOtherCharges(mappedCharges);
         } else {
@@ -1657,6 +1586,7 @@ export const AddUpdateBooking: React.FC = () => {
         const response = await paymentScheduleMasterService.apiCallPullPaymentScheduleMaster(params);
 
         if (E.isRight(response)) {
+
           const mappedPaymentSchedule = mapPaymentScheduleToBookingPaymentSchedule(response.right.Data, Number(formData.AgreementValue), Number(formData.AgreementValueGSTPercentage));
 
           setPaymentSchedules(mappedPaymentSchedule);
@@ -1706,10 +1636,11 @@ export const AddUpdateBooking: React.FC = () => {
               type="text"
               required
               disabled={Number(bookingId) > 0 ? true : false}
-              label="Enquiry Unique Code"
+              label="Enquiry Code"
               value={enquiryUniqueCode}
               onChange={(e) => {
                 setEnquiryUniqueCode(e.target.value);
+                setEnquiryId(0);
               }}
               placeholder="Search By Enquiry Unique Code"
               leftIcon={<Search className="h-4 w-4 text-gray-400" />}
@@ -1717,9 +1648,9 @@ export const AddUpdateBooking: React.FC = () => {
             />
           </div>
 
-          {enquiryUniqueCode &&
-            enquiryUniqueCode.trim() !== "" &&
-            (Number(enquiryId) ? (
+          {enquiryUniqueCode && enquiryUniqueCode.trim() !== "" && (
+            Number(enquiryId) > 0 &&
+              (Number(bookingId) !== 0 || enquiryList?.FinalStage !== "Booking Done") ? (
               <div className="space-y-4 pt-5 pb-3">
                 {/* ===================== ENQUIRY DETAILS ===================== */}
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Details</h3>
@@ -1727,69 +1658,73 @@ export const AddUpdateBooking: React.FC = () => {
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
                     <FieldItem label="Enquiry Code" value={enquiryUniqueCode || "-"} />
-                    <FieldItem label="Name" value={name || "-"} />
-                    <FieldItem label="Mobile No" value={mobileNumber ? `+91 ${mobileNumber}` : "-"} />
-                    <FieldItem label="Source" value={source || "-"} />
-                    <FieldItem label="Sub Source" value={subSource || "-"} />
-                    {source?.toUpperCase() !== "CHANNEL PARTNER" && !!subSubSource?.trim() && <FieldItem label="Sub Sub Source" value={subSubSource || "-"} />}
+                    <FieldItem label="Name" value={enquiryList?.Name || "-"} />
+                    <FieldItem label="Mobile No" value={enquiryList?.MobileNumber ? `+91 ${enquiryList?.MobileNumber}` : "-"} />
+                    <FieldItem label="Source" value={enquiryList?.Source || "-"} />
+                    <FieldItem label="Sub Source" value={enquiryList?.SubSource || "-"} />
+                    {enquiryList?.Source?.toUpperCase() !== "CHANNEL PARTNER" && !!enquiryList?.SubSubSource?.trim() && <FieldItem label="Sub Sub Source" value={enquiryList?.SubSubSource || "-"} />}
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3 pt-5">
-                    <FieldItem label="Sales Advisor" value={salesAdvisor ?? "-"} />
-                    <FieldItem label="Sourcing Manager" value={sourcingManager ?? "-"} />
+                    <FieldItem label="Sales Advisor" value={enquiryList?.SalesAdvisor ?? "-"} />
+                    <FieldItem label="Sourcing Manager" value={enquiryList?.SourcingManager ?? "-"} />
+                    <FieldItem label="Stage" value={enquiryList?.FinalStage ?? "-"} />
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-3 pt-5">
-                    <FieldItem label="Current Location" value={currentLocation || "-"} />
+                    <FieldItem label="Current Location" value={enquiryList?.CurrentLocation || "-"} />
                   </div>
                 </div>
 
                 {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-                {source === "Direct Walking" && subSource === "Reference" && (
+                {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                      <FieldItem label="Referral Name" value={referelName || "-"} />
-                      <FieldItem label="Referral Mobile" value={referelMobileNumber ? `+91 ${referelMobileNumber}` : "-"} />
-                      <FieldItem label="Referral Project" value={referelProjectName || "-"} />
-                      <FieldItem label="Referral Unit No" value={referelUnitNumber || "-"} />
+                      <FieldItem label="Referral Name" value={enquiryList?.ReferelUnitOwnerName || "-"} />
+                      <FieldItem label="Referral Project" value={enquiryList?.ReferelProjectName || "-"} />
+                      <FieldItem label="Referral Unit No" value={enquiryList?.ReferelUnitNumber || "-"} />
                     </div>
                   </div>
                 )}
 
                 {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-                {source === "Direct Walking" && subSource === "Loyalty" && (
+                {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Loyalty" && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      <FieldItem label="Existing Project" value={loyaltyExistingProjectName || "-"} />
-                      <FieldItem label="Existing Unit No" value={loyaltyExistingUnitNumber || "-"} />
+                      <FieldItem label="Existing Project" value={enquiryList?.LoyaltyExistingProjectName || "-"} />
+                      <FieldItem label="Existing Unit No" value={enquiryList?.LoyaltyExistingUnitNumber || "-"} />
                     </div>
                   </div>
                 )}
 
                 {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-                {source === "Direct Walking" && subSource === "Employee Reference" && (
+                {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Employee Reference" && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      <FieldItem label="Employee Name" value={employeeReferenceName || "-"} />
-                      <FieldItem label="Employee Mobile" value={employeeReferenceMobileNumber ? `+91 ${employeeReferenceMobileNumber}` : "-"} />
+                      <FieldItem label="Employee Name" value={enquiryList?.EmployeeReferenceName || "-"} />
+                      <FieldItem label="Employee Mobile" value={enquiryList?.EmployeeReferenceMobileNumber ? `+91 ${enquiryList?.EmployeeReferenceMobileNumber}` : "-"} />
                     </div>
                   </div>
                 )}
 
                 {/* ===================== CHANNEL PARTNER DETAILS ===================== */}
-                {source?.toUpperCase() === "CHANNEL PARTNER" && (
+                {enquiryList?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                      <FieldItem label="Channel Partner" value={channelPartnerName || "-"} />
-                      <FieldItem label="CP Mobile" value={channelPartnerMobileNumber ? `+91 ${channelPartnerMobileNumber}` : "-"} />
-                      <FieldItem label="CP Team Member" value={channelPartnerTeamMemberName || "-"} />
-                      <FieldItem label="CP Team Mobile" value={channelPartnerTeamMemberMobileNumber || "-"} />
+                      <FieldItem label="Channel Partner" value={enquiryList?.ChannelPartnerName || "-"} />
+                      <FieldItem label="CP Mobile" value={enquiryList?.ChannelPartnerMobileNumber ? `+91 ${enquiryList?.ChannelPartnerMobileNumber}` : "-"} />
+                      <FieldItem label="CP Team Member" value={enquiryList?.ChannelPartnerTeamMemberName || "-"} />
+                      <FieldItem label="CP Team Mobile" value={enquiryList?.ChannelPartnerTeamMemberMobileNumber || "-"} />
                     </div>
                   </div>
                 )}
               </div>
-            ) : (
-              !Number(enquiryId) && <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200 text-sm text-red-700 ">No Enquiry details found for this Unique Code</div>
-            ))}
+            )
+              :
+              (
+                <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200 text-sm text-red-700 ">
+                  {enquiryList?.FinalStage === "Booking Done" ? "Booking already done for this enquiry" : "No Enquiry details found for this Unique Code"}
+                </div>
+              ))}
 
           {/* ============================================================= [APPLICANT DETAILS] ============================================================================================= */}
           <div className="space-y-4 pt-3 pb-3">
@@ -2006,10 +1941,10 @@ export const AddUpdateBooking: React.FC = () => {
                     loadOtherCharges();
                   }
                   else {
-                     const flatDataFromState = (location.state as any)?.flatData;
+                    const flatDataFromState = (location.state as any)?.flatData;
 
-                       const rERACarpetAreaSqFt = flatDataFromState?.RERACarpetAreaSqFt  ?? selectedFlatData?.RERACarpetAreaSqFt ?? 0;
-                     const mappedCharges = mapOtherChargesToBookingOtherCharges(Number(rERACarpetAreaSqFt), otherChargesData);
+                    const rERACarpetAreaSqFt = flatDataFromState?.RERACarpetAreaSqFt ?? selectedFlatData?.RERACarpetAreaSqFt ?? 0;
+                    const mappedCharges = mapOtherChargesToBookingOtherCharges(Number(rERACarpetAreaSqFt), otherChargesData);
                     setOtherCharges(mappedCharges);
                   }
                 }}
@@ -2077,7 +2012,7 @@ export const AddUpdateBooking: React.FC = () => {
           </div>
 
           {/* ============================================================= [BROKERAGE DETAILS] ============================================================================================= */}
-          {source?.toUpperCase() === "CHANNEL PARTNER" && (
+          {enquiryList?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
             <div className="space-y-4 pb-3">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Brokerage Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2110,7 +2045,7 @@ export const AddUpdateBooking: React.FC = () => {
           )}
 
           {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-          {source === "Direct Walking" && subSource === "Reference" && (
+          {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
             <div className="space-y-4 pb-3">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Referel Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2142,7 +2077,7 @@ export const AddUpdateBooking: React.FC = () => {
           )}
 
           {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-          {source === "Direct Walking" && subSource === "Loyalty" && (
+          {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Loyalty" && (
             <div className="space-y-4 pb-3">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Loyalty Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2174,7 +2109,7 @@ export const AddUpdateBooking: React.FC = () => {
           )}
 
           {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-          {source === "Direct Walking" && subSource === "Employee Reference" && (
+          {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Employee Reference" && (
             <div className="space-y-4 pb-3">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Employee Reference Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2234,7 +2169,7 @@ export const AddUpdateBooking: React.FC = () => {
               </div>
               <DatePickerInput label="Expected Registration Date" value={formatDate_dd_mm_yyyy(formData.RegistrationDate)} onChange={(val) => handleFieldChange("RegistrationDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.RegistrationDate} />
               <div>
-                <SinglePageSelection label="Source Of Funding" placeholder="Select Source Of Funding" value={formData.SourceOfFunding ?? ""} onChange={(value) => handleFieldChange("SourceOfFunding", value)} options={SOURCE_OF_FUNDING_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))} error={errors.SourceOfFunding} />
+                <SinglePageSelection required label="Source Of Funding" placeholder="Select Source Of Funding" value={formData.SourceOfFunding ?? ""} onChange={(value) => handleFieldChange("SourceOfFunding", value)} options={SOURCE_OF_FUNDING_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))} error={errors.SourceOfFunding} />
               </div>
             </div>
           </div>
@@ -2243,6 +2178,7 @@ export const AddUpdateBooking: React.FC = () => {
             <SingleSelectDropdownWithPagination
               label="Payment Schedule Scheme"
               title="Select Payment Schedule Scheme"
+              required
               size="lg"
               dataFetchCallBack={fetchPaymentScheduleSchemeMaster()}
               onSelected={(item) => {
@@ -2298,7 +2234,15 @@ export const AddUpdateBooking: React.FC = () => {
               )}
             </div>
             {paymentSchedules.length > 0 ? (
-              <DataTable data={paymentSchedules} columns={paymentScheduleColumns} emptyMessage="No payment schedules found. Click 'Add Payment Schedule' to add one." fixedHeight={false} recordsPerPage={20} className="min-w-full" aria-label="Payment schedule list" />
+              <DataTableDraggable
+                data={paymentSchedules}
+                columns={paymentScheduleColumns}
+                emptyMessage="No payment schedules found. Click 'Add Payment Schedule' to add one."
+                fixedHeight={false} recordsPerPage={20}
+                className="min-w-full"
+                enableRowReorder
+                onRowReorder={(newData) => setPaymentSchedules(newData)}
+              />
             ) : (
               <div className="flex items-center justify-center">
                 <span className="text-gray-500 text-sm font-medium">No payment schedules found</span>
@@ -2336,9 +2280,14 @@ export const AddUpdateBooking: React.FC = () => {
                   size="lg"
                   dataFetchCallBack={fetchBankListMasterDropdown}
                   onSelected={(item) => {
-                    if (item) {
-                      handleFieldChange("BankListMasterId", Number(item.value));
+
+                    if (!item) {
+
+                      handleFieldChange("BankListMasterId", 0);
+                      return;
                     }
+                    handleFieldChange("BankListMasterId", Number(item.value));
+
                   }}
                   initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
                   error={errors.BankListMasterId}
@@ -2361,10 +2310,10 @@ export const AddUpdateBooking: React.FC = () => {
                 <TextArea label="Other Remark" value={formData.OtherRemark ?? ""} onChange={(e) => handleFieldChange("OtherRemark", e.target.value)} placeholder="Enter Other Remark" error={errors.OtherRemark} />
               </div>
               <div>
-                <SingleSelectDropdownWithPagination label="Term & Conditional" title="Term & Conditional" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)} />
+                <SingleSelectDropdownWithPagination label="Term & Condition" title="Term & Condition" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)} />
               </div>
               <div>
-                <RichTextEditor value={formData.TermsAndConditionsDescription ?? ""} onChange={(html) => handleFieldChange("TermsAndConditionsDescription", html)} placeholder="Enter Description" readOnly />
+                <RichTextEditor value={formData.TermsAndConditionsDescription ?? ""} onChange={(html) => handleFieldChange("TermsAndConditionsDescription", html)}  readOnly />
               </div>
             </div>
           </div>

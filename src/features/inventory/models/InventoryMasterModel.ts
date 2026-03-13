@@ -64,12 +64,13 @@ export interface InventoryFlatData {
     FlatConfiguration: string;
     FlatStatus: 'Alloted' | "Available" | "Booked" | "Blocked" | "Hold";
     FlatFacing: string;
+    
     CreatedById: number;
     CreatedBy: string;
     CreatedDate: string;
     ModifiedById: number;
     ModifiedBy: string;
-    ModifiedDate: null;
+    ModifiedDate: string;
 
     InventoryFlatSpecificationData: InventoryFlatSpecificationData[];
     OwnerName: string;

@@ -85,7 +85,7 @@ export const PaymentScheduleSchemeMasterViewModal: React.FC<PaymentScheduleSchem
         <div className="flex justify-between items-center pt-4">
           {canAction && (
             <>
-              {(!data.IsExistsPaymentScheduleScheme || 0) === 0 ? (
+              {(data.IsExistsPaymentScheduleScheme || 0) === 0 ? (
                 <Button color="red" variant="solid" colorMode="light" size="md" onClick={handleDelete}>
                   Delete
                 </Button>

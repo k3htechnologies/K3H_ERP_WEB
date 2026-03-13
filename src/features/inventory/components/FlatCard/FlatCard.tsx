@@ -20,6 +20,7 @@ interface FlatCardProps {
 
 export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumber, canAction, canBookingAction }: FlatCardProps) => {
     const navigate = useNavigate();
+
     const { updateListState } = useBookingListState();
 
     const hexToRgba = (hex: string, alpha: number = 0.12) => {
@@ -53,7 +54,13 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
 
     const handleBook = () => {
 
+        updateListState({
+            bookingId: 0,
+            bookingName: ""
+        });
+        
         navigate('/booking/add', {
+
             state: {
                 flatData: {
                     InventoryFlatId: flat.InventoryFlatId,
@@ -66,7 +73,9 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                     BuildingNumber: buildingNumber || flat.BuildingNumber,
                     PageName: "UNIT BOOK",
                     InventoryFlatFloorBasementPodiumWingId: flat.InventoryFlatFloorBasementPodiumWingId,
-                    InventoryBuildingId: flat.InventoryBuildingId
+                    InventoryBuildingId: flat.InventoryBuildingId,
+                    bookingId: 0,
+                    bookingName: ""
                 }
             }
         });
@@ -80,14 +89,18 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
     };
 
     const handleOwnerNameClick = () => {
+
         if (flat.BookingId && flat.BookingId > 0) {
+
             updateListState({
                 bookingId: flat.BookingId,
                 bookingName: flat.OwnerName || '',
             });
+
             navigate('/booking/view', {
                 state: { sourcePage: 'inventory' }
             });
+
         }
     };
 

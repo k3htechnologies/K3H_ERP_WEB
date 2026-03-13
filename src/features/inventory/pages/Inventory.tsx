@@ -417,6 +417,7 @@ const Inventory = () => {
                 setIsLoading,
                 setLoadingMessage,
                 async () => {
+
                     return await inventoryService.apiCallDeleteInventoryFlat(params);
                 },
                 undefined,
@@ -676,14 +677,16 @@ const Inventory = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
+                
                 const response = await inventoryService.apiCallAddInventoryBuilding(params);
 
                 if (E.isRight(response)) {
+
                     setIsAddBuildingModalOpen(false);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
-                    await fetchInventory();
+                    setInventory(response.right.Data);
 
                 } else {
 
@@ -797,7 +800,8 @@ const Inventory = () => {
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
-                    await fetchInventory();
+                    setInventory(response.right.Data);
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -850,7 +854,8 @@ const Inventory = () => {
                 if (E.isRight(response)) {
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
-                    await fetchInventory();
+                    setInventory(response.right.Data);
+                    
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }

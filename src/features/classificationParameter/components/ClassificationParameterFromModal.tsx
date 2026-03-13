@@ -75,7 +75,19 @@ export const ClassificationParameterFormModal: React.FC<ClassificationParameterF
                             placeholder="Select Requirement"
                             required
                             value={formData.Requirement ?? ""}
-                            onChange={(value) => onFieldChange("Requirement", value)}
+
+                            onChange={(item) => {
+
+                                if (!item) {
+                                    onFieldChange("RequirementType", "");
+                                    return;
+                                }
+
+                                onFieldChange("Requirement", item)
+                                onFieldChange("RequirementType", "");
+
+                            }}
+
                             options={REQUIREMENT_TYPE_OPTIONS.map((opt) => ({
                                 label: opt.name,
                                 value: opt.id,

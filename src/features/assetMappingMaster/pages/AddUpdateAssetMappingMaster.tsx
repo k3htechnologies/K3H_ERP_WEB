@@ -19,8 +19,9 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import Checkbox from "@/ui/components/forms/Checkbox";
-import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
+import {  isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
+import type { AssetMasterData } from "@/features/assetMaster/models/AssetMasterModel";
 
 const initialFormState = (): AddUpdateAssetMappingMasterRequest => ({
   AssetMasterMappingId: 0,
@@ -35,17 +36,13 @@ const initialFormState = (): AddUpdateAssetMappingMasterRequest => ({
 });
 
 export const AddUpdateAssetMappingMaster: React.FC = () => {
-  //#region STATE MANAGEMENT
+
   const [formData, setFormData] = useState<AddUpdateAssetMappingMasterRequest>(() => initialFormState());
+
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
 
-  const [assetCode, setAssetCode] = useState<string>();
-  const [assetName, setAssetName] = useState<string>();
-  const [assetType, setAssetType] = useState<string>();
-  const [assetModel, setAssetModel] = useState<string>();
-  const [assetBrand, setAssetBrand] = useState<string>();
-  const [serialNumber, setSerialNumber] = useState<string>();
+  const [assetMasterData, setAssetMasterData] = useState<AssetMasterData | null>(null);
 
   const [employeeDetails, setEmployeeDetails] = useState<EmployeeMasterData | null>(null);
   const [joiningDate, setJoiningDate] = useState<string>();
@@ -57,23 +54,20 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
   const AssetMappingId = AssetMasterMappingId ? Number(AssetMasterMappingId) : 0;
   const isAddMode = AssetMappingId === 0;
 
-  // TOAST
   const { addToast } = useToast();
 
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions("/assetMappingMaster");
-  //#endregion
 
-  // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  //#endregion
+
+  const [isEditAllowedForAssetAndEmployee, SetIsEditAllowedForAssetAndEmployee] = useState<boolean>(true);
+  
 
   const [dropdownLabels, setDropdownLabels] = useState<{
     employeeName?: string;
     assetName?: string;
   }>({});
 
-  //#region HANDLE FIELD CHANGE EVENT
   const handleFieldChange = (field: keyof AddUpdateAssetMappingMasterRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -81,31 +75,12 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
-  //#endregion
 
-  //#region INITIALIZATION
   useEffect(() => {
     if (!isAddMode) {
       fetchAssetMappingMasterDetails();
     }
   }, [AssetMappingId]);
-
-  useEffect(() => {
-    if (!formData.AssetMasterId) return;
-
-    fetchAssetById(formData.AssetMasterId).then((asset) => {
-      if (!asset) return;
-
-      setAssetCode(asset.AssetCode ?? "");
-      setAssetName(asset.AssetName ?? "");
-      setAssetType(asset.AssetType ?? "");
-      setAssetModel(asset.AssetModel ?? "");
-      setAssetBrand(asset.AssetBrand ?? "");
-      setSerialNumber(asset.SerialNumber ?? "");
-    });
-  }, [formData.AssetMasterId]);
-
-  //#endregion
 
   //#region FETCH ASSET MAPPING MASTER DETAILS
   const fetchAssetMappingMasterDetails = async () => {
@@ -124,6 +99,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
         const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
 
         if (E.isRight(response)) {
+          
           const e = response.right.Data?.[0];
 
           if (e) {
@@ -138,15 +114,29 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
               ConditionOnIssue: e.ConditionOnIssue ?? prev.ConditionOnIssue,
               ConditionOnReturn: e.ConditionOnReturn ?? prev.ConditionOnReturn,
               Remarks: e.Remarks ?? prev.Remarks,
+              
             }));
 
             if (e.EmployeeId) {
+
               fetchEmployeeMasterById(e.EmployeeId).then((employee) => {
                 if (!employee) return;
                 setEmployeeDetails(employee);
                 setJoiningDate(formatDate_dd_mm_yyyy(employee.JoiningDate ?? ""));
               });
+
             }
+
+            if (e.EmployeeId) {
+
+              fetchAssetById(e.AssetMasterId ?? 0).then((assetMaster) => {
+                if (!assetMaster) return;
+                setAssetMasterData(assetMaster);
+              });
+
+            }
+
+            SetIsEditAllowedForAssetAndEmployee(e.IsEditAllowedForAssetAndEmployee);
 
             setDropdownLabels({
               employeeName: e.EmployeeName || "",
@@ -293,22 +283,23 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
               <SingleSelectDropdownWithPagination
                 label="Asset"
                 title="Select Asset"
+                disabled={!isEditAllowedForAssetAndEmployee}
                 size="lg"
                 required
                 dataFetchCallBack={fetchAssetMasterDropdown}
                 onSelected={(item) => {
+
                   if (!item) {
+
                     handleFieldChange("AssetMasterId", null);
-                    setAssetCode("");
-                    setAssetName("");
-                    setAssetType("");
-                    setAssetModel("");
-                    setAssetBrand("");
-                    setSerialNumber("");
+
+                    setAssetMasterData(null);
                     return;
                   }
 
                   handleFieldChange("AssetMasterId", Number(item.value));
+                  setAssetMasterData(item as unknown as AssetMasterData);
+
                 }}
                 initialValue={createDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
                 error={errors.AssetMasterId}
@@ -317,12 +308,12 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
               {formData.AssetMasterId != 0 && formData.AssetMasterId != null && (
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <FieldItem label="Asset Code" value={assetCode || "-"} />
-                    <FieldItem label="Asset Name" value={assetName || "-"} />
-                    <FieldItem label="Asset Type" value={assetType || "-"} />
-                    <FieldItem label="Asset Model" value={assetModel || "-"} />
-                    <FieldItem label="Asset Brand" value={assetBrand || "-"} />
-                    <FieldItem label="Serial Number" value={serialNumber || "-"} />
+                    <FieldItem label="Asset Code" value={assetMasterData?.AssetCode || "-"} />
+                    <FieldItem label="Asset Name" value={assetMasterData?.AssetName || "-"} />
+                    <FieldItem label="Asset Type" value={assetMasterData?.AssetType || "-"} />
+                    <FieldItem label="Asset Model" value={assetMasterData?.AssetModel || "-"} />
+                    <FieldItem label="Asset Brand" value={assetMasterData?.AssetBrand || "-"} />
+                    <FieldItem label="Serial Number" value={assetMasterData?.SerialNumber || "-"} />
                   </div>
                 </div>
               )}
@@ -334,11 +325,15 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                 label="Employee"
                 title="Select Employee"
                 size="lg"
+                 disabled={!isEditAllowedForAssetAndEmployee}
                 required
                 dataFetchCallBack={fetchEmployeeMasterDropdown}
                 onSelected={(item) => {
+
                   if (!item) {
+
                     handleFieldChange("EmployeeId", 0);
+
                     setEmployeeDetails(null);
                     setJoiningDate("");
                     return;
@@ -346,6 +341,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                   setEmployeeDetails(item as unknown as EmployeeMasterData);
                   setJoiningDate(formatDate_dd_mm_yyyy(item.JoiningDate ?? ""));
                   handleFieldChange("EmployeeId", Number(item.value));
+
                 }}
                 initialValue={createDropdownInitialValue(formData.EmployeeId, dropdownLabels.employeeName)}
                 error={errors.EmployeeId}

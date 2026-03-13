@@ -66,9 +66,10 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   const { canAction } = useMenuPermissions();
 
-  const fetchPaymentScheduleSchemeMaster = () => (page: number) =>
+  const fetchPaymentScheduleSchemeMaster = () => (page: number, params?: { value?: string }) =>
     fetchPaymentScheduleSchemeMasterDropDown(page, {
       projectId: Number(projectId),
+      paymentScheduleScheme: params?.value || "",
       isReuiredOthersOption: false,
     });
 
@@ -458,6 +459,7 @@ export const PaymentScheduleMaster: React.FC = () => {
           let pageToShow = pagination.currentPage;
 
           if (pagination.currentPage > newTotalPages) {
+
             pageToShow = newTotalPages;
           } else if (PaymentScheduleMasterList.length === 1 && pagination.currentPage > 1) {
             pageToShow = pagination.currentPage - 1;
@@ -468,7 +470,7 @@ export const PaymentScheduleMaster: React.FC = () => {
             totalPages: newTotalPages,
           });
 
-          await loadPaymentScheduleMaster(pageToShow);
+          await loadPaymentScheduleMaster(pageToShow, {}, undefined, formData.PaymentScheduleSchemeMasterId ?? 0, formData.InventoryBuildingId, formData.InventoryFlatFloorBasementPodiumWingId);
 
           addToast({
             type: "success",
@@ -561,32 +563,32 @@ export const PaymentScheduleMaster: React.FC = () => {
         </div>
       </div>
       {Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
-      <div className="p-4">
-      <div className="space-y-4 p-4  bg-blue-50 rounded-lg border border-blue-200">
-        <div className="grid grid-cols-1 md:grid-cols-3">
-          <FieldItem label="Building" value={buildingName || "-"} />
-          <FieldItem label="Wing" value={wingName || "-"} />
-          <FieldItem
-            label="Total"
-            value={
-              <div className="flex items-center">
-                <span className={`font-bold ${totalPercentage === 100 ? "text-green-600" : "text-red-600"}`}>
-                  {totalPercentage.toFixed(2)}%
-                </span>
+        <div className="p-4">
+          <div className="space-y-4 p-4  bg-blue-50 rounded-lg border border-blue-200">
+            <div className="grid grid-cols-1 md:grid-cols-3">
+              <FieldItem label="Building" value={buildingName || "-"} />
+              <FieldItem label="Wing" value={wingName || "-"} />
+              <FieldItem
+                label="Total"
+                value={
+                  <div className="flex items-center">
+                    <span className={`font-bold ${totalPercentage === 100 ? "text-green-600" : "text-red-600"}`}>
+                      {totalPercentage.toFixed(2)}%
+                    </span>
 
-                {totalPercentage !== 100 && (
-                  <span className="text-xs text-red-600 ml-2">
-                    {totalPercentage < 100
-                      ? `Missing ${(100 - totalPercentage).toFixed(2)}%`
-                      : `Exceeds ${(totalPercentage - 100).toFixed(2)}%`}
-                  </span>
-                )}
-              </div>
-            }
-          />
+                    {totalPercentage !== 100 && (
+                      <span className="text-xs text-red-600 ml-2">
+                        {totalPercentage < 100
+                          ? `Missing ${(100 - totalPercentage).toFixed(2)}%`
+                          : `Exceeds ${(totalPercentage - 100).toFixed(2)}%`}
+                      </span>
+                    )}
+                  </div>
+                }
+              />
+            </div>
+          </div>
         </div>
-      </div>
-      </div>
       )}
       {/* TOTAL SUMMARY */}
       <div className="space-y-4 p-4 pb-5">
@@ -594,7 +596,7 @@ export const PaymentScheduleMaster: React.FC = () => {
           <div className="flex items-center gap-30">
             <h3 className="text-lg font-semibold text-gray-900">Payment Schedule List</h3>
           </div>
-          
+
           {canAction && totalPercentage < 100 && Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
             <Button
               onClick={() => {

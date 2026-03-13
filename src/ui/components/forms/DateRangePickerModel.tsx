@@ -537,7 +537,9 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                     padding: 4,
                     display: 'flex',
                     alignItems: 'center',
-                    color: theme.colors.text,
+                    color: theme.colors.textSecondary,
+                    fontWeight: theme.fontWeight.normal,
+
                   }}
                 >
                   <ChevronRight size={18} />
@@ -619,7 +621,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                                 ? '#dbeafe'
                                 : 'transparent',
                           color: isSelected
-                            ? '#fff'
+                            ? '#ffff'
                             : !isCurrentMonth
                               ? theme.colors.textLight
                               : !dateAllowed

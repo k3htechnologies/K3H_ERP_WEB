@@ -142,6 +142,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                     <div className="space-y-4">
                         <DateInput
                             label="Working Date"
+                            required
                             value={startDate ? formatDate_dd_mm_yyyy(startDate) : null}
                             onChange={(value) => {
                                 const converted = convert_dd_mm_yyyy_To_Yyyy_mm_dd(value);
@@ -164,6 +165,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                         />
                         <DateInput
                             label="Comp Off Date"
+                            required
                             value={endDate ? formatDate_dd_mm_yyyy(endDate) : null}
                             onChange={(value) => {
                                 const converted = convert_dd_mm_yyyy_To_Yyyy_mm_dd(value);

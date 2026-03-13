@@ -251,6 +251,7 @@ export const PayrollReport: React.FC = () => {
             />
 
           ) : (
+            
             <DataTableExpandable
               data={getCurrentData()}
               columns={getCurrentColumns(activeTab)}

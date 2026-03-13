@@ -14,13 +14,15 @@ import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialVa
 import { MultiFilePicker, type FileValue } from "@/ui/components/ImagePicker/MultiFilePicker";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, parseTimeFromISO, getCurrentTime } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, parseTimeFromISO } from "@/core/utils/dateFormat";
 import { runApiWithLoader } from '@/core/utils';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { TextArea } from "@/ui/components/forms/Textarea";
+import type { DropdownItem } from "@/core/types/DropdownItem";
+import { getCurrentTime } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateOutDoor => ({
   OutdoorId: 0,
@@ -67,7 +69,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string; }>({});
   const [selectedDepartmentName, setSelectedDepartmentName] = useState<string>("");
   const [selectedAccompaniedValues, setSelectedAccompaniedValues] = useState<string | number | null>(null);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -214,9 +215,11 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
 
   //#region HANDLE DEPARTMENT SELECTED
-  const handleDepartmentSelected = useCallback((item: { label: string; value: string | number | null }) => {
-    const departmentId = item.value ? Number(item.value) : 0;
-    const departmentName = item.label || "";
+  const handleDepartmentSelected = useCallback((item: DropdownItem| null) => {
+
+    const departmentId = item?.value ? Number(item.value) : 0;
+
+    const departmentName = item?.label || "";
 
     handleFieldChange("DepartmentId", departmentId);
     setSelectedDepartmentName(departmentName);
@@ -317,7 +320,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   const handleSubmit = async () => {
 
     setErrors({})
-    setHasSubmitted(true);
+    
     const validation = validateForm()
 
     if (!validation.isValid) {
@@ -423,7 +426,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                 <MultiSelectPagination
                   label="Accompanied By"
                   required
-                  hasSubmitted={hasSubmitted}
+                  error={outdoorFormData.AccompaniedById}
                   dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
                   selectedValues={accompaniedDropdown.selectedValues}
                   options={accompaniedDropdown.initialOptions}

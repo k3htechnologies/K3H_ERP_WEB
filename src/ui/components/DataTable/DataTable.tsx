@@ -45,6 +45,8 @@ interface DataTableProps {
   recordsPerPage?: number
   sortInfo?: SortInfo
   onSort?: (sortInfo: SortInfo) => void
+  onRowSelect?: (rows: any[]) => void
+  rowKey?: string
 }
 
 export const DataTable: React.FC<DataTableProps> = ({
@@ -58,8 +60,13 @@ export const DataTable: React.FC<DataTableProps> = ({
   maxHeight = useViewportHeight(255, 350, 900),
   recordsPerPage = 10,
   sortInfo,
-  onSort
+  onSort,
+   onRowSelect,
+  rowKey = "id"
 }) => {
+
+  const [selectedRows, setSelectedRows] = React.useState<(string | number)[]>([])
+
 
   const handleSort = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey)
@@ -228,8 +235,31 @@ export const DataTable: React.FC<DataTableProps> = ({
               :
               (
                 data.map((row, index) => (
-                  <tr key={index} className="hover:bg-gray-50 h-10 border-b border-gray-200">
+
+                  <tr key={index} 
+                      onClick={() => {
+                      const key = row[rowKey]
+
+                      const updatedSelection = selectedRows.includes(key)
+                        ? selectedRows.filter((k) => k !== key)
+                        : [...selectedRows, key]
+
+                      setSelectedRows(updatedSelection)
+
+                      const selectedData = data.filter((r) =>
+                        updatedSelection.includes(r[rowKey])
+                      )
+
+                      onRowSelect?.(selectedData)
+                    }}
+                    className={`h-10 border-b border-gray-200 cursor-pointer ${selectedRows.includes(row[rowKey])
+                        ? "bg-blue-50 border-l-4 border-blue-500"
+                        : "hover:bg-gray-50"
+                      }`}
+                  >
+
                     {columns.map((column) => {
+
                       const cellValue = column.render ?  column.render(row[column.key], row, index): row[column.key]
 
                       return (

@@ -70,7 +70,7 @@ export interface DateRangePickerModalProps {
   loading?: boolean
   timeLabel?: string
   children?: React.ReactNode // allows injecting custom fields (e.g., Reason)
-  renderChildren?: (dates: { 
+  renderChildren?: (dates: {
     startDate: string | null
     endDate: string | null
     editingField?: 'start' | 'end' | null
@@ -186,7 +186,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     const parsedEnd = parseYyyyMmDd(endDate)
     setTempStartDate(parsedStart)
     setTempEndDate(parsedEnd)
-    
+
     // Reset time to default when dates are cleared (e.g., on reset)
     if (!parsedStart && !parsedEnd) {
       setLocalStartTime('00:00 am')
@@ -195,7 +195,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
       setLocalStartTime(startTime)
       setLocalEndTime(endTime)
     }
-    
+
     setLocalAIEnabled(aiEnabled)
     if (parsedStart) setCurrentMonth(parsedStart)
     else if (parsedEnd) setCurrentMonth(parsedEnd)
@@ -255,7 +255,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
         onMonthChange(start, end)
       }
     }
-  }, [currentMonth, isOpen, onMonthChange, getMonthStartEnd])
+  }, [currentMonth, isOpen])
 
   const handlePrevMonth = () => {
     setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))
@@ -272,19 +272,19 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     const dd = String(date.getDate()).padStart(2, '0')
     return `${yyyy}-${mm}-${dd}`
   }
-  
+
   // Check if a selected date is from allowedDates (CompOff dates)
   const isSelectedDateFromAllowedDates = (): boolean => {
     if (!allowedDates || allowedDates.length === 0) return false
-    const selectedDateStr = tempStartDate ? formatYyyyMmDd(tempStartDate) : 
-                           (tempEndDate ? formatYyyyMmDd(tempEndDate) : null)
+    const selectedDateStr = tempStartDate ? formatYyyyMmDd(tempStartDate) :
+      (tempEndDate ? formatYyyyMmDd(tempEndDate) : null)
     if (!selectedDateStr) return false
     return allowedDates.includes(selectedDateStr)
   }
-  
+
   const isDateAllowed = (date: Date): boolean => {
     if (!allowedDates || allowedDates.length === 0) return true
-    
+
     // If a CompOff date is selected, invert the logic:
     // - Disable dates from allowedDates (CompOff dates)
     // - Enable all other dates
@@ -292,7 +292,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
       const dateStr = formatYyyyMmDd(date)
       return !allowedDates.includes(dateStr) // Invert: allow dates NOT in allowedDates
     }
-    
+
     // Default behavior: only allow dates from allowedDates
     const dateStr = formatYyyyMmDd(date)
     return allowedDates.includes(dateStr)
@@ -300,7 +300,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
 
   const handleDayClick = (date: Date | null) => {
     if (!date) return
-    
+
     // Check if date is allowed
     if (!isDateAllowed(date)) return
 
@@ -391,11 +391,11 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   }
 
   const summaryText = getSummaryText()
-  
+
   // Memoize formatted dates
   const formattedStartDate = useMemo(() => formatLocalDate(tempStartDate), [tempStartDate])
   const formattedEndDate = useMemo(() => formatLocalDate(tempEndDate), [tempEndDate])
-  
+
   const fullSummaryText = useMemo(() => {
     if (!summaryText) return ''
     if (renderSummary) {
@@ -409,7 +409,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   }, [summaryText, showTimePicker, localStartTime, localEndTime, summaryPrefix, renderSummary])
 
   // Memoize renderChildren result to prevent unnecessary re-renders when only time changes
-  
+
   const handleSelectField = useCallback((field: 'start' | 'end') => {
     setEditingField(field)
     if (field === 'start' && tempStartDate) {
@@ -417,7 +417,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
       setTempEndDate(null)
     }
   }, [tempStartDate])
-  
+
   const handleClearField = useCallback((field: 'start' | 'end') => {
     if (field === 'start') {
       setTempStartDate(null)
@@ -442,7 +442,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     }
     setEditingField(null)
   }, [])
-  
+
   const renderedChildren = useMemo(() => {
     if (renderChildren) {
       return renderChildren({
@@ -473,9 +473,9 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     >
       <div style={{ padding: 0 }}>
         {/* Main Content */}
-        <div style={{ 
-          display: 'flex', 
-          gap: 24, 
+        <div style={{
+          display: 'flex',
+          gap: 24,
           padding: '0',
           marginTop: -8
         }}>
@@ -537,7 +537,9 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                     padding: 4,
                     display: 'flex',
                     alignItems: 'center',
-                    color: theme.colors.text,
+                    color: theme.colors.textSecondary,
+                    fontWeight: theme.fontWeight.normal,
+
                   }}
                 >
                   <ChevronRight size={18} />
@@ -591,13 +593,9 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                     const dateStr = formatYyyyMmDd(date)
                     const isFromAllowedDates = allowedDates && allowedDates.length > 0 && allowedDates.includes(dateStr)
                     const hasCompOffDateSelected = isSelectedDateFromAllowedDates()
-                    
-                    // Highlight logic: 
-                    // - If CompOff date is selected: highlight dates NOT in allowedDates (enabled dates)
-                    // - If no CompOff date selected: highlight dates IN allowedDates (CompOff dates)
-                    const isHighlighted = hasCompOffDateSelected 
-                        ? (!isFromAllowedDates && !isSelected && !isInRange && isCurrentMonth && dateAllowed)
-                        : (isFromAllowedDates && !isSelected && !isInRange && isCurrentMonth && dateAllowed)
+                    const isHighlighted = hasCompOffDateSelected
+                      ? (!isFromAllowedDates && !isSelected && !isInRange && isCurrentMonth && dateAllowed)
+                      : (isFromAllowedDates && !isSelected && !isInRange && isCurrentMonth && dateAllowed)
 
                     return (
                       <button
@@ -614,17 +612,17 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                           backgroundColor: isSelected
                             ? theme.colors.primary1
                             : isInRange
-                            ? theme.colors.backgroundSecondary
-                            : isHighlighted
-                            ? '#dbeafe'
-                            : 'transparent',
+                              ? theme.colors.backgroundSecondary
+                              : isHighlighted
+                                ? '#dbeafe'
+                                : 'transparent',
                           color: isSelected
-                            ? '#fff'
+                            ? '#ffff'
                             : !isCurrentMonth
-                            ? theme.colors.textLight
-                            : !dateAllowed
-                            ? theme.colors.textLight
-                            : theme.colors.text,
+                              ? theme.colors.textLight
+                              : !dateAllowed
+                                ? theme.colors.textLight
+                                : theme.colors.text,
                           fontWeight: isSelected ? theme.fontWeight.medium : theme.fontWeight.normal,
                           transition: 'all 0.2s',
                           opacity: !dateAllowed ? 0.3 : 1,
@@ -639,8 +637,8 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                             e.currentTarget.style.backgroundColor = isInRange
                               ? theme.colors.backgroundSecondary
                               : isHighlighted
-                              ? '#dbeafe'
-                              : 'transparent'
+                                ? '#dbeafe'
+                                : 'transparent'
                           }
                         }}
                       >
@@ -653,7 +651,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
             </div>
 
             {showTimePicker && (
-              <div style={{ 
+              <div style={{
                 padding: 12,
                 border: `1px solid ${theme.colors.border}`,
                 borderRadius: theme.borderRadius.md,
@@ -694,7 +692,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
 
         {/* Summary Section */}
         {showSummary && fullSummaryText && (
-          <div style={{ 
+          <div style={{
             padding: '16px 24px',
             borderTop: `1px solid ${theme.colors.border}`,
             backgroundColor: theme.colors.backgroundSecondary,
@@ -709,7 +707,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                 summaryText: summaryText
               })
             ) : (
-              <p style={{ 
+              <p style={{
                 margin: 0,
                 fontSize: theme.fontSize.sm,
                 color: theme.colors.text,

@@ -107,102 +107,117 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
     const from = parseDate(fromDate ?? null);
     const to = parseDate(toDate ?? null);
 
-    // Two-click behavior: first click sets "From", second click sets "To"
-    // If clicking on the start date when it's already selected (and no end date), clear it
-    if (from && isSameDay(date, from) && !to) {
-      if (onBothDatesChange) {
-        onBothDatesChange(null, null);
-      } else {
-        onFromDateChange(null);
-      }
-      setSelectingStart(true);
-      return;
-    }
-
-    // If clicking on the end date when it's already selected, clear it
-    if (to && isSameDay(date, to) && from) {
-      if (onBothDatesChange) {
-        onBothDatesChange(fromDate ?? null, null);
-      } else {
-        onToDateChange(null);
-      }
-      setSelectingStart(false);
-      return;
-    }
-
-    // If both dates are the same and clicking on that date, clear both
-    if (from && to && isSameDay(date, from) && isSameDay(date, to)) {
-      if (onBothDatesChange) {
-        onBothDatesChange(null, null);
-      } else {
-        onToDateChange(null);
-        onFromDateChange(null);
-      }
-      setSelectingStart(true);
-      return;
-    }
-
-    // Two-click selection: first click sets "From", second click sets "To"
+    // Case 1: No dates selected → set start date
     if (!from && !to) {
-      // No dates selected - set as start date
-      if (onBothDatesChange) {
-        onBothDatesChange(dateStr, null);
-      } else {
-        onFromDateChange(dateStr);
-      }
+      if (onBothDatesChange) onBothDatesChange(dateStr, null);
+      else onFromDateChange(dateStr);
       setSelectingStart(false);
-    } else if (from && !to) {
-      // Start date exists, selecting end date
-      if (date < from) {
-        // If selected date is before start, swap them
-        if (onBothDatesChange) {
-          onBothDatesChange(dateStr, fromDate ?? null);
-        } else {
+      return;
+    }
+
+    // Case 2: Only start selected → set end date
+    if (from && !to) {
+      if (isSameDay(date, from)) {
+        // If clicked the same start again, treat as single-day range
+        if (onBothDatesChange) onBothDatesChange(dateStr, dateStr);
+        else {
+          onFromDateChange(dateStr);
+          onToDateChange(dateStr);
+        }
+      } else if (date < from) {
+        // If clicked before start → swap
+        if (onBothDatesChange) onBothDatesChange(dateStr, fromDate ?? null);
+        else {
           onFromDateChange(dateStr);
           onToDateChange(fromDate ?? null);
         }
       } else {
-        // Normal case - set as end date
-        if (onBothDatesChange) {
-          onBothDatesChange(fromDate ?? null, dateStr);
-        } else {
-          onToDateChange(dateStr);
-        }
+        // Normal case → set end date
+        if (onBothDatesChange) onBothDatesChange(fromDate ?? null, dateStr);
+        else onToDateChange(dateStr);
       }
       setSelectingStart(true);
-    } else if (from && to) {
-      // Both dates exist - start a new selection
-      if (date < from) {
-        // Clicking before start - set as new start
-        if (onBothDatesChange) {
-          onBothDatesChange(dateStr, null);
-        } else {
+      return;
+    }
+
+    // Case 3: Only end selected → set start date
+    if (!from && to) {
+      if (isSameDay(date, to)) {
+        if (onBothDatesChange) onBothDatesChange(dateStr, dateStr);
+        else {
           onFromDateChange(dateStr);
-          onToDateChange(null);
-        }
-        setSelectingStart(false);
-      } else if (date > to) {
-        // Clicking after end - set as new end
-        if (onBothDatesChange) {
-          onBothDatesChange(fromDate ?? null, dateStr);
-        } else {
           onToDateChange(dateStr);
         }
-        setSelectingStart(true);
+      } else if (date > to) {
+        if (onBothDatesChange) onBothDatesChange(toDate ?? null, dateStr);
+        else onFromDateChange(toDate ?? null);
+        onToDateChange(dateStr);
       } else {
-        // Clicking between or same - reset to start
-        if (onBothDatesChange) {
-          onBothDatesChange(dateStr, null);
-        } else {
+        if (onBothDatesChange) onBothDatesChange(dateStr, toDate ?? null);
+        else onFromDateChange(dateStr);
+      }
+      setSelectingStart(false);
+      return;
+    }
+
+    // Case 4: Both selected → click behavior
+    if (from && to) {
+      if (isSameDay(date, from) && isSameDay(date, to)) {
+        // Single-day range clicked again → deselect both
+        if (onBothDatesChange) onBothDatesChange(null, null);
+        else {
+          onFromDateChange(null);
+          onToDateChange(null);
+        }
+        setSelectingStart(true);
+        return;
+      }
+
+      if (isSameDay(date, from)) {
+        if (onBothDatesChange) onBothDatesChange(null, toDate ?? null);
+        else onFromDateChange(null);
+        setSelectingStart(false);
+        return;
+      }
+
+      if (isSameDay(date, to)) {
+        if (onBothDatesChange) onBothDatesChange(fromDate ?? null, null);
+        else onToDateChange(null);
+        setSelectingStart(true);
+        return;
+      }
+
+      // Click inside range → start a new range from clicked date
+      if (date > from && date < to) {
+        if (onBothDatesChange) onBothDatesChange(dateStr, null);
+        else {
           onFromDateChange(dateStr);
           onToDateChange(null);
         }
         setSelectingStart(false);
+        return;
+      }
+
+      // Click before start → new start
+      if (date < from) {
+        if (onBothDatesChange) onBothDatesChange(dateStr, null);
+        else {
+          onFromDateChange(dateStr);
+          onToDateChange(null);
+        }
+        setSelectingStart(false);
+        return;
+      }
+
+      // Click after end → new end
+      if (date > to) {
+        if (onBothDatesChange) onBothDatesChange(fromDate ?? null, dateStr);
+        else onToDateChange(dateStr);
+        setSelectingStart(true);
+        return;
       }
     }
-    // Keep calendar open - don't close it
-  }, [fromDate, toDate, formatLocalDate, parseDate, isSameDay, onBothDatesChange, onFromDateChange, onToDateChange]);
-
+  }, [fromDate, toDate, parseDate, formatLocalDate, isSameDay, onBothDatesChange, onFromDateChange, onToDateChange]);
   // Memoize calendar generation
   const generateCalendar = useCallback((baseDate: Date) => {
     const year = baseDate.getFullYear();
@@ -245,7 +260,7 @@ export const DateRangeSelector: React.FC<DateRangeSelectorProps> = ({
   const { days, year, month } = calendarData;
 
   // Memoize month names array
-  const monthNames = useMemo(() => 
+  const monthNames = useMemo(() =>
     ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
     []
   );

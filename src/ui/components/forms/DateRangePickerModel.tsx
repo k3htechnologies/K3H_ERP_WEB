@@ -593,10 +593,6 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                     const dateStr = formatYyyyMmDd(date)
                     const isFromAllowedDates = allowedDates && allowedDates.length > 0 && allowedDates.includes(dateStr)
                     const hasCompOffDateSelected = isSelectedDateFromAllowedDates()
-
-                    // Highlight logic: 
-                    // - If CompOff date is selected: highlight dates NOT in allowedDates (enabled dates)
-                    // - If no CompOff date selected: highlight dates IN allowedDates (CompOff dates)
                     const isHighlighted = hasCompOffDateSelected
                       ? (!isFromAllowedDates && !isSelected && !isInRange && isCurrentMonth && dateAllowed)
                       : (isFromAllowedDates && !isSelected && !isInRange && isCurrentMonth && dateAllowed)

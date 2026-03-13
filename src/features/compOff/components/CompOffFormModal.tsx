@@ -44,13 +44,12 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
     const [allowedDates, setAllowedDates] = useState<string[]>([]);
     const [, setIsLoadingDates] = useState(false);
 
-    // Fetch dates for a specific month range
     const fetchCompOffDates = (monthStart: string, monthEnd: string, abortController: AbortController) => {
         setIsLoadingDates(true);
         
         const employeeData = LocalStorageHelper.getStoredEmployeeData();
         const params: PullCompOffDatesRequest = {
-            PageSize: 1000, // Large page size to get all dates for the month
+            PageSize: 1000, 
             PageNumber: 1,
             EmployeeId: employeeData?.EmployeeId,
             StartDate: monthStart,
@@ -60,11 +59,9 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
         compOffService.apiCallPullCompOffDates(params, { signal: abortController.signal })
             .then((response) => {
                 if (E.isRight(response)) {
-                    // Extract dates from AttendanceDate fields and convert ISO to YYYY-MM-DD format
                     const dates = (response.right.Data || [])
                         .map(item => {
                             if (item?.AttendanceDate) {
-                                // Convert ISO format "2026-01-06T00:00:00" to "2026-01-06"
                                 return convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(item.AttendanceDate);
                             }
                             return null;
@@ -91,7 +88,6 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
             // Only fetch dates when adding (not editing)
             const abortController = new AbortController();
             
-            // Use filter dates from DateRangeSelector if available, otherwise use current month
             let monthStart: string;
             let monthEnd: string;
 

@@ -33,6 +33,7 @@ import { DateRangeWithActions } from '@/ui/components/DateRangeWithActions';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { updateFiltersWithDates } from '@/core/helpers/dateFilterHelper';
+import { isEditDisabled } from '../helpers/dateFilterHelper';
 
 export const OutDoor: React.FC = () => {
   //#region STATE
@@ -217,8 +218,8 @@ export const OutDoor: React.FC = () => {
           setConclusionText("");
           setIsConclusionEditMode(false);
 
-          } else {
-            addToast({
+        } else {
+          addToast({
             type: "error", title: response.left.message
           });
         }
@@ -287,10 +288,10 @@ export const OutDoor: React.FC = () => {
 
   const outDoorPaginationInfo: PaginationInfo = useMemo(
     () => ({
-    currentPage: pagination.currentPage,
-    totalPages: pagination.totalPages,
-    totalRecords: pagination.totalRecords,
-    pageSize: pagination.pageSize,
+      currentPage: pagination.currentPage,
+      totalPages: pagination.totalPages,
+      totalRecords: pagination.totalRecords,
+      pageSize: pagination.pageSize,
       onPageChange: handlePageChange
     }),
     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
@@ -333,7 +334,7 @@ export const OutDoor: React.FC = () => {
                     <div className="flex items-center justify-between w-full gap-4">
                       <div className="flex-1 min-w-0">
                         <h3 className="text-sm font-medium text-gray-900 mb-1 flex items-center gap-2">
-                          
+
                           {formatDate_dd_MonthName_yy(item.OutDoorDate)}
                         </h3>
                         <div className="flex items-center gap-3">
@@ -353,12 +354,13 @@ export const OutDoor: React.FC = () => {
                       {(
                         <Button
                           color='transparent'
+                          disabled={isEditDisabled(item.CreatedDate)}
                           onClick={(e) => {
                             e.stopPropagation();
                             handleOpenConclusionModal(item);
                           }}
                           className="p-1.5 rounded-lg hover:bg-white/50 transition-colors"
-                          title={item.Conclusion ? "Edit Conclusion" : "Add Conclusion"}
+                          title={isEditDisabled(item.CreatedDate) ? "Conclusion can only be edited within 2 days" : item.Conclusion ? "Edit Conclusion" : "Add Conclusion"}
                         >
                           <ClipboardCheck
                             className={`w-5 h-5 ${item.Conclusion ? 'text-purple-600' : 'text-gray-600'}`}
@@ -366,7 +368,7 @@ export const OutDoor: React.FC = () => {
                         </Button>
                       )}
 
-                   
+
 
                     </div>
 
@@ -377,17 +379,17 @@ export const OutDoor: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-b border-gray-200 pb-2">
                           <FieldItem label="Company Name" value={item.CompanyName || '-'} isRow={false} />
                           <FieldItem label="Department" value={item.DepartmentName || '-'} isRow={false} />
-                            </div>
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-b border-gray-200 pb-2 pt-2">
                           <FieldItem label="Company Address" value={item.CompanyAddress || '-'} isRow={false} />
                           <FieldItem label="Accompanied By" value={item.AccompaniedByName || '-'} isRow={false} />
-                          </div>
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 border-b border-gray-200 pb-2 pt-2">
                           <FieldItem label="Purpose" value={<TooltipText text={item.Purpose || '-'} maxWidth="300px" tooltipThreshold={30} />} isRow={false} />
                           <FieldItem label="Requested By" value={item.CreatedBy || '-'} isRow={false} />
-                          </div>
+                        </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 pt-2">
                           <FieldItem label="Visiting Card"
@@ -412,12 +414,13 @@ export const OutDoor: React.FC = () => {
                             }
                             isRow={false}
                           />
-                          </div>
+                        </div>
 
                         <div className="flex items-start gap-2.5 pt-2">
                           <div className="flex-1 flex justify-end">
                             {canAction && (
                               <Button
+                                disabled={isEditDisabled(item.CreatedDate)}
                                 onClick={() => navigate(`/outdoor/add/${item.OutdoorId}`)}
                                 color="blue"
                                 size="sm"
@@ -425,12 +428,12 @@ export const OutDoor: React.FC = () => {
                               >
                                 Edit
                               </Button>
-                          )}
-                        </div>
+                            )}
+                          </div>
                         </div>
                       </div>
 
-  
+
                     </div>
                   }
                 />
@@ -465,16 +468,16 @@ export const OutDoor: React.FC = () => {
         loading={isLoading}
       >
         <div className='-mt-2'>
-        <TextArea
+          <TextArea
 
-          label="Conclusion"
-          value={conclusionText}
-          onChange={(e) => setConclusionText(e.target.value)}
+            label="Conclusion"
+            value={conclusionText}
+            onChange={(e) => setConclusionText(e.target.value)}
             placeholder="Enter conclusion about the outdoor visit"
-          rows={6}
+            rows={6}
             autoResize
             disabled={selectedOutdoorItem?.Conclusion ? !isConclusionEditMode : false}
-        />
+          />
         </div>
 
       </Modal>

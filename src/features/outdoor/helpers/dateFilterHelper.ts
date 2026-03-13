@@ -45,3 +45,14 @@ export const updateFiltersWithDates = (
   }
 };
 
+export const isEditDisabled = (createdDate: string | null) => {
+   if (!createdDate) return false; 
+  const created = new Date(createdDate);
+  const now = new Date();
+
+  const diffTime = now.getTime() - created.getTime();
+  const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+  return diffDays > 2;
+};
+

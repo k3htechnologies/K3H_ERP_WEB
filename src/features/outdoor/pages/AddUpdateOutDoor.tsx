@@ -14,7 +14,7 @@ import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialVa
 import { MultiFilePicker, type FileValue } from "@/ui/components/ImagePicker/MultiFilePicker";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, parseTimeFromISO } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, parseTimeFromISO, getCurrentTime } from "@/core/utils/dateFormat";
 import { runApiWithLoader } from '@/core/utils';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
@@ -26,7 +26,7 @@ const initialFormState = (): AddUpdateOutDoor => ({
   OutdoorId: 0,
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   OutDoorDate: new Date().toISOString().split("T")[0],
-  OutDoorTime: "00:00",
+  OutDoorTime: getCurrentTime(),
   AccompaniedById: "",
   DepartmentId: 0,
   CompanyName: "",
@@ -59,7 +59,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  const [selectedTime, setSelectedTime] = useState<string>("00:00");
+  const [selectedTime, setSelectedTime] = useState<string>(getCurrentTime);
   const [visitingCardFiles, setVisitingCardFiles] = useState<FileValue[]>([]);
   const [removedVisitingCardUrls, setRemovedVisitingCardUrls] = useState<string[]>([]);
   const [visitingCardURL, setVisitingCardURL] = useState<string>("");
@@ -67,6 +67,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string; }>({});
   const [selectedDepartmentName, setSelectedDepartmentName] = useState<string>("");
   const [selectedAccompaniedValues, setSelectedAccompaniedValues] = useState<string | number | null>(null);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -93,7 +94,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
     }
 
     setOutdoorFormData(initialFormState());
-    setSelectedTime("00:00");
+    setSelectedTime(getCurrentTime);
     setSelectedDepartmentName("");
     setSelectedAccompaniedValues(null);
     setDropdownLabels({});
@@ -316,7 +317,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   const handleSubmit = async () => {
 
     setErrors({})
-
+    setHasSubmitted(true);
     const validation = validateForm()
 
     if (!validation.isValid) {
@@ -422,6 +423,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                 <MultiSelectPagination
                   label="Accompanied By"
                   required
+                  hasSubmitted={hasSubmitted}
                   dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
                   selectedValues={accompaniedDropdown.selectedValues}
                   options={accompaniedDropdown.initialOptions}
@@ -444,6 +446,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                   label="Company Name"
                   required
                   size="md"
+                  placeholder="Enter Company Name"
                   value={outdoorFormData.CompanyName}
                   onChange={(e) => handleFieldChange('CompanyName', e.target.value)}
                   error={errors.CompanyName}
@@ -471,6 +474,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                 <TextArea
                   label="Company Address"
                   required
+                  placeholder="Enter Company Address"
                   value={outdoorFormData.CompanyAddress}
                   disabled={!!outdoorFormData.Conclusion}
                   onChange={(e) => handleFieldChange("CompanyAddress", e.target.value)}
@@ -482,6 +486,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                 <TextArea
                   label="Purpose"
                   required
+                  placeholder="Enter purpose"
                   value={outdoorFormData.Purpose}
                   onChange={(e) => handleFieldChange('Purpose', e.target.value)}
                   error={errors.Purpose}

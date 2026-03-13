@@ -460,7 +460,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                   onChange={setVisitingCardFiles}
                   availableFilesURL={visitingCardURL ?? ""}
                   allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
-                  maxFiles={5}
+                  maxFiles={2}
                   maxSizeMB={10}
                   onRemoveExisting={(url) => {
                     setRemovedVisitingCardUrls((prev) => [...prev, url]);

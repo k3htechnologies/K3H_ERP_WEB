@@ -22,7 +22,7 @@ import { useTabData } from "../hooks/useTabData";
 import { useGroupedAttendance } from "../hooks/useGroupedAttendance";
 import { usePayrollColumns } from "../hooks/usePayrollColumns";
 import { Button } from "@/ui/components/forms/Button";
-import { Check, Cross, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import ModuleApprovalStatus from "../components/moduleApprovalStatus";
 
 export const PayrollReport: React.FC = () => {
@@ -31,6 +31,8 @@ export const PayrollReport: React.FC = () => {
   const [selectedApprovals, setSelectedApprovals] = useState<any[]>([]);
   const [showApprovalPopup, setShowApprovalPopup] = useState(false);
   const [approvalRemark, setApprovalRemark] = useState("");
+  const [showRejectPopup, setShowRejectPopup] = useState(false);
+  const [rejectRemark, setRejectRemark] = useState("");
   // ── All data / filter / export logic ──────────────────────────────────────
   const {
     isLoading,
@@ -193,7 +195,13 @@ export const PayrollReport: React.FC = () => {
                     size='sm'
                     color='red'
                     className="flex items-center gap-1 px-4 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
-                    onClick={() => handleApproval("Rejected", selectedApprovals, "")}
+                    onClick={async () => {
+                      if (!selectedApprovals.length) {
+                        await handleApproval("Rejected", [], "");
+                        return;
+                      }
+                      setShowRejectPopup(true);
+                    }}
                   >
                     <X className="h-4 w-4" />
                     Reject
@@ -339,7 +347,10 @@ export const PayrollReport: React.FC = () => {
           }}
           saveText="Approve"
           cancelText="Cancel"
-          onCancel={() => setShowApprovalPopup(false)}
+          onCancel={() => {
+            setShowApprovalPopup(false);
+            setApprovalRemark("");
+          }}
           size="sm"
         >
           <div className="space-y-4">
@@ -351,6 +362,41 @@ export const PayrollReport: React.FC = () => {
               label="Remark"
               value={approvalRemark}
               onChange={(e) => setApprovalRemark(e.target.value)}
+              rows={4}
+              placeholder="Enter remark "
+            />
+          </div>
+        </Modal>
+
+        {/* REJECT CONFIRMATION MODAL */}
+        <Modal
+          isOpen={showRejectPopup}
+          onClose={() => setShowRejectPopup(false)}
+          title="Confirm Rejection"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            await handleApproval("Rejected", selectedApprovals, rejectRemark);
+            setShowRejectPopup(false);
+            setRejectRemark("");
+            setSelectedApprovals([]);
+          }}
+          saveText="Reject"
+          cancelText="Cancel"
+          onCancel={() => {
+            setShowRejectPopup(false);
+            setRejectRemark("");
+          }}
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-700">
+              You are about to reject <span className="font-semibold">{selectedApprovals.length}</span>{" "}
+              record(s).
+            </p>
+            <TextArea
+              label="Remark"
+              value={rejectRemark}
+              onChange={(e) => setRejectRemark(e.target.value)}
               rows={4}
               placeholder="Enter remark "
             />

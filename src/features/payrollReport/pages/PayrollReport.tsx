@@ -273,8 +273,6 @@ export const PayrollReport: React.FC = () => {
             />
           )}
         </div>
-
-
         {/* FILTER MODAL */}
         <Modal
           isOpen={showFilterPopup}

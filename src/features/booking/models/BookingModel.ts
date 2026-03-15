@@ -295,11 +295,9 @@ export interface AddUpdateBookingPaymentScheduleRequest {
     Name: string | null;
     Date: string | null;
     PaymentSchedulePercentage: number | null;
-    PaymentScheduleCumulative: number | null;
     PaymentScheduleAmount: number | null;
     PaymentScheduleGSTAmount: number | null;
     PaymentScheduleTDSAmount: number | null;
-    Rank:number | null;
 }
 //=============================================================
 // [ CANCEL REQUEST ]

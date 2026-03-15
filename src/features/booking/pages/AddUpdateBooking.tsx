@@ -2565,11 +2565,9 @@ export const AddUpdateBooking: React.FC = () => {
             Name: scheduleName,
             Date: scheduleDate,
             PaymentSchedulePercentage: percentage,
-            PaymentScheduleCumulative:0,
             PaymentScheduleAmount: amount,
             PaymentScheduleGSTAmount: (amount * Number(formData.AgreementValueGSTPercentage)) / 100,
             PaymentScheduleTDSAmount: agreementValue > 4999999.99 ? (amount * 1) / 100 : 0,
-            Rank:1,
           };
 
           if (editingPaymentScheduleIndex !== null) {

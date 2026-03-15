@@ -50,7 +50,6 @@ import { fetchChannelPartnerByMobileNumber, fetchChannelPartnerTeamMemberDropdow
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { fetchVillageDropdown } from "@/features/technical/villageDropDown";
-import { getCustomerClassification } from "@/features/enquiry/utils/customerClassification";
 import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { sendOTP } from "@/features/technical/services/OTPService";
@@ -529,13 +528,7 @@ export const AddUpdateEnquiry: React.FC = () => {
   const PushEnquiryFormData = (): AddUpdateEnquiryRequest => {
     const villageIdsString = villageDropdown.selectedValues.length > 0 ? villageDropdown.selectedValues.join(",") : "";
 
-    const customerClassification = getCustomerClassification({
-      Budget: formData.Budget,
-      PossessionType: formData.PossessionType,
-      Requirement: formData.Requirement,
-      VillageMasterId: villageIdsString,
-      Timeline: formData.Timeline ?? "",
-    });
+   
 
     // =====================[DIRECT WALKING → REFERENCE]=========================
     const isDirectReference = formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE";
@@ -598,7 +591,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       Requirement: formData.Requirement,
       RequirementType: formData.RequirementType || null,
 
-      CustomerClassification: customerClassification,
+      CustomerClassification: "Cold",
       SourceOfFunding: formData.SourceOfFunding,
       Ethnicity: formData.Ethnicity,
       Timeline: formData.Timeline,

@@ -98,7 +98,6 @@ export interface EmployeeReportingCycle {
   PersonalMobileNumber: string | null;
 }
 
-
 export interface AddUpdateEmployeeMasterRequest {
   EmployeeId: number;
   UniqueKey: string | null;
@@ -135,6 +134,23 @@ export interface AddUpdateEmployeeMasterRequest {
   DistrictMasterId: number | null;
   CityMasterId: number | null;
 }
+
+export interface UpdateEmployeeMasterRequest {
+  EmployeeId: number;
+  UniqueKey: string | null;
+  FirstName?: string;
+  MiddleName?: string;
+  LastName?: string;
+  Gender?: string
+  MaritalStatus?:string
+  DateOfBirth?:string
+  EmailId?:string
+  PersonalMobileNumber?:string
+  CommunicationAddress?:string
+  PermanentAddress?:string
+  BloodGroup?:string
+}
+
 
 export interface FilterWithPaginationLocationRequest {
   countryId?: number;
@@ -201,4 +217,5 @@ export interface SetEmployeeMPINRequest {
 export type LocationResponse = ApiResponse<LocationDataWrapper>;
 export type EmployeeMasterListResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMasterSaveResponse = ApiResponse<EmployeeMasterData[]>;
+export type EmployeeMasterUpdateResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMPINRequestResponse = ApiResponse<String>;

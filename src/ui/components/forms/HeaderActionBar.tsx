@@ -13,6 +13,7 @@ interface HeaderActionBarProps {
     onEdit?: () => void;
     onExtraButton?: () => void;
     canAction?: boolean;
+    canActionExtraButtonText?: boolean;
     isLoading?: boolean;
 }
 
@@ -26,6 +27,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
     onEdit,
     onExtraButton,
     canAction = false,
+    canActionExtraButtonText = false,
     isLoading = false,
 }) => {
 
@@ -69,20 +71,23 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
             </div>
 
-            {canAction && (
-                <div className="flex items-center gap-2">
-                    {ExtraButtonText && (
-                        <Button
-                            color="black"
-                            size="sm"
-                            title={ExtraButtonText}
-                            onClick={onExtraButton}
-                            disabled={isLoading}
-                        >
-                            {ExtraButtonText}
-                        </Button>
-                    )}
 
+            <div className="flex items-center gap-2">
+                {canActionExtraButtonText && ExtraButtonText && (
+                    <Button
+                        color="blue"
+                        variant="solid"
+                        colorMode="extraLight"
+                        size="sm"
+                        title={ExtraButtonText}
+                        onClick={onExtraButton}
+                        disabled={isLoading}
+                    >
+                        {ExtraButtonText}
+                    </Button>
+
+                )}
+                {canAction && (
                     <Button
                         color="blue"
                         size="sm"
@@ -92,8 +97,9 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                     >
                         {EditText}
                     </Button>
-                </div>
-            )}
+                )}
+            </div>
+
         </div>
     );
 };

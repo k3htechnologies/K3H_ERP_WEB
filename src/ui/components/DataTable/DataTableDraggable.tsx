@@ -138,7 +138,7 @@ export const DataTableDraggable: React.FC<DataTableDraggableProps> = ({
         <div className={`bg-white rounded border-b border-gray-200 ${className}`}>
 
             <div
-                className={`overflow-auto`}
+                className={`overflow-auto thin-scroll`}
                 style={{ maxHeight: fixedHeight ? maxHeight : undefined }}
             >
                 <table className="min-w-full border-collapse border border-gray-300" tabIndex={0} onKeyDown={handleKeyDown}>

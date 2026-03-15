@@ -459,7 +459,7 @@ export const ViewProjectMaster: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Project Scope" value={editProjectData?.ProjectScope ?? '-'} />
                                         <FieldItem label="Project Scheme" value={editProjectData?.ProjectScheme ?? '-'} />
-                                        <FieldItem label="Project Sub Scope" value={editProjectData?.ProjectSubScheme ?? '-'} />
+                                        <FieldItem label="Project Sub Scheme" value={editProjectData?.ProjectSubScheme ?? '-'} />
 
                                     </div>
                                 </section>
@@ -685,7 +685,7 @@ export const ViewProjectMaster: React.FC = () => {
                             projectWithBankDetailsList.map((b, i) => (
                                 <section
                                     key={i}
-                                    className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] mb-4"
+                                    className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]"
                                 >
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                         {b.BeneficiaryAccountHolderName ?? "Account Details"}

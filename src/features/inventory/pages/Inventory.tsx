@@ -38,7 +38,6 @@ import { useBookingListState } from "@/features/booking/context/BookingListState
 import TooltipText from "@/ui/components/Tooltip/TooltipText"
 
 const Inventory = () => {
-    //#region STATE MANAGEMENT
 
     const navigate = useNavigate();
     const { updateListState } = useBookingListState();
@@ -102,8 +101,7 @@ const Inventory = () => {
 
     //#region TAB ACTIVITY
     // Preserve tab state in localStorage
-    const [activeTab, setActiveTab] = useState<string>(() => {
-        const savedTab = localStorage.getItem('inventoryActiveTab');
+    const [activeTab, setActiveTab] = useState<string>(() => { const savedTab = localStorage.getItem('inventoryActiveTab');
         return savedTab || "Grid";
     });
 
@@ -130,6 +128,9 @@ const Inventory = () => {
 
     // Clear all state when project changes
     useEffect(() => {
+
+          setActiveTab('Grid');
+          localStorage.setItem("inventoryActiveTab", "Grid");
 
         if (!projectId) {
             setIsInventoryAvailable(false)
@@ -164,7 +165,6 @@ const Inventory = () => {
 
             // Clear search
             setSearchTerm('');
-            // Reset tab to Grid when project is cleared
             setActiveTab('Grid');
             localStorage.removeItem('inventoryActiveTab');
             return;
@@ -686,7 +686,7 @@ const Inventory = () => {
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
-                    setInventory(response.right.Data);
+                    await fetchInventory();
 
                 } else {
 
@@ -1044,6 +1044,7 @@ const Inventory = () => {
 
     // Flatten floors and flats for table view
     const tableData = useMemo(() => {
+
         if (!selectedWing) {
             return [];
         }
@@ -1181,6 +1182,7 @@ const Inventory = () => {
                         state: {
                             flat: flat,
                             projectId: projectId,
+                            approvalStatus:selectedWing?.ApprovalStatus
                         },
                     });
                 };
@@ -1205,7 +1207,7 @@ const Inventory = () => {
                                 />
                             </div>
                         )}
-                        {canAction && (flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
+                        {canAction && selectedWing?.ApprovalStatus?.toUpperCase()!=="APPROVED" && (flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
                             <div title="Delete">
                                 <Trash
                                     onClick={() => handleDeleteFlat(flat)}
@@ -1219,7 +1221,7 @@ const Inventory = () => {
                 );
             },
         },
-    ], [inventory, navigate, handleDeleteFlat]);
+    ], [inventory, navigate, handleDeleteFlat, selectedWing, canAction]);
 
     //#endregion
 
@@ -1355,6 +1357,7 @@ const Inventory = () => {
                             setSelectedWing(inventory[index].InventoryFlatFloorBasementPodiumWingData[0]);
                         }}
                         onDeleteBuilding={handleDeleteBuilding}
+                        approvalStatus={selectedWing?.ApprovalStatus}
                     />
 
                     <div className="pt-5">
@@ -1392,6 +1395,7 @@ const Inventory = () => {
                                     }
                                 }}
                                 onDeleteWing={handleDeleteWing}
+                                approvalStatus={selectedWing?.ApprovalStatus}
                             />
                         )}
                     </div>
@@ -1419,7 +1423,6 @@ const Inventory = () => {
                 }}
             />
 
-
             {activeTab === "Grid" ? (
 
                 selectedWing && isInventoryAvailable===true && getFilteredFloors.map((floor) => {
@@ -1442,11 +1445,14 @@ const Inventory = () => {
                             isLastFloor={isLastFloor}
                             canAction={canAction}
                             canBookingAction={canBookingAction}
+                            approvalStatus={selectedWing?.ApprovalStatus}
                         />
                     );
                 })
             ) : (
+                
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
+                    {isInventoryAvailable===true && (
                     <DataTable
                         data={tableData}
                         columns={tableColumns}
@@ -1454,7 +1460,9 @@ const Inventory = () => {
                         loading={isLoading}
                         fixedHeight={false}
                     />
+                     )}
                 </div>
+               
             )}
 
             <DeleteDialog

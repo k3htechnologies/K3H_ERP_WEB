@@ -6,7 +6,9 @@ import type {
     EmployeeMasterListResponse,
     LocationResponse,
     SetEmployeeMPINRequest,
-    EmployeeMPINRequestResponse
+    EmployeeMPINRequestResponse,
+    UpdateEmployeeMasterRequest,
+    EmployeeMasterUpdateResponse
 } from '@/features/employeeMaster/models/EmployeeMasterModel'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 
@@ -14,6 +16,7 @@ export abstract class EmployeeMasterDatasource {
 
     abstract pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
     abstract addUpdateEmployeeMaster(params: AddUpdateEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
+    abstract updateEmployeeMaster(params: UpdateEmployeeMasterRequest): Promise<EmployeeMasterUpdateResponse>;
 }
 
 export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
@@ -138,6 +141,25 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
             }
 
 
+            throw error
+        }
+    }
+
+    async updateEmployeeMaster(params: UpdateEmployeeMasterRequest): Promise<EmployeeMasterUpdateResponse> {
+
+        try {
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                EmployeeMasterApi.UPDATE,
+                params
+            )
+            return response
+        } catch (error) {
+
+            console.error('ERROR: UPDATE Employee Master:', error)
+
+            if (error === TokenExpiredException) {
+                await this.updateEmployeeMaster(params);
+            }
             throw error
         }
     }

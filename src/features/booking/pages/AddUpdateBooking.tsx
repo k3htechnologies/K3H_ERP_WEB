@@ -381,6 +381,7 @@ export const AddUpdateBooking: React.FC = () => {
     const hasValidCode = code && code.length === 18;
 
     if (hasEnquiryId) {
+
       fetchEnquiryBySystemGeneratedCode("", Number(projectId), Number(enquiryId)).then(handleEnquiryResponse);
       return;
     }
@@ -389,10 +390,19 @@ export const AddUpdateBooking: React.FC = () => {
       fetchEnquiryBySystemGeneratedCode(code, Number(projectId), 0).then(handleEnquiryResponse);
       return;
     }
+    if (!hasEnquiryId || !hasValidCode) {
+      setEnquiryId(0);
+      setEnquiryMasterList(null);
+    }
+
   }, [enquiryUniqueCode, projectId, enquiryId]);
 
   const handleEnquiryResponse = (enquiry: any) => {
     setEnquiryId(enquiry?.EnquiryId);
+    setFormData(prev => ({
+      ...prev,
+      EnquiryId: enquiry?.EnquiryId
+    }));
     setEnquiryMasterList(enquiry);
   };
 
@@ -531,9 +541,11 @@ export const AddUpdateBooking: React.FC = () => {
               Name: schedule.Name ?? null,
               Date: schedule.Date ?? null,
               PaymentSchedulePercentage: schedule.PaymentSchedulePercentage ?? null,
+              PaymentScheduleCumulative: schedule.PaymentScheduleCumulative ?? 0,
               PaymentScheduleAmount: schedule.PaymentScheduleAmount ?? null,
               PaymentScheduleGSTAmount: schedule.PaymentScheduleGSTAmount ?? null,
               PaymentScheduleTDSAmount: schedule.PaymentScheduleTDSAmount ?? null,
+              Rank: schedule.Rank ?? null,
             }));
 
             setPaymentSchedules(paymentSchedulesMapped);
@@ -1013,7 +1025,8 @@ export const AddUpdateBooking: React.FC = () => {
     if (!formData.SourceOfFunding) {
       newErrors.SourceOfFunding = "Source Of Funding is required";
     }
-    if (!formData.PaymentScheduleSchemeMasterId) {
+
+    if (formData.PaymentScheduleSchemeMasterId === null) {
       newErrors.PaymentScheduleSchemeMasterId = "Payment Schedule Scheme is required";
     }
 
@@ -1639,8 +1652,10 @@ export const AddUpdateBooking: React.FC = () => {
               label="Enquiry Code"
               value={enquiryUniqueCode}
               onChange={(e) => {
+                setEnquiryMasterList(null);
                 setEnquiryUniqueCode(e.target.value);
                 setEnquiryId(0);
+
               }}
               placeholder="Search By Enquiry Unique Code"
               leftIcon={<Search className="h-4 w-4 text-gray-400" />}
@@ -2258,7 +2273,14 @@ export const AddUpdateBooking: React.FC = () => {
               </div>
             </div>
             {otherCharges.length > 0 ? (
-              <DataTable data={otherCharges} columns={otherChargesColumns} emptyMessage="No other charges found. Click 'Add Other Charges' to add one." fixedHeight={false} recordsPerPage={20} className="min-w-full" aria-label="Other charges list" />
+              <DataTable
+                data={otherCharges}
+                columns={otherChargesColumns}
+                emptyMessage="No other charges found. Click 'Add Other Charges' to add one."
+                fixedHeight={false}
+                recordsPerPage={20}
+                className="min-w-full"
+                aria-label="Other charges list" />
             ) : (
               <div className="flex items-center justify-center">
                 <span className="text-gray-500 text-sm font-medium">No other charges found</span>
@@ -2270,7 +2292,7 @@ export const AddUpdateBooking: React.FC = () => {
           <div className="space-y-4 pb-3">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Payment Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Input label="Booking Amount" type="number" value={formData.BookingAmount?.toString() ?? ""} onChange={(e) => handleFieldChange("BookingAmount", filterNumbersWithDecimal(e.target.value))} placeholder="Booking Amount" />
+              <Input label="Booking Amount" value={formData.BookingAmount?.toString() ?? ""} onChange={(e) => handleFieldChange("BookingAmount", filterNumbersWithDecimal(e.target.value))} placeholder="Booking Amount" />
               <Input label="Cheque / RTGS No." type="text" value={formData.ChequeRTGSNumber ?? ""} onChange={(e) => handleFieldChange("ChequeRTGSNumber", e.target.value)} placeholder="Cheque / RTGS No." />
               <DatePickerInput label="Cheque / RTGS Date" value={formatDate_dd_mm_yyyy(formData.ChequeRTGSDate)} onChange={(val) => handleFieldChange("ChequeRTGSDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} />
               <div>
@@ -2313,7 +2335,7 @@ export const AddUpdateBooking: React.FC = () => {
                 <SingleSelectDropdownWithPagination label="Term & Condition" title="Term & Condition" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)} />
               </div>
               <div>
-                <RichTextEditor value={formData.TermsAndConditionsDescription ?? ""} onChange={(html) => handleFieldChange("TermsAndConditionsDescription", html)}  readOnly />
+                <RichTextEditor value={formData.TermsAndConditionsDescription ?? ""} onChange={(html) => handleFieldChange("TermsAndConditionsDescription", html)} readOnly />
               </div>
             </div>
           </div>
@@ -2543,9 +2565,11 @@ export const AddUpdateBooking: React.FC = () => {
             Name: scheduleName,
             Date: scheduleDate,
             PaymentSchedulePercentage: percentage,
+            PaymentScheduleCumulative:0,
             PaymentScheduleAmount: amount,
             PaymentScheduleGSTAmount: (amount * Number(formData.AgreementValueGSTPercentage)) / 100,
             PaymentScheduleTDSAmount: agreementValue > 4999999.99 ? (amount * 1) / 100 : 0,
+            Rank:1,
           };
 
           if (editingPaymentScheduleIndex !== null) {
@@ -2649,7 +2673,7 @@ export const AddUpdateBooking: React.FC = () => {
       </Modal>
 
       <Modal
-        isOpen={showOtpSection && formData.EnquiryId === 0}
+        isOpen={showOtpSection}
         onClose={() => {
           setOtp("");
           setIsOtpSent(false);
@@ -2657,7 +2681,7 @@ export const AddUpdateBooking: React.FC = () => {
           setShowOtpSection(false);
         }}
         title="Complete Verification"
-        saveText={formData.EnquiryId ? "Update" : "Verify OTP & Add"}
+        saveText={formData.BookingId ? "Update" : "Verify OTP & Add"}
         size="md"
         onSubmit={(e) => {
           e.preventDefault();

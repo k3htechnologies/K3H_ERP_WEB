@@ -642,7 +642,7 @@ const ViewEnquiry: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="mt-3">
+                        <div className="mt-3 overflow-y-auto h-[1600px] thin-scroll pr-2">
 
                             {editEnquiryFollowUpData?.map((item, index) => (
                                 <div key={item.EnquiryFollowUpId} className="grid grid-cols-[24px_1fr] gap-3">

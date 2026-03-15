@@ -28,9 +28,10 @@ interface FloorCardProps {
     isLastFloor?: boolean;
     canAction?: boolean;
     canBookingAction?: boolean;
+    approvalStatus?: string
 }
 
-export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDelete, onParkingUpdate, onDeleteFloor, isLastFloor, canAction, canBookingAction }: FloorCardProps) => {
+export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDelete, onParkingUpdate, onDeleteFloor, isLastFloor, canAction, canBookingAction, approvalStatus }: FloorCardProps) => {
     const navigate = useNavigate();
     const { addToast } = useToast();
 
@@ -73,10 +74,10 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
 
     const handleParkingClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-         if(canAction){
-        setIsParkingModalOpen(true);
-        setParkingCount(floor.ParkingCount?.toString() || '0');
-         }
+        if (canAction && approvalStatus?.toUpperCase() !== "APPROVED") {
+            setIsParkingModalOpen(true);
+            setParkingCount(floor.ParkingCount?.toString() || '0');
+        }
     };
 
     const handleSaveParkingCount = async (e: React.FormEvent) => {
@@ -154,15 +155,18 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                                     <Car className="text-[#135BEC]" size={20} />
                                 </div>
 
-                                <Plus
-                                    className="p-1.5 cursor-pointer hover:bg-gray-100 rounded transition-colors"
-                                    size={28}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleAddFlat();
-                                    }}
-                                />
-                                {onDeleteFloor && isLastFloor && wing.Wing.toUpperCase() !== 'BGP' && (
+                                {approvalStatus?.toUpperCase() !== "APPROVED" && (
+                                    <Plus
+                                        className="p-1.5 cursor-pointer hover:bg-gray-100 rounded transition-colors"
+                                        size={28}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddFlat();
+                                        }}
+                                    />
+                                )}
+                                
+                                {onDeleteFloor && isLastFloor && approvalStatus?.toUpperCase() !== "APPROVED" && wing.Wing.toUpperCase() !== 'BGP' && (
                                     <Button
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -192,6 +196,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                                 buildingNumber={building?.BuildingNumber ?? ""}
                                 canAction={canAction}
                                 canBookingAction={canBookingAction}
+                                approvalStatus={approvalStatus}
                             />
                         ))}
                     </div>

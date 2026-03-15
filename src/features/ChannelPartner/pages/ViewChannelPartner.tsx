@@ -13,6 +13,7 @@ import { Loader } from "@/core/utils/loader";
 import type { FilterWithPaginationChannelPartnerRequest } from "../models/ChannelPartnerModel";
 import { ChannelPartnerService } from "../services/ChannelPartnerService";
 import { Mail, Phone } from "lucide-react";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const ViewChannelPartner: React.FC = () => {
 
@@ -235,6 +236,21 @@ const ViewChannelPartner: React.FC = () => {
                                 <FieldItem label="GST Number" value={editChannelPartnerData?.GSTNumber} urls={editChannelPartnerData?.GSTCertificateURL} isIcon />
                             </div>
                         </section>
+
+                         <hr className="border-t border-gray-200" />
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Enquiry & Booking Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="No Of Enquiry" value={editChannelPartnerData?.NoOfEnquiry}  />
+                                <FieldItem label="No Of Booking" value={editChannelPartnerData?.NoOfBooking}/>
+                                <FieldItem label="Brokerage Percentage (%)" value={editChannelPartnerData?.BrokeragePercentage} />
+                                <FieldItem label="Brokerage Amount (₹)" value={editChannelPartnerData?.BrokerageAmount} />
+                                <FieldItem label="Paid Brokerage Amount (₹)" value={editChannelPartnerData?.PaidBrokerageAmount} />
+                            </div>
+                        </section>
                         <hr className="border-t border-gray-200" />
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
@@ -255,12 +271,10 @@ const ViewChannelPartner: React.FC = () => {
                     </div>
                 </div>
 
-
-
                 {/*  RIGHT SIDE  */}
                 {/* RIGHT SIDE – TEAM MEMBERS */}
                 <div className="col-span-4">
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
 
                         {/* Header */}
                         <div className="pb-3 border-b border-gray-300">
@@ -270,11 +284,11 @@ const ViewChannelPartner: React.FC = () => {
                         </div>
 
                         {/* Team Member List */}
-                        <div className="mt-4 space-y-4 overflow-y-auto">
+                        <div className="mt-4 space-y-4 overflow-y-auto h-[940px] thin-scroll">
 
                             {filteredTeamMembers.length === 0 && (
                                 <p className="text-sm text-gray-400 text-center">
-                                    No team members found
+                                    <NoDataView message="No team members found"/>
                                 </p>
                             )}
 

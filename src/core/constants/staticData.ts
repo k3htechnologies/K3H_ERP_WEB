@@ -71,7 +71,7 @@ export const MASTER_DATA = {
 
   project_scheme: ['BMC', 'MHADA', 'SRA'],
 
-  project_sub_scheme_BMC: ['33 (20) B', '33 (19)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
+  project_sub_scheme_BMC: ['33 (20) B', '33 (19)','33 (7)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
 
   project_sub_scheme_MHADA: ['33 (5)'],
 

@@ -1,7 +1,7 @@
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import type { ParkingData } from "@/features/parking/models/ParkingModel";
 import { colorsForParkingComponent } from "@/features/parking/utils/parkingColors";
-import { Edit, Eye, BookOpen } from "lucide-react";
+import { Edit, Eye } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/ui/components/forms";
 import { useBookingListState } from "@/features/booking/context/BookingListStateContext";
@@ -12,9 +12,10 @@ interface ParkingCardProps {
   onEdit: (parking: ParkingData) => void;
   canAction?: boolean
   canBookingAction?: boolean;
+  approvalStatus?:string;
 }
 
-export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction }: ParkingCardProps) => {
+export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction ,approvalStatus}: ParkingCardProps) => {
   const navigate = useNavigate();
   const { updateListState } = useBookingListState();
 
@@ -71,12 +72,14 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction }: Pa
 
   return (
     <div
-      className={`flex flex-col justify-evenly ${parking.ParkingStatus === "Available" ? "min-h-[240px]" : "h-[240px]"} w-[300px] rounded-[8px] border ${colorsForParkingComponent[parking.ParkingStatus ?? "Available"].Border} border-[0.3px] px-2 `} style={gradientStyle}>
+      className={`flex flex-col justify-evenly ${parking.ParkingStatus === "Available" ? "min-h-[250px]" : "h-[250px]"} w-[300px] rounded-[8px] border ${colorsForParkingComponent[parking.ParkingStatus ?? "Available"].Border} border-[0.3px] px-2 `} style={gradientStyle}>
 
       <FieldItem label="Parking No" value={parking.ParkingNumber} isRow={true} isUsedForInventoryFlat={true} />
       <FieldItem label="Category" value={parking.ParkingCategory} isRow={true} isUsedForInventoryFlat={true} />
       <FieldItem label="Type" value={parking.ParkingType} isRow={true} isUsedForInventoryFlat={true} />
       <FieldItem label="EV Charging " value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} isRow={true} isUsedForInventoryFlat={true} />
+      <FieldItem label="Dimensions" value={parking.ParkingDimensions} isRow={true} isUsedForInventoryFlat={true} />
+      <FieldItem label="Size" value={parking.ParkingSubType} isRow={true} isUsedForInventoryFlat={true} />
 
       <div className="flex items-center justify-evenly gap-2">
         <div className={`
@@ -90,15 +93,15 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction }: Pa
           {parking.ParkingStatus}
         </div>
 
-        {(parking.ParkingStatus === "Booked" || parking.ParkingStatus === "Member") && <Eye size={16} onClick={() => onEdit(parking)} />}
+        {approvalStatus?.toUpperCase()==="APPROVED" && <Eye size={16} onClick={() => onEdit(parking)} />}
 
-        {(parking.ParkingStatus === "Blocked" || parking.ParkingStatus === "Available" || parking.ParkingStatus === "Hold") && canAction && (
+        {approvalStatus?.toUpperCase()!=="APPROVED" && canAction && (
           <Edit className="cursor-pointer" onClick={() => onEdit(parking)} size={16} />
         )}
 
       </div>
 
-      {parking.ParkingStatus === "Available"  && parking.ParkingNumber !== "" && parking.ParkingCategory !== "" && canBookingAction && (
+      {parking.ParkingStatus === "Available"  && approvalStatus?.toUpperCase()==="APPROVED" && parking.ParkingNumber !== "" && parking.ParkingCategory !== "" && canBookingAction && (
         <div className="flex items-center justify-center mt-2">
           <Button
             onClick={handleBook}
@@ -106,7 +109,6 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction }: Pa
             size="sm"
             className="w-full"
           >
-            <BookOpen className="h-4 w-4 mr-2" />
             Book
           </Button>
         </div>

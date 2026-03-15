@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Loader } from '@/core/utils/loader';
 import type { BookingData, FilterWithPaginationBookingRequest } from '../models/BookingModel';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -12,12 +12,13 @@ import HeaderActionBar from '@/ui/components/forms/HeaderActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useBookingListState } from '@/features/booking/context/BookingListStateContext';
 import Tabs from '@/ui/components/Tab/Tab';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm, formatDate_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import type { EnquiryData, FilterWithPaginationEnquiryRequest } from '@/features/enquiry/models/EnquiryModel';
 import { EnquiryService } from '@/features/enquiry/services/EnquiryServices';
 import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { handleExportFile } from '@/core/utils/exportFile';
+import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 
 export const ViewBooking: React.FC = () => {
 
@@ -195,7 +196,114 @@ export const ViewBooking: React.FC = () => {
     };
     //#endregion
 
-    //#region RENDER
+    const paymentScheduleColumns = useMemo<TableColumn[]>(
+        () => [
+            {
+                key: "Type",
+                label: "Type",
+                sortable: false,
+                align: "center",
+                render: (value) => value || "-",
+            },
+            {
+                key: "Date",
+                label: "Date / Stage",
+                sortable: false,
+                align: "left",
+
+                render: (_value, row) => {
+
+                    if (row.Type === "Date" && row.Date) {
+
+                        return formatDate_dd_MonthName_yy(row.Date);
+
+                    } else if (row.Type === "Stage" && row.Name) {
+
+                        return row.Name;
+                    }
+                    return "-";
+                },
+            },
+            {
+                key: "PaymentSchedulePercentage",
+                label: "Percentage (%)",
+                sortable: false,
+                align: "center",
+                render: (value) => `${value || 0}%`,
+            },
+            {
+                key: "PaymentScheduleAmount",
+                label: "Amount (₹)",
+                sortable: false,
+                align: "right",
+                render: (value) => value || "-",
+            },
+            {
+                key: "PaymentScheduleGSTAmount",
+                label: "GST Amount (₹)",
+                sortable: false,
+                align: "right",
+                render: (value) => value || "-",
+            },
+            {
+                key: "PaymentScheduleTDSAmount",
+                label: "TDS Amount (₹)",
+                sortable: false,
+                align: "right",
+                render: (value) => value || "-",
+            },
+
+        ],
+        [],
+    );
+
+    const otherChargesColumns = useMemo<TableColumn[]>(
+        () => [
+            {
+                key: "ChargeName",
+                label: "Charges",
+                width: "20",
+                sortable: false,
+                align: "left",
+                fixed: "left",
+                render: (value) => value || "-",
+            },
+            {
+                key: "CalculatedOn",
+                label: "Calculated On",
+                width: "15",
+                sortable: false,
+                align: "center",
+                render: (value) => value || "-",
+            },
+            {
+                key: "Value",
+                label: "Value (₹)",
+                width: "18",
+                sortable: false,
+                align: "right",
+                render: (value) => value || "-",
+            },
+            {
+                key: "GSTPercentage",
+                label: "GST (%)",
+                width: "12",
+                sortable: false,
+                align: "center",
+                render: (value) => `${value || 0}%`,
+            },
+            {
+                key: "GSTValue",
+                label: "GST Value (₹)",
+                width: "18",
+                sortable: false,
+                align: "right",
+                render: (value) => value || "-",
+            },
+        ],
+        [],
+    );
+
     if (!bookingData) {
         return (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -228,9 +336,10 @@ export const ViewBooking: React.FC = () => {
                         navigate('/booking');
                     }
                 }}
-                canAction={canAction && sourcePage === 'booking' ? true : false}
+                canAction={canAction && bookingData.ApprovalStatus?.toUpperCase()!="APPROVED" && sourcePage === 'booking' ? true : false}
+                canActionExtraButtonText={bookingData.ApprovalStatus?.toUpperCase()=="APPROVED" ? true : false}
                 onEdit={() => navigate('/booking/add')}
-                ExtraButtonText="PDF"
+                ExtraButtonText="Generate PDF"
                 onExtraButton={() => handleExportBookings("BOOKING FORM PDF")}
                 isLoading={isLoading}
             />
@@ -251,24 +360,28 @@ export const ViewBooking: React.FC = () => {
                     <>
                         {/* ===================== ENQUIRY DETAILS ===================== */}
                         {editEnquiryData && (
-                            <div className="space-y-4 pt-3 pb-3">
+                            <div className="space-y-4 pb-3">
                                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
                                     Enquiry Details
                                 </h3>
-
                                 <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
 
                                         <FieldItem label="Unique Code:" value={editEnquiryData?.SystemGeneratedCode || '-'} />
+
                                         <FieldItem label="Name" value={editEnquiryData?.Name || '-'} />
 
                                         <FieldItem label="Mobile No:" value={safe(editEnquiryData?.MobileNumber) ? `+91 ${editEnquiryData?.MobileNumber}` : '-'} />
+
                                         <FieldItem label="Source" value={editEnquiryData?.Source || '-'} />
+
                                         <FieldItem label="Sub Source" value={editEnquiryData?.SubSource || '-'} />
+
                                         {editEnquiryData?.Source?.toUpperCase() !== 'CHANNEL PARTNER' && !!editEnquiryData?.SubSubSource?.trim() && (
                                             <FieldItem label="Sub Sub Source" value={editEnquiryData?.SubSubSource || '-'} />
                                         )}
+
                                     </div>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3 pt-3">
@@ -432,10 +545,21 @@ export const ViewBooking: React.FC = () => {
                                     </div>
                                 </section>
 
+                                <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        Payment Details
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                        <FieldItem label="Cheque / RTGS No." value={safe(bookingData.ChequeRTGSNumber)} />
+                                        <FieldItem label="Cheque / RTGS Date" value={bookingData.ChequeRTGSDate ? formatDate_dd_MonthName_yy(bookingData.ChequeRTGSDate) : '-'} />
+                                        <FieldItem label="Bank Name" value={safe(bookingData.BankName)} />
+                                    </div>
+                                </section>
+
 
                             </div>
 
-                            {/* Right side summary card */}
                             <div className="lg:col-span-1 space-y-6">
                                 <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
@@ -482,80 +606,118 @@ export const ViewBooking: React.FC = () => {
 
                         </div>
 
-                        <div className='pt-3'>
+                        <section className="bg-white rounded-xl pt-5">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Other Charges
+                            </h4>
+                            <DataTable
+                                data={bookingData?.BookingOtherChargesData || []}
+                                columns={otherChargesColumns}
+                                emptyMessage="No Other Charges Found"
+                                fixedHeight={false}
+                                recordsPerPage={20}
+                                className="min-w-full" />
 
-                            {/* Other Charges Summary */}
-                            {bookingData.BookingOtherChargesData && bookingData.BookingOtherChargesData.length > 0 && (
-                                <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Other Charges
-                                    </h4>
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full divide-y divide-gray-200">
-                                            <thead className="bg-gray-50">
-                                                <tr>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Charge Name</th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calculated On</th>
-                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Value (₹)</th>
-                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">GST (%)</th>
-                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">GST Value (₹)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
-                                                {bookingData.BookingOtherChargesData.map((charge, index) => (
-                                                    <tr key={index}>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(charge.ChargeName)}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(charge.CalculatedOn)}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(charge.Value)}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{safe(charge.GSTPercentage)}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(charge.GSTValue)}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </section>
-                            )}
-                        </div>
-                        <div className='pt-3'>
-                            {/* Payment Schedule Summary */}
-                            {bookingData.BookingPaymentScheduleData && bookingData.BookingPaymentScheduleData.length > 0 && (
-                                <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Payment Schedule
-                                    </h4>
-                                    <div className="overflow-x-auto">
-                                        <table className="min-w-full divide-y divide-gray-200">
-                                            <thead className="bg-gray-50">
-                                                <tr>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage (%)</th>
-                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount (₹)</th>
-                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">GST (₹)</th>
-                                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">TDS (₹)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="bg-white divide-y divide-gray-200">
-                                                {bookingData.BookingPaymentScheduleData.map((schedule, index) => (
-                                                    <tr key={index}>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(schedule.Type)}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(schedule.Name)}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
-                                                            {schedule.Date ? formatDate_dd_MonthName_yy(schedule.Date) : '-'}
-                                                        </td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{safe(schedule.PaymentSchedulePercentage)}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(schedule.PaymentScheduleAmount)}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(schedule.PaymentScheduleGSTAmount)}</td>
-                                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(schedule.PaymentScheduleTDSAmount)}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </section>
-                            )}
+                        </section>
+
+                        <section className="bg-white rounded-xl pt-5">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Payment Schedule
+                            </h4>
+
+                            <DataTable
+                                data={bookingData.BookingPaymentScheduleData || []}
+                                columns={paymentScheduleColumns}
+                                emptyMessage="No Payment Schedule Found"
+                                fixedHeight={false}
+                                recordsPerPage={20}
+                                className="min-w-full" />
+
+
+                        </section>
+
+                        {bookingData.FlatAlterationRemark && (
+                            <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f] mt-5">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Flat Alteration Remarks
+                                </h4>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <FieldItem label="Remarks" value={safe(bookingData.FlatAlterationRemark)} />
+                                </div>
+                            </section>
+                        )}
+
+
+                        {bookingData.PaymentRemark && (
+                            <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f] mt-5">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Payment Remarks
+                                </h4>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <FieldItem label="Remarks" value={safe(bookingData.PaymentRemark)} />
+                                </div>
+                            </section>
+                        )}
+
+
+                        {bookingData.OtherRemark && (
+                            <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f] mt-5">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Other Remarks
+                                </h4>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <FieldItem label="Remarks" value={safe(bookingData.OtherRemark)} />
+                                </div>
+                            </section>
+                        )}
+
+
+                        {bookingData.TermsAndConditionsDescription && (
+                            <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f] mt-5">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Terms & Conditions
+                                </h4>
+                                <div className="grid grid-cols-1 gap-4">
+                                    <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
+
+                                </div>
+                            </section>
+                        )}
+
+                        <div className='pt-5'>
+                            <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Action Details
+                                </h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                                    <FieldItem label="Created By" value={safe(bookingData.CreatedBy)} />
+                                    <FieldItem
+                                        label="Created Date"
+                                        value={
+                                            bookingData.CreatedDate
+                                                ? formatDate_dd_MonthName_yy_hh_mm(bookingData.CreatedDate)
+                                                : '-'
+                                        }
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                                    <FieldItem label="Modified By" value={safe(bookingData.ModifiedBy)} />
+                                    <FieldItem
+                                        label="Modified Date"
+                                        value={
+                                            bookingData.ModifiedDate
+                                                ? formatDate_dd_MonthName_yy_hh_mm(bookingData.ModifiedDate)
+                                                : '-'
+                                        }
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-4 pt-4">
+                                    <FieldItem label="Approval Status" value={safe(bookingData.ApprovalStatus)} />
+                                </div>
+                            </section>
                         </div>
 
                     </>
@@ -595,157 +757,32 @@ export const ViewBooking: React.FC = () => {
                     </div>
                 )}
 
-                {activeTab === 'Charges' && bookingData.BookingOtherChargesData && bookingData.BookingOtherChargesData.length > 0 && (
+                {activeTab === 'Charges' && (
                     <div className="space-y-4">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Charge Name</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Calculated On</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Value (₹)</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">GST (%)</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">GST Value (₹)</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {bookingData.BookingOtherChargesData.map((charge, index) => (
-                                        <tr key={index}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(charge.ChargeName)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(charge.CalculatedOn)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(charge.Value)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{safe(charge.GSTPercentage)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(charge.GSTValue)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <DataTable
+                            data={bookingData.BookingOtherChargesData || []}
+                            columns={otherChargesColumns}
+                            emptyMessage="No Other Charges Found"
+                            fixedHeight={false}
+                            recordsPerPage={20}
+                            className="min-w-full" />
                     </div>
                 )}
 
-                {activeTab === 'Payment' && bookingData.BookingPaymentScheduleData && bookingData.BookingPaymentScheduleData.length > 0 && (
+                {activeTab === 'Payment' && (
                     <div className="space-y-4">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Percentage (%)</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount (₹)</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">GST (₹)</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">TDS (₹)</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="bg-white divide-y divide-gray-200">
-                                    {bookingData.BookingPaymentScheduleData.map((schedule, index) => (
-                                        <tr key={index}>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(schedule.Type)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{safe(schedule.Name)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">{schedule.Date ? formatDate_MonthName_yy(schedule.Date) : '-'}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{safe(schedule.PaymentSchedulePercentage)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(schedule.PaymentScheduleAmount)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(schedule.PaymentScheduleGSTAmount)}</td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">{formatCurrency(schedule.PaymentScheduleTDSAmount)}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <DataTable
+                            data={bookingData.BookingPaymentScheduleData || []}
+                            columns={paymentScheduleColumns}
+                            emptyMessage="No Payment Schedule Found"
+                            fixedHeight={false}
+                            recordsPerPage={20}
+                            className="min-w-full" />
+
                     </div>
                 )}
-                
-                <div className='pt-5'>
-                    {/* Flat Alteration Remarks */}
-                    {bookingData.FlatAlterationRemark && (
-                        <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Flat Alteration Remarks
-                            </h4>
-                            <div className="grid grid-cols-1 gap-4">
-                                <FieldItem label="Remarks" value={safe(bookingData.FlatAlterationRemark)} />
-                            </div>
-                        </section>
-                    )}
-                </div>
 
-                <div className='pt-5'>
-                    {bookingData.PaymentRemark && (
-                        <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Payment Remarks
-                            </h4>
-                            <div className="grid grid-cols-1 gap-4">
-                                <FieldItem label="Remarks" value={safe(bookingData.PaymentRemark)} />
-                            </div>
-                        </section>
-                    )}
-                </div>
 
-                <div className='pt-5'>
-                    {bookingData.OtherRemark && (
-                        <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Other Remarks
-                            </h4>
-                            <div className="grid grid-cols-1 gap-4">
-                                <FieldItem label="Remarks" value={safe(bookingData.OtherRemark)} />
-                            </div>
-                        </section>
-                    )}
-                </div>
-
-                <div className='pt-5'>
-                    {bookingData.TermsAndConditionsDescription && (
-                        <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Terms & Conditions
-                            </h4>
-                            <div className="grid grid-cols-1 gap-4">
-                                <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
-
-                            </div>
-                        </section>
-                    )}
-                </div>
-
-                <div className='pt-5'>
-                    <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Action Details
-                        </h4>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
-                            <FieldItem label="Created By" value={safe(bookingData.CreatedBy)} />
-                            <FieldItem
-                                label="Created Date"
-                                value={
-                                    bookingData.CreatedDate
-                                        ? formatDate_dd_MonthName_yy_hh_mm(bookingData.CreatedDate)
-                                        : '-'
-                                }
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
-                            <FieldItem label="Modified By" value={safe(bookingData.ModifiedBy)} />
-                            <FieldItem
-                                label="Modified Date"
-                                value={
-                                    bookingData.ModifiedDate
-                                        ? formatDate_dd_MonthName_yy_hh_mm(bookingData.ModifiedDate)
-                                        : '-'
-                                }
-                            />
-                        </div>
-
-                        <div className="grid grid-cols-1 gap-4 pt-4">
-                            <FieldItem label="Approval Status" value={safe(bookingData.ApprovalStatus)} />
-                        </div>
-                    </section>
-                </div>
             </div>
         </div>
     );

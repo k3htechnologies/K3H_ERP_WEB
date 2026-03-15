@@ -191,8 +191,8 @@ const Parking = () => {
           InventoryFloorId: parking.InventoryFloorId,
           InventoryFlatFloorBasementPodiumWingId: parking.InventoryFlatFloorBasementPodiumWingId,
           Wing: parking.Wing || "",
-          IsApproval:parking.IsApproval,
-          ApprovalStatus:parking.ApprovalStatus || "Pending",
+          IsApproval: parking.IsApproval,
+          ApprovalStatus: parking.ApprovalStatus || "Pending",
           ParkingData: [],
         };
         building.Floors.push(floor);
@@ -216,9 +216,13 @@ const Parking = () => {
         const response = await parkingService.apiCallPullParking(params);
 
         if (E.isRight(response)) {
+
           setParkingData(response.right.Data || []);
+
           const grouped = groupParkingData(response.right.Data || []);
+
           setGroupedParking(grouped);
+
         } else {
           addToast({ type: "error", title: response.left.message });
         }
@@ -230,7 +234,7 @@ const Parking = () => {
         addToast({ type: "error", title: error.message });
       },
       undefined,
-      "Loading Parking Data",
+      "Loading Parking",
     );
   }, [projectId, groupParkingData, addToast]);
 
@@ -596,12 +600,12 @@ const Parking = () => {
 
           return (
             <div className="flex items-center gap-2">
-              {(parking.ParkingStatus === "Booked" || parking.ParkingStatus === "Member") && (
+              {approvalStatus?.toUpperCase()==="APPROVED" && (
                 <div title="View Details">
                   <Eye size={16} className="cursor-pointer text-blue-600 hover:text-blue-800" onClick={() => handleEditParking(parking)} />
                 </div>
               )}
-              {(parking.ParkingStatus === "Blocked" || parking.ParkingStatus === "Available" || parking.ParkingStatus === "Hold") &&
+              {approvalStatus?.toUpperCase()!=="APPROVED" &&
                 canAction && (
                   <div title="Edit">
                     <Edit
@@ -709,12 +713,13 @@ const Parking = () => {
   const isChange = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? false : true;
   const disabled = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? true : false;
 
+  const approvalStatus=selectedBuildingIndex !== null && selectedFloorIndex !== null
+            ? groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.ApprovalStatus
+            : undefined
+
   return (
     <>
-      <Loader loading={isLoading} title={loadingMessage}>
-        {" "}
-        <div></div>
-      </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div></Loader>
 
       <ParkingHeader
         activeTab={activeTab}
@@ -723,12 +728,12 @@ const Parking = () => {
         onExportPdf={handleExportParkingPdf}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleInventory}
-        canExport={canExport && Number(projectId) > 0}
+        canExport={canExport && Number(projectId) > 0 && parkingData.length > 0}
         exportLoading={isLoading}
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
         onClearSearch={handleClearSearch}
-        canAction={canAction && Number(projectId) > 0}
+        canAction={canAction && Number(projectId) > 0 && parkingData.length > 0}
         approvalStatus={
           selectedBuildingIndex !== null && selectedFloorIndex !== null
             ? groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.ApprovalStatus
@@ -757,6 +762,7 @@ const Parking = () => {
         <div className="flex justify-between items-center">
           <div className="flex gap-5">
             {groupedParking.map((building, index) => (
+
               <span
                 key={index}
                 onClick={() => {
@@ -767,11 +773,10 @@ const Parking = () => {
                     setSelectedFloorIndex(null);
                   }
                 }}
-                className={`relative pb-2 text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
-                  selectedBuildingIndex === index
+                className={`relative pb-2 text-sm font-medium transition-all duration-200 flex items-center gap-2 ${selectedBuildingIndex === index
                     ? "text-blue-600 font-medium text-[16px] leading-[140%] tracking-[0.01em]"
                     : "text-gray-400 font-normal text-[14px] leading-[140%] tracking-[0.01em] hover:text-blue-500"
-                }`}
+                  }`}
               >
                 {building.BuildingNumber}
                 {selectedBuildingIndex === index && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full" />}
@@ -802,13 +807,12 @@ const Parking = () => {
                     <button
                       key={index}
                       onClick={() => setSelectedFloorIndex(index)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                        selectedFloorIndex === index
+                      className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedFloorIndex === index
                           ? "bg-blue-600 text-white"
                           : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-300"
-                      }`}
+                        }`}
                     >
-                      {floor.Floor}
+                      {floor.Wing} / {floor.Floor}
                     </button>
                   ))}
                 </div>
@@ -841,6 +845,11 @@ const Parking = () => {
                 onEdit={handleEditParking}
                 canAction={canAction}
                 canBookingAction={canBookingAction}
+                approvalStatus={
+                  selectedBuildingIndex !== null && selectedFloorIndex !== null
+                    ? groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.ApprovalStatus
+                    : undefined
+                }
               />
             ))}
           </div>
@@ -864,7 +873,7 @@ const Parking = () => {
         }}
         title="Update Parking"
         onSubmit={handleUpdateParking}
-        saveText={canAction === true && isChange ? "Update" : ""}
+        saveText={canAction === true && approvalStatus?.toUpperCase()!=="APPROVED" && isChange ? "Update" : "" }
         onCancel={() => {
           setIsUpdateParkingModalOpen(false);
         }}
@@ -941,6 +950,7 @@ const Parking = () => {
             <Input
               label="Dimensions"
               value={formData.ParkingDimensions || ""}
+              maxLength={15}
               onChange={(e) => handleFieldChange("ParkingDimensions", e.target.value)}
               placeholder="Enter Dimensions"
               required

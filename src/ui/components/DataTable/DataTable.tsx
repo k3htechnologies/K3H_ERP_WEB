@@ -32,7 +32,6 @@ export interface FilterInfo {
   [key: string]: string
 }
 
-
 interface DataTableProps {
   data: any[]
   columns: TableColumn[]
@@ -47,6 +46,7 @@ interface DataTableProps {
   onSort?: (sortInfo: SortInfo) => void
   onRowSelect?: (rows: any[]) => void
   rowKey?: string
+  lastUpdatedRow?: string | number | null
 }
 
 export const DataTable: React.FC<DataTableProps> = ({
@@ -61,28 +61,39 @@ export const DataTable: React.FC<DataTableProps> = ({
   recordsPerPage = 10,
   sortInfo,
   onSort,
-   onRowSelect,
-  rowKey = "id"
+  onRowSelect,
+  rowKey = "id",
+  lastUpdatedRow
 }) => {
 
   const [selectedRows, setSelectedRows] = React.useState<(string | number)[]>([])
+  const [tempHighlightRow, setTempHighlightRow] = React.useState<string | number | null>(null)
+  console.log("lastUpdatedRow from parent:", lastUpdatedRow)
+  React.useEffect(() => {
+    if (lastUpdatedRow !== null && lastUpdatedRow !== undefined) {
 
+      setTempHighlightRow(lastUpdatedRow)
 
+      const timer = setTimeout(() => {
+        setTempHighlightRow(null)
+      }, 3000)
+
+      return () => clearTimeout(timer)
+    }
+  }, [lastUpdatedRow])
   const handleSort = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey)
     if (!onSort || !column?.sortable) return
 
     const newDirection = sortInfo?.column === columnKey && sortInfo?.direction === 'asc' ? 'desc' : 'asc'
-    // Pass the column key for internal sorting logic
     onSort({ column: columnKey, direction: newDirection })
   }
-
 
   const renderPagination = () => {
     if (!pagination) return null
 
     const { currentPage, totalPages, totalRecords, pageSize, onPageChange } = pagination
-    const startRecord = totalRecords===0 ? 0 :(currentPage - 1) * pageSize + 1
+    const startRecord = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
     const endRecord = Math.min(currentPage * pageSize, totalRecords)
 
     return (
@@ -93,7 +104,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={totalRecords===0 ? true : currentPage === 1}
+            disabled={totalRecords === 0 ? true : currentPage === 1}
             className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -129,7 +140,7 @@ export const DataTable: React.FC<DataTableProps> = ({
 
           <button
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={totalRecords===0 ? true :currentPage === totalPages}
+            disabled={totalRecords === 0 ? true : currentPage === totalPages}
             className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <ChevronRight className="h-4 w-4" />
@@ -140,8 +151,6 @@ export const DataTable: React.FC<DataTableProps> = ({
   }
 
   return (
-
-
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col ${fixedHeight ? 'h-full' : ''} ${className}`}>
 
       {/* Table Container with Fixed Height */}
@@ -158,17 +167,7 @@ export const DataTable: React.FC<DataTableProps> = ({
               zIndex: 30,
             }}
           >
-            <tr
-              className="h-10"
-              style={{
-                fontSize: '14px',
-                fontWeight: '500',
-                lineHeight: '1.4',
-                letterSpacing: '0%',
-                paddingTop: '6px',
-                paddingBottom: '6px',
-              }}
-            >
+            <tr className="h-10" style={{ fontSize: '14px', fontWeight: '500', lineHeight: '1.4', letterSpacing: '0%', paddingTop: '6px', paddingBottom: '6px' }}>
               {columns.map((column) => (
                 <th
                   key={column.key}
@@ -190,86 +189,65 @@ export const DataTable: React.FC<DataTableProps> = ({
                     lineHeight: '1.4',
                     letterSpacing: '0%',
                     backgroundColor: '#E4F0FF',
-                    borderBottom: '1px solid #D1D5DB', // ✅ Only bottom border (prevents double)
-                    borderRight: '1px solid #D1D5DB',  // ✅ Keep vertical separation
+                    borderBottom: '1px solid #D1D5DB',
+                    borderRight: '1px solid #D1D5DB',
                   }}
                   onClick={() => column.sortable && handleSort(column.key)}
                 >
-                  <div
-                    className={`flex items-center space-x-1 ${column.align === 'center'
-                      ? 'justify-center'
-                      : column.align === 'right'
-                        ? 'justify-end'
-                        : 'justify-start'
-                      }`}
-                  >
+                  <div className={`flex items-center space-x-1 ${column.align === 'center' ? 'justify-center' : column.align === 'right' ? 'justify-end' : 'justify-start'}`}>
                     <span className="truncate">{column.label}</span>
-                    {column.sortable && (
-                      <ArrowUpDown className="h-3 w-3 flex-shrink-0" />
-                    )}
-                    {sortInfo?.column === column.key && (
-                      <span className="text-blue-500 flex-shrink-0">
-                        {sortInfo.direction === 'asc' ? '↑' : '↓'}
-                      </span>
-                    )}
+                    {column.sortable && <ArrowUpDown className="h-3 w-3 flex-shrink-0" />}
+                    {sortInfo?.column === column.key && <span className="text-blue-500 flex-shrink-0">{sortInfo.direction === 'asc' ? '↑' : '↓'}</span>}
                   </div>
                 </th>
               ))}
-
             </tr>
           </thead>
 
           <tbody className="bg-white">
             {!loading && data.length === 0 ? (
               <tr>
-                <td
-                  colSpan={columns.length}
-                  className="py-10"
-                >
-                  <NoDataView
-                    message={emptyMessage}
-                  />
+                <td colSpan={columns.length} className="py-10">
+                  <NoDataView message={emptyMessage} />
                 </td>
               </tr>
-            )
-              :
-              (
-                data.map((row, index) => (
-
-                  <tr key={index} 
-                      onClick={() => {
-                      const key = row[rowKey]
-
-                      const updatedSelection = selectedRows.includes(key)
-                        ? selectedRows.filter((k) => k !== key)
-                        : [...selectedRows, key]
+            ) : (
+              data.map((row, index) => {
+                const rowKeyValue = row[rowKey]
+                const isSelected = selectedRows.includes(rowKeyValue)
+                const isTempHighlighted = tempHighlightRow === rowKeyValue
+                return (
+                  <tr
+                    key={rowKeyValue}
+                    onClick={onRowSelect ? () => {
+                      const updatedSelection = isSelected
+                        ? selectedRows.filter((k) => k !== rowKeyValue)
+                        : [...selectedRows, rowKeyValue]
 
                       setSelectedRows(updatedSelection)
 
-                      const selectedData = data.filter((r) =>
-                        updatedSelection.includes(r[rowKey])
-                      )
-
-                      onRowSelect?.(selectedData)
-                    }}
-                    className={`h-10 border-b border-gray-200 cursor-pointer ${selectedRows.includes(row[rowKey])
-                        ? "bg-blue-50 border-l-4 border-blue-500"
-                        : "hover:bg-gray-50"
-                      }`}
+                      const selectedData = data.filter((r) => updatedSelection.includes(r[rowKey]))
+                      onRowSelect(selectedData)
+                    } : undefined}
+                    className={`h-10 border-b border-gray-200 transition-all duration-700
+                               ${onRowSelect ? 'cursor-pointer' : ''}
+                               ${isSelected ? 'bg-blue-50 border-l-4 border-blue-500' : ''}
+                               ${isTempHighlighted ? 'bg-blue-50 border-l-4 border-blue-500' : ''}
+                               ${!isSelected && !isTempHighlighted && onRowSelect ? 'hover:bg-gray-50' : ''}
+                             `}
                   >
-
                     {columns.map((column) => {
-
-                      const cellValue = column.render ?  column.render(row[column.key], row, index): row[column.key]
-
+                      const cellValue = column.render ? column.render(row[column.key], row, index) : row[column.key]
                       return (
                         <td
                           key={column.key}
-                          className={`px-4 py-2 text-gray-900 border-r border-gray-200 ${column.align === 'center' ? 'text-center' :
-                            column.align === 'right' ? 'text-right' : 'text-left'
-                            } ${column.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100' :
-                              column.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100' : ''
-                            }`}
+                          className={`px-4 py-2 text-gray-900 border-r border-gray-100${!column.fixed ? 'border-r border-gray-200' : ''}
+                           ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
+                           ${column.fixed === 'left'
+                              ? `sticky left-0 z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r border-gray-100
+                           ${isTempHighlighted || isSelected ? 'bg-blue-50' : 'bg-white'}` : column.fixed === 'right'
+                                ? `sticky right-0 z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l border-gray-100
+                            ${isTempHighlighted || isSelected ? 'bg-blue-50' : 'bg-white'}` : ''}`}
                           style={{
                             ...(column.width ? { width: column.width } : {}),
                             fontSize: '14px',
@@ -293,10 +271,10 @@ export const DataTable: React.FC<DataTableProps> = ({
                         </td>
                       )
                     })}
-
                   </tr>
-                ))
-              )}
+                )
+              })
+            )}
           </tbody>
         </table>
       </div>

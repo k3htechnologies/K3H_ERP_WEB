@@ -17,7 +17,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { Button, Input } from '@/ui/components/forms';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
-import {Edit, Plus, Trash2} from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
@@ -125,7 +125,8 @@ const ProjectRERADocument: React.FC = () => {
   // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-  const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+  const [rERADocumentName, setRERADocumentName] = useState<string | null>("");
+  const [rERADocumentCategory, setRERADocumentCategory] = useState<string | null>("");
 
   // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -528,7 +529,8 @@ const ProjectRERADocument: React.FC = () => {
       Id: row.ProjectRERADocumentId ?? 0,
       ProjectId: row.ProjectId ?? 0,
     };
-    setApprovalDocumentName(row.ProjectRERADocumentName)
+    setRERADocumentCategory(row.ProjectRERADocumentCategory)
+    setRERADocumentName(row.ProjectRERADocumentName)
     setApprovalLogRequest(request);
     setIsApprovalLogModalOpen(true);
   };
@@ -782,10 +784,10 @@ const ProjectRERADocument: React.FC = () => {
     }
 
     if (formData.ProjectRERADocumentStatus?.toUpperCase() === "ISSUED" &&
-          !hasAnyDocumentFile(projectRERADocumentFiles, projectRERADocumentURL, RemoveProjectRERADocumentUrls)
-        ) {
-          newErrors.ProjectRERADocumentURL = "File is required.";
-        }
+      !hasAnyDocumentFile(projectRERADocumentFiles, projectRERADocumentURL, RemoveProjectRERADocumentUrls)
+    ) {
+      newErrors.ProjectRERADocumentURL = "File is required.";
+    }
 
 
     return {
@@ -1281,16 +1283,19 @@ const ProjectRERADocument: React.FC = () => {
 
       <ApprovalLogModal
         isOpen={isApprovalLogModalOpen}
-        documentName={approvalDocumentName ?? ""}
+        title='RERA Document'
+        titleText={rERADocumentCategory ?? ""}
+        subTitleText={rERADocumentName ?? ""}
         onClose={() => setIsApprovalLogModalOpen(false)}
         request={approvalLogRequest} />
 
       <ApprovalActionModal
-      title='Document'
+        title='Document'
         isOpen={isApprovalActionModalOpen}
         onClose={() => setIsApprovalActionModalOpen(false)}
         actionType={approvalActionType}
-        documentName={approvalRowData?.ProjectRERADocumentName ?? ""}
+        titleText={rERADocumentCategory ?? ""}
+        subTitleText={rERADocumentName ?? ""}
         onSubmit={handleApprovalSubmit}
         loading={isLoading}
       />

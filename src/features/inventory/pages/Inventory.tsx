@@ -92,7 +92,8 @@ const Inventory = () => {
     // APPROVAL LOG MODAL
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-    const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+    const [buildingName, setBuildingName] = useState<string | null>("");
+    const [wingName, setWingName] = useState<string | null>("");
 
     // APPROVAL ACTION MODAL
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -1244,7 +1245,8 @@ const Inventory = () => {
             ProjectId: building.ProjectId,
         };
 
-        setApprovalDocumentName(`${building.BuildingNumber} - Wing ${selectedWing?.Wing}`);
+        setBuildingName(building.BuildingNumber);
+        setWingName(selectedWing?.Wing)
 
         setApprovalLogRequest(request);
         setIsApprovalLogModalOpen(true);
@@ -1260,7 +1262,8 @@ const Inventory = () => {
 
         if (!building) return;
 
-        setApprovalDocumentName(`${building.BuildingNumber} - Wing ${selectedWing?.Wing}`);
+        setBuildingName(building.BuildingNumber);
+        setWingName(selectedWing?.Wing)
 
         setIsApprovalActionModalOpen(true);
     };
@@ -1691,7 +1694,9 @@ const Inventory = () => {
             {/* Approval Log History */}
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
-                documentName={approvalDocumentName ?? ""}
+                title="Inventory"
+                titleText={buildingName ?? ""}
+                subTitleText={wingName ?? ""}
                 onClose={() => setIsApprovalLogModalOpen(false)}
                 request={approvalLogRequest}
             />
@@ -1702,7 +1707,8 @@ const Inventory = () => {
                 isOpen={isApprovalActionModalOpen}
                 onClose={() => setIsApprovalActionModalOpen(false)}
                 actionType={approvalActionType}
-                documentName={approvalDocumentName ?? ""}
+                titleText={buildingName ?? ""}
+                subTitleText={wingName ?? ""}
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />

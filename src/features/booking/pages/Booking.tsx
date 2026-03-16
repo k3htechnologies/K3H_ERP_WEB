@@ -54,7 +54,9 @@ export const Booking: React.FC = () => {
     // APPROVAL LOG MODAL
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-    const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+    const [ownerName, setOwnerName] = useState<string | null>("");
+    const [wing, setwing] = useState<string | null>("");
+    const [unitNumber, setUnitNumber] = useState<string | null>("");
 
     // APPROVAL ACTION MODAL
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -300,7 +302,10 @@ export const Booking: React.FC = () => {
             Id: row.BookingId ?? 0,
             ProjectId: row.ProjectId ?? 0,
         };
-        setApprovalDocumentName(`Applicant : ${row.ApplicantName}  Wing : ${row?.Wing}  Unit : ${row?.Flat}`);
+        setOwnerName(row.ApplicantName);
+        setwing(row?.Wing)
+        setUnitNumber(row?.Flat);
+
         setApprovalLogRequest(request);
         setIsApprovalLogModalOpen(true);
     };
@@ -308,7 +313,9 @@ export const Booking: React.FC = () => {
     const handleApproveRejectDocument = (row: BookingData, approvalType: "approve" | "reject") => {
 
         setApprovalRowData(row);
-        setApprovalDocumentName(`Applicant : ${row.ApplicantName}  Wing : ${row?.Wing}  Unit : ${row?.Flat}`);
+        setOwnerName(row.ApplicantName);
+        setwing(row?.Wing)
+        setUnitNumber(row?.Flat);
         setApprovalActionType(approvalType);
         setIsApprovalActionModalOpen(true);
 
@@ -751,7 +758,10 @@ export const Booking: React.FC = () => {
 
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
-                documentName={approvalDocumentName ?? ""}
+                title='Booking'
+                titleText={ownerName ?? ""}
+                subTitleText={wing ?? ""}
+                subSubTitleText={unitNumber ?? ""}
                 onClose={() => setIsApprovalLogModalOpen(false)}
                 request={approvalLogRequest} />
 
@@ -760,7 +770,9 @@ export const Booking: React.FC = () => {
                 isOpen={isApprovalActionModalOpen}
                 onClose={() => setIsApprovalActionModalOpen(false)}
                 actionType={approvalActionType}
-                documentName={approvalDocumentName ?? ""}
+                titleText={ownerName ?? ""}
+                subTitleText={wing ?? ""}
+                subSubTitleText={unitNumber ?? ""}
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />

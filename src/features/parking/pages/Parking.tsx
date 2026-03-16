@@ -105,7 +105,8 @@ const Parking = () => {
   // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-  const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+  const [buildingName, setBuildingName] = useState<string | null>("");
+  const [floor, setFloor] = useState<string | null>("");
 
   // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -600,12 +601,12 @@ const Parking = () => {
 
           return (
             <div className="flex items-center gap-2">
-              {approvalStatus?.toUpperCase()==="APPROVED" && (
+              {approvalStatus?.toUpperCase() === "APPROVED" && (
                 <div title="View Details">
                   <Eye size={16} className="cursor-pointer text-blue-600 hover:text-blue-800" onClick={() => handleEditParking(parking)} />
                 </div>
               )}
-              {approvalStatus?.toUpperCase()!=="APPROVED" &&
+              {approvalStatus?.toUpperCase() !== "APPROVED" &&
                 canAction && (
                   <div title="Edit">
                     <Edit
@@ -643,7 +644,8 @@ const Parking = () => {
       ProjectId: Number(projectId),
     };
 
-    setApprovalDocumentName(`${building.BuildingNumber} - ${floor.Floor}`);
+    setBuildingName(building.BuildingNumber);
+    setFloor(floor.Floor)
 
     setApprovalLogRequest(request);
     setIsApprovalLogModalOpen(true);
@@ -659,7 +661,8 @@ const Parking = () => {
 
     if (!building || !floor) return;
 
-    setApprovalDocumentName(`${building.BuildingNumber} - ${floor.Floor}`);
+    setBuildingName(building.BuildingNumber);
+    setFloor(floor.Floor)
 
     setIsApprovalActionModalOpen(true);
   };
@@ -713,9 +716,9 @@ const Parking = () => {
   const isChange = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? false : true;
   const disabled = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? true : false;
 
-  const approvalStatus=selectedBuildingIndex !== null && selectedFloorIndex !== null
-            ? groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.ApprovalStatus
-            : undefined
+  const approvalStatus = selectedBuildingIndex !== null && selectedFloorIndex !== null
+    ? groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.ApprovalStatus
+    : undefined
 
   return (
     <>
@@ -774,8 +777,8 @@ const Parking = () => {
                   }
                 }}
                 className={`relative pb-2 text-sm font-medium transition-all duration-200 flex items-center gap-2 ${selectedBuildingIndex === index
-                    ? "text-blue-600 font-medium text-[16px] leading-[140%] tracking-[0.01em]"
-                    : "text-gray-400 font-normal text-[14px] leading-[140%] tracking-[0.01em] hover:text-blue-500"
+                  ? "text-blue-600 font-medium text-[16px] leading-[140%] tracking-[0.01em]"
+                  : "text-gray-400 font-normal text-[14px] leading-[140%] tracking-[0.01em] hover:text-blue-500"
                   }`}
               >
                 {building.BuildingNumber}
@@ -808,8 +811,8 @@ const Parking = () => {
                       key={index}
                       onClick={() => setSelectedFloorIndex(index)}
                       className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedFloorIndex === index
-                          ? "bg-blue-600 text-white"
-                          : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-300"
+                        ? "bg-blue-600 text-white"
+                        : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-300"
                         }`}
                     >
                       {floor.Wing} / {floor.Floor}
@@ -873,7 +876,7 @@ const Parking = () => {
         }}
         title="Update Parking"
         onSubmit={handleUpdateParking}
-        saveText={canAction === true && approvalStatus?.toUpperCase()!=="APPROVED" && isChange ? "Update" : "" }
+        saveText={canAction === true && approvalStatus?.toUpperCase() !== "APPROVED" && isChange ? "Update" : ""}
         onCancel={() => {
           setIsUpdateParkingModalOpen(false);
         }}
@@ -981,7 +984,9 @@ const Parking = () => {
       {/* Approval Log History */}
       <ApprovalLogModal
         isOpen={isApprovalLogModalOpen}
-        documentName={approvalDocumentName ?? ""}
+        title="Parking"
+        titleText={buildingName ?? ""}
+        subTitleText={floor ?? ""}
         onClose={() => setIsApprovalLogModalOpen(false)}
         request={approvalLogRequest}
       />
@@ -992,7 +997,8 @@ const Parking = () => {
         isOpen={isApprovalActionModalOpen}
         onClose={() => setIsApprovalActionModalOpen(false)}
         actionType={approvalActionType}
-        documentName={approvalDocumentName ?? ""}
+        titleText={buildingName ?? ""}
+        subTitleText={floor ?? ""}
         onSubmit={handleApprovalSubmit}
         loading={isLoading}
       />

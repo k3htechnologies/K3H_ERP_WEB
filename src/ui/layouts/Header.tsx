@@ -381,21 +381,26 @@ export const Header: React.FC<HeaderProps> = ({
                                 required={false}
                                 size="md"
                                 isShowClearSelection={false}
+
                                 options={(emp?.ProjectData ?? []).map(opt => ({
                                     label: opt.ProjectName,
                                     value: opt.ProjectId
                                 }))}
+
                                 value={projectId ?? undefined}
                                 onChange={(value: string | number) => {
                                     setProjectId(Number(value))
                                 }}
+
                                 placeholder="Select Project"
                                 selectedTextColor="#135BEC"
                                 disabled={readOnlyProject}
                                 leftIcon={<Info size={18} color="#135BEC" />}
+
                                 leftIconClick={() => {
 
                                     if (!projectId || projectId <= 0) return;
+                                    
                                     setEmployeeMasterList([]);
                                     setProjectMasterList([]);
                                     setActiveTab(TabList[0].id)

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react"
 import type { DropdownItem } from "./DropdownItem"
 
 export interface SingleSelectWithPaginationProps {
@@ -7,7 +8,7 @@ export interface SingleSelectWithPaginationProps {
   variant?: 'default' | 'outlined' | 'filled'
   color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info'
   onChange?: (value: string | number) => void
-  dataFetchCallBack?: ( pageNumber: number, params?: { value?: string } ) => Promise<{ totalNumberOfRecord: number;itemList: DropdownItem[]}>
+  dataFetchCallBack?: (pageNumber: number, params?: { value?: string }) => Promise<{ totalNumberOfRecord: number; itemList: DropdownItem[] }>
   onSelected: (item: DropdownItem | null) => void
   title?: string
   label?: string
@@ -21,7 +22,11 @@ export interface SingleSelectWithPaginationProps {
   error?: string
   className?: string
   style?: React.CSSProperties
-  isShowClearSelection?:boolean
+  isShowClearSelection?: boolean
+
+  selectedTextColor?: string;
+  leftIcon?: ReactNode
+  leftIconClick?: () => void
 }
 export interface MultiSelectDropdownProps {
   label?: string;
@@ -53,5 +58,5 @@ export interface SinglePageSelectionProps {
     spacing: Record<string, string>;
     fontSize: Record<string, string>;
   };
-  isShowClearSelection?:boolean
+  isShowClearSelection?: boolean
 }

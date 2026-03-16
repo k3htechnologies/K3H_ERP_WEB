@@ -85,7 +85,7 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
 
         }
     };
-
+    
     //#endregion 
 
     return (
@@ -99,7 +99,7 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
                 e.preventDefault()
                 setIsMenuModalOpen(false);
                 refreshMenu()
-                navigate('/dashboard');
+                window.location.reload();
             }}
         >
             <div className="space-y-3">

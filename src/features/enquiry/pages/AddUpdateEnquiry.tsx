@@ -1012,6 +1012,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                         title="Select Project"
                         size="lg"
                         dataFetchCallBack={fetchProjectDropdown}
+                        
                         onSelected={(item) => {
                           if (!item) {
                             handleFieldChange("ReferelProjectId", 0);
@@ -1032,6 +1033,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             referelInventoryFlat: "",
                           }));
                         }}
+
                         initialValue={createDropdownInitialValue(formData.ReferelProjectId, dropdownLabels.referelProjectName)}
                         error={errors.ReferelProjectId}
                       />

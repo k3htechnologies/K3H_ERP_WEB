@@ -157,6 +157,8 @@ import { IncentiveReportListStateProvider } from '@/features/incentiveReport/con
 import PaymentScheduleSchemeMaster from '@/features/paymentScheduleSchemeMaster/pages/PaymentScheduleSchemeMaster';
 import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
 import ClassificationParameter from '@/features/classificationParameter/pages/ClassificationParameter';
+import PayTrack from '@/features/crmPayTrackScreen/pages/PayTrack';
+import ViewPayTrack from '@/features/crmPayTrackScreen/pages/ViewPayTrack';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -191,7 +193,7 @@ function App() {
   useEffect(() => {
     const token = LocalStorageHelper.getStoredTokenData()
     if (!token) {
-      
+
     }
   }, [])
 
@@ -357,7 +359,7 @@ function App() {
             <Route path="paymentScheduleScheme" element={<PaymentScheduleSchemeMaster />} />
 
             <Route path="target" element={<Target />} />
-             <Route path="classificationParameter" element={<ClassificationParameter />} />
+            <Route path="classificationParameter" element={<ClassificationParameter />} />
 
             <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
             <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />
@@ -366,6 +368,10 @@ function App() {
             <Route path="enquiryReport" element={<EnquiryReport />} />
             <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
+
+            {/* CRM PAY TRACK SCREEN */}
+            <Route path="payTrack" element={<PayTrack />} />
+            <Route path="viewPayTrack/:BookingId" element={<ViewPayTrack />} />
 
             {/* REDEVELOPMENT */}
 
@@ -389,6 +395,7 @@ function App() {
             <Route path="proposedOffer" element={<ProposedOffer />} />
 
             <Route path="proposedPlan" element={<ProposedPlan />} />
+
 
 
             {/* OPERATION */}

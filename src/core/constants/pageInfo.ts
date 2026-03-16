@@ -423,6 +423,13 @@ export const getPageInfo = (path: string) => {
                 description: "Manage classification parameters for the system",
             }
 
+        // CRM
+        case 'payTrack':
+            return {
+                title: "CRM Pay Track",
+                description: "Track and manage payments across the CRM",
+            }
+
 
         // MARKETING
         case 'content':
@@ -448,7 +455,7 @@ export const getPageInfo = (path: string) => {
                 title: "Legal Dashboard",
                 description: "Track & manage project related legal cases",
             }
-            
+
 
         default:
             return {

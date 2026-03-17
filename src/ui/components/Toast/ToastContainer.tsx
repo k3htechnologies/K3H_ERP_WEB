@@ -3,7 +3,6 @@ import { Toast } from './Toast'
 import type { ToastProps } from './Toast'
 import { Modal } from '../Modal/Modal'
 import { LOCAL_STORAGE_KEYS } from '@/core/constants'
-import { useNavigate } from 'react-router-dom'
 import * as E from 'fp-ts/Either';
 import type { PullMenuRequest } from '@/features/menu/models/MenuModel'
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
@@ -17,9 +16,6 @@ export interface ToastContainerProps {
 export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
 
     const [isMenuModalOpen, setIsMenuModalOpen] = useState(false)
-
-    //LOCATION
-    const navigate = useNavigate();
 
     // Whenever toasts change, check if any have title === 'Menu Changed'
 

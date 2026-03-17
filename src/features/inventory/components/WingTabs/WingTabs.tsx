@@ -47,7 +47,7 @@ export const WingTabs = ({ wings, activeWingTab, onWingChange, onDeleteWing,canA
                                 {wing.Wing}
                             </span>
                             
-                            {onDeleteWing && canAction && isActive && approvalStatus?.toUpperCase()!=="APPROVED" && (
+                            {onDeleteWing && canAction && isActive && !approvalStatus?.toUpperCase().includes("APPROVED") && (
                                 <button
                                     onClick={(e) => handleDeleteClick(e, wing)}
                                     className="ml-1 p-0.5 rounded-full hover:bg-gray-200 transition-colors"

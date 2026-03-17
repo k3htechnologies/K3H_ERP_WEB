@@ -95,7 +95,7 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction ,appr
 
         {approvalStatus?.toUpperCase()==="APPROVED" && <Eye size={16} onClick={() => onEdit(parking)} />}
 
-        {approvalStatus?.toUpperCase()!=="APPROVED" && canAction && (
+        {!approvalStatus?.toUpperCase().includes("APPROVED") && canAction && (
           <Edit className="cursor-pointer" onClick={() => onEdit(parking)} size={16} />
         )}
 

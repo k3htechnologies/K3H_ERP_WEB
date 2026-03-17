@@ -606,7 +606,7 @@ const Parking = () => {
                   <Eye size={16} className="cursor-pointer text-blue-600 hover:text-blue-800" onClick={() => handleEditParking(parking)} />
                 </div>
               )}
-              {approvalStatus?.toUpperCase() !== "APPROVED" &&
+              {!approvalStatus?.toUpperCase().includes("APPROVED") &&
                 canAction && (
                   <div title="Edit">
                     <Edit
@@ -876,7 +876,7 @@ const Parking = () => {
         }}
         title="Update Parking"
         onSubmit={handleUpdateParking}
-        saveText={canAction === true && approvalStatus?.toUpperCase() !== "APPROVED" && isChange ? "Update" : ""}
+        saveText={canAction === true && !approvalStatus?.toUpperCase().includes("APPROVED") && isChange ? "Update" : ""}
         onCancel={() => {
           setIsUpdateParkingModalOpen(false);
         }}

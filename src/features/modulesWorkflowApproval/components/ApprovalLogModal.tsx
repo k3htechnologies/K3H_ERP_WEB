@@ -9,6 +9,7 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { Loader } from "@/core/utils/loader";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { getStatusColor } from "../utils/Status";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 
 interface Props {
     isOpen: boolean;
@@ -123,7 +124,7 @@ export const ApprovalLogModal: React.FC<Props> = ({
                                     </span>
 
                                     <span className="text-xs text-gray-500 whitespace-nowrap">
-                                        {item.DateTime}
+                                        {formatDate_dd_MonthName_yy_hh_mm(item.Date ?? '-')}
                                     </span>
 
                                 </div>

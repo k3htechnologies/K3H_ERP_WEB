@@ -674,7 +674,7 @@ const ProjectRERADocument: React.FC = () => {
         align: 'center',
         fixed: 'right',
         render: (_value, row) => {
-          const showEdit = canAction && row.ProjectRERADocumentApprovalStatus !== "Approved" ? true : false;
+          const showEdit = canAction && !row.ProjectRERADocumentApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
               <div className="flex-shrink-0 ml-2">

@@ -710,7 +710,7 @@ const ApprovalDocument: React.FC = () => {
         align: 'center',
         fixed: 'right',
         render: (_value, row) => {
-          const showEdit = canAction && row.ApprovalDocumentApprovalStatus !== "Approved" ? true : false;
+          const showEdit = canAction && !row.ApprovalDocumentApprovalStatus?.toUpperCase().includes("APPROVED")? true : false;
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
               {/* RIGHT SIDE — Fixed Edit Button */}

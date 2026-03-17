@@ -462,7 +462,7 @@ const InventorySpecification: React.FC = () => {
         align: "center",
         render: (_value, row, index) => (
           <div className="flex items-center justify-center gap-2">
-            {isChange && approvalStatus?.toUpperCase() !== "APPROVED" && (
+            {isChange && !approvalStatus?.toUpperCase().includes("APPROVED") && (
               <>
                 <Button
                   onClick={(e) => {
@@ -509,7 +509,7 @@ const InventorySpecification: React.FC = () => {
 
   const isFlatLocked = ["Alloted", "Booked"].includes(formDataInventoryFlat.FlatStatus);
 
-  const canFullEdit = canAction && !isFlatLocked && approvalStatus?.toUpperCase() !== "APPROVED";
+  const canFullEdit = canAction && !isFlatLocked && !approvalStatus?.toUpperCase().includes("APPROVED");
 
   const canStatusEditOnly = !canAction && canBookingAction && !isFlatLocked;
 
@@ -660,7 +660,7 @@ const InventorySpecification: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900">Unit Layout Form</h3>
               </div>
 
-              {canFullEdit && approvalStatus?.toUpperCase() !== "APPROVED" && (
+              {canFullEdit && !approvalStatus?.toUpperCase().includes("APPROVED") && (
                 <Button onClick={handleAddSpecification} color="blue" size="sm" title="Add Unit Specification">
                   Add Unit Specification
                 </Button>

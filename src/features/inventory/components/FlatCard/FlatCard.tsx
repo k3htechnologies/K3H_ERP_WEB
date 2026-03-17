@@ -138,7 +138,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                             <Edit className="cursor-pointer" onClick={handleEdit} size={16} />
                         )}
 
-                        {(flat.FlatStatus === "Available" && approvalStatus?.toUpperCase() !== "APPROVED") && (
+                        {(flat.FlatStatus === "Available" && !approvalStatus?.toUpperCase().includes("APPROVED")) && (
                             <Trash onClick={handleDelete} color="red" size={16} />
                         )}
                     </>

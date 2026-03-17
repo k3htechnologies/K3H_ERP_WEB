@@ -391,19 +391,31 @@ export const AddUpdateBooking: React.FC = () => {
       return;
     }
     if (!hasEnquiryId || !hasValidCode) {
+
       setEnquiryId(0);
+
+      setFormData(prev => ({
+        ...prev,
+        EnquiryId: 0
+      }));
+
       setEnquiryMasterList(null);
+
     }
 
   }, [enquiryUniqueCode, projectId, enquiryId]);
 
   const handleEnquiryResponse = (enquiry: any) => {
+
     setEnquiryId(enquiry?.EnquiryId);
+
     setFormData(prev => ({
       ...prev,
       EnquiryId: enquiry?.EnquiryId
     }));
+
     setEnquiryMasterList(enquiry);
+
   };
 
   //#endregion
@@ -2323,13 +2335,13 @@ export const AddUpdateBooking: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Additional Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
               <div>
-                <TextArea label="Unit / Modulation / Customization Remark" required value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
+                <TextArea className='thin-scroll' label="Unit / Modulation / Customization Remark" required value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
               </div>
               <div>
-                <TextArea label="Payment Related Remark" value={formData.PaymentRemark ?? ""} onChange={(e) => handleFieldChange("PaymentRemark", e.target.value)} placeholder="Enter Payment Related Remark" error={errors.PaymentRemark} />
+                <TextArea  className='thin-scroll' label="Payment Related Remark" value={formData.PaymentRemark ?? ""} onChange={(e) => handleFieldChange("PaymentRemark", e.target.value)} placeholder="Enter Payment Related Remark" error={errors.PaymentRemark} />
               </div>
               <div>
-                <TextArea label="Other Remark" value={formData.OtherRemark ?? ""} onChange={(e) => handleFieldChange("OtherRemark", e.target.value)} placeholder="Enter Other Remark" error={errors.OtherRemark} />
+                <TextArea  className='thin-scroll' label="Other Remark" value={formData.OtherRemark ?? ""} onChange={(e) => handleFieldChange("OtherRemark", e.target.value)} placeholder="Enter Other Remark" error={errors.OtherRemark} />
               </div>
               <div>
                 <SingleSelectDropdownWithPagination label="Term & Condition" title="Term & Condition" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)} />

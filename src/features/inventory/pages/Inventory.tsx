@@ -469,10 +469,11 @@ const Inventory = () => {
             async () => {
                 const params: FilterInventoryRequest = {
                     ProjectId: Number(projectId),
-                    ExportType: "Excel"
+                    ExportType: "SAMPLE"
                 }
 
                 const response = await inventoryService.apiCallpullInventory(params);
+                
                 handleExportFile(response, 'Excel', 'Inventory', addToast, 'Sample file download successfully')
 
                 return response;

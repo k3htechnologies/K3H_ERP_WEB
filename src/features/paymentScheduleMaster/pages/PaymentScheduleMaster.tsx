@@ -291,6 +291,7 @@ export const PaymentScheduleMaster: React.FC = () => {
             const newRecord = response.right.Data[0] as PaymentScheduleMasterData;
 
             setPaymentScheduleMasterList((prevData) => [newRecord, ...prevData]);
+
             setPagination({
               currentPage: pagination.currentPage,
               totalRecords: pagination.totalRecords + 1,
@@ -461,9 +462,11 @@ export const PaymentScheduleMaster: React.FC = () => {
           if (pagination.currentPage > newTotalPages) {
 
             pageToShow = newTotalPages;
-          } else if (PaymentScheduleMasterList.length === 1 && pagination.currentPage > 1) {
+          } 
+          else if (PaymentScheduleMasterList.length === 1 && pagination.currentPage > 1) {
             pageToShow = pagination.currentPage - 1;
           }
+          
           setPagination({
             currentPage: pageToShow,
             totalRecords: newTotalRecords,
@@ -702,6 +705,7 @@ export const PaymentScheduleMaster: React.FC = () => {
                     handleFieldChange("PaymentSchedulePercentage", percentageValue);
 
                     const percentage = Number(percentageValue || 0);
+                    
                     const newTotal = calculateCumulative(percentage);
 
                     if (newTotal > 100) {

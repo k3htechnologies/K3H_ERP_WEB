@@ -336,8 +336,8 @@ export const ViewBooking: React.FC = () => {
                         navigate('/booking');
                     }
                 }}
-                canAction={canAction && bookingData.ApprovalStatus?.toUpperCase()!="APPROVED" && sourcePage === 'booking' ? true : false}
-                canActionExtraButtonText={bookingData.ApprovalStatus?.toUpperCase()=="APPROVED" ? true : false}
+                canAction={canAction && !bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") && sourcePage === 'booking' ? true : false}
+                canActionExtraButtonText={!bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false}
                 onEdit={() => navigate('/booking/add')}
                 ExtraButtonText="Generate PDF"
                 onExtraButton={() => handleExportBookings("BOOKING FORM PDF")}

@@ -74,7 +74,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
 
     const handleParkingClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (canAction && approvalStatus?.toUpperCase() !== "APPROVED") {
+        if (canAction && !approvalStatus?.toUpperCase().includes("APPROVED")) {
             setIsParkingModalOpen(true);
             setParkingCount(floor.ParkingCount?.toString() || '0');
         }
@@ -155,7 +155,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                                     <Car className="text-[#135BEC]" size={20} />
                                 </div>
 
-                                {approvalStatus?.toUpperCase() !== "APPROVED" && (
+                                {!approvalStatus?.toUpperCase().includes("APPROVED") && (
                                     <Plus
                                         className="p-1.5 cursor-pointer hover:bg-gray-100 rounded transition-colors"
                                         size={28}
@@ -166,7 +166,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                                     />
                                 )}
                                 
-                                {onDeleteFloor && isLastFloor && approvalStatus?.toUpperCase() !== "APPROVED" && wing.Wing.toUpperCase() !== 'BGP' && (
+                                {onDeleteFloor && isLastFloor && !approvalStatus?.toUpperCase().includes("APPROVED") && wing.Wing.toUpperCase() !== 'BGP' && (
                                     <Button
                                         onClick={(e) => {
                                             e.stopPropagation();

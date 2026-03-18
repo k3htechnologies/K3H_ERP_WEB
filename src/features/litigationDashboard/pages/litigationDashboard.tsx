@@ -13,7 +13,7 @@ import { litigationDashboardService } from "@/features/litigationDashboard/servi
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 
-
+// ADDED COMMENT
 const LitigationDashboard: React.FC = () => {
 
     const { addToast } = useToast();

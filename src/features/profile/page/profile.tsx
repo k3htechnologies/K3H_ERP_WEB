@@ -1069,7 +1069,7 @@ export const Profile: React.FC = () => {
 
                 {activeTab === 'Overview' && employeeData && (
                     <>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                             {/* ================= LEFT SIDE (2/3) ================= */}
                             <div className="lg:col-span-2 space-y-6">

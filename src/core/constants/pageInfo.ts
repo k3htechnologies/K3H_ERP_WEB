@@ -441,6 +441,44 @@ export const getPageInfo = (path: string) => {
                 title: "Incentive Report",
                 description: "Centralized enquiry management for faster response",
             }
+        case 'classificationParameter':
+            return {
+                title: "Classification Parameter",
+                description: "Manage classification parameters for the system",
+            }
+        case 'performance':
+            return {
+                title: "Performance",
+                description: "Manage performance-related informationss",
+            }
+
+
+
+        // MARKETING
+        case 'content':
+            return {
+                title: "Content",
+                description: "Profile",
+            }
+        // PROJECT
+        case 'approvedBank':
+            return {
+                title: "Approved Bank",
+                description: "Profile",
+            }
+        // LITIGATION
+        case 'litigation':
+            return {
+                title: "Litigation",
+                description: "Track & manage project related legal cases",
+            }
+
+        case 'legalDashboard':
+            return {
+                title: "Legal Dashboard",
+                description: "Track & manage project related legal cases",
+            }
+
 
         default:
             return {

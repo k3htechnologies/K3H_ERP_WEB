@@ -17,7 +17,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { Button, Input } from '@/ui/components/forms';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import {Edit, Plus, Trash2} from 'lucide-react';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
@@ -30,6 +30,12 @@ import { getDocumentStatusColor } from '@/features/projectDocument/pages/Project
 import { TextArea } from '@/ui/components/forms/Textarea';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
+import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService';
+import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/ApprovalLogModal';
+import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
+import ApprovalActions from '@/features/modulesWorkflowApproval/components/ApprovalActionsButton';
+import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
 
 
 const initialFormState = (): AddUpdateProjectRERADocumentRequest => ({
@@ -115,6 +121,17 @@ const ProjectRERADocument: React.FC = () => {
 
   //ADD UPDATE PROJECT RERA DOCUMENT MASTER
   const [formData, setFormData] = useState<AddUpdateProjectRERADocumentRequest>(() => initialFormState());
+
+  // APPROVAL LOG MODAL
+  const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+  const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+  const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+
+  // APPROVAL ACTION MODAL
+  const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
+  const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
+  const [approvalRowData, setApprovalRowData] = useState<ProjectRERADocumentData | null>(null);
+
   //#endregion
 
   //#region MENU PERMISSIONS
@@ -270,7 +287,7 @@ const ProjectRERADocument: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        
+
         const params: FilterWithPaginationProjectRERADocument = {
           PageNumber: page,
           PageSize: pagination.pageSize,
@@ -505,6 +522,25 @@ const ProjectRERADocument: React.FC = () => {
 
   //#region TABLE COLUMN DOCUMENT DETAILS
 
+  const handleApprovalLog = (row: ProjectRERADocumentData) => {
+    const request: ModulesApprovalStatusRequest = {
+      ModuleName: "RERA DOCUMENT APPROVAL",
+      Id: row.ProjectRERADocumentId ?? 0,
+      ProjectId: row.ProjectId ?? 0,
+    };
+    setApprovalDocumentName(row.ProjectRERADocumentName)
+    setApprovalLogRequest(request);
+    setIsApprovalLogModalOpen(true);
+  };
+
+  const handleApproveRejectDocument = (row: ProjectRERADocumentData, approvalType: "approve" | "reject") => {
+
+    setApprovalRowData(row);
+    setApprovalActionType(approvalType);
+    setIsApprovalActionModalOpen(true);
+
+  };
+
   const projectRERADocumentDetailsColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -586,6 +622,23 @@ const ProjectRERADocument: React.FC = () => {
         )
       },
       {
+        key: "ProjectRERADocumentApprovalStatus",
+        label: "Approval Status",
+        width: "18",
+        sortable: false,
+        align: "left",
+        render: (value, row) => (
+          <ApprovalActions
+            approvalStatus={value || "-"}
+            showApproval={row.IsApproval}
+            isIcons={true}
+            onHistory={() => handleApprovalLog(row)}
+            onApprove={() => handleApproveRejectDocument(row, "approve")}
+            onReject={() => handleApproveRejectDocument(row, "reject")}
+          />
+        )
+      },
+      {
         key: 'ModifiedBy',
         label: 'Last Modified By',
         width: '33',
@@ -613,13 +666,13 @@ const ProjectRERADocument: React.FC = () => {
               : '-'
       },
       {
-        key: 'actions',
+        key: 'Actions',
         label: 'Actions',
         width: '12',
         align: 'center',
         fixed: 'right',
         render: (_value, row) => {
-          const showEdit = canAction ? true : false;
+          const showEdit = canAction && row.ProjectRERADocumentApprovalStatus !== "Approved" ? true : false;
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
               <div className="flex-shrink-0 ml-2">
@@ -672,7 +725,7 @@ const ProjectRERADocument: React.FC = () => {
 
     ],
     // dependencies: include everything used inside that might change
-    [canAction, handleConfirmationDialogBoxOpen]
+    [canAction, handleConfirmationDialogBoxOpen, handleApprovalLog, handleApproveRejectDocument]
   )
   //#endregion
 
@@ -727,6 +780,12 @@ const ProjectRERADocument: React.FC = () => {
 
       newErrors.ProjectRERADocumentStatus = "Status is required"
     }
+
+    if (formData.ProjectRERADocumentStatus?.toUpperCase() === "ISSUED" &&
+          !hasAnyDocumentFile(projectRERADocumentFiles, projectRERADocumentURL, RemoveProjectRERADocumentUrls)
+        ) {
+          newErrors.ProjectRERADocumentURL = "File is required.";
+        }
 
 
     return {
@@ -927,6 +986,64 @@ const ProjectRERADocument: React.FC = () => {
   }
   //#endregion
 
+  const handleApprovalSubmit = async (remark: string) => {
+
+    if (!approvalRowData) return;
+
+    const payload: UpdateModulesWorkflowApprovalRequest = {
+      ModuleName: "RERA DOCUMENT APPROVAL",
+      Id: approvalRowData.ProjectRERADocumentId ?? 0,
+      ProjectId: approvalRowData.ProjectId ?? 0,
+      IsApproved: approvalActionType === "approve",
+      Remarks: remark ?? null
+    };
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+          setIsApprovalActionModalOpen(false);
+
+          const parentId = expandedParentId;
+
+          await fetchProjectRERADocumentList(pagination.currentPage);
+
+          // collapse all first
+          if (dtRef.current) {
+            dtRef.current.collapseAll?.();
+          }
+
+          // reopen after table renders
+          setTimeout(() => {
+            if (parentId) {
+              dtRef.current?.expandRow?.(String(parentId), expandedParentRow);
+            }
+          }, 50);
+
+        } else {
+
+          addToast({ type: "error", title: response.left.message });
+
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: "error", title: error.message });
+      },
+      undefined,
+      approvalActionType === "approve" ? "Approving Document" : "Rejecting Document"
+    );
+  };
+
   return (
 
 
@@ -1072,7 +1189,7 @@ const ProjectRERADocument: React.FC = () => {
         title={editingDocumentData ? 'Update Document' : 'Add Document'}
         onSubmit={(e) => handleAddUpdateDocument(e)}
         saveText={editingDocumentData ? 'Update' : 'Add'}
-        
+
         loading={isLoading}
         size='xl'
       >
@@ -1107,12 +1224,15 @@ const ProjectRERADocument: React.FC = () => {
             <div>
               <MultiFilePicker
                 label="Files"
+                placeholder='Select File'
+                required={formData.ProjectRERADocumentStatus?.toUpperCase() === "ISSUED" ? true : false}
                 value={projectRERADocumentFiles}
                 onChange={setProjectRERADocumentFiles}
                 availableFilesURL={projectRERADocumentURL ?? ""}
                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                 maxFiles={5}
                 maxSizeMB={10}
+                error={errors.ProjectRERADocumentURL}
                 onRemoveExisting={(url) => {
                   setRemoveProjectRERADocumentUrls((prev) => [...prev, url])
                 }}
@@ -1121,6 +1241,7 @@ const ProjectRERADocument: React.FC = () => {
             <div>
               <MultiFilePicker
                 label="Screenshot"
+                placeholder='Select Screenshot'
                 value={rERAPortalScreenShotFiles}
                 onChange={setRERAPortalScreenShotFiles}
                 availableFilesURL={rERAPortalScreenShotURL ?? ""}
@@ -1156,6 +1277,22 @@ const ProjectRERADocument: React.FC = () => {
         onConfirm={handleDeleteProjectRERADocument}
         loading={isLoading}
         pageName='RERA document'
+      />
+
+      <ApprovalLogModal
+        isOpen={isApprovalLogModalOpen}
+        documentName={approvalDocumentName ?? ""}
+        onClose={() => setIsApprovalLogModalOpen(false)}
+        request={approvalLogRequest} />
+
+      <ApprovalActionModal
+      title='Document'
+        isOpen={isApprovalActionModalOpen}
+        onClose={() => setIsApprovalActionModalOpen(false)}
+        actionType={approvalActionType}
+        documentName={approvalRowData?.ProjectRERADocumentName ?? ""}
+        onSubmit={handleApprovalSubmit}
+        loading={isLoading}
       />
     </div>
   );

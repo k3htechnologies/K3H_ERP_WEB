@@ -60,7 +60,7 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
       loading={loading}
       size="xl"
     >
-      <div className="space-y-6">
+      <div className="space-y-6 p-6 bg-blue-100">
         <div className='space-y-4'>
           <div>
             <SingleSelectDropdownWithPagination

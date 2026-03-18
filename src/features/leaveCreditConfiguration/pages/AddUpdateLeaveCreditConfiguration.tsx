@@ -488,10 +488,10 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                                                 required
                                                 dataFetchCallBack={fetchLeaveTypeMasterDropdown}
                                                 onSelected={(selectedItem) => {
-                                                    const leaveTypeId = Number(selectedItem.value);
+                                                    const leaveTypeId = Number(selectedItem?.value);
                                                     if (leaveTypeId && leaveTypeId > 0) {
                                                         handleUpdateLeaveBalanceType(index, 'LeaveTypeId', leaveTypeId);
-                                                        setLeaveTypeLabels((prev) => ({ ...prev, [index]: selectedItem.label || '' }));
+                                                        setLeaveTypeLabels((prev) => ({ ...prev, [index]: selectedItem?.label || '' }));
                                                         if (errors[`LeaveBalanceType_${index}_LeaveTypeId`]) {
                                                             setErrors((prev) => ({ ...prev, [`LeaveBalanceType_${index}_LeaveTypeId`]: '' }));
                                                         }

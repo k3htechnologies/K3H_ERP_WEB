@@ -25,6 +25,7 @@ export interface PaymentScheduleSchemeMasterData {
   Wing: string;
   PaymentScheduleScheme: string;
   OrderBy: number | 0;
+  IsExistsPaymentScheduleScheme: boolean;
 
   CreatedById: number | 0;
   CreatedBy: string | "";

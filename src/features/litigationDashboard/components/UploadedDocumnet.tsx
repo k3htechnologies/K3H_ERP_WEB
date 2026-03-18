@@ -18,7 +18,6 @@ export default function UploadedDocument({ uploadedDocumentData = [] }: Props) {
                             className="mb-1 p-3 border-b border-gray-300 last:border-b-0 last:pb-0"
                         >
                             <div className="space-y-2">
-                                <h1 className="font-medium">Structural Document</h1>
                                 <p className="text-sm text-gray-600">Case No: {item.CaseNumber}</p>
                                 <p className="text-sm font-medium">{item.DocumentName}</p>
                             </div>

@@ -1,6 +1,11 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import {
+  convert_dd_mm_yyyy_To_Yyyy_mm_dd,
+  formatDate_dd_mm_yyyy,
+  formatDate_dd_MonthName_yy,
+  formatDate_dd_MonthName_yy_hh_mm,
+} from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useEffect, useState } from "react";
@@ -15,12 +20,23 @@ import { runApiWithLoader } from "@/core/utils";
 import { Loader } from "@/core/utils/loader";
 import { Edit, Trash2 } from "lucide-react";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
-import type { AddUpdateLitigationClosureRequest, FilterWithPaginationLitigationClosureRequest, LitigationClosureData } from "@/features/litigation/models/LitigationClosureModel";
-import type { AddUpdateLitigationHearingRequest, DeleteLitigationHearingRequest, FilterWithPaginationLitigationHearingRequest, LitigationHearingData } from "@/features/litigation/models/LitigationHearingModel";
-import type { FilterWithPaginationLitigationRequest, LitigationData, LitigationReopenData, UpdateLitigationReopenRequest } from "@/features/litigation/models/LitigationModel";
-import { litigationClosureService } from "@/features/litigation/services/LitigationClosureService";
-import { litigationHearingService } from "@/features/litigation/services/LitigationHearingService";
-import { litigationService } from "@/features/litigation/services/LitigationService";
+import type {
+  AddUpdateLitigationClosureRequest,
+  FilterWithPaginationLitigationClosureRequest,
+  LitigationClosureData,
+} from "@/features/litigation/models/LitigationClosureModel";
+import type {
+  AddUpdateLitigationHearingRequest,
+  DeleteLitigationHearingRequest,
+  FilterWithPaginationLitigationHearingRequest,
+  LitigationHearingData,
+} from "@/features/litigation/models/LitigationHearingModel";
+import type {
+  FilterWithPaginationLitigationRequest,
+  LitigationData,
+  LitigationReopenData,
+  UpdateLitigationReopenRequest,
+} from "@/features/litigation/models/LitigationModel";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { TextArea } from "@/ui/components/forms/Textarea";
@@ -29,8 +45,11 @@ import { useLitigationListState } from "@/features/litigation/context/Litigation
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import Tabs from "@/ui/components/Tab/Tab";
 import type { FilterWithPaginationLitigationDocumentRequest, LitigationDocumentData } from "../models/LitigationDocumentModel";
-import { litigationDocumentService } from "../services/LitigationDocumentService";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { litigationService } from "../services/LitigationService";
+import { litigationClosureService } from "../services/LitigationClosureService";
+import { litigationHearingService } from "../services/LitigationHearingService";
+import { litigationDocumentService } from "../services/LitigationDocumentService";
 
 const ViewLitigation: React.FC = () => {
   // EDIT LITIGATION DATA FROM STATE
@@ -118,7 +137,7 @@ const ViewLitigation: React.FC = () => {
   ];
 
   const [activeTab, setActiveTab] = useState<string>(litigationTabList[0].id);
-  const isEditDisabled = !isEditable || activeTab === "Document";
+  const isEditDisabled = !isEditable;
 
   //#region USE EFFECT TO FETCH CLOSURE DETAILS
   useEffect(() => {
@@ -165,8 +184,6 @@ const ViewLitigation: React.FC = () => {
 
   //#region CLOSURE MODAL MANAGEMENT
   const handleopenClosureModal = (item?: LitigationClosureData) => {
-    if (litigationStatus !== "Open" && litigationStatus !== "Closed") return;
-
     setErrors({});
     setClosureURLFiles([]);
     SetRemoveClosureAttachementUrls([]);
@@ -310,7 +327,10 @@ const ViewLitigation: React.FC = () => {
         const response = await litigationClosureService.apiCallAddUpdateLitigationClosure(payload);
 
         if (E.isRight(response)) {
-          addToast({ type: "success", title: response.right.SuccessMessage[0] });
+          addToast({
+            type: "success",
+            title: response.right.SuccessMessage[0],
+          });
           setIsClosureModalOpen(false);
           setClosureURL("");
           SetRemoveClosureAttachementUrls([]);
@@ -410,7 +430,10 @@ const ViewLitigation: React.FC = () => {
 
     if (!hearingFormData.HearingDate?.trim()) {
       newErrors.HearingDate = "Hearing Date is required.";
-    } else if (hearingFormData.LitigationHearingId === 0 && new Date(hearingFormData.HearingDate) < new Date()) {
+    } else if (
+      hearingFormData.LitigationHearingId === 0 &&
+      new Date(hearingFormData.HearingDate) < new Date(litigationData?.DateOfFilling || new Date())
+    ) {
       newErrors.HearingDate = "Hearing Date cannot be in the past.";
     }
 
@@ -468,7 +491,10 @@ const ViewLitigation: React.FC = () => {
         const response = await litigationHearingService.apiCallAddUpdateLitigationHearing(payload);
 
         if (E.isRight(response)) {
-          addToast({ type: "success", title: response.right.SuccessMessage[0] });
+          addToast({
+            type: "success",
+            title: response.right.SuccessMessage[0],
+          });
 
           setIsHearingModalOpen(false);
           setHearingURL("");
@@ -510,7 +536,10 @@ const ViewLitigation: React.FC = () => {
         const response = await litigationHearingService.apiCallDeleteLitigationHearing(params);
 
         if (E.isRight(response)) {
-          addToast({ type: "success", title: response.right.SuccessMessage[0] });
+          addToast({
+            type: "success",
+            title: response.right.SuccessMessage[0],
+          });
           setIsDeleteHearingDialogOpen(false);
           fetchHearingDetails();
           setSelectedHearingItem(null);
@@ -534,7 +563,13 @@ const ViewLitigation: React.FC = () => {
     if (!row?.LitigationId) return;
     navigate(`/litigation/add/${row.LitigationId}`);
   };
-  // #endregion
+  //#endregion
+  //#region EDIT DOCUMENT
+  const handleEditLitigationDocument = (row: LitigationDocumentData) => {
+    if (!row?.LitigationId) return;
+    navigate(`/litigation/document`);
+  };
+  //#endregion
 
   //#region BACK PROJECT PAGE
   const handleBackToListLitigation = () => {
@@ -559,7 +594,10 @@ const ViewLitigation: React.FC = () => {
         const response = await litigationService.apiCallUpdateLitigationReopen(payload);
 
         if (E.isRight(response)) {
-          addToast({ type: "success", title: response.right.SuccessMessage[0] });
+          addToast({
+            type: "success",
+            title: response.right.SuccessMessage[0],
+          });
 
           setLitigationData((prev) => (prev ? { ...prev, Status: "Reopen" } : prev));
         } else {
@@ -638,6 +676,10 @@ const ViewLitigation: React.FC = () => {
         onEdit={() => {
           if (activeTab === "Overview" && litigationData) {
             handleEditLitigation(litigationData);
+          } else if (activeTab === "Document" && litigationData) {
+            handleEditLitigationDocument({
+              LitigationId: litigationData.LitigationId,
+            } as LitigationDocumentData);
           }
         }}
         isLoading={false}
@@ -671,7 +713,10 @@ const ViewLitigation: React.FC = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                   <FieldItem label="Case Title" value={litigationData?.Title} />
-                  <FieldItem label="Date Of Filling" value={litigationData?.DateOfFilling ? formatDate_dd_MonthName_yy(litigationData.DateOfFilling) : ""} />
+                  <FieldItem
+                    label="Date Of Filling"
+                    value={litigationData?.DateOfFilling ? formatDate_dd_MonthName_yy(litigationData.DateOfFilling) : ""}
+                  />
                   <FieldItem label="Case Type" value={litigationData?.CaseType} />
                   <FieldItem label="Case / Petiton / Dispute Number" value={litigationData?.CaseNumber} />
                 </div>
@@ -695,7 +740,7 @@ const ViewLitigation: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
                   <div className="lg:col-span-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                      <FieldItem label="Plainiff" value={litigationData?.Plantiff} />
+                      <FieldItem label="Plaintiff" value={litigationData?.Plantiff} />
                       <FieldItem label="Defendant / Opposite Party / Respondent" value={litigationData?.Defendant} />
                     </div>
                   </div>
@@ -729,13 +774,29 @@ const ViewLitigation: React.FC = () => {
                           <div key={item.LitigationClosureId} className="mb-4 pb-4 border-b border-gray-300 last:border-b-0 last:pb-0">
                             <div className="flex pb-2 justify-between">
                               <FieldItem label="Closure Date" value={formatDate_dd_MonthName_yy(item.ClosureDate)} />
-                              {isLatest && isCaseReopen && <Button color="transparent" isborderRadius size="sm" style={{ color: "blue", padding: "4px 8px" }} title="Edit" onClick={() => handleopenClosureModal(item)} disabled={isLoading} leftIcon={<Edit className="h-4 w-4" />} />}
+                              {isLatest && isCaseReopen && (
+                                <Button
+                                  color="transparent"
+                                  isborderRadius
+                                  size="sm"
+                                  style={{ color: "blue", padding: "4px 8px" }}
+                                  title="Edit"
+                                  onClick={() => handleopenClosureModal(item)}
+                                  disabled={isLoading}
+                                  leftIcon={<Edit className="h-4 w-4" />}
+                                />
+                              )}
                             </div>
 
                             <div className="grid grid-cols-1 gap-4 ">
                               <FieldItem label="Remark" value={item.Remark || "-"} />
                               <FieldItem label="Conclusion" value={item.Conclusion || "-"} />
-                              <MultiImageViewer images={parseDocumentUrls(item.ClosureAttachementURL)} title="Closure Document" isIcon={false} triggerLabel="Document" />
+                              <MultiImageViewer
+                                images={parseDocumentUrls(item.ClosureAttachementURL)}
+                                title="Closure Document"
+                                isIcon={false}
+                                triggerLabel="Document"
+                              />
                             </div>
                           </div>
                         );
@@ -782,7 +843,10 @@ const ViewLitigation: React.FC = () => {
                     <div className="lg:col-span-3">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                         <FieldItem label="Created By" value={litigationData?.CreatedBy} />
-                        <FieldItem label="Created Date" value={litigationData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(litigationData.CreatedDate) : ""} />
+                        <FieldItem
+                          label="Created Date"
+                          value={litigationData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(litigationData.CreatedDate) : ""}
+                        />
                       </div>
                     </div>
 
@@ -790,14 +854,17 @@ const ViewLitigation: React.FC = () => {
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                         <FieldItem label="Modified By" value={litigationData?.ModifiedBy} />
 
-                        <FieldItem label="Modified Date" value={litigationData?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(litigationData.ModifiedDate) : ""} />
+                        <FieldItem
+                          label="Modified Date"
+                          value={litigationData?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(litigationData.ModifiedDate) : ""}
+                        />
                       </div>
                     </div>
                   </div>
 
                   <div className="flex justify-end gap-2">
                     {(litigationStatus === "Open" || litigationStatus === "Reopen") && canAction && (
-                      <Button  size="sm" onClick={() => handleopenClosureModal()}>
+                      <Button size="sm" onClick={() => handleopenClosureModal()}>
                         Close Case
                       </Button>
                     )}
@@ -861,8 +928,26 @@ const ViewLitigation: React.FC = () => {
                           {canEditHearing && (
                             <>
                               <div className="flex items-center gap-1 ml-auto">
-                                <Button color="transparent" isborderRadius size="sm" style={{ color: "blue" }} title="Edit Hearing" onClick={() => handleopenHearingModal(item)} disabled={isLoading} leftIcon={<Edit className="h-4 w-4" />} />
-                                <Button color="transparent" isborderRadius size="sm" style={{ color: "red" }} title="Delete Hearing" onClick={() => handleDeleteHearing(item)} disabled={isLoading} leftIcon={<Trash2 className="h-4 w-4" />} />
+                                <Button
+                                  color="transparent"
+                                  isborderRadius
+                                  size="sm"
+                                  style={{ color: "blue" }}
+                                  title="Edit Hearing"
+                                  onClick={() => handleopenHearingModal(item)}
+                                  disabled={isLoading}
+                                  leftIcon={<Edit className="h-4 w-4" />}
+                                />
+                                <Button
+                                  color="transparent"
+                                  isborderRadius
+                                  size="sm"
+                                  style={{ color: "red" }}
+                                  title="Delete Hearing"
+                                  onClick={() => handleDeleteHearing(item)}
+                                  disabled={isLoading}
+                                  leftIcon={<Trash2 className="h-4 w-4" />}
+                                />
                               </div>
                             </>
                           )}
@@ -872,7 +957,12 @@ const ViewLitigation: React.FC = () => {
 
                         <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
                           <p>Document</p>
-                          <MultiImageViewer images={parseDocumentUrls(item.HearingAttachementURL)} title="Hearing Document" isIcon={false} triggerLabel="Document" />
+                          <MultiImageViewer
+                            images={parseDocumentUrls(item.HearingAttachementURL)}
+                            title="Hearing Document"
+                            isIcon={false}
+                            triggerLabel="Document"
+                          />
                         </div>
                       </div>
                     );
@@ -884,10 +974,24 @@ const ViewLitigation: React.FC = () => {
 
           {/* CLOSURE MODAL */}
 
-          <Modal isOpen={isClosureModalOpen} title={"Close Case"} onClose={handleClosureModal} onSubmit={handleAddUpdateClosure} cancelText="Cancel" saveText="Close" onCancel={handleClosureModal} loading={isLoading} size="lg">
-            <div className="space-y-4">
+          <Modal
+            isOpen={isClosureModalOpen}
+            title={"Close Case"}
+            onClose={handleClosureModal}
+            onSubmit={handleAddUpdateClosure}
+            saveText="Close"
+            loading={isLoading}
+            size="lg"
+          >
+            <div className="space-y-6 p-6 bg-blue-100">
               <div>
-                <DatePickerInput label="Closure Date" value={formatDate_dd_mm_yyyy(closureFormData.ClosureDate ?? "")} onChange={(val) => handleFieldChange("ClosureDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.ClosureDate} />
+                <DatePickerInput
+                  label="Closure Date"
+                  value={formatDate_dd_mm_yyyy(closureFormData.ClosureDate ?? "")}
+                  onChange={(val) => handleFieldChange("ClosureDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={errors.ClosureDate}
+                />
               </div>
 
               <div>
@@ -909,21 +1013,51 @@ const ViewLitigation: React.FC = () => {
               </div>
 
               <div>
-                <TextArea label="Remarks" required className="thin-scroll" value={closureFormData.Remark ?? ""} placeholder="Enter Remarks" onChange={(e) => handleFieldChange("Remark", e.target.value)} error={errors.Remark} />
+                <TextArea
+                  label="Remarks"
+                  required
+                  className="thin-scroll"
+                  value={closureFormData.Remark ?? ""}
+                  placeholder="Enter Remarks"
+                  onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                  error={errors.Remark}
+                />
               </div>
 
               <div>
-                <TextArea label="Conclusion" required className="thin-scroll" value={closureFormData.Conclusion ?? ""} placeholder="Enter Conclusion" onChange={(e) => handleFieldChange("Conclusion", e.target.value)} error={errors.Conclusion} />
+                <TextArea
+                  label="Conclusion"
+                  required
+                  className="thin-scroll"
+                  value={closureFormData.Conclusion ?? ""}
+                  placeholder="Enter Conclusion"
+                  onChange={(e) => handleFieldChange("Conclusion", e.target.value)}
+                  error={errors.Conclusion}
+                />
               </div>
             </div>
           </Modal>
 
           {/* HEARING MODAL */}
 
-          <Modal isOpen={isHearingModalOpen} title={"Add Hearing"} onClose={handleHearingModal} onSubmit={handleAddUpdateHearing} cancelText="Cancel" saveText={hearingFormData.LitigationHearingId > 0 ? "Update" : "Add"} onCancel={handleHearingModal} loading={isLoading} size="lg">
-            <div className="space-y-4">
+          <Modal
+            isOpen={isHearingModalOpen}
+            title={"Add Hearing"}
+            onClose={handleHearingModal}
+            onSubmit={handleAddUpdateHearing}
+            saveText={hearingFormData.LitigationHearingId > 0 ? "Update" : "Add"}
+            loading={isLoading}
+            size="lg"
+          >
+            <div className="space-y-6 p-6 bg-blue-100">
               <div>
-                <DatePickerInput label="Hearing Date" value={formatDate_dd_mm_yyyy(hearingFormData.HearingDate ?? "")} onChange={(val) => handleHearingFieldChange("HearingDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.HearingDate} />
+                <DatePickerInput
+                  label="Hearing Date"
+                  value={formatDate_dd_mm_yyyy(hearingFormData.HearingDate ?? "")}
+                  onChange={(val) => handleHearingFieldChange("HearingDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  required
+                  error={errors.HearingDate}
+                />
               </div>
 
               <div>
@@ -946,7 +1080,15 @@ const ViewLitigation: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                 <div>
-                  <TextArea label="Remark" required className="thin-scroll" value={hearingFormData.Remark ?? ""} placeholder="Enter Remarks" onChange={(e) => handleHearingFieldChange("Remark", e.target.value)} error={errors.Remark} />
+                  <TextArea
+                    label="Remark"
+                    required
+                    className="thin-scroll"
+                    value={hearingFormData.Remark ?? ""}
+                    placeholder="Enter Remarks"
+                    onChange={(e) => handleHearingFieldChange("Remark", e.target.value)}
+                    error={errors.Remark}
+                  />
                 </div>
               </div>
             </div>
@@ -1007,7 +1149,10 @@ const ViewLitigation: React.FC = () => {
                   </div>
 
                   <div className="bg-gray-50 p-2 mt-auto">
-                    <FieldItem label="Uploaded By / Date" value={`${d?.ModifiedBy || d?.CreatedBy || "-"} / ${d?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate) : d?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate) : "-"}`} />
+                    <FieldItem
+                      label="Uploaded By / Date"
+                      value={`${d?.ModifiedBy || d?.CreatedBy || "-"} / ${d?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(d?.ModifiedDate) : d?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(d?.CreatedDate) : "-"}`}
+                    />
                   </div>
                 </div>
               );

@@ -94,8 +94,6 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
             onClose={() => setIsMenuModalOpen(false)}
             title="Menu Changed"
             saveText="Restart"
-            cancelText="Close"
-            onCancel={() => setIsMenuModalOpen(false)}
             size="sm"
             onSubmit={(e) => {
                 e.preventDefault()

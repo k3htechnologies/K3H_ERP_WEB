@@ -22,7 +22,7 @@ import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeCol
 import { useNavigate } from 'react-router-dom';
 import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 import { updateFilter } from '@/core/utils/filterHelper';
-import { BanknoteXIcon, Building2Icon, User2 } from 'lucide-react';
+import { BanknoteXIcon, Building2Icon, CheckCircle, User2 } from 'lucide-react';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 
 export const ProjectMaster: React.FC = () => {
@@ -251,6 +251,14 @@ export const ProjectMaster: React.FC = () => {
   }, [navigate, updateListState]);
   //#endregion
 
+  //#region VIEW COMPANY DETAILS
+
+  const handleViewProjectApproval = useCallback((row: ProjectMasterData) => {
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
+    navigate('/projectMaster/approval');
+  }, [navigate, updateListState]);
+  //#endregion
+
 
   //#region TABLE COLUMN
 
@@ -353,7 +361,7 @@ export const ProjectMaster: React.FC = () => {
         render: (value) => value || '-'
       },
       {
-        key: 'actions',
+        key: 'Actions',
         label: 'Actions',
         width: '12',
         fixed: 'right',
@@ -408,12 +416,31 @@ export const ProjectMaster: React.FC = () => {
                 isborderRadius
                 size='sm'
                 style={{
-                  color: 'green',
+                  color: 'gray',
                   padding: '4px 8px'
                 }}
                 title="Project Bank"
               >
                 <BanknoteXIcon className="h-4 w-4" />
+              </Button>
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  handleViewProjectApproval(row)
+                }}
+                color='transparent'
+                isborderRadius
+                size='sm'
+                style={{
+                  color: 'black',
+                  padding: '4px 8px'
+                }}
+                title="Modules Workflow Approval"
+              >
+                <CheckCircle  className="h-4 w-4" />
+
               </Button>
             </div>
           ) : null
@@ -422,14 +449,14 @@ export const ProjectMaster: React.FC = () => {
         )
       }
     ],
-    [handleViewProjectDetails, handleViewProjectEmployee, handleViewProjectCompany, handleViewProjectBank]
+    [handleViewProjectDetails, handleViewProjectEmployee, handleViewProjectCompany, handleViewProjectBank,handleViewProjectApproval]
   )
 
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
 
-  const requiredProjectMasterColumnKeys: string[] = ['ProjectName'];
+  const requiredProjectMasterColumnKeys: string[] = ['ProjectName','Actions'];
 
   const [selectedProjectMasterColumnKeys, setSelectedProjectMasterColumnKeys] = useState<string[]>([]);
 

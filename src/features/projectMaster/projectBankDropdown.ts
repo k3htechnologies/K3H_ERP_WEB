@@ -4,7 +4,6 @@ import { projectMasterService } from "@/features/projectMaster/services/ProjectM
 export interface ProjectBankDropdownItem {
   label: string;
   value: string;
-
   BeneficiaryAccountHolderName: string;
   BankListMasterId: number;
   BankName: string;
@@ -28,10 +27,11 @@ export const fetchProjectBankDropdown = async (_pageNumber: number,params?: { pr
     const apiResponse = responseEither.right;
 
     const itemList: ProjectBankDropdownItem[] = (apiResponse?.Data || []).map(
+
       (d: any) => ({
+
         label: d.BankName,
         value: String(d.BankListMasterId),
-
         BeneficiaryAccountHolderName: d.BeneficiaryAccountHolderName ?? "",
         BankListMasterId: d.BankListMasterId ?? 0,
         BankName: d.BankName ?? "",
@@ -42,11 +42,11 @@ export const fetchProjectBankDropdown = async (_pageNumber: number,params?: { pr
       })
     );
 
-    // IMPORTANT: stop pagination
     return {
       totalNumberOfRecord: itemList.length,
       itemList
     };
+
   } catch (err) {
     console.error(err);
     return {

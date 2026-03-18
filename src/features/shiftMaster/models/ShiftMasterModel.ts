@@ -32,6 +32,7 @@ export interface ShiftMasterData {
     GraceTime: string | ''          
 
     LateArrivalAction: string | ''
+    LateCount: number | 0
 
     Remarks: string | ''
     CreatedById: number | 0
@@ -66,8 +67,8 @@ export interface AddUpdateShiftMasterRequest {
     BreakDurationTime: string | ''        
     GraceTime: string | ''
     Remarks: string | ''
-
     LateArrivalAction: string | ''
+    LateCount: number | 0
 }
 
 export interface DeleteShiftMasterRequest {

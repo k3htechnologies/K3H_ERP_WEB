@@ -11,7 +11,7 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { bookingService } from "../services/BookingService";
+import { bookingService } from "@/features/booking/services/BookingService";
 import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidDrivingLicenseNumber, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
@@ -44,7 +44,7 @@ import RichTextEditor from "@/ui/components/forms/RichTextEditor";
 import { sendOTP } from "@/features/technical/services/OTPService";
 import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
 import { getBookingVerificationSteps } from "@/features/booking/utils/bookingVerificationSteps";
-import type { FilterWithPaginationOtherChargesRequest } from "@/features/otherCharges/models/OtherChargesModel";
+import type { FilterWithPaginationOtherChargesRequest, OtherChargesData } from "@/features/otherCharges/models/OtherChargesModel";
 import { otherChargesService } from "@/features/otherCharges/services/OtherChargesService";
 import { mapOtherChargesToBookingOtherCharges } from "@/features/booking/utils/MapOtherCharges";
 import { fetchPaymentScheduleSchemeMasterDropDown } from "@/features/paymentScheduleSchemeMaster/PaymentScheduleSchemeMasterDropdown";
@@ -151,6 +151,7 @@ export const AddUpdateBooking: React.FC = () => {
   const [applicantList, setApplicantList] = useState<BookingApplicantWithFiles[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [parkingId, setParkingId] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { projectId } = useProject();
@@ -207,6 +208,7 @@ export const AddUpdateBooking: React.FC = () => {
   const [currentLocation, setCurrentLocation] = useState<string>("");
 
   const [salesAdvisor, setSalesAdvisor] = useState<string>("");
+
   const [sourcingManager, setSourcingManager] = useState<string>("");
 
   //#endregion
@@ -297,6 +299,7 @@ export const AddUpdateBooking: React.FC = () => {
 
   //#region OTHER CHARGES STATE
   const [otherCharges, setOtherCharges] = useState<AddUpdateBookingOtherChargesRequest[]>([]);
+  const [otherChargesData, setOtherChargesData] = useState<OtherChargesData[]>([]);
   //#endregion
 
   //#region PAYMENT SCHEDULE CALCULATIONS
@@ -586,6 +589,8 @@ export const AddUpdateBooking: React.FC = () => {
                 BookingCreatedDate: null,
               });
             }
+            setParkingId(booking.ParkingId ?? null);
+            setSelectedParkingValues(booking.ParkingId ?? "");
             setParkingData(booking.ParkingData || []);
 
             setEnquiryId(booking.EnquiryId ?? 0);
@@ -939,13 +944,12 @@ export const AddUpdateBooking: React.FC = () => {
           return `₹${Number(value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         },
       },
+      ...(formData.PaymentScheduleSchemeMasterId !== 0 ? [] : [
       {
         key: "actions",
         label: "Actions",
         width: "12",
-        fixed: "right",
-        align: "center",
-        render: (_value, row, index) =>
+        render: (_value:any, row:any, index:number) =>
           canAction ? (
             <div className="flex items-center justify-center gap-2">
               <Button
@@ -991,6 +995,8 @@ export const AddUpdateBooking: React.FC = () => {
             </div>
           ) : null,
       },
+      ]),
+      
     ],
     [cumulativePercentages, canAction, paymentScheduleOptions],
   );
@@ -1553,10 +1559,11 @@ export const AddUpdateBooking: React.FC = () => {
   const fetchParkingProjectWise = useCallback(async (pageNumber: number, params?: { value?: string }) => {
     return fetchParkingDropdown(pageNumber, {
       ...params,
+      value: params?.value || "",
       projectId: projectId || 0,
-      value: "",
+      displayParkingId:parkingId ||"",
     });
-  }, []);
+  }, [projectId, parkingId]);
 
   const parkingDropdown = useMultiSelectDropdown({
     value: selectedParkingValues,
@@ -1590,7 +1597,14 @@ export const AddUpdateBooking: React.FC = () => {
         const response = await otherChargesService.apiCallPullOtherCharges(params);
 
         if (E.isRight(response)) {
-          const mappedCharges = mapOtherChargesToBookingOtherCharges(response.right.Data);
+
+          setOtherChargesData(response.right.Data);
+
+           const flatDataFromState = (location.state as any)?.flatData;
+
+           const rERACarpetAreaSqFt = flatDataFromState?.RERACarpetAreaSqFt  ?? selectedFlatData?.RERACarpetAreaSqFt ?? 0;
+
+           const mappedCharges = mapOtherChargesToBookingOtherCharges(rERACarpetAreaSqFt ,response.right.Data);
 
           setOtherCharges(mappedCharges);
         } else {
@@ -1991,6 +2005,13 @@ export const AddUpdateBooking: React.FC = () => {
                   if (otherCharges.length === 0) {
                     loadOtherCharges();
                   }
+                  else {
+                     const flatDataFromState = (location.state as any)?.flatData;
+
+                       const rERACarpetAreaSqFt = flatDataFromState?.RERACarpetAreaSqFt  ?? selectedFlatData?.RERACarpetAreaSqFt ?? 0;
+                     const mappedCharges = mapOtherChargesToBookingOtherCharges(Number(rERACarpetAreaSqFt), otherChargesData);
+                    setOtherCharges(mappedCharges);
+                  }
                 }}
                 placeholder="Agreement Value"
                 rightIcon="₹"
@@ -2225,9 +2246,11 @@ export const AddUpdateBooking: React.FC = () => {
               size="lg"
               dataFetchCallBack={fetchPaymentScheduleSchemeMaster()}
               onSelected={(item) => {
-                const schemeId = Number(item.value);
+                const schemeId = Number(item?.value);
 
                 handleFieldChange("PaymentScheduleSchemeMasterId", schemeId);
+
+                setPaymentSchedules([]);
 
                 if (schemeId > 0) {
                   loadPaymentScheduleByPaymentScheduleSchemeId(schemeId);
@@ -2254,7 +2277,7 @@ export const AddUpdateBooking: React.FC = () => {
                 </div>
               )}
 
-              {Number(formData.AgreementValue) > 0 && formData.PaymentScheduleSchemeMasterId === 0 && (
+              {Number(formData.AgreementValue) > 0 && formData.PaymentScheduleSchemeMasterId === 0 && totalPercentage < 100 && (
                 <Button
                   type="button"
                   onClick={() => {
@@ -2338,7 +2361,7 @@ export const AddUpdateBooking: React.FC = () => {
                 <TextArea label="Other Remark" value={formData.OtherRemark ?? ""} onChange={(e) => handleFieldChange("OtherRemark", e.target.value)} placeholder="Enter Other Remark" error={errors.OtherRemark} />
               </div>
               <div>
-                <SingleSelectDropdownWithPagination label="Term & Conditional" title="Term & Conditional" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item.value)} />
+                <SingleSelectDropdownWithPagination label="Term & Conditional" title="Term & Conditional" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)} />
               </div>
               <div>
                 <RichTextEditor value={formData.TermsAndConditionsDescription ?? ""} onChange={(html) => handleFieldChange("TermsAndConditionsDescription", html)} placeholder="Enter Description" readOnly />

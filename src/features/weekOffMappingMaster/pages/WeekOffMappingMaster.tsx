@@ -44,12 +44,7 @@ export const WeekOffMappingMaster: React.FC = () => {
     dropdownResetKey,
     mappingWeekoff,
 
-    departmentName,
-    designationName,
-    branchName,
-    reportingPersonName,
-    emailId,
-    personalMobileNumber,
+    employeeDetails,
 
     // Setters
     setSearchTerm,
@@ -68,6 +63,7 @@ export const WeekOffMappingMaster: React.FC = () => {
     setDropdownLabels,
     setDropdownResetKey,
     setMappingWeekoff,
+    setEmployeeDetails,
 
     // Actions
     handlePageChange,
@@ -186,13 +182,8 @@ export const WeekOffMappingMaster: React.FC = () => {
         dropdownResetKey={dropdownResetKey}
         mappingWeekoff={mappingWeekoff}
         onApplicableTypeChange={handleApplicableTypeChange}
-
-        departmentName={departmentName}
-        designationName={designationName}
-        branchName={branchName}
-        reportingPersonName={reportingPersonName}
-        emailId={emailId}
-        personalMobileNumber={personalMobileNumber}
+        employeeDetails={employeeDetails}
+        setEmployeeDetails={setEmployeeDetails}
       />
 
       <CustomizeColumnsModal

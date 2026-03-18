@@ -39,7 +39,7 @@ import {
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { fetchEmployeeMasterByEmployeeId, fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
+import { fetchEmployeeMasterById, fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import RadioPill from "@/ui/components/forms/RadioPill";
 import { RangeSelector } from "@/ui/components/forms/RangeSelector";
@@ -59,6 +59,7 @@ import { fetchProjectDropdown } from "@/features/projectMaster/projectDropdown";
 import { fetchInventoryFlatDetails, fetchPaginatedInventoryFlatDropdown } from "@/features/inventory/InventoryFlatDropdown";
 import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
 import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
+import { fetchPaginationProjectWithEmployeeDropdown } from "@/features/projectMaster/projectWiseEmployeeDropdown";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
   EnquiryId: 0,
@@ -207,11 +208,16 @@ export const AddUpdateEnquiry: React.FC = () => {
   //#endregion
 
   //#region FETCH EMPLOYEE DROPDOWN WITH DEPARTMENT
-  const fetchEmployeesByDept = (dept: string) => (page: number, params?: { value?: string }) =>
-    fetchEmployeeMasterDropdown(page, {
-      value: params?.value || "",
-      departmentName: dept,
-    });
+    const fetchEmployeeDropdown = useCallback(
+        async (pageNumber: number, params?: { value?: string }) => {
+          return fetchPaginationProjectWithEmployeeDropdown(pageNumber, {
+            projectId: projectId || 0,
+            value: params?.value || "",
+            departmentName:"Sales"
+          });
+        },
+        [projectId]
+      );
   //#endregion
 
   //#region INITIALIZATION
@@ -228,32 +234,6 @@ export const AddUpdateEnquiry: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (!formData.EmployeeReferenceEmployeeId) {
-      setEmployeeDetails(null);
-      return;
-    }
-
-    fetchEmployeeMasterByEmployeeId(formData.EmployeeReferenceEmployeeId).then(setEmployeeDetails);
-  }, [formData.EmployeeReferenceEmployeeId]);
-
-  useEffect(() => {
-    if (!formData.ReferelInventoryFlatId || !formData.ReferelProjectId) {
-      setReferelInventoryFlatData(null);
-      return;
-    }
-
-    fetchInventoryFlatDetails(Number(formData.ReferelProjectId), Number(formData.ReferelInventoryFlatId)).then(setReferelInventoryFlatData);
-  }, [formData.ReferelProjectId, formData.ReferelInventoryFlatId]);
-
-  useEffect(() => {
-    if (!formData.LoyaltyInventoryFlatId || !formData.LoyaltyProjectId) {
-      setLoyaltyInventoryFlatData(null);
-      return;
-    }
-
-    fetchInventoryFlatDetails(Number(formData.LoyaltyProjectId), Number(formData.LoyaltyInventoryFlatId)).then(setLoyaltyInventoryFlatData);
-  }, [formData.LoyaltyProjectId, formData.LoyaltyInventoryFlatId]);
   //#endregion
 
   //#region FETCH ENQUIRY  MASTER DETAILS
@@ -354,6 +334,28 @@ export const AddUpdateEnquiry: React.FC = () => {
 
               employeeReferenceEmployeeName: e.EmployeeReferenceName || "",
             });
+
+            if (e.EmployeeReferenceEmployeeId) {
+              fetchEmployeeMasterById(e.EmployeeReferenceEmployeeId).then((employee) => {
+                if (!employee) return;
+                setEmployeeDetails(employee);
+              });
+            }
+
+            if (e.LoyaltyInventoryFlatId) {
+              await fetchInventoryFlatDetails(Number(e.LoyaltyProjectId), e.LoyaltyInventoryFlatId).then((flat) => {
+                if (!flat) return;
+                setLoyaltyInventoryFlatData(flat);
+              });
+            }
+
+            if (e.ReferelInventoryFlatId) {
+             await fetchInventoryFlatDetails(Number(e.ReferelProjectId), e.ReferelInventoryFlatId).then((flat) => {
+                if (!flat) return;
+                setReferelInventoryFlatData(flat);
+              });
+            }
+
             setSelectedVillageValues(e.VillageMasterId || "");
 
             const age = calculateAge(e.DateOfBirth || "");
@@ -664,7 +666,10 @@ export const AddUpdateEnquiry: React.FC = () => {
         const response = await EnquiryService.apiCallAddUpdateEnquiry(payload);
 
         if (E.isRight(response)) {
-          addToast({ type: "success", title: response.right.SuccessMessage[0] });
+          addToast({
+            type: "success",
+            title: response.right.SuccessMessage[0],
+          });
 
           navigate("/enquiry");
         } else {
@@ -1050,9 +1055,10 @@ export const AddUpdateEnquiry: React.FC = () => {
                           onSelected={(item) => {
                             if (!item) {
                               handleFieldChange("ReferelInventoryFlatId", 0);
+                              setReferelInventoryFlatData(null);
                               return;
                             }
-
+                            setReferelInventoryFlatData(item as unknown as InventoryFlatData);
                             handleFieldChange("ReferelInventoryFlatId", Number(item.value));
                           }}
                           initialValue={createDropdownInitialValue(formData.ReferelInventoryFlatId, dropdownLabels.referelInventoryFlat)}
@@ -1107,9 +1113,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                         onSelected={(item) => {
                           if (!item) {
                             handleFieldChange("LoyaltyInventoryFlatId", 0);
+                            setLoyaltyInventoryFlatData(null);
                             return;
                           }
 
+                          setLoyaltyInventoryFlatData(item as unknown as InventoryFlatData);
                           handleFieldChange("LoyaltyInventoryFlatId", Number(item.value));
                         }}
                         initialValue={createDropdownInitialValue(formData.LoyaltyInventoryFlatId, dropdownLabels.loyaltyInventoryFlat)}
@@ -1131,9 +1139,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                         onSelected={(item) => {
                           if (!item) {
                             handleFieldChange("EmployeeReferenceEmployeeId", 0);
+                            setEmployeeDetails(null);
                             return;
                           }
 
+                          setEmployeeDetails(item as unknown as EmployeeMasterData);
                           handleFieldChange("EmployeeReferenceEmployeeId", Number(item.value));
                         }}
                         initialValue={createDropdownInitialValue(formData.EmployeeReferenceEmployeeId, dropdownLabels.employeeReferenceEmployeeName)}
@@ -1201,29 +1211,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                         {!formData.ChannelPartnerTeamMemberId && (
                           <>
                             <div>
-                              <Input
-                                type="text"
-                                label="Team Member Name"
-                                value={formData.ChannelPartnerTeamMemberName ?? ""}
-                                onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberName", e.target.value)}
-                                placeholder="Enter Team Member Name"
-                                maxLength={100}
-                                error={errors.ChannelPartnerTeamMemberName}
-                              />
+                              <Input type="text" label="Team Member Name" value={formData.ChannelPartnerTeamMemberName ?? ""} onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberName", e.target.value)} placeholder="Enter Team Member Name" maxLength={100} error={errors.ChannelPartnerTeamMemberName} />
                             </div>
 
                             <div>
-                              <Input
-                                label="Team Member Mobile Number"
-                                type="text"
-                                maxLength={10}
-                                value={formData.ChannelPartnerTeamMemberMobileNumber ?? ""}
-                                leftIcon="+91"
-                                rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                                onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberMobileNumber", filterMobile(e.target.value))}
-                                placeholder="Enter Team Member Mobile Number"
-                                error={errors.ChannelPartnerTeamMemberMobileNumber}
-                              />
+                              <Input label="Team Member Mobile Number" type="text" maxLength={10} value={formData.ChannelPartnerTeamMemberMobileNumber ?? ""} leftIcon="+91" rightIcon={<Phone className="h-4 w-4 text-gray-400" />} onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberMobileNumber", filterMobile(e.target.value))} placeholder="Enter Team Member Mobile Number" error={errors.ChannelPartnerTeamMemberMobileNumber} />
                             </div>
                           </>
                         )}
@@ -1361,8 +1353,8 @@ export const AddUpdateEnquiry: React.FC = () => {
                     {formData.Requirement && (
                       <div>
                         <SinglePageSelection
-                          label={formData.Requirement === "Residential" ? "Residential Type" : formData.Requirement === "Commercial" ? "Commercial Type" : "Type"}
-                          placeholder={`Select ${formData.Requirement === "Residential" ? "Residential" : formData.Requirement === "Commercial" ? "Commercial" : "Type"} Type`}
+                          label={formData.Requirement === "Residential" ? "Residential Type" : formData.Requirement === "Commercial" ? "Commercial Type" : "Commercial Leasing Type"}
+                          placeholder={`Select ${formData.Requirement === "Residential" ? "Residential Type" : formData.Requirement === "Commercial" ? "Commercial Type" : "Commercial Leasing Type"}`}
                           value={formData.RequirementType ?? ""}
                           onChange={(value) => handleFieldChange("RequirementType", value)}
                           options={
@@ -1509,74 +1501,40 @@ export const AddUpdateEnquiry: React.FC = () => {
                     </div>
                     {formData.FinalStage === "Lost" && (
                       <div>
-                        <SinglePageSelection
-                          label="Final Stage Detail"
-                          placeholder="Select Final Stage Detail"
-                          value={formData.FinalStageDetail ?? ""}
-                          onChange={(value) => handleFieldChange("FinalStageDetail", value)}
-                          options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                          error={errors.FinalStageDetail}
-                          disabled={Number(formData.EnquiryId) > 0 ? true : false}
-                        />
+                        <SinglePageSelection label="Final Stage Detail" placeholder="Select Final Stage Detail" value={formData.FinalStageDetail ?? ""} onChange={(value) => handleFieldChange("FinalStageDetail", value)} options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} error={errors.FinalStageDetail} disabled={Number(formData.EnquiryId) > 0 ? true : false} />
                       </div>
                     )}
                   </div>
                 </div>
-                <div className="space-y-4 pb-3">
-                  <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Follow Up Details</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
-                    <div>
-                      <DatePickerInput
-                        label="Enquiry Date"
-                        required
-                        isDisplayCurrentDate={true}
-                        value={formatDate_dd_mm_yyyy(formData.EnquiryDate)}
-                        onChange={(val) => handleFieldChange("EnquiryDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                        error={errors.EnquiryDate}
-                        disabled={Number(formData.EnquiryId) > 0 ? true : false}
-                      />
-                    </div>
-
-                    <div>
-                      <DatePickerInput
-                        label="Next Follow-Up Date"
-                        value={formatDate_dd_mm_yyyy(formData.NextFollowUpDate)}
-                        onChange={(val) => handleFieldChange("NextFollowUpDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                        error={errors.NextFollowUpDate}
-                        disabled={Number(formData.EnquiryId) > 0 ? true : false}
-                      />
-                    </div>
-                  </div>
-                </div>
               </>
             )}
+
+            <div className="space-y-4 pb-3">
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Follow Up Details</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+                <div>
+                  <DatePickerInput label="Enquiry Date" required isDisplayCurrentDate={true} value={formatDate_dd_mm_yyyy(formData.EnquiryDate)} onChange={(val) => handleFieldChange("EnquiryDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} error={errors.EnquiryDate} disabled={Number(formData.EnquiryId) > 0 ? true : false} />
+                </div>
+
+                {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
+                  <div>
+                    <DatePickerInput label="Next Follow-Up Date" value={formatDate_dd_mm_yyyy(formData.NextFollowUpDate)} onChange={(val) => handleFieldChange("NextFollowUpDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} error={errors.NextFollowUpDate} disabled={Number(formData.EnquiryId) > 0 ? true : false} />
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
+
           {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
             <div className="space-y-4 pb-3">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2"> Sales Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
                 <div>
-                  <SingleSelectDropdownWithPagination
-                    label="Sales Advisor"
-                    title="Select Advisor"
-                    size="lg"
-                    dataFetchCallBack={fetchEmployeesByDept("Sale")}
-                    onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item.value))}
-                    initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.SalesAdvisor)}
-                    error={errors.SalesAdvisorId}
-                  />
+                  <SingleSelectDropdownWithPagination label="Sales Advisor" title="Select Advisor" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.SalesAdvisor)} error={errors.SalesAdvisorId} />
                 </div>
 
                 <div>
-                  <SingleSelectDropdownWithPagination
-                    label="Sourcing Manager"
-                    title="Select Sourcing Manager"
-                    size="lg"
-                    dataFetchCallBack={fetchEmployeesByDept("Sale")}
-                    onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item.value))}
-                    initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.SourcingManager)}
-                    error={errors.SourcingManagerId}
-                  />
+                  <SingleSelectDropdownWithPagination label="Sourcing Manager" title="Select Sourcing Manager" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.SourcingManager)} error={errors.SourcingManagerId} />
                 </div>
                 <div>
                   <TimePicker label="Customer Time Out" size="md" format={24} value={formData.EnquiryTimeOut || ""} onChange={(val) => handleFieldChange("EnquiryTimeOut", val)} error={errors.EnquiryTimeOut} />

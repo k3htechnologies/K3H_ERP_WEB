@@ -157,14 +157,17 @@ import Target from '@/features/target/pages/Target';
 import IncentiveReport from '@/features/incentiveReport/pages/IncentiveReport';
 import { IncentiveReportListStateProvider } from '@/features/incentiveReport/context/IncentiveReportListStateContext';
 import PaymentScheduleSchemeMaster from '@/features/paymentScheduleSchemeMaster/pages/PaymentScheduleSchemeMaster';
-import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
+import ClassificationParameter from '@/features/classificationParameter/pages/ClassificationParameter';
+import Approval from '@/features/projectMaster/pages/Approval';
 import PerformanceReport from '@/features/performanceReport/pages/PerformanceReport';
+import LitigationDashboard from '@/features/litigationDashboard/pages/litigationDashboard';
 import ViewPerformanceReport from '@/features/performanceReport/pages/ViewPerformanceReport';
 import Brokerage from '@/features/brokerage/pages/Brokerage';
 import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoice';
 import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
-import PaymentScheduleMaster from '@/features/paymentScheduleMaster/pages/paymentScheduleMaster';
+import PaymentScheduleMaster from '@/features/paymentScheduleMaster/pages/PaymentScheduleMaster';
+import ChannelPartnerDashboard from '@/features/channelPartnerDashboard/pages/ChannelPartnerDashboard';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -199,6 +202,7 @@ function App() {
   useEffect(() => {
     const token = LocalStorageHelper.getStoredTokenData()
     if (!token) {
+
 
     }
   }, [])
@@ -256,6 +260,7 @@ function App() {
             <Route path="projectMaster/employee" element={<ProjectMasterListStateProvider><Employee /></ProjectMasterListStateProvider>} />
             <Route path="projectMaster/bank" element={<ProjectMasterListStateProvider><Bank /></ProjectMasterListStateProvider>} />
             <Route path="projectMaster/Company" element={<ProjectMasterListStateProvider><Company /></ProjectMasterListStateProvider>} />
+            <Route path="projectMaster/Approval" element={<ProjectMasterListStateProvider><Approval /></ProjectMasterListStateProvider>} />
 
             {/* SETTING -> COMPANY SETUP -> VENDOR */}
             <Route path="vendor" element={<VendorListStateProvider><Vendor /></VendorListStateProvider>} />
@@ -349,6 +354,7 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
+            <Route path='channelPartnerDashboard' element={<ChannelPartnerDashboard />} />
 
             <Route path="sourcing" element={<ChannelPartnerSourcingListStateProvider><ChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
             <Route path="sourcing/view" element={<ChannelPartnerSourcingListStateProvider><ViewChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
@@ -363,8 +369,10 @@ function App() {
 
             <Route path="paymentSchedule" element={<PaymentScheduleMaster />} />
             <Route path="paymentScheduleScheme" element={<PaymentScheduleSchemeMaster />} />
+            <Route path="paymentScheduleScheme" element={<PaymentScheduleSchemeMaster />} />
 
             <Route path="target" element={<Target />} />
+            <Route path="classificationParameter" element={<ClassificationParameter />} />
 
             <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
             <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />
@@ -373,6 +381,9 @@ function App() {
             <Route path="enquiryReport" element={<EnquiryReport />} />
             <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
+
+            <Route path="performance" element={<PerformanceReport />} />
+
             <Route path="performance" element={<PerformanceReport />} />
             <Route path="performance/view/:EmployeeId" element={<ViewPerformanceReport />} />
 
@@ -424,6 +435,8 @@ function App() {
             <Route path='litigation/add/:LitigationId?' element={<LitigationListStateProvider><AddUpdateLitigation /></LitigationListStateProvider>} />
             <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
             <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
+            <Route path="legalDashboard" element={<LitigationDashboard />} />
+
 
             {/* PROJECT */}
             <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />

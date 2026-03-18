@@ -46,6 +46,6 @@
     "vite": "^7.1.7"
   },
   "prettier": {
-    "printWidth": 5
+    "printWidth": 140
   }
 }

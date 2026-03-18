@@ -9,13 +9,7 @@ import { employeeMasterService } from "@/features/employeeMaster/services/Employ
 import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { Loader } from "@/core/utils/loader";
-import {
-  BLOOD_GROUP_OPTIONS,
-  EMERGENCY_RELATION_OPTIONS,
-  EMPLOYEE_TYPE_OPTIONS,
-  GENDER_OPTIONS,
-  MARITAL_STATUS_OPTIONS,
-} from "@/core/constants/staticData";
+import { BLOOD_GROUP_OPTIONS, EMERGENCY_RELATION_OPTIONS, EMPLOYEE_TYPE_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS } from "@/core/constants/staticData";
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
@@ -28,13 +22,12 @@ import { fetchCompanyMasterDropdown } from "@/features/companyMaster/companyMast
 import { fetchBranchMasterDropdown } from "@/features/branchMaster/branchMasterDropDown";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
-import type { AddUpdateEmployeeMasterRequest, FilterWithPaginationEmployeeMasterRequest } from "@/features/employeeMaster/models/EmployeeMasterModel";
+import type { AddUpdateEmployeeMasterRequest, EmployeeMasterData, FilterWithPaginationEmployeeMasterRequest } from "@/features/employeeMaster/models/EmployeeMasterModel";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Mail, Phone } from "lucide-react";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-
 
 const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
   EmployeeId: 0,
@@ -74,19 +67,13 @@ const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
 });
 
 const AddUpdateEmployeePage: React.FC = () => {
-
   //#region STATE MANAGEMENT
   const [formData, setFormData] = useState<AddUpdateEmployeeMasterRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingMessage, setLoadingMessage] = useState('');
+  const [loadingMessage, setLoadingMessage] = useState("");
 
   //SET EMPLOYEE MASTER DETAILS
-  const [departmentName, setDepartmentName] = useState<string>();
-  const [designationName, setDesignationName] = useState<string>();
-  const [branchName, setBranchName] = useState<string>();
-  const [reportingPersonName, setReportingPersonName] = useState<string>();
-  const [emailId, setEmailId] = useState<string>();
-  const [personalMobileNumber, setPersonalMobileNumber] = useState<string>();
+  const [employeeDetails, setEmployeeDetails] = useState<EmployeeMasterData | null>(null);
 
   // NAVIGATE
   const navigate = useNavigate();
@@ -100,7 +87,7 @@ const AddUpdateEmployeePage: React.FC = () => {
   //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  //SET DROP DOWN 
+  //SET DROP DOWN
   const [dropdownLabels, setDropdownLabels] = useState<{
     companyName?: string;
     departmentName?: string;
@@ -116,54 +103,47 @@ const AddUpdateEmployeePage: React.FC = () => {
   //#endregion
 
   //#region MENU PERMISSIONS
-  const { canAction } = useMenuPermissions('/employeeMaster');
+  const { canAction } = useMenuPermissions("/employeeMaster");
   //#endregion
 
-  //#region COUNTRY STATE CITY DISTRICT 
-  const {
-    isLoading: isLocationLoading,
-    countries,
-    statesByCountryId,
-    districtsByStateId,
-    citiesByDistrictId,
-  } = useCountryStateCityDistrictVillageData()
+  //#region COUNTRY STATE CITY DISTRICT
+  const { isLoading: isLocationLoading, countries, statesByCountryId, districtsByStateId, citiesByDistrictId } = useCountryStateCityDistrictVillageData();
 
-  const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1)
-  const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null)
-  const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null)
-  const [selectedCityId, setSelectedCityId] = React.useState<number | null>(null)
+  const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1);
+  const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null);
+  const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null);
+  const [selectedCityId, setSelectedCityId] = React.useState<number | null>(null);
 
-  const countryOptions = countries.map(c => ({ label: c.name, value: c.id }))
+  const countryOptions = countries.map((c) => ({ label: c.name, value: c.id }));
 
   const stateOptions =
     selectedCountryId != null
-      ? (statesByCountryId[selectedCountryId] || []).map(s => ({
-        label: s.name,
-        value: s.id,
-      }))
-      : []
+      ? (statesByCountryId[selectedCountryId] || []).map((s) => ({
+          label: s.name,
+          value: s.id,
+        }))
+      : [];
 
   const districtOptions =
     selectedStateId != null
-      ? (districtsByStateId[selectedStateId] || []).map(d => ({
-        label: d.name,
-        value: d.id,
-      }))
-      : []
+      ? (districtsByStateId[selectedStateId] || []).map((d) => ({
+          label: d.name,
+          value: d.id,
+        }))
+      : [];
 
   const cityOptions =
     selectedDistrictId != null
-      ? (citiesByDistrictId[selectedDistrictId] || []).map(c => ({
-        label: c.name,
-        value: c.id,
-      }))
+      ? (citiesByDistrictId[selectedDistrictId] || []).map((c) => ({
+          label: c.name,
+          value: c.id,
+        }))
       : [];
 
   //#endregion
 
   //#region HANDLE FILED CHNAGE EVENT
   const handleFieldChange = (field: keyof AddUpdateEmployeeMasterRequest, value: any) => {
-
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (errors[field]) {
@@ -180,25 +160,9 @@ const AddUpdateEmployeePage: React.FC = () => {
     }
 
     setSelectedCountryId(1);
-    handleFieldChange('CountryMasterId', 1);
-
+    handleFieldChange("CountryMasterId", 1);
   }, [employeeId]);
 
-
-  useEffect(() => {
-    if (!formData.ReportPersonId) return;
-
-    fetchEmployeeMasterById(formData.ReportPersonId).then(employee => {
-      if (!employee) return;
-
-      setDepartmentName(employee.Department ?? "");
-      setDesignationName(employee.Designation ?? "");
-      setBranchName(employee.Branch ?? "");
-      setReportingPersonName(employee.ReportPersonName ?? "");
-      setEmailId(employee.EmailId ?? "");
-      setPersonalMobileNumber(employee.PersonalMobileNumber ?? "");
-    });
-  }, [formData.ReportPersonId]);
   //#endregion
 
   //#region FETCH EMPLOYEE MASTER DETAILS
@@ -207,23 +171,20 @@ const AddUpdateEmployeePage: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-
         const params: FilterWithPaginationEmployeeMasterRequest = {
           PageNumber: 1,
           PageSize: 1,
           IsCheckPermission: false,
-          EmployeeId: Number(employeeId)
-        }
+          EmployeeId: Number(employeeId),
+        };
 
         const response = await employeeMasterService.apiCallPullEmployeeMaster(params);
 
         if (E.isRight(response)) {
-
           const e = response.right.Data?.[0];
 
           if (e) {
-
-            setFormData(prev => ({
+            setFormData((prev) => ({
               ...prev,
               EmployeeId: e.EmployeeId ?? prev.EmployeeId,
               UniqueKey: e.UniqueKey ?? prev.UniqueKey,
@@ -274,54 +235,55 @@ const AddUpdateEmployeePage: React.FC = () => {
               reportPersonName: e.ReportPersonName || "",
               bankName: e.BankName || "",
             });
+
+            if (e.ReportPersonId) {
+              fetchEmployeeMasterById(e.ReportPersonId).then((employee) => {
+                if (!employee) return;
+                setEmployeeDetails(employee);
+              });
+            }
           }
         } else {
-
-          addToast({ type: 'error', title: response.left.message });
-
+          addToast({ type: "error", title: response.left.message });
         }
 
-        return response
+        return response;
       },
       undefined,
       (error: any) => {
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: "error", title: error.message });
       },
       undefined,
-      'Loading Employee Data'
-    )
-  }
+      "Loading Employee Data",
+    );
+  };
   //#endregion
 
   //#region EMPLOYEE MASTER VALIDATION | ADD | UPDATE ACTION
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddEmployeeMasterForm = (): {
+    isValid: boolean;
 
-    isValid: boolean
-
-    errors: { [key: string]: string }
-
+    errors: { [key: string]: string };
   } => {
-
-    const newErrors: { [key: string]: string } = {}
-
+    const newErrors: { [key: string]: string } = {};
 
     if (!formData.FirstName?.trim()) {
-      newErrors.FirstName = 'First Name is required.'
+      newErrors.FirstName = "First Name is required.";
     } else if (formData.FirstName.trim().length > 50) {
-      newErrors.FirstName = 'First Name must be at most 50 characters'
+      newErrors.FirstName = "First Name must be at most 50 characters";
     }
 
     if (!formData.MiddleName?.trim()) {
-      newErrors.MiddleName = 'Middle Name is required.'
+      newErrors.MiddleName = "Middle Name is required.";
     } else if (formData.MiddleName.trim().length > 50) {
-      newErrors.MiddleName = 'Middle Name must be at most 50 characters'
+      newErrors.MiddleName = "Middle Name must be at most 50 characters";
     }
 
     if (!formData.LastName?.trim()) {
-      newErrors.LastName = 'Last Name is required.'
+      newErrors.LastName = "Last Name is required.";
     } else if (formData.LastName.trim().length > 50) {
-      newErrors.LastName = 'Last Name must be at most 50 characters'
+      newErrors.LastName = "Last Name must be at most 50 characters";
     }
 
     if (!formData.Gender?.trim()) {
@@ -337,39 +299,35 @@ const AddUpdateEmployeePage: React.FC = () => {
     }
 
     if (!formData.DateOfBirth) {
-      newErrors.DateOfBirth = 'DOB is required'
-
-    }
-    else if (formData.DateOfBirth) {
-      const dob = new Date(formData.DateOfBirth as unknown as string)
-      const today = new Date()
+      newErrors.DateOfBirth = "DOB is required";
+    } else if (formData.DateOfBirth) {
+      const dob = new Date(formData.DateOfBirth as unknown as string);
+      const today = new Date();
       if (dob > today) {
-        newErrors.DateOfBirth = 'Date of Birth cannot be in the future'
+        newErrors.DateOfBirth = "Date of Birth cannot be in the future";
       }
     }
 
     if (!formData.EmailId?.trim()) {
-      newErrors.EmailId = 'E-mail Id is required'
+      newErrors.EmailId = "E-mail Id is required";
     } else if (!isValidEmail(formData.EmailId.trim())) {
-      newErrors.EmailId = 'Enter a Valid E-mail Id'
+      newErrors.EmailId = "Enter a Valid E-mail Id";
     }
-
 
     if (formData.OfficeEmailId?.trim() && !isValidEmail(formData.OfficeEmailId.trim())) {
-      newErrors.OfficeEmailId = 'Enter a valid office Email Address';
+      newErrors.OfficeEmailId = "Enter a valid office Email Address";
     }
-
 
     if (!formData.PersonalMobileNumber?.trim()) {
-      newErrors.PersonalMobileNumber = 'Mobile Number is required.'
+      newErrors.PersonalMobileNumber = "Mobile Number is required.";
     } else if (!isValidMobile(formData.PersonalMobileNumber.trim())) {
-      newErrors.PersonalMobileNumber = 'Enter a valid 10-Digit Mobile Number'
+      newErrors.PersonalMobileNumber = "Enter a valid 10-Digit Mobile Number";
     }
 
-    if (formData.OfficeMobileNumber != '' && !formData.OfficeMobileNumber?.trim()) {
-      newErrors.OfficeMobileNumber = 'Office Mobile Number is required.'
-    } else if (formData.OfficeMobileNumber != '' && !isValidMobile(formData.OfficeMobileNumber.trim())) {
-      newErrors.OfficeMobileNumber = 'Enter a valid 10-digit Office Mobile Number'
+    if (formData.OfficeMobileNumber != "" && !formData.OfficeMobileNumber?.trim()) {
+      newErrors.OfficeMobileNumber = "Office Mobile Number is required.";
+    } else if (formData.OfficeMobileNumber != "" && !isValidMobile(formData.OfficeMobileNumber.trim())) {
+      newErrors.OfficeMobileNumber = "Enter a valid 10-digit Office Mobile Number";
     }
 
     if (!formData.EmployeeType?.trim()) {
@@ -381,9 +339,9 @@ const AddUpdateEmployeePage: React.FC = () => {
     }
 
     if (!formData.EmergencyMobileNumber?.trim()) {
-      newErrors.EmergencyMobileNumber = 'Emergency Contact Number is required'
+      newErrors.EmergencyMobileNumber = "Emergency Contact Number is required";
     } else if (!isValidMobile(formData.EmergencyMobileNumber.trim())) {
-      newErrors.EmergencyMobileNumber = 'Enter a valid 10-digit Emergency Contact Number'
+      newErrors.EmergencyMobileNumber = "Enter a valid 10-digit Emergency Contact Number";
     }
 
     if (!formData.CompanyId) {
@@ -400,22 +358,21 @@ const AddUpdateEmployeePage: React.FC = () => {
     }
 
     if (!formData.JoiningDate) {
-      newErrors.JoiningDate = 'Joining Date is required'
-
+      newErrors.JoiningDate = "Joining Date is required";
     }
     if (!formData.ReportPersonId) {
       newErrors.ReportPersonId = "Report Person is required";
     }
     if (!formData.CommunicationAddress?.trim()) {
-      newErrors.CommunicationAddress = 'Communication Address is required'
+      newErrors.CommunicationAddress = "Communication Address is required";
     } else if (formData.CommunicationAddress.trim().length > 500) {
-      newErrors.CommunicationAddress = 'Communication Address must be at most 500 characters'
+      newErrors.CommunicationAddress = "Communication Address must be at most 500 characters";
     }
 
     if (!formData.PermanentAddress?.trim()) {
-      newErrors.PermanentAddress = 'Permanent Address Name is required'
+      newErrors.PermanentAddress = "Permanent Address Name is required";
     } else if (formData.PermanentAddress.trim().length > 500) {
-      newErrors.PermanentAddress = 'Permanent Address must be at most 500 characters'
+      newErrors.PermanentAddress = "Permanent Address must be at most 500 characters";
     }
 
     if (!formData.CountryMasterId) {
@@ -436,25 +393,23 @@ const AddUpdateEmployeePage: React.FC = () => {
     }
 
     if (!formData.BankBranchName?.trim()) {
-      newErrors.BankBranchName = 'Bank Branch Name is required.'
+      newErrors.BankBranchName = "Bank Branch Name is required.";
     } else if (formData.BankBranchName.trim().length > 50) {
-      newErrors.BankBranchName = 'Bank Branch Name must be at most 50 characters'
+      newErrors.BankBranchName = "Bank Branch Name must be at most 50 characters";
     }
 
     if (!formData.AccountNo?.trim()) {
-      newErrors.AccountNo = 'Account Number is required.'
+      newErrors.AccountNo = "Account Number is required.";
     } else if (formData.AccountNo.trim().length > 18) {
-      newErrors.AccountNo = 'Account Number must be at most 50 characters'
+      newErrors.AccountNo = "Account Number must be at most 50 characters";
     }
 
     if (!formData.IFSCCode?.trim()) {
-      newErrors.IFSCCode = 'IFSC Code is required.'
-    }
-    else if (formData.IFSCCode.trim().length > 12) {
-      newErrors.IFSCCode = 'IFSC Code must be at most 50 characters'
-    }
-    else if (!isValidIFSC(formData.IFSCCode.trim())) {
-      newErrors.IFSCCode = 'Enter a valid IFSC Code'
+      newErrors.IFSCCode = "IFSC Code is required.";
+    } else if (formData.IFSCCode.trim().length > 12) {
+      newErrors.IFSCCode = "IFSC Code must be at most 50 characters";
+    } else if (!isValidIFSC(formData.IFSCCode.trim())) {
+      newErrors.IFSCCode = "Enter a valid IFSC Code";
     }
 
     if (formData.IdCardIssuedDate && !isToDateGreaterOrEqualFromDate(formData.JoiningDate!, formData.IdCardIssuedDate!)) {
@@ -463,9 +418,9 @@ const AddUpdateEmployeePage: React.FC = () => {
 
     return {
       isValid: Object.keys(newErrors).length === 0,
-      errors: newErrors
-    }
-  }
+      errors: newErrors,
+    };
+  };
 
   const PushEmployeeMasterFormData = (): AddUpdateEmployeeMasterRequest => {
     return {
@@ -504,21 +459,17 @@ const AddUpdateEmployeePage: React.FC = () => {
       DistrictMasterId: formData.DistrictMasterId ?? 0,
       CityMasterId: formData.CityMasterId ?? 0,
     };
-
   };
 
   const handleSubmit = async () => {
+    setErrors({});
 
-    setErrors({})
-
-
-    const validation = validateAddEmployeeMasterForm()
+    const validation = validateAddEmployeeMasterForm();
 
     if (!validation.isValid) {
+      setErrors(validation.errors);
 
-      setErrors(validation.errors)
-
-      return
+      return;
     }
 
     await runApiWithLoader(
@@ -526,44 +477,36 @@ const AddUpdateEmployeePage: React.FC = () => {
 
       setLoadingMessage,
       async () => {
-
         const payload = PushEmployeeMasterFormData();
 
         const response = await employeeMasterService.apiCallAddUpdateEmployeeMaster(payload);
 
         if (E.isRight(response)) {
-
           addToast({ type: "success", title: formData.EmployeeId ? "Employee updated successfully" : "Employee added successfully" });
 
           navigate("/employeeMaster");
-
         } else {
-
           addToast({ type: "error", title: response.left?.message });
-
         }
         return response;
       },
       undefined,
       (error: any) => {
-
-        addToast({ type: 'error', title: error.message })
+        addToast({ type: "error", title: error.message });
       },
       undefined,
 
-      Number(employeeId) === 0 ? 'Add Employee' : 'Update Employee'
-    )
-
+      Number(employeeId) === 0 ? "Add Employee" : "Update Employee",
+    );
   };
 
   //#endregion
   return (
-
-
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-
-      <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-
+      <Loader loading={isLoading} title={loadingMessage}>
+        {" "}
+        <div></div>{" "}
+      </Loader>
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <form onSubmit={handleSubmit}>
@@ -573,148 +516,47 @@ const AddUpdateEmployeePage: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
-                <Input
-                  label="First Name"
-                  placeholder="Enter First Name"
-                  value={formData.FirstName}
-                  required
-                  onChange={e => handleFieldChange('FirstName', filterLetters(e.target.value))}
-                  error={errors.FirstName} />
+                <Input label="First Name" placeholder="Enter First Name" value={formData.FirstName} required onChange={(e) => handleFieldChange("FirstName", filterLetters(e.target.value))} error={errors.FirstName} />
               </div>
               <div>
-                <Input
-                  value={formData.MiddleName}
-                  label="Middle Name"
-                  placeholder="Enter Middle Name"
-                  required
-                  onChange={e => handleFieldChange('MiddleName', filterLetters(e.target.value))}
-                  error={errors.MiddleName} />
+                <Input value={formData.MiddleName} label="Middle Name" placeholder="Enter Middle Name" required onChange={(e) => handleFieldChange("MiddleName", filterLetters(e.target.value))} error={errors.MiddleName} />
               </div>
               <div>
-                <Input
-                  value={formData.LastName}
-                  label="Last Name"
-                  placeholder="Enter Last Name"
-                  required
-                  onChange={e => handleFieldChange('LastName', filterLetters(e.target.value))}
-                  error={errors.LastName} />
+                <Input value={formData.LastName} label="Last Name" placeholder="Enter Last Name" required onChange={(e) => handleFieldChange("LastName", filterLetters(e.target.value))} error={errors.LastName} />
               </div>
               <div>
-                <SinglePageSelection
-                  label="Gender"
-                  placeholder="Select Gender"
-                  required
-                  value={formData.Gender}
-                  onChange={(e) => handleFieldChange('Gender', String(e))}
-                  options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={errors.Gender}
-                />
+                <SinglePageSelection label="Gender" placeholder="Select Gender" required value={formData.Gender} onChange={(e) => handleFieldChange("Gender", String(e))} options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} error={errors.Gender} />
               </div>
               <div>
-                <SinglePageSelection
-                  label="Marital Status"
-                  placeholder="Select Marital Status"
-                  value={formData.MaritalStatus}
-                  onChange={(val) => handleFieldChange("MaritalStatus", String(val))}
-                  options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} required
-                  error={errors.MaritalStatus}
-                />
+                <SinglePageSelection label="Marital Status" placeholder="Select Marital Status" value={formData.MaritalStatus} onChange={(val) => handleFieldChange("MaritalStatus", String(val))} options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} required error={errors.MaritalStatus} />
               </div>
               <div>
-                <SinglePageSelection
-                  value={formData.BloodGroup}
-                  label="Blood Group"
-                  placeholder="Select Blood Group"
-                  onChange={(val) => handleFieldChange("BloodGroup", String(val))} required
-                  options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={errors.BloodGroup}
-                />
+                <SinglePageSelection value={formData.BloodGroup} label="Blood Group" placeholder="Select Blood Group" onChange={(val) => handleFieldChange("BloodGroup", String(val))} required options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} error={errors.BloodGroup} />
               </div>
               <div>
-                <DatePickerInput
-                  label="DOB"
-                  value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
-                  onChange={(val) => handleFieldChange('DateOfBirth', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                  required
-                  error={errors.DateOfBirth}
-
-                />
-
+                <DatePickerInput label="DOB" value={formatDate_dd_mm_yyyy(formData.DateOfBirth)} onChange={(val) => handleFieldChange("DateOfBirth", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.DateOfBirth} />
               </div>
               <div>
-                <Input
-                  label="E-mail Id"
-                  placeholder="Enter E-mail Id"
-                  value={formData.EmailId}
-                  rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
-                  required
-                  onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))}
-                  error={errors.EmailId} />
+                <Input label="E-mail Id" placeholder="Enter E-mail Id" value={formData.EmailId} rightIcon={<Mail className="h-6 w-6 text-gray-400" />} required onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))} error={errors.EmailId} />
               </div>
               <div>
-                <Input
-                  label="Office E-mail Id"
-                  placeholder="Enter Office E-mail Id"
-                  value={formData.OfficeEmailId}
-                  rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
-                  onChange={(e) => handleFieldChange("OfficeEmailId", filterEmail(e.target.value))}
-                  error={errors.OfficeEmailId}
-                />
+                <Input label="Office E-mail Id" placeholder="Enter Office E-mail Id" value={formData.OfficeEmailId} rightIcon={<Mail className="h-6 w-6 text-gray-400" />} onChange={(e) => handleFieldChange("OfficeEmailId", filterEmail(e.target.value))} error={errors.OfficeEmailId} />
               </div>
 
               <div>
-                <Input
-                  leftIcon="+91"
-                  label="Personal Mobile Number"
-                  placeholder="Enter Personal Mobile Number"
-                  required
-                  value={formData.PersonalMobileNumber}
-                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                  onChange={(e) => handleFieldChange("PersonalMobileNumber", filterMobile(e.target.value))}
-                  error={errors.PersonalMobileNumber} />
+                <Input leftIcon="+91" label="Personal Mobile Number" placeholder="Enter Personal Mobile Number" required value={formData.PersonalMobileNumber} rightIcon={<Phone className="h-4 w-4 text-gray-400" />} onChange={(e) => handleFieldChange("PersonalMobileNumber", filterMobile(e.target.value))} error={errors.PersonalMobileNumber} />
               </div>
               <div>
-                <Input
-
-                  value={formData.OfficeMobileNumber}
-                  leftIcon="+91"
-                  label="Office Mobile Number"
-                  placeholder="Enter Office Mobile Number"
-                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                  onChange={(e) => handleFieldChange("OfficeMobileNumber", filterMobile(e.target.value))}
-                  error={errors.OfficeMobileNumber}
-                />
+                <Input value={formData.OfficeMobileNumber} leftIcon="+91" label="Office Mobile Number" placeholder="Enter Office Mobile Number" rightIcon={<Phone className="h-4 w-4 text-gray-400" />} onChange={(e) => handleFieldChange("OfficeMobileNumber", filterMobile(e.target.value))} error={errors.OfficeMobileNumber} />
               </div>
               <div>
-                <SinglePageSelection
-                  label="Employee Type"
-                  placeholder="Select Employee Type"
-                  value={formData.EmployeeType} required
-                  onChange={(val) => handleFieldChange("EmployeeType", String(val))}
-                  options={EMPLOYEE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={errors.EmployeeType}
-                />
+                <SinglePageSelection label="Employee Type" placeholder="Select Employee Type" value={formData.EmployeeType} required onChange={(val) => handleFieldChange("EmployeeType", String(val))} options={EMPLOYEE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} error={errors.EmployeeType} />
               </div>
               <div>
-                <SinglePageSelection
-                  label="Relation to Emergency Contact"
-                  placeholder="Select Relation"
-                  value={formData.EmergencyContactPersonRelationship} required
-                  onChange={(val) => handleFieldChange("EmergencyContactPersonRelationship", String(val))}
-                  options={EMERGENCY_RELATION_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={errors.EmergencyContactPersonRelationship}
-                />
+                <SinglePageSelection label="Relation to Emergency Contact" placeholder="Select Relation" value={formData.EmergencyContactPersonRelationship} required onChange={(val) => handleFieldChange("EmergencyContactPersonRelationship", String(val))} options={EMERGENCY_RELATION_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} error={errors.EmergencyContactPersonRelationship} />
               </div>
               <div>
-                <Input
-                  label="Emergency Contact Number"
-                  placeholder="Enter Emergency Contact Number"
-                  leftIcon="+91"
-                  value={formData.EmergencyMobileNumber}
-                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                  required
-                  onChange={(e) => handleFieldChange("EmergencyMobileNumber", filterMobile(e.target.value))}
-                  error={errors.EmergencyMobileNumber} />
+                <Input label="Emergency Contact Number" placeholder="Enter Emergency Contact Number" leftIcon="+91" value={formData.EmergencyMobileNumber} rightIcon={<Phone className="h-4 w-4 text-gray-400" />} required onChange={(e) => handleFieldChange("EmergencyMobileNumber", filterMobile(e.target.value))} error={errors.EmergencyMobileNumber} />
               </div>
             </div>
           </div>
@@ -738,7 +580,6 @@ const AddUpdateEmployeePage: React.FC = () => {
 
                     handleFieldChange("CompanyId", Number(item.value));
                   }}
-
                   initialValue={createDropdownInitialValue(formData.CompanyId, dropdownLabels.companyName)}
                   error={errors.CompanyId}
                 />
@@ -801,26 +642,11 @@ const AddUpdateEmployeePage: React.FC = () => {
                 />
               </div>
               <div>
-                <DatePickerInput
-                  label="Joining Date"
-                  value={formatDate_dd_mm_yyyy(formData.JoiningDate)}
-                  onChange={(val) => handleFieldChange('JoiningDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                  required
-                  error={errors.JoiningDate}
-
-                />
-
+                <DatePickerInput label="Joining Date" value={formatDate_dd_mm_yyyy(formData.JoiningDate)} onChange={(val) => handleFieldChange("JoiningDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.JoiningDate} />
               </div>
               <div>
-                <DatePickerInput
-                  label="Id Card Issued Date"
-                  value={formatDate_dd_mm_yyyy(formData.IdCardIssuedDate)}
-                  onChange={(val) => handleFieldChange('IdCardIssuedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                  error={errors.IdCardIssuedDate}
-                />
-
+                <DatePickerInput label="Id Card Issued Date" value={formatDate_dd_mm_yyyy(formData.IdCardIssuedDate)} onChange={(val) => handleFieldChange("IdCardIssuedDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} error={errors.IdCardIssuedDate} />
               </div>
-
             </div>
           </div>
 
@@ -838,8 +664,11 @@ const AddUpdateEmployeePage: React.FC = () => {
                   onSelected={(item) => {
                     if (!item) {
                       handleFieldChange("ReportPersonId", null);
+                      setEmployeeDetails(null);
                       return;
                     }
+
+                    setEmployeeDetails(item as unknown as EmployeeMasterData);
 
                     handleFieldChange("ReportPersonId", Number(item.value));
                   }}
@@ -847,17 +676,16 @@ const AddUpdateEmployeePage: React.FC = () => {
                   error={errors.ReportPersonId}
                 />
               </div>
-
             </div>
-            {(formData.ReportPersonId != 0 && formData.ReportPersonId != null) && (
+            {employeeDetails && (
               <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                  <FieldItem label="Department" value={departmentName || '-'} />
-                  <FieldItem label="Designation" value={designationName || '-'} />
-                  <FieldItem label="Branch" value={branchName || '-'} />
-                  <FieldItem label="Reporting Person" value={reportingPersonName || '-'} />
-                  <FieldItem label="Email ID" value={emailId || '-'} />
-                  <FieldItem label="Personal Mobile Number" value={personalMobileNumber || '-'} />
+                  <FieldItem label="Department" value={employeeDetails?.Department || "-"} />
+                  <FieldItem label="Designation" value={employeeDetails?.Designation || "-"} />
+                  <FieldItem label="Branch" value={employeeDetails?.Branch || "-"} />
+                  <FieldItem label="Reporting Person" value={employeeDetails?.ReportPersonName || "-"} />
+                  <FieldItem label="Email ID" value={employeeDetails?.EmailId || "-"} />
+                  <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber || "-"} />
                 </div>
               </div>
             )}
@@ -867,48 +695,31 @@ const AddUpdateEmployeePage: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <TextArea
-                  label="Communication Address"
-                  placeholder="Enter Communication Address"
-                  required
-                  className='thin-scroll'
-                  value={formData.CommunicationAddress}
-                  onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)}
-                  error={errors.CommunicationAddress} />
+                <TextArea label="Communication Address" placeholder="Enter Communication Address" required className="thin-scroll" value={formData.CommunicationAddress} onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)} error={errors.CommunicationAddress} />
               </div>
               <div>
-                <TextArea
-                  label="Permanent Address"
-                  placeholder="Enter Permanent Address"
-                  required
-                  className='thin-scroll'
-                  value={formData.PermanentAddress}
-                  onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)}
-                  error={errors.PermanentAddress} />
+                <TextArea label="Permanent Address" placeholder="Enter Permanent Address" required className="thin-scroll" value={formData.PermanentAddress} onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)} error={errors.PermanentAddress} />
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
               <div>
-
                 <SinglePageSelection
-                  label='Country'
+                  label="Country"
                   placeholder="Select Country"
                   required
-                  value={selectedCountryId || ''}
+                  value={selectedCountryId || ""}
                   error={errors.CountryMasterId}
                   onChange={(item) => {
-
                     if (!item) {
                       setSelectedCountryId(null);
                       setSelectedStateId(null);
                       setSelectedDistrictId(null);
                       setSelectedCityId(null);
 
-                      handleFieldChange('CountryMasterId', 0);
-                      handleFieldChange('StateMasterId', 0);
-                      handleFieldChange('DistrictMasterId', 0);
-                      handleFieldChange('CityMasterId', 0);
+                      handleFieldChange("CountryMasterId", 0);
+                      handleFieldChange("StateMasterId", 0);
+                      handleFieldChange("DistrictMasterId", 0);
+                      handleFieldChange("CityMasterId", 0);
 
                       return;
                     }
@@ -920,28 +731,24 @@ const AddUpdateEmployeePage: React.FC = () => {
                     setSelectedDistrictId(null);
                     setSelectedCityId(null);
 
-                    handleFieldChange('CountryMasterId', id);
-                    handleFieldChange('StateMasterId', 0);
-                    handleFieldChange('DistrictMasterId', 0);
-                    handleFieldChange('CityMasterId', 0);
+                    handleFieldChange("CountryMasterId", id);
+                    handleFieldChange("StateMasterId", 0);
+                    handleFieldChange("DistrictMasterId", 0);
+                    handleFieldChange("CityMasterId", 0);
                   }}
                   disabled={isLocationLoading}
                   options={countryOptions}
                 />
-
-
               </div>
 
               <div>
-
                 <SinglePageSelection
-                  label='State'
+                  label="State"
                   placeholder="Select State"
                   required
-                  value={selectedStateId ?? ''}
+                  value={selectedStateId ?? ""}
                   error={errors.StateMasterId}
                   onChange={(item) => {
-
                     if (!item) {
                       setSelectedStateId(null);
                       setSelectedDistrictId(null);
@@ -967,26 +774,22 @@ const AddUpdateEmployeePage: React.FC = () => {
                   disabled={!selectedCountryId || stateOptions.length === 0}
                   options={stateOptions}
                 />
-
-
               </div>
 
               <div>
-
                 <SinglePageSelection
-                  label='District'
+                  label="District"
                   placeholder="Select District"
                   required
-                  value={selectedDistrictId ?? ''}
+                  value={selectedDistrictId ?? ""}
                   error={errors.DistrictMasterId}
                   onChange={(item) => {
-
                     if (!item) {
                       setSelectedDistrictId(null);
                       setSelectedCityId(null);
 
-                      handleFieldChange('DistrictMasterId', 0);
-                      handleFieldChange('CityMasterId', 0);
+                      handleFieldChange("DistrictMasterId", 0);
+                      handleFieldChange("CityMasterId", 0);
                       return;
                     }
 
@@ -995,8 +798,8 @@ const AddUpdateEmployeePage: React.FC = () => {
                     setSelectedDistrictId(id);
                     setSelectedCityId(null);
 
-                    handleFieldChange('DistrictMasterId', id);
-                    handleFieldChange('CityMasterId', 0);
+                    handleFieldChange("DistrictMasterId", id);
+                    handleFieldChange("CityMasterId", 0);
                   }}
                   disabled={!selectedStateId || districtOptions.length === 0}
                   options={districtOptions}
@@ -1004,30 +807,27 @@ const AddUpdateEmployeePage: React.FC = () => {
               </div>
 
               <div>
-
                 <SinglePageSelection
-                  label='City'
+                  label="City"
                   placeholder="Select City"
                   required
-                  value={selectedCityId ?? ''}
+                  value={selectedCityId ?? ""}
                   error={errors.CityMasterId}
                   onChange={(item) => {
-
                     if (!item) {
                       setSelectedCityId(null);
-                      handleFieldChange('CityMasterId', 0);
+                      handleFieldChange("CityMasterId", 0);
                       return;
                     }
 
                     const id = Number(item);
 
                     setSelectedCityId(id);
-                    handleFieldChange('CityMasterId', id);
+                    handleFieldChange("CityMasterId", id);
                   }}
                   disabled={!selectedDistrictId || cityOptions.length === 0}
                   options={cityOptions}
                 />
-
               </div>
             </div>
           </div>
@@ -1057,30 +857,13 @@ const AddUpdateEmployeePage: React.FC = () => {
                 />
               </div>
               <div>
-                <Input
-                  label="Bank Branch Name"
-                  placeholder="Enter Bank Branch Name"
-                  required value={formData.BankBranchName}
-                  onChange={(e) => handleFieldChange("BankBranchName", filterLetters(e.target.value))}
-                  error={errors.BankBranchName} />
+                <Input label="Bank Branch Name" placeholder="Enter Bank Branch Name" required value={formData.BankBranchName} onChange={(e) => handleFieldChange("BankBranchName", filterLetters(e.target.value))} error={errors.BankBranchName} />
               </div>
               <div>
-                <Input
-                  label="Account Number"
-                  placeholder="Enter Account Number"
-                  required value={formData.AccountNo}
-                  maxLength={18}
-                  onChange={(e) => handleFieldChange("AccountNo", filterNumbers(e.target.value))}
-                  error={errors.AccountNo} />
+                <Input label="Account Number" placeholder="Enter Account Number" required value={formData.AccountNo} maxLength={18} onChange={(e) => handleFieldChange("AccountNo", filterNumbers(e.target.value))} error={errors.AccountNo} />
               </div>
               <div>
-                <Input
-                  label="IFSC Code"
-                  placeholder="Enter IFSC Code"
-                  required
-                  value={formData.IFSCCode}
-                  onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
-                  error={errors.IFSCCode} />
+                <Input label="IFSC Code" placeholder="Enter IFSC Code" required value={formData.IFSCCode} onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))} error={errors.IFSCCode} />
               </div>
             </div>
           </div>
@@ -1097,8 +880,6 @@ const AddUpdateEmployeePage: React.FC = () => {
         }}
         isLoading={isLoading}
       />
-
-
     </div>
   );
 };

@@ -34,7 +34,7 @@ export class PaymentScheduleMasterDatasourceImpl implements PaymentScheduleMaste
 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
             if (params.InventoryBuildingId) queryParams.append("InventoryBuildingId", params.InventoryBuildingId.toString());
-             if (params.InventoryFlatFloorBasementPodiumWingId) queryParams.append("InventoryBuildingId", params.InventoryFlatFloorBasementPodiumWingId.toString());
+             if (params.InventoryFlatFloorBasementPodiumWingId) queryParams.append("InventoryFlatFloorBasementPodiumWingId", params.InventoryFlatFloorBasementPodiumWingId.toString());
             if (params.PaymentScheduleMasterId) queryParams.append("PaymentScheduleMasterId", params.PaymentScheduleMasterId.toString());
             if (params.PaymentScheduleSchemeMasterId) queryParams.append("PaymentScheduleSchemeMasterId", params.PaymentScheduleSchemeMasterId.toString());
             if (params.Stage) queryParams.append('Stage', params.Stage.toString());

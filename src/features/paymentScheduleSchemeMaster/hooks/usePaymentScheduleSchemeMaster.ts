@@ -4,11 +4,20 @@ import type { FilterInfo, SortInfo, TableColumn } from "@/ui/components/DataTabl
 import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
-import type { AddUpdatePaymentScheduleSchemeMasterRequest, DeletePaymentScheduleSchemeMasterRequest, PaymentScheduleSchemeMasterData, FilterWithPaginationPaymentScheduleSchemeMaster } from "@/features/paymentScheduleSchemeMaster/models/PaymentScheduleSchemeMasterModel";
+import type {
+  AddUpdatePaymentScheduleSchemeMasterRequest,
+  DeletePaymentScheduleSchemeMasterRequest,
+  PaymentScheduleSchemeMasterData,
+  FilterWithPaginationPaymentScheduleSchemeMaster,
+} from "@/features/paymentScheduleSchemeMaster/models/PaymentScheduleSchemeMasterModel";
 import { paymentScheduleSchemeMasterService } from "@/features/paymentScheduleSchemeMaster/services/PaymentScheduleSchemeMasterService";
 import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { getInitialFormState, getPaymentScheduleSchemeMasterColumns, REQUIRED_COLUMN_KEYS } from "@/features/paymentScheduleSchemeMaster/constants/paymentScheduleSchemeMaster";
+import {
+  getInitialFormState,
+  getPaymentScheduleSchemeMasterColumns,
+  REQUIRED_COLUMN_KEYS,
+} from "@/features/paymentScheduleSchemeMaster/constants/paymentScheduleSchemeMaster";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
@@ -19,7 +28,8 @@ import { updateFilter } from "@/core/utils/filterHelper";
 export const usePaymentScheduleSchemeMaster = () => {
   //#region STATE MANAGEMENT
   const [paymentScheduleSchemeMasterList, setPaymentScheduleSchemeMasterList] = useState<PaymentScheduleSchemeMasterData[]>([]);
-  const [viewPaymentScheduleSchemeMasterDetailsData, setViewPaymentScheduleSchemeMasterDetailsData] = useState<PaymentScheduleSchemeMasterData | null>(null);
+  const [viewPaymentScheduleSchemeMasterDetailsData, setViewPaymentScheduleSchemeMasterDetailsData] =
+    useState<PaymentScheduleSchemeMasterData | null>(null);
   const { pagination, setPagination } = usePagination(20);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -34,12 +44,16 @@ export const usePaymentScheduleSchemeMaster = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-  const [deletePaymentScheduleSchemeMasterDetailsData, setDeletePaymentScheduleSchemeMasterDetailsData] = useState<PaymentScheduleSchemeMasterData | null>(null);
-  const [editingPaymentScheduleSchemeMasterData, setEditingPaymentScheduleSchemeMasterData] = useState<PaymentScheduleSchemeMasterData | null>(null);
+  const [deletePaymentScheduleSchemeMasterDetailsData, setDeletePaymentScheduleSchemeMasterDetailsData] =
+    useState<PaymentScheduleSchemeMasterData | null>(null);
+  const [editingPaymentScheduleSchemeMasterData, setEditingPaymentScheduleSchemeMasterData] =
+    useState<PaymentScheduleSchemeMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<AddUpdatePaymentScheduleSchemeMasterRequest>(() => getInitialFormState());
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  const [isShowCustomizePaymentScheduleSchemeMasterColumnsModal, setIsShowCustomizePaymentScheduleSchemeMasterColumnsModal] = useState(false);
+  const [isShowCustomizePaymentScheduleSchemeMasterColumnsModal, setIsShowCustomizePaymentScheduleSchemeMasterColumnsModal] =
+    useState(false);
   const [wingOptions, setWingOptions] = useState<{ label: string; value: number }[]>([]);
   const [buildingOptions, setBuildingOptions] = useState<{ label: string; value: number }[]>([]);
   const debouncedSearch = useDebouncedCallback((value: string) => {
@@ -55,7 +69,11 @@ export const usePaymentScheduleSchemeMaster = () => {
   }, [projectId]);
 
   useEffect(() => {
-    setSelectedPaymentScheduleSchemeMasterColumnKeys((prev) => Array.from(new Set([...prev, ...requiredPaymentScheduleSchemeMasterColumnKeys])).filter((k) => allPaymentScheduleSchemeMasterColumnKeys.includes(k)));
+    setSelectedPaymentScheduleSchemeMasterColumnKeys((prev) =>
+      Array.from(new Set([...prev, ...requiredPaymentScheduleSchemeMasterColumnKeys])).filter((k) =>
+        allPaymentScheduleSchemeMasterColumnKeys.includes(k),
+      ),
+    );
   }, []);
 
   //Debounce search
@@ -209,7 +227,11 @@ export const usePaymentScheduleSchemeMaster = () => {
           } else {
             const updatedRecord = response.right.Data[0] as PaymentScheduleSchemeMasterData;
 
-            setPaymentScheduleSchemeMasterList((prevData) => prevData.map((item) => (item.PaymentScheduleSchemeMasterId === formData.PaymentScheduleSchemeMasterId ? updatedRecord : item)));
+            setPaymentScheduleSchemeMasterList((prevData) =>
+              prevData.map((item) =>
+                item.PaymentScheduleSchemeMasterId === formData.PaymentScheduleSchemeMasterId ? updatedRecord : item,
+              ),
+            );
 
             addToast({ type: "success", title: response.right.SuccessMessage[0] });
           }
@@ -246,7 +268,9 @@ export const usePaymentScheduleSchemeMaster = () => {
             PageSize: pagination.pageSize,
             IsCheckPermission: true,
             ProjectId: Number(projectId),
-            PaymentScheduleSchemeMasterId: filterParams.PaymentScheduleSchemeMasterId ? Number(filterParams.PaymentScheduleSchemeMasterId) : 0,
+            PaymentScheduleSchemeMasterId: filterParams.PaymentScheduleSchemeMasterId
+              ? Number(filterParams.PaymentScheduleSchemeMasterId)
+              : 0,
             PaymentScheduleScheme: searchtext ?? filterParams.PaymentScheduleScheme ?? undefined,
             BuildingNumber: filterParams.BuildingNumber?.trim() || undefined,
             Wing: filterParams.Wing?.trim() || undefined,
@@ -297,7 +321,10 @@ export const usePaymentScheduleSchemeMaster = () => {
     return allPaymentScheduleSchemeMasterColumnKeys;
   });
 
-  const visiblePaymentScheduleSchemeMasterColumns = useMemo(() => paymentScheduleSchemeMasterColumns.filter((col) => selectedPaymentScheduleSchemeMasterColumnKeys.includes(col.key)), [paymentScheduleSchemeMasterColumns, selectedPaymentScheduleSchemeMasterColumnKeys]);
+  const visiblePaymentScheduleSchemeMasterColumns = useMemo(
+    () => paymentScheduleSchemeMasterColumns.filter((col) => selectedPaymentScheduleSchemeMasterColumnKeys.includes(col.key)),
+    [paymentScheduleSchemeMasterColumns, selectedPaymentScheduleSchemeMasterColumnKeys],
+  );
   //#endregion
 
   //#region VIEW EDIT
@@ -308,6 +335,7 @@ export const usePaymentScheduleSchemeMaster = () => {
 
   //#region EDIT DEPARTMENT MASTER
   const handleEditPaymentScheduleSchemeMasterDetails = useCallback((row: PaymentScheduleSchemeMasterData) => {
+    setErrors({});
     setEditingPaymentScheduleSchemeMasterData(row);
 
     handleBuildingChange(row.InventoryBuildingId || 0);
@@ -321,7 +349,7 @@ export const usePaymentScheduleSchemeMaster = () => {
       OrderBy: row.OrderBy || 0,
       InventoryFlatFloorBasementPodiumWingId: row.InventoryFlatFloorBasementPodiumWingId || 0,
     });
-
+    setIsEditing(row.IsExistsPaymentScheduleScheme);
     setIsAddUpdateModalOpen(true);
   }, []);
   //#endregion
@@ -496,6 +524,7 @@ export const usePaymentScheduleSchemeMaster = () => {
     filters,
     tempFilters,
     loadingMessage,
+    isEditing,
 
     fetchPaymentScheduleSchemeMasterList,
     setIsShowCustomizePaymentScheduleSchemeMasterColumnsModal,

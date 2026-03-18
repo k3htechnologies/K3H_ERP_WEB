@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DataTableWithOutBorder, type TableColumn } from '@/ui/components/DataTable/DataTableWithoutBorder';
 import { Button } from "@/ui/components/forms";
 import { ConfirmationDialogBox } from '@/core/utils/confirmationDialogBox';
@@ -14,75 +14,26 @@ interface Props {
     enquiryData: EnquiryModel[];
 }
 
-export default function Enquiries({ }: Props) {
+export default function Enquiries({ enquiryData }: Props) {
+
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [selectedRow, setSelectedRow] = useState<any>(null);
-    const [, setTableData] = useState<any[]>([]);
+    const [tableData, setTableData] = useState<any[]>([]);
 
-    const data = [
-        {
-            ClientName: "John Doe",
-            Date: formatDate_dd_MonthName_yy("2022-01-12"),
-            CustomerTimeIn: "10:00 AM",
-            Action: "Mark Time Out"
-        },
-        {
-            ClientName: "Jane Smith",
-            Date: formatDate_dd_MonthName_yy("2022-12-23"),
-            CustomerTimeIn: "12:00 PM",
-            Action: "Mark Time Out"
-        },
-        {
-            ClientName: "Tim Lee",
-            Date: formatDate_dd_MonthName_yy("2022-08-22"),
-            CustomerTimeIn: "12:00 PM",
-            Action: "Mark Time Out"
-        },
-        {
-            ClientName: "Kim John",
-            Date: formatDate_dd_MonthName_yy("2022-01-12"),
-            CustomerTimeIn: "12:00 PM",
-            Action: "Mark Time Out"
-        },
-        {
-            ClientName: "Tim LOKO",
-            Date: formatDate_dd_MonthName_yy("2022-01-11"),
-            CustomerTimeIn: "12:00 PM",
-            Action: "Mark Time Out"
-        },
-        {
-            ClientName: "Tim Lee",
-            Date: "2022-01-07",
-            CustomerTimeIn: "12:00 PM",
-            Action: "Mark Time Out"
-        },
-        {
-            ClientName: "Tim Lee",
-            Date: "2022-01-08",
-            CustomerTimeIn: "12:00 PM",
-            Action: "Mark Time Out"
-        },
-        {
-            ClientName: "Tim Lee",
-            Date: "2022-01-09",
-            CustomerTimeIn: "12:00 PM",
-            Action: "Mark Time Out"
-        },
-        {
-            ClientName: "Tim Lee",
-            Date: "2022-01-10",
-            CustomerTimeIn: "12:00 PM",
-            Action: "Mark Time Out"
-        },
-
-
-    ]
-
+    useEffect(() => {
+        setTableData(enquiryData || []);
+    }, [enquiryData]);
 
     const columns: TableColumn[] = [
-        { key: 'ClientName', label: 'Client Name', align: 'center' },
-        { key: 'Date', label: 'Date', align: 'center' },
-        { key: 'CustomerTimeIn', label: 'Customer Time-in', align: 'center' },
+        { key: 'Name', label: 'Client Name', align: 'left' },
+        {
+            key: 'EnquiryDate',
+            label: 'Date',
+            sortable: false,
+            align: 'left',
+            render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
+        },
+        { key: 'EnquiryTimeIn', label: 'Customer Time-in', align: 'center' },
         {
             key: 'Action',
             label: 'Action',
@@ -97,7 +48,7 @@ export default function Enquiries({ }: Props) {
                     fullWidth={false}
                     color='primary'
                 >
-                    {_value}
+                    Mark Time Out
                 </Button>
             )
         }
@@ -105,14 +56,14 @@ export default function Enquiries({ }: Props) {
     return (
         <div className="space-y-4 flex flex-col h-full w-full min-w-0">
             <h2 className="text-lg font-semibold text-gray-800">
-                Enquiries
+                Enquiries (Todays)
             </h2>
             <div className="flex flex-row gap-4 items-stretch flex-1 min-w-0 min-h-0">
                 <div className="flex-1 bg-white rounded-xl p-5 shadow-sm border border-gray-100 min-w-0 overflow-hidden flex flex-col">
                     <div className='max-h-[280px] overflow-y-auto thin-scroll'>
                         <DataTableWithOutBorder
                             columns={columns}
-                            data={data}
+                            data={tableData}
                             emptyMessage="No records Found"
                             fixedHeight={true}
                         />

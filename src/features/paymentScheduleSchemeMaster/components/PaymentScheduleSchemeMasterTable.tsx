@@ -21,12 +21,12 @@ interface PaymentScheduleSchemeMasterTableProps {
 export const PaymentScheduleSchemeMasterTable: React.FC<PaymentScheduleSchemeMasterTableProps> = ({ data, columns, pagination, sortInfo, onSort, onView, onDelete, canAction, loading }) => {
   const tableColumns = useMemo<TableColumn[]>(() => {
     return columns.map((col) => {
-      if (col.key === "Actions") {
+      if (col.key === "Actions" ) {
         return {
           ...col,
 
           render: (_value, row: PaymentScheduleSchemeMasterData) =>
-            canAction ? (
+            canAction && !row.IsExistsPaymentScheduleScheme ? (
               <div className="flex items-center justify-center gap-2">
                 <Button
                   onClick={(e) => {

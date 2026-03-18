@@ -29,12 +29,16 @@ const initialFormState = (): AddUpdateProjectMasterRequest => ({
     RemoveProjectPhotoURL: '',
     CTSNumber: '',
     IsRedevelopment: 0,
+    FileNumber: '',
+    ArchitectName: '',
+    ArchitectMobileNumber: '',
     BussinessCategory: '',
     ProjectShortName: '',
     CountryMasterId: 0,
     DistrictMasterId: 0,
     StateMasterId: 0,
     CityMasterId: 0,
+    VillageMasterId: 0,
     ZipCode: '',
     ProjectScope: '',
     ProjectEstimateCost: 0,
@@ -89,12 +93,14 @@ const AddUpdateProjectMaster: React.FC = () => {
         statesByCountryId,
         districtsByStateId,
         citiesByDistrictId,
+        villagesByCityId,
     } = useCountryStateCityDistrictVillageData()
 
     const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1)
     const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null)
     const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null)
     const [selectedCityId, setSelectedCityId] = React.useState<number | null>(null)
+    const [selectedVillageId, setSelectedVillageId] = React.useState<number | null>(null)
 
     const countryOptions = countries.map(c => ({ label: c.name, value: c.id }))
 
@@ -117,6 +123,14 @@ const AddUpdateProjectMaster: React.FC = () => {
     const cityOptions =
         selectedDistrictId != null
             ? (citiesByDistrictId[selectedDistrictId] || []).map(c => ({
+                label: c.name,
+                value: c.id,
+            }))
+            : [];
+
+    const villageOptions =
+        selectedCityId != null
+            ? (villagesByCityId[selectedCityId] || []).map(c => ({
                 label: c.name,
                 value: c.id,
             }))
@@ -185,12 +199,16 @@ const AddUpdateProjectMaster: React.FC = () => {
                             RemoveProjectPhotoURL: '',
                             CTSNumber: row.CTSNumber ?? prev.CTSNumber,
                             IsRedevelopment: row.IsRedevelopment ? 1 : 0,
+                            FileNumber: row.FileNumber ?? prev.FileNumber ?? '',
+                            ArchitectName: row.ArchitectName ?? prev.ArchitectName ?? '',
+                            ArchitectMobileNumber: row.ArchitectMobileNumber ?? prev.ArchitectMobileNumber ?? '',
                             BussinessCategory: row.BussinessCategory ?? prev.BussinessCategory ?? '',
                             ProjectShortName: row.ProjectShortName ?? prev.ProjectShortName ?? '',
                             CountryMasterId: row.CountryMasterId ?? prev.CountryMasterId ?? 1,
                             DistrictMasterId: row.DistrictMasterId ?? prev.DistrictMasterId ?? 0,
                             StateMasterId: row.StateMasterId ?? prev.StateMasterId ?? 0,
                             CityMasterId: row.CityMasterId ?? prev.CityMasterId ?? 0,
+                            VillageMasterId: row.VillageMasterId ?? prev.VillageMasterId ?? 0,
                             ZipCode: row.ZipCode ?? prev.ZipCode ?? '',
                             ProjectScope: row.ProjectScope ?? prev.ProjectScope ?? '',
                             ProjectEstimateCost: row.ProjectEstimateCost ?? prev.ProjectEstimateCost ?? 0,
@@ -216,6 +234,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                         setSelectedStateId(row.StateMasterId ?? null);
                         setSelectedDistrictId(row.DistrictMasterId ?? null);
                         setSelectedCityId(row.CityMasterId ?? null);
+                        setSelectedVillageId(row.VillageMasterId ?? null);
 
                     }
                 } else {
@@ -278,6 +297,9 @@ const AddUpdateProjectMaster: React.FC = () => {
         if (!formData.CityMasterId) {
             newErrors.CityMasterId = "City is required.";
         }
+        if (!formData.VillageMasterId) {
+            newErrors.VillageMasterId = "Village is required";
+        }
 
         if (formData.SiteContactMobileNumber && !isValidMobile(formData.SiteContactMobileNumber)) {
             newErrors.SiteContactMobileNumber = "Enter a valid 10-digit mobile number.";
@@ -307,12 +329,16 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('ProjectLocation', formData.ProjectLocation ?? '');
         fd.append('CTSNumber', formData.IsRedevelopment === 1 ? "System Generated CTS Number" : formData.CTSNumber ?? '');
         fd.append('IsRedevelopment', String(formData.IsRedevelopment ?? 0));
+        fd.append('FileNumber', formData.FileNumber ?? '');
+        fd.append('ArchitectName', formData.ArchitectName ?? '');
+        fd.append('ArchitectMobileNumber', formData.ArchitectMobileNumber ?? '');
         fd.append('BussinessCategory', formData.BussinessCategory ?? '');
         fd.append('ProjectShortName', formData.ProjectShortName ?? '');
         fd.append('CountryMasterId', String(formData.CountryMasterId ?? 0));
         fd.append('StateMasterId', String(formData.StateMasterId ?? 0));
         fd.append('DistrictMasterId', String(formData.DistrictMasterId ?? 0));
         fd.append('CityMasterId', String(formData.CityMasterId ?? 0));
+        fd.append('VillageMasterId', String(formData.VillageMasterId ?? 0));
         fd.append('ZipCode', formData.ZipCode ?? '');
         fd.append('ProjectScope', formData.ProjectScope ?? '');
         fd.append('ProjectEstimateCost', String(formData.ProjectEstimateCost ?? 0));
@@ -467,6 +493,37 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     options={BUSINESS_CATEGORY.map(opt => ({ label: opt.name, value: opt.id }))}
                                 />
                             </div>
+                            <div>
+                                <Input
+                                    label="File Number"
+                                    error={errors.ProjectName}
+                                    type="text"
+                                    maxLength={250}
+                                    value={formData.FileNumber}
+                                    onChange={(e) => handleFieldChange('FileNumber', e.target.value)}
+                                    placeholder="Enter File Number"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Architect Name"
+                                    error={errors.ArchitectName}
+                                    type="text"
+                                    maxLength={250}
+                                    value={formData.ArchitectName}
+                                    onChange={(e) => handleFieldChange('ArchitectName', e.target.value)}
+                                    placeholder="Enter Architect Name"
+                                />
+                            </div>
+                            <div>
+                                <Input leftIcon="+91"
+                                    label="Architect Mobile Number"
+                                    placeholder="Enter Personal Mobile Number"
+                                    value={formData.ArchitectMobileNumber}
+                                    rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                    onChange={(e) => handleFieldChange("ArchitectMobileNumber", filterMobile(e.target.value))}
+                                    error={errors.ArchitectMobileNumber} />
+                            </div>
 
                         </div>
                     </div>
@@ -519,6 +576,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                             handleFieldChange('StateMasterId', 0);
                                             handleFieldChange('DistrictMasterId', 0);
                                             handleFieldChange('CityMasterId', 0);
+                                            handleFieldChange('VillageMasterId', 0);
 
                                             return;
                                         }
@@ -534,6 +592,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         handleFieldChange('StateMasterId', 0);
                                         handleFieldChange('DistrictMasterId', 0);
                                         handleFieldChange('CityMasterId', 0);
+                                        handleFieldChange('VillageMasterId', 0);
                                     }}
                                     disabled={isLocationLoading}
                                     options={countryOptions}
@@ -560,6 +619,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                             handleFieldChange("StateMasterId", 0);
                                             handleFieldChange("DistrictMasterId", 0);
                                             handleFieldChange("CityMasterId", 0);
+                                            handleFieldChange('VillageMasterId', 0);
 
                                             return;
                                         }
@@ -573,6 +633,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         handleFieldChange("StateMasterId", id);
                                         handleFieldChange("DistrictMasterId", 0);
                                         handleFieldChange("CityMasterId", 0);
+                                        handleFieldChange('VillageMasterId', 0);
                                     }}
                                     disabled={!selectedCountryId || stateOptions.length === 0}
                                     options={stateOptions}
@@ -597,6 +658,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                                             handleFieldChange('DistrictMasterId', 0);
                                             handleFieldChange('CityMasterId', 0);
+                                            handleFieldChange('VillageMasterId', 0);
                                             return;
                                         }
 
@@ -607,6 +669,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                                         handleFieldChange('DistrictMasterId', id);
                                         handleFieldChange('CityMasterId', 0);
+                                        handleFieldChange('VillageMasterId', 0);
                                     }}
                                     disabled={!selectedStateId || districtOptions.length === 0}
                                     options={districtOptions}
@@ -626,6 +689,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         if (!item) {
                                             setSelectedCityId(null);
                                             handleFieldChange('CityMasterId', 0);
+                                            handleFieldChange('VillageMasterId', 0);
                                             return;
                                         }
 
@@ -633,9 +697,35 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                                         setSelectedCityId(id);
                                         handleFieldChange('CityMasterId', id);
+                                        handleFieldChange('VillageMasterId', 0);
                                     }}
                                     disabled={!selectedDistrictId || cityOptions.length === 0}
                                     options={cityOptions}
+                                />
+
+                            </div>
+                            <div>
+                                <SinglePageSelection
+                                    label="Village"
+                                    placeholder="Select Village"
+                                    value={selectedVillageId ?? ''}
+                                    required
+                                    error={errors.VillageMasterId}
+                                    onChange={(item) => {
+
+                                        if (!item) {
+                                            setSelectedVillageId(null);
+                                            handleFieldChange('VillageMasterId', 0);
+                                            return;
+                                        }
+
+                                        const id = Number(item);
+
+                                        setSelectedVillageId(id);
+                                        handleFieldChange('VillageMasterId', id);
+                                    }}
+                                    disabled={!selectedCityId || villageOptions.length === 0}
+                                    options={villageOptions}
                                 />
 
                             </div>

@@ -6,7 +6,6 @@ import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -16,8 +15,8 @@ import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import type { FilterWithPaginationSourcingTargetRequest, SourcingTargetData } from '@/features/target/models/SourcingTargetModel';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { sourcingTargetService } from '@/features/target/services/SourcingTargetService';
-import DatePickerInput from '@/ui/components/forms/Datepicker';
 import { Button } from '@/ui/components/forms';
+import MonthPicker from '@/ui/components/forms/MonthPicker';
 
 export const SourcingTarget: React.FC = () => {
     //#region STATE
@@ -31,8 +30,7 @@ export const SourcingTarget: React.FC = () => {
     const { addToast } = useToast();
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [fromDate, setFromDate] = useState<string | null>(null);
-    const [toDate, setToDate] = useState<string | null>(null);
+    const [monthYear, setMonthYear] = useState<string | null>(null);
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchEmployee(value);
     }, 350);
@@ -80,8 +78,7 @@ export const SourcingTarget: React.FC = () => {
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     EmployeeName: searchtext?.trim() ?? undefined,
-                    FromDate: fromDate || undefined,
-                    ToDate: toDate || undefined,
+                    MonthYear: monthYear || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, sourcingTargetColumns),
                 }
 
@@ -134,6 +131,7 @@ export const SourcingTarget: React.FC = () => {
     //#region CLAER SERACH EMPLOYEE
     const clearSearchEmployees = async () => {
         debouncedSearch.cancel?.();
+        setSearchTerm("");
         await loadSourcingTarget(1, sortInfo, undefined)
     };
 
@@ -151,8 +149,7 @@ export const SourcingTarget: React.FC = () => {
                     PageSize: pagination.totalRecords,
                     ProjectId: Number(projectId),
                     EmployeeName: searchTerm?.trim() ?? undefined,
-                    FromDate: fromDate || undefined,
-                    ToDate: toDate || undefined,
+                    MonthYear: monthYear || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, sourcingTargetColumns),
                     ExportType: exportType
                 };
@@ -182,12 +179,12 @@ export const SourcingTarget: React.FC = () => {
     //#region TABLE CONFIG
     const handlePageChange = useCallback((page: number) => {
         fetchSourcingTargetList(page);
-    }, [sortInfo, searchTerm, fromDate, toDate, projectId]);
+    }, [sortInfo, searchTerm, monthYear, projectId]);
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
-        loadSourcingTarget(1, sort,searchTerm?.trim());
-    }, [searchTerm, fromDate, toDate, projectId]);
+        loadSourcingTarget(1, sort, searchTerm?.trim());
+    }, [searchTerm, monthYear, projectId]);
 
     const sourcingTargetPaginationInfo: PaginationInfo = useMemo(
         () => ({
@@ -233,8 +230,7 @@ export const SourcingTarget: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 10000000,
                     ProjectId: Number(projectId),
-                    FromDate: fromDate || undefined,
-                    ToDate: toDate || undefined,
+                    MonthYear: monthYear || undefined,
                     IsSampleDownload: true,
                     ExportType: "Excel"
                 };
@@ -268,8 +264,7 @@ export const SourcingTarget: React.FC = () => {
                 fd.append("IsAllDelete", mergeExisting);
                 fd.append("TableName", 'SALES TARGET SOURCING');
                 fd.append("ProjectId", String(projectId));
-                fd.append("FromDate", String(fromDate));
-                fd.append("ToDate", String(toDate));
+                fd.append("MonthYear", String(monthYear));
 
                 const response = await technicalService.apiCallExcelImport(fd);
 
@@ -312,7 +307,7 @@ export const SourcingTarget: React.FC = () => {
                 isShowFilterButton={false}
 
                 // IMPORT
-                isShowImportButton={canAction && !!fromDate && !!toDate && !!projectId}
+                isShowImportButton={canAction && !!monthYear && !!projectId}
                 onUploadExcel={() => setShowImportModal(true)}
                 onDownloadSampleExcel={handleDownloadExcelSampleSourcingTarget}
 
@@ -323,19 +318,12 @@ export const SourcingTarget: React.FC = () => {
                 exportLoading={isLoading}
             />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                <DatePickerInput
-                    label="From Date"
-                    value={formatDate_dd_mm_yyyy(fromDate)}
-                    onChange={(val) => setFromDate(convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-
+                <MonthPicker
+                    label="Select Month"
+                    value={monthYear || ""}
+                    onChange={(val) => setMonthYear(val)}
                 />
-                <DatePickerInput
-                    label="To Date"
-                    value={formatDate_dd_mm_yyyy(toDate)}
-                    onChange={(val) => setToDate(convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-
-                />
-                {fromDate && toDate && projectId && (
+                {monthYear && projectId && (
                     <div className="pt-6">
                         <Button color="blue" size="md" onClick={() => fetchSourcingTargetList(1)}>
                             Search

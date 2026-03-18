@@ -274,8 +274,8 @@ export const AddUpdateLeave: React.FC = () => {
                                         fetchLeaveTypeMasterDropdown(pageNumber, params)
                                     }
                                     onSelected={(item) => {
-                                        setFormData((prev) => ({ ...prev, LeaveTypeMasterId: Number(item.value) }));
-                                        setDropdownLabels((prev) => ({ ...prev, leaveTypeName: item.label }));
+                                        setFormData((prev) => ({ ...prev, LeaveTypeMasterId: Number(item?.value) }));
+                                        setDropdownLabels((prev) => ({ ...prev, leaveTypeName: item?.label }));
                                     }}
                                     initialValue={createDropdownInitialValue(
                                         formData.LeaveTypeMasterId ? String(formData.LeaveTypeMasterId) : null,
@@ -438,7 +438,7 @@ export const AddUpdateLeave: React.FC = () => {
                                     totalNumberOfRecord: LEAVE_DURATION_OPTIONS.length,
                                     itemList: LEAVE_DURATION_OPTIONS,
                                 })}
-                                onSelected={(item) => setFormData((prev) => ({ ...prev, StartDateLeaveDuration: String(item.value) }))}
+                                onSelected={(item) => setFormData((prev) => ({ ...prev, StartDateLeaveDuration: String(item?.value) }))}
                                 initialValue={
                                     formData.StartDateLeaveDuration
                                         ? {
@@ -464,7 +464,7 @@ export const AddUpdateLeave: React.FC = () => {
                                     totalNumberOfRecord: LEAVE_DURATION_OPTIONS.length,
                                     itemList: LEAVE_DURATION_OPTIONS,
                                 })}
-                                onSelected={(item) => setFormData((prev) => ({ ...prev, EndDateLeaveDuration: String(item.value) }))}
+                                onSelected={(item) => setFormData((prev) => ({ ...prev, EndDateLeaveDuration: String(item?.value) }))}
                                 initialValue={
                                     formData.EndDateLeaveDuration
                                         ? {

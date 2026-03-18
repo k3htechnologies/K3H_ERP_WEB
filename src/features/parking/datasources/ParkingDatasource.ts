@@ -92,6 +92,7 @@ export class ParkingDatasourceImpl implements ParkingDatasource {
             if (params.ParkingType?.trim()) queryParams.append('ParkingType', params.ParkingType.trim());
             if (params.ParkingSubType?.trim()) queryParams.append('ParkingSubType', params.ParkingSubType.trim());
             if (params.Dimensions?.trim()) queryParams.append('Dimensions', params.Dimensions.trim());
+            if (params.DisplayParkingId?.trim()) queryParams.append('DisplayParkingId', params.DisplayParkingId.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

@@ -1,0 +1,272 @@
+import React from "react"
+import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react"
+import { useViewportHeight } from "@/core/utils/useViewportHeight"
+import NoDataView from "@/ui/components/NoDataView/NoDataView"
+
+export interface TableColumn {
+  key: string
+  label: string
+  render?: (value: any, row: any, index: number) => React.ReactNode
+  sortable?: boolean
+  width?: string
+  fixed?: "left" | "right"
+  align?: "left" | "center" | "right"
+  truncate?: boolean
+  maxWidth?: string
+  children?: TableColumn[]
+}
+
+export interface PaginationInfo {
+  currentPage: number
+  totalPages: number
+  totalRecords: number
+  pageSize: number
+  onPageChange: (page: number) => void
+}
+
+export interface SortInfo {
+  column: string
+  direction: "asc" | "desc"
+}
+
+interface Props {
+  data: any[]
+  columns: TableColumn[]
+  pagination?: PaginationInfo
+  loading?: boolean
+  emptyMessage?: string
+  className?: string
+  fixedHeight?: boolean
+  maxHeight?: string
+  recordsPerPage?: number
+  sortInfo?: SortInfo
+  onSort?: (sort: SortInfo) => void
+}
+
+export const CustomTable: React.FC<Props> = ({
+  data,
+  columns,
+  pagination,
+  loading = false,
+  emptyMessage = "No data available",
+  className = "",
+  fixedHeight = false,
+  maxHeight = useViewportHeight(255, 350, 900),
+  recordsPerPage = 10,
+  sortInfo,
+  onSort
+}) => {
+
+  const handleSort = (columnKey: string) => {
+    const column = columns.find(col => col.key === columnKey)
+    if (!onSort || !column?.sortable) return
+
+    const newDirection =
+      sortInfo?.column === columnKey && sortInfo?.direction === "asc"
+        ? "desc"
+        : "asc"
+
+    onSort({ column: columnKey, direction: newDirection })
+  }
+
+  const flattenColumns = (cols: TableColumn[]): TableColumn[] => {
+    let result: TableColumn[] = []
+
+    cols.forEach(col => {
+      if (col.children) {
+        result = result.concat(flattenColumns(col.children))
+      } else {
+        result.push(col)
+      }
+    })
+
+    return result
+  }
+
+  const leafColumns = flattenColumns(columns)
+
+  const buildHeaderRows = () => {
+    const rows: any[] = []
+
+    const traverse = (cols: TableColumn[], level = 0) => {
+      rows[level] = rows[level] || []
+
+      cols.forEach(col => {
+        const hasChildren = col.children && col.children.length > 0
+
+        rows[level].push({
+          ...col,
+          colSpan: hasChildren ? flattenColumns(col.children!).length : 1,
+          rowSpan: hasChildren ? 1 : 3
+        })
+
+        if (hasChildren) {
+          traverse(col.children!, level + 1)
+        }
+      })
+    }
+
+    traverse(columns)
+
+    return rows
+  }
+
+  const renderPagination = () => {
+    if (!pagination) return null
+
+    const { currentPage, totalPages, totalRecords, pageSize, onPageChange } =
+      pagination
+
+    const startRecord =
+      totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
+
+    const endRecord = Math.min(currentPage * pageSize, totalRecords)
+
+    return (
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-2 bg-white border-t border-gray-200">
+
+        <div className="text-sm text-gray-700">
+          Showing {startRecord} to {endRecord} of {totalRecords} entries
+        </div>
+
+        <div className="flex items-center space-x-2">
+
+          <button
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="p-2 border border-gray-200 rounded"
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => onPageChange(i + 1)}
+              className={`px-3 py-1 rounded ${
+                currentPage === i + 1
+                  ? "bg-blue-500 text-white"
+                  : "hover:bg-gray-100"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <button
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="p-2 border border-gray-200 rounded"
+          >
+            <ChevronRight size={16} />
+          </button>
+
+        </div>
+      </div>
+    )
+  }
+
+  return (
+
+    <div
+      className={`bg-white rounded-lg shadow-sm  flex flex-col ${className}`}
+    >
+
+      <div
+        className={`overflow-x-auto thin-scroll ${
+          fixedHeight ? "flex-1 overflow-y-auto" : ""
+        }`}
+        style={
+          fixedHeight
+            ? { maxHeight: recordsPerPage === 10 ? "calc(10 * 2.5rem + 2.5rem)" : maxHeight }
+            : {}
+        }
+      >
+
+        <table className="min-w-full border-collapse border border-gray-300">
+
+          {/* HEADER */}
+
+          <thead
+            className={`${fixedHeight ? "sticky top-0 z-40" : ""}`}
+            style={{ backgroundColor: "#E4F0FF" }}
+          >
+
+            {buildHeaderRows().map((row, rIndex) => (
+              <tr key={rIndex}>
+
+                {row.map((col: any, cIndex: number) => (
+
+                  <th
+                    key={cIndex}
+                    colSpan={col.colSpan}
+                    rowSpan={col.rowSpan}
+                    className="border border-gray-300 px-3 py-2 text-center text-sm font-medium"
+                    onClick={() => col.sortable && handleSort(col.key)}
+                  >
+
+                    <div className="flex items-center justify-center gap-1">
+
+                      {col.label}
+
+                      {col.sortable && (
+                        <ArrowUpDown size={12} />
+                      )}
+
+                    </div>
+
+                  </th>
+
+                ))}
+              </tr>
+            ))}
+
+          </thead>
+
+          {/* BODY */}
+
+          <tbody>
+
+            {!loading && data.length === 0 ? (
+              <tr>
+                <td colSpan={leafColumns.length} className="py-10">
+                  <NoDataView message={emptyMessage} />
+                </td>
+              </tr>
+            ) : (
+              data.map((row, i) => (
+
+                <tr key={i} className="hover:bg-gray-50">
+
+                  {leafColumns.map(col => {
+
+                    const value = col.render
+                      ? col.render(row[col.key], row, i)
+                      : row[col.key]
+
+                    return (
+                      <td
+                        key={col.key}
+                        className="border border-gray-200 px-3 py-2 text-sm text-center"
+                      >
+                        {value ?? 0}
+                      </td>
+                    )
+                  })}
+
+                </tr>
+
+              ))
+            )}
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+      {pagination && renderPagination()}
+
+    </div>
+  )
+}

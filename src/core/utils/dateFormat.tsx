@@ -194,6 +194,21 @@ export const convert_dd_mm_yyyy_To_Yyyy_mm_dd = (
   return `${yyyy}-${mm}-${dd}`;
 };
 
+export const convert_yy_mm_dd_To_dd_mm_yyyy = (
+  value?: string | null,
+): string | null => {
+  if (!value) return null;
+
+  const trimmed = value.trim();
+  if (!trimmed) return null;
+
+  const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(trimmed);
+  if (!match) return null;
+
+  const [, dd, mm, yyyy] = match;
+  return `${dd}-${mm}-${yyyy}`;
+};
+
 export const convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd = (date?: string | null) => {
   if (!date) return "";
   return date.split("T")[0];

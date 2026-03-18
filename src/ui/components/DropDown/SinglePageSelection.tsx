@@ -277,20 +277,6 @@ export const SinglePageSelection = forwardRef<
         <div
           ref={buttonRef}
           onClick={handleToggle}
-          // style={{
-          //   position: "relative",   // 👈 IMPORTANT
-          //   height: currentSize.height,
-          //   fontSize: currentSize.fontSize,
-          //   padding: currentSize.padding,
-          //   // paddingLeft: leftIcon ? "38px" : "8px",
-          //   borderRadius: "6px",
-          //   backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
-          //   cursor: disabled ? "not-allowed" : "pointer",
-          //   display: "flex",
-          //   alignItems: "center",
-          //   justifyContent: "space-between",
-          //   border: `1px solid ${error ? theme.colors.error : theme.colors.border}`,
-          // }}
           style={{
             position: 'relative',
             height: currentSize.height,
@@ -298,8 +284,13 @@ export const SinglePageSelection = forwardRef<
             padding: currentSize.padding,
             paddingLeft: leftIcon ? "38px" : "8px",
             borderRadius: "6px",
-            backgroundColor: disabled ? "#f5f5f5" : theme.colors.background,
+            backgroundColor: disabled ? theme.colors.backgroundSecondary : theme.colors.backgroundSecondary,
+
+            color: disabled ? theme.colors.textLight : theme.colors.text,
+
             cursor: disabled ? "not-allowed" : "pointer",
+
+            opacity: disabled ? 0.6 : 1,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",

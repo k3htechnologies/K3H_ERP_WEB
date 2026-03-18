@@ -145,6 +145,7 @@ export const Litigation: React.FC = () => {
         const response = await litigationService.apiCallPullLitigation(params);
 
         if (E.isRight(response)) {
+
           setLitigationList(response.right.Data);
           setPagination({
             currentPage: page,
@@ -153,6 +154,7 @@ export const Litigation: React.FC = () => {
               response.right.TotalNumberOfRecord / pagination.pageSize,
             ),
           });
+
         } else {
           addToast({ type: "error", title: response.left.message });
           return response;
@@ -182,39 +184,37 @@ export const Litigation: React.FC = () => {
   //#endregion
 
   //#region EXPORT / IMPORT EXCEL AND PDF
-  const handleExportLitigation = useCallback(
-    async (exportType: "Excel" | "PDF") => {
-      await runApiWithLoader(
-        setIsLoading,
-        setLoadingMessage,
-        async () => {
-          const params: FilterWithPaginationLitigationRequest = {
-            PageNumber: 1,
-            PageSize: pagination.totalRecords,
-            Title: filters.Title?.trim() || undefined,
-            CaseNumber: filters.CaseNumber ?? undefined,
-            CourtName: filters.CourtName ?? undefined,
-            ProjectId: Number(projectId),
-            SortBy: getSortByParam(sortInfo ?? null, LitigationColumns),
-            ExportType: exportType,
-          };
+  const handleExportLitigation = async (exportType: 'Excel' | 'PDF') => {
 
-          const response =
-            await litigationService.apiCallPullLitigation(params);
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const params: FilterWithPaginationLitigationRequest = {
+          PageNumber: 1,
+          PageSize: pagination.totalRecords,
+          Title: filters.Title?.trim() || undefined,
+          CaseNumber: filters.CaseNumber ?? undefined,
+          CourtName: filters.CourtName ?? undefined,
+          ProjectId: Number(projectId),
+          SortBy: getSortByParam(sortInfo ?? null, LitigationColumns),
+          ExportType: exportType,
+        };
 
-          handleExportFile(response, exportType, "Litigation", addToast);
+        const response =
+          await litigationService.apiCallPullLitigation(params);
 
-          return response;
-        },
-        undefined,
-        (error: any) =>
-          addToast({ type: "error", title: error.message || "Export failed" }),
-        undefined,
-        "Preparing Export",
-      );
-    },
-    [projectId, pagination.pageSize, addToast],
-  );
+        handleExportFile(response, exportType, "Litigation", addToast);
+
+        return response;
+      },
+      undefined,
+      (error: any) =>
+        addToast({ type: "error", title: error.message || "Export failed" }),
+      undefined,
+      "Preparing Export",
+    );
+  }
 
   const handleExportLitigationExcel = () => handleExportLitigation("Excel");
   const handleExportLitigationPdf = () => handleExportLitigation("PDF");
@@ -539,7 +539,7 @@ export const Litigation: React.FC = () => {
             allLitigationColumnKeys.includes(k),
           );
         }
-      } catch {}
+      } catch { }
       return allLitigationColumnKeys;
     });
 
@@ -701,7 +701,7 @@ export const Litigation: React.FC = () => {
             LocalStorageHelper.storeLitigationTableColumns?.(
               JSON.stringify(withRequired),
             );
-          } catch {}
+          } catch { }
         }}
         columns={LitigationColumns}
         selectedKeys={selectedLitigationColumnKeys}

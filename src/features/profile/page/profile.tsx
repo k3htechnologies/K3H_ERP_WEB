@@ -31,7 +31,6 @@ import { employeeExperienceDetailsService } from '@/features/employeeMaster/serv
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Input } from '@/ui/components/forms/Input';
 import { ConfirmationDialogBox } from '@/core/utils/confirmationDialogBox';
-import { Edit, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/ui/components/forms/Button';
 import type { DeleteEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
 import type { DeleteEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
@@ -40,6 +39,7 @@ import { branchAssociationsService } from '@/features/branchAssociationsMaster/s
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 
 export const Profile: React.FC = () => {
 
@@ -1089,7 +1089,6 @@ export const Profile: React.FC = () => {
                                             leftIcon={<Edit className="h-4 w-4" />}
                                         />
                                     </div>
-
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                         <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">

@@ -98,7 +98,6 @@ export interface EmployeeReportingCycle {
   PersonalMobileNumber: string | null;
 }
 
-
 export interface AddUpdateEmployeeMasterRequest {
   EmployeeId: number;
   UniqueKey: string | null;
@@ -217,4 +216,5 @@ export interface SetEmployeeMPINRequest {
 export type LocationResponse = ApiResponse<LocationDataWrapper>;
 export type EmployeeMasterListResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMasterSaveResponse = ApiResponse<EmployeeMasterData[]>;
+export type EmployeeMasterUpdateResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMPINRequestResponse = ApiResponse<String>;

@@ -130,7 +130,8 @@ const ProjectDocument: React.FC = () => {
   // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-  const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+  const [documentName, setDocumentName] = useState<string | null>("");
+    const [documentCategory, setDocumentCategory] = useState<string | null>("");
 
   // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -545,7 +546,8 @@ const ProjectDocument: React.FC = () => {
       Id: row.ProjectDocumentId,
       ProjectId: row.ProjectId,
     };
-    setApprovalDocumentName(row.ProjectDocumentName)
+    setDocumentName(row.ProjectDocumentName);
+    setDocumentCategory(row.ProjectDocumentCategory);
     setApprovalLogRequest(request);
     setIsApprovalLogModalOpen(true);
   };
@@ -553,7 +555,8 @@ const ProjectDocument: React.FC = () => {
   const handleApproveRejectDocument = (row: ProjectDocumentData, approvalType: "approve" | "reject") => {
 
     setApprovalRowData(row);
-    setApprovalDocumentName(row.ProjectDocumentName)
+    setDocumentName(row.ProjectDocumentName);
+    setDocumentCategory(row.ProjectDocumentCategory);
     setApprovalActionType(approvalType);
     setIsApprovalActionModalOpen(true);
 
@@ -656,7 +659,7 @@ const ProjectDocument: React.FC = () => {
         align: "center",
         fixed: "right",
         render: (_value, row) => {
-          const showEdit = canAction && row.ProjectDocumentApprovalStatus !== "Approved" ? true : false;
+          const showEdit = canAction && !row.ProjectDocumentApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
               {/* RIGHT SIDE — Fixed Edit Button */}
@@ -1397,7 +1400,9 @@ const ProjectDocument: React.FC = () => {
 
       <ApprovalLogModal
         isOpen={isApprovalLogModalOpen}
-        documentName={approvalDocumentName ?? ""}
+        title='Project Document'
+        titleText={documentCategory ?? ""}
+        subTitleText={documentName ?? ""}
         onClose={() => setIsApprovalLogModalOpen(false)}
         request={approvalLogRequest} />
 
@@ -1406,7 +1411,8 @@ const ProjectDocument: React.FC = () => {
         isOpen={isApprovalActionModalOpen}
         onClose={() => setIsApprovalActionModalOpen(false)}
         actionType={approvalActionType}
-        documentName={approvalDocumentName ?? ""}
+         titleText={documentCategory ?? ""}
+        subTitleText={documentName ?? ""}
         onSubmit={handleApprovalSubmit}
         loading={isLoading}
       />

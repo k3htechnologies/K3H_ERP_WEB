@@ -17,6 +17,8 @@ import { ChannelPartnerService } from '@/features/ChannelPartner/services/Channe
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import { isChannelPartnerComplete } from '@/features/ChannelPartner/utils/channelPartnerUtils';
+import { AlertTriangle } from 'lucide-react';
 
 export const ChannelPartnerSourcing: React.FC = () => {
 
@@ -56,7 +58,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
       loadChannelPartner(listState.page, listState.filters, listState.sortInfo);
 
     }
-  }, [projectId,listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
+  }, [projectId, listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   useEffect(() => {
 
@@ -195,14 +197,27 @@ export const ChannelPartnerSourcing: React.FC = () => {
         sortable: true,
         fixed: 'left',
         align: 'left',
-        render: value => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="150px"
-            tooltipThreshold={20}
-            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-          />
-        )
+        render: (value, row) => {
+          const complete = isChannelPartnerComplete(row)
+          return (
+            <div className="flex items-center justify-center gap-2">
+
+              <TooltipText
+                text={value || '-'}
+                maxWidth="150px"
+                tooltipThreshold={20}
+                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+              />
+
+              {!complete && (
+                <span title="Channel Partner Profile Incomplete">
+                  <AlertTriangle className="w-4 h-4 text-amber-500 cursor-pointer" />
+                </span>
+              )}
+
+            </div>
+          );
+        }
       },
       {
         key: 'Name',

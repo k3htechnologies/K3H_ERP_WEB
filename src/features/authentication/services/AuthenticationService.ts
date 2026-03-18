@@ -45,4 +45,16 @@ export const authenticationService = {
         }
     },
 
+    apicallGetEmployeeWithMenu: async (): Promise<E.Either<Failure, AuthenticationResponse>> => {
+        try {
+
+            return E.right(await authenticationDatasource.getEmployeeWithMenu());
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
 }

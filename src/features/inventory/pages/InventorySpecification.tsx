@@ -30,6 +30,7 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 interface FormDataInventoryFlat {
   InventoryFlatId: number;
@@ -87,8 +88,9 @@ const InventorySpecification: React.FC = () => {
   const { canAction } = useMenuPermissions("/inventory");
   const { canAction: canBookingAction } = useMenuPermissions("/booking");
 
-  const flatData = (location.state as { flat?: InventoryFlatData; projectId?: number })?.flat;
-  const projectId = (location.state as { flat?: InventoryFlatData; projectId?: number })?.projectId;
+  const flatData = (location.state as { flat?: InventoryFlatData; projectId?: number; approvalStatus?: string })?.flat;
+  const projectId = (location.state as { flat?: InventoryFlatData; projectId?: number; approvalStatus?: string })?.projectId;
+  const approvalStatus = (location.state as { flat?: InventoryFlatData; projectId?: number; approvalStatus?: string })?.approvalStatus;
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -141,6 +143,10 @@ const InventorySpecification: React.FC = () => {
 
     if (!formDataInventoryFlat.Flat?.trim()) {
       newErrors.Flat = "Unit is required";
+    }
+
+    if (totalUnitArea === 0) {
+      newErrors.RERACarpetAreaSqFt = "RERA Carpet Area is required";
     }
 
     if (!formDataInventoryFlat.FlatType?.trim()) {
@@ -239,7 +245,7 @@ const InventorySpecification: React.FC = () => {
     const validation = validateInventoryFlatSpecificationForm();
 
     if (!validation.isValid) {
-      
+
       setErrorsInventoryFlatSpecification(validation.errors);
 
       return;
@@ -456,7 +462,7 @@ const InventorySpecification: React.FC = () => {
         align: "center",
         render: (_value, row, index) => (
           <div className="flex items-center justify-center gap-2">
-            {isChange && (
+            {isChange && !approvalStatus?.toUpperCase().includes("APPROVED") && (
               <>
                 <Button
                   onClick={(e) => {
@@ -503,7 +509,7 @@ const InventorySpecification: React.FC = () => {
 
   const isFlatLocked = ["Alloted", "Booked"].includes(formDataInventoryFlat.FlatStatus);
 
-  const canFullEdit = canAction && !isFlatLocked;
+  const canFullEdit = canAction && !isFlatLocked && !approvalStatus?.toUpperCase().includes("APPROVED");
 
   const canStatusEditOnly = !canAction && canBookingAction && !isFlatLocked;
 
@@ -525,11 +531,22 @@ const InventorySpecification: React.FC = () => {
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2"> Inventory Specification Form </h3>
 
+
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <FieldItem label="Building Number" value={flatData?.BuildingNumber || "-"} />
+                <FieldItem label="Wing" value={flatData?.Wing || "-"} />
+                <FieldItem label="Floor" value={flatData?.Floor || "-"} />
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
               <Input
                 label="Unit"
                 placeholder="Enter Unit"
                 required
+                maxLength={10}
                 value={formDataInventoryFlat.Flat.replace(/^[A-Za-z\s]+-\s*/, "")}
                 onChange={(e) => handleFieldChangeInventoryFlat("Flat", e.target.value)}
                 disabled={disabled}
@@ -539,7 +556,7 @@ const InventorySpecification: React.FC = () => {
               <Input
                 label="Unit Area (SqFt)"
                 type="text"
-                value={totalUnitArea?.toString() || ""}
+                value={totalUnitArea?.toString() || 0}
                 onChange={(e) =>
                   handleFieldChangeInventoryFlat("RERACarpetAreaSqFt", e.target.value === "" ? null : Number(e.target.value))
                 }
@@ -609,7 +626,24 @@ const InventorySpecification: React.FC = () => {
 
               <SinglePageSelection
                 label="Status"
-                options={INVENTORY_FLAT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                options={
+                  INVENTORY_FLAT_STATUS
+                    .filter((opt) => {
+
+                      if (formDataInventoryFlat.FlatStatus === "Booked") {
+                        return opt.id === "Booked";
+                      }
+                      if (formDataInventoryFlat.FlatStatus === "Alloted") {
+                        return opt.id === "Alloted";
+                      }
+
+                      return !["Booked", "Alloted"].includes(opt.id);
+                    })
+                    .map((opt) => ({
+                      label: opt.name,
+                      value: opt.id,
+                    }))
+                }
                 value={formDataInventoryFlat.FlatStatus}
                 onChange={(value) => handleFieldChangeInventoryFlat("FlatStatus", value as InventoryFlatData["FlatStatus"])}
                 placeholder="Select Status"
@@ -626,7 +660,7 @@ const InventorySpecification: React.FC = () => {
                 <h3 className="text-lg font-semibold text-gray-900">Unit Layout Form</h3>
               </div>
 
-              {canFullEdit && (
+              {canFullEdit && !approvalStatus?.toUpperCase().includes("APPROVED") && (
                 <Button onClick={handleAddSpecification} color="blue" size="sm" title="Add Unit Specification">
                   Add Unit Specification
                 </Button>
@@ -642,17 +676,11 @@ const InventorySpecification: React.FC = () => {
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
-              {/* Redevelopment Checkbox */}
               <div className="space-y-4 pb-4">
                 <Checkbox
                   label="Apply the same flat specifications for all units in the inventory with the same RERA carpet area?"
                   checked={formDataInventoryFlat.IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt === true}
-                  onChange={(e) =>
-                    handleFieldChangeInventoryFlat(
-                      "IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt",
-                      e.target.checked ? true : false,
-                    )
-                  }
+                  onChange={(e) => handleFieldChangeInventoryFlat("IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt", e.target.checked ? true : false,)}
                   disabled={disabled}
                 />
               </div>

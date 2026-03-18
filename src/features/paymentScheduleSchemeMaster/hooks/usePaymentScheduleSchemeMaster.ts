@@ -144,6 +144,7 @@ export const usePaymentScheduleSchemeMaster = () => {
   };
 
   const handleAddPaymentScheduleSchemeMasterModal = () => {
+    setIsEditing(false);
     setEditingPaymentScheduleSchemeMasterData(null);
     setFormData(getInitialFormState());
     setWingOptions([]);
@@ -329,6 +330,7 @@ export const usePaymentScheduleSchemeMaster = () => {
 
   //#region VIEW EDIT
   const handleViewPaymentScheduleSchemeMasterDetails = useCallback((row: PaymentScheduleSchemeMasterData) => {
+    setIsEditing(false);
     setViewPaymentScheduleSchemeMasterDetailsData(row);
     setIsViewModalOpen(true);
   }, []);

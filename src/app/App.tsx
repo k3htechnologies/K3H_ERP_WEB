@@ -198,7 +198,6 @@ function App() {
 
   useNetworkStatus();
 
-  // Check for existing auth token on app load
   useEffect(() => {
     const token = LocalStorageHelper.getStoredTokenData()
     if (!token) {

@@ -43,12 +43,16 @@ export function SignIn() {
                         const msg = response.right.SuccessMessage?.[0] ?? "";
 
                         if (msg.toLowerCase().includes("otp")) {
+
                             setStep("otp");
+
                             showSuccess('OTP Sent', response.right.SuccessMessage?.[0]);
                         }
 
                         else if (msg.toLowerCase().includes("mpin")) {
+
                             setStep("mpin");
+                            
                             showSuccess('MPIN', response.right.SuccessMessage?.[0]);
                         }
                         else {
@@ -202,6 +206,7 @@ export function SignIn() {
                                 </div>
 
                                 <Input
+                                    autoFocus
                                     type="tel"
                                     label="Mobile Number"
                                     placeholder="Enter Mobile Number"
@@ -314,6 +319,7 @@ export function SignIn() {
                                 </div>
 
                                 <Input
+                                autoFocus
                                     type="text"
                                     placeholder="Enter MPIN"
                                     value={otp}

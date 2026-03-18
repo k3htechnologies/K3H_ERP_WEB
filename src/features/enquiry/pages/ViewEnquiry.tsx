@@ -642,7 +642,7 @@ const ViewEnquiry: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="mt-3">
+                        <div className="mt-3 overflow-y-auto h-[1600px] thin-scroll pr-2">
 
                             {editEnquiryFollowUpData?.map((item, index) => (
                                 <div key={item.EnquiryFollowUpId} className="grid grid-cols-[24px_1fr] gap-3">
@@ -666,7 +666,11 @@ const ViewEnquiry: React.FC = () => {
 
                                             <div className="flex items-center gap-3">
                                                 <span className="font-semibold text-gray-900">
-                                                    {formatDate_dd_MonthName_yy_hh_mm(item.CreatedDate ?? "")}
+                                                    {
+                                                        item.ModifiedBy
+                                                            ? `${item.ModifiedBy} - ${formatDate_dd_MonthName_yy_hh_mm(item.ModifiedDate ?? "")}`
+                                                            : `${item.CreatedBy ?? ""} - ${formatDate_dd_MonthName_yy_hh_mm(item.CreatedDate ?? "")}`
+                                                    }
                                                 </span>
 
                                                 <span className="text-xs text-gray-500 flex flex-col gap-1">
@@ -767,7 +771,7 @@ const ViewEnquiry: React.FC = () => {
                 loading={isLoading}
                 size="xl"
             >
-               <div className="space-y-6 p-6 bg-blue-100">
+                <div className="space-y-6 p-6 bg-blue-100">
 
                     {/* STATUS / FINAL STAGE */}
                     <SinglePageSelection

@@ -379,7 +379,7 @@ export const ChannelPartner: React.FC = () => {
       fixed: 'left',
       align: 'left',
       render: (value, row) => {
-        const complete = isChannelPartnerComplete(row);
+        const complete = isChannelPartnerComplete(row)
 
         return (
           <div className="flex items-center justify-center gap-2">

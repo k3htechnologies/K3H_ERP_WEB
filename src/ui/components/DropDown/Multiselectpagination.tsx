@@ -50,9 +50,10 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const isFetchingRef = useRef(false);
   const pageRef = useRef(1);
+  
   const SIZE_MAP = {
     sm: { fontSize: 12, paddingY: 6, paddingX: 12, height: 38, dropdownHeight: 150 },
-    md: { fontSize: 16, paddingY: 8, paddingX: 16, height: 46, dropdownHeight: 200 },
+    md: { fontSize: 16, paddingY: 8, paddingX: 10, height: 46, dropdownHeight: 200 },
     lg: { fontSize: 16, paddingY: 10, paddingX: 20, height: 54, dropdownHeight: 250 },
   };
 
@@ -261,7 +262,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
 
   const visibleTags = selectedLabels.slice(0, 2);
   const remainingCount = selectedLabels.length - visibleTags.length;
-  const displayTitle = selectedLabels.length > 0 ? selectedLabels.join(", ") : title || "select " + label;
+  const displayTitle = selectedLabels.length > 0 ? selectedLabels.join(", ") : title || "Select " + label;
 
   return (
     <div

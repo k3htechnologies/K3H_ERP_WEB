@@ -23,13 +23,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const el = containerRef.current
     if (!el) return
 
-    // create instance every mount
     const quill = new Quill(el, {
       theme: 'snow',
       placeholder,
       readOnly: readOnly,
       modules: readOnly
-        ? { toolbar: false }              // ✅ disable toolbar
+        ? { toolbar: false }            
         : {
           toolbar: [
             ['bold', 'italic', 'underline', 'strike'],
@@ -45,12 +44,10 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     quillRef.current = quill
 
-    // initial value
     if (value) {
       quill.clipboard.dangerouslyPasteHTML(value)
     }
 
-    // change handler
     const handler = () => {
       const html = quill.root.innerHTML
       const normalized = html === '<p><br></p>' ? '' : html
@@ -60,15 +57,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     quill.on('text-change', handler)
 
     return () => {
-      // cleanup for StrictMode: remove listener & DOM
       quill.off('text-change', handler)
       quillRef.current = null
       el.innerHTML = ''
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) // run once per mount cycle
+  }, []) 
 
-  // Keep external value in sync (e.g. when editing or resetting form)
   useEffect(() => {
     const quill = quillRef.current
     if (!quill) return

@@ -6,6 +6,8 @@ interface BuildingTabsProps {
     selectedBuildingIndex: number | null;
     onBuildingSelect: (index: number) => void;
     onDeleteBuilding?: (building: InventoryData) => void;
+    canAction?:boolean;
+    approvalStatus?:string;
 }
 
 export const BuildingTabs = ({
@@ -13,6 +15,8 @@ export const BuildingTabs = ({
     selectedBuildingIndex,
     onBuildingSelect,
     onDeleteBuilding,
+    canAction,
+    approvalStatus,
 }: BuildingTabsProps) => {
     const handleDeleteClick = (e: React.MouseEvent, building: InventoryData) => {
         e.stopPropagation();
@@ -35,7 +39,7 @@ export const BuildingTabs = ({
                     {selectedBuildingIndex === index && (
                         <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full" />
                     )}
-                    {onDeleteBuilding && selectedBuildingIndex === index && (
+                    {onDeleteBuilding && canAction && !approvalStatus?.toUpperCase().includes("APPROVED") && selectedBuildingIndex === index && (
                         <button
                             onClick={(e) => handleDeleteClick(e, building)}
                             className="ml-1 p-0.5 rounded-full hover:bg-gray-200 transition-colors"

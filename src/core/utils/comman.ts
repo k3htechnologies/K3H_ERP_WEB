@@ -99,6 +99,7 @@ export const isDateWithinPastDays = (dateStr: string | null | undefined, pastDay
   return inputDate >= minAllowedDate && inputDate <= today;
 
 };
+
 export const format24To12Hour = (hour: string, minute: string) => {
   const h = Number(hour)
   const ampm = h >= 12 ? "PM" : "AM"
@@ -114,6 +115,13 @@ export const getMonthDateRange = (date: Date) => {
   toDate.setHours(23, 59, 59, 999);
 
   return { fromDate, toDate };
+};
+
+export const getCurrentTime = () => {
+  const now = new Date();
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
 };
 
 export const getTodayDateRange = () => {

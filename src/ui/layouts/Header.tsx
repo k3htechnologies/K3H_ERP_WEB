@@ -381,21 +381,26 @@ export const Header: React.FC<HeaderProps> = ({
                                 required={false}
                                 size="md"
                                 isShowClearSelection={false}
+
                                 options={(emp?.ProjectData ?? []).map(opt => ({
                                     label: opt.ProjectName,
                                     value: opt.ProjectId
                                 }))}
+
                                 value={projectId ?? undefined}
                                 onChange={(value: string | number) => {
                                     setProjectId(Number(value))
                                 }}
+
                                 placeholder="Select Project"
                                 selectedTextColor="#135BEC"
                                 disabled={readOnlyProject}
                                 leftIcon={<Info size={18} color="#135BEC" />}
+
                                 leftIconClick={() => {
 
                                     if (!projectId || projectId <= 0) return;
+                                    
                                     setEmployeeMasterList([]);
                                     setProjectMasterList([]);
                                     setActiveTab(TabList[0].id)
@@ -617,7 +622,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                                     <FieldItem label="Project Scope" value={projectMasterList[0]?.ProjectScope ?? '-'} />
                                     <FieldItem label="Project Scheme" value={projectMasterList[0]?.ProjectScheme ?? '-'} />
-                                    <FieldItem label="Project Sub Scope" value={projectMasterList[0]?.ProjectSubScheme ?? '-'} />
+                                    <FieldItem label="Project Sub Scheme" value={projectMasterList[0]?.ProjectSubScheme ?? '-'} />
                                 </div>
 
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">

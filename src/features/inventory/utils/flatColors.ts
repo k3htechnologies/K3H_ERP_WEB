@@ -27,7 +27,8 @@ export const colorsForFlatComponent = {
         Border: "border-[#C4C41D]",
         Background: "#C4C41D",
         Button: "bg-[#C4C41D]/15",
-        buttonText: "text-[#C4C41D]",
+        buttonText: "text-[#7B6B28]",
     },
+
 };
 

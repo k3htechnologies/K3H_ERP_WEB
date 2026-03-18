@@ -16,6 +16,7 @@ export const EmployeeMasterApi = {
     DELETE_EMPLOYEE_EDUCATION_DETAILS: '/EmployeeEducationDetails/DeleteEmployeeEducationDetails',
 
     SET_EMPLOYEE_MPIN: '/Employee/SetEmployeeMPIN',
+     UPDATE:'/Employee/UpdateEmployee',
     
 } as const
 

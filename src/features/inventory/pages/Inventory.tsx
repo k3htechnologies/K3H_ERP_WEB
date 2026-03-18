@@ -34,11 +34,13 @@ import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal"
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal"
+import { useBookingListState } from "@/features/booking/context/BookingListStateContext"
+import TooltipText from "@/ui/components/Tooltip/TooltipText"
 
 const Inventory = () => {
-    //#region STATE MANAGEMENT
 
     const navigate = useNavigate();
+    const { updateListState } = useBookingListState();
     const [inventory, setInventory] = useState<InventoryData[]>([]);
     const [selectedBuilding, setSelectedBuilding] = useState<InventoryFlatFloorBasementPodiumWingData[] | undefined>(undefined)
     const [selectedBuildingIndex, setSelectedBuildingIndex] = useState<number | null>(null)
@@ -90,7 +92,8 @@ const Inventory = () => {
     // APPROVAL LOG MODAL
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-    const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+    const [buildingName, setBuildingName] = useState<string | null>("");
+    const [wingName, setWingName] = useState<string | null>("");
 
     // APPROVAL ACTION MODAL
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -99,8 +102,7 @@ const Inventory = () => {
 
     //#region TAB ACTIVITY
     // Preserve tab state in localStorage
-    const [activeTab, setActiveTab] = useState<string>(() => {
-        const savedTab = localStorage.getItem('inventoryActiveTab');
+    const [activeTab, setActiveTab] = useState<string>(() => { const savedTab = localStorage.getItem('inventoryActiveTab');
         return savedTab || "Grid";
     });
 
@@ -127,6 +129,9 @@ const Inventory = () => {
 
     // Clear all state when project changes
     useEffect(() => {
+
+          setActiveTab('Grid');
+          localStorage.setItem("inventoryActiveTab", "Grid");
 
         if (!projectId) {
             setIsInventoryAvailable(false)
@@ -161,7 +166,6 @@ const Inventory = () => {
 
             // Clear search
             setSearchTerm('');
-            // Reset tab to Grid when project is cleared
             setActiveTab('Grid');
             localStorage.removeItem('inventoryActiveTab');
             return;
@@ -414,6 +418,7 @@ const Inventory = () => {
                 setIsLoading,
                 setLoadingMessage,
                 async () => {
+
                     return await inventoryService.apiCallDeleteInventoryFlat(params);
                 },
                 undefined,
@@ -464,10 +469,11 @@ const Inventory = () => {
             async () => {
                 const params: FilterInventoryRequest = {
                     ProjectId: Number(projectId),
-                    ExportType: "Excel"
+                    ExportType: "SAMPLE"
                 }
 
                 const response = await inventoryService.apiCallpullInventory(params);
+                
                 handleExportFile(response, 'Excel', 'Inventory', addToast, 'Sample file download successfully')
 
                 return response;
@@ -673,9 +679,11 @@ const Inventory = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
+                
                 const response = await inventoryService.apiCallAddInventoryBuilding(params);
 
                 if (E.isRight(response)) {
+
                     setIsAddBuildingModalOpen(false);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
@@ -794,7 +802,8 @@ const Inventory = () => {
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
-                    await fetchInventory();
+                    setInventory(response.right.Data);
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -847,7 +856,8 @@ const Inventory = () => {
                 if (E.isRight(response)) {
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
-                    await fetchInventory();
+                    setInventory(response.right.Data);
+                    
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -1036,6 +1046,7 @@ const Inventory = () => {
 
     // Flatten floors and flats for table view
     const tableData = useMemo(() => {
+
         if (!selectedWing) {
             return [];
         }
@@ -1117,7 +1128,7 @@ const Inventory = () => {
                 const statusColors = colorsForFlatComponent[value as keyof typeof colorsForFlatComponent] || colorsForFlatComponent.Available;
 
                 return (
-                    <span className={`px-3 py-1 rounded text-sm font-medium ${statusColors.Button} ${statusColors.buttonText}`}>
+                    <span className={`px-3 py-1 rounded-[15px] text-sm font-medium ${statusColors.Button} ${statusColors.buttonText}`}>
                         {value}
                     </span>
                 );
@@ -1131,15 +1142,31 @@ const Inventory = () => {
         },
         {
             key: 'OwnerName',
-            label: 'Owner/Alloted',
+            label: 'Owner / Alloted',
             width: '200px',
             sortable: false,
-            render: (value: string) => {
+            render: (value: string, row: any) => {
                 if (!value) return '-';
+                const flat = row.flatData as InventoryFlatData;
+                const handleBook = () => {
+
+                    if (flat.BookingId && flat.BookingId > 0) {
+                        updateListState({
+                            bookingId: flat.BookingId,
+                            bookingName: flat.OwnerName || '',
+                        });
+                        navigate('/booking/view', {
+                            state: { sourcePage: 'inventory' }
+                        });
+                    }
+                };
                 return (
-                    <span className="text-[#135BEC] font-semibold">
-                        {value}
-                    </span>
+                    <TooltipText
+                        text={value || '-'}
+                        maxWidth="250px"
+                        tooltipThreshold={25}
+                        onClick={() => handleBook()}
+                    />
                 );
             },
         },
@@ -1157,6 +1184,7 @@ const Inventory = () => {
                         state: {
                             flat: flat,
                             projectId: projectId,
+                            approvalStatus:selectedWing?.ApprovalStatus
                         },
                     });
                 };
@@ -1172,7 +1200,7 @@ const Inventory = () => {
                                 />
                             </div>
                         )}
-                        {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
+                        {canAction && (flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available" || flat.FlatStatus === "Hold") && (
                             <div title="Edit">
                                 <Edit
                                     className="cursor-pointer text-blue-600 hover:text-blue-800"
@@ -1181,7 +1209,7 @@ const Inventory = () => {
                                 />
                             </div>
                         )}
-                        {(flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
+                        {canAction && selectedWing?.ApprovalStatus?.toUpperCase()!=="APPROVED" && (flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
                             <div title="Delete">
                                 <Trash
                                     onClick={() => handleDeleteFlat(flat)}
@@ -1195,7 +1223,7 @@ const Inventory = () => {
                 );
             },
         },
-    ], [inventory, navigate, handleDeleteFlat]);
+    ], [inventory, navigate, handleDeleteFlat, selectedWing, canAction]);
 
     //#endregion
 
@@ -1218,7 +1246,8 @@ const Inventory = () => {
             ProjectId: building.ProjectId,
         };
 
-        setApprovalDocumentName(`${building.BuildingNumber} - Wing ${selectedWing?.Wing}`);
+        setBuildingName(building.BuildingNumber);
+        setWingName(selectedWing?.Wing)
 
         setApprovalLogRequest(request);
         setIsApprovalLogModalOpen(true);
@@ -1234,7 +1263,8 @@ const Inventory = () => {
 
         if (!building) return;
 
-        setApprovalDocumentName(`${building.BuildingNumber} - Wing ${selectedWing?.Wing}`);
+        setBuildingName(building.BuildingNumber);
+        setWingName(selectedWing?.Wing)
 
         setIsApprovalActionModalOpen(true);
     };
@@ -1323,6 +1353,7 @@ const Inventory = () => {
 
                     <BuildingTabs
                         inventory={inventory}
+                        canAction={canAction}
                         selectedBuildingIndex={selectedBuildingIndex}
                         onBuildingSelect={(index) => {
                             setSelectedBuilding(inventory[index].InventoryFlatFloorBasementPodiumWingData);
@@ -1330,6 +1361,7 @@ const Inventory = () => {
                             setSelectedWing(inventory[index].InventoryFlatFloorBasementPodiumWingData[0]);
                         }}
                         onDeleteBuilding={handleDeleteBuilding}
+                        approvalStatus={selectedWing?.ApprovalStatus}
                     />
 
                     <div className="pt-5">
@@ -1349,9 +1381,9 @@ const Inventory = () => {
                 <div className="flex justify-between items-center pt-2 pb-2">
 
                     <div className="flex-1">
-                        {selectedBuilding && isInventoryAvailable && (
+                        {selectedBuilding && isInventoryAvailable===true && (
                             <WingTabs
-
+                                canAction={canAction}
                                 wings={selectedBuilding}
                                 activeWingTab={activeWingTab}
                                 onWingChange={(index) => {
@@ -1367,6 +1399,7 @@ const Inventory = () => {
                                     }
                                 }}
                                 onDeleteWing={handleDeleteWing}
+                                approvalStatus={selectedWing?.ApprovalStatus}
                             />
                         )}
                     </div>
@@ -1394,10 +1427,9 @@ const Inventory = () => {
                 }}
             />
 
-
             {activeTab === "Grid" ? (
 
-                selectedWing && isInventoryAvailable && getFilteredFloors.map((floor) => {
+                selectedWing && isInventoryAvailable===true && getFilteredFloors.map((floor) => {
 
                     const originalFloorIndex = selectedWing.InventoryFloorData.findIndex(f => f.InventoryFloorId === floor.InventoryFloorId);
 
@@ -1417,11 +1449,14 @@ const Inventory = () => {
                             isLastFloor={isLastFloor}
                             canAction={canAction}
                             canBookingAction={canBookingAction}
+                            approvalStatus={selectedWing?.ApprovalStatus}
                         />
                     );
                 })
             ) : (
+                
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
+                    {isInventoryAvailable===true && (
                     <DataTable
                         data={tableData}
                         columns={tableColumns}
@@ -1429,7 +1464,9 @@ const Inventory = () => {
                         loading={isLoading}
                         fixedHeight={false}
                     />
+                     )}
                 </div>
+               
             )}
 
             <DeleteDialog
@@ -1658,7 +1695,9 @@ const Inventory = () => {
             {/* Approval Log History */}
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
-                documentName={approvalDocumentName ?? ""}
+                title="Inventory"
+                titleText={buildingName ?? ""}
+                subTitleText={wingName ?? ""}
                 onClose={() => setIsApprovalLogModalOpen(false)}
                 request={approvalLogRequest}
             />
@@ -1669,7 +1708,8 @@ const Inventory = () => {
                 isOpen={isApprovalActionModalOpen}
                 onClose={() => setIsApprovalActionModalOpen(false)}
                 actionType={approvalActionType}
-                documentName={approvalDocumentName ?? ""}
+                titleText={buildingName ?? ""}
+                subTitleText={wingName ?? ""}
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />

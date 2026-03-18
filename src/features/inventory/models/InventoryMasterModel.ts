@@ -6,7 +6,7 @@ export interface FilterProjectInventoryExistsRequest {
 
 export interface FilterInventoryRequest {
     ProjectId: number
-    ExportType?: 'Excel' | 'PDF'
+    ExportType?: 'Excel' | 'PDF' | 'SAMPLE'
 }
 
 export interface InventoryData {
@@ -19,7 +19,7 @@ export interface InventoryData {
     NoOfWings: number;
     CreatedById: number;
     CreatedBy: string;
-    CreatedDate: Date;
+    CreatedDate: string;
     ModifiedById: number;
     ModifiedBy: string;
     ModifiedDate: null;
@@ -64,6 +64,14 @@ export interface InventoryFlatData {
     FlatConfiguration: string;
     FlatStatus: 'Alloted' | "Available" | "Booked" | "Blocked" | "Hold";
     FlatFacing: string;
+    
+    CreatedById: number;
+    CreatedBy: string;
+    CreatedDate: string;
+    ModifiedById: number;
+    ModifiedBy: string;
+    ModifiedDate: string;
+
     InventoryFlatSpecificationData: InventoryFlatSpecificationData[];
     OwnerName: string;
     BookingId: number;

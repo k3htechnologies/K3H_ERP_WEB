@@ -39,6 +39,7 @@ export interface AssetMappingMasterData {
     AssetCost: number | null
     SupplierName: string | null
     Status: string | null
+    IsEditAllowedForAssetAndEmployee:boolean
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

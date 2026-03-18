@@ -292,7 +292,7 @@ export const useClassificationParameter = () => {
         }
 
         if (!formData.TimeLine || formData.TimeLine.trim() === "") {
-            newErrors.TimeLine = "Time Line is required";
+            newErrors.TimeLine = "Timeline is required";
         }
 
         if (!formData.VillageMasterId  || formData.VillageMasterId.trim() === "") {
@@ -312,7 +312,7 @@ export const useClassificationParameter = () => {
             ClassificationParameterId: formData.ClassificationParameterId || 0,
             Uniquekey: formData.Uniquekey,
             ProjectId: formData.ProjectId || Number(projectId),
-            MinBudget: formData.MinBudget,
+            MinBudget: formData.MinBudget==="" ? "<1" :formData.MinBudget,
             PossessionType: formData.PossessionType || '',
             Requirement: formData.Requirement || '',
             RequirementType: formData.RequirementType ?? '',

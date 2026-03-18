@@ -50,7 +50,6 @@ import { fetchChannelPartnerByMobileNumber, fetchChannelPartnerTeamMemberDropdow
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { fetchVillageDropdown } from "@/features/technical/villageDropDown";
-import { getCustomerClassification } from "@/features/enquiry/utils/customerClassification";
 import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { sendOTP } from "@/features/technical/services/OTPService";
@@ -208,16 +207,16 @@ export const AddUpdateEnquiry: React.FC = () => {
   //#endregion
 
   //#region FETCH EMPLOYEE DROPDOWN WITH DEPARTMENT
-    const fetchEmployeeDropdown = useCallback(
-        async (pageNumber: number, params?: { value?: string }) => {
-          return fetchPaginationProjectWithEmployeeDropdown(pageNumber, {
-            projectId: projectId || 0,
-            value: params?.value || "",
-            departmentName:"Sales"
-          });
-        },
-        [projectId]
-      );
+  const fetchEmployeeDropdown = useCallback(
+    async (pageNumber: number, params?: { value?: string }) => {
+      return fetchPaginationProjectWithEmployeeDropdown(pageNumber, {
+        projectId: projectId || 0,
+        value: params?.value || "",
+        departmentName: "Sales"
+      });
+    },
+    [projectId]
+  );
   //#endregion
 
   //#region INITIALIZATION
@@ -350,7 +349,7 @@ export const AddUpdateEnquiry: React.FC = () => {
             }
 
             if (e.ReferelInventoryFlatId) {
-             await fetchInventoryFlatDetails(Number(e.ReferelProjectId), e.ReferelInventoryFlatId).then((flat) => {
+              await fetchInventoryFlatDetails(Number(e.ReferelProjectId), e.ReferelInventoryFlatId).then((flat) => {
                 if (!flat) return;
                 setReferelInventoryFlatData(flat);
               });
@@ -493,12 +492,10 @@ export const AddUpdateEnquiry: React.FC = () => {
       newErrors.ChannelPartnerTeamMemberName = "Channel Partner Team Member Name is required";
     }
 
-    // 2️⃣ If name entered → mobile required
     if (name && !mobile) {
       newErrors.ChannelPartnerTeamMemberMobileNumber = "Mobile Number is required";
     }
 
-    // 3️⃣ If mobile entered → validate format
     if (mobile && !isValidMobile(mobile)) {
       newErrors.ChannelPartnerTeamMemberMobileNumber = "Enter a valid 10-digit mobile number";
     }
@@ -508,6 +505,10 @@ export const AddUpdateEnquiry: React.FC = () => {
     } else if (Number(formData.EnquiryDate) === 0 && !isDateWithinPastDays(formData.EnquiryDate, 2)) {
       newErrors.EnquiryDate = "Enquiry date can only be today or within the previous 2 days";
     }
+
+     if (formData.Requirement?.trim() !== "" && formData.RequirementType?.trim() === "") {
+            newErrors.RequirementType = `${formData.Requirement} Type is required`;
+        }
 
     if (formData.FinalStage?.toUpperCase() === "LOST") {
       if (!formData.FinalStageDetail) {
@@ -529,13 +530,7 @@ export const AddUpdateEnquiry: React.FC = () => {
   const PushEnquiryFormData = (): AddUpdateEnquiryRequest => {
     const villageIdsString = villageDropdown.selectedValues.length > 0 ? villageDropdown.selectedValues.join(",") : "";
 
-    const customerClassification = getCustomerClassification({
-      Budget: formData.Budget,
-      PossessionType: formData.PossessionType,
-      Requirement: formData.Requirement,
-      VillageMasterId: villageIdsString,
-      Timeline: formData.Timeline ?? "",
-    });
+
 
     // =====================[DIRECT WALKING → REFERENCE]=========================
     const isDirectReference = formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE";
@@ -598,7 +593,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       Requirement: formData.Requirement,
       RequirementType: formData.RequirementType || null,
 
-      CustomerClassification: customerClassification,
+      CustomerClassification: "Cold",
       SourceOfFunding: formData.SourceOfFunding,
       Ethnicity: formData.Ethnicity,
       Timeline: formData.Timeline,
@@ -1019,6 +1014,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                         title="Select Project"
                         size="lg"
                         dataFetchCallBack={fetchProjectDropdown}
+
                         onSelected={(item) => {
                           if (!item) {
                             handleFieldChange("ReferelProjectId", 0);
@@ -1039,6 +1035,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             referelInventoryFlat: "",
                           }));
                         }}
+
                         initialValue={createDropdownInitialValue(formData.ReferelProjectId, dropdownLabels.referelProjectName)}
                         error={errors.ReferelProjectId}
                       />
@@ -1342,7 +1339,19 @@ export const AddUpdateEnquiry: React.FC = () => {
                         label="Requirement"
                         placeholder="Select Requirement"
                         value={formData.Requirement ?? ""}
-                        onChange={(value) => handleFieldChange("Requirement", value)}
+
+                        onChange={(item) => {
+
+                          if (!item) {
+                            handleFieldChange("Requirement", "")
+                            handleFieldChange("RequirementType", "");
+                            return;
+                          }
+
+                          handleFieldChange("Requirement", item)
+                          handleFieldChange("RequirementType", "");
+
+                        }}
                         options={REQUIREMENT_TYPE_OPTIONS.map((opt) => ({
                           label: opt.name,
                           value: opt.id,
@@ -1350,6 +1359,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                         error={errors.Requirement}
                       />
                     </div>
+
                     {formData.Requirement && (
                       <div>
                         <SinglePageSelection
@@ -1360,17 +1370,17 @@ export const AddUpdateEnquiry: React.FC = () => {
                           options={
                             formData.Requirement === "Residential"
                               ? RESIDENTIAL_FLAT_CONFIGURATION.map((opt) => ({
+                                label: opt.name,
+                                value: opt.id,
+                              }))
+                              : formData.Requirement === "Commercial" || formData.Requirement === "Commercial Leasing"
+                                ? COMMERCIAL_FLAT_CONFIGURATION.map((opt) => ({
                                   label: opt.name,
                                   value: opt.id,
                                 }))
-                              : formData.Requirement === "Commercial" || formData.Requirement === "Commercial Leasing"
-                                ? COMMERCIAL_FLAT_CONFIGURATION.map((opt) => ({
-                                    label: opt.name,
-                                    value: opt.id,
-                                  }))
                                 : []
                           }
-                          error={errors.Residential}
+                          error={errors.RequirementType}
                         />
                       </div>
                     )}

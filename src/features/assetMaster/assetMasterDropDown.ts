@@ -18,7 +18,13 @@ export const fetchAssetMasterDropdown = async (pageNumber: number, params?: { va
 
         const itemList = (apiResponse?.Data || []).map((d: any) => ({
             label: d.AssetName,
-            value: String(d.AssetMasterId)
+            value: String(d.AssetMasterId),
+            AssetCode: d.AssetCode,
+            AssetName: d.AssetName,
+            AssetType: d.AssetType,
+            AssetModel: d.AssetModel,
+            AssetBrand: d.AssetBrand,
+            SerialNumber: d.SerialNumber,
         }));
 
 
@@ -36,14 +42,14 @@ export const fetchAssetMasterDropdown = async (pageNumber: number, params?: { va
 export const fetchAssetById = async (assetId: number) => {
 
     const responseEither = await assetMasterService.apiCallPullAssetMaster({
-      PageSize: 1,
-      PageNumber: 1,
-      AssetMasterId: assetId
+        PageSize: 1,
+        PageNumber: 1,
+        AssetMasterId: assetId
     });
 
     if (E.isLeft(responseEither)) return null;
 
     return responseEither.right.Data?.[0] || null;
-    
-  };
+
+};
 

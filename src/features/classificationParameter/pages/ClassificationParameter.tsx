@@ -8,7 +8,7 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import { ClassificationParameterFormModal } from '@/features/classificationParameter/components/ClassificationParameterFromModal';
 import { createFormResetHandler } from '@/features/classificationParameter/utils/classificationParameterUtils';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
-import { ClassificationParameterViewModal } from '../components/ClassificationParameterViewModal';
+import { ClassificationParameterViewModal } from '@/features/classificationParameter/components/ClassificationParameterViewModal';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 export const ClassificationParameter: React.FC = () => {

@@ -582,9 +582,8 @@ export const Rent: React.FC = () => {
         onExportPdf={handleExportRentPdf}
         exportLoading={isLoading}
       />
-
+      
       <div className="flex items-center gap-4 flex-nowrap">
-        {/* Building dropdown */}
         <div className={`relative w-[300px] flex-shrink-0 ${selectedBuilding ? "pb-0" : "pb-5"}`}>
           <SingleSelectDropdownWithPagination title="Select Building" size="lg" initialValue={selectedBuilding} dataFetchCallBack={fetchBuildingCallback} isShowClearSelection={false} onSelected={handleBuildingChange} className="Bold" />
         </div>

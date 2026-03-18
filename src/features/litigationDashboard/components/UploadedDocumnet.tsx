@@ -12,7 +12,8 @@ export default function UploadedDocument({ uploadedDocumentData = [] }: Props) {
                     Recently Uploaded Documents
                 </h2>
 
-                <div className="bg-white rounded-xl p-4 h-[380px] " style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+                <div className="bg-white rounded-xl p-4 h-[380px] flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+                     <div className="flex-1 overflow-y-auto thin-scroll space-y-3 pr-1">
                     {uploadedDocumentData.map((item, index) => (
                         <div key={index}
                             className="mb-1 p-3 border-b border-gray-300 last:border-b-0 last:pb-0"
@@ -23,6 +24,7 @@ export default function UploadedDocument({ uploadedDocumentData = [] }: Props) {
                             </div>
                         </div>
                     ))}
+                    </div>
                 </div>
 
             </div>

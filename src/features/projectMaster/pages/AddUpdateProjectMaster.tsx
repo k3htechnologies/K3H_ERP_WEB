@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
-import { filterGoogleMapsUrl, filterMobile, filterNumbers, filterRERA, hasAnyDocumentFile, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
+import { filterGoogleMapsUrl, filterMobile, filterNumbers, filterNumbersWithDecimal, filterRERA, hasAnyDocumentFile, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
 import type { AddUpdateProjectMasterRequest, FilterWithPaginationProjectMasterRequest } from "@/features/projectMaster/models/ProjectMasterModel";
 import { projectMasterService } from "@/features/projectMaster/services/ProjectMasterService";
 import Checkbox from "@/ui/components/forms/Checkbox";
@@ -733,8 +733,9 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 <Input
                                     label="PIN Code"
                                     type="text"
+                                    maxLength={6}
                                     value={formData.ZipCode}
-                                    onChange={(e) => handleFieldChange('ZipCode', e.target.value)}
+                                    onChange={(e) => handleFieldChange('ZipCode', filterNumbers(e.target.value))}
                                     placeholder="Enter PIN Code"
                                 />
                             </div>
@@ -826,6 +827,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 <Input
                                     label="Project Estimate Cost"
                                     type="text"
+                                    maxLength={16}
                                     value={formData.ProjectEstimateCost || ''}
                                     rightIcon={<IndianRupee className="h-6 w-6 text-gray-400" />}
                                     onChange={(e) => handleFieldChange('ProjectEstimateCost', filterNumbers(e.target.value) || 0)}
@@ -836,6 +838,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 <Input
                                     label="On Going Budget Cost"
                                     type="text"
+                                    maxLength={16}
                                     value={formData.OnGoingBudgetCost || ''}
                                     rightIcon={<IndianRupee className="h-6 w-6 text-gray-400" />}
                                     onChange={(e) => handleFieldChange('OnGoingBudgetCost', filterNumbers(e.target.value) || 0)}
@@ -847,7 +850,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     label="Project Area in (SqFt)"
                                     type="text"
                                     value={formData.ProjectAreaInSqft || ''}
-                                    onChange={(e) => handleFieldChange('ProjectAreaInSqft', filterNumbers(e.target.value) || 0)}
+                                    onChange={(e) => handleFieldChange('ProjectAreaInSqft', filterNumbersWithDecimal(e.target.value) || 0)}
                                     placeholder="Enter Area in (SqFt)"
                                 />
                             </div>
@@ -890,6 +893,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 <Input
                                     label="Site Contact Name"
                                     type="text"
+                                    maxLength={250}
                                     value={formData.SiteContactName}
                                     onChange={(e) => handleFieldChange('SiteContactName', e.target.value)}
                                     placeholder="Enter Site Contact Name"

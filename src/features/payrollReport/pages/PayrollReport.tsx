@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Loader } from "@/core/utils/loader";
 import Tabs from "@/ui/components/Tab/Tab";
 import {
@@ -15,16 +15,24 @@ import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
+import { TextArea } from "@/ui/components/forms/Textarea";
 
-import { TAB_LIST, EMPTY_MESSAGES, type TabId } from "../constants/tabConfig";
+import { TAB_LIST, EMPTY_MESSAGES, type TabId, SUBTAB_LIST, type SubTabId } from "../constants/tabConfig";
 import { useTabData } from "../hooks/useTabData";
 import { useGroupedAttendance } from "../hooks/useGroupedAttendance";
 import { usePayrollColumns } from "../hooks/usePayrollColumns";
+import { Button } from "@/ui/components/forms/Button";
+import { Check, X } from "lucide-react";
+import ModuleApprovalStatus from "../components/moduleApprovalStatus";
 
 export const PayrollReport: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>(TAB_LIST[0].id);
   const attendanceTableRef = useRef<DataTableExpandableRef>(null);
-
+  const [selectedApprovals, setSelectedApprovals] = useState<any[]>([]);
+  const [showApprovalPopup, setShowApprovalPopup] = useState(false);
+  const [approvalRemark, setApprovalRemark] = useState("");
+  const [showRejectPopup, setShowRejectPopup] = useState(false);
+  const [rejectRemark, setRejectRemark] = useState("");
   // ── All data / filter / export logic ──────────────────────────────────────
   const {
     isLoading,
@@ -39,7 +47,9 @@ export const PayrollReport: React.FC = () => {
     setSortInfo,
     pagination,
     attendanceList,
+    handleApproval,
     getCurrentData,
+    getApprovalData,
     dispatchLoad,
     applyFilters,
     clearFilters,
@@ -49,18 +59,39 @@ export const PayrollReport: React.FC = () => {
   } = useTabData(activeTab, attendanceTableRef);
 
   // ── All memoized column definitions ───────────────────────────────────────
-  const { attendanceColumns, attendanceDetailsColumns, getCurrentColumns } =
-    usePayrollColumns();
+  const { attendanceColumns, attendanceDetailsColumns, getCurrentColumns } = usePayrollColumns();
 
   // ── Grouped + sorted attendance rows for expandable table ─────────────────
   const groupedAttendanceData = useGroupedAttendance(attendanceList);
 
+  const [subActiveTab, setSubActiveTab] = useState<SubTabId>(SUBTAB_LIST[0].id);
+
+  // Row key for approval grid selection should match the primary key of each module
+  const approvalRowKey = useMemo(() => {
+    switch (activeTab) {
+      case "Comp-Off":
+        return "CompOffId";
+      case "Leave":
+        return "LeaveId";
+      case "Outdoor":
+        return "OutdoorId";
+      case "Attendance Regularization":
+        return "AttendanceRegularizationId";
+      case "Resignation":
+        return "EmployeeResignationId";
+      default:
+        // Fallback for Attendance or any other tab that exposes a generic Id
+        return "Id";
+    }
+  }, [activeTab]);
   // ── Debounced search ───────────────────────────────────────────────────────
   const debouncedSearch = useDebouncedCallback(
     (_v: string) => dispatchLoad(1),
     350,
   );
-
+  useEffect(() => {
+    setSubActiveTab(SUBTAB_LIST[0].id);
+  }, [activeTab]);
   // ── Pagination & sorting ───────────────────────────────────────────────────
   const handlePageChange = useCallback(
     (page: number) => dispatchLoad(page),
@@ -85,7 +116,6 @@ export const PayrollReport: React.FC = () => {
     }),
     [pagination, handlePageChange],
   );
-
   // ── Shared table props  ──────────
   const sharedTableProps = {
     fixedHeight: true,
@@ -133,6 +163,56 @@ export const PayrollReport: React.FC = () => {
             isShowCustomizeButton={false}
           />
         </div>
+        {activeTab !== "Attendance" && (
+          <div className="mt-6">
+            <div className="flex items-center justify-between">
+              <Tabs
+                tabs={SUBTAB_LIST}
+                isChips={true}
+                defaultActive={subActiveTab}
+                onTabChange={(t) => setSubActiveTab(t.id as SubTabId)}
+              />
+
+              {subActiveTab === "Approval" && (
+                <div className="flex gap-3">
+                  <Button
+                    size='sm'
+                    color="green"
+                    className="flex items-center gap-1 px-4 py-1 rounded bg-green-100 text-green-600 hover:bg-green-200 transition"
+                    onClick={async () => {
+                      if (!selectedApprovals.length) {
+                        await handleApproval("Approved", [], "");
+                        return;
+                      }
+                      setShowApprovalPopup(true);
+                    }}
+                  >
+                    <Check className="h-4 w-4" />
+                    Approve
+                  </Button>
+
+                  <Button
+                    size='sm'
+                    color='red'
+                    className="flex items-center gap-1 px-4 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
+                    onClick={async () => {
+                      if (!selectedApprovals.length) {
+                        await handleApproval("Rejected", [], "");
+                        return;
+                      }
+                      setShowRejectPopup(true);
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                    Reject
+                  </Button>
+
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
 
         <div className="mt-6">
           {activeTab === "Attendance" ? (
@@ -141,35 +221,59 @@ export const PayrollReport: React.FC = () => {
               data={groupedAttendanceData}
               columns={attendanceColumns}
               pagination={paginationInfo}
+
               emptyMessage={EMPTY_MESSAGES[activeTab]}
               {...sharedTableProps}
               expandable={{
                 keyField: "EmployeeId",
-                renderRow: (_data: any, row: any) => {
-                  return (
-                    <>
-                      <DataTableWithOutBorder
-                        data={row._groupedItems || []}
-                        columns={attendanceDetailsColumns}
-                        emptyMessage="No Attendance Data Found"
-                        {...sharedTableProps}
-                        loading={isLoading}
-                      />
-                    </>
-                  );
-                },
+                alwaysFetchOnOpen: false,
+
+                renderRow: (_data: any, row: any) => (
+                  <DataTableWithOutBorder
+                    data={row._groupedItems || []}
+                    columns={attendanceDetailsColumns}
+                    emptyMessage="No Attendance Data Found"
+                    {...sharedTableProps}
+                    loading={isLoading}
+                  />
+                ),
               }}
             />
-          ) : (
+          ) : subActiveTab === "Approval" ? (
             <DataTable
+              data={getApprovalData()}
+              columns={getCurrentColumns(activeTab)}
+              pagination={paginationInfo}
+              rowKey={approvalRowKey}
+              onRowSelect={(rows) => setSelectedApprovals(rows)}
+              emptyMessage={EMPTY_MESSAGES[activeTab]}
+              {...sharedTableProps}
+            />
+
+          ) : (
+            
+            <DataTableExpandable
               data={getCurrentData()}
               columns={getCurrentColumns(activeTab)}
               pagination={paginationInfo}
               emptyMessage={EMPTY_MESSAGES[activeTab]}
               {...sharedTableProps}
+              expandable={{
+                keyField: approvalRowKey,
+                alwaysFetchOnOpen: true,
+                renderRow: (_data: any, row: any) => (
+                  <ModuleApprovalStatus
+
+                    id={row[approvalRowKey]}
+                    moduleName={activeTab}
+                    requestId={row.CreatedById}
+                  />
+                ),
+              }}
             />
           )}
         </div>
+
 
         {/* FILTER MODAL */}
         <Modal
@@ -227,6 +331,76 @@ export const PayrollReport: React.FC = () => {
                 </>
               )}
             </div>
+          </div>
+        </Modal>
+
+        {/* APPROVAL CONFIRMATION MODAL */}
+        <Modal
+          isOpen={showApprovalPopup}
+          onClose={() => setShowApprovalPopup(false)}
+          title="Confirm Approval"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            await handleApproval("Approved", selectedApprovals, approvalRemark);
+            setShowApprovalPopup(false);
+            setApprovalRemark("");
+            setSelectedApprovals([]);
+          }}
+          saveText="Approve"
+          cancelText="Cancel"
+          onCancel={() => {
+            setShowApprovalPopup(false);
+            setApprovalRemark("");
+          }}
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-700">
+              You are about to approve <span className="font-semibold">{selectedApprovals.length}</span>{" "}
+              record(s).
+            </p>
+            <TextArea
+              label="Remark"
+              value={approvalRemark}
+              onChange={(e) => setApprovalRemark(e.target.value)}
+              rows={4}
+              placeholder="Enter remark "
+            />
+          </div>
+        </Modal>
+
+        {/* REJECT CONFIRMATION MODAL */}
+        <Modal
+          isOpen={showRejectPopup}
+          onClose={() => setShowRejectPopup(false)}
+          title="Confirm Rejection"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            await handleApproval("Rejected", selectedApprovals, rejectRemark);
+            setShowRejectPopup(false);
+            setRejectRemark("");
+            setSelectedApprovals([]);
+          }}
+          saveText="Reject"
+          cancelText="Cancel"
+          onCancel={() => {
+            setShowRejectPopup(false);
+            setRejectRemark("");
+          }}
+          size="sm"
+        >
+          <div className="space-y-4">
+            <p className="text-sm text-gray-700">
+              You are about to reject <span className="font-semibold">{selectedApprovals.length}</span>{" "}
+              record(s).
+            </p>
+            <TextArea
+              label="Remark"
+              value={rejectRemark}
+              onChange={(e) => setRejectRemark(e.target.value)}
+              rows={4}
+              placeholder="Enter remark "
+            />
           </div>
         </Modal>
       </div>

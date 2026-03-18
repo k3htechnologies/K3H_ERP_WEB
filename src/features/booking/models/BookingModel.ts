@@ -188,9 +188,11 @@ export interface BookingPaymentScheduleData {
     Name: string | null;
     Date: string | null;
     PaymentSchedulePercentage: number | null;
+    PaymentScheduleCumulative: number | null;
     PaymentScheduleAmount: number | null;
     PaymentScheduleGSTAmount: number | null;
     PaymentScheduleTDSAmount: number | null;
+    Rank: number | null;
     CreatedById: number | null;
     CreatedBy: string | null;
     CreatedDate: string | null;

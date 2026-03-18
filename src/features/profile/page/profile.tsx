@@ -1034,7 +1034,9 @@ export const Profile: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="space-y-4">
                 <HeaderActionBar
-                    titleText={'Profile Details'}
+                    titleText={'Profile Details : '}
+                    subTitleText={employeeData?.FirstName}
+                    subSubTitleText={employeeData?.EmployeeCode}
                     cancelText="Cancel"
                     EditText={activeTab === "Document" ? "Edit" : ""}
                     onCancel={() => navigate(-1)}

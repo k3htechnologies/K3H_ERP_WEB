@@ -505,6 +505,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             <HeaderActionBar
                 titleText={'Employee Details : '}
                 subTitleText={employeeName}
+                subSubTitleText={employeeData?.EmployeeCode}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListEmployeeMaster()}
@@ -558,7 +559,6 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 Basic Details
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="First Name" value={safe(employeeData!.FirstName)} />

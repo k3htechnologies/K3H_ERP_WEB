@@ -102,7 +102,8 @@ const Inventory = () => {
 
     //#region TAB ACTIVITY
     // Preserve tab state in localStorage
-    const [activeTab, setActiveTab] = useState<string>(() => { const savedTab = localStorage.getItem('inventoryActiveTab');
+    const [activeTab, setActiveTab] = useState<string>(() => {
+        const savedTab = localStorage.getItem('inventoryActiveTab');
         return savedTab || "Grid";
     });
 
@@ -130,8 +131,8 @@ const Inventory = () => {
     // Clear all state when project changes
     useEffect(() => {
 
-          setActiveTab('Grid');
-          localStorage.setItem("inventoryActiveTab", "Grid");
+        setActiveTab('Grid');
+        localStorage.setItem("inventoryActiveTab", "Grid");
 
         if (!projectId) {
             setIsInventoryAvailable(false)
@@ -473,9 +474,14 @@ const Inventory = () => {
                 }
 
                 const response = await inventoryService.apiCallpullInventory(params);
-                
-                handleExportFile(response, 'Excel', 'Inventory', addToast, 'Sample file download successfully')
 
+                if (E.isRight(response) && response.right.Data.length > 0) {
+
+                    handleExportFile(response, 'Excel', 'Inventory', addToast, 'Sample file download successfully')
+                }
+                else {
+                    addToast({ type: "error", title: "All records are already approved. No data available for sample export" });
+                }
                 return response;
             },
             undefined,
@@ -679,7 +685,7 @@ const Inventory = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-                
+
                 const response = await inventoryService.apiCallAddInventoryBuilding(params);
 
                 if (E.isRight(response)) {
@@ -857,7 +863,7 @@ const Inventory = () => {
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
                     setInventory(response.right.Data);
-                    
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -1184,7 +1190,7 @@ const Inventory = () => {
                         state: {
                             flat: flat,
                             projectId: projectId,
-                            approvalStatus:selectedWing?.ApprovalStatus
+                            approvalStatus: selectedWing?.ApprovalStatus
                         },
                     });
                 };
@@ -1209,7 +1215,7 @@ const Inventory = () => {
                                 />
                             </div>
                         )}
-                        {canAction && selectedWing?.ApprovalStatus?.toUpperCase()!=="APPROVED" && (flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
+                        {canAction && selectedWing?.ApprovalStatus?.toUpperCase() !== "APPROVED" && (flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
                             <div title="Delete">
                                 <Trash
                                     onClick={() => handleDeleteFlat(flat)}
@@ -1381,7 +1387,7 @@ const Inventory = () => {
                 <div className="flex justify-between items-center pt-2 pb-2">
 
                     <div className="flex-1">
-                        {selectedBuilding && isInventoryAvailable===true && (
+                        {selectedBuilding && isInventoryAvailable === true && (
                             <WingTabs
                                 canAction={canAction}
                                 wings={selectedBuilding}
@@ -1429,7 +1435,7 @@ const Inventory = () => {
 
             {activeTab === "Grid" ? (
 
-                selectedWing && isInventoryAvailable===true && getFilteredFloors.map((floor) => {
+                selectedWing && isInventoryAvailable === true && getFilteredFloors.map((floor) => {
 
                     const originalFloorIndex = selectedWing.InventoryFloorData.findIndex(f => f.InventoryFloorId === floor.InventoryFloorId);
 
@@ -1454,19 +1460,19 @@ const Inventory = () => {
                     );
                 })
             ) : (
-                
+
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
-                    {isInventoryAvailable===true && (
-                    <DataTable
-                        data={tableData}
-                        columns={tableColumns}
-                        emptyMessage="No flats found"
-                        loading={isLoading}
-                        fixedHeight={false}
-                    />
-                     )}
+                    {isInventoryAvailable === true && (
+                        <DataTable
+                            data={tableData}
+                            columns={tableColumns}
+                            emptyMessage="No flats found"
+                            loading={isLoading}
+                            fixedHeight={false}
+                        />
+                    )}
                 </div>
-               
+
             )}
 
             <DeleteDialog

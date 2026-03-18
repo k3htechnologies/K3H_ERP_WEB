@@ -143,18 +143,16 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                 customizedIcon={
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">{`Slab Height: ${slabHeight} ft`}</span>
+
+                        <div
+                            className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition-colors"
+                            onClick={handleParkingClick}
+                            title="Update Parking Count">
+                            <span className="text-[#135BEC] font-medium text-sm">{floor.ParkingCount || 0}</span>
+                            <Car className="text-[#135BEC]" size={20} />
+                        </div>
                         {canAction && (
                             <>
-                                <div
-                                    className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition-colors"
-                                    onClick={handleParkingClick}
-                                    title="Update Parking Count"
-
-                                >
-                                    <span className="text-[#135BEC] font-medium text-sm">{floor.ParkingCount || 0}</span>
-                                    <Car className="text-[#135BEC]" size={20} />
-                                </div>
-
                                 {!approvalStatus?.toUpperCase().includes("APPROVED") && (
                                     <Plus
                                         className="p-1.5 cursor-pointer hover:bg-gray-100 rounded transition-colors"
@@ -165,7 +163,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                                         }}
                                     />
                                 )}
-                                
+
                                 {onDeleteFloor && isLastFloor && !approvalStatus?.toUpperCase().includes("APPROVED") && wing.Wing.toUpperCase() !== 'BGP' && (
                                     <Button
                                         onClick={(e) => {

@@ -477,13 +477,18 @@ const Parking = () => {
       async () => {
         const params: FilterParkingRequest = {
           ProjectId: Number(projectId),
-          ExportType: "Excel",
+          ExportType: "SAMPLE",
         };
 
         const response = await parkingService.apiCallPullParking(params);
 
-        handleExportFile(response, "Excel", "Parking", addToast, "Sample file download successfully");
+        if (E.isRight(response) && response.right.Data.length > 0) {
 
+          handleExportFile(response, "Excel", "Parking", addToast, "Sample file download successfully");
+        }
+        else {
+          addToast({ type: "error", title: "All records are already approved. No data available for sample export" });
+        }
         return response;
       },
       undefined,
@@ -512,6 +517,7 @@ const Parking = () => {
         const response = await technicalService.apiCallExcelImport(fd);
 
         if (E.isRight(response)) {
+          
           addToast({ type: "success", title: "Excel imported sucessfully" });
 
           fetchParking();

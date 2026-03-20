@@ -551,7 +551,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           setIsConfirmationDialogBoxOpen(false)
         }}
         onConfirm={onLogout}
-        title="You are sure you want to logout?"
+        title="Are you sure you want to logout?"
         message="Are you sure you want to logout from the application? Please save all your work before confirming."
         confirmText="Logout"
         cancelText="Cancel"

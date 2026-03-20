@@ -1,3 +1,4 @@
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -23,11 +24,11 @@ export default function MissingDetails({ MissingDetailsData = [] }: Props) {
                 Missing Details
             </h2>
 
-            <div className="bg-white rounded p-4 space-y-4 shadow-sm h-[200px]">
+            <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm h-[200px] overflow-y-auto thin-scroll">
                 {MissingDetailsData.length === 0 ? (
-                    <p className="text-center  pt-12 text-gray-500 text-sm">
-                        No data found
-                    </p>
+                    <div className="flex flex-col justify-center items-center h-full">
+                        <NoDataView />
+                    </div>
                 ) : (
                     <div className="space-y-4 overflow-y-auto">
                         {MissingDetailsData.map((item, index) => (

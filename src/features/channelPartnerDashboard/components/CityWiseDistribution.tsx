@@ -1,3 +1,5 @@
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
+
 interface Props {
     cityWiseDistributionData: any[];
 }
@@ -7,35 +9,40 @@ export default function CityWiseDistribution({ cityWiseDistributionData = [] }: 
 
     return (
         <div className="pt-5">
-            <div className="bg-white rounded-xl p-6 h-[305px]" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+            <div className="bg-white rounded-lg p-6 h-[315px] shadow-sm space-y-4 overflow-y-auto thin-scroll" >
                 <h3 className="text-sm text-gray-500 font-medium mb-4">
                     City Wise Distribution
                 </h3>
 
-                <div className="flex flex-col gap-3">
-                    {cityWiseDistributionData.map((item, index) => {
-                        const widthPercent = ((item.TotalChannelPartner || 0) / maxValue) * 100;
+                {cityWiseDistributionData.length === 0 ? (
+                    <div className="flex flex-col justify-center items-center h-full">
+                        <NoDataView />
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-3">
+                        {cityWiseDistributionData.map((item, index) => {
+                            const widthPercent = ((item.TotalChannelPartner || 0) / maxValue) * 100;
+                            return (
+                                <div key={index} className="flex items-center gap-2">
+                                    <span className="text-sm text-gray-500 w-24 shrink-0">
+                                        {item.Name}
+                                    </span>
 
-                        return (
-                            <div key={index} className="flex items-center gap-2">
-                                <span className="text-sm text-gray-500 w-24 shrink-0">
-                                    {item.Name}
-                                </span>
-
-                                <div className="relative flex-1 h-8 rounded-lg  overflow-hidden">
-                                    <div
-                                        className="h-full rounded-lg bg-[#bfdbfe] flex items-center justify-end pr-3 transition-all duration-500"
-                                        style={{ width: `${widthPercent}%` }}
-                                    >
-                                        <span className="text-sm font-bold text-[#1d4ed8] whitespace-nowrap">
-                                            {item.TotalChannelPartner}
-                                        </span>
+                                    <div className="relative flex-1 h-8 rounded-lg  overflow-hidden">
+                                        <div
+                                            className="h-full rounded-lg bg-[#bfdbfe] flex items-center justify-end pr-3 transition-all duration-500"
+                                            style={{ width: `${widthPercent}%` }}
+                                        >
+                                            <span className="text-sm font-bold text-[#1d4ed8] whitespace-nowrap">
+                                                {item.TotalChannelPartner}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        );
-                    })}
-                </div>
+                            );
+                        })}
+                    </div>
+                )}
             </div>
         </div>
     );

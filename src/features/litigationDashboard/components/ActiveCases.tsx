@@ -63,9 +63,7 @@ const ActiveCases: React.FC<Props> = ({ activeCaseData }) => {
         <div className="space-y-3 pt-5">
 
             <h2 className="text-lg font-semibold text-gray-800">Active Cases</h2>
-
-            <div className="bg-white rounded-xl p-4 h-[400px] " style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
-
+            <div className="bg-white rounded-lg p-4 shadow-sm space-y-4 h-[280px] ">
                 <DataTableWithOutBorder
                     columns={activeCaseColumns}
                     data={activeCaseData}

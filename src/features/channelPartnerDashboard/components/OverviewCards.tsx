@@ -48,7 +48,7 @@ export default function OverviewCards({ overViewData = [] }: Props) {
           <div
             key={i}
             className={`
-              rounded-xl p-5 shadow-sm border
+              rounded-lg p-5 shadow-sm space-y-4
               ${c.type === "primary" && "bg-blue-900 text-white border-blue-900"}
               ${c.type === "default" && "bg-white-300 border-gray-200"}
               ${c.type === "month" && "bg-white-300 border-gray-200"}

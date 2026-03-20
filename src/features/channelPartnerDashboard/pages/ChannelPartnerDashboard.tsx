@@ -107,7 +107,7 @@ const ChannelPartnerDashboard: React.FC = () => {
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4">
-                    <PartnerTypeDistribution partnerTypeDistributionData={partnerTypeDistributionData} />
+                    <PartnerTypeDistribution partnerTypeDistributionData={partnerTypeDistributionData}/>
                     <FirmTypeDistribution firmTypeData={firmTypeDistributionData} />
                     <CityWiseDistribution cityWiseDistributionData={cityWiseDistributionData} />
                 </div>

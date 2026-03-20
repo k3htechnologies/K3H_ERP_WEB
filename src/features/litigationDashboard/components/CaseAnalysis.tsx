@@ -1,3 +1,4 @@
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import {
     LineChart, ResponsiveContainer, Legend, Tooltip, Line, XAxis, YAxis
 } from "recharts";
@@ -13,52 +14,58 @@ export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
                 Case Analysis
             </h2>
 
-            <div className="bg-white rounded p-4 space-y-4 shadow-sm">
-                <ResponsiveContainer width="100%" height={350}>
-                    <LineChart
-                        data={CaseAnalysisData}
-                    >
+            <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm">
+                {CaseAnalysisData.length === 0 ? (
+                    <div className="flex flex-col justify-center items-center h-[170px]">
+                        <NoDataView />
+                    </div>
+                ) : (
+                    <ResponsiveContainer width="100%" height={350}>
+                        <LineChart
+                            data={CaseAnalysisData}
+                        >
 
-                        <XAxis dataKey="Month" />
-                        <YAxis
-                            type="number"
-                            domain={[10, 100]}
-                            allowDataOverflow={true}
-                            ticks={[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
-                            label={{
-                                value: "CASES (YEAR)",
-                                angle: -90,
-                                position: "insideLeft"
-                            }}
-                        />
+                            <XAxis dataKey="Month" />
+                            <YAxis
+                                type="number"
+                                domain={[10, 100]}
+                                allowDataOverflow={true}
+                                ticks={[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
+                                label={{
+                                    value: "CASES (YEAR)",
+                                    angle: -90,
+                                    position: "insideLeft"
+                                }}
+                            />
 
-                        <Tooltip />
-                        <Legend
-                            verticalAlign="top"
-                            align="right"
-                            iconSize={0}
-                            formatter={(value) => `- ${value}`}
-                        />
+                            <Tooltip />
+                            <Legend
+                                verticalAlign="top"
+                                align="right"
+                                iconSize={0}
+                                formatter={(value) => `- ${value}`}
+                            />
 
-                        {/* Closed Cases*/}
-                        <Line
-                            type="monotone"
-                            dataKey="Closed"
-                            stroke="#6366F1"
-                            strokeWidth={3}
-                            dot={false}
-                        />
+                            {/* Closed Cases*/}
+                            <Line
+                                type="monotone"
+                                dataKey="ClosedCases"
+                                stroke="#6366F1"
+                                strokeWidth={3}
+                                dot={false}
+                            />
 
-                        {/* Opened Cases */}
-                        <Line
-                            type="monotone"
-                            dataKey="Opened"
-                            stroke="#EC4899"
-                            strokeWidth={3}
-                            dot={false}
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
+                            {/* Opened Cases */}
+                            <Line
+                                type="monotone"
+                                dataKey="OpenCases"
+                                stroke="#EC4899"
+                                strokeWidth={3}
+                                dot={false}
+                            />
+                        </LineChart>
+                    </ResponsiveContainer>
+                )}
             </div>
         </div>
     );

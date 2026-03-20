@@ -164,6 +164,8 @@ import Brokerage from '@/features/brokerage/pages/Brokerage';
 import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoice';
 import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
+import PrivacyPolicy from '@/features/PrivacyPolicy/pages/PrivacyPolicy';
+import Terms from '@/features/Terms/pages/TermsAndCondition';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -209,6 +211,8 @@ function App() {
           {/* Public Routes */}
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
+          <Route path='Terms' element={<Terms />} />
+          <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
           <Route
             path="/"
             element={
@@ -429,7 +433,7 @@ function App() {
             <Route path='content' element={<MarketingContentListStateProvider><MarketingContentFolder /></MarketingContentListStateProvider>} />
             <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
-{/* CRM */}
+            {/* CRM */}
 
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />

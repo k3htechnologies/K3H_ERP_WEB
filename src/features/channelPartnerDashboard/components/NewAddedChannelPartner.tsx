@@ -70,7 +70,7 @@ const NewAddedChannelPartner: React.FC<Props> = ({ NewAddedChannelPartnerData })
         <div className="space-y-3 pt-5">
 
             <h2 className="text-lg font-semibold text-gray-800">Recently Added Channel Partner</h2>
-            <div className="bg-white rounded-lg shadow-sm space-y-4 p-4 h-[200px] ">
+            <div className="bg-white rounded-lg shadow-sm space-y-4 p-4 h-[300px] ">
 
                 <DataTableWithOutBorder
                     columns={NewAddedChannelPartnerColumns}

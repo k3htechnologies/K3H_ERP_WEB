@@ -588,7 +588,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       PossessionType: formData.PossessionType,
       AreaPreferred: formData.AreaPreferred,
       DesiredFloorBand: formData.DesiredFloorBand,
-      Budget: formData.Budget,
+      Budget: formData.Budget ==="" ? "<1" :formData.Budget,
 
       Requirement: formData.Requirement,
       RequirementType: formData.RequirementType || null,
@@ -1305,12 +1305,12 @@ export const AddUpdateEnquiry: React.FC = () => {
             </div>
 
             {/* ============================================================= [ADDRESS] ============================================================================================= */}
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address</h3>
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-                <div>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300">Address</h3>
+              <div className="grid grid-cols-1 md:grid-cols-1">
+                
                   <TextArea label="Current Location" placeholder="Enter Current Location" required className="thin-scroll" value={formData.CurrentLocation ?? ""} onChange={(e) => handleFieldChange("CurrentLocation", e.target.value)} error={errors.CurrentLocation} />
-                </div>
+               
               </div>
             </div>
             {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
@@ -1363,6 +1363,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     {formData.Requirement && (
                       <div>
                         <SinglePageSelection
+                          required
                           label={formData.Requirement === "Residential" ? "Residential Type" : formData.Requirement === "Commercial" ? "Commercial Type" : "Commercial Leasing Type"}
                           placeholder={`Select ${formData.Requirement === "Residential" ? "Residential Type" : formData.Requirement === "Commercial" ? "Commercial Type" : "Commercial Leasing Type"}`}
                           value={formData.RequirementType ?? ""}
@@ -1538,7 +1539,7 @@ export const AddUpdateEnquiry: React.FC = () => {
           {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
             <div className="space-y-4 pb-3">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2"> Sales Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <SingleSelectDropdownWithPagination label="Sales Advisor" title="Select Advisor" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.SalesAdvisor)} error={errors.SalesAdvisorId} />
                 </div>

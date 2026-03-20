@@ -6,6 +6,7 @@ import { LOCAL_STORAGE_KEYS } from '@/core/constants'
 import * as E from 'fp-ts/Either';
 import type { PullMenuRequest } from '@/features/menu/models/MenuModel'
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
+import { useNavigate } from 'react-router-dom'
 import { menuService } from '@/features/menu/services/MenuService'
 
 export interface ToastContainerProps {
@@ -16,6 +17,7 @@ export interface ToastContainerProps {
 export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
 
     const [isMenuModalOpen, setIsMenuModalOpen] = useState(false)
+    const navigate = useNavigate();
 
     // Whenever toasts change, check if any have title === 'Menu Changed'
 
@@ -81,7 +83,7 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
 
         }
     };
-    
+
     //#endregion 
 
     return (
@@ -95,7 +97,17 @@ export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
                 e.preventDefault()
                 setIsMenuModalOpen(false);
                 refreshMenu()
-                window.location.reload();
+                const currentPath = window.location.pathname;
+
+                if (currentPath === '/dashboard') {
+
+                    window.location.reload();
+
+                } else {
+
+                    navigate('/dashboard');
+                    
+                }
             }}
         >
             <div className="space-y-3">

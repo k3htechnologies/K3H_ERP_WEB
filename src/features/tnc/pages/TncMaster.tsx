@@ -437,7 +437,7 @@ export const TncMaster: React.FC = () => {
         }}
         cancelText="Close"
         loading={false}
-        size='xl'
+        size='large-half'
       >
         <div className="space-y-6">
           <div className="space-y-4">
@@ -783,25 +783,26 @@ export const TncMaster: React.FC = () => {
 
         }}
       />
-
-      <DataTable
-        data={tncListForTable}
-        columns={visibleTncColumns}
-        pagination={tncPaginationInfo}
-        emptyMessage="No terms & conditions found"
-        recordsPerPage={20}
-        className="flex-1"
-        sortInfo={sortInfo}
-        onSort={handleSortColumn}
-      />
-      <ViewTncDetailsModal
-        isOpen={isViewModalOpen}
-        onClose={() => {
-          setIsViewModalOpen(false);
-          setViewTncData(null);
-        }}
-        data={viewTncData}
-      />
+      <div className='pt-5'>
+        <DataTable
+          data={tncListForTable}
+          columns={visibleTncColumns}
+          pagination={tncPaginationInfo}
+          emptyMessage="No terms & conditions found"
+          recordsPerPage={20}
+          className="flex-1"
+          sortInfo={sortInfo}
+          onSort={handleSortColumn}
+        />
+        <ViewTncDetailsModal
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setViewTncData(null);
+          }}
+          data={viewTncData}
+        />
+      </div>
       {/*  ADD EDIT UPDATE TNC MODAL */}
 
       <Modal
@@ -822,7 +823,7 @@ export const TncMaster: React.FC = () => {
         onSubmit={handleAddUpdateTncMaster}
         saveText={editingTncMasterData ? 'Update' : 'Add'}
         loading={isLoading}
-        size='xl'
+        size='large-half'
       >
         <div className="space-y-6 p-6  bg-blue-100">
           <div className="space-y-4">

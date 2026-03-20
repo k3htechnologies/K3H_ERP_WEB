@@ -61,8 +61,7 @@ export default function OverviewCards({ overViewData = [] }: Props) {
         Overview
       </h2>
 
-      <div className="grid grid-cols-5 gap-4">
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {cards.map((c, i) => (
           <div
             key={i}

@@ -53,7 +53,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   
   const SIZE_MAP = {
     sm: { fontSize: 12, paddingY: 6, paddingX: 12, height: 38, dropdownHeight: 150 },
-    md: { fontSize: 16, paddingY: 8, paddingX: 10, height: 46, dropdownHeight: 200 },
+    md: { fontSize: 16, paddingY: 8, paddingX: 12, height: 46, dropdownHeight: 200 },
     lg: { fontSize: 16, paddingY: 10, paddingX: 20, height: 54, dropdownHeight: 250 },
   };
 
@@ -321,7 +321,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
           ...style,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }} title={selectedLabels.join(", ")}>
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "1px" }} title={selectedLabels.join(", ")}>
           {hasSelections ? (
             <>
               {visibleTags.map((tagLabel, index) => (

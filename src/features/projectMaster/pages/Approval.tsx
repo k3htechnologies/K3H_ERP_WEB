@@ -267,7 +267,7 @@ const Approval: React.FC = () => {
         canAction={false}
         isLoading={isLoading}
       />
-      <div className="space-y-4 p-4">
+      <div className="space-y-4 pt-5">
         <Tabs
           tabs={activeTabForModulesWorkflowApproval}
           defaultActive={activeModuleTab}
@@ -281,11 +281,11 @@ const Approval: React.FC = () => {
 
           filteredApprovalList.map((item, i) => (
 
-            <section key={i} className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+            <section key={i} className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] pt-2">
 
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-2">
 
-                <FieldItem label="" value={item.SubSubModuleName ?? "-"} />
+                <FieldItem label="" value={item.SubSubModuleName ?? "-"}  className="text-[18px] font-semibold"/>
 
                 {canAction && (
                   <Button

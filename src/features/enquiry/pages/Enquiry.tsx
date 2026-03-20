@@ -318,7 +318,6 @@ export const Enquiry: React.FC = () => {
         {
             key: 'SystemGeneratedCode',
             label: 'Enquiry Code',
-            width: '20',
             sortable: true,
             fixed: 'left',
             align: 'left',
@@ -334,9 +333,7 @@ export const Enquiry: React.FC = () => {
         {
             key: 'Name',
             label: 'Name',
-            width: '20',
             sortable: true,
-            fixed: 'left',
             align: 'left',
             render: (value, row) => (
                 <TooltipText
@@ -530,7 +527,7 @@ export const Enquiry: React.FC = () => {
             width: '14',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: value => value ? `+91 ${value}` : '-'
         },
         {
             key: 'CustomerClassification',
@@ -609,27 +606,31 @@ export const Enquiry: React.FC = () => {
 
                 const canDelete = canAction && row?.FinalStage?.toUpperCase() == "";
 
-                return canDelete ? (
+                return  (
                     <div className="flex items-center justify-center gap-2">
                         <Button
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
+                                if (!canDelete) return;
                                 handleConfirmationDialogBoxOpen(row)
                             }}
                             color="transparent"
                             isborderRadius
+                            disabled={!canDelete}
                             size="sm"
                             style={{
-                                color: 'red',
-                                padding: '4px 8px'
+                                color: canDelete ? 'red' : '#9CA3AF',
+                                padding: '4px 8px',
+                                cursor: canDelete ? 'pointer' : 'not-allowed',
+                                opacity: canDelete ? 1 : 0.5
                             }}
                             title="Delete Enquiry"
                         >
                             <Trash2 className="h-4 w-4" />
                         </Button>
                     </div>
-                ) : null
+                ) 
             }
         }
 
@@ -979,6 +980,8 @@ export const Enquiry: React.FC = () => {
                 onConfirm={handleDeleteEnquiry}
                 loading={isLoading}
                 pageName='Enquiry'
+                message={`Deleting this Enquiry ${deleteEnquiryData?.SystemGeneratedCode} will permanently remove all associated data.`}
+                
             />
         </div>
     );

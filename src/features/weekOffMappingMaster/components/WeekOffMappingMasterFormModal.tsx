@@ -56,8 +56,17 @@ export const WeekOffMappingMasterFormModal: React.FC<WeekOffMappingMasterFormMod
           <div>
             <p className="text-sm text-gray-600 mb-2">Mapping</p>
             <div className="flex gap-3">
-              <RadioPill name="Mapping" label="Department" checked={mappingWeekoff === "Department"} onChange={() => onApplicableTypeChange("Department")} />
-              <RadioPill name="Mapping" label="Employee" checked={mappingWeekoff === "Employee"} onChange={() => onApplicableTypeChange("Employee")} />
+              <RadioPill name="Mapping" label="Department" checked={mappingWeekoff === "Department"}
+                onChange={() => {
+                  onApplicableTypeChange("Department");
+                  setEmployeeDetails(null);
+                  onFieldChange("EmployeeId", null);
+                }} />
+              <RadioPill name="Mapping" label="Employee" checked={mappingWeekoff === "Employee"}
+                onChange={() => {
+                  onApplicableTypeChange("Employee");
+                  onFieldChange("DepartmentMasterId", null);
+                }} />
             </div>
           </div>
           {mappingWeekoff === "Employee" && (

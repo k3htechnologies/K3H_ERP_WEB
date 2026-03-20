@@ -159,6 +159,11 @@ import LitigationDashboard from '@/features/litigationDashboard/pages/litigation
 import ClassificationParameter from '@/features/classificationParameter/pages/ClassificationParameter';
 import Approval from '@/features/projectMaster/pages/Approval';
 import PerformanceReport from '@/features/performanceReport/pages/PerformanceReport';
+import ChannelPartnerDashboard from '@/features/channelPartnerDashboard/pages/ChannelPartnerDashboard';
+import Brokerage from '@/features/brokerage/pages/Brokerage';
+import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoice';
+import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
+import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -340,6 +345,8 @@ function App() {
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />
 
+            <Route path="channelPartnerDashboard" element={<ChannelPartnerDashboard />} />
+
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
@@ -422,6 +429,12 @@ function App() {
             <Route path='content' element={<MarketingContentListStateProvider><MarketingContentFolder /></MarketingContentListStateProvider>} />
             <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
+{/* CRM */}
+
+            <Route path="brokerage" element={<Brokerage />} />
+            <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
+            <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
+            <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

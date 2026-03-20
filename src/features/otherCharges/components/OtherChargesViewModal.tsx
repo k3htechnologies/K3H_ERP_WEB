@@ -89,7 +89,6 @@ export const OtherChargesViewModal: React.FC<OtherChargesViewModalProps> = ({
             label="Value + GST Value"
             value={data.Value + data.GSTValue ? `₹ ${data.Value + data.GSTValue}` : '-'}
             isRow
-            withBorder={true}
           />
         </div>
 
@@ -121,7 +120,7 @@ export const OtherChargesViewModal: React.FC<OtherChargesViewModalProps> = ({
           )}
         </div>
 
-        <div className="flex justify-between items-center pt-4">
+        <div className="flex justify-between items-center">
           {canAction && (
             <>
               <Button

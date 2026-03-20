@@ -78,6 +78,13 @@ export interface EmployeeMasterData {
   DistrictName: string | ''
   CityMasterId: number | 0
   CityName: string | ''
+
+  AadharCardNumber: string | ''
+  PassportNumber: string | ''
+  PanCardNumber: string | ''
+  DrivingLicenceNumber: string | ''
+  VoterCardNumber: string | ''
+
   ClientRegistrationId: number | 0
   CreatedById: number | 0
   CreatedBy: string | ''
@@ -142,13 +149,19 @@ export interface UpdateEmployeeMasterRequest {
   MiddleName?: string;
   LastName?: string;
   Gender?: string
-  MaritalStatus?:string
-  DateOfBirth?:string
-  EmailId?:string
-  PersonalMobileNumber?:string
-  CommunicationAddress?:string
-  PermanentAddress?:string
-  BloodGroup?:string
+  MaritalStatus?: string
+  DateOfBirth?: string
+  EmailId?: string
+  PersonalMobileNumber?: string
+  CommunicationAddress?: string
+  PermanentAddress?: string
+  BloodGroup?: string
+  
+  AadharCardNumber: string | ''
+  PassportNumber: string | ''
+  PanCardNumber: string | ''
+  DrivingLicenceNumber: string | ''
+  VoterCardNumber: string | ''
 }
 
 

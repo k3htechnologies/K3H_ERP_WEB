@@ -209,6 +209,16 @@ export const convert_yy_mm_dd_To_dd_mm_yyyy = (
   return `${dd}-${mm}-${yyyy}`;
 };
 
+export const convert_date_yy_mm_dd_To_dd_mm_yyyy = (date?: Date) => {
+  if (!date) return "";
+
+  const d = String(date.getDate()).padStart(2, '0');
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const y = date.getFullYear();
+
+  return `${d}-${m}-${y}`;
+};
+
 export const convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd = (date?: string | null) => {
   if (!date) return "";
   return date.split("T")[0];

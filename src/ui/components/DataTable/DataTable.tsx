@@ -61,7 +61,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   recordsPerPage = 10,
   sortInfo,
   onSort,
-   onRowSelect,
+  onRowSelect,
   rowKey = "id"
 }) => {
 
@@ -82,7 +82,7 @@ export const DataTable: React.FC<DataTableProps> = ({
     if (!pagination) return null
 
     const { currentPage, totalPages, totalRecords, pageSize, onPageChange } = pagination
-    const startRecord = totalRecords===0 ? 0 :(currentPage - 1) * pageSize + 1
+    const startRecord = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
     const endRecord = Math.min(currentPage * pageSize, totalRecords)
 
     return (
@@ -93,7 +93,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={totalRecords===0 ? true : currentPage === 1}
+            disabled={totalRecords === 0 ? true : currentPage === 1}
             className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <ChevronLeft className="h-4 w-4" />
@@ -129,7 +129,7 @@ export const DataTable: React.FC<DataTableProps> = ({
 
           <button
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={totalRecords===0 ? true :currentPage === totalPages}
+            disabled={totalRecords === 0 ? true : currentPage === totalPages}
             className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <ChevronRight className="h-4 w-4" />
@@ -185,6 +185,7 @@ export const DataTable: React.FC<DataTableProps> = ({
         `}
                   style={{
                     ...(column.width ? { width: column.width } : {}),
+
                     fontSize: '14px',
                     fontWeight: '500',
                     lineHeight: '1.4',
@@ -236,8 +237,8 @@ export const DataTable: React.FC<DataTableProps> = ({
               (
                 data.map((row, index) => (
 
-                  <tr key={index} 
-                      onClick={() => {
+                  <tr key={index}
+                    onClick={() => {
                       const key = row[rowKey]
 
                       const updatedSelection = selectedRows.includes(key)
@@ -253,14 +254,14 @@ export const DataTable: React.FC<DataTableProps> = ({
                       onRowSelect?.(selectedData)
                     }}
                     className={`h-10 border-b border-gray-200 cursor-pointer ${selectedRows.includes(row[rowKey])
-                        ? "bg-blue-50 border-l-4 border-blue-500"
-                        : "hover:bg-gray-50"
+                      ? "bg-blue-50 border-l-4 border-blue-500"
+                      : "hover:bg-gray-50"
                       }`}
                   >
 
                     {columns.map((column) => {
 
-                      const cellValue = column.render ?  column.render(row[column.key], row, index): row[column.key]
+                      const cellValue = column.render ? column.render(row[column.key], row, index) : row[column.key]
 
                       return (
                         <td
@@ -272,6 +273,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                             }`}
                           style={{
                             ...(column.width ? { width: column.width } : {}),
+
                             fontSize: '14px',
                             fontWeight: '400',
                             lineHeight: '1.5',

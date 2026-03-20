@@ -808,14 +808,14 @@ export const AddUpdateBooking: React.FC = () => {
         key: "Type",
         label: "Type",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
         key: "Date",
         label: "Date / Stage",
         sortable: false,
-        align: "left",
+        align: "center",
 
         render: (_value, row) => {
 
@@ -834,14 +834,14 @@ export const AddUpdateBooking: React.FC = () => {
         key: "PaymentSchedulePercentage",
         label: "Percentage (%)",
         sortable: false,
-        align: "center",
+        align: "right",
         render: (value) => `${value || 0}%`,
       },
       {
         key: "Cumulative",
         label: "Cumulative (%)",
         sortable: false,
-        align: "center",
+        align: "right",
         render: (_value, _row, index) => {
           return `${cumulativePercentages[index]?.toFixed(2) || 0}%`;
         },
@@ -950,7 +950,7 @@ export const AddUpdateBooking: React.FC = () => {
         label: "Calculated On",
         width: "15",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -969,7 +969,7 @@ export const AddUpdateBooking: React.FC = () => {
         label: "GST (%)",
         width: "12",
         sortable: false,
-        align: "center",
+        align: "right",
         render: (value) => `${value || 0}%`,
       },
       {
@@ -1678,7 +1678,7 @@ export const AddUpdateBooking: React.FC = () => {
           {enquiryUniqueCode && enquiryUniqueCode.trim() !== "" && (
             Number(enquiryId) > 0 &&
               (Number(bookingId) !== 0 || enquiryList?.FinalStage !== "Booking Done") ? (
-              <div className="space-y-4 pt-5 pb-3">
+              <div className="space-y-4 pt-5 pt-5">
                 {/* ===================== ENQUIRY DETAILS ===================== */}
                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Details</h3>
 
@@ -1756,7 +1756,7 @@ export const AddUpdateBooking: React.FC = () => {
           {/* ============================================================= [APPLICANT DETAILS] ============================================================================================= */}
           <div className="space-y-4 pt-3 pb-3">
             <div className="flex items-center justify-between">
-              <div className="flex-1 border-b border-gray-500 pb-2">
+              <div className="flex-1 border-b border-gray-500 pt-5">
                 <HeaderActionBar titleText="Applicant Detail " isLoading={isLoading} />
               </div>
               <div className="ml-4">
@@ -1802,7 +1802,7 @@ export const AddUpdateBooking: React.FC = () => {
           </div>
 
           {/* ============================================================= [ADDRESS DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
               <TextArea label="Permanent Address" required value={formData.PermanentAddress ?? ""} onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)} placeholder="Enter Permanent Address" error={errors.PermanentAddress} />
@@ -1881,7 +1881,7 @@ export const AddUpdateBooking: React.FC = () => {
           </div>
 
           {/* ============================================================= [AGREEMENT DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Agreement Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Input
@@ -1988,7 +1988,7 @@ export const AddUpdateBooking: React.FC = () => {
           </div>
 
           {/* ============================================================= [TAX DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Tax Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Input
@@ -2040,7 +2040,7 @@ export const AddUpdateBooking: React.FC = () => {
 
           {/* ============================================================= [BROKERAGE DETAILS] ============================================================================================= */}
           {enquiryList?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
-            <div className="space-y-4 pb-3">
+            <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Brokerage Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Input
@@ -2073,7 +2073,7 @@ export const AddUpdateBooking: React.FC = () => {
 
           {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
           {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
-            <div className="space-y-4 pb-3">
+            <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Referel Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Input
@@ -2105,7 +2105,7 @@ export const AddUpdateBooking: React.FC = () => {
 
           {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
           {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Loyalty" && (
-            <div className="space-y-4 pb-3">
+            <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Loyalty Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Input
@@ -2137,7 +2137,7 @@ export const AddUpdateBooking: React.FC = () => {
 
           {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
           {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Employee Reference" && (
-            <div className="space-y-4 pb-3">
+            <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Employee Reference Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Input
@@ -2168,7 +2168,7 @@ export const AddUpdateBooking: React.FC = () => {
           )}
 
           {/* ============================================================= [OTHER DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Other Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <MultiSelectPagination
@@ -2201,7 +2201,7 @@ export const AddUpdateBooking: React.FC = () => {
             </div>
           </div>
 
-          <div className="pb-5">
+          <div>
             <SingleSelectDropdownWithPagination
               label="Payment Schedule Scheme"
               title="Select Payment Schedule Scheme"
@@ -2225,7 +2225,7 @@ export const AddUpdateBooking: React.FC = () => {
           </div>
 
           {/* ============================================================= [PAYMENT SCHEDULE TABLE] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <div className="flex items-center justify-between border-b border-gray-300 pb-2">
               <div className="flex items-center gap-4">
                 <h3 className="text-lg font-semibold text-gray-900">Payment Schedule</h3>
@@ -2278,7 +2278,7 @@ export const AddUpdateBooking: React.FC = () => {
           </div>
 
           {/* ============================================================= [OTHER CHARGES TABLE] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <div className="flex items-center justify-between border-b border-gray-300 pb-2">
               <div className="flex items-center gap-4">
                 <h3 className="text-lg font-semibold text-gray-900">Other Charges</h3>
@@ -2301,7 +2301,7 @@ export const AddUpdateBooking: React.FC = () => {
           </div>
 
           {/* ============================================================= [PAYMENT DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Payment Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Input label="Booking Amount" value={formData.BookingAmount?.toString() ?? ""} onChange={(e) => handleFieldChange("BookingAmount", filterNumbersWithDecimal(e.target.value))} placeholder="Booking Amount" />
@@ -2331,9 +2331,9 @@ export const AddUpdateBooking: React.FC = () => {
           </div>
 
           {/* ============================================================= [ADITIONAL DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Additional Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
               <div>
                 <TextArea className='thin-scroll' label="Unit / Modulation / Customization Remark" required value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
               </div>

@@ -381,19 +381,21 @@ export const EmployeeDocument: React.FC = () => {
                     }}
                     leftIcon={<Edit className="h-4 w-4" />}
                   />
-
-                  <Button
-                    color='transparent'
-                    size='sm'
-                    style={{ color: 'red', padding: '0px 8px' }}
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setIsAddUpdateModalOpen(false)
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    leftIcon={<Trash2 className="h-4 w-4" />}
-                  />
+                  
+                  {false && (
+                    <Button
+                      color='transparent'
+                      size='sm'
+                      style={{ color: 'red', padding: '0px 8px' }}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setIsAddUpdateModalOpen(false)
+                        handleConfirmationDialogBoxOpen(row)
+                      }}
+                      leftIcon={<Trash2 className="h-4 w-4" />}
+                    />
+                  )}
 
                 </div>
               )}

@@ -56,8 +56,18 @@ export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalPr
           <div>
             <p className="text-sm text-gray-600 mb-2">Mapping</p>
             <div className="flex gap-3">
-              <RadioPill name="Mapping" label="Department" checked={mappingShift === "Department"} onChange={() => onApplicableTypeChange("Department")} />
-              <RadioPill name="Mapping" label="Employee" checked={mappingShift === "Employee"} onChange={() => onApplicableTypeChange("Employee")} />
+              <RadioPill name="Mapping" label="Department" checked={mappingShift === "Department"} 
+              onChange={() => {
+                onApplicableTypeChange("Department");
+                setEmployeeDetails(null);
+                onFieldChange("EmployeeId", null);
+              }} />
+
+              <RadioPill name="Mapping" label="Employee" checked={mappingShift === "Employee"}
+                onChange={() => {
+                  onApplicableTypeChange("Employee");
+                  onFieldChange("DepartmentMasterId", null);
+                }} />
             </div>
           </div>
           {mappingShift === "Employee" && (
@@ -106,6 +116,7 @@ export const ShiftMappingMasterFormModal: React.FC<ShiftMappingMasterFormModalPr
                 required
                 dataFetchCallBack={fetchDepartmentMasterDropdown}
                 onSelected={(item) => {
+
                   if (!item) {
                     onFieldChange("DepartmentMasterId", null);
                     return;

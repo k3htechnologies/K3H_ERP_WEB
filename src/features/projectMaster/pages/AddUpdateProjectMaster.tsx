@@ -571,6 +571,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                             setSelectedStateId(null);
                                             setSelectedDistrictId(null);
                                             setSelectedCityId(null);
+                                            setSelectedVillageId(null);
 
                                             handleFieldChange('CountryMasterId', 0);
                                             handleFieldChange('StateMasterId', 0);
@@ -587,6 +588,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         setSelectedStateId(null);
                                         setSelectedDistrictId(null);
                                         setSelectedCityId(null);
+                                        setSelectedVillageId(null);
 
                                         handleFieldChange('CountryMasterId', id);
                                         handleFieldChange('StateMasterId', 0);
@@ -615,6 +617,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                             setSelectedStateId(null);
                                             setSelectedDistrictId(null);
                                             setSelectedCityId(null);
+                                            setSelectedVillageId(null);
 
                                             handleFieldChange("StateMasterId", 0);
                                             handleFieldChange("DistrictMasterId", 0);
@@ -629,6 +632,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         setSelectedStateId(id);
                                         setSelectedDistrictId(null);
                                         setSelectedCityId(null);
+                                        setSelectedVillageId(null);
 
                                         handleFieldChange("StateMasterId", id);
                                         handleFieldChange("DistrictMasterId", 0);
@@ -655,6 +659,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         if (!item) {
                                             setSelectedDistrictId(null);
                                             setSelectedCityId(null);
+                                            setSelectedVillageId(null);
 
                                             handleFieldChange('DistrictMasterId', 0);
                                             handleFieldChange('CityMasterId', 0);
@@ -666,6 +671,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                                         setSelectedDistrictId(id);
                                         setSelectedCityId(null);
+                                        setSelectedVillageId(null);
 
                                         handleFieldChange('DistrictMasterId', id);
                                         handleFieldChange('CityMasterId', 0);
@@ -688,6 +694,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                                         if (!item) {
                                             setSelectedCityId(null);
+                                            setSelectedVillageId(null);
                                             handleFieldChange('CityMasterId', 0);
                                             handleFieldChange('VillageMasterId', 0);
                                             return;
@@ -696,6 +703,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         const id = Number(item);
 
                                         setSelectedCityId(id);
+                                        setSelectedVillageId(null);
                                         handleFieldChange('CityMasterId', id);
                                         handleFieldChange('VillageMasterId', 0);
                                     }}

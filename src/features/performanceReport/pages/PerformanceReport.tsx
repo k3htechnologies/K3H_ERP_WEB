@@ -18,7 +18,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import Tabs from "@/ui/components/Tab/Tab";
 import { getMonthDateRange, getWeekToDateRange, getYearToDateRange } from "@/core/utils/comman";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 
 export const PerformanceReport: React.FC = () => {
 
@@ -63,7 +63,7 @@ export const PerformanceReport: React.FC = () => {
         loadPerformanceReport(1, filters, sortInfo, searchTerm);
     }, [targetActiveTab]);
 
-    const loadPerformanceReport = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
+    const loadPerformanceReport = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string,periodType?: string) => {
 
         await runApiWithLoader(
             setIsLoading,
@@ -76,6 +76,7 @@ export const PerformanceReport: React.FC = () => {
                     EmployeeName: searchText?.trim() ?? undefined,
                     FromDate: filterParams.FromDate || undefined,
                     ToDate: filterParams.ToDate || undefined,
+                    PeriodType:periodType || "WTD",
                     ReportType: targetActiveTab,
                     SortBy: getSortByParam(sort ?? null, targetActiveTab === "Closing" ? PerformanceReportClosingColumns : PerformanceReportSourcingColumns),
                 };
@@ -486,13 +487,11 @@ export const PerformanceReport: React.FC = () => {
             toDate = range.toDate;
         }
 
-        const formatDate = (date?: Date) =>
-            date ? date.toISOString().split("T")[0] : "";
-
+       
         const updatedFilters: FilterInfo = {
             ...filters,
-            FromDate: formatDate(fromDate),
-            ToDate: formatDate(toDate),
+            FromDate: convert_date_yy_mm_dd_To_dd_mm_yyyy(fromDate),
+            ToDate: convert_date_yy_mm_dd_To_dd_mm_yyyy(toDate),
         };
 
         setFilters(updatedFilters);
@@ -500,7 +499,7 @@ export const PerformanceReport: React.FC = () => {
 
         setPagination({ currentPage: 1 });
 
-        loadPerformanceReport(1, updatedFilters, sortInfo, searchTerm);
+        loadPerformanceReport(1, updatedFilters, sortInfo, searchTerm,tabId);
     };
 
     const PerformanceReportPaginationInfo: PaginationInfo = useMemo(

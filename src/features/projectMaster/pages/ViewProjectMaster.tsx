@@ -390,7 +390,7 @@ export const ViewProjectMaster: React.FC = () => {
                 />
                 {activeTab === 'Project Overview' && (
                     <>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
                             {/* ================= LEFT (2/3 WIDTH) ================= */}
                             <div className="lg:col-span-2 space-y-6">
@@ -426,7 +426,7 @@ export const ViewProjectMaster: React.FC = () => {
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                         Location Details
                                     </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
 
                                         <FieldItem label="Project Location" value={editProjectData?.ProjectLocation ?? '-'} />
                                     </div>
@@ -620,7 +620,7 @@ export const ViewProjectMaster: React.FC = () => {
                 )}
 
                 {activeTab === 'Employee' && (
-                    <div className="space-y-4 p-4">
+                    <div className="space-y-4 pt-5">
 
                         <TableActionToolbar
                             isShowSearchBar
@@ -680,7 +680,7 @@ export const ViewProjectMaster: React.FC = () => {
 
                 {activeTab === "Bank Details" && (
 
-                    <div className="space-y-3 p-4">
+                    <div className="space-y-3 pt-5">
                         {projectWithBankDetailsList?.length ? (
                             projectWithBankDetailsList.map((b, i) => (
                                 <section
@@ -692,7 +692,6 @@ export const ViewProjectMaster: React.FC = () => {
                                     </h4>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Account Holder" value={b.BeneficiaryAccountHolderName ?? "-"} />
                                         <FieldItem label="Account Number" value={b.AccountNumber ?? "-"} />
                                         <FieldItem label="Bank Name" value={b.BankName ?? "-"} />
                                         <FieldItem label="Branch" value={b.Branch ?? "-"} />
@@ -712,7 +711,7 @@ export const ViewProjectMaster: React.FC = () => {
                 )}
 
                 {activeTab === "Company" && (
-                    <div className="space-y-4 p-4">
+                    <div className="space-y-4 pt-5">
 
 
                         {compantMasterList?.length ? (
@@ -748,7 +747,7 @@ export const ViewProjectMaster: React.FC = () => {
                 )}
 
                 {activeTab === "Approval" && (
-                    <div className="space-y-4 p-4">
+                    <div className="space-y-4 pt-5">
 
                         <Tabs
                             tabs={activeTabForModulesWorkflowApproval}
@@ -763,17 +762,11 @@ export const ViewProjectMaster: React.FC = () => {
 
                             filteredApprovalList.map((item, i) => (
 
-                                <section
-                                    key={i}
-                                    className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]"
-                                >
+                                <section  key={i} className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] pt-2"  >
 
                                     {/* Module Name */}
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
-                                        <FieldItem
-                                            label=""
-                                            value={item.SubSubModuleName ?? "-"}
-                                        />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-2">
+                                        <FieldItem  label="" value={item.SubSubModuleName ?? "-"}    className="text-[18px] font-semibold"/>
                                     </div>
 
                                     {/* Employee List */}
@@ -783,10 +776,7 @@ export const ViewProjectMaster: React.FC = () => {
 
                                             {item.EmployeeData.map((member, index) => (
 
-                                                <div
-                                                    key={index}
-                                                    className="border border-gray-200 rounded-lg p-3 hover:shadow transition"
-                                                >
+                                                <div key={index} className="border border-gray-200 rounded-lg p-3 hover:shadow transition" >
 
                                                     <div className="flex items-start justify-between gap-2">
                                                         <h5 className="text-sm font-semibold text-gray-900 truncate">

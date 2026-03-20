@@ -49,8 +49,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                     </Button>
                 )}
 
-                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 pl-3">
-
+                <h2 className={`text-lg font-semibold text-gray-900 flex items-center gap-2 ${onCancel ? 'pl-3' : 'pl-0'}`}>
                     {titleText && <span>{titleText}</span>}
 
                     {subTitleText && (

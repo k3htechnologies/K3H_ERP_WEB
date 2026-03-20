@@ -21,7 +21,6 @@ export class LitigationDashboardDatasourceImpl implements LitigationDashboardDat
             })
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(`${LitigationDashboardApi.PULL}?${queryParams.toString()}`, { signal } )
-
             return response;
 
         } catch (error: any) {

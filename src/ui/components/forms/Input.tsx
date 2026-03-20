@@ -46,7 +46,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     const currentSize = sizeConfig[size]
-    
 
     // Variant styles
     const getVariantStyles = () => {

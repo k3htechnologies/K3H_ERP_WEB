@@ -355,6 +355,12 @@ export const getPageInfo = (path: string) => {
                 title: "Enquiry",
                 description: "Centralized enquiry management for faster response",
             }
+        case 'channelPartnerDashboard':
+            return {
+                title: "Chaannel Partner Dashboard",
+                description: "Centralized enquiry management for faster response",
+            }
+
         case 'channelPartner':
             return {
                 title: "Channel Partner",

@@ -31,7 +31,7 @@ import { employeeExperienceDetailsService } from '@/features/employeeMaster/serv
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Input } from '@/ui/components/forms/Input';
 import { ConfirmationDialogBox } from '@/core/utils/confirmationDialogBox';
-import { Edit, Mail, Phone, Plus, Trash2 } from 'lucide-react';
+import { Edit, IdCardIcon, Mail, Phone, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/ui/components/forms/Button';
 import type { DeleteEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
 import type { DeleteEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
@@ -40,7 +40,7 @@ import { branchAssociationsService } from '@/features/branchAssociationsMaster/s
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
-import { filterMobile } from '@/core/utils/fileValidation';
+import { filterAadhaar, filterDrivingLicenseNumber, filterMobile, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidDrivingLicenseNumber, isValidPAN, isValidPassportNumber, isValidVoterId } from '@/core/utils/fileValidation';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { BLOOD_GROUP_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS } from '@/core/constants';
 import { TextArea } from '@/ui/components/forms/Textarea';
@@ -115,6 +115,7 @@ export const Profile: React.FC = () => {
     // Employee form state
     const [employeeFormData, setEmployeeFormData] = useState<UpdateEmployeeMasterRequest>({
         EmployeeId: 0,
+        UniqueKey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
         FirstName: '',
         MiddleName: '',
         LastName: '',
@@ -125,8 +126,13 @@ export const Profile: React.FC = () => {
         EmailId: '',
         PersonalMobileNumber: '',
         CommunicationAddress: '',
-        UniqueKey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
         PermanentAddress: '',
+
+        AadharCardNumber: '',
+        PassportNumber: '',
+        PanCardNumber: '',
+        DrivingLicenceNumber: '',
+        VoterCardNumber: '',
     });
     const [employeeFormErrors, setEmployeeFormErrors] = useState<{
         FirstName?: string;
@@ -139,7 +145,12 @@ export const Profile: React.FC = () => {
         EmailId?: string;
         PersonalMobileNumber?: string;
         PermanentAddress?: string;
-        CommunicationAddress?: string
+        CommunicationAddress?: string,
+        AadharCardNumber?: string,
+        PassportNumber?: string,
+        PanCardNumber?: string,
+        DrivingLicenceNumber?: string,
+        VoterCardNumber?: string,
     }>({});
 
     // TOAST
@@ -882,6 +893,11 @@ export const Profile: React.FC = () => {
                 PersonalMobileNumber: item.PersonalMobileNumber || '',
                 CommunicationAddress: item.CommunicationAddress || '',
                 PermanentAddress: item.PermanentAddress || '',
+                AadharCardNumber: item.AadharCardNumber || '',
+                PassportNumber: item.PassportNumber || '',
+                PanCardNumber: item.PanCardNumber || '',
+                DrivingLicenceNumber: item.DrivingLicenceNumber || '',
+                VoterCardNumber: item.VoterCardNumber || '',
             });
             setIsEditEmployeeMode(true);
         }
@@ -906,7 +922,13 @@ export const Profile: React.FC = () => {
             PersonalMobileNumber: '',
             CommunicationAddress: '',
             PermanentAddress: '',
-            
+
+            AadharCardNumber: '',
+            PassportNumber: '',
+            PanCardNumber: '',
+            DrivingLicenceNumber: '',
+            VoterCardNumber: '',
+
         });
         setEmployeeFormErrors({});
     };
@@ -923,7 +945,12 @@ export const Profile: React.FC = () => {
             PersonalMobileNumber?: string;
             CommunicationAddress?: string;
             PermanentAddress?: string;
-            Gender?: string
+            Gender?: string;
+            AadharCardNumber?: string,
+            PassportNumber?: string,
+            PanCardNumber?: string,
+            DrivingLicenceNumber?: string,
+            VoterCardNumber?: string,
         } = {};
 
         if (!employeeFormData.FirstName?.trim()) {
@@ -959,6 +986,31 @@ export const Profile: React.FC = () => {
         if (!employeeFormData.Gender) {
             errors.Gender = 'Gender is required';
         }
+
+        if (!employeeFormData.AadharCardNumber?.trim()) {
+            errors.AadharCardNumber = "Aadhaar Card Number is required";
+        } else if (!isValidAadhaar(employeeFormData.AadharCardNumber?.trim())) {
+            errors.AadharCardNumber = "Enter a valid Aadhaar Card Number";
+        }
+
+        if (!employeeFormData.PanCardNumber?.trim()) {
+            errors.PanCardNumber = "PAN Card Number is required";
+        } else if (!isValidPAN(employeeFormData.PanCardNumber?.trim())) {
+            errors.PanCardNumber = "Enter a valid PAN Card Number";
+        }
+
+        if (employeeFormData.PassportNumber?.trim() !== "" && !isValidPassportNumber(employeeFormData.PassportNumber?.trim())) {
+            errors.PassportNumber = "Enter a valid Passport Number";
+        }
+
+        if (employeeFormData.DrivingLicenceNumber?.trim() !== "" && !isValidDrivingLicenseNumber(employeeFormData.DrivingLicenceNumber?.trim())) {
+            errors.DrivingLicenceNumber = "Enter a valid Driving Licence Number";
+        }
+
+        if (employeeFormData.VoterCardNumber?.trim() !== "" && !isValidVoterId(employeeFormData.VoterCardNumber?.trim())) {
+            errors.VoterCardNumber = "Enter a valid Voter Card Number";
+        }
+
         setEmployeeFormErrors(errors);
         return Object.keys(errors).length === 0;
     };
@@ -989,18 +1041,24 @@ export const Profile: React.FC = () => {
                     PermanentAddress: employeeFormData.PermanentAddress?.trim() || '',
                     BloodGroup: employeeFormData.BloodGroup?.trim() || '',
                     Gender: employeeFormData.Gender?.trim() || '',
+
+                    AadharCardNumber: employeeFormData.AadharCardNumber?.trim() || '',
+                    PassportNumber: employeeFormData.PassportNumber?.trim() || '',
+                    PanCardNumber: employeeFormData.PanCardNumber?.trim() || '',
+                    DrivingLicenceNumber: employeeFormData.DrivingLicenceNumber?.trim() || '',
+                    VoterCardNumber: employeeFormData.VoterCardNumber?.trim() || '',
                 };
 
                 const response = await employeeMasterService.apiCallUpdateEmployeeMaster(params);
 
                 if (E.isRight(response)) {
 
-                    addToast({ type: 'success', title: response.right.SuccessMessage[0]});
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
                     handleCloseEmployeeModal();
 
                     setEmployeeMasterList(response.right.Data);
-                    
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -1128,6 +1186,19 @@ export const Profile: React.FC = () => {
                                                     ? `+91 ${safe(employeeData?.PersonalMobileNumber)}`
                                                     : '-'}
                                                 />
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Aaadhaar Card Number" value={safe(employeeData!.AadharCardNumber)} />
+                                                <FieldItem label="PAN Number" value={safe(employeeData!.PanCardNumber)} />
+                                                <FieldItem label="Passport Number" value={safe(employeeData!.PassportNumber)} />
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Driving / Licence Number" value={safe(employeeData!.DrivingLicenceNumber)} />
+                                                <FieldItem label="Voter Card Number" value={safe(employeeData!.VoterCardNumber)} />
                                             </div>
                                         </div>
 
@@ -1432,7 +1503,7 @@ export const Profile: React.FC = () => {
                                                                     className="border-b last:border-b-0 border-gray-200 py-2 last:border-b-0 last:pb-0"
                                                                 >
                                                                     <FieldItem label="Qualification" value={e.Qualification} isRow />
-                                                                    <FieldItem label="College" value={e.CollegeName} isRow />
+                                                                    <FieldItem label="School / College Name" value={e.CollegeName} isRow />
                                                                     <FieldItem label="Passing Year" value={e.Passing} isRow />
 
                                                                     <div className="flex justify-end gap-2">
@@ -1928,36 +1999,44 @@ export const Profile: React.FC = () => {
                 title={isEditEducationMode ? "Update Education Details" : "Add Education Details"}
                 onSubmit={handleEducationFormSubmit}
                 saveText={isEditEducationMode ? "Update" : "Add"}
-                cancelText="Cancel"
-                onCancel={handleCloseEducationModal}
                 loading={isLoading}
                 size="xl"
             >
                 <div className="space-y-4">
-                    <Input
-                        label="Qualification"
-                        value={educationFormData.Qualification || ''}
-                        onChange={(e) => setEducationFormData({ ...educationFormData, Qualification: e.target.value })}
-                        required
-                        error={educationFormErrors.Qualification}
-                        placeholder="Enter Qualification"
-                    />
-                    <Input
-                        label="College Name"
-                        value={educationFormData.CollegeName || ''}
-                        onChange={(e) => setEducationFormData({ ...educationFormData, CollegeName: e.target.value })}
-                        required
-                        error={educationFormErrors.CollegeName}
-                        placeholder="Enter College Name"
-                    />
-                    <Input
-                        label="Passing Year"
-                        value={educationFormData.Passing || ''}
-                        onChange={(e) => setEducationFormData({ ...educationFormData, Passing: e.target.value })}
-                        required
-                        error={educationFormErrors.Passing}
-                        placeholder="Enter Passing Year"
-                    />
+                    <div>
+                        <Input
+                            label="Qualification"
+                            value={educationFormData.Qualification || ''}
+                            onChange={(e) => setEducationFormData({ ...educationFormData, Qualification: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={educationFormErrors.Qualification}
+                            placeholder="Enter Qualification"
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            label="School / College Name"
+                            value={educationFormData.CollegeName || ''}
+                            onChange={(e) => setEducationFormData({ ...educationFormData, CollegeName: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={educationFormErrors.CollegeName}
+                            placeholder="Enter School / College Name"
+                        />
+
+                    </div>
+                    <div>
+                        <Input
+                            label="Passing Year"
+                            value={educationFormData.Passing || ''}
+                            onChange={(e) => setEducationFormData({ ...educationFormData, Passing: e.target.value })}
+                            required
+                            maxLength={7}
+                            error={educationFormErrors.Passing}
+                            placeholder="Enter Passing Year"
+                        />
+                    </div>
                 </div>
             </Modal>
 
@@ -1968,36 +2047,43 @@ export const Profile: React.FC = () => {
                 title={isEditExperienceMode ? "Update Experience Details" : "Add Experience Details"}
                 onSubmit={handleExperienceFormSubmit}
                 saveText={isEditExperienceMode ? "Update" : "Add"}
-                cancelText="Cancel"
-                onCancel={handleCloseExperienceModal}
                 loading={isLoading}
                 size="xl"
             >
                 <div className="space-y-4">
-                    <Input
-                        label="Company Name"
-                        value={experienceFormData.CompanyName || ''}
-                        onChange={(e) => setExperienceFormData({ ...experienceFormData, CompanyName: e.target.value })}
-                        required
-                        error={experienceFormErrors.CompanyName}
-                        placeholder="Enter Company Name"
-                    />
-                    <Input
-                        label="Role"
-                        value={experienceFormData.Role || ''}
-                        onChange={(e) => setExperienceFormData({ ...experienceFormData, Role: e.target.value })}
-                        required
-                        error={experienceFormErrors.Role}
-                        placeholder="Enter Role"
-                    />
-                    <Input
-                        label="Tenure"
-                        value={experienceFormData.Tenure || ''}
-                        onChange={(e) => setExperienceFormData({ ...experienceFormData, Tenure: e.target.value })}
-                        required
-                        error={experienceFormErrors.Tenure}
-                        placeholder="Enter Tenure"
-                    />
+                    <div>
+                        <Input
+                            label="Company Name"
+                            value={experienceFormData.CompanyName || ''}
+                            onChange={(e) => setExperienceFormData({ ...experienceFormData, CompanyName: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={experienceFormErrors.CompanyName}
+                            placeholder="Enter Company Name"
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            label="Role"
+                            value={experienceFormData.Role || ''}
+                            onChange={(e) => setExperienceFormData({ ...experienceFormData, Role: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={experienceFormErrors.Role}
+                            placeholder="Enter Role"
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            label="Tenure"
+                            value={experienceFormData.Tenure || ''}
+                            onChange={(e) => setExperienceFormData({ ...experienceFormData, Tenure: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={experienceFormErrors.Tenure}
+                            placeholder="Enter Tenure"
+                        />
+                    </div>
                 </div>
             </Modal>
 
@@ -2008,14 +2094,12 @@ export const Profile: React.FC = () => {
                 title={isEditEmployeeMode ? "Update Basic Details" : "Add Basic Details"}
                 onSubmit={handleEmployeeFormSubmit}
                 saveText={isEditEmployeeMode ? "Update" : "Add"}
-                cancelText="Cancel"
-                onCancel={handleCloseEmployeeModal}
                 loading={isLoading}
-                size="xl"
+                size="xxl"
             >
                 <div className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <Input
                             label="First Name"
                             value={employeeFormData.FirstName || ''}
@@ -2061,6 +2145,7 @@ export const Profile: React.FC = () => {
                             rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                             onChange={(e) => setEmployeeFormData({ ...employeeFormData, PersonalMobileNumber: filterMobile(e.target.value) })}
                             error={employeeFormErrors.PersonalMobileNumber} />
+
                         <SinglePageSelection
                             label="Gender"
                             placeholder="Select Gender"
@@ -2069,8 +2154,6 @@ export const Profile: React.FC = () => {
                             onChange={(e) => setEmployeeFormData({ ...employeeFormData, Gender: String(e) })}
                             options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                             error={employeeFormErrors.Gender} />
-
-                        
                         <DatePickerInput
                             label="DOB"
                             value={employeeFormData.DateOfBirth ? formatDate_dd_mm_yyyy(employeeFormData.DateOfBirth) : ''}
@@ -2086,7 +2169,6 @@ export const Profile: React.FC = () => {
                             options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                             required
                             error={employeeFormErrors.MaritalStatus} />
-
                         <SinglePageSelection
                             value={employeeFormData.BloodGroup}
                             label="Blood Group"
@@ -2095,9 +2177,77 @@ export const Profile: React.FC = () => {
                             required
                             options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
                             error={employeeFormErrors.BloodGroup} />
+                        <Input
+                            label="Aadhaar Number"
+                            error={employeeFormErrors.AadharCardNumber}
+                            required
+                            type="text"
+                            value={employeeFormData.AadharCardNumber ?? ""}
+                            maxLength={12}
+                            onChange={(e) =>
+                                setEmployeeFormData({
+                                    ...employeeFormData,
+                                    AadharCardNumber: filterAadhaar(e.target.value)
+                                })
+                            }
+                            placeholder="Enter Aadhaar Number"
+                            rightIcon={<IdCardIcon />} />
+                        <Input
+                            label="PAN Number"
+                            required error={employeeFormErrors.PanCardNumber}
+                            type="text"
+                            value={employeeFormData.PanCardNumber ?? ""}
+                            maxLength={10}
+                            onChange={(e) =>
+                                setEmployeeFormData({
+                                    ...employeeFormData,
+                                    PanCardNumber: filterPAN(e.target.value).toUpperCase()
+                                })
+                            }
+                            placeholder="Enter PAN Number"
+                            rightIcon={<IdCardIcon />} />
+                        <Input
+                            label="Passport Number"
+                            error={employeeFormErrors.PassportNumber}
+                            type="text"
+                            value={employeeFormData.PassportNumber ?? ""}
+                            maxLength={8}
+                            onChange={(e) =>
+                                setEmployeeFormData({
+                                    ...employeeFormData,
+                                    PassportNumber: filterPassportNumber(e.target.value).toUpperCase()
+                                })
+                            }
+                            placeholder="Enter Passport Number"
+                            rightIcon={<IdCardIcon />} />
 
+                        <Input label="Driving License Number"
+                            error={employeeFormErrors.DrivingLicenceNumber}
+                            type="text" value={employeeFormData.DrivingLicenceNumber ?? ""}
+                            maxLength={15}
+                            onChange={(e) =>
+                                setEmployeeFormData({
+                                    ...employeeFormData,
+                                    DrivingLicenceNumber: filterDrivingLicenseNumber(e.target.value).toUpperCase()
+                                })
+                            }
+                            placeholder="Enter Driving License Number"
+                            rightIcon={<IdCardIcon />} />
 
-                        
+                        <Input label="Voting Card Number"
+                            error={employeeFormErrors.VoterCardNumber}
+                            type="text"
+                            value={employeeFormData.VoterCardNumber ?? ""}
+                            maxLength={10}
+                            onChange={(e) =>
+                                setEmployeeFormData({
+                                    ...employeeFormData,
+                                    VoterCardNumber: filterVoterId(e.target.value).toUpperCase()
+                                })
+                            }
+                            placeholder="Enter Voting Card Number"
+                            rightIcon={<IdCardIcon />} />
+
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-2">
@@ -2122,10 +2272,10 @@ export const Profile: React.FC = () => {
                         />
                     </div>
                 </div>
-            </Modal>
+            </Modal >
 
             {/* Delete Confirmation Dialogs */}
-            <ConfirmationDialogBox
+            < ConfirmationDialogBox
                 isOpen={isDeleteEducationDialogOpen}
                 onClose={() => {
                     setIsDeleteEducationDialogOpen(false);

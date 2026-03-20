@@ -1,5 +1,6 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 interface Props {
   alertsData: any[];
@@ -22,8 +23,8 @@ const AlertsPanel: React.FC<Props> = ({ alertsData = [] }) => {
         <div className="flex-1 overflow-y-auto thin-scroll space-y-3 pr-1">
 
           {alertsData.length === 0 && (
-            <p className="text-sm text-gray-400 text-center mt-10">
-              No alerts available
+            <p className="text-sm text-gray-400 text-center mt-16">
+              <NoDataView />
             </p>
           )}
 

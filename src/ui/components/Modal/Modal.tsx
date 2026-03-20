@@ -79,9 +79,8 @@ export const Modal: React.FC<ModalProps> = ({
                 {/* Half-screen modal on the right */}
                 <div className={`fixed right-4 top-16 bottom-2 bg-white shadow-2xl flex flex-col ${widthSize}`}>
                     {/* Header */}
-                    <div className="flex items-start justify-between min-h-16 border-b border-gray-500 bg-white mx-5 py-3">
-
-                        <h3 className="text-lg font-semibold text-gray-900 flex-1 pr-4 leading-snug break-words">
+                    <div className="flex items-center justify-between h-16 border-b border-gray-500 bg-white mx-5">
+                        <h3 className="text-lg font-semibold text-gray-900">
                             {title}
                         </h3>
                         <Button

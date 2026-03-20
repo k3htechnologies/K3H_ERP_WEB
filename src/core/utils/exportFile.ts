@@ -5,15 +5,19 @@ export const handleExportFile = (
   addToast: (options: { type: 'success' | 'error'; title: string }) => void,
   message?: string
 ) => {
-  if (response.right.Data) {
-    handleBase64Export(response.right.Data, exportType, fileName, addToast, message);
-  } else {
-    addToast({
-      type: 'error',
-      title: response.ErrorMessage?.[0] || 'Export failed'
-    })
+
+  const data = response?.right?.Data;
+
+  const isEmpty = !data || (Array.isArray(data) && data.length === 0) || (typeof data === 'string' && data.trim() === '');
+
+  if (!isEmpty) {
+    handleBase64Export(data, exportType, fileName, addToast, message);
+  } 
+  else {
+    addToast({ type: 'error', title: 'No data available for export' });
   }
-}
+  
+};
 
 export const handleBase64Export = (
   fileData: any,
@@ -31,12 +35,10 @@ export const handleBase64Export = (
       return
     }
 
-    // Determine MIME type based on export type
     const mimeType = exportType === 'Excel'
       ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       : 'application/pdf'
 
-    // Decode base64 data properly
     const binaryString = atob(base64Data)
     const bytes = new Uint8Array(binaryString.length)
     for (let i = 0; i < binaryString.length; i++) {

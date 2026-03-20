@@ -511,7 +511,7 @@ const AddUpdateEmployeePage: React.FC = () => {
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <form onSubmit={handleSubmit}>
           {/* ============================================================= [BASIC EMPLOYEE DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Employee Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -561,7 +561,7 @@ const AddUpdateEmployeePage: React.FC = () => {
             </div>
           </div>
           {/* ============================================================= [EMPLOYEE INFO SHEET] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Employee Info Sheet</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -651,7 +651,7 @@ const AddUpdateEmployeePage: React.FC = () => {
           </div>
 
           {/* ============================================================= [REPORTING PERSON] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Reporting Person</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
@@ -691,7 +691,7 @@ const AddUpdateEmployeePage: React.FC = () => {
             )}
           </div>
           {/* ============================================================= [ADDRESS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -833,7 +833,7 @@ const AddUpdateEmployeePage: React.FC = () => {
           </div>
 
           {/* ============================================================= [BANK DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Bank Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

@@ -208,7 +208,6 @@ export const SourcingTarget: React.FC = () => {
         { key: 'FreshVisits', label: 'Fresh Visits', sortable: false },
         { key: 'Revisits', label: 'Revisits', sortable: false },
         { key: 'Bookings', label: 'Bookings', sortable: false },
-        { key: 'TotalMeetings', label: 'Total Meetings', sortable: false },
         { key: 'TotalOBM', label: 'Total OBM', sortable: false },
         { key: 'TotalOBMFreshVisits', label: 'Total OBM Fresh Visits', sortable: false },
         { key: 'TotalOBMRevisits', label: 'Total OBM Revisits', sortable: false },
@@ -290,7 +289,7 @@ export const SourcingTarget: React.FC = () => {
     //#endregion
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div>
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>

@@ -259,7 +259,7 @@ export const CallingData: React.FC = () => {
             label: 'Mobile Number',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value ? `+91 ${value}` : '-'
         },
         {
@@ -267,7 +267,7 @@ export const CallingData: React.FC = () => {
             label: 'E-mail ID',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -275,7 +275,7 @@ export const CallingData: React.FC = () => {
             label: 'Last Modified Date',
             width: '33',
             sortable: false,
-            align: 'left',
+            align: 'center',
             render: (value, row) => value ? formatDate_dd_MonthName_yy(row.CreatedDate) : '-'
         },
         {
@@ -283,7 +283,7 @@ export const CallingData: React.FC = () => {
             label: 'Address',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
     ], []);
@@ -362,7 +362,7 @@ export const CallingData: React.FC = () => {
 
     //#region
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div>
 
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
 

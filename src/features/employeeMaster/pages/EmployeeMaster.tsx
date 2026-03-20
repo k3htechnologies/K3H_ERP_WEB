@@ -336,9 +336,10 @@ export const EmployeeMaster: React.FC = () => {
       {
         key: "EmployeeCode",
         label: "Employee Code",
-        width: "14",
         sortable: true,
-        align: "center",
+        width: '150px',
+        align: "left",
+        fixed: "left",
         render: (value, row) => {
           const complete = isEmployeeComplete(row);
 
@@ -363,19 +364,18 @@ export const EmployeeMaster: React.FC = () => {
       {
         key: "FullName",
         label: "Full Name",
-        width: "22",
         sortable: true,
-        fixed: "left",
+        width: '220px',
         align: "left",
         render: (value, row) => {
           const fullName = (row?.FullName ?? "").trim();
           const initials = fullName
             ? fullName
-                .split(/\s+/)
-                .map((w: string) => (w && w.length ? w[0] : ""))
-                .join("")
-                .toUpperCase()
-                .slice(0, 2)
+              .split(/\s+/)
+              .map((w: string) => (w && w.length ? w[0] : ""))
+              .join("")
+              .toUpperCase()
+              .slice(0, 2)
             : "NA";
 
           return (
@@ -412,7 +412,7 @@ export const EmployeeMaster: React.FC = () => {
         label: "Gender",
         width: "14",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -489,7 +489,7 @@ export const EmployeeMaster: React.FC = () => {
       },
       {
         key: "ReportPersonName",
-        label: "Report Person Name",
+        label: "Reporting Person Name",
         width: "14",
         sortable: true,
         align: "left",
@@ -539,7 +539,7 @@ export const EmployeeMaster: React.FC = () => {
         label: "Marital Status",
         width: "14",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -547,7 +547,7 @@ export const EmployeeMaster: React.FC = () => {
         label: "Blood Group",
         width: "14",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -591,7 +591,7 @@ export const EmployeeMaster: React.FC = () => {
         label: "Account No",
         width: "14",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -613,7 +613,7 @@ export const EmployeeMaster: React.FC = () => {
         label: "Office Mobile",
         width: "14",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {

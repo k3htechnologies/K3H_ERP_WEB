@@ -224,7 +224,6 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Name',
         width: '20',
         sortable: true,
-        fixed: 'left',
         align: 'left',
         render: (value, row) => (
           <TooltipText
@@ -241,7 +240,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Designation',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -249,7 +248,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Company Name',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -257,7 +256,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Firm Type',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -265,7 +264,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Type',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
 
@@ -274,7 +273,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Email Id',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -293,7 +292,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Pan Number',
         width: '12',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -310,7 +309,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Aadhaar Card Number',
         width: '12',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -327,7 +326,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'GST Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -344,7 +343,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'RERA Number',
         width: '12',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -376,7 +375,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Village',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -384,7 +383,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Office Address',
         width: '12',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
     ],

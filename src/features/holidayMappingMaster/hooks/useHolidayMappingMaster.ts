@@ -124,6 +124,11 @@ export const useHolidayMappingMaster = () => {
         });
       } else {
         setFormData(getInitialFormState());
+        setBranchValue("");
+        setDepartmentValue("");
+
+        setDropdownLabels({});
+        setDropdownResetKey(prev => prev + 1);
       }
       setErrors({});
     }
@@ -346,6 +351,12 @@ export const useHolidayMappingMaster = () => {
   const handleAddHolidayMappingModal = () => {
     setEditingHolidayMappingMasterData(null);
     setFormData(getInitialFormState());
+
+    setBranchValue("");
+    setDepartmentValue("");
+
+    setDropdownResetKey(prev => prev + 1);
+
     setErrors({});
     setIsAddUpdateModalOpen(true);
   }

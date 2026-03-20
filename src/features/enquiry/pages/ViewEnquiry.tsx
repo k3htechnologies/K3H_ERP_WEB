@@ -387,7 +387,7 @@ const ViewEnquiry: React.FC = () => {
                                             Enquiry Date
                                         </span>
                                         <span>:</span>
-                                        <span className="font-semibold w-32 text-right">
+                                        <span className="font-semibold w-32">
                                             {formatDate_dd_MonthName_yy(safe(enquiryData?.EnquiryDate ?? ""))}
                                         </span>
                                     </div>
@@ -397,7 +397,7 @@ const ViewEnquiry: React.FC = () => {
                                             Next Follow-up Date
                                         </span>
                                         <span>:</span>
-                                        <span className="font-semibold w-32 text-right">
+                                        <span className="font-semibold w-32">
                                             {formatDate_dd_MonthName_yy(safe(enquiryData?.NextFollowUpDate))}
                                         </span>
                                     </div>
@@ -410,29 +410,30 @@ const ViewEnquiry: React.FC = () => {
 
                         {/* Basic Deatils */}
 
-                        <div className="grid grid-cols-2 gap-x-10 gap-y-6 p-4">
-                            <FieldItem label="Enquiry Code:" value={safe(enquiryData?.SystemGeneratedCode)} />
-                            <FieldItem label="Mobile No:" value={safe(enquiryData?.MobileNumber) ? `+91 ${safe(enquiryData?.MobileNumber)}` : '-'} />
-                            <FieldItem label="E-Mail ID" value={safe(enquiryData?.EmailId)} />
-                            <FieldItem label="Date of Birth" value={safe(enquiryData?.DateOfBirth) ? formatDate_dd_MonthName_yy(safe(enquiryData?.DateOfBirth)) : ""} />
-                            <FieldItem label="Age" value={calculateAge(enquiryData?.DateOfBirth || "")} />
-                            <FieldItem label="Accommodation" value={safe(enquiryData?.Accommodation)} />
-                            <FieldItem label="Occupation Type" value={safe(enquiryData?.OccupationType)} />
-                            <FieldItem label="Nationality" value={safe(enquiryData?.Nationality)} />
-                            {safe(enquiryData?.Nationality?.toUpperCase()) !== "INDIAN" ? (
-                                <>
-                                    <FieldItem label="Country Of Residence" value={safe(enquiryData?.CountryOfResidence)} />
-                                    <FieldItem label="City Of Residence" value={safe(enquiryData?.CityOfResidence)} />
-                                </>
-                            ) : null}
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Enquiry Details
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="Enquiry Code:" value={safe(enquiryData?.SystemGeneratedCode)} />
+                                <FieldItem label="Mobile No:" value={safe(enquiryData?.MobileNumber) ? `+91 ${safe(enquiryData?.MobileNumber)}` : '-'} />
+                                <FieldItem label="E-Mail ID" value={safe(enquiryData?.EmailId)} />
+                                <FieldItem label="Date of Birth" value={safe(enquiryData?.DateOfBirth) ? formatDate_dd_MonthName_yy(safe(enquiryData?.DateOfBirth)) : ""} />
+                                <FieldItem label="Age" value={calculateAge(enquiryData?.DateOfBirth || "")} />
+                                <FieldItem label="Accommodation" value={safe(enquiryData?.Accommodation)} />
+                                <FieldItem label="Occupation Type" value={safe(enquiryData?.OccupationType)} />
+                                <FieldItem label="Nationality" value={safe(enquiryData?.Nationality)} />
+                                {safe(enquiryData?.Nationality?.toUpperCase()) !== "INDIAN" ? (
+                                    <>
+                                        <FieldItem label="Country Of Residence" value={safe(enquiryData?.CountryOfResidence)} />
+                                        <FieldItem label="City Of Residence" value={safe(enquiryData?.CityOfResidence)} />
+                                    </>
+                                ) : null}
 
-
-
-
-                            <FieldItem label="Customer Time In" value={safe(enquiryData?.EnquiryTimeIn)} />
-                            <FieldItem label="Customer Time Out" value={safe(enquiryData?.EnquiryTimeOut)} />
-
-                        </div>
+                                <FieldItem label="Customer Time In" value={safe(enquiryData?.EnquiryTimeIn)} />
+                                <FieldItem label="Customer Time Out" value={safe(enquiryData?.EnquiryTimeOut)} />
+                            </div>
+                        </section>
                         <hr className="border-t border-gray-200" />
 
                         <section className="p-4">
@@ -441,8 +442,6 @@ const ViewEnquiry: React.FC = () => {
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-
-
 
                                 <FieldItem label="Source " value={safe(enquiryData?.Source)} />
 
@@ -559,8 +558,8 @@ const ViewEnquiry: React.FC = () => {
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Stage " value={safe(enquiryData?.FinalStage)} />
-                                {safe(enquiryData?.FinalStageDetail) !== "" ? <FieldItem label="Stage Reason " value={safe(enquiryData?.FinalStageDetail)} /> : ""}
+                                <FieldItem label="Stage " value={safe(enquiryData?.FinalStage)}/>
+                                {safe(enquiryData?.FinalStageDetail) !== "-" ? <FieldItem label="Stage Reason " value={safe(enquiryData?.FinalStageDetail)} /> : ""}
 
                             </div>
                         </section>

@@ -344,7 +344,6 @@ export const Booking: React.FC = () => {
                 label: 'Applicant Name',
                 width: '20',
                 sortable: true,
-                fixed: 'left',
                 align: 'left',
                 render: (value, row) => (
                     <div className="flex items-center justify-between gap-3">
@@ -414,7 +413,7 @@ export const Booking: React.FC = () => {
                 label: "Approval Status",
                 width: "18",
                 sortable: false,
-                align: "left",
+                align: "center",
                 render: (value, row) => (
 
                     <ApprovalActions

@@ -17,7 +17,7 @@ export const Target: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
 
-            <div className="pt-3">
+            <div className="pb-5">
                 <Tabs
                     tabs={TargetTabList}
                     defaultActive={activeTab}

@@ -202,15 +202,17 @@ export const ViewBooking: React.FC = () => {
                 key: "Type",
                 label: "Type",
                 sortable: false,
-                align: "center",
+                width: "20",
+                align: "left",
                 render: (value) => value || "-",
             },
             {
                 key: "Date",
                 label: "Date / Stage",
                 sortable: false,
-                align: "left",
-
+                
+                width: "30",
+                align: "center",
                 render: (_value, row) => {
 
                     if (row.Type === "Date" && row.Date) {
@@ -228,19 +230,25 @@ export const ViewBooking: React.FC = () => {
                 key: "PaymentSchedulePercentage",
                 label: "Percentage (%)",
                 sortable: false,
-                align: "center",
+                
+                width: "20",
+                align: "right",
                 render: (value) => `${value || 0}%`,
             },
             {
                 key: "PaymentScheduleAmount",
                 label: "Amount (₹)",
                 sortable: false,
+                
+                width: "20",
                 align: "right",
                 render: (value) => value || "-",
             },
             {
                 key: "PaymentScheduleGSTAmount",
                 label: "GST Amount (₹)",
+                
+                width: "20",
                 sortable: false,
                 align: "right",
                 render: (value) => value || "-",
@@ -248,6 +256,8 @@ export const ViewBooking: React.FC = () => {
             {
                 key: "PaymentScheduleTDSAmount",
                 label: "TDS Amount (₹)",
+                
+                width: "20",
                 sortable: false,
                 align: "right",
                 render: (value) => value || "-",
@@ -262,7 +272,6 @@ export const ViewBooking: React.FC = () => {
             {
                 key: "ChargeName",
                 label: "Charges",
-                width: "20",
                 sortable: false,
                 align: "left",
                 fixed: "left",
@@ -271,15 +280,13 @@ export const ViewBooking: React.FC = () => {
             {
                 key: "CalculatedOn",
                 label: "Calculated On",
-                width: "15",
                 sortable: false,
-                align: "center",
+                align: "left",
                 render: (value) => value || "-",
             },
             {
                 key: "Value",
                 label: "Value (₹)",
-                width: "18",
                 sortable: false,
                 align: "right",
                 render: (value) => value || "-",
@@ -287,15 +294,13 @@ export const ViewBooking: React.FC = () => {
             {
                 key: "GSTPercentage",
                 label: "GST (%)",
-                width: "12",
                 sortable: false,
-                align: "center",
+                align: "right",
                 render: (value) => `${value || 0}%`,
             },
             {
                 key: "GSTValue",
                 label: "GST Value (₹)",
-                width: "18",
                 sortable: false,
                 align: "right",
                 render: (value) => value || "-",
@@ -337,7 +342,7 @@ export const ViewBooking: React.FC = () => {
                     }
                 }}
                 canAction={canAction && !bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") && sourcePage === 'booking' ? true : false}
-                canActionExtraButtonText={!bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false}
+                canActionExtraButtonText={bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false}
                 onEdit={() => navigate('/booking/add')}
                 ExtraButtonText="Generate PDF"
                 onExtraButton={() => handleExportBookings("BOOKING FORM PDF")}
@@ -355,16 +360,16 @@ export const ViewBooking: React.FC = () => {
                 />
             </div>
 
-            <div className="mt-3">
+            <div className="mt-5">
                 {activeTab === 'Overview' && (
                     <>
                         {/* ===================== ENQUIRY DETAILS ===================== */}
                         {editEnquiryData && (
-                            <div className="space-y-4 pb-3">
+                            <div className="space-y-4">
                                 <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
                                     Enquiry Details
                                 </h3>
-                                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                <div className="mt-4 p-4 bg-blue-50 shadow-sm rounded-lg border border-blue-200">
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
 
@@ -396,7 +401,7 @@ export const ViewBooking: React.FC = () => {
 
                                 {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
                                 {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Reference' && (
-                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
 
                                             <FieldItem label="Referral Unit Owner" value={editEnquiryData?.ReferelUnitOwnerName || '-'} />
@@ -409,7 +414,7 @@ export const ViewBooking: React.FC = () => {
 
                                 {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
                                 {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Loyalty' && (
-                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
 
                                             <FieldItem label="Existing Project" value={editEnquiryData?.LoyaltyExistingProjectName || '-'} />
@@ -422,7 +427,7 @@ export const ViewBooking: React.FC = () => {
 
                                 {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
                                 {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Employee Reference' && (
-                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
 
                                             <FieldItem label="Employee Name" value={editEnquiryData?.EmployeeReferenceName || '-'} />
@@ -434,7 +439,7 @@ export const ViewBooking: React.FC = () => {
 
                                 {/* ===================== CHANNEL PARTNER DETAILS ===================== */}
                                 {editEnquiryData?.Source?.toUpperCase() === 'CHANNEL PARTNER' && (
-                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                                    <div className="mt-4 p-4 bg-blue-50 rounded-lg shadow-sm border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
 
                                             <FieldItem label="Channel Partner" value={editEnquiryData?.ChannelPartnerName || '-'} />
@@ -449,37 +454,39 @@ export const ViewBooking: React.FC = () => {
                         )}
 
                         {/* Applicant Details */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Applicant Details
-                            </h4>
-                            <div className="space-y-5">
-                                {bookingData.BookingApplicantData && bookingData.BookingApplicantData.length > 0 ? (
-                                    bookingData.BookingApplicantData.map((applicant, i) => (
-                                        <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                <FieldItem label="Type" value={safe(applicant.ApplicantType)} className='text-blue-900 bold' />
-                                                <FieldItem label="Applicant Name" value={safe(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                <FieldItem label="Contact Number" value={safe(applicant?.ApplicantMobileNumber)} />
-                                                <FieldItem label="E-Mail ID" value={safe(applicant?.ApplicantEmailId)} />
-                                                <FieldItem label="Aadhaar Card No." value={safe(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
-                                                <FieldItem label="PAN No." value={safe(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
-                                                <FieldItem label="Driving License" value={safe(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
-                                                <FieldItem label="Voting ID No." value={safe(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
-                                                <FieldItem label="Passport No." value={safe(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
-                                                <FieldItem label="GST No." value={safe(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
+                        <div className="pt-5">
+                            <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                    Applicant Details
+                                </h4>
+                                <div className="space-y-5">
+                                    {bookingData.BookingApplicantData && bookingData.BookingApplicantData.length > 0 ? (
+                                        bookingData.BookingApplicantData.map((applicant, i) => (
+                                            <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                                    <FieldItem label="Type" value={safe(applicant.ApplicantType)} className='text-blue-900 bold' />
+                                                    <FieldItem label="Applicant Name" value={safe(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
+                                                    <FieldItem label="Contact Number" value={safe(applicant?.ApplicantMobileNumber)} />
+                                                    <FieldItem label="E-Mail ID" value={safe(applicant?.ApplicantEmailId)} />
+                                                    <FieldItem label="Aadhaar Card No." value={safe(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
+                                                    <FieldItem label="PAN No." value={safe(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
+                                                    <FieldItem label="Driving License" value={safe(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
+                                                    <FieldItem label="Voting ID No." value={safe(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
+                                                    <FieldItem label="Passport No." value={safe(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
+                                                    <FieldItem label="GST No." value={safe(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
+                                                </div>
                                             </div>
+                                        ))
+                                    ) : (
+                                        <div className="py-6 text-center text-gray-500 text-sm">
+                                            <NoDataView message="No Applicant Data Found" />
                                         </div>
-                                    ))
-                                ) : (
-                                    <div className="py-6 text-center text-gray-500 text-sm">
-                                        <NoDataView message="No Applicant Data Found" />
-                                    </div>
-                                )}
-                            </div>
-                        </section>
+                                    )}
+                                </div>
+                            </section>
+                        </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-5">
                             <div className="lg:col-span-2 space-y-6">
                                 {/* Project Details */}
                                 <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
@@ -510,7 +517,7 @@ export const ViewBooking: React.FC = () => {
 
                                 {/* Parking Details */}
                                 {bookingData.ParkingData && bookingData.ParkingData.length > 0 && (
-                                    <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+                                    <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f]">
                                         <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                             Parking Details
                                         </h4>
@@ -533,7 +540,7 @@ export const ViewBooking: React.FC = () => {
                                     </section>
                                 )}
 
-                                <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
+                                <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f]">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                         Booking Details
                                     </h4>
@@ -545,7 +552,7 @@ export const ViewBooking: React.FC = () => {
                                     </div>
                                 </section>
 
-                                <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
+                                <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f]">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                         Payment Details
                                     </h4>
@@ -561,7 +568,7 @@ export const ViewBooking: React.FC = () => {
                             </div>
 
                             <div className="lg:col-span-1 space-y-6">
-                                <section className="bg-white rounded-xl  p-6 border-[0.1px] border-[#3333334f]">
+                                <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f]">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                         Booking Summary
                                     </h4>
@@ -637,7 +644,7 @@ export const ViewBooking: React.FC = () => {
                         </section>
 
                         {bookingData.FlatAlterationRemark && (
-                            <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f] mt-5">
+                            <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                     Flat Alteration Remarks
                                 </h4>
@@ -649,7 +656,7 @@ export const ViewBooking: React.FC = () => {
 
 
                         {bookingData.PaymentRemark && (
-                            <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f] mt-5">
+                            <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                     Payment Remarks
                                 </h4>
@@ -661,7 +668,7 @@ export const ViewBooking: React.FC = () => {
 
 
                         {bookingData.OtherRemark && (
-                            <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f] mt-5">
+                            <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                     Other Remarks
                                 </h4>
@@ -673,7 +680,7 @@ export const ViewBooking: React.FC = () => {
 
 
                         {bookingData.TermsAndConditionsDescription && (
-                            <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f] mt-5">
+                            <section className="rounded-xl pt-5">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                     Terms & Conditions
                                 </h4>
@@ -681,7 +688,7 @@ export const ViewBooking: React.FC = () => {
                                     <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
 
                                 </div>
-                            </section>
+                                </section>
                         )}
 
                         <div className='pt-5'>
@@ -702,7 +709,7 @@ export const ViewBooking: React.FC = () => {
                                     />
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
                                     <FieldItem label="Modified By" value={safe(bookingData.ModifiedBy)} />
                                     <FieldItem
                                         label="Modified Date"

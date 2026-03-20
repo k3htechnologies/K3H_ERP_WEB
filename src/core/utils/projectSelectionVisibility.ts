@@ -39,6 +39,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         ,'compOff'
         ,'attendance'
         ,'payrollReport'
+        ,'channelPartnerDashboard'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

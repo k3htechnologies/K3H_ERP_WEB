@@ -359,16 +359,16 @@ export const CallLog: React.FC = () => {
             label: 'Receiver Name',
             width: '20',
             sortable: true,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
             key: 'MobileNumber',
-            label: 'Phone Number',
+            label: 'Mobile Number',
             width: '15',
             sortable: false,
-            align: 'center',
-            render: value => value || '-'
+            align: 'left',
+            render: value => value ? `+91 ${value}` : '-'
         },
         {
             key: 'CallDate',
@@ -421,7 +421,7 @@ export const CallLog: React.FC = () => {
             label: 'Remark',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: (value) => (
                 <TooltipText
                     text={value || '-'}
@@ -526,7 +526,6 @@ export const CallLog: React.FC = () => {
         setFilters({});
         setPagination({ currentPage: 1 });
         loadCallLogData(1, {}, sortInfo, searchTerm);
-        setShowFilterPopup(false);
     };
 
     //#region HANDLE FILTER CHNAGE
@@ -614,7 +613,7 @@ export const CallLog: React.FC = () => {
 
     //#region
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div>
 
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
 
@@ -749,6 +748,7 @@ export const CallLog: React.FC = () => {
                         <div>
                             <TextArea
                                 label="Remark"
+                                required
                                 className='thin-scroll'
                                 value={formData.Remark ?? ""}
                                 placeholder="Enter Remark"

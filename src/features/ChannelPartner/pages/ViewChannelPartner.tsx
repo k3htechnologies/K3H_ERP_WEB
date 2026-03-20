@@ -182,6 +182,9 @@ const ViewChannelPartner: React.FC = () => {
 
                         {/* Basic Deatils */}
                         <section className="p-4">
+                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Basic Details
+                            </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 ">
                                 <FieldItem label="Mobile No:" value={editChannelPartnerData?.MobileNumber ? `+91 ${editChannelPartnerData?.MobileNumber}` : '-'} />
                                 <FieldItem label="E-Mail ID" value={editChannelPartnerData?.EmailId} />

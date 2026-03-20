@@ -107,7 +107,7 @@ export const format24To12Hour = (hour: string, minute: string) => {
 }
 export const getMonthDateRange = (date: Date) => {
 
-  const fromDate = new Date(date.getFullYear(), date.getMonth(), 2);
+  const fromDate = new Date(date.getFullYear(), date.getMonth(), 1);
   const toDate = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 
   fromDate.setHours(0, 0, 0, 0);
@@ -138,21 +138,29 @@ export const getTodayDateRange = () => {
 
 export const getWeekToDateRange = () => {
 
-  const today = new Date();
+  const now = new Date();
 
-  const firstDay = new Date(today);
+  const today = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate()
+  );
+
   const day = today.getDay();
-  const diff = today.getDate() - day + (day === 0 ? -6 : 1);
 
-  const fromDate = new Date(firstDay.setDate(diff));
-  const toDate = new Date(today);
+  const diffToTuesday = (day >= 2) ? day - 2 : day + 5;
+
+  const fromDate = new Date(today);
+  fromDate.setDate(today.getDate() - diffToTuesday);
+
+  const toDate = new Date(fromDate);
+  toDate.setDate(fromDate.getDate() + 6);
 
   fromDate.setHours(0, 0, 0, 0);
   toDate.setHours(23, 59, 59, 999);
 
   return { fromDate, toDate };
 };
-
 export const getYearToDateRange = () => {
 
   const today = new Date();

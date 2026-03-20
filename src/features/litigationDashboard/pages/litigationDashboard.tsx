@@ -12,7 +12,7 @@ import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import { litigationDashboardService } from "@/features/litigationDashboard/services/litigationDashboardService";
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
-
+import type { Table0, Table1, Table2, Table3, Table4, Table6 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 const LitigationDashboard: React.FC = () => {
 
@@ -22,13 +22,14 @@ const LitigationDashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
 
-    const [overViewData, setOverViewData] = useState<any[]>([]);
-    const [caseAnalysisData, setCaseAnalysisData] = useState<any[]>([]);
-    const [activeCaseData, setActiveCaseData] = useState<any[]>([]);
-    const [upComingHearingData, setUpComingHearingData] = useState<any[]>([]);
-    const [courtDistributionData, setCourtDistributionData] = useState<any[]>([]);
-    const [uploadedDocumentData, setUploadedDocumentData] = useState<any[]>([]);
-    const [caseTypeDistributionData, setCaseTypeDistributionData] = useState<any[]>([]);
+    const [overViewData, setOverViewData] = useState<Table0[]>([]);
+    const [hearingData, setHearingData] = useState<Table1[]>([])
+    const [caseTypeDistributionData, setCaseTypeDistributionData] = useState<Table2[]>([]);
+    const [courtDistributionData, setCourtDistributionData] = useState<Table3[]>([]);
+    const [activeCaseData, setActiveCaseData] = useState<Table4[]>([]);
+    const [upComingHearingData, setUpComingHearingData] = useState<Table4[]>([]);
+    const [caseAnalysisData, setCaseAnalysisData] = useState<Table0[]>([]);
+    const [uploadedDocumentData, setUploadedDocumentData] = useState<Table6[]>([]);
 
     useEffect(() => {
         if (!projectId) return;
@@ -48,11 +49,12 @@ const LitigationDashboard: React.FC = () => {
                     const e = response.right.Data;
 
                     setOverViewData(e.Table0 || []);
-                    setCaseTypeDistributionData(e.Table1 || []);
-                    setCourtDistributionData(e.Table2 || []);
-                    setActiveCaseData(e.Table3 || []);
+                    setHearingData(e.Table1 || []);
+                    setCaseTypeDistributionData(e.Table2 || []);
+                    setCourtDistributionData(e.Table3 || []);
+                    setActiveCaseData(e.Table4 || []);
                     setUpComingHearingData(e.Table4 || []);
-                    setCaseAnalysisData(e.Table5 || []);
+                    setCaseAnalysisData(e.Table0 || []);
                     setUploadedDocumentData(e.Table6 || []);
 
                 } else {
@@ -74,26 +76,20 @@ const LitigationDashboard: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
 
             <div className="cursor-pointer">
-                <OverviewCards overViewData={overViewData} />
-
-                <div className="grid grid-cols-[0.8fr_1.2fr] gap-4">
+                <OverviewCards overViewData={overViewData} hearingData={hearingData}/>
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">
                     <CaseTypeDistribution CaseTypeData={caseTypeDistributionData} />
                     <CourtDistribution courtData={courtDistributionData} />
                 </div>
 
-                <div className="grid grid-cols-[0.8fr_1.2fr] gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">
                     <ActiveCases activeCaseData={activeCaseData} />
                     <UpComingHearing upComingHearingData={upComingHearingData} />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                    <div className="col-span-2">
-                        <CaseAnalysis CaseAnalysisData={caseAnalysisData} />
-                    </div>
-
-                    <div className="col-span-1">
-                        <UploadedDocument uploadedDocumentData={uploadedDocumentData} />
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">
+                    <CaseAnalysis CaseAnalysisData={caseAnalysisData} />
+                    <UploadedDocument uploadedDocumentData={uploadedDocumentData} />
                 </div>
 
             </div>

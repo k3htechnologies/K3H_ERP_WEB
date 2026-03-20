@@ -81,7 +81,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   return (
     <div
       className={className}
-      style={{ width: '100%', marginBottom: theme.spacing.sm }}
+      style={{ width: '100%', marginBottom: theme.spacing.sm}}
       data-name={name}
     >
       <div ref={containerRef} />

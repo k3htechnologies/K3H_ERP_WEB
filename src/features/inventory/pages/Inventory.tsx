@@ -1346,7 +1346,7 @@ const Inventory = () => {
                 onSearchChange={handleSearchChange}
                 onClearSearch={handleClearSearch}
 
-                approvalStatus={selectedWing?.ApprovalStatus ?? ""}
+                approvalStatus={isInventoryAvailable===true ? selectedWing?.ApprovalStatus ?? "" : ''}
                 showApprovalActions={selectedWing?.IsApproval === true}
                 onApprovalLog={handleApprovalLog}
                 onApprove={() => handleApproveRejectDocument("approve")}

@@ -46,10 +46,10 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
 
     const fetchCompOffDates = (monthStart: string, monthEnd: string, abortController: AbortController) => {
         setIsLoadingDates(true);
-        
+
         const employeeData = LocalStorageHelper.getStoredEmployeeData();
         const params: PullCompOffDatesRequest = {
-            PageSize: 1000, 
+            PageSize: 1000,
             PageNumber: 1,
             EmployeeId: employeeData?.EmployeeId,
             StartDate: monthStart,
@@ -67,7 +67,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                             return null;
                         })
                         .filter((date): date is string => date !== null && date !== '');
-                    
+
                     setAllowedDates(dates);
                 }
                 setIsLoadingDates(false);
@@ -87,7 +87,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
         if (isOpen && !editingData) {
             // Only fetch dates when adding (not editing)
             const abortController = new AbortController();
-            
+
             let monthStart: string;
             let monthEnd: string;
 
@@ -104,7 +104,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                 const lastDay = new Date(year, month + 1, 0).getDate();
                 monthEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
             }
-            
+
             fetchCompOffDates(monthStart, monthEnd, abortController);
 
             return () => {

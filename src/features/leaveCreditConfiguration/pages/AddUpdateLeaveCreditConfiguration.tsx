@@ -519,9 +519,9 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
               initialValue={
                 formData.DepartmentMasterId
                   ? createDropdownInitialValue(
-                      String(formData.DepartmentMasterId),
-                      dropdownLabels.departmentName || "",
-                    )
+                    String(formData.DepartmentMasterId),
+                    dropdownLabels.departmentName || "",
+                  )
                   : null
               }
               error={errors.DepartmentMasterId}
@@ -610,9 +610,9 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                         initialValue={
                           item.LeaveTypeId && item.LeaveTypeId > 0
                             ? createDropdownInitialValue(
-                                String(item.LeaveTypeId),
-                                leaveTypeLabels[index] || "",
-                              )
+                              String(item.LeaveTypeId),
+                              leaveTypeLabels[index] || "",
+                            )
                             : null
                         }
                         error={errors[`LeaveBalanceType_${index}_LeaveTypeId`]}
@@ -623,7 +623,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                         label="Leave Credit"
                         required
                         size="sm"
-                        type="number"
+                        type="text"
                         value={item.LeaveCredit}
                         onChange={(e) =>
                           handleUpdateLeaveBalanceType(
@@ -635,6 +635,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                         placeholder="Enter Leave Credit"
                         error={errors[`LeaveBalanceType_${index}_LeaveCredit`]}
                         min={0}
+                        maxLength={2}
                         step={1}
                       />
                     </div>
@@ -660,7 +661,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
           cancelText="Cancel"
           saveText={
             formData.LeaveCreditConfigurationId &&
-            formData.LeaveCreditConfigurationId > 0
+              formData.LeaveCreditConfigurationId > 0
               ? "Update"
               : "Add"
           }

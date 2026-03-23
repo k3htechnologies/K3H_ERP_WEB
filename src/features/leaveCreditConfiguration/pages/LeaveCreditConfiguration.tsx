@@ -349,7 +349,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
-  const requiredLeaveCreditConfigurationColumnKeys: string[] = ['DepartmentName'];
+  const requiredLeaveCreditConfigurationColumnKeys: string[] = ['DepartmentName', 'actions'];
 
   const allLeaveCreditConfigurationColumnKeys: string[] = leaveCreditConfigurationColumns.map(c => c.key);
 
@@ -470,7 +470,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Department Name..."
+        searchPlaceholder="Search By Department Name"
         onSearchChange={searchLeaveCreditConfigurations}
         onClearSearch={clearSearchLeaveCreditConfigurations}
         isShowFilterButton

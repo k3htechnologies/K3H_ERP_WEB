@@ -515,7 +515,7 @@ const AttendanceCalendar: React.FC = () => {
               style={{
                 backgroundColor: stableEventsForSelectedDate[0]?.AttendanceStatus
                   ? getStatusColor(stableEventsForSelectedDate[0].AttendanceStatus)
-                  : '#9ca3af',
+                  : '',
               }}
             />
             <div className="font-semibold text-base sm:text-lg flex-1 truncate">
@@ -526,29 +526,58 @@ const AttendanceCalendar: React.FC = () => {
               const hasExistingRegularization = hasRegularization(att.AttendanceDate);
               return canRegularizeStatus && !hasExistingRegularization;
             }) && (
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const firstRegularizable = stableEventsForSelectedDate.find(att => {
-                    const canRegularizeStatus = canRegularize(att.AttendanceStatus);
-                    const hasExistingRegularization = hasRegularization(att.AttendanceDate);
-                    return canRegularizeStatus && !hasExistingRegularization;
-                  });
-                  if (firstRegularizable) {
-                    handleRegularize(firstRegularizable);
-                  }
-                }}
-                color="transparent"
-                isborderRadius
-                size="sm"
-                style={{ color: 'blue', padding: '4px 8px' }}
-                title="Regularize"
-                className="flex-shrink-0"
-              >
-                <ClockCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </Button>
-            )}
+                // <Button
+                //   onClick={(e) => {
+                //     e.preventDefault();
+                //     e.stopPropagation();
+                //     const firstRegularizable = stableEventsForSelectedDate.find(att => {
+                //       const canRegularizeStatus = canRegularize(att.AttendanceStatus);
+                //       const hasExistingRegularization = hasRegularization(att.AttendanceDate);
+                //       return canRegularizeStatus && !hasExistingRegularization;
+                //     });
+                //     if (firstRegularizable) {
+                //       handleRegularize(firstRegularizable);
+                //     }
+                //   }}
+                //   color="transparent"
+                //   isborderRadius
+                //   size="sm"
+                //   style={{ color: 'blue', padding: '4px 8px' }}
+                //   title="Regularize"
+                //   className="flex-shrink-0"
+                // >
+                //   Regularize
+                //   {/* <ClockCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> */}
+                // </Button>
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const firstRegularizable = stableEventsForSelectedDate.find(att => {
+                      const canRegularizeStatus = canRegularize(att.AttendanceStatus);
+                      const hasExistingRegularization = hasRegularization(att.AttendanceDate);
+                      return canRegularizeStatus && !hasExistingRegularization;
+                    });
+
+                    if (firstRegularizable) {
+                      handleRegularize(firstRegularizable);
+                    }
+                  }}
+                  color="blue"
+                  size="mxs"
+                  variant="solid"
+                  colorMode="gradient_dark"
+                  defineWidth
+                  title="Regularize"
+                  aria-label="Regularize"
+                  style={{ width: '110px' }}
+                  leftIcon={<ClockCheck className="h-4 w-4" />}
+                >
+                  <span>Regularize</span>
+                </Button>
+
+              )}
           </div>
 
           <div className="space-y-2 sm:space-y-3">

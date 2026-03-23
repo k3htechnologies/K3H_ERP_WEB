@@ -238,14 +238,21 @@ const AttendanceMonthView = React.memo(function AttendanceMonthView({
                             {/* Events */}
                             <div className="mt-1 space-y-0.5 sm:space-y-1 overflow-hidden">
                                 {dayEvents.slice(0, 3).map((ev) => {
+                                    if (!ev.type) return null;
+
                                     const badge = getStatusBadgeClasses(ev.type);
+
+                                    if (!badge || !badge.backgroundColor || !badge.color) {
+                                        return null;
+                                        
+                                    }
 
                                     return (
                                         <div
                                             key={ev.id}
                                             className="text-[9px] sm:text-[10px] px-1 py-0.5 rounded truncate border"
                                             style={{
-                                                backgroundColor: `${badge.backgroundColor}20`, 
+                                                backgroundColor: `${badge.backgroundColor}20`,
                                                 color: badge.color,
                                                 borderColor: `${badge.backgroundColor}40`,
                                             }}

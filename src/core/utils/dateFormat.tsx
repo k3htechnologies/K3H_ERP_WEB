@@ -8,7 +8,7 @@ export const formatDate_dd_MonthName_yy_hh_mm = (
   dateString: string,
   timeString?: string,
 ): string => {
-  if (!dateString || dateString.trim() === "") {
+  if (!dateString) {
     return "";
   }
 

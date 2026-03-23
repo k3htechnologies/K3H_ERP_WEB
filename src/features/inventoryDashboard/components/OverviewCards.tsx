@@ -1,15 +1,8 @@
 import { Building2, Layers, Box, GitBranch, Grid3x3 } from "lucide-react";
-
-interface OverviewItem {
-  TotalBuilding?: number;
-  TotalBasement?: number;
-  TotalPodium?: number;
-  TotalWings?: number;
-  TotalFloors?: number;
-}
+import type { Table0 } from "@/features/inventoryDashboard/models/InventoryDashboardModel";
 
 interface Props {
-  overViewData?: OverviewItem[];
+  overViewData?: Table0[];
 }
 
 export default function OverviewCards({ overViewData = [] }: Props) {
@@ -46,8 +39,8 @@ export default function OverviewCards({ overViewData = [] }: Props) {
       color: "#EA580C",
     },
     {
-      title: "Floors",
-      value: data.TotalFloors ?? 0,
+      title: "Ground",
+      value: data.TotalBuilding ?? 0,
       icon: Grid3x3,
       backgroundColor: "#F0FDF4",
       color: "#16A34A",

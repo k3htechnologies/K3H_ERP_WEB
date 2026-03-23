@@ -1,10 +1,11 @@
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import type { Table3 } from "@/features/channelPartnerDashboard/models/ChannelPartnerDashboardModel";
 
 interface Props {
-    cityWiseDistributionData: any[];
+    cityWiseDistributionData: Table3[];
 }
 
-export default function CityWiseDistribution({ cityWiseDistributionData = [] }: Props) {
+export default function CityWiseDistribution({ cityWiseDistributionData}: Props) {
     const maxValue = Math.max(...cityWiseDistributionData.map(item => item.TotalChannelPartner || 0), 1);
 
     return (
@@ -25,7 +26,7 @@ export default function CityWiseDistribution({ cityWiseDistributionData = [] }: 
                             return (
                                 <div key={index} className="flex items-center gap-2">
                                     <span className="text-sm text-gray-500 w-24 shrink-0">
-                                        {item.Name}
+                                        {item.Name ?? ''}
                                     </span>
 
                                     <div className="relative flex-1 h-8 rounded-lg  overflow-hidden">
@@ -34,7 +35,7 @@ export default function CityWiseDistribution({ cityWiseDistributionData = [] }: 
                                             style={{ width: `${widthPercent}%` }}
                                         >
                                             <span className="text-sm font-bold text-[#1d4ed8] whitespace-nowrap">
-                                                {item.TotalChannelPartner}
+                                                {item.TotalChannelPartner ?? 0}
                                             </span>
                                         </div>
                                     </div>

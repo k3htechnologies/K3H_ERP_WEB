@@ -1,7 +1,8 @@
 import { PieChart, Pie, Cell } from "recharts";
+import type { Table2 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 interface Props {
-    CaseTypeData: any[];
+    CaseTypeData: Table2[];
 }
 
 export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {

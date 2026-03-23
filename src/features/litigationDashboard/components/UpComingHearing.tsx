@@ -1,10 +1,12 @@
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import type { Table5 } from "@/features/litigationDashboard/models/litigationDashboardModel";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 
 interface Props {
-  upComingHearingData: any[];
+  upComingHearingData: Table5[];
 }
 
-export default function UpComingHearing({ upComingHearingData = [] }: Props) {
+export default function UpComingHearing({ upComingHearingData }: Props) {
   return (
     <div className="pt-4">
       <h2 className="text-lg font-semibold text-gray-800 mb-4">
@@ -26,23 +28,20 @@ export default function UpComingHearing({ upComingHearingData = [] }: Props) {
                 {/* Left content */}
                 <div>
                   <p className="text-sm font-semibold text-gray-900">
-                    Case No: {item.CaseNumber}</p>
+                    Case No: {item.CaseNumber ?? '-'}</p>
                   <p className="text-xs text-gray-600 mt-2">
-                    {item.CaseType}</p>
+                    {item.CaseType ?? '-'}</p>
                   <p className="text-xs text-gray-600 mt-2">
-                    {item.CourtType}</p>
+                    {item.CourtType ?? '-'}</p>
                 </div>
 
                 {/* Right content */}
                 <div className="flex flex-col items-end space-y-2">
                   <p className="text-sm font-medium text-gray-700">
-                    {item.Location}
+                    {formatDate_dd_MonthName_yy_hh_mm(item.HearingDate ?? '')}
                   </p>
-
-                  <span className="bg-purple-800 text-white px-1 py-1 mt-3 rounded">
-                    {`in ${Math.ceil((new Date(item.HearingDate).getTime() - new Date().setHours(0, 0, 0, 0)) / (1000 * 60 * 60 * 24))} days`}
-                  </span>
-
+                  <span className="bg-purple-800 text-white px-2 py-1 mt-3 rounded">
+                    {`in ${item.DaysRemaining} day`}</span>
                 </div>
               </div>
             ))}

@@ -1,21 +1,11 @@
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import type { Table5 } from "@/features/channelPartnerDashboard/models/ChannelPartnerDashboardModel";
 
 interface Props {
-    MissingDetailsData: any[];
+    MissingDetailsData: Table5[];
 }
 
-export default function MissingDetails({ MissingDetailsData = [] }: Props) {
-
-    // USE NAVIGATE
-    const navigate = useNavigate();
-
-    //#region NAVIGATE TO  VIEW CHANNEL PARTNER
-    const handleNavigateToView = useCallback(() => {
-        navigate('/channelPartner/view');
-    }, [navigate]);
-    //#endregion
+export default function MissingDetails({ MissingDetailsData }: Props) {
 
     //#region
     return (
@@ -37,23 +27,10 @@ export default function MissingDetails({ MissingDetailsData = [] }: Props) {
                                 <div className="w-2 bg-red-500 flex-shrink-0"></div>
                                 <div className="flex justify-between items-center w-full p-4">
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-900">
-                                            {item.Name}
-                                        </p>
-                                        <p className="text-xs text-gray-600 mt-1">
-                                            {item.SystemGeneratedCode}
-                                        </p>
+                                        <p className="text-sm font-semibold text-gray-900">{item.Name ?? ''}</p>
+                                        <p className="text-xs text-gray-600 mt-1">{item.SystemGeneratedCode ??''}</p>
                                     </div>
-
-                                    <button className="text-blue-600 text-sm font-medium underline hover:text-blue-800"
-                                        onClick={() => {
-                                            handleNavigateToView()
-                                        }}
-                                    >
-                                        View
-                                    </button>
                                 </div>
-
                             </div>
                         ))}
                     </div>

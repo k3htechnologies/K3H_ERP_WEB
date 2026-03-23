@@ -2,13 +2,13 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { useMemo } from "react";
+import type { Table5 } from "@/features/channelPartnerDashboard/models/ChannelPartnerDashboardModel";
 
 interface Props {
-    TeamMemberOverviewData: any[];
+    TeamMemberOverviewData: Table5[];
 }
 
-const TeamMemberOverview: React.FC<Props> = ({ TeamMemberOverviewData }) => {
-
+const TeamMemberOverview: React.FC<Props> = ({ TeamMemberOverviewData}) => {
     const TeamMemberOverviewColumns = useMemo<any[]>(
         () => [
             {
@@ -57,7 +57,7 @@ const TeamMemberOverview: React.FC<Props> = ({ TeamMemberOverviewData }) => {
                 align: "center",
                 render: (value: string) => (
                     <span className="font-medium text-black">
-                        {(value || '')}
+                        {(value || '-')}
                     </span>
                 )
             },

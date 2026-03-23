@@ -12,7 +12,8 @@ import { runApiWithLoader } from "@/core/utils";
 import { Loader } from "@/core/utils/loader";
 import useToast from "@/core/hooks/useToast";
 import * as E from "fp-ts/Either";
-import type { Table0, Table1, Table2, Table3 } from "../models/InventoryDashboardModel";
+import { type Table0, type Table1, type Table2, type Table3, type Table4 } from "@/features/inventoryDashboard/models/InventoryDashboardModel";
+import WingDetails from "@/features/inventoryDashboard/components/WingDetails";
 
 const InventoryDashboard: React.FC = () => {
 
@@ -26,6 +27,7 @@ const InventoryDashboard: React.FC = () => {
   const [parkingData, setParkingData] = useState<Table1[]>([]);
   const [buildingOverviewData, setBuildingOverviewData] = useState<Table2[]>([]);
   const [alertsData, setAlertsData] = useState<Table3[]>([]);
+  const [wingData, setWingData] = useState<Table4[]>([])
 
   useEffect(() => {
     if (!projectId) return;
@@ -47,7 +49,7 @@ const InventoryDashboard: React.FC = () => {
           setParkingData(e.Table1 || []);
           setBuildingOverviewData(e.Table2 || []);
           setAlertsData(e.Table3 || []);
-
+          setWingData(e.Table4 || []);
         } else {
           addToast({ type: "error", title: response.left.message });
         }
@@ -65,12 +67,11 @@ const InventoryDashboard: React.FC = () => {
 
   return (
     <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
-
       <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
 
       {overViewData.length > 0 ? (
         <>
-          <InventoryHeader/>
+          <InventoryHeader />
 
           <OverviewCards overViewData={overViewData} />
 
@@ -87,6 +88,10 @@ const InventoryDashboard: React.FC = () => {
             <div className="md:col-span-12 lg:col-span-4">
               <AlertsPanel alertsData={alertsData} />
             </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
+            <WingDetails wingData={wingData} />
           </div>
         </>
       ) :

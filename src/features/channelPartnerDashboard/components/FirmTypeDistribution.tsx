@@ -1,9 +1,11 @@
 
 import React from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import type { Table1 } from '@/features/channelPartnerDashboard/models/ChannelPartnerDashboardModel';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
 
 interface Props {
-    firmTypeData: any[];
+    firmTypeData: Table1[];
 }
 
 const COLORS = ["#2F6FED", "#1B2F6B", "#7A97A5"];
@@ -20,31 +22,36 @@ const FirmTypeDistribution: React.FC<Props> = ({ firmTypeData }) => {
                         Firm Type Distribution
                     </h3>
 
-                    <ResponsiveContainer>
-                        <PieChart>
-                            <Pie
-                                data={firmTypeData}
-                                innerRadius="50%"
-                                outerRadius="70%"
-                                paddingAngle={3}
-                                dataKey="TotalCount"
-                                cornerRadius={10}
-                            >
-                                {firmTypeData.map((_, i) => (
-                                    <Cell
-                                        key={i}
-                                        fill={COLORS[i % COLORS.length]}
-                                    />
-                                ))}
-                            </Pie>
-                        </PieChart>
-                    </ResponsiveContainer>
+                    {firmTypeData.length === 0 ? (
+                        <div className="flex flex-col justify-center items-center h-[270px]">
+                            <NoDataView />
+                        </div>
+                    ) : (
+                        <>
+                            <ResponsiveContainer>
+                                <PieChart>
+                                    <Pie
+                                        data={firmTypeData}
+                                        innerRadius="50%"
+                                        outerRadius="70%"
+                                        paddingAngle={3}
+                                        dataKey="TotalCount"
+                                        cornerRadius={10}
+                                    >
+                                        {firmTypeData.map((_, i) => (
+                                            <Cell
+                                                key={i}
+                                                fill={COLORS[i % COLORS.length]}
+                                            />
+                                        ))}
+                                    </Pie>
+                                </PieChart>
+                            </ResponsiveContainer></>
+                    )}
 
                     {/* CENTER TOTAL */}
                     <div className="absolute sm:pt-18 inset-0 flex items-center justify-center">
-                        <p className="text-lg font-bold text-blue-600">
-                            {total}
-                        </p>
+                        <p className="text-lg font-bold text-blue-600">{total > 0 ? total : ""}</p>
                     </div>
                 </div>
 
@@ -56,19 +63,12 @@ const FirmTypeDistribution: React.FC<Props> = ({ firmTypeData }) => {
                                 className="w-4 h-4 min-w-[16px] min-h-[16px] rounded-full"
                                 style={{ backgroundColor: COLORS[i % COLORS.length] }}
                             />
-
-                            <p className="font-semibold text-lg">
-                                {t.TotalCount}
-                            </p>
-
-                            <p className="text-sm sm:text-sm md:text- text-gray-500">
-                                {t.FirmsType}
-                            </p>
+                            <p className="font-semibold text-lg">{t.TotalCount ?? 0}</p>
+                            <p className="text-sm sm:text-sm md:text- text-gray-500">{t.FirmsType ?? ''}</p>
                         </div>
                     ))}
                 </div>
             </div>
-           
         </div>
     )
 }

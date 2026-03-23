@@ -14,13 +14,12 @@ import { Button } from "@/ui/components/forms";
 import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PartnerTypeDistribution from "@/features/channelPartnerDashboard/components/PartnerTypeDistribution";
-import type { Table0, Table1, Table2, Table3, Table4, Table5 } from "../models/ChannelPartnerDashboardModel";
+import type { Table0, Table1, Table2, Table3, Table4, Table5 } from "@/features/channelPartnerDashboard/models/ChannelPartnerDashboardModel";
 
 
 const ChannelPartnerDashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
-
     const { addToast } = useToast();
 
     const [overViewCardData, setOverViewCardData] = useState<Table0[]>([]);
@@ -107,7 +106,7 @@ const ChannelPartnerDashboard: React.FC = () => {
                 </h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-3 gap-4">
-                    <PartnerTypeDistribution partnerTypeDistributionData={partnerTypeDistributionData}/>
+                    <PartnerTypeDistribution partnerTypeDistributionData={partnerTypeDistributionData} />
                     <FirmTypeDistribution firmTypeData={firmTypeDistributionData} />
                     <CityWiseDistribution cityWiseDistributionData={cityWiseDistributionData} />
                 </div>

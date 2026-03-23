@@ -1,11 +1,12 @@
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
+import type { Table1 } from "@/features/inventoryDashboard/models/InventoryDashboardModel";
 
 interface Props {
-  parkingData: any[];
+  parkingData: Table1[];
 }
 
-export default function ParkingDistribution({ parkingData = [] }: Props) {
+export default function ParkingDistribution({ parkingData}: Props) {
 
   return (
 

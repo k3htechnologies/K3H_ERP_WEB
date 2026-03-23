@@ -213,6 +213,7 @@ function App() {
           <Route path="error" element={<ErrorFallbackPage />} />
           <Route path='Terms' element={<Terms />} />
           <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
+
           <Route
             path="/"
             element={
@@ -423,7 +424,6 @@ function App() {
             <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
             <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
             <Route path="legalDashboard" element={<LitigationDashboard />} />
-
 
             {/* PROJECT */}
             <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />

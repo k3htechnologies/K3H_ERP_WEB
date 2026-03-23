@@ -2,9 +2,10 @@ import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import {
     LineChart, ResponsiveContainer, Legend, Tooltip, Line, XAxis, YAxis
 } from "recharts";
+import type { Table7 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 interface Props {
-    CaseAnalysisData: any[];
+    CaseAnalysisData: Table7[];
 }
 
 export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
@@ -16,7 +17,7 @@ export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
 
             <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm">
                 {CaseAnalysisData.length === 0 ? (
-                    <div className="flex flex-col justify-center items-center h-[170px]">
+                    <div className="flex flex-col justify-center items-center h-[350px]">
                         <NoDataView />
                     </div>
                 ) : (
@@ -25,20 +26,15 @@ export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
                             data={CaseAnalysisData}
                         >
 
-                            <XAxis dataKey="Month" />
+                            <XAxis dataKey="MonthName" />
                             <YAxis
                                 type="number"
-                                domain={[10, 100]}
-                                allowDataOverflow={true}
+                                domain={[0, 100]}
                                 ticks={[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
-                                label={{
-                                    value: "CASES (YEAR)",
-                                    angle: -90,
-                                    position: "insideLeft"
-                                }}
+                                interval={0}  
                             />
-
                             <Tooltip />
+                            
                             <Legend
                                 verticalAlign="top"
                                 align="right"
@@ -50,15 +46,18 @@ export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
                             <Line
                                 type="monotone"
                                 dataKey="ClosedCases"
+                                name="CLOSED"
                                 stroke="#6366F1"
                                 strokeWidth={3}
                                 dot={false}
                             />
 
-                            {/* Opened Cases */}
+                            {/* Open Cases*/}
+
                             <Line
                                 type="monotone"
                                 dataKey="OpenCases"
+                                name="OPENED"
                                 stroke="#EC4899"
                                 strokeWidth={3}
                                 dot={false}

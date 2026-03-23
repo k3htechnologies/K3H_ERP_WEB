@@ -1,8 +1,9 @@
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from "recharts";
+import type { Table3 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 interface Props {
-    courtData: any[];
+    courtData: Table3[];
 }
 
 export default function CourtDistribution({ courtData = [] }: Props) {
@@ -15,7 +16,7 @@ export default function CourtDistribution({ courtData = [] }: Props) {
 
             <div className="bg-white rounded-lg p-4 shadow-sm space-y-4 overflow-y-auto thin-scroll ">
                 {courtData.length === 0 ? (
-                    <div className="flex flex-col justify-center items-center h-[280px]">
+                    <div className="flex flex-col justify-center items-center h-[295px]">
                         <NoDataView />
                     </div>
                 ) : (
@@ -44,6 +45,7 @@ export default function CourtDistribution({ courtData = [] }: Props) {
                                     <XAxis type="number" hide />
 
                                     {/* Court names */}
+                                    
                                     <YAxis
                                         type="category"
                                         dataKey="CourtType"

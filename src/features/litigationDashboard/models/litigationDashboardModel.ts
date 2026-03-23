@@ -8,6 +8,7 @@ export interface LitigationDashboardDataset {
     Table4: Table4[];
     Table5: Table5[];
     Table6: Table6[];
+    Table7: Table7[];
 }
 
 export interface Table0 {
@@ -15,25 +16,24 @@ export interface Table0 {
     OpenCases: number | 0
     ClosedCases: number | 0
     ReOpenCases: number | 0
-    TotalHearings: number | 0
 }
 
 export interface Table1 {
     TotalHearings: number | 0
-}
-
-export interface Table1 {
-    TotalCases: number | 0
-    CivilCases: number | 0
-    CriminalCases: number | 0
 }
 
 export interface Table2 {
-    CaseType: number | 0
-    TotalCases:number | 0
+    CaseType: string | null
+    TotalCases: number | 0
 }
 
 export interface Table3 {
+    CaseType: string | null
+    OpenCases: number | 0
+    TotalCases: number | 0
+}
+
+export interface Table4 {
     Title: string | null
     CaseNumber: number | 0
     CaseType: string | null
@@ -41,22 +41,29 @@ export interface Table3 {
     Status: string | null
 }
 
-export interface Table4 {
+export interface Table5 {
     CaseNumber: number | 0
     CaseType: string | null
     CourtType: string | null
-    Location: string | null
     HearingDate: string | null
+    DaysRemaining: number | 0
 }
 
-export interface Table5 {
+export interface Table6 {
+    DocumentName: string | null
+    CaseNumber: number | 0
+    RecentDate: string | null
+    ClosureAttachementURL: string | '',
+    DocumentURL: string | '',
+    HearingAttachementURL: string | ''
+}
+
+export interface Table7 {
+    MonthName: string | null
+    MonthNumber: number | 0
+    TotalCases: number | 0
     OpenCases: number | 0
     ClosedCases: number | 0
 }
 
-export interface Table6 {
-    CaseNumber: number | 0
-    DocumentName: string | null
-
-}
 export type LitigationDashboardDatasetResponse = ApiResponse<LitigationDashboardDataset>;

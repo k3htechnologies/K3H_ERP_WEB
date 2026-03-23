@@ -2,9 +2,10 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { useMemo } from "react";
+import type { Table4 } from "@/features/channelPartnerDashboard/models/ChannelPartnerDashboardModel";
 
 interface Props {
-    NewAddedChannelPartnerData: any[];
+    NewAddedChannelPartnerData: Table4[];
 }
 
 const NewAddedChannelPartner: React.FC<Props> = ({ NewAddedChannelPartnerData }) => {

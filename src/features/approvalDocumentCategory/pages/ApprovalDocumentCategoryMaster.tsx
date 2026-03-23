@@ -143,7 +143,7 @@ export const ApprovalDocumentCategoryMaster: React.FC = () => {
         addTitle="Add"
         onAdd={handleAddApprovalDocumentCategoryModal}
         // IMPORT
-        isShowImportButton={canAction}
+        isShowImportButton={canAction && Number(projectId) > 0 ? true : false}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleApprovalDocumentCategoryMaster}
         // EXPORT

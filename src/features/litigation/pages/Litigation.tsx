@@ -742,10 +742,10 @@ export const Litigation: React.FC = () => {
           <div>
             <Input
               type="text"
-              label="Case Number"
+              label="Case / Petition / Dispute Number"
               value={tempFilters?.CaseNumber ?? ""}
               onChange={(e) => handleFilterChange("CaseNumber", e.target.value)}
-              placeholder="Enter Case Number"
+              placeholder="Enter Case / Petition / Dispute Number"
             />
           </div>
 

@@ -1099,11 +1099,12 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (!hasAadharCardNumber) {
       newErrorsBookingApplicant.AadharCardNumber = "Enter a valid Aadhaar Card Number";
-    } else if (!isValidAadhaar(AadharCardNumber)) {
+    } 
+    else if (!isValidAadhaar(AadharCardNumber)) {
       newErrorsBookingApplicant.AadharCardNumber = "Enter a valid Aadhaar Card Number";
     }
 
-    if (hasAadharCardNumber && !hasAadharCardNumberFile) {
+    if (!hasAadharCardNumberFile) {
       newErrorsBookingApplicant.AadharCardURL = "Aadhaar document is required";
     }
 
@@ -1114,7 +1115,8 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (!hasPanNumber) {
       newErrorsBookingApplicant.PanNumber = "Enter a valid PAN Card Number";
-    } else if (!isValidPAN(PanNumber)) {
+    } 
+    else if (!isValidPAN(PanNumber)) {
       newErrorsBookingApplicant.PanNumber = "Enter a valid PAN Card Number";
     }
     if (!hasPanFile) {
@@ -2335,7 +2337,7 @@ export const AddUpdateBooking: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Additional Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
               <div>
-                <TextArea className='thin-scroll' label="Unit / Modulation / Customization Remark" required value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
+                <TextArea className='thin-scroll' label="Unit / Modulation / Customization Remark" value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
               </div>
               <div>
                 <TextArea  className='thin-scroll' label="Payment Related Remark" value={formData.PaymentRemark ?? ""} onChange={(e) => handleFieldChange("PaymentRemark", e.target.value)} placeholder="Enter Payment Related Remark" error={errors.PaymentRemark} />

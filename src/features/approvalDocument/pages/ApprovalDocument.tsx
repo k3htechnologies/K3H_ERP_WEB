@@ -589,6 +589,8 @@ const ApprovalDocument: React.FC = () => {
   const handleApproveRejectDocument = (row: ApprovalDocumentData, approvalType: "approve" | "reject") => {
 
     setApprovalRowData(row);
+    setApprovalDocumentName(row.ApprovalDocumentName);
+    setApprovalDocumentCategory(row.ApprovalDocumentCategory);
     setApprovalActionType(approvalType);
     setIsApprovalActionModalOpen(true);
 
@@ -640,7 +642,7 @@ const ApprovalDocument: React.FC = () => {
               maxWidth="180px"
               tooltipThreshold={18}
               isApplyBgTextColor
-              tooltipClassName={`inline-block px-2 py-1 rounded-full text-sm font-medium ${statusClass} overflow-hidden text-ellipsis whitespace-nowrap`}
+              tooltipClassName={`inline-block px-2 py-1 rounded-full text-xs font-medium ${statusClass} overflow-hidden text-ellipsis whitespace-nowrap`}
             />
           );
         },
@@ -1453,7 +1455,7 @@ const ApprovalDocument: React.FC = () => {
                 <Input
                   label='Document'
                   required
-                  readOnly
+                  disabled
                   type="text"
                   value={formData.ApprovalDocumentName}
                   maxLength={250}

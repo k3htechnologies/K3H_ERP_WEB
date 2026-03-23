@@ -131,7 +131,7 @@ const ProjectDocument: React.FC = () => {
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
   const [documentName, setDocumentName] = useState<string | null>("");
-    const [documentCategory, setDocumentCategory] = useState<string | null>("");
+  const [documentCategory, setDocumentCategory] = useState<string | null>("");
 
   // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -1411,7 +1411,7 @@ const ProjectDocument: React.FC = () => {
         isOpen={isApprovalActionModalOpen}
         onClose={() => setIsApprovalActionModalOpen(false)}
         actionType={approvalActionType}
-         titleText={documentCategory ?? ""}
+        titleText={documentCategory ?? ""}
         subTitleText={documentName ?? ""}
         onSubmit={handleApprovalSubmit}
         loading={isLoading}

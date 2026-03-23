@@ -1,21 +1,10 @@
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import { useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 
 interface Props {
     MissingDetailsData: any[];
 }
 
 export default function MissingDetails({ MissingDetailsData = [] }: Props) {
-
-    // USE NAVIGATE
-    const navigate = useNavigate();
-
-    //#region NAVIGATE TO  VIEW CHANNEL PARTNER
-    const handleNavigateToView = useCallback(() => {
-        navigate('/channelPartner/view');
-    }, [navigate]);
-    //#endregion
 
     //#region
     return (
@@ -45,13 +34,6 @@ export default function MissingDetails({ MissingDetailsData = [] }: Props) {
                                         </p>
                                     </div>
 
-                                    <button className="text-blue-600 text-sm font-medium underline hover:text-blue-800"
-                                        onClick={() => {
-                                            handleNavigateToView()
-                                        }}
-                                    >
-                                        View
-                                    </button>
                                 </div>
 
                             </div>

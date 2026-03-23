@@ -8,7 +8,6 @@ import OverviewCards from "@/features/channelPartnerDashboard/components/Overvie
 import FirmTypeDistribution from "@/features/channelPartnerDashboard/components/FirmTypeDistribution";
 import CityWiseDistribution from "@/features/channelPartnerDashboard/components/CityWiseDistribution";
 import NewAddedChannelPartner from "@/features/channelPartnerDashboard/components/NewAddedChannelPartner";
-import TeamMemberOverview from "@/features/channelPartnerDashboard/components/TeamMemberOverview";
 import MissingDetails from "@/features/channelPartnerDashboard/components/MissingDetails";
 import { Button } from "@/ui/components/forms";
 import { Plus } from "lucide-react";
@@ -116,7 +115,6 @@ const ChannelPartnerDashboard: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">
-                <TeamMemberOverview TeamMemberOverviewData={teamMemberOverviewData} />
                 <MissingDetails MissingDetailsData={teamMemberOverviewData} />
             </div>
         </div>

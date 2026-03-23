@@ -538,6 +538,8 @@ const ProjectRERADocument: React.FC = () => {
   const handleApproveRejectDocument = (row: ProjectRERADocumentData, approvalType: "approve" | "reject") => {
 
     setApprovalRowData(row);
+    setRERADocumentCategory(row.ProjectRERADocumentCategory)
+    setRERADocumentName(row.ProjectRERADocumentName)
     setApprovalActionType(approvalType);
     setIsApprovalActionModalOpen(true);
 

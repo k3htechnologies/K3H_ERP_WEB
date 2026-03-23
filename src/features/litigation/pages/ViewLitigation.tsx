@@ -814,7 +814,7 @@ const ViewLitigation: React.FC = () => {
                 <h4 className="text-lg font-semibold text-gray-900 pb-2">Case Brief / Petition / Suit</h4>
                 <div className="lg:col-span-3 pt-1">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                    <p>{litigationData?.CaseBrief}</p>
+                    <FieldItem label="" value={litigationData?.CaseBrief || "-"} />
                   </div>
                 </div>
               </div>
@@ -827,7 +827,7 @@ const ViewLitigation: React.FC = () => {
                 <h4 className="text-lg font-semibold text-gray-900 pb-2">Case Remarks / Comments</h4>
                 <div className="lg:col-span-3 pt-1">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                    <p>{litigationData?.Remark}</p>
+                    <FieldItem label="" value={litigationData?.Remark|| "-"} />
                   </div>
                 </div>
               </div>

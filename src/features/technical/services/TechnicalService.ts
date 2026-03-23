@@ -114,4 +114,16 @@ export const technicalService = {
 
         }
     },
+
+    apiCallGetDownloadURL: async (Url?: string): Promise<E.Either<Failure, ApiResponse<string>>> => {
+        try {
+
+            return E.right(await technicalDatasource.getDownloadURL(Url));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
 }

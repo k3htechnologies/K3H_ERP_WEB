@@ -309,7 +309,7 @@ export const ProjectMaster: React.FC = () => {
         label: 'CTS Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => (
           <div className="flex items-center justify-start">
             <TooltipText
@@ -325,7 +325,7 @@ export const ProjectMaster: React.FC = () => {
         label: 'Business Category',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -333,7 +333,7 @@ export const ProjectMaster: React.FC = () => {
         label: 'Project Status',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -341,7 +341,7 @@ export const ProjectMaster: React.FC = () => {
         label: 'State',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -349,7 +349,7 @@ export const ProjectMaster: React.FC = () => {
         label: 'District',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -357,7 +357,15 @@ export const ProjectMaster: React.FC = () => {
         label: 'City',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'VillageName',
+        label: 'Village',
+        width: '15',
+        sortable: true,
+        align: 'left',
         render: (value) => value || '-'
       },
       {

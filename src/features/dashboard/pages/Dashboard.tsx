@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-
 import WorktimeOverview from "@/features/dashboard/components/WorktimeOverview";
 import { HeaderSection } from "@/features/dashboard/components/HeaderSection";
 import DailyActivities from "@/features/dashboard/components/DailyActivities";
@@ -16,21 +15,23 @@ import { runApiWithLoader } from '@/core/utils';
 import { useToast } from '@/core/hooks/useToast';
 import EventsMore from "@/features/dashboard/components/EventsMore";
 import { Loader } from "@/core/utils/loader";
+import type { Table7, Table0, Table2, Table3, Table4, Table1, Table6, Table5, Table8, Table10, Table11 } from "@/features/dashboard/models/UserDashboardModel";
 
 const Dashboard: React.FC = () => {
-  const [attendanceSummaryData, setAttendanceSummaryData] = React.useState<any[]>([]);
-  const [employeeOverviewTable, setEmployeeOverviewTable] = React.useState<any[]>([]);
-  const [workHourStatus, setWorkHourStatus] = React.useState<any[]>([]);
-  const [workHourBarGraphStatus, setWorkHourBarGraphStatus] = React.useState<any[]>([]);
-  const [leaveBalanceData, setLeaveBalanceData] = React.useState<any[]>([]);
-  const [attendanceSummaryShiftPatternData, setAttendanceSummaryShiftPatternData] = React.useState<any[]>([]);
-  const [attendanceSummaryPresentDays, setAttendanceSummaryPresentDays] = React.useState<any[]>([]);
-  const [holidayData, setHolidayData] = React.useState<any[]>([]);
-  const [birthdays, setBirthdays] = React.useState<any[]>([]);
-  const [reportingData, setReportingData] = React.useState<any[]>([]);
+  const [attendanceSummaryData, setAttendanceSummaryData] = useState<Table7[]>([]);
+  const [employeeOverviewTable, setEmployeeOverviewTable] = useState<Table0[]>([]);
+  const [workHourStatus, setWorkHourStatus] = useState<Table2[]>([]);
+  const [workHourBarGraphStatus, setWorkHourBarGraphStatus] = useState<Table3[]>([]);
+  const [leaveBalanceData, setLeaveBalanceData] = useState<Table4[]>([]);
+  const [upcomingApprovedHolidays, setUpcomingApprovedHolidays] = useState<Table5[]>([]);
+  const [attendanceSummaryShiftPatternData, setAttendanceSummaryShiftPatternData] = useState<Table1[]>([]);
+  const [attendanceSummaryPresentDays, setAttendanceSummaryPresentDays] = React.useState<Table1[]>([]);
+  const [holidayData, setHolidayData] = useState<Table6[]>([]);
+  const [birthdays, setBirthdays] = useState<Table8[]>([]);
+  const [reportingData, setReportingData] = useState<Table10[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [workTimeOverviewTable, setWorkTimeOverviewTable] = React.useState<any[]>([]);
+  const [workTimeOverviewTable, setWorkTimeOverviewTable] = useState<Table11[]>([]);
 
 
   const { addToast } = useToast()
@@ -58,7 +59,9 @@ const Dashboard: React.FC = () => {
           setHolidayData(e.Table6 || []);
           setBirthdays(e.Table8 || []);
           setReportingData(e.Table10 || []);
-          setWorkTimeOverviewTable(e.Table11 || [])
+          setWorkTimeOverviewTable(e.Table11 || []);
+          setUpcomingApprovedHolidays(e.Table5 || []);
+
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
@@ -74,26 +77,28 @@ const Dashboard: React.FC = () => {
   }
 
   return (
-    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
 
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
       <HeaderSection />
-      <div className="grid grid-cols-12 gap-4 ">
-        <div className="col-span-4">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 px-2 lg:px-0">
+        <div className="col-span-1 lg:col-span-4 lg:-mt-1 lg:ml-2">
           <WorktimeOverview workTimeOverviewTable={workTimeOverviewTable} />
         </div>
-        <div className="col-span-4">
+
+        <div className="col-span-1 lg:col-span-4">
           <DailyActivities />
         </div>
-        <div className="col-span-4">
+
+        <div className="col-span-1 lg:col-span-4">
           <ScheduledTask />
         </div>
       </div>
-      <div className="grid grid-cols-3 gap-3">
-        <div className="col-span-2">
+      <div className="grid grid-cols-3 gap-5">
+        <div className="col-span-3 lg:col-span-2">
           <EmployeeTable employeeOverviewTable={employeeOverviewTable} />
         </div>
-        <div className="col-span-1">
+        <div className="col-span-3 lg:col-span-1">
           <AttendanceSummary attendanceSummaryData={attendanceSummaryData} />
         </div>
       </div>
@@ -108,13 +113,16 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Attendance summary section */}
-      <AttendanceSummaryCard attendanceSummaryShiftData={attendanceSummaryShiftPatternData} attendancePresentData={attendanceSummaryPresentDays} />
+      <div className="grid grid-cols-1 gap-3">
+        {/* Attendance summary section */}
+        <AttendanceSummaryCard attendanceSummaryShiftData={attendanceSummaryShiftPatternData} attendancePresentData={attendanceSummaryPresentDays} />
+      </div>
+
 
       {/* Leave & Holiday */}
       <div className="grid grid-cols-12 gap-4">
         <div className="col-span-12">
-          <LeaveHoliday leaveBalanceData={leaveBalanceData} holidayData={holidayData} />
+          <LeaveHoliday leaveBalanceData={leaveBalanceData} holidayData={holidayData} upcomingApprovedHolidays={upcomingApprovedHolidays} />
         </div>
       </div>
 

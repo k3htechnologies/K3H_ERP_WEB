@@ -149,7 +149,7 @@ export const InventoryHeader = ({
                 isShowExportButton={canExport}
                 onExportExcel={onExportExcel}
                 onExportPdf={onExportPdf}
-                isShowImportButton={canImport}
+                isShowImportButton={canImport && approvalStatus==="Pending" ? true :false}
                 onUploadExcel={onUploadExcel}
                 onDownloadSampleExcel={onDownloadSampleExcel}
                 exportLoading={exportLoading}

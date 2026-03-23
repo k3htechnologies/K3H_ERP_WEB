@@ -1215,7 +1215,7 @@ const Inventory = () => {
                                 />
                             </div>
                         )}
-                        {canAction && selectedWing?.ApprovalStatus?.toUpperCase() !== "APPROVED" && (flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
+                        {canAction && selectedWing?.ApprovalStatus?.toUpperCase() !== "APPROVED" && (flat.FlatStatus === "Available") && (
                             <div title="Delete">
                                 <Trash
                                     onClick={() => handleDeleteFlat(flat)}

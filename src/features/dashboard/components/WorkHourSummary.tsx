@@ -10,33 +10,9 @@ const HeaderStat = ({ label, value, subLabel, valueColor = "text-gray-900" }: { 
     </div>
 );
 
-interface WorkHourData {
-    AvgDailyHours: number;
-    Message: string;
-    OvertimeHours: number;
-    ThisMonthHours: number;
-    ThisWeekHours: number;
-}
-
-interface WorkHourBarGraphData {
-    Date: string;
-    HoursWorked?: number;
-    Message: string;
-    RequiredHours: number;
-    AttendanceDate: string;
-    AttendanceStatus: string;
-    CreatedBy: string;
-    CreatedDate: string;
-    DayName: string;
-    FullName: string;
-    PunchIn: string;
-    PunchOut: string;
-    WorkingHours: string
-}
-
 interface Props {
-    workHourStatus: WorkHourData[];
-    workHourBarGraphStatus: WorkHourBarGraphData[];
+    workHourStatus: any[];
+    workHourBarGraphStatus: any[];
 }
 
 export default function WorkHourSummary({ workHourStatus = [], workHourBarGraphStatus = [] }: Props) {
@@ -44,33 +20,49 @@ export default function WorkHourSummary({ workHourStatus = [], workHourBarGraphS
     const today = new Date();
     const dayName = today.toLocaleString('en-us', { weekday: 'long' });
 
-    const chartData = workHourBarGraphStatus.map(item => {
-        const hasValidPunches =
-            typeof item.PunchIn === 'string' && item.PunchIn.trim() !== "" &&
+    const aggregatedData = workHourBarGraphStatus.reduce((acc: any, item) => {
+        const day = item.DayName;
+
+        let currentHours = 0;
+        const hasValidPunches = typeof item.PunchIn === 'string' && item.PunchIn.trim() !== "" &&
             typeof item.PunchOut === 'string' && item.PunchOut.trim() !== "";
 
-        let hours = 0;
         if (hasValidPunches) {
             if (typeof item.HoursWorked === 'number') {
-                hours = item.HoursWorked;
+                currentHours = item.HoursWorked;
             } else if (item.WorkingHours) {
                 const parts = item.WorkingHours.split(':');
                 if (parts.length === 2) {
                     const h = parseInt(parts[0], 10);
                     const m = parseInt(parts[1], 10);
-                    if (!isNaN(h) && !isNaN(m)) {
-                        hours = h + m / 60;
-                    }
+                    if (!isNaN(h) && !isNaN(m)) currentHours = h + m / 60;
                 }
             }
         }
 
+        if (!acc[day]) {
+            acc[day] = {
+                ...item,
+                totalHours: 0,
+                isLate: item.AttendanceStatus === "Late In",
+                isEarly: item.AttendanceStatus === "Early Logout"
+            };
+        }
+
+        acc[day].totalHours += currentHours;
+        if (item.AttendanceStatus === "Late In") acc[day].isLate = true;
+        if (item.AttendanceStatus === "Early Logout") acc[day].isEarly = true;
+
+        return acc;
+    }, {});
+
+    const chartData = Object.values(aggregatedData).map((item: any) => {
+        const hours = item.totalHours;
         const h = Math.floor(hours);
         const m = Math.round((hours - h) * 60);
 
         const displayH = m === 60 ? h + 1 : h;
         const displayM = m === 60 ? 0 : m;
-
         const displayLabel = hours > 0 ? `${displayH}H ${displayM.toString().padStart(2, '0')}m` : "";
 
         return {
@@ -78,19 +70,19 @@ export default function WorkHourSummary({ workHourStatus = [], workHourBarGraphS
             hours: hours,
             maxHours: item.RequiredHours || 9,
             label: displayLabel,
-            fillColor: !hasValidPunches || item.DayName === 'Sunday' ? '#E5E7EB' : '#2563EB'
+            fillColor: hours === 0 || item.DayName === 'Sunday' ? '#E5E7EB' : '#2563EB'
         };
     });
 
-    // calculate length of attendance status:-
-    const lateInEmployee = workHourBarGraphStatus.filter(item => item.AttendanceStatus === "Late In").length;
-    console.log('lateInEmployee', lateInEmployee);
+    const uniqueDays = Object.values(aggregatedData);
+    const lateInEmployee = uniqueDays.filter((item: any) => item.isLate).length;
+    const earlyLogoutEmployee = uniqueDays.filter((item: any) => item.isEarly).length;
 
     return (
-        <div className="space-y-3 pt-5">
-            <h1 className="text-base font-semibold text-gray-800">Work Hour Summary</h1>
+        <div className="space-y-5 pt-5">
+            <h1 className="text-base font-semibold text-gray-800 ml-2">Work Hour Summary</h1>
 
-            {(workHourStatus.length > 0 && workHourBarGraphStatus.length > 0) && <div className="bg-white rounded-xl shadow p-5 h-full flex flex-col">
+            {(workHourStatus.length > 0 && workHourBarGraphStatus.length > 0) && <div className="bg-white rounded-xl p-5 h-full flex flex-col">
                 <p className="text-base font-semibold text-gray-800">Working Hour </p>
                 <div className="flex justify-between items-start mb-8 flex-wrap gap-4 mt-5">
 
@@ -168,12 +160,10 @@ export default function WorkHourSummary({ workHourStatus = [], workHourBarGraphS
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-orange-500">⏱</span>
-                        <span className="text-sm text-gray-500">Early Logout: <span className="text-gray-700">1 day</span></span>
+                        <span className="text-sm text-gray-500">Early Logout: <span className="text-gray-700">{earlyLogoutEmployee} days</span></span>
                     </div>
                 </div>
             </div>}
-
-
         </div>
     );
 }

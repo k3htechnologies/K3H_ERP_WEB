@@ -311,6 +311,7 @@ export const AddUpdateLitigation: React.FC = () => {
                             <div>
                                 <SinglePageSelection
                                     label="Case Type"
+                                    required
                                     placeholder="Select Case Type"
                                     value={formData.CaseType ?? ''}
                                     onChange={(value) => handleFieldChange("CaseType", value)}

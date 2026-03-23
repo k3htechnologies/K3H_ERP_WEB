@@ -362,3 +362,21 @@ export const formatDate_MonthName_yy = (dateString: string | Date): string => {
     return "";
   }
 };
+
+export const convert_hh_mm_ss_to_hh_mm = (timeString?: string) => {
+
+    if (!timeString || timeString === "00:00:00") return "";
+
+    const [hours, minutes] = timeString.split(":");
+
+    const hourNum = parseInt(hours, 10);
+
+    if (isNaN(hourNum)) return "";
+
+    const period = hourNum >= 12 ? "PM" : "AM";
+    
+    const formattedHour = hourNum % 12 === 0 ? 12 : hourNum % 12;
+
+    return `${formattedHour}:${minutes} ${period}`;
+};
+

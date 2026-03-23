@@ -547,7 +547,7 @@ const InventorySpecification: React.FC = () => {
                 placeholder="Enter Unit"
                 required
                 maxLength={10}
-                value={formDataInventoryFlat.Flat.replace(/^[A-Za-z\s]+-\s*/, "")}
+                value={formDataInventoryFlat.Flat.match(/\d+$/)?.[0] || ""}
                 onChange={(e) => handleFieldChangeInventoryFlat("Flat", e.target.value)}
                 disabled={disabled}
                 error={errorsInventoryFlat.Flat}

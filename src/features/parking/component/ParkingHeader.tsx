@@ -82,7 +82,7 @@ export const ParkingHeader = ({
                 isShowExportButton={canExport}
                 onExportExcel={onExportExcel}
                 onExportPdf={onExportPdf}
-                isShowImportButton={canAction}
+                isShowImportButton={canAction && approvalStatus==="Pending" ? true :false}
                 onUploadExcel={onUploadExcel}
                 onDownloadSampleExcel={onDownloadSampleExcel}
                 exportLoading={exportLoading}

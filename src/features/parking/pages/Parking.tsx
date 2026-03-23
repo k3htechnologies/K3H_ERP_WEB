@@ -173,7 +173,7 @@ const Parking = () => {
 
     data.forEach((parking) => {
       const buildingKey = parking.BuildingNumber || "Unknown";
-      const floorKey = parking.Floor || "Unknown";
+      const floorKey = `${parking.Wing} / ${parking.Floor}`;
 
       if (!grouped[buildingKey]) {
         grouped[buildingKey] = {
@@ -517,7 +517,7 @@ const Parking = () => {
         const response = await technicalService.apiCallExcelImport(fd);
 
         if (E.isRight(response)) {
-          
+
           addToast({ type: "success", title: "Excel imported sucessfully" });
 
           fetchParking();
@@ -719,12 +719,10 @@ const Parking = () => {
   };
 
   //#endregion
-  const isChange = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? false : true;
-  const disabled = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? true : false;
 
-  const approvalStatus = selectedBuildingIndex !== null && selectedFloorIndex !== null
-    ? groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.ApprovalStatus
-    : undefined
+  const approvalStatus = selectedBuildingIndex !== null && selectedFloorIndex !== null ? groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.ApprovalStatus  : undefined
+  const isChange = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? false : true;
+  const disabled = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" || approvalStatus?.toUpperCase().includes("APPROVED") ? true : false;
 
   return (
     <>
@@ -821,7 +819,7 @@ const Parking = () => {
                         : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-300"
                         }`}
                     >
-                      {floor.Wing} / {floor.Floor}
+                      {floor.Floor}
                     </button>
                   ))}
                 </div>

@@ -12,6 +12,7 @@ export abstract class TechnicalDatasource {
     abstract getCountryStateDistrictCityVillage(): Promise<CountryStateCityDistrictVillageListResponse>;
     abstract getMaterialSubMaterialMasterUOM(params: FilterWithPaginationMaterialSubMaterialMasterUOM): Promise<MaterialSubMaterialMasterUOMListResponse>;
     abstract pullMagicLinkWithValidate(params: FilterMagicLinkWithValidate): Promise<ApiResponse<string>>;
+    abstract getDownloadURL(Url?: string, signal?: AbortSignal): Promise<ApiResponse<string>>;
 }
 
 export class TechnicalDatasourceImpl implements TechnicalDatasource {
@@ -217,6 +218,28 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
             if (error === TokenExpiredException) {
 
                 await this.pullVillage(params);
+            }
+
+            throw error
+        }
+    }
+
+    async getDownloadURL(Url?: string, signal?: AbortSignal): Promise<ApiResponse<string>> {
+        try {
+            const queryParams = new URLSearchParams({
+                Url: (Url ?? "").toString()
+            })
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${TechnicalApi.GET_DOWNLOAD_URL}?${queryParams.toString()}`, { signal }
+            )
+            return response;
+        } catch (error: any) {
+
+            console.error('ERROR: DOWNLOAD DOCUMENT:', error);
+
+            if (error === TokenExpiredException) {
+
+                await this.getDownloadURL(Url);
             }
 
             throw error

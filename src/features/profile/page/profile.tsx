@@ -2081,7 +2081,7 @@ export const Profile: React.FC = () => {
                             required
                             maxLength={50}
                             error={experienceFormErrors.Tenure}
-                            placeholder="Enter Tenure"
+                            placeholder="Enter Tenure (e.g.  2 years)"
                         />
                     </div>
                 </div>
@@ -2141,6 +2141,7 @@ export const Profile: React.FC = () => {
                             label="Personal Mobile Number"
                             placeholder="Enter Personal Mobile Number"
                             required
+                            disabled
                             value={employeeFormData.PersonalMobileNumber}
                             rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                             onChange={(e) => setEmployeeFormData({ ...employeeFormData, PersonalMobileNumber: filterMobile(e.target.value) })}

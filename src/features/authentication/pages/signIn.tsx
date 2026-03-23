@@ -52,7 +52,7 @@ export function SignIn() {
                         else if (msg.toLowerCase().includes("mpin")) {
 
                             setStep("mpin");
-                            
+
                             showSuccess('MPIN', response.right.SuccessMessage?.[0]);
                         }
                         else {
@@ -92,7 +92,7 @@ export function SignIn() {
                     return
                 }
 
-                const response = await authenticationService.apicallIsValidOTP(mobileNumber, otp,step)
+                const response = await authenticationService.apicallIsValidOTP(mobileNumber, otp, step)
 
                 if (E.isRight(response)) {
 
@@ -108,9 +108,10 @@ export function SignIn() {
 
                     showSuccess('Login Successful', `Welcome, ${employeeData[0].FullName}`);
 
-                    setIsVerified(true)
+                    setIsVerified(true);
 
                     navigate('/dashboard');
+
                 } else {
                     showError('Invalid OTP', response.left.message)
                 }
@@ -123,7 +124,7 @@ export function SignIn() {
             },
             undefined,
             'Verify OTP'
-        ) // ✅ Properly closed
+        )
     }
     //#endregion
 
@@ -213,8 +214,6 @@ export function SignIn() {
                                     value={mobileNumber}
                                     onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                                     maxLength={10}
-                                    required
-                                    size="lg"
                                     variant="filled"
                                     fullWidth
                                     leftIcon={
@@ -259,6 +258,7 @@ export function SignIn() {
                                 </div>
 
                                 <Input
+                                    autoFocus
                                     type="text"
                                     placeholder="Enter OTP"
                                     value={otp}
@@ -319,7 +319,9 @@ export function SignIn() {
                                 </div>
 
                                 <Input
-                                autoFocus
+                                    autoFocus
+                                    variant="filled"
+                                    fullWidth
                                     type="text"
                                     placeholder="Enter MPIN"
                                     value={otp}

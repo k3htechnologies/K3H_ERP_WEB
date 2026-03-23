@@ -118,15 +118,15 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction ,appr
 
       {parking.OwnerName && (parking.ParkingStatus === "Booked" || parking.ParkingStatus === "Member") ? (
         <p
-          className="text-center text-[#135BEC] font-semibold cursor-pointer hover:underline"
+          className="text-center text-[#135BEC] font-medium text-sm cursor-pointer hover:underline"
           onClick={handleOwnerNameClick}
           title="Click to view booking details"
         >
           Owner : {parking.OwnerName}
         </p>
       ) : parking.ParkingStatus === "Blocked" || parking.ParkingStatus === "Hold" ? (
-        <p className={`text-center ${colorsForParkingComponent[parking.ParkingStatus].buttonText}`}>
-          {parking.ParkingStatus} by {parking.CreatedBy} on {formatDate_dd_MonthName_yy_hh_mm(parking.CreatedDate ?? "-")}
+        <p className={`text-center font-medium text-sm ${colorsForParkingComponent[parking.ParkingStatus].buttonText}`}>
+          {parking.ParkingStatus} by {parking.ModifiedBy} on {formatDate_dd_MonthName_yy_hh_mm(parking.ModifiedDate ?? "-")}
         </p>
       ) : (
         <p className="text-center text-[#135BEC] font-semibold">

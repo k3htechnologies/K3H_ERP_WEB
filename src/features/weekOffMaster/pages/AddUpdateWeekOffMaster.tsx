@@ -273,7 +273,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
 
           {/* Basic WEEK OFF Details */}
 
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Week Off Policy Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
@@ -327,8 +327,8 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Week Off Details</h3>
+          <div className="space-y-4 pt-5">
+            <h3 className="text-lg font-medium  text-gray-900 border-b border-gray-300 pb-2">Week Off Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>

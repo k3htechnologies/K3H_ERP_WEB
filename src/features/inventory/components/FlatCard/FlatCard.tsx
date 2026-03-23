@@ -170,15 +170,15 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
 
             {flat.OwnerName && (flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") ? (
                 <p
-                    className="text-center text-[#135BEC] font-semibold cursor-pointer hover:underline"
+                    className="text-center text-[#135BEC] font-medium text-sm cursor-pointer hover:underline"
                     onClick={handleOwnerNameClick}
                     title="Click to view booking details"
                 >
                     {getOwnerLabel()}{flat.OwnerName}
                 </p>
             ) : flat.FlatStatus === "Blocked" || flat.FlatStatus === "Hold" ? (
-                <p className={`text-center ${colorsForFlatComponent[flat.FlatStatus].buttonText}`}>
-                    {flat.FlatStatus} by {flat.CreatedBy} on {formatDate_dd_MonthName_yy_hh_mm(flat.CreatedDate ?? "-")}
+                <p className={`text-center font-medium text-sm ${colorsForFlatComponent[flat.FlatStatus].buttonText}`}>
+                    {flat.FlatStatus} by {flat.ModifiedBy} on {formatDate_dd_MonthName_yy_hh_mm(flat.ModifiedDate ?? "-")}
                 </p>
             ) : (
                 <p className="text-center text-[#135BEC] font-semibold">

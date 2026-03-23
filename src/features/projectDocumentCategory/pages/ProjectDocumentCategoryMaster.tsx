@@ -144,7 +144,7 @@ export const ProjectDocumentCategoryMaster: React.FC = () => {
         addTitle="Add"
         onAdd={handleAddProjectDocumentCategoryModal}
         // IMPORT
-        isShowImportButton={canAction}
+        isShowImportButton={canAction && Number(projectId) > 0 ? true : false}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleProjectDocumentCategoryMaster}
         // EXPORT

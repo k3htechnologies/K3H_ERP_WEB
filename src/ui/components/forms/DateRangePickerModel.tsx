@@ -165,11 +165,10 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   const [tempEndDate, setTempEndDate] = useState<Date | null>(endDateObj)
   const initialDate = startDateObj ?? endDateObj ?? new Date()
   const [currentMonth, setCurrentMonth] = useState<Date>(initialDate)
-  const [editingField, setEditingField] = useState<'start' | 'end' | null>(null) // Track which field is being edited
+  const [editingField, setEditingField] = useState<'start' | 'end' | null>(null) 
   const [localStartTime, setLocalStartTime] = useState(startTime)
   const [localEndTime, setLocalEndTime] = useState(endTime)
   const [localAIEnabled, setLocalAIEnabled] = useState(aiEnabled)
-  // Reason is now expected via children; no internal state
 
   // Keep state in sync with external values
   useEffect(() => {

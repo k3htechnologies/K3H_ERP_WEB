@@ -34,12 +34,12 @@ export default function PartnerTypeDistribution({ partnerTypeDistributionData}: 
                                 dataKey="Type"
                                 axisLine={false}
                                 tickLine={false}
-                                width={120}
+                                width={60}
                                 tick={{ fontSize: 14, fill: "#6b7280" }}
                             />
                             <Bar
                                 dataKey="TotalCount"
-                                barSize={12}
+                                barSize={14}
                                 radius={[6, 6, 6, 6]}
                                 background={{ fill: "#e5e7eb", radius: 6 }}
                             >

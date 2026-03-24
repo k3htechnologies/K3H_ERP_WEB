@@ -1,19 +1,16 @@
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import type { Table2 } from "@/features/payrollDashboard/models/PayrollDashboardModel";
 
 interface CompOffTableRecord {
-  CompoffDate: string,
-  WorkingDate: string,
-  CreatedBy: string,
-  CreatedDate: string,
-  status: "Approved" | "Pending";
+  Status: "Approved" | "Pending";
 }
 
 interface Props {
-  compOffData: CompOffTableRecord[];
+  compOffData: Table2[];
 }
 
-export default function CompOffTable({ compOffData = [] }: Props) {
+export default function CompOffTable({ compOffData }: Props) {
   const columns = [
 
     {
@@ -50,11 +47,10 @@ export default function CompOffTable({ compOffData = [] }: Props) {
       key: 'status',
       label: 'Status',
       align: 'center' as const,
-      render: (value: string) => (
+      render: (value: string, record: CompOffTableRecord) => (
         <div className="flex flex-col">
           <span className="font-medium text-gray-900">{value}</span>
-          {/* <span className="text-xs text-gray-500">{record.Status}</span> */}
-          <span className="font-medium text-green-700 ">Approved</span>
+          <span className="text-xs text-gray-500">{record.Status}</span>
         </div>
       )
     },
@@ -65,12 +61,12 @@ export default function CompOffTable({ compOffData = [] }: Props) {
       width: "150px",
       render: (record: CompOffTableRecord) => (
         <button
-          className={`px-4 py-1 rounded-md text-sm font-medium text-white shadow-sm ${record.status === "Approved"
+          className={`px-4 py-1 rounded-md text-sm font-medium text-white ${record.Status === "Approved"
             ? "bg-blue-500 "
             : "bg-gray-400 cursor-not-allowed"
             }`}
         >
-          {record.status === "Approved" ? "Approve" : "Approved"}
+          {record.Status === "Approved" ? "Approve" : "Approved"}
         </button>
       )
     }
@@ -82,14 +78,24 @@ export default function CompOffTable({ compOffData = [] }: Props) {
       </h2>
       <div
         className="bg-white rounded-xl p-4 h-[300px] "
-        style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
+
       >
-        <DataTableWithOutBorder
-          columns={columns}
-          data={compOffData.slice(0, 4)}
-          emptyMessage="No records Found"
-          fixedHeight={true}
-        />
+        {compOffData?.length > 0 ? (
+          <DataTableWithOutBorder
+            columns={columns}
+            data={compOffData.slice(0, 4)}
+            emptyMessage="No records Found"
+            fixedHeight={true}
+          />
+        ) : (
+          <div>
+            <DataTableWithOutBorder
+              columns={columns}
+              data={[]}
+              emptyMessage="No records Found"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

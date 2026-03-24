@@ -1,6 +1,8 @@
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { Mail } from "lucide-react";
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
+import type { Table0 } from "../models/UserDashboardModel";
+import { getSafeString } from "@/core/utils/comman";
 
 
 interface EmployeeTableData {
@@ -8,7 +10,7 @@ interface EmployeeTableData {
 }
 
 interface Props {
-    employeeOverviewTable: any[];
+    employeeOverviewTable: Table0[];
 }
 
 function sendEmail(email: string) {
@@ -17,19 +19,19 @@ function sendEmail(email: string) {
     }
 }
 
-export default function EmployeeTable({ employeeOverviewTable = [] }: Props) {
+export default function EmployeeTable({ employeeOverviewTable }: Props) {
 
     const columns = [
         {
             key: "Name",
             label: "Employee Name",
-            align:"left" as any,
+            align: "left" as any,
             render: (value: string) => (<span className="font-medium text-black"> {(value || '')}  </span>),
         },
         {
             key: "Department",
             label: "Department",
-            align:"left" as any,
+            align: "left" as any,
             render: (value: string) => (
                 <span className="font-medium text-black">
                     {(value || '')}
@@ -47,7 +49,7 @@ export default function EmployeeTable({ employeeOverviewTable = [] }: Props) {
         {
             key: "Status",
             label: "Status",
-            align:"center",
+            align: "center",
             render: (value: string) => (
                 <span className="font-medium text-black">
                     {(value || '')}
@@ -56,19 +58,19 @@ export default function EmployeeTable({ employeeOverviewTable = [] }: Props) {
         {
             key: "PunchIn",
             label: "Punch In",
-            align:"center" as any,
+            align: "center" as any,
             render: (value: string) => (
                 <span className="font-medium text-black">
-                    {value ? (value ?? '00:00') : '-'}
+                    {getSafeString(value ? (value ?? '00:00') : '-')}
                 </span>)
         },
         {
             key: "PunchOut",
             label: "Punch Out",
-            align:"center" as any,
+            align: "center" as any,
             render: (value: string) => (
                 <span className="font-medium text-black">
-                    {value ? (value ?? '00:00') : '-'}
+                    {getSafeString(value ? (value ?? '00:00') : '-')}
                 </span>)
         },
         {
@@ -76,7 +78,7 @@ export default function EmployeeTable({ employeeOverviewTable = [] }: Props) {
             label: "Action",
             align: "center" as any,
             render: (_: any, row: EmployeeTableData) => (
-                <div className="flex items-center justify-center gap-2" onClick={() => sendEmail(row.EmailId || '')}>
+                <div className="flex items-center justify-center gap-2 " onClick={() => sendEmail(row.EmailId || '')}>
                     <Mail className={`w-4 h-4 cursor-pointer ${row.EmailId ? 'text-blue-500' : 'text-gray-500'}`} />
                 </div>
             )
@@ -87,20 +89,21 @@ export default function EmployeeTable({ employeeOverviewTable = [] }: Props) {
         <div className="space-y-3 pt-4 sm:pt-5">
             <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2">Team Overview</h2>
 
-            <div className="bg-white rounded-xl p-4 sm:p-5 mt-3 flex flex-col   min-h-[250px] sm:min-h-[310px] max-h-[60vh]">
+            <div className="bg-white rounded-xl p-4 h-[310px] flex flex-col">
 
                 {/* Content */}
 
                 {employeeOverviewTable?.length > 0 ? (
-                    <div className="min-w-[500px] sm:min-w-full">
+                    <div className="min-w-[500px] sm:min-w-full flex-1 overflow-hidden flex flex-col">
                         <DataTableWithOutBorder
                             data={employeeOverviewTable}
                             columns={columns}
+                            recordsPerPage={6}
                             fixedHeight={true}
                         />
                     </div>
                 ) : (
-                    <div className="flex items-center justify-center h-full text-center px-2">
+                    <div className="flex items-center justify-center flex-1 text-center px-2">
                         <NoDataView message="No employee data available" />
                     </div>
                 )}

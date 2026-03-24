@@ -14,7 +14,7 @@ import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
 
-export const ViewCompantMaster: React.FC = () => {
+export const ViewCompanyMaster: React.FC = () => {
     //#region STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -241,4 +241,4 @@ export const ViewCompantMaster: React.FC = () => {
     );
 };
 
-export default ViewCompantMaster;
+export default ViewCompanyMaster;

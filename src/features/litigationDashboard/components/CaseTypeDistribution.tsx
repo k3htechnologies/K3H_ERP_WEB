@@ -1,7 +1,8 @@
 import { PieChart, Pie, Cell } from "recharts";
+import type { Table2 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 interface Props {
-    CaseTypeData: any[];
+    CaseTypeData: Table2[];
 }
 
 export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
@@ -15,6 +16,7 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
         { name: "Criminal Case", value: criminal },
     ];
 
+    // new commit 
     const COLORS = ["#1d8cf8", "#0c3ca3"];
 
     return (

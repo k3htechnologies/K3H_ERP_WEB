@@ -429,13 +429,7 @@ export const EmployeeDocument: React.FC = () => {
         width: '33',
         sortable: false,
         align: 'left',
-        render: (value, row) => (
-          <TooltipText
-            text={value || row.CreatedBy || '-'}
-            maxWidth="180px"
-            tooltipThreshold={18}
-          />
-        )
+       render: value => value || '-'
       },
       {
         key: 'ModifiedDate',
@@ -443,12 +437,7 @@ export const EmployeeDocument: React.FC = () => {
         width: '33',
         sortable: false,
         align: 'left',
-        render: (value, row) =>
-          value
-            ? formatDate_dd_MonthName_yy(value)
-            : row.CreatedDate
-              ? formatDate_dd_MonthName_yy(row.CreatedDate)
-              : '-'
+        render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
       },
     ],
     // dependencies: include everything used inside that might change

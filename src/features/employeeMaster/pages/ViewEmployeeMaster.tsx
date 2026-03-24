@@ -589,7 +589,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 </div>
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Aaadhaar Card Number" value={safe(employeeData!.AadharCardNumber)} />
+                                        <FieldItem label="Aadhaar Card Number" value={safe(employeeData!.AadharCardNumber)} />
                                         <FieldItem label="PAN Number" value={safe(employeeData!.PanCardNumber)} />
                                         <FieldItem label="Passport Number" value={safe(employeeData!.PassportNumber)} />
                                     </div>

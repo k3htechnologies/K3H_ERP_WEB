@@ -63,8 +63,8 @@ const initialFormState = (): AddUpdateBookingRequest => ({
   CommunicationAddress: "",
   BrokeragePercentage: 0,
   BrokerageAmount: 0,
-  ReferelPercentage: 0,
-  ReferelAmount: 0,
+  ReferralPercentage: 0,
+  ReferralAmount: 0,
 
   LoyaltyPercentage: 0,
   LoyaltyAmount: 0,
@@ -448,8 +448,8 @@ export const AddUpdateBooking: React.FC = () => {
               CommunicationAddress: booking.CommunicationAddress ?? "",
               BrokeragePercentage: booking.BrokeragePercentage ?? 0,
               BrokerageAmount: booking.BrokerageAmount ?? 0,
-              ReferelPercentage: booking.ReferelPercentage ?? 0,
-              ReferelAmount: booking.ReferelAmount ?? 0,
+              ReferralPercentage: booking.ReferralPercentage ?? 0,
+              ReferralAmount: booking.ReferralAmount ?? 0,
 
               LoyaltyPercentage: booking.LoyaltyPercentage ?? 0,
               LoyaltyAmount: booking.LoyaltyAmount ?? 0,
@@ -1372,8 +1372,8 @@ export const AddUpdateBooking: React.FC = () => {
         formDataToSend.append("BrokeragePercentage", String(formData.BrokeragePercentage ?? 0));
         formDataToSend.append("BrokerageAmount", String(formData.BrokerageAmount ?? 0));
 
-        formDataToSend.append("ReferelPercentage", String(formData.ReferelPercentage ?? 0));
-        formDataToSend.append("ReferelAmount", String(formData.ReferelAmount ?? 0));
+        formDataToSend.append("ReferralPercentage", String(formData.ReferralPercentage ?? 0));
+        formDataToSend.append("ReferralAmount", String(formData.ReferralAmount ?? 0));
 
         formDataToSend.append("LoyaltyPercentage", String(formData.LoyaltyPercentage ?? 0));
         formDataToSend.append("LoyaltyAmount", String(formData.LoyaltyAmount ?? 0));
@@ -1708,9 +1708,9 @@ export const AddUpdateBooking: React.FC = () => {
                 {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
                   <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                      <FieldItem label="Referral Name" value={enquiryList?.ReferelUnitOwnerName || "-"} />
-                      <FieldItem label="Referral Project" value={enquiryList?.ReferelProjectName || "-"} />
-                      <FieldItem label="Referral Unit No" value={enquiryList?.ReferelUnitNumber || "-"} />
+                      <FieldItem label="Referral Name" value={enquiryList?.ReferralUnitOwnerName || "-"} />
+                      <FieldItem label="Referral Project" value={enquiryList?.ReferralProjectName || "-"} />
+                      <FieldItem label="Referral Unit No" value={enquiryList?.ReferralUnitNumber || "-"} />
                     </div>
                   </div>
                 )}
@@ -1922,9 +1922,9 @@ export const AddUpdateBooking: React.FC = () => {
                   handleFieldChange("BrokerageAmount", brokerageAMount.toFixed(2));
 
                   /* ================= REFEREL % ================= */
-                  const referelAMount = (agreementValue * Number(formData.ReferelPercentage)) / 100;
+                  const referelAMount = (agreementValue * Number(formData.ReferralPercentage)) / 100;
 
-                  handleFieldChange("ReferelAmount", referelAMount.toFixed(2));
+                  handleFieldChange("ReferralAmount", referelAMount.toFixed(2));
 
                   /* ================= LOYALTY % ================= */
                   const loyaltyAMount = (agreementValue * Number(formData.LoyaltyPercentage)) / 100;
@@ -2076,31 +2076,31 @@ export const AddUpdateBooking: React.FC = () => {
           {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
           {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
             <div className="space-y-4 pt-5">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Referel Details</h3>
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Referral Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Input
-                  label="Referel (%)"
-                  value={formData.ReferelPercentage?.toString() ?? ""}
+                  label="Referral (%)"
+                  value={formData.ReferralPercentage?.toString() ?? ""}
                   disabled={Number(formData.AgreementValue) > 0 ? false : true}
                   required
                   onChange={(e) => {
                     const val = allowPercentage(e.target.value);
                     if (val !== null) {
                       const percentage = filterNumbersWithDecimal(e.target.value);
-                      handleFieldChange("ReferelPercentage", percentage);
+                      handleFieldChange("ReferralPercentage", percentage);
 
                       const agreementValue = formData.AgreementValue || 0;
 
                       const cstAmount = (agreementValue * Number(percentage)) / 100;
 
-                      handleFieldChange("ReferelAmount", cstAmount.toFixed(2));
+                      handleFieldChange("ReferralAmount", cstAmount.toFixed(2));
                     }
                   }}
-                  placeholder="Referel (%)"
+                  placeholder="Referral (%)"
                   rightIcon="%"
-                  error={errors.ReferelPercentage}
+                  error={errors.ReferralPercentage}
                 />
-                <Input label="Referel Amount (₹)" value={formData.ReferelAmount?.toString() ?? ""} disabled rightIcon="₹" />
+                <Input label="Referral Amount (₹)" value={formData.ReferralAmount?.toString() ?? ""} disabled rightIcon="₹" />
               </div>
             </div>
           )}

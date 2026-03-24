@@ -24,7 +24,7 @@ const Company: React.FC = () => {
   //#region STATE MANAGEMENT
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [compantMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
+  const [companyMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
 
   // TOAST
   const { addToast } = useToast()
@@ -155,8 +155,8 @@ const Company: React.FC = () => {
         render: (value) => value || ''
       },
       {
-        key: 'CompanyType',
-        label: 'Company Type',
+        key: 'FirmsType',
+        label: 'Firms Type',
         width: '33',
         sortable: false,
         align: 'center',
@@ -280,7 +280,7 @@ const Company: React.FC = () => {
     });
 
 
-    const assignedIds = (compantMasterList || [])
+    const assignedIds = (companyMasterList || [])
       .map(e => e.CompanyId)
       .filter(Boolean) as number[];
     setSelectedCompanyIds(assignedIds);
@@ -406,7 +406,7 @@ const Company: React.FC = () => {
       />
       <div className='pt-5'>
         <DataTable
-          data={compantMasterList}
+          data={companyMasterList}
           columns={projectMasterWithCompanyColumns}
           emptyMessage="No Company Data Found"
           fixedHeight={true}

@@ -1,44 +1,43 @@
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
+import type { Table7 } from "../models/UserDashboardModel";
 
 interface Props {
-    attendanceSummaryData?: any[];
+    attendanceSummaryData?: Table7[];
 }
 
-export default function AttendanceSummary({ attendanceSummaryData = [] }: Props) {
-    const total = attendanceSummaryData[0]?.TotalEmployees
+export default function AttendanceSummary({ attendanceSummaryData }: Props) {
+    const total = attendanceSummaryData?.[0]?.TotalEmployees
 
     const data = [
         {
             name: 'Present',
-            value: attendanceSummaryData[0]?.PresentCount,
+            value: attendanceSummaryData?.[0]?.PresentCount,
             color: "#135bec"
         },
         {
             name: 'Absent',
-            value: attendanceSummaryData[0]?.AbsentCount,
+            value: attendanceSummaryData?.[0]?.AbsentCount,
             color: "#13367A",
         },
         {
             name: 'On Leave',
-            value: attendanceSummaryData[0]?.OnLeaveCount,
+            value: attendanceSummaryData?.[0]?.OnLeaveCount,
             color: "#7a98a5",
         }
     ]
     return (
         <div className="space-y-3 pt-5">
             <div className="bg-white rounded-xl p-5 mt-10 h-[310px]">
-                <h3 className="text-sm text-gray-500 font-medium">
-                    Attendance Summary
-                </h3>
+                <p className="text-md font-semibold text-gray-500 pb-2">Attendance Summary</p>
 
-                {attendanceSummaryData?.length > 0 ? (
+                {attendanceSummaryData?.length ?? 0 > 0 ? (
                     <>
                         <div className="grid grid-cols-2 items-center gap-4">
 
                             {/* Left DONUT */}
-                            <div className="relative h-[220px]">
-                                <ResponsiveContainer width="100%" height="100%">
+                            <div className="relative h-[220px] min-h-[220px] w-full min-w-0">
+                                <ResponsiveContainer width="100%" height={200}>
                                     <PieChart>
                                         <Pie
                                             data={data}

@@ -16,9 +16,7 @@ export interface ToastContainerProps {
 
 export function ToastContainer({ toasts, onRemoveToast }: ToastContainerProps) {
 
-    const [isMenuModalOpen, setIsMenuModalOpen] = useState(false)
-
-    // Whenever toasts change, check if any have title === 'Menu Changed'
+    const [isMenuModalOpen, setIsMenuModalOpen] = useState(false);
 
     useEffect(() => {
         const hasMenuChangedToast = toasts.some(t => t.title === 'Menu Changed')

@@ -1,20 +1,37 @@
 import type { InventoryData, InventoryFlatFloorBasementPodiumWingData } from "../models/InventoryMasterModel";
 
-export const countFlatsByStatus = (inventory: InventoryData[], status: string): number => {
-    if (inventory.length === 0) return 0;
+export const countFlatsByStatus = (
+    inventory: InventoryData[],
+    inventoryBuildingId: number,
+    status: string
+): number => {
 
-    return inventory.reduce((total, building) => {
-        const buildingFlats = building.InventoryFlatFloorBasementPodiumWingData.reduce((wingTotal, wing) => {
-            const wingFlats = wing.InventoryFloorData.reduce((floorTotal, floor) => {
-                const count = floor.InventoryFlatData.filter(
-                    flat => flat.FlatStatus === status
-                ).length;
-                return floorTotal + count;
-            }, 0);
+    if (!inventory || inventory.length === 0) return 0;
+
+    const building = inventory.find(
+        b => b.InventoryBuildingId === inventoryBuildingId
+    );
+
+    if (!building) return 0;
+
+    return building.InventoryFlatFloorBasementPodiumWingData.reduce(
+        (wingTotal, wing) => {
+
+            const wingFlats = wing.InventoryFloorData.reduce(
+                (floorTotal, floor) => {
+
+                    const count = floor.InventoryFlatData.filter(
+                        flat => flat.FlatStatus === status
+                    ).length;
+
+                    return floorTotal + count;
+
+                }, 0);
+
             return wingTotal + wingFlats;
-        }, 0);
-        return total + buildingFlats;
-    }, 0);
+
+        }, 0
+    );
 };
 
 /**
@@ -24,9 +41,11 @@ export const countWingWiseFlatStatus = (
     wing: InventoryFlatFloorBasementPodiumWingData | undefined,
     status: string
 ): number => {
+
     if (!wing) return 0;
 
     return wing.InventoryFloorData.reduce((total, floor) => {
+
         const count = floor.InventoryFlatData.filter(
             flat => flat.FlatStatus === status
         ).length;

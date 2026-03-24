@@ -12,7 +12,7 @@ import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import { litigationDashboardService } from "@/features/litigationDashboard/services/litigationDashboardService";
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
-import type { Table0, Table1, Table2, Table3, Table4, Table6 } from "@/features/litigationDashboard/models/litigationDashboardModel";
+import type { Table0, Table1, Table2, Table3, Table4, Table5, Table6, Table7 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 const LitigationDashboard: React.FC = () => {
 
@@ -27,8 +27,8 @@ const LitigationDashboard: React.FC = () => {
     const [caseTypeDistributionData, setCaseTypeDistributionData] = useState<Table2[]>([]);
     const [courtDistributionData, setCourtDistributionData] = useState<Table3[]>([]);
     const [activeCaseData, setActiveCaseData] = useState<Table4[]>([]);
-    const [upComingHearingData, setUpComingHearingData] = useState<Table4[]>([]);
-    const [caseAnalysisData, setCaseAnalysisData] = useState<Table0[]>([]);
+    const [upComingHearingData, setUpComingHearingData] = useState<Table5[]>([]);
+    const [caseAnalysisData, setCaseAnalysisData] = useState<Table7[]>([]);
     const [uploadedDocumentData, setUploadedDocumentData] = useState<Table6[]>([]);
 
     useEffect(() => {
@@ -47,14 +47,14 @@ const LitigationDashboard: React.FC = () => {
                 if (E.isRight(response)) {
 
                     const e = response.right.Data;
-
+                    
                     setOverViewData(e.Table0 || []);
                     setHearingData(e.Table1 || []);
                     setCaseTypeDistributionData(e.Table2 || []);
                     setCourtDistributionData(e.Table3 || []);
                     setActiveCaseData(e.Table4 || []);
-                    setUpComingHearingData(e.Table4 || []);
-                    setCaseAnalysisData(e.Table0 || []);
+                    setUpComingHearingData(e.Table5 || []);
+                    setCaseAnalysisData(e.Table7 || []);
                     setUploadedDocumentData(e.Table6 || []);
 
                 } else {
@@ -73,10 +73,11 @@ const LitigationDashboard: React.FC = () => {
 
     return (
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
-            <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
 
-            <div className="cursor-pointer">
-                <OverviewCards overViewData={overViewData} hearingData={hearingData}/>
+            <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
+            <div className="cursor-pointer" >
+
+                <OverviewCards overViewData={overViewData} hearingData={hearingData} />
                 <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">
                     <CaseTypeDistribution CaseTypeData={caseTypeDistributionData} />
                     <CourtDistribution courtData={courtDistributionData} />

@@ -1,33 +1,17 @@
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-
-interface AttendnaceOverviewItem {
-  AttendanceDate: string;
-  AttendanceStatus: string;
-  FullName: string;
-}
+import type { Table5 } from "../models/PayrollDashboardModel";
 
 interface Props {
-  attendanceOverviewData?: AttendnaceOverviewItem[];
+  attendanceOverviewData: Table5[];
 }
 
-export default function AttendanceOverview({ attendanceOverviewData = [] }: Props) {
-  const attendanceOverviewDataResult = attendanceOverviewData || {};
+export default function AttendanceOverview({ attendanceOverviewData }: Props) {
+  const stats = attendanceOverviewData[0] || {};
 
-  //Filtering the employees by their attendance status
-  const presentEmployeeCount = attendanceOverviewDataResult.filter(
-    (pEmployee) => pEmployee.AttendanceStatus === "Present",
-  ).length;
-
-  const absentEmployeeCount = attendanceOverviewDataResult.filter(
-    (aEmployee) => aEmployee.AttendanceStatus === "Absent",
-  ).length;
-
-  const onLeaveEmployeeCount = attendanceOverviewDataResult.filter(
-    (k) => k.AttendanceStatus === "Leave",
-  ).length;
-  
-
-  const totalNumberOfEmployees = attendanceOverviewData.length;
+  const presentEmployeeCount = stats.PresentCount || 0;
+  const absentEmployeeCount = stats.AbsentCount || 0;
+  const onLeaveEmployeeCount = stats.OnLeaveCount || 0;
+  const totalNumberOfEmployees = stats.TotalEmployees || 0;
 
   const data = [
     {
@@ -46,29 +30,26 @@ export default function AttendanceOverview({ attendanceOverviewData = [] }: Prop
       color: "#7a98a5",
     },
   ];
+
   return (
     <div className="space-y-3 pt-5">
-      <h2 className="text-lg font-semibold text-gray-800">
-        Attendance Overview
-      </h2>
+      <h2 className="text-lg font-semibold text-gray-800">Attendance Overview</h2>
 
-      <div
-        className=" bg-white rounded-xl p-8"
-        style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
-      >
-        <h3 className="text-sm text-gray-500 font-medium ">Team Attendance</h3>
+      <div className="bg-white rounded-xl p-4  border border-gray-50">
+        <h3 className="text-sm text-gray-500 font-medium mb-4">Team Attendance</h3>
 
         <div className="grid grid-cols-2 items-center gap-4">
           {/* Left DONUT */}
           <div className="relative h-[220px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
                   data={data}
-                  innerRadius={50}
+                  innerRadius={60}
                   outerRadius={90}
                   paddingAngle={5}
                   dataKey="value"
+                  stroke="none"
                   cornerRadius={10}
                 >
                   {data.map((t, i) => (
@@ -77,30 +58,43 @@ export default function AttendanceOverview({ attendanceOverviewData = [] }: Prop
                 </Pie>
               </PieChart>
             </ResponsiveContainer>
+
             {/* CENTER TOTAL */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-              <p className="text-xl font-bold text-gray-800">
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              <p className="text-2xl font-bold text-gray-800">
                 {totalNumberOfEmployees}
               </p>
+
             </div>
           </div>
+
           {/* Right LEGEND */}
-          <div className="space-y-3">
+          <div className="space-y-4">
             {data.map((t, i) => (
-              <div key={i} className="rounded-lg p-2 flex items-center gap-3">
+              <div key={i} className="flex items-center gap-3">
                 <div
-                  className="w-3 h-3 rounded-full"
+                  className="w-3 h-3 rounded-full shrink-0"
                   style={{ backgroundColor: t.color }}
                 ></div>
-                <p className="font-semibold text-[22px]">{t.value}</p>
-                <p className="text-sm text-gray-500 font-medium">{t.name}</p>
+                <p className="text-sm text-gray-700">
+                  <span className="font-bold text-gray-900 text-lg">
+                    {t.value}
+                  </span>
+                  <span className="text-gray-500 ml-2 text-lg">
+                    {t.name}
+                  </span>
+                </p>
               </div>
             ))}
           </div>
         </div>
-        <p className="text-sm font-bold text-left p-1 ml-20">
-          {totalNumberOfEmployees} Total Employees
-        </p>
+
+        {/*Footer*/}
+        <div className="mt-6 pt-4 border-t border-gray-50 text-center">
+          <p className="text-sm font-semibold text-gray-600">
+            {totalNumberOfEmployees} Total Employee
+          </p>
+        </div>
       </div>
     </div>
   );

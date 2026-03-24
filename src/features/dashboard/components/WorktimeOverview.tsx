@@ -1,12 +1,13 @@
 import React from "react";
 import polyline from "@mapbox/polyline";
 import { formatTimeFromDateTime } from "@/core/utils/dateFormat";
+import type { Table11 } from "../models/UserDashboardModel";
 
 interface Props {
-  workTimeOverviewTable: any[];
+  workTimeOverviewTable: Table11[];
 }
 
-const WorktimeOverview: React.FC<Props> = ({ workTimeOverviewTable = [] }) => {
+const WorktimeOverview: React.FC<Props> = ({ workTimeOverviewTable }) => {
   const data = workTimeOverviewTable[0];
 
   const formattedDate = data?.PunchIn
@@ -71,7 +72,7 @@ const WorktimeOverview: React.FC<Props> = ({ workTimeOverviewTable = [] }) => {
       </h2>
 
       <div className="bg-white rounded-xl p-5 mt-3 h-[330px]">
-        <p className="text-sm text-gray-500 font-medium mb-3">Work Time</p>
+        <p className="text-md font-semibold text-gray-500  pb-2">Work Time</p>
 
         {workTimeOverviewTable.length > 0 ? (
           <>

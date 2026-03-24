@@ -1,15 +1,8 @@
-
-interface OverviewItem {
-  TotalCases?: number;
-  OpenCases?: number;
-  ClosedCases?: number;
-  ReOpenCases?: number;
-  TotalHearings?: number;
-}
+import type { Table0, Table1 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 interface Props {
-  overViewData?: OverviewItem[];
-  hearingData?:any[]
+  overViewData?: Table0[];
+  hearingData?:Table1[]
 }
 
 export default function OverviewCards({ overViewData = [], hearingData = [] }: Props) {
@@ -56,7 +49,6 @@ const cards = [
                 </p>
 
               </div>
-
             </div>
           </div>
         ))}

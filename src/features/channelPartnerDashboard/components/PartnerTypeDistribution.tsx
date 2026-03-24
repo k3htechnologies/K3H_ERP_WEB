@@ -1,13 +1,14 @@
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { ResponsiveContainer, BarChart, XAxis, YAxis, Bar, LabelList, Cell } from "recharts";
+import type { Table2 } from "@/features/channelPartnerDashboard/models/ChannelPartnerDashboardModel";
 
 interface Props {
-    partnerTypeDistributionData: any[];
+    partnerTypeDistributionData: Table2[];
 }
 
 const COLORS = ["#3b82f6", "#6366f1", "#8b5cf6"];
 
-export default function PartnerTypeDistribution({ partnerTypeDistributionData = [] }: Props) {
+export default function PartnerTypeDistribution({ partnerTypeDistributionData}: Props) {
     return (
         <div className="pt-5">
             <div className="bg-white p-4 rounded-lg shadow-sm space-y-4 h-[315px]">
@@ -33,12 +34,12 @@ export default function PartnerTypeDistribution({ partnerTypeDistributionData = 
                                 dataKey="Type"
                                 axisLine={false}
                                 tickLine={false}
-                                width={120}
+                                width={40}
                                 tick={{ fontSize: 14, fill: "#6b7280" }}
                             />
                             <Bar
                                 dataKey="TotalCount"
-                                barSize={12}
+                                barSize={14}
                                 radius={[6, 6, 6, 6]}
                                 background={{ fill: "#e5e7eb", radius: 6 }}
                             >

@@ -23,7 +23,7 @@ export interface FilterWithPaginationBookingRequest {
     AgreementValue?: number;
     BookingType?: string;
     SortBy?: string;
-    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF';
+    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF'| 'BOOKING FORM PDF ON MAIL';
 }
 
 export interface FilterWithPaginationChannelPartnerBookingRequest {
@@ -82,8 +82,8 @@ export interface BookingData {
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
 
-    ReferelPercentage: number | null;
-    ReferelAmount: number | null;
+    ReferralPercentage: number | null;
+    ReferralAmount: number | null;
 
     LoyaltyPercentage: number | null;
     LoyaltyAmount: number | null;
@@ -213,8 +213,8 @@ export interface AddUpdateBookingRequest {
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
 
-    ReferelPercentage: number | null;
-    ReferelAmount: number | null;
+    ReferralPercentage: number | null;
+    ReferralAmount: number | null;
 
     LoyaltyPercentage: number | null;
     LoyaltyAmount: number | null;

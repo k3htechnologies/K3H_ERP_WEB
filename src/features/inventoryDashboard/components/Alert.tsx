@@ -1,13 +1,13 @@
 import React from "react";
 import { AlertTriangle } from "lucide-react";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import type { Table3 } from "@/features/inventoryDashboard/models/InventoryDashboardModel";
 
 interface Props {
-  alertsData: any[];
+  alertsData: Table3[];
 }
 
-const AlertsPanel: React.FC<Props> = ({ alertsData = [] }) => {
-
+const AlertsPanel: React.FC<Props> = ({ alertsData}) => {
   return (
     <div className="space-y-3">
 
@@ -64,7 +64,6 @@ const AlertsPanel: React.FC<Props> = ({ alertsData = [] }) => {
 
             </div>
           ))}
-
         </div>
 
       </div>

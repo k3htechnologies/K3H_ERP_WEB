@@ -174,3 +174,74 @@ export const getYearToDateRange = () => {
   return { fromDate, toDate };
 };
 
+export const getSafeString = (value: any): string => {
+        if (value === null || value === undefined) return '-';
+        if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+        if (typeof value === 'number') return value.toString();
+        return String(value).trim() || '-';
+    };
+
+  export const formatCurrency = (value: number | null | undefined): string => {
+        if (value === null || value === undefined) return '-';
+        return `₹${Number(value).toLocaleString('en-IN')}`;
+    };
+
+export const cleanHtml = (html: string) => {
+  if (!html) return ''
+
+  const parser = new DOMParser()
+  const doc = parser.parseFromString(html, 'text/html')
+
+  // ✅ Remove Quill UI
+  doc.querySelectorAll('.ql-ui').forEach(el => el.remove())
+
+  // ✅ Convert OL → UL (bullet)
+  doc.querySelectorAll('ol').forEach(ol => {
+    const isBullet = ol.querySelector('li[data-list="bullet"]')
+
+    if (isBullet) {
+      const ul = doc.createElement('ul')
+
+      ol.querySelectorAll('li').forEach(li => {
+        const newLi = doc.createElement('li')
+        newLi.innerHTML = li.innerHTML
+        ul.appendChild(newLi)
+      })
+
+      ol.replaceWith(ul)
+    }
+  })
+
+  // ✅ Remove data-list
+  doc.querySelectorAll('[data-list]').forEach(el =>
+    el.removeAttribute('data-list')
+  )
+
+  // ✅ Handle indent
+  doc.querySelectorAll('[class*="ql-indent-"]').forEach(el => {
+    const match = el.className.match(/ql-indent-(\d+)/)
+
+    if (match) {
+      const level = parseInt(match[1], 10)
+      el.setAttribute('style', `margin-left:${level * 20}px`)
+    }
+
+    el.removeAttribute('class')
+  })
+
+  // ✅ Remove remaining ql classes
+  doc.querySelectorAll('[class]').forEach(el => {
+    if (el.className.startsWith('ql-')) {
+      el.removeAttribute('class')
+    }
+  })
+
+  // ✅ Remove empty paragraphs
+  doc.querySelectorAll('p').forEach(p => {
+    if (p.innerHTML === '<br>' || p.innerText.trim() === '') {
+      p.remove()
+    }
+  })
+
+  return doc.body.innerHTML.trim()
+}

@@ -53,7 +53,7 @@ import ApprovalDocumentCategoryMaster from '@/features/approvalDocumentCategory/
 import ApprovalDocument from '@/features/approvalDocument/pages/ApprovalDocument';
 import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCategory/pages/ProjectRERADocumentCategoryMaster';
 import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRERADocument';
-import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
+import ViewCompanyMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
 import Inventory from '@/features/inventory/pages/Inventory';
 import InventorySpecification from '@/features/inventory/pages/InventorySpecification';
 import { OutDoor } from '@/features/outdoor/pages/OutDoor';
@@ -236,7 +236,7 @@ function App() {
             <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
 
             <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
-            <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompantMaster /></CompanyListStateProvider>} />
+            <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />

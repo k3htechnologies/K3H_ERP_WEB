@@ -1,4 +1,6 @@
 import { BarChart, Bar, XAxis, Cell, ResponsiveContainer, LabelList } from 'recharts';
+import type { Table2, Table3 } from '../models/UserDashboardModel';
+
 
 const HeaderStat = ({ label, value, subLabel, valueColor = "text-gray-900" }: { label: string, value: string, subLabel?: React.ReactNode, valueColor?: string }) => (
     <div className="flex flex-col">
@@ -11,11 +13,11 @@ const HeaderStat = ({ label, value, subLabel, valueColor = "text-gray-900" }: { 
 );
 
 interface Props {
-    workHourStatus: any[];
-    workHourBarGraphStatus: any[];
+    workHourStatus: Table2[];
+    workHourBarGraphStatus: Table3[];
 }
 
-export default function WorkHourSummary({ workHourStatus = [], workHourBarGraphStatus = [] }: Props) {
+export default function WorkHourSummary({ workHourStatus, workHourBarGraphStatus }: Props) {
 
     const today = new Date();
     const dayName = today.toLocaleString('en-us', { weekday: 'long' });
@@ -80,10 +82,10 @@ export default function WorkHourSummary({ workHourStatus = [], workHourBarGraphS
 
     return (
         <div className="space-y-5 pt-5">
-            <h1 className="text-base font-semibold text-gray-800 ml-2">Work Hour Summary</h1>
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2 ">Work Hour Summary</h2>
 
             {(workHourStatus.length > 0 && workHourBarGraphStatus.length > 0) && <div className="bg-white rounded-xl p-5 h-full flex flex-col">
-                <p className="text-base font-semibold text-gray-800">Working Hour </p>
+                <p className="text-md font-semibold text-gray-500 pb-2">Working Hour </p>
                 <div className="flex justify-between items-start mb-8 flex-wrap gap-4 mt-5">
 
                     <div className="flex justify-between w-full">
@@ -98,8 +100,8 @@ export default function WorkHourSummary({ workHourStatus = [], workHourBarGraphS
 
                 <div className="mb-4">
                     <p className="text-sm text-gray-500 mb-6">Daily Work Hours (This Week)</p>
-                    <div className="h-[250px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-[250px] min-h-[250px] w-full min-w-0">
+                        <ResponsiveContainer width="100%" height={200}>
                             <BarChart
                                 data={chartData}
                                 margin={{ top: 20, right: 30, left: 20, bottom: 5 }}

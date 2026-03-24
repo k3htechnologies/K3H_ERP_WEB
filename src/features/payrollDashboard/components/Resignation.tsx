@@ -1,102 +1,85 @@
-import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-
-interface ResignationTableRecord {
-  FullName: string;
-  ExpectedRelievingDate: string;
-  ResignationDate: string;
-  IsAnyOfferInHand: boolean;
-  status: "Approved" | "Pending";
-}
+import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { useMemo } from "react";
+import type { Table4 } from "@/features/payrollDashboard/models/PayrollDashboardModel";
 
 interface Props {
-  resignationData: ResignationTableRecord[];
+  resignationData: Table4[];
 }
 
-export default function Resignation({ resignationData = [] }: Props) {
-  const columns = [
-    {
-      key: "employeeName",
-      label: "Employee Name",
-      render: ( record: ResignationTableRecord) => (
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gray-200 " />
-          <div className="flex flex-col">
-            <span className="text-sm font-medium text-black">{record.FullName}</span>
-            <span className="text-xs text-gray-400 font-medium mt-1">Full-Stack Developer </span>
+const Resignation: React.FC<Props> = ({ resignationData }) => {
+  const columns = useMemo<any[]>(
+    () => [
+      {
+        key: "FullName",
+        label: "Employee Name",
+        align: "left",
+        render: (value: string | null) => (
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-gray-200" />
+            <span className="text-sm font-medium text-black">
+              {value || "-"}
+            </span>
           </div>
-        </div>
-      ),
-    },
-    {
-      key: "resignationDate",
-      label: "Resignation Date",
-      render: (value: string, record: ResignationTableRecord) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-gray-900">{value}</span>
+        ),
+      },
+      {
+        key: "ResignationDate",
+        label: "Resignation Date",
+        align: "left",
+        render: (value: string | null) => (
           <span className="font-medium text-black">
-            {formatDate_dd_MonthName_yy(record.ResignationDate)}
+            {value ? formatDate_dd_MonthName_yy(value) : "-"}
           </span>
-        </div>
-      ),
-    },
-    {
-      key: "relievingDate",
-      label: "Relieving Date",
-      render: (value: string, record: ResignationTableRecord) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-gray-900">{value}</span>
-          <span className="font-medium text-black">
-            {formatDate_dd_MonthName_yy(record.ExpectedRelievingDate)}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "offerInHand",
-      label: "Offer In Hand",
-      align: "left" as const,
-      render: (value: string, record: ResignationTableRecord) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-gray-900 ">{value}</span>
-          <span className="font-medium text-black ml-10 ">
-            {record.IsAnyOfferInHand ? "Yes" : "No"}
-          </span>
-        </div>
-      ),
-    },
-    {
-      key: "action",
-      label: "Action",
-      width: "150px",
-      render: (_: any, record: ResignationTableRecord) => (
-        <button
-          className={`px-4 py-1 rounded-md text-sm font-medium text-white shadow-sm ${record.status === "Approved"
-            ? "bg-gray-400 cursor-not-allowed"
-            : "bg-blue-600 hover:bg-blue-700"
-            }`}
-        >
-          {record.status === "Approved" ? "Approved" : "Approve"}
-        </button>
-      ),
-    },
-  ];
+        ),
+      },
+      {
+        key: "Reason",
+        label: "Reason",
+        align: "left",
+        render: (value: string | null) => (
+          <TooltipText
+            text={value || '-'}
+            maxWidth="200px"
+            tooltipThreshold={20}
+          />
+        )
+      },
+      {
+        key: "status",
+        label: "Action",
+        align: "center",
+        render: (value: string | null) => (
+          <button
+            className={`px-4 py-1 rounded-md text-sm font-medium text-white shadow-sm ${value === "Approved"
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            disabled={value === "Approved"}
+          >
+            {value === "Approved" ? "Approved" : "Approve"}
+          </button>
+        ),
+      },
+    ],
+    []
+  );
+
   return (
     <div className="space-y-3 pt-5">
       <h2 className="text-lg font-semibold text-gray-800">Resignation</h2>
-      <div
-        className="bg-white rounded-xl p-4"
-        style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
-      >
-
+      <div className="bg-white rounded-lg shadow-sm space-y-4 p-4 h-[300px]">
         <DataTableWithOutBorder
           columns={columns}
-          data={resignationData.slice(0, 4)}
-          emptyMessage="No records Found"
+          data={resignationData?.slice(0, 4) || []}
+          emptyMessage="No Resignation Records Found"
           fixedHeight={true}
+          className="flex-1"
         />
-
       </div>
     </div>
   );
-}
+};
+
+export default Resignation;

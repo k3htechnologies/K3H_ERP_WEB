@@ -1,20 +1,23 @@
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from "recharts";
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import type { Table4, Table6, Table5 } from "../models/UserDashboardModel";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
+
 
 interface Props {
-    leaveBalanceData: any[];
-    holidayData: any[];
-    upcomingApprovedHolidays: any[];
+    leaveBalanceData: Table4[];
+    holidayData: Table6[];
+    upcomingApprovedHolidays: Table5[];
 }
 
-export default function LeaveHoliday({ leaveBalanceData = [], holidayData = [], upcomingApprovedHolidays = [] }: Props) {
+export default function LeaveHoliday({ leaveBalanceData, holidayData, upcomingApprovedHolidays }: Props) {
 
     // caluculate total leaves
-    const totalLeaves = leaveBalanceData.reduce((acc, leave) => acc + leave.TotalLeaves, 0);
+    const totalLeaves = leaveBalanceData.reduce((acc, leave) => acc + (leave.TotalLeaves ?? 0), 0);
     // used leaves
-    const usedLeaves = leaveBalanceData.reduce((acc, leave) => acc + leave.UsedLeaves, 0);
+    const usedLeaves = leaveBalanceData.reduce((acc, leave) => acc + (leave.UsedLeaves ?? 0), 0);
     // calculate Pending leaves
-    const pendingLeaves = leaveBalanceData.reduce((acc, leave) => acc + leave.PendingLeaves, 0);
+    const pendingLeaves = leaveBalanceData.reduce((acc, leave) => acc + (leave.RemainingLeaves ?? 0), 0);
 
     // Next Holiday 
     const nextHoliday = holidayData.length > 0 ? holidayData[0] : null;
@@ -24,17 +27,17 @@ export default function LeaveHoliday({ leaveBalanceData = [], holidayData = [], 
 
     return (
         <div className="space-y-3 pt-5">
-            <p className="text-md font-semibold text-gray-800 ml-2">Leave & Holiday</p>
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2">Leave & Holiday</h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4">
 
                 {/* Leave Summary Card: */}
-                <div className="col-span-1 lg:col-span-6 bg-white p-5 rounded-xl shadow-sm">
-                  <p className="text-md font-semibold text-gray-500 border-b border-gray-50 pb-2">Leave Summary</p>
-                    <p className="text-xs font-semibold text-gray-400 mt-3">Leave Breakdown</p>
+                <div className="col-span-1 lg:col-span-6 bg-white p-5 rounded-xl ">
+                    <p className="text-md font-semibold text-gray-500  pb-2">Leave Summary</p>
+                    <p className="text-sm font-medium text-gray-400 mb-3 mt-3">Leave Breakdown</p>
 
-                    <div className="h-[200px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-[200px] min-h-[200px] w-full min-w-0">
+                        <ResponsiveContainer width="100%" height={200}>
                             <BarChart
                                 data={[...leaveBalanceData, { LeaveTypeName: "Earned Leave", TotalLeaves: 0, UsedLeaves: 0, PendingLeaves: 0 }, { LeaveTypeName: "Paid Leave", TotalLeaves: 0, UsedLeaves: 0, PendingLeaves: 0 }]}
                                 layout="vertical"
@@ -69,14 +72,14 @@ export default function LeaveHoliday({ leaveBalanceData = [], holidayData = [], 
                 </div>
 
                 {/* Leave Balance Card: */}
-                <div className="col-span-1 lg:col-span-3 bg-white rounded-xl p-5 min-h-[320px] shadow-sm">
-                    <p className="text-md font-semibold text-gray-500 border-b border-gray-50 pb-2">
+                <div className="col-span-1 lg:col-span-3 bg-white rounded-xl p-5 ">
+                    <p className="text-md font-semibold text-gray-500 pb-2">
                         Leave Balance & Approved
                     </p>
 
                     {leaveBalanceData ? (
                         <div className="mt-4">
-                            <p className="text-sm font-medium text-gray-400 mb-3">Leave Balance</p>
+                            <p className="text-sm font-medium text-gray-400 mb-3 mt-3">Leave Balance</p>
                             <div className="space-y-2">
                                 <div className="flex items-center justify-between">
                                     <p className="text-sm text-gray-600 font-medium">Total Leaves :</p>
@@ -98,7 +101,7 @@ export default function LeaveHoliday({ leaveBalanceData = [], holidayData = [], 
                         </div>
                     )}
 
-                    <p className="text-sm font-medium text-gray-400 mt-6 mb-2">Upcoming Approved</p>
+                    <p className="text-sm font-medium text-gray-400 mb-3 mt-3">Upcoming Approved</p>
                     <div className="w-full bg-green-50 rounded-md p-3 border border-green-100">
                         {upcomingApprovedHolidays.length > 0 ? (
                             upcomingApprovedHolidays.map((item, index) => (
@@ -121,12 +124,12 @@ export default function LeaveHoliday({ leaveBalanceData = [], holidayData = [], 
                 </div>
 
                 {/* Holiday Card: */}
-                <div className="col-span-1 lg:col-span-3 rounded-xl bg-white p-5 min-h-[320px] max-h-[400px] overflow-y-auto shadow-sm">
-                    <p className="text-md font-semibold text-gray-500 border-b border-gray-50 pb-2">Holiday</p>
+                <div className="col-span-1 lg:col-span-3 rounded-xl bg-white p-5 min-h-80 max-h-[400px] overflow-y-auto ">
+                    <p className="text-md font-semibold text-gray-500  pb-2">Holiday</p>
 
                     {holidayData?.length > 0 ? (
-                        <div className="mt-4">
-                            <p className="text-sm font-medium text-gray-400 mb-2">Next Holiday</p>
+                        <div className="">
+                            <p className="text-sm font-medium text-gray-400 mb-3 mt-3">Next Holiday</p>
                             {nextHoliday ? (
                                 <div className="w-full bg-indigo-50 rounded-md p-3 border border-indigo-100 mb-4">
                                     <p className="font-semibold text-indigo-900 text-sm">
@@ -147,13 +150,13 @@ export default function LeaveHoliday({ leaveBalanceData = [], holidayData = [], 
                                 <p className="text-xs text-gray-400 mb-4">No upcoming holidays</p>
                             )}
 
-                            <p className="text-sm font-medium text-gray-400 mb-2">Upcoming Holidays</p>
+                            <p className="text-sm font-medium text-gray-400 mb-3 mt-3">Upcoming Holidays</p>
                             <div className="space-y-2">
                                 {upcomingHolidays?.length > 0 ? (
                                     upcomingHolidays.map((holiday, index) => (
-                                        <div key={index} className="flex items-center justify-between border-b border-gray-50 pb-1 last:border-0">
+                                        <div key={index} className="flex items-center justify-between pb-1 last:border-0">
                                             <p className="text-sm text-black truncate mr-2 ">{holiday.HolidayName ?? '-'}</p>
-                                            <p className="text-[11px] text-black whitespace-nowrap">
+                                            <p className="text-sm  text-black whitespace-nowrap">
                                                 {holiday.HolidayDate ? new Date(holiday.HolidayDate).toLocaleDateString('en-GB', {
                                                     day: 'numeric', month: 'short'
                                                 }) : '-'}
@@ -161,12 +164,12 @@ export default function LeaveHoliday({ leaveBalanceData = [], holidayData = [], 
                                         </div>
                                     ))
                                 ) : (
-                                    <p className="text-[11px] text-gray-400 italic">No more holidays this month</p>
+                                    <p className="text-[11px] text-gray-400">No more holidays this month</p>
                                 )}
                             </div>
                         </div>
                     ) : (
-                        <p className="text-sm text-gray-500 text-center py-6">No data available</p>
+                        <NoDataView message="No Holidays Available" />
                     )}
                 </div>
             </div>

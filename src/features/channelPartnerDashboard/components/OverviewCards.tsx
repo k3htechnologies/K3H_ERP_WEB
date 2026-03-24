@@ -1,12 +1,7 @@
-interface OverviewItem {
-  TotalChannelPartner?: number;
-  ActiveChannelPartner?: number;
-  ThisMonthAddedChannelPartner?: number;
-  MissingInfoChannelPartner?: number;
-}
+import type { Table0 } from "@/features/channelPartnerDashboard/models/ChannelPartnerDashboardModel";
 
 interface Props {
-  overViewData?: OverviewItem[];
+  overViewData?: Table0[];
 }
 
 export default function OverviewCards({ overViewData = [] }: Props) {

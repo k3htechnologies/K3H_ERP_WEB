@@ -373,7 +373,7 @@ const InventorySpecification: React.FC = () => {
             InventoryBuildingId: flatContext.InventoryBuildingId,
             InventoryFlatFloorBasementPodiumWingId: flatContext.InventoryFlatFloorBasementPodiumWingId,
             InventoryFlatId: formDataInventoryFlat.InventoryFlatId,
-            Flat: formDataInventoryFlat.Flat.replace(/^[A-Za-z\s]+-\s*/, ""),
+            Flat: formDataInventoryFlat.Flat.match(/\d+$/)?.[0],
             FlatType: formDataInventoryFlat.FlatType,
             RERACarpetAreaSqFt: totalUnitArea ?? 0,
             FlatConfiguration: formDataInventoryFlat.FlatConfiguration,

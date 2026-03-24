@@ -19,6 +19,7 @@ import { EnquiryService } from '@/features/enquiry/services/EnquiryServices';
 import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
+import { formatCurrency, getSafeString } from '@/core/utils/comman';
 
 export const ViewBooking: React.FC = () => {
 
@@ -148,7 +149,7 @@ export const ViewBooking: React.FC = () => {
         );
     };
 
-    const handleExportBookings = async (exportType: 'Excel' | 'PDF' | 'BOOKING FORM PDF') => {
+    const handleExportBookings = async (exportType: 'Excel' | 'PDF' | 'BOOKING FORM PDF' | 'BOOKING FORM PDF ON MAIL') => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -163,9 +164,15 @@ export const ViewBooking: React.FC = () => {
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);
+                
+                if (exportType === "BOOKING FORM PDF ON MAIL") {
+                    addToast({ type: 'success', title: "E-Mail sent successfully" })
+                }
+                else {
 
-                const pdfName = `Booking Form - ${bookingData?.ProjectName ?? ''} - ${bookingData?.ApplicantName ?? ''} - ${bookingData?.Flat ?? ''}`;
-                handleExportFile(response, 'PDF', pdfName, addToast);
+                    const pdfName = `Booking Form - ${bookingData?.ProjectName ?? ''} - ${bookingData?.ApplicantName ?? ''} - ${bookingData?.Flat ?? ''}`;
+                    handleExportFile(response, 'PDF', pdfName, addToast);
+                }
 
 
                 return response;
@@ -182,18 +189,6 @@ export const ViewBooking: React.FC = () => {
 
     //#endregion
 
-    //#region HELPER FUNCTIONS
-    const safe = (value: any): string => {
-        if (value === null || value === undefined) return '-';
-        if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-        if (typeof value === 'number') return value.toString();
-        return String(value).trim() || '-';
-    };
-
-    const formatCurrency = (value: number | null | undefined): string => {
-        if (value === null || value === undefined) return '-';
-        return `₹${Number(value).toLocaleString('en-IN')}`;
-    };
     //#endregion
 
     const paymentScheduleColumns = useMemo<TableColumn[]>(
@@ -210,7 +205,7 @@ export const ViewBooking: React.FC = () => {
                 key: "Date",
                 label: "Date / Stage",
                 sortable: false,
-                
+
                 width: "30",
                 align: "center",
                 render: (_value, row) => {
@@ -230,7 +225,7 @@ export const ViewBooking: React.FC = () => {
                 key: "PaymentSchedulePercentage",
                 label: "Percentage (%)",
                 sortable: false,
-                
+
                 width: "20",
                 align: "right",
                 render: (value) => `${value || 0}%`,
@@ -239,7 +234,7 @@ export const ViewBooking: React.FC = () => {
                 key: "PaymentScheduleAmount",
                 label: "Amount (₹)",
                 sortable: false,
-                
+
                 width: "20",
                 align: "right",
                 render: (value) => value || "-",
@@ -247,7 +242,7 @@ export const ViewBooking: React.FC = () => {
             {
                 key: "PaymentScheduleGSTAmount",
                 label: "GST Amount (₹)",
-                
+
                 width: "20",
                 sortable: false,
                 align: "right",
@@ -256,7 +251,7 @@ export const ViewBooking: React.FC = () => {
             {
                 key: "PaymentScheduleTDSAmount",
                 label: "TDS Amount (₹)",
-                
+
                 width: "20",
                 sortable: false,
                 align: "right",
@@ -342,10 +337,15 @@ export const ViewBooking: React.FC = () => {
                     }
                 }}
                 canAction={canAction && !bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") && sourcePage === 'booking' ? true : false}
-                canActionExtraButtonText={bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false}
                 onEdit={() => navigate('/booking/add')}
-                ExtraButtonText="Generate PDF"
+
+                ExtraButtonText="Generate"
                 onExtraButton={() => handleExportBookings("BOOKING FORM PDF")}
+                canActionExtraButtonText={bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false}
+
+                ExtraExtraButtonText="Send E-Mail"
+                onExtraExtraButton={() => handleExportBookings("BOOKING FORM PDF ON MAIL")}
+                canActionExtraExtraButton={bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false}
                 isLoading={isLoading}
             />
 
@@ -377,7 +377,7 @@ export const ViewBooking: React.FC = () => {
 
                                         <FieldItem label="Name" value={editEnquiryData?.Name || '-'} />
 
-                                        <FieldItem label="Mobile No:" value={safe(editEnquiryData?.MobileNumber) ? `+91 ${editEnquiryData?.MobileNumber}` : '-'} />
+                                        <FieldItem label="Mobile No:" value={getSafeString(editEnquiryData?.MobileNumber) ? `+91 ${editEnquiryData?.MobileNumber}` : '-'} />
 
                                         <FieldItem label="Source" value={editEnquiryData?.Source || '-'} />
 
@@ -404,9 +404,9 @@ export const ViewBooking: React.FC = () => {
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
 
-                                            <FieldItem label="Referral Unit Owner" value={editEnquiryData?.ReferelUnitOwnerName || '-'} />
-                                            <FieldItem label="Referral Project" value={editEnquiryData?.ReferelProjectName || '-'} />
-                                            <FieldItem label="Referral Unit No" value={editEnquiryData?.ReferelUnitNumber || '-'} />
+                                            <FieldItem label="Referral Unit Owner" value={editEnquiryData?.ReferralUnitOwnerName || '-'} />
+                                            <FieldItem label="Referral Project" value={editEnquiryData?.ReferralProjectName || '-'} />
+                                            <FieldItem label="Referral Unit No" value={editEnquiryData?.ReferralUnitNumber || '-'} />
 
                                         </div>
                                     </div>
@@ -464,16 +464,16 @@ export const ViewBooking: React.FC = () => {
                                         bookingData.BookingApplicantData.map((applicant, i) => (
                                             <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                    <FieldItem label="Type" value={safe(applicant.ApplicantType)} className='text-blue-900 bold' />
-                                                    <FieldItem label="Applicant Name" value={safe(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                    <FieldItem label="Contact Number" value={safe(applicant?.ApplicantMobileNumber)} />
-                                                    <FieldItem label="E-Mail ID" value={safe(applicant?.ApplicantEmailId)} />
-                                                    <FieldItem label="Aadhaar Card No." value={safe(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
-                                                    <FieldItem label="PAN No." value={safe(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
-                                                    <FieldItem label="Driving License" value={safe(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
-                                                    <FieldItem label="Voting ID No." value={safe(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
-                                                    <FieldItem label="Passport No." value={safe(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
-                                                    <FieldItem label="GST No." value={safe(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
+                                                    <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
+                                                    <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
+                                                    <FieldItem label="Contact Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
+                                                    <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
+                                                    <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
+                                                    <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
+                                                    <FieldItem label="Driving License" value={getSafeString(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
+                                                    <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
+                                                    <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
+                                                    <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
                                                 </div>
                                             </div>
                                         ))
@@ -494,23 +494,23 @@ export const ViewBooking: React.FC = () => {
                                         Project Details
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Project Name" value={safe(bookingData.ProjectName)} />
-                                        <FieldItem label="Booking Type" value={safe(bookingData.BookingType)} />
+                                        <FieldItem label="Project Name" value={getSafeString(bookingData.ProjectName)} />
+                                        <FieldItem label="Booking Type" value={getSafeString(bookingData.BookingType)} />
 
                                         {bookingData.BookingType?.toUpperCase() === "FLAT" && (
                                             <>
-                                                <FieldItem label="Flat" value={safe(bookingData.Flat)} />
-                                                <FieldItem label="Wing" value={safe(bookingData.Wing)} />
-                                                <FieldItem label="Floor" value={safe(bookingData.Floor)} />
-                                                <FieldItem label="Building Number" value={safe(bookingData.BuildingNumber)} />
-                                                <FieldItem label="Flat Type" value={safe(bookingData.FlatType)} />
-                                                <FieldItem label="Flat Configuration" value={safe(bookingData.FlatConfiguration)} />
-                                                <FieldItem label="RERA Carpet Area (SqFt)" value={safe(bookingData.RERACarpetAreaSqFt)} />
+                                                <FieldItem label="Flat" value={getSafeString(bookingData.Flat)} />
+                                                <FieldItem label="Wing" value={getSafeString(bookingData.Wing)} />
+                                                <FieldItem label="Floor" value={getSafeString(bookingData.Floor)} />
+                                                <FieldItem label="Building Number" value={getSafeString(bookingData.BuildingNumber)} />
+                                                <FieldItem label="Flat Type" value={getSafeString(bookingData.FlatType)} />
+                                                <FieldItem label="Flat Configuration" value={getSafeString(bookingData.FlatConfiguration)} />
+                                                <FieldItem label="RERA Carpet Area (SqFt)" value={getSafeString(bookingData.RERACarpetAreaSqFt)} />
                                             </>
                                         )}
 
                                         {bookingData.BookingType?.toUpperCase() === "PARKING" && (
-                                            <FieldItem label="Parking Number" value={safe(bookingData.ParkingNumber)} />
+                                            <FieldItem label="Parking Number" value={getSafeString(bookingData.ParkingNumber)} />
                                         )}
                                     </div>
                                 </section>
@@ -525,14 +525,14 @@ export const ViewBooking: React.FC = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             {bookingData.ParkingData.map((parking, index) => (
                                                 <React.Fragment key={parking.ParkingId || index}>
-                                                    <FieldItem label="Parking Number" value={safe(parking.ParkingNumber)} />
-                                                    <FieldItem label="Building" value={safe(parking.BuildingNumber)} />
-                                                    <FieldItem label="Wing" value={safe(parking.Wing)} />
-                                                    <FieldItem label="Floor" value={safe(parking.Floor)} />
-                                                    <FieldItem label="Category" value={safe(parking.ParkingCategory)} />
-                                                    <FieldItem label="Type" value={safe(parking.ParkingType)} />
-                                                    <FieldItem label="Size" value={safe(parking.ParkingSubType)} />
-                                                    <FieldItem label="Dimensions" value={safe(parking.ParkingDimensions)} />
+                                                    <FieldItem label="Parking Number" value={getSafeString(parking.ParkingNumber)} />
+                                                    <FieldItem label="Building" value={getSafeString(parking.BuildingNumber)} />
+                                                    <FieldItem label="Wing" value={getSafeString(parking.Wing)} />
+                                                    <FieldItem label="Floor" value={getSafeString(parking.Floor)} />
+                                                    <FieldItem label="Category" value={getSafeString(parking.ParkingCategory)} />
+                                                    <FieldItem label="Type" value={getSafeString(parking.ParkingType)} />
+                                                    <FieldItem label="Size" value={getSafeString(parking.ParkingSubType)} />
+                                                    <FieldItem label="Dimensions" value={getSafeString(parking.ParkingDimensions)} />
                                                     <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
                                                 </React.Fragment>
                                             ))}
@@ -546,9 +546,9 @@ export const ViewBooking: React.FC = () => {
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Expected Registration Date" value={bookingData.RegistrationDate ? formatDate_dd_MonthName_yy(bookingData.RegistrationDate) : '-'} />
-                                        <FieldItem label="Handover Type" value={safe(bookingData.HandoverType)} />
-                                        <FieldItem label="Source Of Funding" value={safe(bookingData.SourceOfFunding)} />
-                                        <FieldItem label="Number Of Parking" value={safe(bookingData.NumberOfParking)} />
+                                        <FieldItem label="Handover Type" value={getSafeString(bookingData.HandoverType)} />
+                                        <FieldItem label="Source Of Funding" value={getSafeString(bookingData.SourceOfFunding)} />
+                                        <FieldItem label="Number Of Parking" value={getSafeString(bookingData.NumberOfParking)} />
                                     </div>
                                 </section>
 
@@ -558,9 +558,9 @@ export const ViewBooking: React.FC = () => {
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                                        <FieldItem label="Cheque / RTGS No." value={safe(bookingData.ChequeRTGSNumber)} />
+                                        <FieldItem label="Cheque / RTGS No." value={getSafeString(bookingData.ChequeRTGSNumber)} />
                                         <FieldItem label="Cheque / RTGS Date" value={bookingData.ChequeRTGSDate ? formatDate_dd_MonthName_yy(bookingData.ChequeRTGSDate) : '-'} />
-                                        <FieldItem label="Bank Name" value={safe(bookingData.BankName)} />
+                                        <FieldItem label="Bank Name" value={getSafeString(bookingData.BankName)} />
                                     </div>
                                 </section>
 
@@ -576,33 +576,33 @@ export const ViewBooking: React.FC = () => {
                                         <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData.AgreementValue)} isRow />
                                         <FieldItem label="TDS (₹)" value={formatCurrency(bookingData.AgreementValueTDS)} isRow />
                                         <FieldItem label="Agreement Value (Without TDS)" value={formatCurrency((bookingData?.AgreementValue ?? 0) - (bookingData?.AgreementValueTDS ?? 0))} isRow />
-                                        <FieldItem label="GST (%)" value={safe(bookingData.AgreementValueGSTPercentage)} isRow />
+                                        <FieldItem label="GST (%)" value={getSafeString(bookingData.AgreementValueGSTPercentage)} isRow />
                                         <FieldItem label="GST (₹)" value={formatCurrency(bookingData.AgreementValueGSTAmount)} isRow />
-                                        <FieldItem label="Stamp Duty (%)" value={safe(bookingData.StampDutyPercentage)} isRow />
+                                        <FieldItem label="Stamp Duty (%)" value={getSafeString(bookingData.StampDutyPercentage)} isRow />
                                         <FieldItem label="Stamp Duty (₹)" value={formatCurrency(bookingData.StampDutyAmount)} isRow />
                                         <FieldItem label="Registration Fees (₹)" value={formatCurrency(bookingData.RegistrationFees)} isRow />
                                         <FieldItem label="Booking Amount (₹)" value={formatCurrency(bookingData.BookingAmount)} isRow />
                                         {editEnquiryData?.Source?.toUpperCase() === 'CHANNEL PARTNER' && (
                                             <>
-                                                <FieldItem label="Brokerage (%)" value={safe(bookingData.BrokeragePercentage)} isRow />
+                                                <FieldItem label="Brokerage (%)" value={getSafeString(bookingData.BrokeragePercentage)} isRow />
                                                 <FieldItem label="Brokerage Amount (₹)" value={formatCurrency(bookingData.BrokerageAmount)} isRow />
                                             </>
                                         )}
                                         {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Reference' && (
                                             <>
-                                                <FieldItem label="Referel (%)" value={safe(bookingData.ReferelAmount)} isRow />
-                                                <FieldItem label="Referel Amount (₹)" value={formatCurrency(bookingData.ReferelAmount)} isRow />
+                                                <FieldItem label="Referral (%)" value={getSafeString(bookingData.ReferralAmount)} isRow />
+                                                <FieldItem label="Referral Amount (₹)" value={formatCurrency(bookingData.ReferralAmount)} isRow />
                                             </>
                                         )}
                                         {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Loyalty' && (
                                             <>
-                                                <FieldItem label="Loyalty (%)" value={safe(bookingData.LoyaltyPercentage)} isRow />
+                                                <FieldItem label="Loyalty (%)" value={getSafeString(bookingData.LoyaltyPercentage)} isRow />
                                                 <FieldItem label="Loyalty Amount (₹)" value={formatCurrency(bookingData.LoyaltyAmount)} isRow />
                                             </>
                                         )}
                                         {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Employee Reference' && (
                                             <>
-                                                <FieldItem label="Employee Reference (%)" value={safe(bookingData.EmployeeReferencePercentage)} isRow />
+                                                <FieldItem label="Employee Reference (%)" value={getSafeString(bookingData.EmployeeReferencePercentage)} isRow />
                                                 <FieldItem label="Employee Reference Amount (₹)" value={formatCurrency(bookingData.EmployeeReferenceAmount)} isRow />
                                             </>
                                         )}
@@ -649,7 +649,7 @@ export const ViewBooking: React.FC = () => {
                                     Flat Alteration Remarks
                                 </h4>
                                 <div className="grid grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={safe(bookingData.FlatAlterationRemark)} />
+                                    <FieldItem label="Remarks" value={getSafeString(bookingData.FlatAlterationRemark)} />
                                 </div>
                             </section>
                         )}
@@ -661,7 +661,7 @@ export const ViewBooking: React.FC = () => {
                                     Payment Remarks
                                 </h4>
                                 <div className="grid grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={safe(bookingData.PaymentRemark)} />
+                                    <FieldItem label="Remarks" value={getSafeString(bookingData.PaymentRemark)} />
                                 </div>
                             </section>
                         )}
@@ -673,7 +673,7 @@ export const ViewBooking: React.FC = () => {
                                     Other Remarks
                                 </h4>
                                 <div className="grid grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={safe(bookingData.OtherRemark)} />
+                                    <FieldItem label="Remarks" value={getSafeString(bookingData.OtherRemark)} />
                                 </div>
                             </section>
                         )}
@@ -688,7 +688,7 @@ export const ViewBooking: React.FC = () => {
                                     <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
 
                                 </div>
-                                </section>
+                            </section>
                         )}
 
                         <div className='pt-5'>
@@ -698,7 +698,7 @@ export const ViewBooking: React.FC = () => {
                                 </h4>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
-                                    <FieldItem label="Created By" value={safe(bookingData.CreatedBy)} />
+                                    <FieldItem label="Created By" value={getSafeString(bookingData.CreatedBy)} />
                                     <FieldItem
                                         label="Created Date"
                                         value={
@@ -710,7 +710,7 @@ export const ViewBooking: React.FC = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
-                                    <FieldItem label="Modified By" value={safe(bookingData.ModifiedBy)} />
+                                    <FieldItem label="Modified By" value={getSafeString(bookingData.ModifiedBy)} />
                                     <FieldItem
                                         label="Modified Date"
                                         value={
@@ -722,7 +722,7 @@ export const ViewBooking: React.FC = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 gap-4 pt-4">
-                                    <FieldItem label="Approval Status" value={safe(bookingData.ApprovalStatus)} />
+                                    <FieldItem label="Approval Status" value={getSafeString(bookingData.ApprovalStatus)} />
                                 </div>
                             </section>
                         </div>
@@ -741,16 +741,16 @@ export const ViewBooking: React.FC = () => {
                                     bookingData.BookingApplicantData.map((applicant, i) => (
                                         <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                <FieldItem label="Type" value={safe(applicant.ApplicantType)} className='text-blue-900 bold' />
-                                                <FieldItem label="Applicant Name" value={safe(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                <FieldItem label="Contact Number" value={safe(applicant?.ApplicantMobileNumber)} />
-                                                <FieldItem label="E-Mail ID" value={safe(applicant?.ApplicantEmailId)} />
-                                                <FieldItem label="Aadhaar Card No." value={safe(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
-                                                <FieldItem label="PAN No." value={safe(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
-                                                <FieldItem label="Driving License" value={safe(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
-                                                <FieldItem label="Voting ID No." value={safe(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
-                                                <FieldItem label="Passport No." value={safe(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
-                                                <FieldItem label="GST No." value={safe(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
+                                                <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
+                                                <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
+                                                <FieldItem label="Contact Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
+                                                <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
+                                                <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
+                                                <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
+                                                <FieldItem label="Driving License" value={getSafeString(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
+                                                <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
+                                                <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
+                                                <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
                                             </div>
                                         </div>
                                     ))

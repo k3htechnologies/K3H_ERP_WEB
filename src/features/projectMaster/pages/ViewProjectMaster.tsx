@@ -36,7 +36,7 @@ export const ViewProjectMaster: React.FC = () => {
     }, 350)
 
 
-    const [compantMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
+    const [companyMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
 
     const [projectWithBankDetailsList, setProjectWithBankDetailsList] = useState<ProjectWithBankDetails[]>([]);
 
@@ -714,8 +714,8 @@ export const ViewProjectMaster: React.FC = () => {
                     <div className="space-y-4 pt-5">
 
 
-                        {compantMasterList?.length ? (
-                            compantMasterList.map((c, i) => (
+                        {companyMasterList?.length ? (
+                            companyMasterList.map((c, i) => (
                                 <section
                                     key={i}
                                     className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] mb-4"

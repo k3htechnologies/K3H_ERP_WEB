@@ -63,20 +63,15 @@ export default function QuickActions() {
 
     return (
         <div className="space-y-3 pt-5 sm:pt-7">
-            <h1 className="text-base font-semibold opacity-0 select-none">
-                Quick Actions
-            </h1>
 
-            <div className="bg-white rounded-xl p-4 sm:p-5 mt-3 flex flex-col 
-                  min-h-[300px] sm:min-h-[400px] max-h-[70vh]">
-
+            <div className="bg-white rounded-xl p-4 sm:p-5 mt-10 flex flex-col h-[531px]">
                 {/* Title */}
-                <p className="text-sm sm:text-base font-semibold text-gray-800">
+                <p className="text-md font-semibold text-gray-500 pb-2">
                     Quick Actions
                 </p>
 
                 {/* Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-3 sm:gap-4 mt-5 sm:mt-8 overflow-y-auto thin-scroll ">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-3 sm:gap-4 mt-2 sm:mt-4 overflow-y-auto thin-scroll ">
 
                     {cardDarta?.length > 0 ? (
                         cardDarta.map((card, index) => (

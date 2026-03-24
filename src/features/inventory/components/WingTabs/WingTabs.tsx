@@ -22,7 +22,7 @@ export const WingTabs = ({ wings, activeWingTab, onWingChange, onDeleteWing,canA
 
     return (
         <div className="w-full pb-2">
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto thin-scroll whitespace-nowrap scrollbar-hide">
                 {wings.map((wing, index) => {
 
                     const isActive = activeWingTab === String(index);

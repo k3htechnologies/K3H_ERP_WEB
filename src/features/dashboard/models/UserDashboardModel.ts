@@ -22,6 +22,7 @@ export interface Table0 {
   Status: string | null;
   PunchIn: string | null;
   PunchOut: string | null;
+  EmailId: string | null;
 }
 
 export interface Table1 {
@@ -33,10 +34,10 @@ export interface Table1 {
 }
 
 export interface Table2 {
-  ThisMonthHours: string | null;
-  ThisWeekHours: string | null;
-  OvertimeHours: string | null;
-  AvgDailyHours: string | null;
+  ThisMonthHours: number | null;
+  ThisWeekHours: number | null;
+  OvertimeHours: number | null;
+  AvgDailyHours: number | null;
   Message?: string | null;
 }
 
@@ -45,12 +46,20 @@ export interface Table3 {
   EmployeeId: number | null;
   FullName: string | null;
   WorkingHours: string | null;
-  AttendanceId: number | null;
-  DayName: string | null;
-  PunchIn: string | null;
-  PunchOut: string | null;
-  PunchInAddress: string | null;
-  PunchOutAddress: string | null;
+  AttendanceId: number | 0;
+  DayName: string;
+  PunchIn: string | "";
+  PunchOut: string | "";
+  PunchInAddress: string | "";
+  PunchOutAddress: string | "";
+  AttendanceStatus: string | null;
+  CreatedById: number | null;
+  CreatedBy: string | null;
+  CreatedDate: string | null;
+  ModifiedById: number | null;
+  ModifiedBy: string | null;
+  ModifiedDate: string | null;
+  HoursWorked: number | null;
 }
 
 export interface Table4 {
@@ -71,7 +80,11 @@ export interface Table5 {
 }
 
 export interface Table6 {
-  // No response coming from backend for this table
+  HolidayMasterId: number | null;
+  HolidayName: string | null;
+  HolidayDate: string | null;
+  DaysRemaining: number | null;
+  DayName: string | null;
 }
 
 export interface Table7 {
@@ -93,12 +106,12 @@ export interface Table9 {
 }
 
 export interface Table10 {
-  ManagerId: number | null;
-  ManagerName: string | null;
-  ManagerEmail: string | null;
-  ManagerPhone: string | null;
-  ManagerDepartment: string | null;
-  ManagerDesignation: string | null;
+  ManagerId: number | 0;
+  ManagerName: string | "";
+  ManagerEmail: string | "";
+  ManagerPhone: string | "";
+  ManagerDepartment: string | "";
+  ManagerDesignation: string | "";
 }
 
 export interface Table11 {
@@ -110,6 +123,10 @@ export interface Table11 {
   EndLongitude: number | null;
   Distance: number | null;
   Polyline: string | null;
+  WorkedTime: string | null;
+  TotalTime: string | null;
+  Date: string | null;
+  Progress: number | null;
 
 }
 

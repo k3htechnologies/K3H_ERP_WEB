@@ -1,9 +1,11 @@
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { useMemo } from "react";
+import type { Table4 } from "@/features/litigationDashboard/models/litigationDashboardModel";
+import { getLitigationStatuscolor } from "@/features/litigation/pages/Status";
 
 interface Props {
-    activeCaseData: any[];
+    activeCaseData: Table4[];
 }
 
 const ActiveCases: React.FC<Props> = ({ activeCaseData }) => {
@@ -49,12 +51,24 @@ const ActiveCases: React.FC<Props> = ({ activeCaseData }) => {
             {
                 key: "Status",
                 label: "Status",
-                align: "left",
-                render: (value: string) => (
-                    <span className="font-medium text-black">
-                        {(value || '')}
-                    </span>
-                )
+                width: "14",
+                sortable: false,
+                align: "center",
+                render: (value?: string) => {
+                    const { bg, text } = getLitigationStatuscolor(value);
+
+                    return (
+                        <span
+                            className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                            style={{
+                                backgroundColor: bg,
+                                color: text,
+                            }}
+                        >
+                            {value || "-"}
+                        </span>
+                    );
+                },
             },
         ], []
     );

@@ -1,10 +1,11 @@
 import { PieChart, Pie, Cell } from "recharts";
+import type { Table0 } from "@/features/inventoryDashboard/models/InventoryDashboardModel";
 
 interface Props {
-  overViewData: any[];
+  overViewData: Table0[];
 }
 
-export default function UnitStatusDistribution({ overViewData = [] }: Props) {
+export default function UnitStatusDistribution({ overViewData}: Props) {
 
   const data = overViewData[0] || {};
 

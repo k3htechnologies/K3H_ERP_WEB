@@ -1,8 +1,9 @@
 import { convert_hh_mm_ss_to_hh_mm } from "@/core/utils/dateFormat";
+import type { Table1 } from "../models/UserDashboardModel";
 
 interface Props {
-    attendanceSummaryShiftData: any[];
-    attendancePresentData: any[];
+    attendanceSummaryShiftData: Table1[];
+    attendancePresentData: Table1[];
 }
 
 
@@ -13,14 +14,12 @@ export default function AttendanceSummaryCard({ attendanceSummaryShiftData = [],
 
     return (
         <div className="space-y-3 pt-4 sm:pt-5">
-            <p className="text-sm sm:text-md font-semibold text-gray-800">
-                Attendance Summary
-            </p>
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2">Attendance Summary</h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 mt-4">
 
                 {/* Card-1: Present Days */}
-                <div className="w-full bg-green-100 shadow-sm rounded-md 
+                <div className="w-full bg-green-100  rounded-md 
                     p-3 sm:p-4 border border-green-300 leading-loose">
 
                     <div className="text-xs sm:text-sm text-gray-500 font-medium mb-1 sm:mb-2">
@@ -42,7 +41,7 @@ export default function AttendanceSummaryCard({ attendanceSummaryShiftData = [],
                 </div>
 
                 {/* Card-2: Shift Pattern */}
-                <div className="w-full bg-purple-100 shadow-sm rounded-md 
+                <div className="w-full bg-purple-100 rounded-md 
                     p-3 sm:p-4 border border-purple-300 leading-loose">
 
                     <div className="text-xs sm:text-sm text-gray-500 font-medium mb-1 sm:mb-2">
@@ -57,7 +56,7 @@ export default function AttendanceSummaryCard({ attendanceSummaryShiftData = [],
 
                     <div className="text-purple-600 text-xs break-words">
                         {attendanceSummaryShiftData?.length > 0 && shiftData
-                            ? `${convert_hh_mm_ss_to_hh_mm(shiftData.ShiftBeginTime)} - ${convert_hh_mm_ss_to_hh_mm(shiftData.ShiftEndTime)}`
+                            ? `${convert_hh_mm_ss_to_hh_mm(shiftData.ShiftBeginTime ?? "")} - ${convert_hh_mm_ss_to_hh_mm(shiftData.ShiftEndTime ?? "")}`
                             : "--"}
                     </div>
 

@@ -25,7 +25,7 @@ const Dashboard: React.FC = () => {
   const [leaveBalanceData, setLeaveBalanceData] = useState<Table4[]>([]);
   const [upcomingApprovedHolidays, setUpcomingApprovedHolidays] = useState<Table5[]>([]);
   const [attendanceSummaryShiftPatternData, setAttendanceSummaryShiftPatternData] = useState<Table1[]>([]);
-  const [attendanceSummaryPresentDays, setAttendanceSummaryPresentDays] = React.useState<Table1[]>([]);
+  const [attendanceSummaryPresentDays, setAttendanceSummaryPresentDays] = useState<Table1[]>([]);
   const [holidayData, setHolidayData] = useState<Table6[]>([]);
   const [birthdays, setBirthdays] = useState<Table8[]>([]);
   const [reportingData, setReportingData] = useState<Table10[]>([]);

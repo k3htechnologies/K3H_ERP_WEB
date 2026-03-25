@@ -176,7 +176,7 @@ export const getPageInfo = (path: string) => {
 
         case 'compOff':
             return {
-                title: 'CompOff',
+                title: 'Comp Off',
                 description: 'Smartly Track Extra Work. Seamlessly Grant Comp Off',
             }
         case 'outdoor':

@@ -215,7 +215,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
 
 
   //#region HANDLE DEPARTMENT SELECTED
-  const handleDepartmentSelected = useCallback((item: DropdownItem| null) => {
+  const handleDepartmentSelected = useCallback((item: DropdownItem | null) => {
 
     const departmentId = item?.value ? Number(item.value) : 0;
 
@@ -320,7 +320,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
   const handleSubmit = async () => {
 
     setErrors({})
-    
+
     const validation = validateForm()
 
     if (!validation.isValid) {
@@ -382,7 +382,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <DatePickerInput
-                  label="OutDoor Date"
+                  label="Outdoor Date"
                   value={formatDate_dd_mm_yyyy(outdoorFormData.OutDoorDate)}
                   onChange={(val) => handleFieldChange('OutDoorDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
                   required
@@ -459,6 +459,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
               <div>
                 <MultiFilePicker
                   label="Upload visiting card"
+                  placeholder="Select files"
                   value={visitingCardFiles}
                   onChange={setVisitingCardFiles}
                   availableFilesURL={visitingCardURL ?? ""}

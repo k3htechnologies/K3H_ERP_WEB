@@ -5,8 +5,8 @@ import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-    FilterWithPaginationLeaveRequest,
-    LeaveData,
+  FilterWithPaginationLeaveRequest,
+  LeaveData,
 } from '@/features/leave/models/LeaveModel';
 import { LeaveService } from '@/features/leave/services/LeaveService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
@@ -304,7 +304,7 @@ export const Leave: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-  
+
 
         const params: FilterWithPaginationLeaveRequest = {
           PageNumber: 1,
@@ -511,7 +511,7 @@ export const Leave: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Leave Type..."
+        searchPlaceholder="Search By Leave Type"
         onSearchChange={
           searchLeaves
         }
@@ -581,7 +581,7 @@ export const Leave: React.FC = () => {
         saveText="Apply "
         cancelText="Clear"
         onCancel={() => clearFilters()}
-       
+
         size="small-half"
       >
         <div className="space-y-6">

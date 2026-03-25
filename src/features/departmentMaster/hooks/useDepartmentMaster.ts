@@ -43,7 +43,7 @@ export const useDepartmentMaster = () => {
   // EDIT DEPARTMENT MASTER
   const [editingDepartmentMasterData, setEditingDepartmentMasterData] = useState<DepartmentMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-
+  const [lastUpdatedRow, setLastUpdatedRow] = React.useState<string | number | null>(null);
   //ADD UPDATE DEPARTMENT MASTER
   const [formData, setFormData] = useState<AddUpdateDepartmentMasterRequest>(() => getInitialFormState());
 
@@ -371,7 +371,6 @@ export const useDepartmentMaster = () => {
 
   const handleAddUpdateDepartmentMaster = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setErrors({})
 
     const validation = validateAddDepartmentMasterForm()
@@ -401,7 +400,7 @@ export const useDepartmentMaster = () => {
             const newRecord = response.right.Data[0] as DepartmentMasterData
 
             setDepartmentMasterList(prevData => [newRecord, ...prevData]);
-
+            setLastUpdatedRow(newRecord.DepartmentMasterId);
             setPagination({
               currentPage: pagination.currentPage,
               totalRecords: pagination.totalRecords + 1,
@@ -411,8 +410,9 @@ export const useDepartmentMaster = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
           } else {
-
+debugger
             const updatedRecord = response.right.Data[0] as DepartmentMasterData;
+            setLastUpdatedRow(updatedRecord.DepartmentMasterId);
 
             setDepartmentMasterList(prevData =>
               prevData.map(item =>
@@ -599,7 +599,7 @@ export const useDepartmentMaster = () => {
     selectedDepartmentMasterColumnKeys,
     requiredDepartmentMasterColumnKeys,
     allDepartmentMasterColumnKeys,
-
+    lastUpdatedRow,
     // Setters
     setSearchTerm,
     setIsViewModalOpen,

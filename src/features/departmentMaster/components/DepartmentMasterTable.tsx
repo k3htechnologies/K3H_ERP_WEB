@@ -16,6 +16,7 @@ interface DepartmentMasterTableProps {
   onDelete: (row: DepartmentMasterData) => void;
   canAction: boolean;
   loading: boolean;
+  lastUpdatedRow?: string | number | null;
 }
 
 export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
@@ -27,7 +28,8 @@ export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
   onView,
   onDelete,
   canAction,
-  loading
+  loading,
+  lastUpdatedRow
 }) => {
   const tableColumns = useMemo<TableColumn[]>(() => {
     return columns.map(col => {
@@ -93,6 +95,7 @@ export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
       data={data}
       columns={tableColumns}
       pagination={pagination}
+      rowKey="DepartmentMasterId"
       emptyMessage="No Departments Data Found"
       fixedHeight={true}
       recordsPerPage={20}
@@ -100,6 +103,7 @@ export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
       sortInfo={sortInfo}
       onSort={onSort}
       loading={loading}
+      lastUpdatedRow={lastUpdatedRow}
     />
   );
 };

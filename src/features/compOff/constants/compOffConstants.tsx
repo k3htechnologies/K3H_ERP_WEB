@@ -20,7 +20,7 @@ export const getInitialFormState = (): AddUpdateCompOff => ({
 export const getCompOffColumns = (onView?: (row: any) => void): TableColumn[] => [
     {
         key: 'CompOffDate',
-        label: 'CompOff Date',
+        label: 'Comp Off Date',
         width: '25',
         sortable: true,
         fixed: 'left',

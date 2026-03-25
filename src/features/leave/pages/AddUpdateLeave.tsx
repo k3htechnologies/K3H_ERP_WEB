@@ -32,8 +32,8 @@ const initialFormState = (): AddUpdateLeaveRequest => ({
     LeaveTypeMasterId: 0,
     StartDate: null,
     EndDate: null,
-    StartDateLeaveDuration: 'Full',
-    EndDateLeaveDuration: 'Full',
+    StartDateLeaveDuration: '',
+    EndDateLeaveDuration: '',
     Reason: '',
     LeaveDocumentFiles: [],
     RemoveLeaveURL: '',
@@ -155,8 +155,8 @@ export const AddUpdateLeave: React.FC = () => {
             ...prev,
             StartDate: null,
             EndDate: null,
-            StartDateLeaveDuration: 'Full',
-            EndDateLeaveDuration: 'Full',
+            StartDateLeaveDuration: '',
+            EndDateLeaveDuration: '',
         }));
         setErrors((prev) => {
             const newErrors = { ...prev };
@@ -322,6 +322,7 @@ export const AddUpdateLeave: React.FC = () => {
                             <div>
                                 <MultiFilePicker
                                     label="Leave Documents"
+                                    placeholder="Select files"
                                     value={leaveDocumentFiles}
                                     onChange={setLeaveDocumentFiles}
                                     availableFilesURL={leaveDocumentURL ?? ""}
@@ -429,7 +430,7 @@ export const AddUpdateLeave: React.FC = () => {
 
                         <div>
                             <SingleSelectDropdownWithPagination
-                                label="Start Date Duration"
+                                label="Start Day Duration"
                                 title="Select Duration"
                                 size="lg"
                                 required
@@ -455,7 +456,7 @@ export const AddUpdateLeave: React.FC = () => {
 
                         <div>
                             <SingleSelectDropdownWithPagination
-                                label="End Date Duration"
+                                label="End Day Duration"
                                 title="Select Duration"
                                 size="lg"
                                 required
@@ -480,7 +481,7 @@ export const AddUpdateLeave: React.FC = () => {
                         </div>
 
                         <Input
-                            label="Total Days (auto)"
+                            label="Total Days"
                             disabled
                             value={
                                 startDate && endDate

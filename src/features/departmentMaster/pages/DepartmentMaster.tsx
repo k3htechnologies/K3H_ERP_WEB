@@ -42,6 +42,7 @@ export const DepartmentMaster: React.FC = () => {
     selectedDepartmentMasterColumnKeys,
     requiredDepartmentMasterColumnKeys,
     isShowCustomizeDepartmentMasterColumnsModal,
+    lastUpdatedRow,
 
     // Setters
     setSearchTerm,
@@ -167,6 +168,7 @@ export const DepartmentMaster: React.FC = () => {
         onView={handleViewDepartmentDetails}
         onEdit={handleEditDepartmentMaster}
         onDelete={handleConfirmationDialogBoxOpen}
+        lastUpdatedRow={lastUpdatedRow}
         canAction={canAction}
         loading={isLoading}
       />

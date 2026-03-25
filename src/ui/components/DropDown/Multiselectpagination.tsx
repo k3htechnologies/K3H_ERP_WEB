@@ -58,14 +58,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   };
 
   // Approximate height of the search + select-all/clear-all header sections
-  const HEADER_HEIGHT_MAP = {
-    sm: 68,
-    md: 76,
-    lg: 84,
-  };
-
   const currentSize = SIZE_MAP[size as keyof typeof SIZE_MAP] || SIZE_MAP.md;
-  const headerHeight = HEADER_HEIGHT_MAP[size as keyof typeof HEADER_HEIGHT_MAP] || HEADER_HEIGHT_MAP.md;
 
   const hasSelections = selectedValues.length > 0;
 

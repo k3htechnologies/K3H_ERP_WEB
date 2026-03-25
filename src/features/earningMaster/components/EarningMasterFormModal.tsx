@@ -99,28 +99,28 @@ export const EarningMasterFormModal: React.FC<EarningMasterFormModalProps> = ({
 
               <RadioPill
                 name="Applicable"
-                label="Lumsum"
+                label="Lumpsum"
                 value={formData.Applicable ?? ''}
-                checked={applicable === "Lumsum"}
+                checked={applicable === "Lumpsum"}
                 onChange={() => {
 
                   onFieldChange("Value", 0);
-                  setApplicable("Lumsum");
-                  onFieldChange("Applicable", "Lumsum");
+                  setApplicable("Lumpsum");
+                  onFieldChange("Applicable", "Lumpsum");
                 }}
               />
             </div>
           </div>
           <div>
             <Input
-              label={formData.Applicable === "Lumsum" ? 'Value (Lumsum)' : 'Value (%)'}
+              label={formData.Applicable === "Lumpsum" ? 'Value (Lumpsum)' : 'Value (%)'}
               required
               error={errors.Value}
               type="text"
               value={formData.Value ?? ''}
               maxLength={10}
               onChange={(e) => {
-                if (formData.Applicable === "Lumsum") {
+                if (formData.Applicable === "Lumpsum") {
                   onFieldChange("Value", filterNumbersWithDecimal(e.target.value))
                 }
                 else {

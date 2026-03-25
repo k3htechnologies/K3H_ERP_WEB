@@ -13,7 +13,7 @@ import { fetchEmployeeMasterById, fetchEmployeeMasterDropdown } from "@/features
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchAssetById, fetchAssetMasterDropdown } from "@/features/assetMaster/assetMasterDropDown";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_To_dd_mm_yyyy, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -191,7 +191,9 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
       newErrors.AssignedDate = "Assigned Date is required";
     }
 
-    if (formData.AssignedDate && !isToDateGreaterOrEqualFromDate(joiningDate || "", formData.AssignedDate!)) {
+    const assignedDate=convert_yy_mm_dd_To_dd_mm_yyyy(formData.AssignedDate)
+    
+    if (formData.AssignedDate && !isToDateGreaterOrEqualFromDate(joiningDate || "", assignedDate!)) {
       newErrors.AssignedDate = "Assigned Date must be greater than or equal to Joining Date";
     }
 

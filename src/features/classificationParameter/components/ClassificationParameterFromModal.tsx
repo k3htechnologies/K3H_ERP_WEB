@@ -22,6 +22,7 @@ interface ClassificationParameterFormModalProps {
         initialOptions: any[];
         handleChange: (values: any) => { idsString: string | null };
     }
+    dropdownResetKey?:number;
 }
 
 export const ClassificationParameterFormModal: React.FC<ClassificationParameterFormModalProps> = ({
@@ -34,7 +35,8 @@ export const ClassificationParameterFormModal: React.FC<ClassificationParameterF
     errors,
     editingData,
     loading,
-    villageDropdown
+    villageDropdown,
+    dropdownResetKey   
 }) => {
 
     return (
@@ -126,6 +128,7 @@ export const ClassificationParameterFormModal: React.FC<ClassificationParameterF
                     <div>
                         <MultiSelectPagination
                             label="Location"
+                            key={dropdownResetKey}
                             dataFetchCallBack={fetchVillageDropdown}
                             required
                             selectedValues={villageDropdown.selectedValues}

@@ -246,8 +246,7 @@ export const CallLog: React.FC = () => {
             newErrors.RescheduleDate = "Reschedule Date is required";
         }
 
-        if (editingCallLogData?.CallDate && formData.RescheduleDate && !isToDateGreaterOrEqualFromDate(editingCallLogData.CallDate,
-            formData.RescheduleDate)
+        if (editingCallLogData?.CallDate && formData.RescheduleDate && !isToDateGreaterOrEqualFromDate(editingCallLogData.CallDate, formData.RescheduleDate)
         ) {
             newErrors.RescheduleDate =
                 "Reschedule Date must be After Call Date";

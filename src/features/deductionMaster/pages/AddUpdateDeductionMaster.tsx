@@ -213,7 +213,7 @@ export const AddUpdateDeductionMaster: React.FC = () => {
       Name: formData.Name || '',
       Type: Array.isArray(formData.Type) ? formData.Type.join(',') : formData.Type,
       Value: formData.Value || 0,
-      Applicable: formData.Applicable,
+      Applicable: formData.Applicable==="" ?'Percenatge' :formData.Applicable,
       BranchMasterId: formData.BranchMasterId || 0,
       MinSalary: formData.MinSalary || 0,
       MaxSalary: formData.MaxSalary || 0,
@@ -331,27 +331,27 @@ export const AddUpdateDeductionMaster: React.FC = () => {
 
                   <RadioPill
                     name="Applicable"
-                    label="Lumsum"
+                    label="Lumpsum"
                     value={formData.Applicable ?? ''}
-                    checked={applicable === "Lumsum"}
+                    checked={applicable === "Lumpsum"}
                     onChange={() => {
                       formData.Value = 0;
-                      setApplicable("Lumsum");
-                      handleFieldChange("Applicable", "Lumsum");
+                      setApplicable("Lumpsum");
+                      handleFieldChange("Applicable", "Lumpsum");
                     }}
                   />
                 </div>
               </div>
               <div>
                 <Input
-                  label={formData.Applicable === "Lumsum" ? 'Value (Lumsum)' : 'Value (%)'}
+                  label={formData.Applicable === "Lumpsum" ? 'Value (Lumpsum)' : 'Value (%)'}
                   required
                   error={errors.Value}
                   type="text"
                   value={formData.Value ?? ''}
                   maxLength={10}
                   onChange={(e) => {
-                    if (formData.Applicable === "Lumsum") {
+                    if (formData.Applicable === "Lumpsum") {
                       handleFieldChange("Value", filterNumbersWithDecimal(e.target.value))
                     }
                     else {

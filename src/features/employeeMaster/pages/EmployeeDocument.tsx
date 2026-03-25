@@ -285,7 +285,7 @@ export const EmployeeDocument: React.FC = () => {
   //#region HANDLE PAGE CHNAGE EVENT
 
   const handlePageChange = (page: number) => {
-    fetchEmployeeDocumentList(page);
+    loadEmployeeDocuments(page, filters, sortInfo, searchTerm || undefined);
   };
 
   //#endregion
@@ -381,7 +381,7 @@ export const EmployeeDocument: React.FC = () => {
                     }}
                     leftIcon={<Edit className="h-4 w-4" />}
                   />
-                  
+
                   {false && (
                     <Button
                       color='transparent'
@@ -429,14 +429,14 @@ export const EmployeeDocument: React.FC = () => {
         width: '33',
         sortable: false,
         align: 'left',
-       render: value => value || '-'
+        render: value => value || '-'
       },
       {
         key: 'ModifiedDate',
         label: 'Last Modified Date',
         width: '33',
         sortable: false,
-        align: 'left',
+        align: 'center',
         render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
       },
     ],

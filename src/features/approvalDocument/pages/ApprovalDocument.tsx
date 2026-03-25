@@ -40,6 +40,7 @@ import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/
 import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
 import ApprovalActions from '@/features/modulesWorkflowApproval/components/ApprovalActionsButton';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
 
 
 const initialFormState = (): AddUpdateApprovalDocumentRequest => ({
@@ -1359,7 +1360,7 @@ const ApprovalDocument: React.FC = () => {
 
               return (
                 <div className="p-1 text-xs text-gray-600 text-center">
-                  No Document Found.
+                  <NoDataView />
                 </div>
               );
             }

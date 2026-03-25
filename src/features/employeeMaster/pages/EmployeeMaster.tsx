@@ -194,7 +194,6 @@ export const EmployeeMaster: React.FC = () => {
     }
 
     updateListState({ searchTerm: searchValue, page: 1 });
-    // await loadEmployees(1, filters, sortInfo, searchValue);
   };
 
   //#endregion

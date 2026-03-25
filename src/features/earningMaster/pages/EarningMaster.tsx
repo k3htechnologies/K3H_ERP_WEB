@@ -128,7 +128,7 @@ export const EarningMaster: React.FC = () => {
           debouncedSearch(v)
         }}
         onClearSearch={clearsearchEarnings}
-        isShowFilterButton
+        isShowFilterButton={false}
         filters={filters}
         onOpenFilter={handleOpenFilter}
         isShowCustomizeButton

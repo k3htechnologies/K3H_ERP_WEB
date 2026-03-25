@@ -66,18 +66,24 @@ export function formatToKLCr(value: number): string {
   return value.toString();
 }
 
+const parseDDMMYYYY = (value: string | Date): Date => {
+  if (value instanceof Date) return value;
+
+  const [dd, mm, yyyy] = value.split("-");
+  return new Date(Number(yyyy), Number(mm) - 1, Number(dd));
+};
+
 export const isToDateGreaterOrEqualFromDate = (
   fromDate: string | Date,
   toDate: string | Date
 ): boolean => {
   if (!fromDate || !toDate) return false;
 
-  const from = new Date(fromDate);
-  const to = new Date(toDate);
+  const from = parseDDMMYYYY(fromDate);
+  const to = parseDDMMYYYY(toDate);
 
   return to.getTime() >= from.getTime();
 };
-
 
 //Common Validation: Allow Only Past N Days (Including Today)
 

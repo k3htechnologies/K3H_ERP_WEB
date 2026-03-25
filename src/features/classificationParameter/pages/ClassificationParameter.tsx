@@ -31,6 +31,7 @@ const { projectId } = useProject();
         viewClassificationParameterDetailsData,
         canExport,
         villageDropdown,
+        dropdownResetKey,
         classificationParameterColumns,
 
         //setters
@@ -43,6 +44,7 @@ const { projectId } = useProject();
         setIsViewModalOpen,
         setViewClassificationParameterDetailsData,
         setVillageValue,
+        setDropdownResetKey,
 
         //Actions
         handlePageChange,
@@ -78,9 +80,9 @@ const { projectId } = useProject();
 
     const handleFormReset = useCallback(
 
-        createFormResetHandler(setIsAddUpdateModalOpen, setEditingClassificationParameterData, setFormData, setErrors,setVillageValue),
+        createFormResetHandler(setIsAddUpdateModalOpen, setEditingClassificationParameterData, setFormData, setErrors,setVillageValue,setDropdownResetKey),
 
-        [setIsAddUpdateModalOpen, setEditingClassificationParameterData, setFormData, setErrors, setVillageValue]
+        [setIsAddUpdateModalOpen, setEditingClassificationParameterData, setFormData, setErrors, setVillageValue,setDropdownResetKey]
 
     );
 
@@ -144,6 +146,7 @@ const { projectId } = useProject();
                 editingData={editingClassificationParameterData}
                 loading={isLoading}
                 villageDropdown={villageDropdown}
+                dropdownResetKey={dropdownResetKey}
             />
 
             <DeleteDialog

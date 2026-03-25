@@ -195,17 +195,17 @@ export const convert_dd_mm_yyyy_To_Yyyy_mm_dd = (
 };
 
 export const convert_yy_mm_dd_To_dd_mm_yyyy = (
-  value?: string | null,
+  value?: string | Date | null,
 ): string | null => {
   if (!value) return null;
 
-  const trimmed = value.trim();
+  const trimmed = value.toString().trim();
   if (!trimmed) return null;
 
-  const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(trimmed);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
   if (!match) return null;
 
-  const [, dd, mm, yyyy] = match;
+  const [, yyyy, mm, dd] = match;
   return `${dd}-${mm}-${yyyy}`;
 };
 

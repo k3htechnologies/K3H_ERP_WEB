@@ -45,6 +45,7 @@ import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const initialFormState = (): AddUpdateProjectDocumentRequest => ({
   ProjectDocumentId: 0,
@@ -1229,7 +1230,7 @@ const ProjectDocument: React.FC = () => {
           renderRow: (fetchedData) => {
             const details: ProjectDocumentData[] = Array.isArray(fetchedData) ? fetchedData : fetchedData ? [fetchedData] : [];
             if (!details || details.length === 0) {
-              return <div className="p-1 text-xs text-gray-600 text-center">No Document Found.</div>;
+              return <div className="p-1 text-xs text-gray-600 text-center"><NoDataView /></div>;
             }
 
             return (

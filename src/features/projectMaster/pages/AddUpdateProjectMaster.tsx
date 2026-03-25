@@ -422,18 +422,18 @@ const AddUpdateProjectMaster: React.FC = () => {
     return (
 
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
 
             <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
                 <form onSubmit={handleSubmit}>
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Basic Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {/* Redevelopment Checkbox */}
-                            <div className="space-y-4 pb-4">
+                            <div className="space-y-4">
                                 <Checkbox
                                     label="Is This Project a Redevelopment Project?"
                                     checked={formData.IsRedevelopment === 1}
@@ -529,7 +529,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Scheme & Scope Details */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Location Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
@@ -751,7 +751,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Scheme & Scope Details */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Scheme & Scope Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
@@ -797,7 +797,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Project Documentation */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Documentation</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
@@ -828,7 +828,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Project Financials */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Financials</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
@@ -866,7 +866,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Timeline */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Timeline</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
@@ -894,7 +894,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Contact Information */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Contact Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>

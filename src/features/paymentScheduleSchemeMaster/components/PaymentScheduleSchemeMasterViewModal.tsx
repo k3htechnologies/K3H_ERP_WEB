@@ -52,16 +52,14 @@ export const PaymentScheduleSchemeMasterViewModal: React.FC<PaymentScheduleSchem
       size="xl"
     >
       <div className="space-y-6">
-        <div className="space-y-4">
+       
           <FieldItem label="Scheme" value={data.PaymentScheduleScheme} isRow withBorder={true} />
 
           <FieldItem label="Building" value={data.BuildingNumber} isRow withBorder={true} className="font-medium text-blue-900 " />
 
           <FieldItem label="Wing" value={data.Wing} isRow withBorder={true} />
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="text-lg font-semibold pb-2">Action Details</h4>
+        
+          <h4 className="text-lg font-semibold">Action Details</h4>
 
           <FieldItem
             label="Created By / Date"
@@ -80,9 +78,9 @@ export const PaymentScheduleSchemeMasterViewModal: React.FC<PaymentScheduleSchem
           ) : (
             ""
           )}
-        </div>
+        
 
-        <div className="flex justify-between items-center pt-4">
+        <div className="flex justify-between items-center">
           {canAction && (
             <>
               {(data.IsExistsPaymentScheduleScheme || 0) === 0 ? (

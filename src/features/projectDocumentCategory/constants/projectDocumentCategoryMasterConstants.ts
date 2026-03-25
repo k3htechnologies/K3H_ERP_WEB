@@ -19,7 +19,7 @@ export const getProjectDocumentCategoryMasterColumns = (): TableColumn[] => [
   {
     key: 'ProjectDocumentCategoryName',
     label: 'Project Document Category',
-    width: '40',
+    width: '60',
     sortable: true,
     fixed: 'left',
     align: 'left'

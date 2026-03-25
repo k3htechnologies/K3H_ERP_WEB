@@ -31,16 +31,16 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       modules: readOnly
         ? { toolbar: false }
         : {
-            toolbar: [
-              ['bold', 'italic', 'underline', 'strike'],
-              [{ size: [] }],
-              [{ font: [] }],
-              [{ color: [] }, { background: [] }],
-              [{ align: [] }],
-              [{ list: 'ordered' }, { list: 'bullet' }],
-              ['clean'],
-            ],
-          },
+          toolbar: [
+            ['bold', 'italic', 'underline', 'strike'],
+            [{ size: [] }],
+            [{ font: [] }],
+            [{ color: [] }, { background: [] }],
+            [{ align: [] }],
+            [{ list: 'ordered' }, { list: 'bullet' }],
+            ['clean'],
+          ],
+        },
     })
 
     quillRef.current = quill
@@ -100,8 +100,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   }, [value])
 
   return (
-    <div
-      className={className}
+    <div className={`bg-white rounded-xl shadow-sm border border-[#3333334f] ${className}`}
       style={{ width: '100%', marginBottom: theme.spacing.sm }}
       data-name={name}
     >

@@ -526,7 +526,7 @@ const InventorySpecification: React.FC = () => {
         <div></div>
       </Loader>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
         <div className="space-y-6">
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2"> Inventory Specification Form </h3>

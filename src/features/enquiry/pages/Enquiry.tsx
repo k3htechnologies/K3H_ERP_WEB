@@ -746,7 +746,7 @@ export const Enquiry: React.FC = () => {
 
     return (
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
@@ -820,7 +820,7 @@ export const Enquiry: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Enquiry Master"
+                title="Filter - Enquiry"
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -833,7 +833,7 @@ export const Enquiry: React.FC = () => {
             >
                 <div className="space-y-6">
                     <div>
-                        <Input type="text" label="System Generated Code" value={tempFilters?.SystemGeneratedCode ?? ''} onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)} placeholder="Enter System Code" />
+                        <Input type="text" label="Enquiry Code" value={tempFilters?.SystemGeneratedCode ?? ''} onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)} placeholder="Enter System Code" />
                     </div>
 
                     <div>

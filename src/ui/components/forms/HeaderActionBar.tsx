@@ -109,7 +109,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
 
             <div className="flex items-center gap-2">
-                {(onExtraButton || onExtraExtraButton) && (
+                {(onExtraButton || onExtraExtraButton ) && canActionExtraButtonText && canActionExtraExtraButton && (
                     <div className="relative" ref={generateRef}>
                         <Button
                             type="button"

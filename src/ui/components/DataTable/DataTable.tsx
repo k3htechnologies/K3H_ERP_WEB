@@ -68,7 +68,6 @@ export const DataTable: React.FC<DataTableProps> = ({
 
   const [selectedRows, setSelectedRows] = React.useState<(string | number)[]>([])
   const [tempHighlightRow, setTempHighlightRow] = React.useState<string | number | null>(null)
-  console.log("lastUpdatedRow from parent:", lastUpdatedRow)
   React.useEffect(() => {
     if (lastUpdatedRow !== null && lastUpdatedRow !== undefined) {
 

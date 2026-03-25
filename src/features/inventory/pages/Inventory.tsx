@@ -1394,7 +1394,7 @@ const Inventory = () => {
 
             />
 
-            <div className="flex flex-col pt-3 w-full h-[220px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4">
+            <div className="flex flex-col pt-3 w-full h-[230px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4">
 
                 <BuildingTabs
                     inventory={inventory}
@@ -1408,7 +1408,7 @@ const Inventory = () => {
                     onDeleteBuilding={handleDeleteBuilding}
                     approvalStatus={selectedWing?.ApprovalStatus}
                 />
-                <div className="pt-2">
+                <div className="pt-3">
                     <StatusCounters
                         availableCount={availableFlatsCount}
                         holdCount={holdFlatsCount}
@@ -1418,9 +1418,9 @@ const Inventory = () => {
                     />
                 </div>
 
-                <div className="border-b border-gray-200 pt-4" />
+                <div className="border-b border-gray-200 pt-3" />
 
-                <div className="flex flex-col pt-2 pb-1">
+                <div className="flex flex-col pt-3">
 
                     <div className="flex-1">
                         {selectedBuilding && isInventoryAvailable === true && (
@@ -1456,7 +1456,7 @@ const Inventory = () => {
                         )}
                     </div>
 
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between pt-2">
                         <StatusCounters
                             availableCount={selectedWingAvailableCount}
                             holdCount={selectedWingHoldCount}

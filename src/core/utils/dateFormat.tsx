@@ -363,6 +363,43 @@ export const formatDate_MonthName_yy = (dateString: string | Date): string => {
   }
 };
 
+export const formatDate_Day_MonthName = (dateString: string | Date): string => {
+  if (!dateString || dateString === "") {
+    return "";
+  }
+
+  try {
+    const date = new Date(dateString);
+
+    // Check if date is valid
+    if (isNaN(date.getTime())) {
+      return "";
+    }
+
+    const monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    const month = monthNames[date.getMonth()];
+    const day = date.getDay();
+
+    return `${day} ${month} `;
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "";
+  }
+};
+
 export const convert_hh_mm_ss_to_hh_mm = (timeString?: string) => {
 
     if (!timeString || timeString === "00:00:00") return "";

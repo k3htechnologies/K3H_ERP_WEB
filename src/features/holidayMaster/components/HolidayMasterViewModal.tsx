@@ -52,16 +52,16 @@ export const HolidayMasterViewModal: React.FC<HolidayMasterViewModalProps> = ({
       size='xl'
     >
       <div className="space-y-6">
-        <div className="space-y-4">
+
           <FieldItem label="Holiday Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
-          <div className="space-y-2">
+          
             <h4 className="text-lg font-semibold"> Action Details  </h4>
             <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
             {data.ModifiedBy !== '' ?
               <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
               :
               ''}
-          </div>
+          
           <div className="flex justify-between items-center">
             {canAction && (
               <>
@@ -85,7 +85,6 @@ export const HolidayMasterViewModal: React.FC<HolidayMasterViewModalProps> = ({
             )}
           </div>
         </div>
-      </div>
     </Modal>
   );
 };

@@ -269,7 +269,7 @@ export const AddUpdateLitigation: React.FC = () => {
     //#region
     return (
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             {/* Loader */}
 
@@ -428,7 +428,7 @@ export const AddUpdateLitigation: React.FC = () => {
                             </div>
                         </div>
 
-                        <div>
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                             <TextArea
                                 label="Case Brief / Petition / Suit"
                                 required
@@ -439,7 +439,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                 error={errors.CaseBrief} />
                         </div>
 
-                        <div>
+                       <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                             <TextArea
                                 label=" Case Remarks / Comments"
                                 required

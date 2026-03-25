@@ -141,15 +141,19 @@ const ViewDeductionMaster: React.FC = () => {
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                <div className="lg:col-span-3 pt-3">
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Applicable" value={editDeductionMasterData!.Applicable} />
                                         <FieldItem label="Value" value={editDeductionMasterData!.Value} />
-
                                         <FieldItem label="Min Salary (₹)" value={editDeductionMasterData!.MinSalary} />
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Max Salary (₹)" value={editDeductionMasterData!.MaxSalary} />
                                     </div>
                                 </div>
+
                             </div>
                         </section>
                     </div>

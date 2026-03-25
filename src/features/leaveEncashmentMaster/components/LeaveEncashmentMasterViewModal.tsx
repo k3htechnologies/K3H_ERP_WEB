@@ -52,14 +52,12 @@ export const LeaveEncashmentMasterViewModal: React.FC<LeaveEncashmentMasterViewM
       size='xl'
     >
       <div className="space-y-6">
-        <div className="space-y-4">
           <FieldItem label="Earning Name" value={data.EarningMasterName} isRow withBorder={true} className='font-medium text-blue-900 ' />
           <FieldItem label="Encashment Rate (%" value={data.EncashmentRate} isRow withBorder={true} />
           <FieldItem label="Min Salary (₹)" value={data.MinSalary} isRow withBorder={true} />
           <FieldItem label="Max Salary (₹)" value={data.MaxSalary} isRow withBorder={true} />
-        </div>
-        <div className="space-y-4">
-          <h4 className="text-lg font-semibold pb-2">
+        
+          <h4 className="text-lg font-semibold">
             Action Details
           </h4>
           <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
@@ -67,8 +65,8 @@ export const LeaveEncashmentMasterViewModal: React.FC<LeaveEncashmentMasterViewM
             <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
             :
             ''}
-        </div>
-        <div className="flex justify-between items-center pt-4">
+        
+        <div className="flex justify-between items-center">
           {canAction && (
             <>
               <Button

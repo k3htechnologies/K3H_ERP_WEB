@@ -317,7 +317,7 @@ export const Litigation: React.FC = () => {
         label: "Case / Petition / Dispute Number",
         width: "16",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -325,7 +325,7 @@ export const Litigation: React.FC = () => {
         label: "Case Type",
         width: "15",
         sortable: true,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -382,7 +382,7 @@ export const Litigation: React.FC = () => {
         label: "Court Name",
         width: "15",
         sortable: true,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -390,7 +390,7 @@ export const Litigation: React.FC = () => {
         label: "Court Location",
         width: "15",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -398,7 +398,7 @@ export const Litigation: React.FC = () => {
         label: "Court Type",
         width: "16",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -406,7 +406,7 @@ export const Litigation: React.FC = () => {
         label: "Plaintiff / Complaint / Petitioner",
         width: "15",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => (
           <TooltipText
             text={value || "-"}
@@ -420,7 +420,7 @@ export const Litigation: React.FC = () => {
         label: "Defendant / Opposite Party / Respondent",
         width: "15",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => (
           <TooltipText
             text={value || "-"}
@@ -434,7 +434,7 @@ export const Litigation: React.FC = () => {
         label: "Assigned Representative",
         width: "15",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => (
           <TooltipText
             text={value || "-"}
@@ -448,7 +448,7 @@ export const Litigation: React.FC = () => {
         label: "Opposing Representative",
         width: "15",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => (
           <TooltipText
             text={value || "-"}
@@ -485,26 +485,28 @@ export const Litigation: React.FC = () => {
               >
                 <FileText className="h-4 w-4" />
               </Button>
-
-              {row?.IsDelete && (
+           
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    if(!row?.IsDelete) return;
                     handleConfirmationDialogBoxOpen(row);
                   }}
                   color="transparent"
                   isborderRadius
                   size="sm"
+                  disabled={!row?.IsDelete}
                   style={{
-                    color: "red",
-                    padding: "4px 8px",
+                    color: row?.IsDelete ? 'red' : '#9CA3AF',
+                    cursor: row?.IsDelete ? 'pointer' : 'not-allowed',
+                    opacity: row?.IsDelete ? 1 : 0.5
                   }}
                   title="Delete Litigation"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-              )}
+              
             </div>
           );
         },
@@ -639,7 +641,7 @@ export const Litigation: React.FC = () => {
   //#endregion
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       {/* Loader */}
       <Loader loading={isLoading} title={loadingMessage}>
         {" "}

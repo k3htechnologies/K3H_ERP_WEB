@@ -498,7 +498,7 @@ export const ViewEmployeeMaster: React.FC = () => {
     });
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
@@ -1100,8 +1100,8 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                                         <div className="lg:col-span-3">
                                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                                <FieldItem label="Shift Begin Time" value={shiftMappingPolicy!.ShiftName} />
-                                                                <FieldItem label="Shift End Time" value={shiftMappingPolicy!.ShiftCode} />
+                                                                <FieldItem label="Shift Name" value={shiftMappingPolicy!.ShiftName} />
+                                                                <FieldItem label="Shift Code" value={shiftMappingPolicy!.ShiftCode} />
 
                                                             </div>
                                                         </div>

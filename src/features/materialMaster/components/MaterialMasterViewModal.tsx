@@ -52,21 +52,19 @@ export const MaterialMasterViewModal: React.FC<MaterialMasterViewModalProps> = (
       size='xl'
     >
       <div className="space-y-6">
-        <div className="space-y-4">
-          <FieldItem label="Material Code" value={data.MaterialCode?.toString()} isRow withBorder={true} />
-          <FieldItem label="Material Name" value={data.MaterialName} isRow withBorder={true} className='font-medium text-blue-900 ' />
-        </div>
-        <div className="space-y-4">
-          <h4 className="text-lg font-semibold pb-2">
-            Action Details
-          </h4>
-          <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
-          {data.ModifiedBy !== '' ?
-            <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
-            :
-            ''}
-        </div>
-        <div className="flex justify-between items-center pt-4">
+        <FieldItem label="Material Code" value={data.MaterialCode?.toString()} isRow withBorder={true} />
+        <FieldItem label="Material Name" value={data.MaterialName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+
+        <h4 className="text-lg font-semibold">
+          Action Details
+        </h4>
+        <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
+        {data.ModifiedBy !== '' ?
+          <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+          :
+          ''}
+
+        <div className="flex justify-between items-center">
           {canAction && (
             <>
               <Button

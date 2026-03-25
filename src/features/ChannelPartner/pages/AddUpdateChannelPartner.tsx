@@ -637,7 +637,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       {/* Loader */}
 
       <Loader loading={isLoading} title={loadingMessage}>
@@ -649,7 +649,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
         <form onSubmit={handleAddUpdateChannelPartner}>
           {/* Basic ChannelPartner Details */}
 
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
               Basic Details
             </h3>
@@ -868,7 +868,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="space-y-4 pb-3 pt-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
               <Checkbox
                 label="Do you have RERA Number?"
@@ -906,7 +906,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
               Speciality
             </h3>
@@ -930,7 +930,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
           </div>
           {/* ============================================================= [DOCUMENT DETAILS] ============================================================================================= */}
 
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
               Document Details
             </h3>
@@ -1040,7 +1040,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
               Address Details
             </h3>

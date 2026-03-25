@@ -702,7 +702,7 @@ const AddCompany: React.FC = () => {
         label: 'Gender',
         width: '10',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-',
       },
       {
@@ -710,7 +710,7 @@ const AddCompany: React.FC = () => {
         label: 'Mobile Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-',
       },
       {
@@ -718,7 +718,7 @@ const AddCompany: React.FC = () => {
         label: 'Email ID',
         width: '20',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-',
       },
       {
@@ -734,7 +734,7 @@ const AddCompany: React.FC = () => {
         label: 'PAN Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -752,7 +752,7 @@ const AddCompany: React.FC = () => {
         label: 'Aadhaar Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
 
           return (
@@ -1196,7 +1196,7 @@ const AddCompany: React.FC = () => {
 
   return (
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
       {/* ✅ Fixed HEADER */}
@@ -1313,7 +1313,7 @@ const AddCompany: React.FC = () => {
           </div>
         </div>
         {/* ============================================================= [GOVERNMENT IDENTIFIERS] ============================================================================================= */}
-        <div className="space-y-4">
+        <div className="space-y-4 pt-5">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Government Identifiers</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1481,7 +1481,7 @@ const AddCompany: React.FC = () => {
         </div>
 
         {/* ============================================================= [ADDRESS] ============================================================================================= */}
-        <div className="space-y-4">
+        <div className="space-y-4 pt-5">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -1630,7 +1630,7 @@ const AddCompany: React.FC = () => {
         </div>
 
         {/* ============================================================= [COMPANY VERIFICATION] ============================================================================================= */}
-        <div className="space-y-4">
+        <div className="space-y-4 pt-5">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Company Verification</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1690,8 +1690,8 @@ const AddCompany: React.FC = () => {
 
 
         {/* ============================================================= [COMPANY PARTNER ] ============================================================================================= */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-gray-500 pb-2 pt-5">
+        <div className="space-y-4 pt-5 pb-5">
+          <div className="flex items-center justify-between border-b border-gray-500 pb-2">
             <h3 className="text-lg font-semibold text-gray-900  pb-2">
               Company Partner
             </h3>
@@ -1720,7 +1720,7 @@ const AddCompany: React.FC = () => {
             </Button>
           </div>
 
-
+<div className='pt-1'>
           <DataTable
             data={companyListForTable ?? []}
             columns={companyPartnerColumns}
@@ -1730,6 +1730,7 @@ const AddCompany: React.FC = () => {
             recordsPerPage={20}
             className="flex-1"
           />
+          </div>
         </div>
 
         {/* ✅ Fixed Bottom  */}

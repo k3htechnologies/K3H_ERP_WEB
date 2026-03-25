@@ -685,7 +685,7 @@ const ViewLitigation: React.FC = () => {
         isLoading={false}
       />
 
-      <div className="pt-2 ">
+      <div className="pt-5">
         <Tabs
           tabs={litigationTabList}
           defaultActive={activeTab}
@@ -703,8 +703,8 @@ const ViewLitigation: React.FC = () => {
       </div>
 
       {activeTab === "Overview" && (
-        <div className="grid grid-cols-12 gap-4 pt-5">
-          {/* LEFT SIDE */}
+        <div className="grid grid-cols-12 gap-5 pt-5">
+
           <div className="col-span-7">
             <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
               {/* ================= CASE DETAILS ================= */}
@@ -737,7 +737,7 @@ const ViewLitigation: React.FC = () => {
               {/* ================= PARTIES DETAILS ================= */}
               <section className="bg-white p-4">
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Parties Details </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
                   <div className="lg:col-span-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                       <FieldItem label="Plaintiff" value={litigationData?.Plantiff} />
@@ -773,7 +773,9 @@ const ViewLitigation: React.FC = () => {
                         return (
                           <div key={item.LitigationClosureId} className="mb-4 pb-4 border-b border-gray-300 last:border-b-0 last:pb-0">
                             <div className="flex pb-2 justify-between">
+
                               <FieldItem label="Closure Date" value={formatDate_dd_MonthName_yy(item.ClosureDate)} />
+
                               {isLatest && isCaseReopen && (
                                 <Button
                                   color="transparent"
@@ -809,8 +811,8 @@ const ViewLitigation: React.FC = () => {
 
             {/* =================CASE BRIEF DETAILS ================= */}
 
-            <div className="col-span-7">
-              <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
+            <div className="col-span-7 pt-5">
+              <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
                 <h4 className="text-lg font-semibold text-gray-900 pb-2">Case Brief / Petition / Suit</h4>
                 <div className="lg:col-span-3 pt-1">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
@@ -822,12 +824,12 @@ const ViewLitigation: React.FC = () => {
 
             {/* =================CASE REMARKS DETAILS ================= */}
 
-            <div className="col-span-7">
-              <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-2">
+            <div className="col-span-7 pt-5">
+              <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
                 <h4 className="text-lg font-semibold text-gray-900 pb-2">Case Remarks / Comments</h4>
                 <div className="lg:col-span-3 pt-1">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                    <FieldItem label="" value={litigationData?.Remark|| "-"} />
+                    <FieldItem label="" value={litigationData?.Remark || "-"} />
                   </div>
                 </div>
               </div>
@@ -835,17 +837,48 @@ const ViewLitigation: React.FC = () => {
 
             {/* ================= ACTION DETAILS ================= */}
 
-            <div className="col-span-7">
-              <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mt-2">
+            <div className="col-span-7 pt-5">
+              <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1">
                 <section className="bg-white p-4 flex flex-col">
-                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Action Details</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 mb-4">
+                  {/* Header Row */}
+                  <div className="flex items-center justify-between mb-4">
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      Action Details
+                    </h4>
+
+                    <div className="flex gap-2">
+                      {(litigationStatus === "Open" || litigationStatus === "Reopen") && canAction && (
+                        <Button size="sm" onClick={() => handleopenClosureModal()}>
+                          Close Case
+                        </Button>
+                      )}
+
+                      {litigationStatus === "Closed" && (
+                        <Button
+                          size="sm"
+                          onClick={() => {
+                            setSelectedLitigationItem(litigationData);
+                            setIsLitigationReopenDialogOpen(true);
+                          }}
+                        >
+                          Reopen
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Existing Content */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
                     <div className="lg:col-span-3">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                         <FieldItem label="Created By" value={litigationData?.CreatedBy} />
                         <FieldItem
                           label="Created Date"
-                          value={litigationData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(litigationData.CreatedDate) : ""}
+                          value={
+                            litigationData?.CreatedDate
+                              ? formatDate_dd_MonthName_yy_hh_mm(litigationData.CreatedDate)
+                              : ""
+                          }
                         />
                       </div>
                     </div>
@@ -853,33 +886,16 @@ const ViewLitigation: React.FC = () => {
                     <div className="lg:col-span-3">
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
                         <FieldItem label="Modified By" value={litigationData?.ModifiedBy} />
-
                         <FieldItem
                           label="Modified Date"
-                          value={litigationData?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(litigationData.ModifiedDate) : ""}
+                          value={
+                            litigationData?.ModifiedDate
+                              ? formatDate_dd_MonthName_yy_hh_mm(litigationData.ModifiedDate)
+                              : ""
+                          }
                         />
                       </div>
                     </div>
-                  </div>
-
-                  <div className="flex justify-end gap-2">
-                    {(litigationStatus === "Open" || litigationStatus === "Reopen") && canAction && (
-                      <Button size="sm" onClick={() => handleopenClosureModal()}>
-                        Close Case
-                      </Button>
-                    )}
-
-                    {litigationStatus === "Closed" && (
-                      <Button
-                        size="sm"
-                        onClick={() => {
-                          setSelectedLitigationItem(litigationData);
-                          setIsLitigationReopenDialogOpen(true);
-                        }}
-                      >
-                        Reopen
-                      </Button>
-                    )}
                   </div>
                 </section>
               </div>
@@ -889,7 +905,7 @@ const ViewLitigation: React.FC = () => {
           {/*  RIGHT SIDE  */}
           <div className="col-span-5">
             <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
-              <div className="border-b pb-2 mt-1">
+              <div className="border-b pb-3">
                 <div className="flex items-center justify-between">
                   <h1 className="text-lg font-semibold text-black"> Hearing History</h1>
 
@@ -983,7 +999,7 @@ const ViewLitigation: React.FC = () => {
             loading={isLoading}
             size="lg"
           >
-            <div className="space-y-6 p-6 bg-blue-100">
+            <div className="space-y-3 p-6 bg-blue-100">
               <div>
                 <DatePickerInput
                   label="Closure Date"
@@ -1126,7 +1142,7 @@ const ViewLitigation: React.FC = () => {
       )}
 
       {activeTab === "Document" && (
-        <div className="mt-3">
+        <div className="pt-5">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             {docsWithUrls.length === 0 && (
               <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">

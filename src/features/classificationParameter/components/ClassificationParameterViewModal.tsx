@@ -53,36 +53,32 @@ export const ClassificationParameterViewModal: React.FC<ClassificationParameterV
             size='xl'
         >
             <div className="space-y-6">
-                <div className="space-y-4">
+
+                <FieldItem label="Possession Type" value={data.PossessionType} isRow withBorder={true} className='font-medium text-blue-900 ' />
+
+                <FieldItem label="Requirement" value={data.Requirement} isRow withBorder={true} />
+
+                <FieldItem label="Requirement Type" value={data.RequirementType} isRow withBorder={true} />
+
+                <FieldItem label="Min Budget" value={data.MinBudget} isRow withBorder={true} />
+
+                <FieldItem label="Location" value={data.VillageName} isRow withBorder={true} />
+
+                <FieldItem label="TimeLine" value={data.TimeLine} isRow withBorder={true} />
 
 
-                    <FieldItem label="Possession Type" value={data.PossessionType} isRow withBorder={true} className='font-medium text-blue-900 ' />
+                <h4 className="text-lg font-semibold pb-2">
+                    Action Details
+                </h4>
 
-                    <FieldItem label="Requirement" value={data.Requirement} isRow withBorder={true} />
+                <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
 
-                    <FieldItem label="Requirement Type" value={data.RequirementType} isRow withBorder={true} />
+                {data.ModifiedBy !== '' ?
+                    <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+                    :
+                    ''}
 
-                    <FieldItem label="Min Budget" value={data.MinBudget} isRow withBorder={true} />
-
-                    <FieldItem label="Location" value={data.VillageName} isRow withBorder={true} />
-
-                    <FieldItem label="TimeLine" value={data.TimeLine} isRow withBorder={true} />
-
-                </div>
-
-                <div className="space-y-4">
-                    <h4 className="text-lg font-semibold pb-2">
-                        Action Details
-                    </h4>
-
-                    <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
-
-                    {data.ModifiedBy !== '' ?
-                        <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
-                        :
-                        ''}
-                </div>
-                <div className="flex justify-between items-center pt-4">
+                <div className="flex justify-between items-center">
                     {canAction && (
                         <>
                             <Button

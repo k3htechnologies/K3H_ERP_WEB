@@ -587,7 +587,7 @@ const EmployeeModuleAccess: React.FC = () => {
   return (
 
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div />
       </Loader>
@@ -600,7 +600,7 @@ const EmployeeModuleAccess: React.FC = () => {
           )}
         </div>
 
-        <label className="flex items-center justify-between pr-23 py-2">
+        <label className="flex items-center justify-between pr-6 py-2">
           <span className="text-sm text-gray-800 flex-1 pr-[6px]">
             Select All
           </span>

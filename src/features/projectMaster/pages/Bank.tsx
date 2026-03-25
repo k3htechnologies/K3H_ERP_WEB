@@ -240,7 +240,7 @@ const Bank: React.FC = () => {
         label: 'Ac Number',
         width: '33',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || ''
       },
       {
@@ -248,7 +248,7 @@ const Bank: React.FC = () => {
         label: 'Bank Name',
         width: '33',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || ''
       },
       {
@@ -256,7 +256,7 @@ const Bank: React.FC = () => {
         label: 'Branch',
         width: '33',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || ''
       },
       {
@@ -264,7 +264,7 @@ const Bank: React.FC = () => {
         label: 'Ac Type',
         width: '33',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || ''
       },
       {
@@ -272,7 +272,7 @@ const Bank: React.FC = () => {
         label: 'IFSC',
         width: '33',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || ''
       },
 
@@ -552,7 +552,7 @@ const Bank: React.FC = () => {
         loading={isLoading}
         size='half-screen'
       >
-        <div className="space-y-10 p-6 bg-blue-100">
+        <div className="space-y-4 p-6 bg-blue-100">
           <div className="space-y-4" >
             <div>
               <Input
@@ -587,7 +587,7 @@ const Bank: React.FC = () => {
               />
             </div>
           </div>
-          <div className=" grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
 
             <div>
               <SinglePageSelection

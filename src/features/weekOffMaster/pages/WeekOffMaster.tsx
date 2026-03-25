@@ -281,7 +281,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       label: 'Week Off Code',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -289,7 +289,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       label: 'Week Days',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -297,7 +297,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       label: 'Week Days Starts On',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -305,7 +305,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       label: 'Weekly Off',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -313,7 +313,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       label: 'Weekly Off 2',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -321,7 +321,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       label: 'Weekly Off 2 Type',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -329,7 +329,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
       label: 'Not Applicable For Months',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -496,7 +496,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   return (
 
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
       {/* LOADER */}
 

@@ -255,7 +255,7 @@ const Approval: React.FC = () => {
 
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>
@@ -284,7 +284,7 @@ const Approval: React.FC = () => {
 
             <section key={i} className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] pt-2">
 
-              <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center justify-between mb-2 pt-2">
 
                 <FieldItem label="" value={item.SubSubModuleName ?? "-"}  className="text-[18px] font-semibold"/>
 

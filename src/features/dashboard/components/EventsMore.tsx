@@ -2,7 +2,7 @@ import { Mail, Phone, Send } from "lucide-react";
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { getSafeString } from "@/core/utils/comman";
 import type { Table8, Table10 } from "../models/UserDashboardModel";
-import { formatDate_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_Day_MonthName } from "@/core/utils/dateFormat";
 
 interface Props {
     birthdays: Table8[];
@@ -54,7 +54,7 @@ export default function EventsMore({ birthdays, reportingData }: Props) {
                                     </div>
                                     <div className="flex items-center gap-3 shrink-0 ml-2">
                                         <span className="text-xs text-gray-500 whitespace-nowrap">
-                                            {item.DateOfBirth ? formatDate_MonthName_yy(item.DateOfBirth) : '-'}
+                                            {item.DateOfBirth ? formatDate_Day_MonthName(item.DateOfBirth) : '-'}
                                         </span>
                                         <button
                                             disabled

@@ -180,17 +180,18 @@ export const getYearToDateRange = () => {
   return { fromDate, toDate };
 };
 
-export const getSafeString = (value: any): string => {
-        if (value === null || value === undefined) return '-';
-        if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-        if (typeof value === 'number') return value.toString();
-        return String(value).trim() || '-';
-    };
+export const getSafeString = (value: any, fallback: string = "-"): string => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "object" && Object.keys(value).length === 0) return fallback;
+  if (typeof value === "object") return fallback;
+  if (String(value).trim() === "") return fallback;
+  return String(value);
+};
 
-  export const formatCurrency = (value: number | null | undefined): string => {
-        if (value === null || value === undefined) return '-';
-        return `₹${Number(value).toLocaleString('en-IN')}`;
-    };
+export const formatCurrency = (value: number | null | undefined): string => {
+  if (value === null || value === undefined) return '-';
+  return `₹${Number(value).toLocaleString('en-IN')}`;
+};
 
 export const cleanHtml = (html: string) => {
   if (!html) return ''

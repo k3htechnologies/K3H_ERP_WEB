@@ -705,7 +705,7 @@ export const ChannelPartner: React.FC = () => {
     );
   };
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
       {/* Loader */}
 

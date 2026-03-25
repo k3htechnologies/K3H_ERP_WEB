@@ -1099,7 +1099,7 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (!hasAadharCardNumber) {
       newErrorsBookingApplicant.AadharCardNumber = "Enter a valid Aadhaar Card Number";
-    } 
+    }
     else if (!isValidAadhaar(AadharCardNumber)) {
       newErrorsBookingApplicant.AadharCardNumber = "Enter a valid Aadhaar Card Number";
     }
@@ -1115,7 +1115,7 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (!hasPanNumber) {
       newErrorsBookingApplicant.PanNumber = "Enter a valid PAN Card Number";
-    } 
+    }
     else if (!isValidPAN(PanNumber)) {
       newErrorsBookingApplicant.PanNumber = "Enter a valid PAN Card Number";
     }
@@ -1651,12 +1651,12 @@ export const AddUpdateBooking: React.FC = () => {
   };
   //#endregion
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>
 
-      <div className="flex-1 space-y-2 px-6 py-3">
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <form onSubmit={handleSubmit}>
           <div>
             <Input
@@ -1680,85 +1680,87 @@ export const AddUpdateBooking: React.FC = () => {
           {enquiryUniqueCode && enquiryUniqueCode.trim() !== "" && (
             Number(enquiryId) > 0 &&
               (Number(bookingId) !== 0 || enquiryList?.FinalStage !== "Booking Done") ? (
-              <div className="space-y-4 pt-5 pt-5">
-                {/* ===================== ENQUIRY DETAILS ===================== */}
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Details</h3>
+              <div className="pt-5">
+                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                  {/* ===================== ENQUIRY DETAILS ===================== */}
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Enquiry Details</h4>
 
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
-                    <FieldItem label="Enquiry Code" value={enquiryUniqueCode || "-"} />
-                    <FieldItem label="Name" value={enquiryList?.Name || "-"} />
-                    <FieldItem label="Mobile No" value={enquiryList?.MobileNumber ? `+91 ${enquiryList?.MobileNumber}` : "-"} />
-                    <FieldItem label="Source" value={enquiryList?.Source || "-"} />
-                    <FieldItem label="Sub Source" value={enquiryList?.SubSource || "-"} />
-                    {enquiryList?.Source?.toUpperCase() !== "CHANNEL PARTNER" && !!enquiryList?.SubSubSource?.trim() && <FieldItem label="Sub Sub Source" value={enquiryList?.SubSubSource || "-"} />}
-                  </div>
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
+                      <FieldItem label="Enquiry Code" value={enquiryUniqueCode || "-"} />
+                      <FieldItem label="Name" value={enquiryList?.Name || "-"} />
+                      <FieldItem label="Mobile No" value={enquiryList?.MobileNumber ? `+91 ${enquiryList?.MobileNumber}` : "-"} />
+                      <FieldItem label="Source" value={enquiryList?.Source || "-"} />
+                      <FieldItem label="Sub Source" value={enquiryList?.SubSource || "-"} />
+                      {enquiryList?.Source?.toUpperCase() !== "CHANNEL PARTNER" && !!enquiryList?.SubSubSource?.trim() && <FieldItem label="Sub Sub Source" value={enquiryList?.SubSubSource || "-"} />}
+                    </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3 pt-5">
-                    <FieldItem label="Sales Advisor" value={enquiryList?.SalesAdvisor ?? "-"} />
-                    <FieldItem label="Sourcing Manager" value={enquiryList?.SourcingManager ?? "-"} />
-                    <FieldItem label="Stage" value={enquiryList?.FinalStage ?? "-"} />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-3 pt-5">
-                    <FieldItem label="Current Location" value={enquiryList?.CurrentLocation || "-"} />
-                  </div>
-                </div>
-
-                {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-                {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                      <FieldItem label="Referral Name" value={enquiryList?.ReferralUnitOwnerName || "-"} />
-                      <FieldItem label="Referral Project" value={enquiryList?.ReferralProjectName || "-"} />
-                      <FieldItem label="Referral Unit No" value={enquiryList?.ReferralUnitNumber || "-"} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3 pt-5">
+                      <FieldItem label="Sales Advisor" value={enquiryList?.SalesAdvisor ?? "-"} />
+                      <FieldItem label="Sourcing Manager" value={enquiryList?.SourcingManager ?? "-"} />
+                      <FieldItem label="Stage" value={enquiryList?.FinalStage ?? "-"} />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-3 pt-5">
+                      <FieldItem label="Current Location" value={enquiryList?.CurrentLocation || "-"} />
                     </div>
                   </div>
-                )}
 
-                {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-                {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Loyalty" && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      <FieldItem label="Existing Project" value={enquiryList?.LoyaltyExistingProjectName || "-"} />
-                      <FieldItem label="Existing Unit No" value={enquiryList?.LoyaltyExistingUnitNumber || "-"} />
+                  {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
+                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                        <FieldItem label="Referral Name" value={enquiryList?.ReferralUnitOwnerName || "-"} />
+                        <FieldItem label="Referral Project" value={enquiryList?.ReferralProjectName || "-"} />
+                        <FieldItem label="Referral Unit No" value={enquiryList?.ReferralUnitNumber || "-"} />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-                {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Employee Reference" && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      <FieldItem label="Employee Name" value={enquiryList?.EmployeeReferenceName || "-"} />
-                      <FieldItem label="Employee Mobile" value={enquiryList?.EmployeeReferenceMobileNumber ? `+91 ${enquiryList?.EmployeeReferenceMobileNumber}` : "-"} />
+                  {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
+                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Loyalty" && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <FieldItem label="Existing Project" value={enquiryList?.LoyaltyExistingProjectName || "-"} />
+                        <FieldItem label="Existing Unit No" value={enquiryList?.LoyaltyExistingUnitNumber || "-"} />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* ===================== CHANNEL PARTNER DETAILS ===================== */}
-                {enquiryList?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                      <FieldItem label="Channel Partner" value={enquiryList?.ChannelPartnerName || "-"} />
-                      <FieldItem label="CP Mobile" value={enquiryList?.ChannelPartnerMobileNumber ? `+91 ${enquiryList?.ChannelPartnerMobileNumber}` : "-"} />
-                      <FieldItem label="CP Team Member" value={enquiryList?.ChannelPartnerTeamMemberName || "-"} />
-                      <FieldItem label="CP Team Mobile" value={enquiryList?.ChannelPartnerTeamMemberMobileNumber || "-"} />
+                  {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
+                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Employee Reference" && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <FieldItem label="Employee Name" value={enquiryList?.EmployeeReferenceName || "-"} />
+                        <FieldItem label="Employee Mobile" value={enquiryList?.EmployeeReferenceMobileNumber ? `+91 ${enquiryList?.EmployeeReferenceMobileNumber}` : "-"} />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {/* ===================== CHANNEL PARTNER DETAILS ===================== */}
+                  {enquiryList?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                        <FieldItem label="Channel Partner" value={enquiryList?.ChannelPartnerName || "-"} />
+                        <FieldItem label="CP Mobile" value={enquiryList?.ChannelPartnerMobileNumber ? `+91 ${enquiryList?.ChannelPartnerMobileNumber}` : "-"} />
+                        <FieldItem label="CP Team Member" value={enquiryList?.ChannelPartnerTeamMemberName || "-"} />
+                        <FieldItem label="CP Team Mobile" value={enquiryList?.ChannelPartnerTeamMemberMobileNumber || "-"} />
+                      </div>
+                    </div>
+                  )}
+                </section>
               </div>
             )
               :
               (
-                <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200 text-sm text-red-700 ">
+                <div className="pt-5 p-4 bg-red-50 rounded-lg border border-red-200 text-sm text-red-700 ">
                   {enquiryList?.FinalStage === "Booking Done" ? "Booking already done for this enquiry" : "No Enquiry details found for this Unique Code"}
                 </div>
               ))}
 
           {/* ============================================================= [APPLICANT DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pt-3 pb-3">
+          <div className="space-y-4 pt-5">
             <div className="flex items-center justify-between">
-              <div className="flex-1 border-b border-gray-500 pt-5">
+              <div className="flex-1 border-b border-gray-500">
                 <HeaderActionBar titleText="Applicant Detail " isLoading={isLoading} />
               </div>
               <div className="ml-4">
@@ -1813,11 +1815,11 @@ export const AddUpdateBooking: React.FC = () => {
           </div>
 
           {/* ============================================================= [PROJECT DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Details</h3>
 
             {formData.BookingType === "FLAT" && selectedFlatData && (
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="pt-5 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                   <FieldItem label="Building" value={selectedFlatData?.BuildingNumber || "-"} />
 
@@ -1861,23 +1863,40 @@ export const AddUpdateBooking: React.FC = () => {
             )}
 
             {parkingData && parkingData.length > 0 && (
-              <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Parking Details</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {parkingData.map((parking, index) => (
-                    <React.Fragment key={parking.ParkingId || index}>
-                      <FieldItem label="Parking Number" value={parking.ParkingNumber} />
-                      <FieldItem label="Building" value={parking.BuildingNumber} />
-                      <FieldItem label="Wing" value={parking.Wing} />
-                      <FieldItem label="Floor" value={parking.Floor} />
-                      <FieldItem label="Category" value={parking.ParkingCategory} />
-                      <FieldItem label="Type" value={parking.ParkingType} />
-                      <FieldItem label="Size" value={parking.ParkingSubType} />
-                      <FieldItem label="Dimensions" value={parking.ParkingDimensions} />
-                      <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? "Yes" : "No"} />
-                    </React.Fragment>
-                  ))}
-                </div>
+
+
+              <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f]">
+                <h4 className="text-lg font-semibold text-gray-900">
+                  Parking Details
+                </h4>
+
+                {parkingData.map((parking, index) => {
+
+                  const isLast = index === (parkingData?.length ?? 0) - 1;
+
+                  return (
+                    <div key={parking.ParkingId || index} className="pt-4">
+                      <h3 className="text-sm font-semibold text-gray-500">
+                        Parking {index + 1}
+                      </h3>
+                      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
+                        <FieldItem label="Parking Number" value={parking.ParkingNumber} />
+                        <FieldItem label="Building" value={parking.BuildingNumber} />
+                        <FieldItem label="Wing" value={parking.Wing} />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
+                        <FieldItem label="Floor" value={parking.Floor} />
+                        <FieldItem label="Category" value={parking.ParkingCategory} />
+                        <FieldItem label="Type" value={parking.ParkingType} />
+                      </div>
+                      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
+                        <FieldItem label="Size" value={parking.ParkingSubType} />
+                        <FieldItem label="Dimensions" value={parking.ParkingDimensions} />
+                        <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
+                      </div>
+                    </div>
+                  );
+                })}
               </section>
             )}
           </div>
@@ -2203,7 +2222,7 @@ export const AddUpdateBooking: React.FC = () => {
             </div>
           </div>
 
-          <div>
+          <div className="space-y-4 pt-5">
             <SingleSelectDropdownWithPagination
               label="Payment Schedule Scheme"
               title="Select Payment Schedule Scheme"
@@ -2334,16 +2353,16 @@ export const AddUpdateBooking: React.FC = () => {
 
           {/* ============================================================= [ADITIONAL DETAILS] ============================================================================================= */}
           <div className="space-y-4 pt-5">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Additional Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300">Additional Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-5">
               <div>
                 <TextArea className='thin-scroll' label="Unit / Modulation / Customization Remark" value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
               </div>
               <div>
-                <TextArea  className='thin-scroll' label="Payment Related Remark" value={formData.PaymentRemark ?? ""} onChange={(e) => handleFieldChange("PaymentRemark", e.target.value)} placeholder="Enter Payment Related Remark" error={errors.PaymentRemark} />
+                <TextArea className='thin-scroll' label="Payment Related Remark" value={formData.PaymentRemark ?? ""} onChange={(e) => handleFieldChange("PaymentRemark", e.target.value)} placeholder="Enter Payment Related Remark" error={errors.PaymentRemark} />
               </div>
               <div>
-                <TextArea  className='thin-scroll' label="Other Remark" value={formData.OtherRemark ?? ""} onChange={(e) => handleFieldChange("OtherRemark", e.target.value)} placeholder="Enter Other Remark" error={errors.OtherRemark} />
+                <TextArea className='thin-scroll' label="Other Remark" value={formData.OtherRemark ?? ""} onChange={(e) => handleFieldChange("OtherRemark", e.target.value)} placeholder="Enter Other Remark" error={errors.OtherRemark} />
               </div>
               <div>
                 <SingleSelectDropdownWithPagination label="Term & Condition" title="Term & Condition" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)} />

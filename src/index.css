@@ -50,6 +50,9 @@ body {
   background: transparent;
 }
 
+.ql-container.ql-snow {
+  border: none !important;
+}
 
 /* Hide duplicate Quill toolbars caused by React StrictMode double-mount
 .ql-toolbar.ql-snow:nth-of-type(1) {

@@ -28,9 +28,11 @@ export const FieldItem: React.FC<{
 
     // Check if value is a ReactNode (React element)
     const isReactNode = React.isValidElement(value);
+
     const displayValue = value !== undefined && value !== null && value !== ''
       ? (isReactNode ? value : String(value))
       : '-';
+      
     const borderClass = withBorder ? 'border-b border-[#135bec2e]' : '';
 
     // parse urls (returns [])
@@ -50,7 +52,7 @@ export const FieldItem: React.FC<{
     // ROW layout: label : value
     if (isRow) {
       return (
-        <div className={`${borderClass} ${!isUsedForInventoryFlat ? 'py-2' : 'py-0.1'}`}>
+        <div className={`${borderClass} ${!isUsedForInventoryFlat ? withBorder ? 'pb-5' :"" : 'py-0.1'}`}>
           <div style={rowGridStyle}>
 
             {/* Label */}

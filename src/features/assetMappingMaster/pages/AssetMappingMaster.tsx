@@ -263,7 +263,7 @@ export const AssetMappingMaster: React.FC = () => {
       label: 'Employee Name',
       width: '20',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || ''
     },
      {
@@ -271,7 +271,7 @@ export const AssetMappingMaster: React.FC = () => {
       label: 'Department',
       width: '20',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || ''
     },
      {
@@ -279,7 +279,7 @@ export const AssetMappingMaster: React.FC = () => {
       label: 'Designation',
       width: '20',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || ''
     },
     {
@@ -366,7 +366,7 @@ export const AssetMappingMaster: React.FC = () => {
   //#endregion
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
       <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 

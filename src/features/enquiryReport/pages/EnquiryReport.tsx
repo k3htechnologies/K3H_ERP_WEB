@@ -14,6 +14,7 @@ import type { FilterWithPaginationEnquiryReportRequest, ProjectWiseEmployeeList 
 import { enquiryReportService } from "@/features/enquiryReport/services/EnquiryReportService";
 import * as E from "fp-ts/Either";
 import { Input } from "@/ui/components/forms";
+import { Search } from "lucide-react";
 
 
 type PivotEnquiryRow = {
@@ -268,7 +269,7 @@ const EnquiryReport: React.FC = () => {
 
     return (
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div />
             </Loader>
@@ -326,6 +327,7 @@ const EnquiryReport: React.FC = () => {
                         placeholder="Search By Employee Name"
                         value={employeeSearch}
                         onChange={(e) => setEmployeeSearch(e.target.value)}
+                        leftIcon={<Search className="h-4 w-4 text-gray-400" />}
                     /></div>
 
 

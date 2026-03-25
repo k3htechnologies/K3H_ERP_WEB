@@ -85,7 +85,7 @@ export const ApprovalDocumentCategoryMasterViewModal: React.FC<ApprovalDocumentC
             ''
           )}
         </div>
-        <div className="flex justify-between items-center pt-4">
+        <div className="flex justify-between items-center">
           {canAction && (
             <>
               <Button

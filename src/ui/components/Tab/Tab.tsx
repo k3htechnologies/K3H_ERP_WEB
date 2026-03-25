@@ -73,7 +73,7 @@ export const Tabs: React.FC<TabsProps> = ({
 
   if (isChips) {
     return (
-      <div className="w-full border-b border-gray-200 pb-2">
+      <div className="w-full border-b border-gray-200">
         <div className="flex gap-8">
           {tabs.map((tab) => {
             const isActive = active === tab.id;
@@ -105,11 +105,8 @@ export const Tabs: React.FC<TabsProps> = ({
 
   return (
 
-    <div className="w-full pb-2">
-      <div
-        className={`${islarge ? " flex flex-wrap gap-2" : " border-b border-blue-300 flex gap-2"
-          }`}
-      >
+    <div className="w-full">
+      <div  className={`${islarge ? " flex flex-wrap gap-2" : " border-b border-blue-300 flex gap-2" }`}>
 
         {tabs.map((tab) => {
           const isActive = active === tab.id;

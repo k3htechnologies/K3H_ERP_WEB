@@ -514,7 +514,7 @@ export const PaymentScheduleMaster: React.FC = () => {
 
       <div className="p-4">
         <div className="grid grid-cols-3 gap-4">
-          <div>
+         
             <SingleSelectDropdownWithPagination
               key={projectId}
               label="Payment Schedule Scheme"
@@ -562,12 +562,12 @@ export const PaymentScheduleMaster: React.FC = () => {
               }}
               error={errors.PaymentScheduleSchemeMasterId}
             />
-          </div>
+          
         </div>
-      </div>
+     
       {Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
-        <div className="p-4">
-          <div className="space-y-4 p-4  bg-blue-50 rounded-lg border border-blue-200">
+        <div className="pt-5">
+          <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
             <div className="grid grid-cols-1 md:grid-cols-3">
               <FieldItem label="Building" value={buildingName || "-"} />
               <FieldItem label="Wing" value={wingName || "-"} />
@@ -591,10 +591,10 @@ export const PaymentScheduleMaster: React.FC = () => {
               />
             </div>
           </div>
-        </div>
+          </div>
       )}
       {/* TOTAL SUMMARY */}
-      <div className="space-y-4 p-4 pb-5">
+      <div className="space-y-4 pt-5">
         <div className="flex items-center justify-between border-b border-gray-300 pb-2">
           <div className="flex items-center gap-30">
             <h3 className="text-lg font-semibold text-gray-900">Payment Schedule List</h3>
@@ -635,7 +635,7 @@ export const PaymentScheduleMaster: React.FC = () => {
           className="flex-1"
         />
       </div>
-
+ </div>
       {/*ADD UPDATE MODAL */}
 
       <Modal

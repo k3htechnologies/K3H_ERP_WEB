@@ -337,7 +337,7 @@ export const ViewProjectMaster: React.FC = () => {
 
     return (
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
@@ -377,7 +377,7 @@ export const ViewProjectMaster: React.FC = () => {
                 isLoading={isLoading}
             />
 
-            <div className='pt-3'>
+            <div className='pt-5'>
 
                 <Tabs
                     tabs={TabList}
@@ -401,17 +401,19 @@ export const ViewProjectMaster: React.FC = () => {
                                         Basic Project Details
                                     </h4>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 ">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
                                         <FieldItem label="Redevelopment" value={editProjectData?.IsRedevelopment === true ? 'YES' : 'NO'} />
                                         <FieldItem label="Project Name" value={editProjectData?.ProjectName ?? '-'} />
 
                                         <FieldItem label="Business Category" value={editProjectData?.BussinessCategory ?? '-'} />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
                                         <FieldItem label="File Number" value={editProjectData?.FileNumber ?? '-'} />
                                         <FieldItem label="Architect Name" value={editProjectData?.ArchitectName ?? '-'} />
                                         <FieldItem label="Architect Mobile Number" value={editProjectData?.ArchitectMobileNumber
-                                                                                    ? `+91 ${editProjectData?.ArchitectMobileNumber}`
-                                                                                    : '-'}
-                                                                                />
+                                            ? `+91 ${editProjectData?.ArchitectMobileNumber}`
+                                            : '-'}
+                                        />
 
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
@@ -426,11 +428,11 @@ export const ViewProjectMaster: React.FC = () => {
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                         Location Details
                                     </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 border-b border-[#135bec2e] pb-4">
 
                                         <FieldItem label="Project Location" value={editProjectData?.ProjectLocation ?? '-'} />
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pt-4 ">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 border-b border-[#135bec2e] pb-4 pt-4">
                                         <div className="text-sm font-medium text-[#1D1D1D80] truncate">
                                             Google Location
                                         </div>
@@ -440,10 +442,12 @@ export const ViewProjectMaster: React.FC = () => {
                                                 {editProjectData?.GoogleLocation}
                                             </span> : "-"}
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
                                         <FieldItem label="Country" value={editProjectData?.CountryName ?? '-'} />
                                         <FieldItem label="State" value={editProjectData?.StateName ?? '-'} />
                                         <FieldItem label="District" value={editProjectData?.DistrictName ?? '-'} />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
                                         <FieldItem label="City" value={editProjectData?.CityName ?? '-'} />
                                         <FieldItem label="Village" value={editProjectData?.VillageName ?? '-'} />
                                         <FieldItem label="PIN Code" value={editProjectData?.ZipCode ?? '-'} />
@@ -598,12 +602,14 @@ export const ViewProjectMaster: React.FC = () => {
                                         Action Details
                                     </h4>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
                                         <FieldItem label="Created By" value={editProjectData?.CreatedBy ?? '-'} />
                                         <FieldItem
                                             label="Created Date"
                                             value={formatDate_dd_MonthName_yy_hh_mm(editProjectData?.CreatedDate ?? '-')}
                                         />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-5">
                                         <FieldItem label="Modified By" value={editProjectData?.ModifiedBy ?? '-'} />
                                         <FieldItem
                                             label="Modified Date"
@@ -645,8 +651,8 @@ export const ViewProjectMaster: React.FC = () => {
                                 return (
                                     <section
                                         key={emp.EmployeeCode}
-                                        className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] mb-4"
-                                    >
+                                        className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                                            
                                         <div className="flex items-center gap-3 mb-4">
                                             <div className="w-8 h-8 rounded-full bg-blue-200 text-gray-800 flex items-center justify-center text-xs font-medium border border-gray-300">
                                                 {initials}
@@ -657,7 +663,7 @@ export const ViewProjectMaster: React.FC = () => {
                                             </h4>
                                         </div>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                                             <FieldItem label="Employee Code" value={emp.EmployeeCode ?? '-'} />
                                             <FieldItem label="Mobile" value={emp.PersonalMobileNumber ? `+91 ${emp.PersonalMobileNumber}` : '-'} />
                                             <FieldItem label="Email" value={emp.EmailId ?? '-'} />
@@ -762,11 +768,11 @@ export const ViewProjectMaster: React.FC = () => {
 
                             filteredApprovalList.map((item, i) => (
 
-                                <section  key={i} className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] pt-2"  >
+                                <section key={i} className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] pt-2"  >
 
                                     {/* Module Name */}
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-2">
-                                        <FieldItem  label="" value={item.SubSubModuleName ?? "-"}    className="text-[18px] font-semibold"/>
+                                        <FieldItem label="" value={item.SubSubModuleName ?? "-"} className="text-[18px] font-semibold" />
                                     </div>
 
                                     {/* Employee List */}

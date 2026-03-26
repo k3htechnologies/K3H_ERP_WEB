@@ -90,7 +90,7 @@ export function useTabData(
   //#endregion
 
   //#region LOADERS
-  const loadResignations = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo) => {
+  const loadResignations = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
@@ -102,6 +102,8 @@ export function useTabData(
           ResignationDateFrom: convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ResignationDateFrom),
           ResignationDateTo: convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ResignationDateTo),
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS.Resignation),
+          CanApprove: canApprove,
+          IsReport: true
         };
         const response = await employeeResignationService.apiCallPullEmployeeResignation(params);
         if (E.isRight(response)) {
@@ -173,7 +175,7 @@ export function useTabData(
     );
   };
 
-  const loadAttendanceRegularization = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo) => {
+  const loadAttendanceRegularization = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = false) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
@@ -183,6 +185,7 @@ export function useTabData(
           IsReport: true,
           EmployeeName: empName(filterParams),
           ...dateParams(filterParams),
+          CanApprove: canApprove,
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS["Attendance Regularization"]),
         };
         const response = await attendanceRegularizationService.apiCallPullAttendanceRegularization(params);
@@ -205,7 +208,7 @@ export function useTabData(
     );
   };
 
-  const loadCompOff = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo) => {
+  const loadCompOff = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
@@ -218,6 +221,8 @@ export function useTabData(
           Reason: filterParams.Reason?.trim() || undefined,
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS["Comp-Off"]),
           IsReport: true,
+          CanApprove: canApprove,
+
         };
         const response = await compOffService.apiCallPullCompOff(params);
         if (E.isRight(response)) {
@@ -273,7 +278,7 @@ export function useTabData(
     );
   };
 
-  const loadOutdoor = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo) => {
+  const loadOutdoor = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
@@ -284,6 +289,7 @@ export function useTabData(
           ...dateParams(filterParams),
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS.Outdoor),
           IsReport: true,
+          CanApprove: canApprove,
         };
         const response = await outDoorService.apiCallPullOutDoor(params);
         if (E.isRight(response)) {

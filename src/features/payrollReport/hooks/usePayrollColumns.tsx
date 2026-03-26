@@ -149,7 +149,7 @@ export function usePayrollColumns() {
       },
       {
         key: "WorkingDate",
-        label: "Request Date",
+        label: "Working Date",
         width: "25",
         sortable: false,
         align: "left",

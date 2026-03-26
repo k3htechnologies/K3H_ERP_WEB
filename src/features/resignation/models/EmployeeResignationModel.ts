@@ -13,6 +13,7 @@ export interface FilterWithPaginationEmployeeResignationRequest {
   ApprovalStatus?: string
   SortBy?: string
   IsReport?: boolean
+  CanApprove?: boolean
   ExportType?: 'Excel' | 'PDF'
 }
 

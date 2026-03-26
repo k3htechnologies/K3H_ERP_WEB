@@ -457,7 +457,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
           className="rounded-lg shadow-sm border border-gray-200 p-6"
           style={{ backgroundColor: "#FFFFFF" }}
         >
-          <h3 className="text-md font-medium text-gray-500 mb-4">Details</h3>
+          <h3 className="text-md font-medium text-gray-500 mb-2">Details</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <SinglePageSelection
@@ -619,11 +619,11 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                         error={errors[`LeaveBalanceType_${index}_LeaveTypeId`]}
                       />
                     </div>
+
                     <div className="flex-1">
                       <Input
                         label="Leave Credit"
                         required
-                        size="sm"
                         type="text"
                         value={item.LeaveCredit}
                         onChange={(e) =>
@@ -643,8 +643,9 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                     <div className="flex-shrink-0 pb-2">
                       <Button
                         type="button"
-                        color="red"
-                        size="xs"
+                        color="transparent"
+                        size="sm"
+                        style={{ color: 'red' }}
                         onClick={() => handleRemoveLeaveBalanceType(index)}
                         title="Remove"
                       >
@@ -657,7 +658,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
             </div>
           )}
         </div>
-
+       
         <BottomActionBar
           cancelText="Cancel"
           saveText={

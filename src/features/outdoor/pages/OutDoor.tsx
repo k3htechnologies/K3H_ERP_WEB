@@ -77,6 +77,7 @@ export const OutDoor: React.FC = () => {
           EndDate: filterParams.EndDate || undefined,
           CompanyName: filterParams.CompanyName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, []),
+          CanApprove: false,
           IsReport: false
         };
 
@@ -146,6 +147,7 @@ export const OutDoor: React.FC = () => {
           CompanyName: filters.CompanyName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, []),
           IsReport: false,
+          CanApprove: false,
           ExportType: exportType
         };
 

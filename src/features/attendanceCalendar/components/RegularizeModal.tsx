@@ -211,6 +211,8 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
                       value={formData.PunchInTime || '00:00'}
                       onChange={handlePunchInChange}
                       error={errors.PunchInTime}
+                      required
+
                     />
                   </div>
                   <div className="w-full">
@@ -220,6 +222,7 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
                       value={formData.PunchOutTime || '00:00'}
                       onChange={handlePunchOutChange}
                       error={errors.PunchOutTime}
+                      required
                     />
                   </div>
                 </>

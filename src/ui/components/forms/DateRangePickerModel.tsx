@@ -283,7 +283,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   }
 
   const isDateAllowed = (date: Date): boolean => {
-    if (!allowedDates || allowedDates.length === 0) return true
+if (!allowedDates || allowedDates.length === 0) return false
 
     // If a CompOff date is selected, invert the logic:
     // - Disable dates from allowedDates (CompOff dates)

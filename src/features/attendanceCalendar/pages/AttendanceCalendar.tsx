@@ -391,6 +391,14 @@ const AttendanceCalendar: React.FC = () => {
       newErrors.Reason = 'Reason must be at most 255 characters';
     }
 
+    if (!data.PunchInTime || data.PunchInTime === '00:00') {
+      newErrors.PunchInTime = 'Punch In Time is required';
+    }
+
+    if (!data.PunchOutTime || data.PunchOutTime === '00:00') {
+      newErrors.PunchOutTime = 'Punch Out Time is required';
+    }
+
     // Validate Punch Out is not less than Punch In using centralized utilities
     if (data.PunchInTime && data.PunchOutTime && data.AttendanceDate) {
       try {

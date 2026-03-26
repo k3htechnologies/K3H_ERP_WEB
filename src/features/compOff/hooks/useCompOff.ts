@@ -100,7 +100,8 @@ export const useCompOff = () => {
 
     //#region DATA LOADING | FETCH | LOAD
 
-    const loadCompOff = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+    const loadCompOff = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo,canApprove:boolean=false,IsReport :boolean=false) => {
+        debugger
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -113,7 +114,8 @@ export const useCompOff = () => {
                     EndDate: filterParams.EndDate || undefined,
                     Reason: filterParams.Reason?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, compOffColumns),
-                    IsReport: false
+                    CanApprove:canApprove,
+                    IsReport: IsReport
                 };
 
                 const response = await compOffService.apiCallPullCompOff(params);

@@ -55,6 +55,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
             if(params.IsReport) queryParams.append('IsReport', params.IsReport.toString());
+            if(params.CanApprove) queryParams.append('CanApprove', params.CanApprove.toString());
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${CompOffApi.PULL}?${queryParams.toString()}`, { signal }

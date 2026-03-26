@@ -73,7 +73,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
 
   //GET VALUE FROM URL :ID
   const { id } = useParams<{ id?: string }>();
-
+  const isEdit = !!id;
   // TOAST
   const { addToast } = useToast();
 
@@ -501,7 +501,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
               label="Department"
               title="Select Department"
               required
-              // size="md"
+              disabled={isEdit}
               dataFetchCallBack={fetchDepartmentMasterDropdown}
               onSelected={(selectedItem) => {
                 const deptId = selectedItem?.value
@@ -529,6 +529,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
             <MultiSelectPagination
               label="Designation"
               title="Select Designation"
+              disabled={isEdit}
               dataFetchCallBack={fetchDesignationMasterDropdown}
               selectedValues={designationDropdown.selectedValues}
               options={designationDropdown.initialOptions}

@@ -18,7 +18,7 @@ import type { AttendanceData, AttendanceRegularizationData, FilterWithPagination
 import type { CompOffData, FilterWithPaginationCompOff } from "@/features/compOff/models/compOff";
 import type { LeaveData, FilterWithPaginationLeaveRequest } from "@/features/leave/models/LeaveModel";
 import type { OutDoorMasterData, FilterWithPaginationOutDoor } from "@/features/outdoor/models/OutDoorModel";
-import { type TabId, EXPORT_LABELS, getDefaultFilters } from "../constants/tabConfig";
+import { type SubTabId, type TabId, EXPORT_LABELS, getDefaultFilters } from "../constants/tabConfig";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { payrollApprovalService } from "../services/PayrollServices";
 
@@ -53,6 +53,7 @@ const SORT_COLUMNS: Record<TabId, TableColumn[]> = {
 export function useTabData(
   activeTab: TabId,
   attendanceTableRef: React.RefObject<any>,
+  subActiveTab: SubTabId,
 ) {
   //#region STATE
   const { addToast } = useToast();
@@ -64,7 +65,6 @@ export function useTabData(
   const [employeeResignationList, setEmployeeResignationList] = useState<EmployeeResignationData[]>([]);
   const [attendanceList, setAttendanceList] = useState<AttendanceData[]>([]);
   const [attendanceRegularizationList, setAttendanceRegularizationList] = useState<AttendanceRegularizationData[]>([]);
-
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -133,6 +133,7 @@ export function useTabData(
           IsReport: true,
           EmployeeName: empName(filterParams),
           ...dateParams(filterParams),
+          IsCheckPermission: true,
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS.Attendance),
         };
         const response = await attendanceService.apiCallPullAttendance(params);
@@ -238,7 +239,7 @@ export function useTabData(
     );
   };
 
-  const loadLeave = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo) => {
+  const loadLeave = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
@@ -248,6 +249,8 @@ export function useTabData(
           EmployeeName: empName(filterParams),
           ...dateParams(filterParams),
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS.Leave),
+          CanApprove: canApprove,
+          IsCheckPermission: true,
           IsReport: true,
         };
         const response = await LeaveService.apiCallPullLeave(params);
@@ -310,14 +313,14 @@ export function useTabData(
         Attendance: loadAttendance,
         "Attendance Regularization": loadAttendanceRegularization,
         "Comp-Off": loadCompOff,
-        Leave: loadLeave,
+        Leave: (p, f, s) => loadLeave(p, f, s, subActiveTab === "Approval"),
         Outdoor: loadOutdoor,
         Resignation: loadResignations,
       };
       return LOADER_MAP[tab](page, f, sort);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeTab, filters],
+    [activeTab, filters, subActiveTab],
   );
   //#endregion
 
@@ -357,7 +360,7 @@ export function useTabData(
       Outdoor: outDoorList,
       Resignation: employeeResignationList,
     };
-    return (DATA_MAP[activeTab] ?? []).filter((item) => item.CanApprove === true);
+    return (DATA_MAP[activeTab] ?? [])
   }, [activeTab, attendanceList, attendanceRegularizationList, compOffList, leaveList, outDoorList, employeeResignationList]);
   //#endregion
 
@@ -446,8 +449,9 @@ export function useTabData(
     status: "Approved" | "Rejected",
     selectedRows: any[],
     remarks: string,
+    isSelectAll: boolean = false
   ) => {
-    if (!selectedRows?.length) {
+    if (!isSelectAll && !selectedRows?.length) {
       addToast({ type: "warning", title: "Please select at least one record" });
       return;
     }
@@ -455,12 +459,26 @@ export function useTabData(
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
-        const approveItems = selectedRows.map((row) => ({
-          ModuleName: activeTab,
-          Id: row.Id ?? row.CompOffId ?? row.LeaveId ?? row.OutdoorId ?? row.AttendanceId ?? row.AttendanceRegularizationId ?? row.EmployeeResignationId,
-          Status: status,
-          Remarks: remarks || "",
-        }));
+
+        let approveItems: any[] = [];
+
+        if (isSelectAll) {
+          const allData = getApprovalData();
+
+          approveItems = allData.map((row: any) => ({
+            ModuleName: activeTab,
+            Id: row.Id ?? row.CompOffId ?? row.LeaveId ?? row.OutdoorId ?? row.AttendanceId ?? row.AttendanceRegularizationId ?? row.EmployeeResignationId,
+            Status: status,
+            Remarks: remarks || "",
+          }));
+        } else {
+          approveItems = selectedRows.map((row) => ({
+            ModuleName: activeTab,
+            Id: row.Id ?? row.CompOffId ?? row.LeaveId ?? row.OutdoorId ?? row.AttendanceId ?? row.AttendanceRegularizationId ?? row.EmployeeResignationId,
+            Status: status,
+            Remarks: remarks || "",
+          }));
+        }
 
         const response = await payrollApprovalService.apiCallAddPayrollApproval({
           ApprovalJson: JSON.stringify(approveItems),
@@ -470,6 +488,7 @@ export function useTabData(
           addToast({ type: "error", title: response.left.message });
         } else {
           addToast({ type: "success", title: `${status} successful` });
+
           dispatchLoad(pagination.currentPage, filters, activeTab, sortInfo);
         }
 

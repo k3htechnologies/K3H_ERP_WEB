@@ -426,7 +426,6 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                 <MultiSelectPagination
                   label="Accompanied By"
                   required
-                  error={outdoorFormData.AccompaniedById}
                   dataFetchCallBack={fetchEmployeeMasterDropdownWithDepartment}
                   selectedValues={accompaniedDropdown.selectedValues}
                   options={accompaniedDropdown.initialOptions}
@@ -438,6 +437,7 @@ export const AddUpdateOutDoorPage: React.FC = () => {
                       setErrors((prev) => ({ ...prev, AccompaniedById: '' }));
                     }
                   }}
+                  error={errors.AccompaniedById}
                   disabled={!!outdoorFormData.Conclusion || !outdoorFormData.DepartmentId || outdoorFormData.DepartmentId === 0}
                 />
 

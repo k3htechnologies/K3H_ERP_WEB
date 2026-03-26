@@ -49,11 +49,13 @@
 import React from "react";
 import { Loader } from "@/core/utils/loader";
 import { useApprovalStatus } from "../hooks/useApprovalStatus";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 
 interface ApprovalExpandableProps {
   id: number;
   moduleName: string;
   requestId: number;
+  remarks: string;
 }
 
 const getStatusColor = (status: string) => {
@@ -73,12 +75,14 @@ const ModuleApprovalStatus: React.FC<ApprovalExpandableProps> = ({
   id,
   moduleName,
   requestId,
+  remarks
 }) => {
 
   const { approvalData, isLoading, error } = useApprovalStatus(
     moduleName,
     id,
-    requestId
+    requestId,
+    remarks
   );
 
   return (
@@ -109,7 +113,13 @@ const ModuleApprovalStatus: React.FC<ApprovalExpandableProps> = ({
 
                   {item.CreatedDate && (
                     <span className="text-xs text-gray-500">
-                      {new Date(item.CreatedDate).toLocaleString()}
+                      {convert_dd_mm_yyyy_To_Yyyy_mm_dd(item.CreatedDate)}
+                    </span>
+                  )}
+
+                  {item.Remarks && (
+                    <span className="text-xs text-gray-500">
+                      {(item.Remarks)}
                     </span>
                   )}
                 </div>

@@ -47,6 +47,7 @@ interface DataTableProps {
   onRowSelect?: (rows: any[]) => void
   rowKey?: string
   lastUpdatedRow?: string | number | null
+  selectedRowKeys?: (string | number)[]
 }
 
 export const DataTable: React.FC<DataTableProps> = ({
@@ -63,7 +64,8 @@ export const DataTable: React.FC<DataTableProps> = ({
   onSort,
   onRowSelect,
   rowKey = "id",
-  lastUpdatedRow
+  lastUpdatedRow,
+  selectedRowKeys
 }) => {
 
   const [selectedRows, setSelectedRows] = React.useState<(string | number)[]>([])
@@ -81,6 +83,11 @@ export const DataTable: React.FC<DataTableProps> = ({
       return () => clearTimeout(timer)
     }
   }, [lastUpdatedRow])
+  React.useEffect(() => {
+    if (selectedRowKeys) {
+      setSelectedRows(selectedRowKeys)
+    }
+  }, [selectedRowKeys])
   const handleSort = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey)
     if (!onSort || !column?.sortable) return

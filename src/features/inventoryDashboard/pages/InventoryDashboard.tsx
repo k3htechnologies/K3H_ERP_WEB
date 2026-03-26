@@ -6,7 +6,6 @@ import InventoryHeader from "@/features/inventoryDashboard/components/InventoryH
 import { inventoryDashboardService } from "@/features/inventoryDashboard/services/InventoryDashboardService";
 import UnitStatusDistribution from "@/features/inventoryDashboard/components/UnitStatusDistribution";
 import ParkingDistribution from "@/features/inventoryDashboard/components/ParkingDistribution";
-
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { runApiWithLoader } from "@/core/utils";
 import { Loader } from "@/core/utils/loader";

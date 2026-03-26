@@ -21,49 +21,51 @@ export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
                         <NoDataView />
                     </div>
                 ) : (
-                    <ResponsiveContainer width="100%" height={350}>
-                        <LineChart
-                            data={CaseAnalysisData}
-                        >
+                    <div className="flex justify-center relative [&_.recharts-wrapper_svg]:outline-none">
+                        <ResponsiveContainer width="100%" height={350}>
+                            <LineChart
+                                data={CaseAnalysisData}
+                            >
+                                
+                                <XAxis dataKey="MonthName" />
+                                <YAxis
+                                    type="number"
+                                    domain={[0, 10]}
+                                    ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+                                    interval={0}
+                                    style={{ outline: "none" }}
+                                />
+                                <Tooltip />
 
-                            <XAxis dataKey="MonthName" />
-                            <YAxis
-                                type="number"
-                                domain={[0, 100]}
-                                ticks={[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
-                                interval={0}  
-                            />
-                            <Tooltip />
-                            
-                            <Legend
-                                verticalAlign="top"
-                                align="right"
-                                iconSize={0}
-                                formatter={(value) => `- ${value}`}
-                            />
+                                <Legend
+                                    verticalAlign="top"
+                                    align="right"
+                                    iconSize={0}
+                                    formatter={(value) => `- ${value}`}
+                                />
 
-                            {/* Closed Cases*/}
-                            <Line
-                                type="monotone"
-                                dataKey="ClosedCases"
-                                name="CLOSED"
-                                stroke="#6366F1"
-                                strokeWidth={3}
-                                dot={false}
-                            />
+                                {/* Closed Cases*/}
+                                <Line
+                                    type="monotone"
+                                    dataKey="ClosedCases"
+                                    name="CLOSED"
+                                    stroke="#6366F1"
+                                    strokeWidth={3}
+                                    dot={false}
+                                />
 
-                            {/* Open Cases*/}
-
-                            <Line
-                                type="monotone"
-                                dataKey="OpenCases"
-                                name="OPENED"
-                                stroke="#EC4899"
-                                strokeWidth={3}
-                                dot={false}
-                            />
-                        </LineChart>
-                    </ResponsiveContainer>
+                                {/* Open Cases*/}
+                                <Line
+                                    type="monotone"
+                                    dataKey="OpenCases"
+                                    name="OPENED"
+                                    stroke="#EC4899"
+                                    strokeWidth={3}
+                                    dot={false}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
                 )}
             </div>
         </div>

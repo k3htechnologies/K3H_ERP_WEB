@@ -41,7 +41,7 @@ const WingDetails: React.FC<Props> = ({ wingData }) => {
             },
             {
                 key: "Units",
-                label: "Units",
+                label: "Total Units",
                 align: "center",
                 render: (value: any) => (
                     <span className="font-medium text-black">
@@ -50,16 +50,27 @@ const WingDetails: React.FC<Props> = ({ wingData }) => {
                 )
             },
             {
-                key: "Flats",
-                label: "Flats",
+                key: "Units",
+                label: "Units",
                 align: "center",
                 children: [
                     { key: "AvailableFlats", label: "Available", align: "center", render: (v: number) => v || 0 },
-                    { key: "AllotedFlats", label: "Alloted", align: "center", render: (v: number) => v || 0 },
-                    { key: "BookedFlats", label: "Booked", align: "center", render: (v: number) => v || 0 },
                     { key: "BlockedFlats", label: "Blocked", align: "center", render: (v: number) => v || 0 },
                     { key: "HoldFlats", label: "Hold", align: "center", render: (v: number) => v || 0 },
+                    { key: "AllotedFlats", label: "Alloted", align: "center", render: (v: number) => v || 0 },
+                    { key: "BookedFlats", label: "Booked", align: "center", render: (v: number) => v || 0 },
+
                 ]
+            },
+            {
+                key: "TotalParking",
+                label: "Total Parking",
+                align: "center",
+                render: (value: any) => (
+                    <span className="font-medium text-black">
+                        {(Number(value || 0))}
+                    </span>
+                )
             },
             {
                 key: "Parking",
@@ -67,10 +78,9 @@ const WingDetails: React.FC<Props> = ({ wingData }) => {
                 align: "center",
                 children: [
                     { key: "AvailableParking", label: "Available", align: "center", render: (v: number) => v || 0 },
-                    { key: "BookedParking", label: "Booked", align: "center", render: (v: number) => v || 0 },
                     { key: "BlockedParking", label: "Blocked", align: "center", render: (v: number) => v || 0 },
                     { key: "HoldParking", label: "Hold", align: "center", render: (v: number) => v || 0 },
-                    { key: "TotalParking", label: "Total", align: "center", render: (v: number) => v || 0 },
+                    { key: "BookedParking", label: "Booked", align: "center", render: (v: number) => v || 0 },
                 ]
             },
         ],
@@ -83,13 +93,13 @@ const WingDetails: React.FC<Props> = ({ wingData }) => {
                 Wing Details
             </h2>
 
-            <div className="bg-white rounded-xl p-4 h-[300px]" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+            <div className="bg-white rounded-xl p-4 h-[290px] md:h-[290px] shadow-sm flex flex-col">
                 <CustomTable
                     data={wingData}
                     columns={wingColumns}
                     emptyMessage="No Wing Data Found"
                     fixedHeight={true}
-                    className="flex-1"
+                    className="flex-1 overflow-y-auto"
                 />
             </div>
         </div>

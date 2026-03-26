@@ -5,7 +5,7 @@ interface Props {
   overViewData: Table0[];
 }
 
-export default function UnitStatusDistribution({ overViewData}: Props) {
+export default function UnitStatusDistribution({ overViewData }: Props) {
 
   const data = overViewData[0] || {};
 
@@ -26,11 +26,12 @@ export default function UnitStatusDistribution({ overViewData}: Props) {
       <h2 className="text-lg font-semibold text-gray-800">
         Unit Status Distribution
       </h2>
+
       <div className="bg-white p-4 rounded-xl mt-5 border border-gray-100"
         style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
         {/* Donut */}
-        <div className="flex justify-center relative">
+        <div className="flex justify-center relative [&_.recharts-wrapper_svg]:outline-none">
 
           <PieChart width={220} height={220}>
             <Pie
@@ -39,6 +40,7 @@ export default function UnitStatusDistribution({ overViewData}: Props) {
               outerRadius={90}
               paddingAngle={3}
               dataKey="value"
+              style={{ outline: "none" }}
             >
               {chartData.map((_, index) => (
                 <Cell key={index} fill={COLORS[index]} />
@@ -70,7 +72,6 @@ export default function UnitStatusDistribution({ overViewData}: Props) {
 }
 
 /* Small Card Component */
-
 function Card({ title, value, color }: any) {
   return (
     <div className="bg-gray-50 rounded-lg p-3">

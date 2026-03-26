@@ -16,18 +16,17 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
         { name: "Criminal Case", value: criminal },
     ];
 
-    // new commit 
     const COLORS = ["#1d8cf8", "#0c3ca3"];
 
     return (
-        <div className="space-y-3 pt-5">
+        <div className="space-y-3 pt-4">
             <h2 className="text-lg font-semibold text-gray-800">
                 Case Type Distribution
             </h2>
 
             <div className="bg-white p-4 rounded-lg shadow-sm space-y-4 mt-4 border border-gray-100 space-y-4">
                 {/* Donut Chart */}
-                <div className="flex justify-center relative">
+                <div className="flex justify-center relative [&_.recharts-wrapper_svg]:outline-none">
                     <PieChart width={220} height={200}>
                         <Pie
                             data={chartData}
@@ -38,6 +37,7 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
                             cornerRadius={10}
                             startAngle={90}
                             endAngle={-270}
+                            style={{ outline: "none" }}
                         >
                             {chartData.map((_, index) => (
                                 <Cell key={index} fill={COLORS[index]} />
@@ -64,7 +64,7 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
 
 function Card({ title, value, color }: { title: string; value: number; color: string }) {
     return (
-        <div className="bg-gray-50 rounded-lg p-3 border border-gray-100">
+        <div className="bg-gray-50 rounded-lg p-3 border border-gray-100" >
             <p className="text-sm text-gray-500 mb-1">{title}</p>
             <p className="text-lg font-bold" style={{ color }}>{value}</p>
         </div>

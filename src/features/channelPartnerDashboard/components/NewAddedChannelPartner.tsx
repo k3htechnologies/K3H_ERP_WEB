@@ -13,20 +13,10 @@ const NewAddedChannelPartner: React.FC<Props> = ({ NewAddedChannelPartnerData })
     const NewAddedChannelPartnerColumns = useMemo<any[]>(
         () => [
             {
-                key: "CreatedDate",
-                label: "Date",
-                align: "left",
-                render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
-            },
-            {
                 key: "Name",
                 label: "CP Name",
                 align: "left",
-                render: (value: string) => (
-                    <span className="text-blue-600 cursor-pointer hover:underline">
-                        {(value || '')}
-                    </span>
-                )
+                render: (value?: string) => value || ''
             },
             {
                 key: "SystemGeneratedCode",
@@ -62,6 +52,12 @@ const NewAddedChannelPartner: React.FC<Props> = ({ NewAddedChannelPartnerData })
                     </span>
                 )
             },
+            {
+                key: "CreatedDate",
+                label: "Date",
+                align: "left",
+                render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+            },
         ], []
     );
     //#endregion
@@ -70,7 +66,9 @@ const NewAddedChannelPartner: React.FC<Props> = ({ NewAddedChannelPartnerData })
     return (
         <div className="space-y-3 pt-5">
 
-            <h2 className="text-lg font-semibold text-gray-800">Recently Added Channel Partner</h2>
+            <h2 className="text-lg font-semibold text-gray-800">Recently Added Channel Partner <span className="text-sm">
+                (Last 7 Days)</span></h2>
+
             <div className="bg-white rounded-lg shadow-sm space-y-4 p-4 h-[300px] ">
 
                 <DataTableWithOutBorder

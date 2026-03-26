@@ -14,11 +14,11 @@ const FirmTypeDistribution: React.FC<Props> = ({ firmTypeData }) => {
     const total = firmTypeData?.reduce((sum, item) => sum + (item.TotalCount || 0), 0);
 
     return (
-        <div className="space-y-8 pt-5">
+        <div className="space-y-8 pt-5 ">
 
             <div className="bg-white p-4 rounded-lg shadow-sm space-y-4 flex flex-col sm:flex-row items-center justify-between">
-                <div className="relative h-[200px] w-full sm:h-[275px] sm:max-w-[300px] lg:h-[270px] lg:max-w-[400px]">
-                    <h3 className="text-sm text-gray-500 font-medium ml-5 mt-1">
+                <div className="relative h-[200px] w-full sm:h-[275px] sm:max-w-[300px] lg:h-[266px] lg:max-w-[400px]">
+                    <h3 className="text-sm text-gray-500 font-medium ml-3 pt-2">
                         Firm Type Distribution
                     </h3>
 

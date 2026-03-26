@@ -9,7 +9,6 @@ interface Props {
 }
 
 const ActiveCases: React.FC<Props> = ({ activeCaseData }) => {
-
     const activeCaseColumns = useMemo<any[]>(
         () => [
             {

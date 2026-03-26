@@ -30,7 +30,7 @@ const initialFormState = (): AddUpdateEmployeeResignationRequest => ({
   EmployeeResignationId: 0,
   UniqueKey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   EmployeeId: null,
-  ResignationDate: null,
+  ResignationDate: new Date().toISOString().split("T")[0],
   ReasonOfLeaving: '',
   ExpectedRelievingDate: null,
   IsAnyOfferInHand: false,
@@ -70,6 +70,9 @@ export const EmployeeResignation: React.FC = () => {
   const [removedOfferLetterUrls, setRemovedOfferLetterUrls] = useState<string[]>([]);
   const [offerLetterURL, setOfferLetterURL] = useState<string>();
   //#endregion
+
+  const canAddResignation = !employeeResignationList.some(
+    (item) => item.ApprovalStatus === "Pending" || item.ApprovalStatus === "Approved");
 
   //#region INITIALIZATION
 
@@ -330,10 +333,8 @@ export const EmployeeResignation: React.FC = () => {
         addToast({ type: 'error', title: error.message })
       },
       undefined,
-
       Number(formData.EmployeeResignationId) === 0 ? 'Add Employee Resignation' : 'Update Employee Resignation'
     )
-
   };
 
   //#endregion
@@ -405,7 +406,7 @@ export const EmployeeResignation: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar={false}
         // ADD
-        isShowAddButton={true}
+        isShowAddButton={canAddResignation}
         addTitle="Add"
         onAdd={handleAddResignationModal}
         exportLoading={isLoading}
@@ -495,7 +496,7 @@ export const EmployeeResignation: React.FC = () => {
         title={editingEmployeeResignationData ? 'Update Employee Resignation' : 'Add Employee Resignation'}
         onSubmit={handleAddUpdateEmployeeResignation}
         saveText={'Save'}
-        
+
         loading={isLoading}
         size='xl'
       >
@@ -508,7 +509,7 @@ export const EmployeeResignation: React.FC = () => {
                 error={errors.ResignationDate}
                 value={formatDate_dd_mm_yyyy(formData.ResignationDate)}
                 onChange={(val) => handleFieldChange('ResignationDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-
+                disabled={!!formData.ResignationDate}
                 placeholder="Select Resignation Date"
               />
             </div>

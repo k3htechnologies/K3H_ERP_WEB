@@ -21,7 +21,6 @@ const AlertsPanel: React.FC<Props> = ({ alertsData}) => {
       >
 
         <div className="flex-1 overflow-y-auto thin-scroll space-y-3 pr-1">
-
           {alertsData.length === 0 && (
             <p className="text-sm text-gray-400 text-center mt-16">
               <NoDataView />
@@ -33,7 +32,7 @@ const AlertsPanel: React.FC<Props> = ({ alertsData}) => {
               key={i}
               className="relative bg-orange-50 rounded-lg p-3 border border-orange-100"
             >
-
+              
               {/* Left Accent */}
               <span className="absolute left-0 top-0 h-full w-1 bg-orange-400 rounded-l-lg" />
 

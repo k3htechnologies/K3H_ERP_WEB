@@ -12,7 +12,7 @@ export default function PartnerTypeDistribution({ partnerTypeDistributionData}: 
     return (
         <div className="pt-5">
             <div className="bg-white p-4 rounded-lg shadow-sm space-y-4 h-[315px]">
-                <h3 className="text-sm text-gray-500 font-medium ml-5 mt-1">
+                <h3 className="text-sm text-gray-500 font-medium ml-3 mt-1">
                     Partner Type Distribution
                 </h3>
 
@@ -34,7 +34,7 @@ export default function PartnerTypeDistribution({ partnerTypeDistributionData}: 
                                 dataKey="Type"
                                 axisLine={false}
                                 tickLine={false}
-                                width={60}
+                                width={40}
                                 tick={{ fontSize: 14, fill: "#6b7280" }}
                             />
                             <Bar
@@ -48,7 +48,7 @@ export default function PartnerTypeDistribution({ partnerTypeDistributionData}: 
                                 ))}
                                 <LabelList
                                     dataKey="TotalCount"
-                                    position="right"
+                                    position="right"            
                                     fill="#374151"
                                     fontSize={13}
                                     fontWeight={500}

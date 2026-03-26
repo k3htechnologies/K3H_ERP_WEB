@@ -182,6 +182,7 @@ export const Leave: React.FC = () => {
   //#region DATA LOAD LEAVE
 
   const loadLeaves = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+    debugger
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -195,9 +196,11 @@ export const Leave: React.FC = () => {
           StartDate: filterParams.StartDate?.trim() || undefined,
           EndDate: filterParams.EndDate?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, []),
-          IsReport: false
+          CanApprove: false,
+          IsReport: false,
+          IsCheckPermission: true
         };
-
+        debugger
         const response = await LeaveService.apiCallPullLeave(params);
 
         if (E.isRight(response)) {
@@ -315,6 +318,7 @@ export const Leave: React.FC = () => {
           EndDate: filters.EndDate?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, []),
           IsReport: false,
+          CanApprove: false,
           ExportType: exportType
         };
 

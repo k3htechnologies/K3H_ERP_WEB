@@ -43,7 +43,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
 }) => {
     const [allowedDates, setAllowedDates] = useState<string[]>([]);
     const [, setIsLoadingDates] = useState(false);
-
+    const [, setDisableAllDates] = useState(false);
     const fetchCompOffDates = (monthStart: string, monthEnd: string, abortController: AbortController) => {
         setIsLoadingDates(true);
 
@@ -69,11 +69,13 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                         .filter((date): date is string => date !== null && date !== '');
 
                     setAllowedDates(dates);
+                    setDisableAllDates(dates.length === 0);
                 }
                 setIsLoadingDates(false);
             })
             .catch(() => {
                 setIsLoadingDates(false);
+                setDisableAllDates(true);
             });
     };
 

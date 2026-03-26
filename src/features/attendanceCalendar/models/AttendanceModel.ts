@@ -9,6 +9,8 @@ export interface FilterWithPaginationAttendanceRequest {
   ApiKey?: string;
   SortBy?: string;
   IsReport?: boolean;
+  CanApprove?: boolean;
+  IsCheckPermission?: boolean
   ExportType?: "Excel" | "PDF";
   EmployeeName?: string;
 }
@@ -84,6 +86,8 @@ export interface FilterWithPaginationAttendanceRegularizationRequest {
   EmployeeName?: string;
   SortBy?: string;
   IsReport?: boolean;
+  CanApprove?: boolean;
+  IsCheckPermission?: boolean;
   ExportType?: "Excel" | "PDF";
 }
 

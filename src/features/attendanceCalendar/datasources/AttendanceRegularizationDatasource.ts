@@ -40,7 +40,9 @@ export class AttendanceRegularizationDatasourceImpl implements AttendanceRegular
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
+            if (params.CanApprove !== undefined) queryParams.append('CanApprove', params.CanApprove.toString())
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+            if (params.IsCheckPermission) queryParams.append('IsCheckPermission', params.IsCheckPermission.toString());
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${AttendanceRegularizationApi.PULL}?${queryParams.toString()}`,

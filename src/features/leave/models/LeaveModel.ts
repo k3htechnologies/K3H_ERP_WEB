@@ -14,6 +14,7 @@ export interface FilterWithPaginationLeaveRequest {
   EmployeeName?: string
   SortBy?: string
   IsReport?: boolean
+  CanApprove?: boolean
   ExportType?: 'Excel' | 'PDF'
 }
 

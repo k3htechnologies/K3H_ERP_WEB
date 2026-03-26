@@ -126,6 +126,8 @@ export const EmployeeResignation: React.FC = () => {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
+          IsReport:false,
+          CanApprove:false,
           EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId || 0,
         }
 

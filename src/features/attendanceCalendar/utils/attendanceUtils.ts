@@ -9,7 +9,7 @@ export const STATUS_CONFIG = {
   EARLY_LEAVE: { color: '#FFC569', text: '#FFC569', badge: { backgroundColor: '#FFC569', color: '#FFC569' } },
   COMP_OFF: { color: '#5149e5', text: '#5149e5', badge: { backgroundColor: '#5149e5', color: '#5149e5' } },
   CHECKOUT_MISSING: { color: '#923b54', text: '#923b54', badge: { backgroundColor: '#923b54', color: '#923b54', } },
-  DEFAULT: { color: '#6b7280', text: '#6b7280', badge: { backgroundColor: '#6b7280', color: '#6b7280' } },
+  DEFAULT: { color: '', text: '', badge: { backgroundColor: '', color: '' } },
 } as const;
 
 type StatusKey = keyof typeof STATUS_CONFIG;

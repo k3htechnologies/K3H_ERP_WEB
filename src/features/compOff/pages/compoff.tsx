@@ -180,7 +180,7 @@ export const CompOff: React.FC = () => {
         pagination={compOffPaginationInfo}
         sortInfo={sortInfo}
         onSort={handleSortColumn}
-        onDelete={handleConfirmationDialogBoxOpen || (() => {})}
+        onDelete={handleConfirmationDialogBoxOpen || (() => { })}
         canAction={Boolean(canAction)}
         loading={isLoading}
       />
@@ -250,7 +250,7 @@ export const CompOff: React.FC = () => {
         onClose={handleDeleteDialogClose}
         onConfirm={handleDeleteCompOff}
         loading={isLoading}
-        pageName='compOff'
+        pageName='Comp Off'
       />
     </div>
 

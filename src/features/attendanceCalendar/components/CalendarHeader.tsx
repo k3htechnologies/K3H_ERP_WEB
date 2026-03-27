@@ -44,13 +44,14 @@ export const CalendarHeader = React.memo<CalendarHeaderProps>(({
   const handleFilterChange = useCallback(
     (val: string | number) => {
       onFilterChange(String(val));
-    },
-    [onFilterChange]
+    },[onFilterChange]
   );
 
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 mb-3 sm:mb-4">
+
       <div className="flex items-center gap-2 sm:gap-3 justify-center sm:justify-start">
+        
         <button
           onClick={onPreviousMonth}
           className="p-1.5 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0"
@@ -59,9 +60,11 @@ export const CalendarHeader = React.memo<CalendarHeaderProps>(({
         >
           <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
         </button>
+
         <h2 className="font-semibold text-blue-600 text-lg sm:text-xl lg:text-[22px] min-w-[140px] sm:min-w-[180px] text-center">
           {formattedMonth}
         </h2>
+
         <button
           onClick={onNextMonth}
           className="p-1.5 rounded-md hover:bg-gray-100 transition-colors flex-shrink-0"
@@ -70,6 +73,7 @@ export const CalendarHeader = React.memo<CalendarHeaderProps>(({
         >
           <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
         </button>
+        
       </div>
 
       <div className="w-full sm:w-auto sm:min-w-[160px] lg:min-w-[180px] pt-0 sm:pt-3">
@@ -79,6 +83,7 @@ export const CalendarHeader = React.memo<CalendarHeaderProps>(({
           options={FILTER_OPTIONS}
         />
       </div>
+
     </div>
   );
 });

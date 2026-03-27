@@ -3,7 +3,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Input } from '@/ui/components/forms';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
-import { fetchLeaveTypeMasterDropdown } from '@/features/leaveTypeMaster/leaveTypeMasterDropdown';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
 import type { AddUpdateLeaveRequest, FilterWithPaginationLeaveRequest } from '@/features/leave/models/LeaveModel';
@@ -19,6 +18,7 @@ import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useLeaveListState } from '@/features/leave/context/LeaveListStateContext';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
+import { fetchLeaveConfiguredDropdown } from '@/features/leave/utils/LeaveConfiguredDropdown';
 
 const LEAVE_DURATION_OPTIONS = [
     { label: 'Full Day', value: 'Full' },
@@ -181,7 +181,9 @@ export const AddUpdateLeave: React.FC = () => {
     const validateLeaveForm = (): {
         isValid: boolean;
         errors: { [key: string]: string };
+
     } => {
+
         const newErrors: { [k: string]: string } = {};
         if (!formData.LeaveTypeMasterId) newErrors.LeaveTypeMasterId = 'Leave Type is required';
         const finalStart = formData.StartDate;
@@ -208,7 +210,6 @@ export const AddUpdateLeave: React.FC = () => {
             setErrors(validation.errors);
             return;
         }
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -249,7 +250,7 @@ export const AddUpdateLeave: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Saving Leave...'
+            'Saving Leave'
         );
     };
     //#endregion
@@ -264,7 +265,9 @@ export const AddUpdateLeave: React.FC = () => {
 
             <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
                 <form onSubmit={(e) => { e.preventDefault(); void handleSave(); }}>
+
                     {/* ============================================================= [LEAVE DETAILS] ============================================================================================= */}
+
                     <div className="space-y-4 pb-3">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Leave Details</h3>
 
@@ -276,7 +279,7 @@ export const AddUpdateLeave: React.FC = () => {
                                     size="md"
                                     required
                                     dataFetchCallBack={async (pageNumber: number, params?: { value?: string }) =>
-                                        fetchLeaveTypeMasterDropdown(pageNumber, params)
+                                        fetchLeaveConfiguredDropdown(pageNumber, params)
                                     }
                                     onSelected={(item) => {
                                         setFormData((prev) => ({ ...prev, LeaveTypeMasterId: Number(item?.value) }));
@@ -293,6 +296,7 @@ export const AddUpdateLeave: React.FC = () => {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         Date Range <span className="text-red-500">*</span>
                                     </label>
+
                                     <Button
                                         type="button"
                                         variant="outline"

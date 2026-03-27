@@ -2,6 +2,7 @@ import React from 'react'
 import { ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react'
 import { useViewportHeight } from '@/core/utils/useViewportHeight'
 import NoDataView from '@/ui/components/NoDataView/NoDataView'
+import { useHorizontalScroll } from './useHorizontalScroll'
 
 export interface TableColumn {
     key: string
@@ -60,7 +61,9 @@ export const DataTableWithOutBorder: React.FC<DataTableWithOutBorderProps> = ({
     sortInfo,
     onSort,
 }) => {
-
+    
+    const scrollRef = useHorizontalScroll()
+    
     const handleSort = (columnKey: string) => {
         const column = columns.find(col => col.key === columnKey)
         if (!onSort || !column?.sortable) return
@@ -139,7 +142,7 @@ export const DataTableWithOutBorder: React.FC<DataTableWithOutBorderProps> = ({
         <div className={`rounded-lg flex flex-col}  ${fixedHeight ? 'h-full' : ''} ${className}`}>
 
             {/* Table Container with Fixed Height */}
-            <div className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
+            <div ref={scrollRef}  className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
                 maxHeight: recordsPerPage === 10 ? 'calc(10 * 2.5rem + 2.5rem)' : maxHeight
             } : {}}>
                 <table className={`min-w-full border-collapse`}>

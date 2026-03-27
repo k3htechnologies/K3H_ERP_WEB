@@ -46,28 +46,12 @@ export default function CompOffTable({ compOffData }: Props) {
       key: 'status',
       label: 'Status',
       align: 'center' as const,
-      // render: (value: string) => (
-      //   <div className="flex flex-col">
-      //     <span className="font-medium text-gray-900">{value}</span>
-      //     <span className="text-xs text-gray-500">{record.Status}</span>
-      //   </div>
-      // )
     },
     {
       key: 'action',
       label: 'Action',
       align: 'center' as const,
       width: "150px",
-      // render: (record: CompOffTableRecord) => (
-      //   <button
-      //     className={`px-4 py-1 rounded-md text-sm font-medium text-white ${record.Status === "Approved"
-      //       ? "bg-blue-500 "
-      //       : "bg-gray-400 cursor-not-allowed"
-      //       }`}
-      //   >
-      //     {record.Status === "Approved" ? "Approve" : "Approved"}
-      //   </button>
-      // )
     }
   ];
   return (
@@ -76,7 +60,7 @@ export default function CompOffTable({ compOffData }: Props) {
         Comp-Off Management
       </h2>
       <div
-        className="bg-white rounded-xl p-4 h-[300px] shadow-sm"
+        className="bg-white rounded-xl p-4 h-[300px]"
 
       >
         {compOffData?.length > 0 ? (

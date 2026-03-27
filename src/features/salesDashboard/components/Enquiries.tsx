@@ -152,6 +152,7 @@ export default function Enquiries({ enquiryData }: Props) {
             key: 'Action',
             label: 'Action',
             align: 'center',
+            fixed: 'right',
             render: (_value, row) => {
                 
                 if (!projectId || row.CanTimeOut === 0) return null;
@@ -181,12 +182,13 @@ export default function Enquiries({ enquiryData }: Props) {
                 Enquiries (Todays)
             </h2>
 
-            <div className="flex-1 bg-white rounded-xl p-5 h-[310px] shadow-sm border border-gray-100 min-w-0 overflow-hidden flex flex-col">
+            <div className="flex-1 bg-white rounded-xl p-5 h-[310px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
                 <DataTableWithOutBorder
                     columns={columns}
                     data={enquiryList}
                     emptyMessage="No records Found"
                     fixedHeight={true}
+                    
                 />
             </div>
 

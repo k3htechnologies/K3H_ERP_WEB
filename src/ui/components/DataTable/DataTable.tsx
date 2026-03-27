@@ -2,6 +2,7 @@ import React from 'react'
 import { ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react'
 import { useViewportHeight } from '@/core/utils/useViewportHeight'
 import NoDataView from '@/ui/components/NoDataView/NoDataView'
+import { useHorizontalScroll } from './useHorizontalScroll'
 
 export interface TableColumn {
   key: string
@@ -65,7 +66,7 @@ export const DataTable: React.FC<DataTableProps> = ({
   rowKey = "id",
   lastUpdatedRow
 }) => {
-
+  const scrollRef = useHorizontalScroll()
   const [selectedRows, setSelectedRows] = React.useState<(string | number)[]>([])
   const [tempHighlightRow, setTempHighlightRow] = React.useState<string | number | null>(null)
   React.useEffect(() => {
@@ -153,10 +154,10 @@ export const DataTable: React.FC<DataTableProps> = ({
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col ${fixedHeight ? 'h-full' : ''} ${className}`}>
 
       {/* Table Container with Fixed Height */}
-      <div className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
+      <div ref={scrollRef} className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
         maxHeight: recordsPerPage === 10 ? 'calc(10 * 2.5rem + 2.5rem)' : maxHeight
       } : {}}>
-        <table className="min-w-full border-collapse border border-gray-300">
+        <table className="min-w-full border-collapse">
           <thead
             className={`${fixedHeight ? 'sticky top-0 z-40' : ''} shadow-sm`}
             style={{

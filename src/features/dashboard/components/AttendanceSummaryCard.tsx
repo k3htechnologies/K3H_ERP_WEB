@@ -20,7 +20,7 @@ export default function AttendanceSummaryCard({ attendanceSummaryShiftData = [],
 
                 {/* Card-1: Present Days */}
                 <div className="w-full bg-green-100  rounded-md 
-                    p-3 sm:p-4 border border-green-300 shadow-sm">
+                    p-3 sm:p-4 border border-green-300">
 
                     <div className="text-xs sm:text-sm text-gray-500 font-medium mb-1 sm:mb-2">
                         Present Days
@@ -42,7 +42,7 @@ export default function AttendanceSummaryCard({ attendanceSummaryShiftData = [],
 
                 {/* Card-2: Shift Pattern */}
                 <div className="w-full bg-purple-100 rounded-md 
-                    p-3 sm:p-4 border border-purple-300 shadow-sm">
+                    p-3 sm:p-4 border border-purple-300">
 
                     <div className="text-xs sm:text-sm text-gray-500 font-medium mb-1 sm:mb-2">
                         Shift Pattern

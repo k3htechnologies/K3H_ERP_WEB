@@ -13,7 +13,7 @@ export default function UpComingHearing({ upComingHearingData }: Props) {
         Upcoming Hearings
       </h2>
 
-      <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm thin-scroll h-[280px] flex flex-col">
+      <div className="bg-white rounded-lg p-4 space-y-4 thin-scroll h-[280px] flex flex-col">
         {upComingHearingData.length === 0 ? (
           <div className="flex flex-col justify-center items-center h-full">
             <NoDataView />

@@ -65,7 +65,7 @@ const SettingsDashboard: React.FC = () => {
   }
 
   return (
-    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
 
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 

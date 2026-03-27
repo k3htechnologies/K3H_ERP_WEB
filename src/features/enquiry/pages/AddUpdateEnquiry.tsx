@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateEnquiryRequest, FilterWithPaginationEnquiryRequest } from "@/features/enquiry//models/EnquiryModel";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -506,9 +506,9 @@ export const AddUpdateEnquiry: React.FC = () => {
       newErrors.EnquiryDate = "Enquiry date can only be today or within the previous 2 days";
     }
 
-     if (formData.Requirement?.trim() !== "" && formData.RequirementType?.trim() === "") {
-            newErrors.RequirementType = `${formData.Requirement} Type is required`;
-        }
+    if (formData.Requirement?.trim() !== "" && formData.RequirementType?.trim() === "") {
+      newErrors.RequirementType = `${formData.Requirement} Type is required`;
+    }
 
     if (formData.FinalStage?.toUpperCase() === "LOST") {
       if (!formData.FinalStageDetail) {
@@ -516,9 +516,18 @@ export const AddUpdateEnquiry: React.FC = () => {
       }
     }
 
-    if (Number(formData.EnquiryId) === 0 && formData.NextFollowUpDate != null && formData.NextFollowUpDate !== "" && !isToDateGreaterOrEqualFromDate(formData.EnquiryDate || "", formData.NextFollowUpDate!)) {
+    const enquiryDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.EnquiryDate ? new Date(formData.EnquiryDate) : undefined);
+    const nextFollowUpDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.NextFollowUpDate ? new Date(formData.NextFollowUpDate) : undefined);
+
+    if (
+      formData?.EnquiryDate &&
+      formData.NextFollowUpDate &&
+      !isToDateGreaterOrEqualFromDate(enquiryDate, nextFollowUpDate)
+    ) {
       newErrors.NextFollowUpDate = "Next Follow Up Date must be greater than or equal to Enquiry Date";
     }
+
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors,
@@ -588,7 +597,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       PossessionType: formData.PossessionType,
       AreaPreferred: formData.AreaPreferred,
       DesiredFloorBand: formData.DesiredFloorBand,
-      Budget: formData.Budget ==="" ? "<1" :formData.Budget,
+      Budget: formData.Budget === "" ? "<1" : formData.Budget,
 
       Requirement: formData.Requirement,
       RequirementType: formData.RequirementType || null,
@@ -624,7 +633,7 @@ export const AddUpdateEnquiry: React.FC = () => {
     const validation = validateAddEnquiryForm();
 
     if (!validation.isValid) {
-      
+
       setErrors(validation.errors);
 
       addToast({ type: "error", title: "Please fill the required filed" });
@@ -1309,9 +1318,9 @@ export const AddUpdateEnquiry: React.FC = () => {
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300">Address</h3>
               <div className="grid grid-cols-1 md:grid-cols-1">
-                
-                  <TextArea label="Current Location" placeholder="Enter Current Location" required className="thin-scroll" value={formData.CurrentLocation ?? ""} onChange={(e) => handleFieldChange("CurrentLocation", e.target.value)} error={errors.CurrentLocation} />
-               
+
+                <TextArea label="Current Location" placeholder="Enter Current Location" required className="thin-scroll" value={formData.CurrentLocation ?? ""} onChange={(e) => handleFieldChange("CurrentLocation", e.target.value)} error={errors.CurrentLocation} />
+
               </div>
             </div>
             {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (

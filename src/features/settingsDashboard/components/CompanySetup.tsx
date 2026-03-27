@@ -40,7 +40,7 @@ const CompanySetup: React.FC<Props> = ({ companySetupData = [] }: Props) => {
         <div className="pt-5 flex flex-col h-full">
             <h1 className="font-semibold text-gray-800 mb-4">Company Master</h1>
 
-            <div className="p-4 bg-white w-full border border-gray-100 flex-1 grid grid-cols-2 gap-x-4 gap-y-4 rounded-xl shadow-sm">
+            <div className="p-4 bg-white w-full border border-gray-100 flex-1 grid grid-cols-2 gap-x-4 gap-y-4 rounded-xl">
                 {data.map((c, i) => (
                     <div
                         key={i}

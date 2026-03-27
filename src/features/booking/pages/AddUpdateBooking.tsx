@@ -876,7 +876,7 @@ export const AddUpdateBooking: React.FC = () => {
           return `₹${Number(value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         },
       },
-      ...(formData.PaymentScheduleSchemeMasterId !== 0 ? [] : [
+      ...(Number(formData.PaymentScheduleSchemeMasterId) !== 0 ? [] : [
         {
           key: "actions",
           label: "Actions",
@@ -1941,7 +1941,7 @@ export const AddUpdateBooking: React.FC = () => {
                   handleFieldChange("AgreementValueTDS", tdsAmount.toFixed(2));
 
                   /* ================= REGISTRATION FEES ================= */
-                  const registrationFees = agreementValue > 4999999.99 ? 30000 : (agreementValue * 1) / 100;
+                  const registrationFees = agreementValue > 2999999.99 ? 30000 : (agreementValue * 1) / 100;
 
                   handleFieldChange("RegistrationFees", registrationFees.toFixed(2));
 

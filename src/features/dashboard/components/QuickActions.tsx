@@ -62,7 +62,7 @@ export default function QuickActions() {
     return (
         <div className="space-y-3 pt-5 sm:pt-7">
 
-            <div className="bg-white rounded-xl p-4 sm:p-5 mt-10 flex flex-col h-[531px] shadow-sm">
+            <div className="bg-white rounded-xl p-4 sm:p-5 mt-10 flex flex-col h-[531px]">
                 {/* Title */}
                 <p className="text-md font-semibold text-gray-500 pb-2">
                     Quick Actions

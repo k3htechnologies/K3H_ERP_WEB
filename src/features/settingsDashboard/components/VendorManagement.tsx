@@ -20,7 +20,7 @@ const VendorManagement: React.FC<Props> = ({ vendorManagementData, vendorGraphDa
         <div className="flex flex-col h-full">
             <h1 className="font-semibold text-gray-800 mb-4">Vendor Management</h1>
 
-            <div className="w-full bg-white p-6 border border-gray-100 rounded-xl flex-1 flex flex-col gap-8 shadow-sm">
+            <div className="w-full bg-white p-6 border border-gray-100 rounded-xl flex-1 flex flex-col gap-8">
 
                 <div className="grid grid-cols-3 divide-x divide-gray-200">
                     <div className="pr-4">

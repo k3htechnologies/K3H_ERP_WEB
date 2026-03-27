@@ -279,7 +279,7 @@ export const ViewTenant: React.FC = () => {
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                         <FieldItem label="Type" value={tenantData.ApplicantType} className='text-blue-900 bold' />
                                                         <FieldItem label="Applicant Name" value={tenantData.ApplicantName} urls={tenantData?.PhotoURL} isIcon />
-                                                        <FieldItem label="Contact Number" value={tenantData?.ApplicantMobileNumber} />
+                                                        <FieldItem label="Mobile Number" value={tenantData?.ApplicantMobileNumber} />
                                                         <FieldItem label="E-Mail ID" value={tenantData?.ApplicantEmailId} />
 
                                                         <FieldItem label="Aadhaar Card No." value={tenantData?.AadharCardNumber} urls={tenantData?.AadharCardURL} isIcon />

@@ -28,7 +28,7 @@ export default function ParkingDistribution({ parkingData}: Props) {
 
               <ResponsiveContainer>
 
-                <BarChart data={parkingData} barGap={-30} style={{ outline: "none" }}>
+                <BarChart data={parkingData} barGap={-40} style={{ outline: "none" }}>
 
                   <XAxis dataKey="FloorName" tick={{ fontSize: 11 }} />
 

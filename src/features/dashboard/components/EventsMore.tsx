@@ -25,7 +25,7 @@ export default function EventsMore({ birthdays, reportingData }: Props) {
             <div className="flex flex-col lg:flex-row gap-4 w-full items-stretch">
 
                 {/* Card-1: Upcoming Birthday */}
-                <div className="bg-white rounded-xl p-5 flex flex-col flex-2 h-[220px] shadow-sm">
+                <div className="bg-white rounded-xl p-5 flex flex-col flex-2 h-[220px]">
 
                     {/* Header */}
                     <p className="text-md font-semibold text-gray-500 pb-2 shrink-0">
@@ -80,7 +80,7 @@ export default function EventsMore({ birthdays, reportingData }: Props) {
                 </div>
 
                 {/* Card-2: Upcoming Events */}
-                <div className="bg-white rounded-xl p-5 flex flex-col flex-2 h-[220px] shadow-sm ">
+                <div className="bg-white rounded-xl p-5 flex flex-col flex-2 h-[220px] ">
 
                     {/* Header */}
                     <p className="text-md font-semibold text-gray-500 pb-2 shrink-0">
@@ -95,7 +95,7 @@ export default function EventsMore({ birthdays, reportingData }: Props) {
 
                 {/* Card-3: Reporting Manager */}
                 {hasValidManager && (
-                    <div className="bg-white rounded-xl p-5 flex flex-col flex-1 h-[220px] shadow-sm">
+                    <div className="bg-white rounded-xl p-5 flex flex-col flex-1 h-[220px]">
 
                         {/* Header */}
                         <p className="text-md font-semibold text-gray-500 pb-2 shrink-0">

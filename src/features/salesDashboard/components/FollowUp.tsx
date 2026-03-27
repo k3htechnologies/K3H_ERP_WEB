@@ -113,7 +113,7 @@ export default function FollowUp({ enquiryFollowUpData }: Props) {
 
             <h2 className="text-lg font-semibold text-gray-800">Follow Up</h2>
 
-            <div className="flex-1 bg-white rounded-xl p-5 h-[310px] shadow-sm border border-gray-100 min-w-0 overflow-hidden flex flex-col">
+            <div className="flex-1 bg-white rounded-xl p-5 h-[310px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
                 
                 <DataTableWithOutBorder
                     columns={columns}

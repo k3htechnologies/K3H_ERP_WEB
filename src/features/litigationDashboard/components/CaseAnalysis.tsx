@@ -15,7 +15,7 @@ export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
                 Case Analysis
             </h2>
 
-            <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm">
+            <div className="bg-white rounded-lg p-4 space-y-4">
                 {CaseAnalysisData.length === 0 ? (
                     <div className="flex flex-col justify-center items-center h-[350px]">
                         <NoDataView />

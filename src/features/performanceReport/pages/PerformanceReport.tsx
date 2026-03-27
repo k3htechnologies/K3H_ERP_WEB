@@ -18,7 +18,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import Tabs from "@/ui/components/Tab/Tab";
 import { getMonthDateRange, getWeekToDateRange, getYearToDateRange } from "@/core/utils/comman";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
-import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 
 export const PerformanceReport: React.FC = () => {
 
@@ -462,6 +462,16 @@ export const PerformanceReport: React.FC = () => {
         setTempFilters(prev => updateFilter(prev, key, value));
     }
 
+    const formatDate = (date?: Date) => {
+        if (!date) return '';
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
+    };
+    
     const handleTabChange = (tabId: string) => {
 
         setActiveTab(tabId);
@@ -492,8 +502,8 @@ export const PerformanceReport: React.FC = () => {
 
         const updatedFilters: FilterInfo = {
             ...filters,
-            FromDate: convert_date_yy_mm_dd_To_dd_mm_yyyy(fromDate),
-            ToDate: convert_date_yy_mm_dd_To_dd_mm_yyyy(toDate),
+            FromDate: formatDate(fromDate),
+            ToDate: formatDate(toDate),
         };
 
         setFilters(updatedFilters);
@@ -577,19 +587,19 @@ export const PerformanceReport: React.FC = () => {
             </div>
 
             {/* DATA TABLE */}
-<div className="pt-5">
-            <CustomTable
-                data={PerformanceReportForTable}
-                columns={targetActiveTab === "Closing" ? PerformanceReportClosingColumns : PerformanceReportSourcingColumns}
-                pagination={PerformanceReportPaginationInfo}
-                emptyMessage="No Performance Report Data Found"
-                fixedHeight={true}
-                recordsPerPage={20}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-            />
-</div>
+            <div className="pt-5">
+                <CustomTable
+                    data={PerformanceReportForTable}
+                    columns={targetActiveTab === "Closing" ? PerformanceReportClosingColumns : PerformanceReportSourcingColumns}
+                    pagination={PerformanceReportPaginationInfo}
+                    emptyMessage="No Performance Report Data Found"
+                    fixedHeight={true}
+                    recordsPerPage={20}
+                    className="flex-1"
+                    sortInfo={sortInfo}
+                    onSort={handleSortColumn}
+                />
+            </div>
             {/* FILTER MODAL FOR PERFORMANCE REPORT */}
 
             <Modal

@@ -13,7 +13,7 @@ import { BLOOD_GROUP_OPTIONS, EMERGENCY_RELATION_OPTIONS, EMPLOYEE_TYPE_OPTIONS,
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { filterEmail, filterIFSC, filterLetters, filterMobile, filterNumbers, isValidEmail, isValidIFSC, isValidMobile } from "@/core/utils/fileValidation";
 import { fetchDepartmentMasterDropdown } from "@/features/departmentMaster/departmentMasterDropdown";
 import { fetchDesignationMasterDropdown } from "@/features/designationMaster/designationMasterDropDown";
@@ -119,25 +119,25 @@ const AddUpdateEmployeePage: React.FC = () => {
   const stateOptions =
     selectedCountryId != null
       ? (statesByCountryId[selectedCountryId] || []).map((s) => ({
-          label: s.name,
-          value: s.id,
-        }))
+        label: s.name,
+        value: s.id,
+      }))
       : [];
 
   const districtOptions =
     selectedStateId != null
       ? (districtsByStateId[selectedStateId] || []).map((d) => ({
-          label: d.name,
-          value: d.id,
-        }))
+        label: d.name,
+        value: d.id,
+      }))
       : [];
 
   const cityOptions =
     selectedDistrictId != null
       ? (citiesByDistrictId[selectedDistrictId] || []).map((c) => ({
-          label: c.name,
-          value: c.id,
-        }))
+        label: c.name,
+        value: c.id,
+      }))
       : [];
 
   //#endregion
@@ -412,7 +412,11 @@ const AddUpdateEmployeePage: React.FC = () => {
       newErrors.IFSCCode = "Enter a valid IFSC Code";
     }
 
-    if (formData.IdCardIssuedDate && !isToDateGreaterOrEqualFromDate(formData.JoiningDate!, formData.IdCardIssuedDate!)) {
+
+    const joiningDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.JoiningDate ? new Date(formData.JoiningDate) : undefined);
+    const idCardIssuedDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.IdCardIssuedDate ? new Date(formData.IdCardIssuedDate) : undefined);
+
+    if (formData?.JoiningDate && formData.IdCardIssuedDate && !isToDateGreaterOrEqualFromDate(joiningDate, idCardIssuedDate)) {
       newErrors.IdCardIssuedDate = "Id card issued Date must be greater than or equal to Joining Date";
     }
 
@@ -467,7 +471,7 @@ const AddUpdateEmployeePage: React.FC = () => {
     const validation = validateAddEmployeeMasterForm();
 
     if (!validation.isValid) {
-      
+
       setErrors(validation.errors);
 
       addToast({ type: "error", title: "Please fill the required filed" });

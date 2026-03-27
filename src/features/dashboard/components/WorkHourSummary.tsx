@@ -87,7 +87,7 @@ export default function WorkHourSummary({ workHourStatus, workHourBarGraphStatus
         <div className="space-y-5 pt-5">
             <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2 ">Work Hour Summary</h2>
 
-            {(workHourStatus.length > 0 && workHourBarGraphStatus.length > 0) && <div className="bg-white rounded-xl p-5 h-full flex flex-col shadow-sm">
+            {(workHourStatus.length > 0 && workHourBarGraphStatus.length > 0) && <div className="bg-white rounded-xl p-5 h-full flex flex-col">
                 <p className="text-md font-semibold text-gray-500 pb-2">Working Hour </p>
                 <div className="flex justify-between items-start mb-8 flex-wrap gap-4 mt-5">
 

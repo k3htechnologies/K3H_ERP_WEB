@@ -28,7 +28,7 @@ export default function AttendanceSummary({ attendanceSummaryData }: Props) {
     ]
     return (
         <div className="space-y-3 pt-5">
-            <div className="bg-white rounded-xl p-5 mt-10 h-[310px] shadow-sm">
+            <div className="bg-white rounded-xl p-5 mt-10 h-[310px]">
                 <p className="text-md font-semibold text-gray-500 pb-2">Attendance Summary</p>
 
                 {attendanceSummaryData?.length ?? 0 > 0 ? (

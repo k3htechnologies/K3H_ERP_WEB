@@ -26,7 +26,7 @@ body {
 .thin-scroll::-webkit-scrollbar {
   width: 2px;
   /* ultra thin */
-  height: 4px;
+  height: 6px;
   background: transparent;
 }
 
@@ -61,6 +61,7 @@ body {
 path.recharts-rectangle{
   outline: none;
 }
+
 
 
 

@@ -111,7 +111,7 @@ export default function EmployeeTable({ employeeOverviewTable }: Props) {
         <div className="space-y-3 pt-4 sm:pt-5">
             <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2">Team Overview</h2>
 
-            <div className="bg-white rounded-xl p-4 h-[310px] flex flex-col shadow-sm">
+            <div className="bg-white rounded-xl p-4 h-[310px] flex flex-col">
 
                 {/* Content */}
 

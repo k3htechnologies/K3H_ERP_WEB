@@ -40,14 +40,11 @@ export default function OverviewCards({ overViewData = [] }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((c, i) => (
-          <div
-            key={i}
-            className={`
-              rounded-lg p-5 shadow-sm space-y-4
+          <div  key={i} className={`rounded-lg p-5 shadow-sm space-y-4
               ${c.type === "primary" && "bg-blue-900 text-white border-blue-900"}
-              ${c.type === "default" && "bg-white-300 border-gray-200"}
-              ${c.type === "month" && "bg-white-300 border-gray-200"}
-              ${c.type === "warning" && "bg-red-50 border-red-300"}
+              ${c.type === "default" && "bg-white rounded-2xl p-4 border border-gray-100"}
+              ${c.type === "month" && "bg-white rounded-2xl p-4 border border-gray-100"}
+              ${c.type === "warning" && "bg-white rounded-2xl p-4 border border-gray-100"}
             `}
           >
             <p className={`text-sm ${c.type === "primary" ? "text-white/80" : "text-gray-500"}`}>

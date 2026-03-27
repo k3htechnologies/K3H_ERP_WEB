@@ -3,7 +3,7 @@ const ScheduledTask = () => {
 
     return (
         <div className="space-y-3 pt-5">
-            <div className="bg-white rounded-xl p-5 mt-4 h-82 overflow-y-auto thin-scroll flex flex-col shadow-sm">
+            <div className="bg-white rounded-xl p-5 mt-4 h-82 overflow-y-auto thin-scroll flex flex-col">
 
                 <p className="text-md font-semibold text-gray-500 pb-2">
                     Scheduled Tasks

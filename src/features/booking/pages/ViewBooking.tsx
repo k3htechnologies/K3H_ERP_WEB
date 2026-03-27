@@ -468,7 +468,7 @@ export const ViewBooking: React.FC = () => {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
                                                     <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                    <FieldItem label="Contact Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
+                                                    <FieldItem label="Mobile Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
                                                     <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
                                                     <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
                                                     <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
@@ -501,7 +501,7 @@ export const ViewBooking: React.FC = () => {
 
                                         {bookingData.BookingType?.toUpperCase() === "FLAT" && (
 
-                                            <FieldItem label="Flat" value={getSafeString(bookingData.Flat)} />)}
+                                            <FieldItem label="Unit No" value={getSafeString(bookingData.Flat)} />)}
                                     </div>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
@@ -820,7 +820,7 @@ export const ViewBooking: React.FC = () => {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
                                                     <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                    <FieldItem label="Contact Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
+                                                    <FieldItem label="Mobile Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
                                                     <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
                                                     <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
                                                     <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />

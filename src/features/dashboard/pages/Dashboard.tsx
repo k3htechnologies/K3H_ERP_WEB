@@ -115,7 +115,7 @@ const Dashboard: React.FC = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1">
         {/* Attendance summary section */}
         <AttendanceSummaryCard attendanceSummaryShiftData={attendanceSummaryShiftPatternData} attendancePresentData={attendanceSummaryPresentDays} />
       </div>
@@ -129,10 +129,9 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Events and More */}
-      <div className=" gap-4">
-        <div className="">
-          <EventsMore birthdays={birthdays} reportingData={reportingData} />
-        </div>
+      <div className="gap-5">
+
+        <EventsMore birthdays={birthdays} reportingData={reportingData} />
       </div>
 
     </div>

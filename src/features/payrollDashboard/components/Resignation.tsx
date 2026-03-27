@@ -83,7 +83,7 @@ const Resignation: React.FC<Props> = ({ resignationData }) => {
         <DataTableWithOutBorder
           columns={columns}
           data={resignationData?.slice(0, 4) || []}
-          emptyMessage="No Resignation Records Found"
+          emptyMessage="No Data Available"
           fixedHeight={true}
           className="flex-1"
         />

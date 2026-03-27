@@ -146,7 +146,7 @@ const WorktimeOverview: React.FC<Props> = ({ workTimeOverviewTable }) => {
                   transform="rotate(-90 60 60)"
                 />
               </svg>
-              <div className="absolute inset-0 flex items-center justify-center font-bold text-lg text-gray-800 tracking-wide">
+              <div className="absolute inset-0 flex items-center justify-center font-bold text-md text-gray-800 tracking-wide">
                 {currentDuration}
               </div>
             </div>

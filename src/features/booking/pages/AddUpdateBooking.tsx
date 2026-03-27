@@ -1849,11 +1849,11 @@ export const AddUpdateBooking: React.FC = () => {
 
                   <FieldItem label="Unit No" value={selectedFlatData?.Flat || "-"} />
 
-                  <FieldItem label="Category" value={selectedFlatData?.FlatType || "-"} />
+                  <FieldItem label="Type" value={selectedFlatData?.FlatType || "-"} />
 
                   <FieldItem label="Configuration" value={selectedFlatData?.FlatConfiguration || "-"} />
 
-                  <FieldItem label="RERA Carpet Area (SqFt)" value={selectedFlatData?.RERACarpetAreaSqFt ? `${selectedFlatData.RERACarpetAreaSqFt} SqFt` : "-"} />
+                  <FieldItem label="RERA Carpet Area" value={selectedFlatData?.RERACarpetAreaSqFt ? `${selectedFlatData.RERACarpetAreaSqFt} SqFt` : "-"} />
                 </div>
               </div>
             )}

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar1Icon, Clock1, LaptopIcon, ListTodo, IndianRupeeIcon, FileDown } from "lucide-react";
+import { Calendar1Icon, Clock1, LaptopIcon, ListTodo, IndianRupeeIcon, FileDown, AlertTriangle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "@/ui/components/Modal/Modal";
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
@@ -16,8 +16,6 @@ export default function QuickActions() {
             bg: "bg-blue-100",
             text: "text-blue-600",
             onClick: () => navigate("/leave/add")
-
-
         },
         {
             icon: <Clock1 size={24} />,
@@ -105,11 +103,18 @@ export default function QuickActions() {
             <Modal
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
-                title="Coming Soon"
+                title={
+                    <div className="flex items-center gap-2 ">
+                        <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-yellow-100">
+                            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                        </div>
+                        <span>Coming Soon</span>
+                    </div>
+                }
                 size="md"
             >
-                <div className="flex flex-col items-center justify-center p-4 sm:p-6 text-center">
-                    <p className="text-gray-600 text-sm sm:text-lg">
+                <div className="flex flex-col items-center">
+                    <p className="text-black-400 text-sm sm:text-lg">
                         This feature is currently under development and will be available soon.
                     </p>
                 </div>

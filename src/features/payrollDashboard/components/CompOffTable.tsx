@@ -91,7 +91,7 @@ export default function CompOffTable({ compOffData }: Props) {
             <DataTableWithOutBorder
               columns={columns}
               data={[]}
-              emptyMessage="No records Found"
+              emptyMessage="No Data Available"
             />
           </div>
         )}

@@ -16,7 +16,7 @@ export default function AttendanceSummaryCard({ attendanceSummaryShiftData = [],
         <div className="space-y-3 pt-4 sm:pt-5">
             <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2">Attendance Summary</h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-5 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2  sm:gap-5 mt-4">
 
                 {/* Card-1: Present Days */}
                 <div className="w-full bg-green-100  rounded-md 

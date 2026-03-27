@@ -13,15 +13,14 @@ const VendorManagement: React.FC<Props> = ({ vendorManagementData, vendorGraphDa
     const totalVendors = vendorManagementData[0]?.TotalVendors;
     const missingDetails = vendorManagementData[0]?.MissingDetails;
     const totalContract = vendorManagementData[0]?.ContractCount;
-    console.log(totalContract);
-    const companyType = "03";
     const recentlyAdded = vendorManagementData[0]?.RecentlyAddedVendors || 0;
+    const companyType = "03";
 
     return (
         <div className="flex flex-col h-full">
             <h1 className="font-semibold text-gray-800 mb-4">Vendor Management</h1>
 
-            <div className="w-full bg-white p-6 border border-gray-100 rounded-md flex-1 flex flex-col gap-8">
+            <div className="w-full bg-white p-6 border border-gray-100 rounded-xl flex-1 flex flex-col gap-8 shadow-sm">
 
                 <div className="grid grid-cols-3 divide-x divide-gray-200">
                     <div className="pr-4">
@@ -73,7 +72,7 @@ const VendorManagement: React.FC<Props> = ({ vendorManagementData, vendorGraphDa
                                             </span>
                                         </div>
 
-                                        <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden">
+                                        <div className="w-full bg-gray-100 h-3 rounded-full overflow-hidden">
                                             <div
                                                 className="bg-[#135bec] h-full rounded-full transition-all duration-300"
                                                 style={{ width: `${percentage}%` }}
@@ -92,8 +91,8 @@ const VendorManagement: React.FC<Props> = ({ vendorManagementData, vendorGraphDa
                     )}
                 </div>
 
-                <div className="mt-auto pt-4">
-                    <div className="w-full bg-purple-50 p-4 border border-purple-200  rounded-md flex items-center justify-between">
+                <div className="mt-auto pt-8">
+                    <div className="-mx-1 bg-purple-50 p-4 border border-purple-200 rounded-md flex items-center justify-between h-20 ">
                         <div className="text-left">
                             <p className="text-[14px] font-semibold text-gray-800">Recently Added Vendors</p>
                             <p className="text-xs text-gray-500 mt-1">Last 30 days</p>

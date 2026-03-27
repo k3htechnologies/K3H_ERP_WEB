@@ -9,8 +9,6 @@ interface Props {
 export default function AttendanceSummary({ attendanceSummaryData }: Props) {
     const total = attendanceSummaryData?.[0]?.TotalEmployees
 
-
-
     const data = [
         {
             name: 'Present',

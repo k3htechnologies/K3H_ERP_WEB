@@ -31,15 +31,15 @@ const ProjectManagement: React.FC<Props> = ({ projectManagementData, projectStat
     <div className=" flex flex-col h-full">
       <h1 className="font-semibold text-gray-800 mb-4">Project Management</h1>
 
-      <div className="w-full bg-white p-4 border border-gray-100 rounded-md flex-1 flex flex-col gap-8">
+      <div className="w-full bg-white p-4 border border-gray-100 rounded-xl flex-1 flex flex-col gap-8 shadow-sm">
 
         {/* Top Stats Cards */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-4">
           <div className="flex items-center justify-between rounded-md border border-gray-100 bg-slate-50/50 px-4 py-2.5 ">
             <span className="text-[13px] font-medium text-slate-500">Total Project</span>
             <span className="text-base font-bold text-gray-800">{totalProjects}</span>
           </div>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-2 gap-4">
             <div className="flex items-center justify-between rounded-md bg-green-50 px-4 py-2.5">
               <span className="text-[13px] font-medium text-slate-500">RERA Registered</span>
               <span className="text-base font-bold text-green-600">{getSafeString(reraRegistered)}</span>
@@ -59,7 +59,7 @@ const ProjectManagement: React.FC<Props> = ({ projectManagementData, projectStat
               <PieChart>
                 <Pie
                   data={chartData}
-                  innerRadius={65}
+                  innerRadius={60}
                   outerRadius={85}
                   paddingAngle={5}
                   dataKey="value"
@@ -85,7 +85,7 @@ const ProjectManagement: React.FC<Props> = ({ projectManagementData, projectStat
                   <span className="font-semibold text-gray-500">{item.name}</span>
                 </div>
                 <span className="text-[13px] text-black font-medium">
-                  {String(item.value).padStart(2, '0')} <span className="text-black mx-0.5">/</span> <span className="text-black">{String(totalProjects).padStart(2, '0')}</span>
+                  {String(item.value).padStart(2, '0')}
                 </span>
               </div>
             ))}

@@ -34,7 +34,7 @@ export default function LeaveHoliday({ leaveBalanceData, holidayData, upcomingAp
         <div className="space-y-3 pt-5">
             <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2">Leave & Holiday</h2>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-4">
 
                 {/* Leave Summary Card: */}
                 <div className="col-span-1 lg:col-span-6 bg-white p-5 rounded-xl shadow-sm h-[340px] overflow-y-auto thin-scroll">

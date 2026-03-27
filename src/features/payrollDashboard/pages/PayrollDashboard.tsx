@@ -88,7 +88,7 @@ const PayrollDashboard: React.FC = () => {
       <PayrollHeader />
       <OverviewCards overViewData={overViewData} attendanceAlert={attendanceOverviewData} />
       <LeaveManagement leaveData={leaveData} />
-      <div className="grid grid-cols-2 gap-5">
+      <div className="grid grid-cols-2 gap-4">
         <OutdoorManagement outdoorManagementData={outdoorManagementData} />
         <AttendanceOverview attendanceOverviewData={attendanceOverviewData} />
       </div>

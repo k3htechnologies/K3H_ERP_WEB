@@ -30,8 +30,9 @@ export class PayrollDashboardDatasourceImpl implements PayrollDashboardDatasourc
 
             console.error('ERROR: PULL PAYROLL DASHBOARD :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullPayrollDashboard(params);
+             if (error instanceof TokenExpiredException) {
+
+                return await this.pullPayrollDashboard(params);
             }
             throw error
         }

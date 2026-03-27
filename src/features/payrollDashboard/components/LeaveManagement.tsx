@@ -84,19 +84,6 @@ const LeaveManagement: React.FC<Props> = ({ leaveData }) => {
           </button>
         )
       },
-      {
-        key: 'viewAll',
-        label: 'View All',
-        align: 'center' as const,
-        render: () => (
-          <span
-            onClick={() => navigate('/payrollReport?tab=Leave')}
-            className="text-blue-600 hover:underline cursor-pointer text-sm font-medium"
-          >
-            View All
-          </span>
-        )
-      }
     ],
     [navigate]
   );
@@ -108,7 +95,7 @@ const LeaveManagement: React.FC<Props> = ({ leaveData }) => {
         <DataTableWithOutBorder
           columns={columns}
           data={leaveData?.slice(0, 4) || []}
-          emptyMessage="No Leave Records Found Here"
+          emptyMessage="No Data Available"
           fixedHeight={true}
           className="flex-1"
         />

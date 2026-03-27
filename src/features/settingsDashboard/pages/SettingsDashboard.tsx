@@ -65,13 +65,13 @@ const SettingsDashboard: React.FC = () => {
   }
 
   return (
-    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-3">
+    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
 
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
       <OverviewCards overViewData={overViewCards} />
 
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
         <ProcurementMaster procurementMasterData={procurementMaster} />
         <CompanySetup companySetupData={companySetup} />
         <ProjectManagement projectManagementData={projectManagement} projectStatusData={projectStatus} />

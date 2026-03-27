@@ -22,8 +22,9 @@ export class ChannelPartnerDashboardDatasourceImpl implements ChannelPartnerDash
 
             console.error('ERROR: PULL CHANNEL PARTNER DASHBOARD :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullChannelPartnerDashboard(signal);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.pullChannelPartnerDashboard(signal);
             }
 
             throw error

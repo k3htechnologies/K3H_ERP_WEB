@@ -24,10 +24,10 @@ export abstract class BuildingDatasource {
     abstract pullBuilding(params: FilterWithPaginationBuildingRequest): Promise<BuildingListResponse>;
     abstract addUpdateBuilding(data: AddUpdateBuildingRequest): Promise<BuildingSaveResponse>;
     abstract deleteBuilding(params: DeleteBuildingRequest): Promise<BuildingDeleteResponse>;
-   
+
     abstract pullBuildingDetails(params: FilterWithPaginationBuildingDetailsRequest): Promise<BuildingDetailsListResponse>;
     abstract addUpdateBuildingDetails(params: AddUpdateBuildingDetailsRequest): Promise<BuildingDetailsSaveResponse>;
-    
+
     abstract pullBuildingDocument(params: FilterWithPaginationBuildingDocumentRequest): Promise<BuildingDocumentListResponse>;
     abstract addUpdateBuildingDocument(params: FormData): Promise<BuildingDocumentSaveResponse>;
     abstract deleteBuildingDocument(params: DeleteBuildingDocumentRequest): Promise<BuildingDocumentDeleteResponse>;
@@ -66,8 +66,9 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
 
             console.error('Error: Pull BUILDING:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullBuilding(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullBuilding(params);
             }
 
             throw error
@@ -87,8 +88,9 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
         } catch (error) {
             console.error('Error: Add Update BUILDING:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateBuilding(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateBuilding(params);
             }
 
             throw error
@@ -113,8 +115,9 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
 
             console.error('ERRPR : DELETE BUILDING:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteBuilding(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteBuilding(params);
             }
 
             throw error
@@ -142,8 +145,9 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
 
             console.error('Error: Pull BUILDING DETAILS :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullBuildingDetails(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullBuildingDetails(params);
             }
 
             throw error
@@ -163,8 +167,9 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
         } catch (error) {
             console.error('Error: Add Update BUILDING DETAILS :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateBuildingDetails(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateBuildingDetails(params);
             }
 
             throw error
@@ -197,8 +202,9 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
 
             console.error('Error: Pull BUILDING DOCUMENT :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullBuildingDocument(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullBuildingDocument(params);
             }
 
             throw error
@@ -218,9 +224,9 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
         } catch (error) {
             console.error('Error: Add Update BUILDING DOCUMENT:', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.addUpdateBuildingDocument(params);
+                return await this.addUpdateBuildingDocument(params);
             }
             throw error
         }
@@ -244,8 +250,9 @@ export class BuildingDatasourceImpl implements BuildingDatasource {
 
             console.error('ERRPR : DELETE BUILDING DOCUMENT:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteBuildingDocument(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteBuildingDocument(params);
             }
 
             throw error

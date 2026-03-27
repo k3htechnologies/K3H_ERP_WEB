@@ -45,8 +45,8 @@ export class TncMasterDatasourceImpl implements TncMasterDatasource {
 
             console.error('ERROR: PULL TERMS AND CONDITIONS MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullTncMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return  await this.pullTncMaster(params);
             }
 
             throw error
@@ -75,8 +75,8 @@ export class TncMasterDatasourceImpl implements TncMasterDatasource {
 
             console.error('ERROR: ADD UPDATE TERMS AND CONDITIONS MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateTncMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return   await this.addUpdateTncMaster(params);
             }
             throw error
         }
@@ -99,9 +99,8 @@ export class TncMasterDatasourceImpl implements TncMasterDatasource {
 
             console.error('ERROR: DELETE TERMS AND CONDITIONS MASTER :', error)
 
-            if (error === TokenExpiredException) {
-
-                await this.deleteTncMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return   await this.deleteTncMaster(params);
 
             }
 

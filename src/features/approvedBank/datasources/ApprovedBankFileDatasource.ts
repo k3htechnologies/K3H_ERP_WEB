@@ -46,8 +46,9 @@ export class ApprovedBankFileDatasourceImpl implements ApprovedBankFileDatasourc
 
             console.error("ERROR: PULL APPROVED BANK FILE :", error);
 
-            if (error === TokenExpiredException) {
-                await this.pullApprovedBankFile(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullApprovedBankFile(params);
             }
             throw error;
         }
@@ -64,7 +65,8 @@ export class ApprovedBankFileDatasourceImpl implements ApprovedBankFileDatasourc
             console.error("ERROR: ADD UPDATE APPROVED BANK FILE :", error);
 
             if (error instanceof TokenExpiredException) {
-                await this.addUpdateApprovedBankFile(formData);
+
+                return await this.addUpdateApprovedBankFile(formData);
             }
             throw error;
         }
@@ -87,11 +89,11 @@ export class ApprovedBankFileDatasourceImpl implements ApprovedBankFileDatasourc
 
         } catch (error) {
 
-            if (error === TokenExpiredException) {
+             console.error("ERROR: DELETE APPROVED BANK FILE :", error);
 
-                console.error("ERROR: DELETE APPROVED BANK FILE :", error);
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteApprovedBankFile(params);
+                return await this.deleteApprovedBankFile(params);
             }
             throw error;
         }

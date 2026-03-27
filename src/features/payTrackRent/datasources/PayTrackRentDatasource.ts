@@ -43,7 +43,7 @@ export class PayTrackRentDatasourceImpl implements PayTrackRentDatasource {
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${PayTrackRentApi.PULL}?${queryParams.toString()}`,
-                {signal}
+                { signal }
             )
 
             return response
@@ -51,8 +51,9 @@ export class PayTrackRentDatasourceImpl implements PayTrackRentDatasource {
 
             console.error('Error: Pull PayTrackRent Ledger:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullPayTrackRentLedger(params, signal);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullPayTrackRentLedger(params, signal);
             }
             throw error
         }
@@ -71,8 +72,9 @@ export class PayTrackRentDatasourceImpl implements PayTrackRentDatasource {
         } catch (error) {
             console.error('Error: Add Update PayTrackRent:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdatePayTrackRent(data);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdatePayTrackRent(data);
             }
             throw error
         }
@@ -99,8 +101,9 @@ export class PayTrackRentDatasourceImpl implements PayTrackRentDatasource {
 
             console.error('ERROR : DELETE PayTrackRent:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deletePayTrackRent(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deletePayTrackRent(params);
             }
 
             throw error

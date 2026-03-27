@@ -37,8 +37,9 @@ export class ProjectRERADocumentCategoryMasterDatasourceImpl implements ProjectR
 
             console.error('ERROR: PULL PROJECT RERA DOCUMENT CATEGORY MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullProjectRERADocumentCategoryMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullProjectRERADocumentCategoryMaster(params);
             }
 
             throw error
@@ -57,8 +58,9 @@ export class ProjectRERADocumentCategoryMasterDatasourceImpl implements ProjectR
 
             console.error('ERROR: ADD UPDATE PROJECT RERA DOCUMENT CATEGORY MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateProjectRERADocumentCategoryMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateProjectRERADocumentCategoryMaster(params);
             }
             throw error
         }
@@ -82,9 +84,9 @@ export class ProjectRERADocumentCategoryMasterDatasourceImpl implements ProjectR
 
             console.error('ERROR: DELETE PROJECT RERA DOCUMENT CATEGORY MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteProjectRERADocumentCategoryMaster(params);
+                return await this.deleteProjectRERADocumentCategoryMaster(params);
 
             }
 

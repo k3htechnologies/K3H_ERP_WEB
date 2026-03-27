@@ -30,8 +30,9 @@ export class EmployeeModuleAccessDatasourceImpl implements EmployeeModuleAccessD
 
             console.error('ERROR: PULL EMPLOYEE ACCESS MODULE :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEmployeeModuleAccess(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullEmployeeModuleAccess(params);
             }
             throw error
         }
@@ -56,8 +57,9 @@ export class EmployeeModuleAccessDatasourceImpl implements EmployeeModuleAccessD
         } catch (error) {
             console.error('ERROR: ADD UPDATE EMPLOYEE ACCESS MODULE:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateEmployeeModuleAccess(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.addUpdateEmployeeModuleAccess(params);
             }
             throw error
         }

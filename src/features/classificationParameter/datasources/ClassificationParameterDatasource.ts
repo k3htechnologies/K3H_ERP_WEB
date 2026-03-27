@@ -36,8 +36,9 @@ export class ClassificationParameterDatasourceImpl implements ClassificationPara
 
             console.error('ERROR: PULL CLASSIFICATION PARAMETER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullClassificationParameter(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullClassificationParameter(params);
             }
 
             throw error
@@ -58,9 +59,9 @@ export class ClassificationParameterDatasourceImpl implements ClassificationPara
 
             console.error('ERROR: ADD UPDATE CLASSIFICATION PARAMETER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.addUpdateClassificationParameter(params);
+                return await this.addUpdateClassificationParameter(params);
 
             }
             throw error
@@ -85,9 +86,9 @@ export class ClassificationParameterDatasourceImpl implements ClassificationPara
 
             console.error('ERROR: DELETE CLASSIFICATION PARAMETER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteClassificationParameter(params);
+                return await this.deleteClassificationParameter(params);
 
             }
 

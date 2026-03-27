@@ -75,8 +75,9 @@ export class EnquiryDatasourceImpl implements EnquiryDatasource {
 
             console.error('ERROR: PULL ENQUIRY :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEnquiry(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullEnquiry(params);
             }
             throw error
         }
@@ -91,8 +92,9 @@ export class EnquiryDatasourceImpl implements EnquiryDatasource {
         } catch (error) {
             console.log('ERROR:ADD UPDATE ENQUIRY:', error)
 
-            if (error == TokenExpiredException) {
-                await this.addUpadateEnquiry(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpadateEnquiry(params);
             }
             throw error
         }
@@ -114,11 +116,12 @@ export class EnquiryDatasourceImpl implements EnquiryDatasource {
             return response
 
         } catch (error) {
-            if (error === TokenExpiredException) {
 
-                console.error('ERROR: DELETE ENQUIRY :', error);
+            console.error('ERROR: DELETE ENQUIRY :', error);
+            
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteEnquiry(params);
+                return await this.deleteEnquiry(params);
 
             }
 

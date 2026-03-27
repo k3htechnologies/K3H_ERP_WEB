@@ -45,8 +45,9 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
 
             console.error('ERROR: PULL DEPARTMENT MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullDepartmentMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.pullDepartmentMaster(params);
             }
 
             throw error
@@ -65,8 +66,9 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
 
             console.error('ERROR: ADD UPDATE DEPARTMENT MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateDepartmentMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.addUpdateDepartmentMaster(params);
             }
             throw error
         }
@@ -87,9 +89,9 @@ export class DepartmentMasterDatasourceImpl implements DepartmentMasterDatasourc
 
             console.error('ERROR: DELETE DEPARTMENT MASTER :', error);
 
-            if (error === TokenExpiredException) {
+           if (error instanceof TokenExpiredException) {
 
-                await this.deleteDepartmentMaster(params);
+                return   await this.deleteDepartmentMaster(params);
 
             }
 

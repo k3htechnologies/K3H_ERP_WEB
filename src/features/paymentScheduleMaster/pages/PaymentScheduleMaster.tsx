@@ -514,13 +514,11 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <Loader loading={isLoading} title={loadingMessage}>
-        {" "}
-        <div />{" "}
-      </Loader>
+      <Loader loading={isLoading} title={loadingMessage}> {" "} <div />{" "} </Loader>
 
       <div className="p-4">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+
 
           <SingleSelectDropdownWithPagination
             key={projectId}
@@ -570,19 +568,23 @@ export const PaymentScheduleMaster: React.FC = () => {
             error={errors.PaymentScheduleSchemeMasterId}
           />
 
-        </div>
 
-        {Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
-          <div className="pt-5">
-            <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+          {Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
+            <div className="col-span-3 border border-blue-200 rounded-lg pl-4 pr-4 pt-2 pb-2 bg-blue-50">
+
               <div className="grid grid-cols-1 md:grid-cols-3">
+
                 <FieldItem label="Building" value={buildingName || "-"} />
+
                 <FieldItem label="Wing" value={wingName || "-"} />
+
                 <FieldItem
-                  label="Total"
-                  value={
+                  label="Total" value={
                     <div className="flex items-center">
-                      <span className={`font-bold ${totalPercentage === 100 ? "text-green-600" : "text-red-600"}`}>
+                      <span
+                        className={`font-bold ${totalPercentage === 100 ? "text-green-600" : "text-red-600"
+                          }`}
+                      >
                         {totalPercentage.toFixed(2)}%
                       </span>
 
@@ -596,10 +598,12 @@ export const PaymentScheduleMaster: React.FC = () => {
                     </div>
                   }
                 />
+
               </div>
+
             </div>
-          </div>
-        )}
+          )}
+        </div>
         {/* TOTAL SUMMARY */}
         <div className="space-y-4 pt-5">
           <div className="flex items-center justify-between border-b border-gray-300 pb-2">

@@ -54,9 +54,8 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
             console.error('ERROR: PULL NOTIFICATION :', error);
 
-            if (error === TokenExpiredException) {
-
-                await this.pullNotification(params);
+            if (error instanceof TokenExpiredException) {
+                return   await this.pullNotification(params);
             }
 
             throw error
@@ -94,9 +93,8 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
             console.error('Error: GET COUNTRY STATE DISTRICT CITY VILLAGE :', error);
 
-            if (error === TokenExpiredException) {
-
-                await this.getCountryStateDistrictCityVillage();
+            if (error instanceof TokenExpiredException) {
+                return  await this.getCountryStateDistrictCityVillage();
             }
 
             throw error
@@ -118,9 +116,8 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
         } catch (error) {
             console.error('Error: GET MATERIAL SUBMATERIAL UOM:', error);
 
-            if (error === TokenExpiredException) {
-
-                await this.getMaterialSubMaterialMasterUOM(params);
+            if (error instanceof TokenExpiredException) {
+                return  await this.getMaterialSubMaterialMasterUOM(params);
             }
             throw error
         }
@@ -140,8 +137,8 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
             console.error('ERROR: EXCEL IMPORT :', error)
 
-            if (error === TokenExpiredException) {
-                await this.excelImport(formData);
+            if (error instanceof TokenExpiredException) {
+                return  await this.excelImport(formData);
             }
             throw error
         }
@@ -163,8 +160,8 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
             console.error('ERROR: PULL EXCEL SAMPLE :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullExcelSample(params);
+            if (error instanceof TokenExpiredException) {
+                return   await this.pullExcelSample(params);
             }
             throw error
         }
@@ -187,8 +184,8 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
             console.error('ERROR: PULL MAGIC LINK WITH VALIDATE :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullMagicLinkWithValidate(params);
+            if (error instanceof TokenExpiredException) {
+                return  await this.pullMagicLinkWithValidate(params);
             }
             throw error
         }
@@ -215,9 +212,8 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
             console.error('ERROR: PULL NOTIFICATION :', error);
 
-            if (error === TokenExpiredException) {
-
-                await this.pullVillage(params);
+            if (error instanceof TokenExpiredException) {
+                return   await this.pullVillage(params);
             }
 
             throw error
@@ -237,9 +233,8 @@ export class TechnicalDatasourceImpl implements TechnicalDatasource {
 
             console.error('ERROR: DOWNLOAD DOCUMENT:', error);
 
-            if (error === TokenExpiredException) {
-
-                await this.getDownloadURL(Url);
+            if (error instanceof TokenExpiredException) {
+                return   await this.getDownloadURL(Url);
             }
 
             throw error

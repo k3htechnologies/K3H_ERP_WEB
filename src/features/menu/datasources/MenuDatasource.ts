@@ -31,9 +31,9 @@ export class MenuDatasourceImpl implements MenuDatasource {
 
             console.error('ERROR :PULL MENU:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullMenu(params);
+                return  await this.pullMenu(params);
             }
             throw error
         }

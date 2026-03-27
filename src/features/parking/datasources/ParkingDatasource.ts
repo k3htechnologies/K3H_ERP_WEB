@@ -47,8 +47,9 @@ export class ParkingDatasourceImpl implements ParkingDatasource {
 
             console.error('ERROR: PULL PARKING :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullParking(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullParking(params);
             }
 
             throw error
@@ -69,8 +70,9 @@ export class ParkingDatasourceImpl implements ParkingDatasource {
 
             console.error('ERROR: ADD UPDATE PARKING :', error)
 
-            if (error === TokenExpiredException) {
-                await this.updateParking(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.updateParking(params);
             }
             throw error
         }
@@ -105,8 +107,9 @@ export class ParkingDatasourceImpl implements ParkingDatasource {
 
             console.error('ERROR: PULL PARKING WITH PAGINATION :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullParking(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullParking(params);
             }
 
             throw error

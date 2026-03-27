@@ -27,8 +27,9 @@ export class InventoryDashboardDatasourceImpl implements InventoryDashboardDatas
 
             console.error('ERROR: PULL INVENTORY DASHBOARD :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullInventoryDashboard(ProjectId);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullInventoryDashboard(ProjectId);
             }
 
             throw error

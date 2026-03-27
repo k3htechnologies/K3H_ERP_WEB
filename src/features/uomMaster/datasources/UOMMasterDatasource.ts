@@ -36,8 +36,8 @@ export class UomMasterDatasourceImpl implements UomMasterDatasource {
 
             console.error('ERROR: PULL UOM MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullUomMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.pullUomMaster(params);
             }
 
             throw error
@@ -56,8 +56,8 @@ export class UomMasterDatasourceImpl implements UomMasterDatasource {
 
             console.error('ERROR: ADD UPDATE UOM MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateUomMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return  await this.addUpdateUomMaster(params);
             }
             throw error
         }
@@ -80,9 +80,8 @@ export class UomMasterDatasourceImpl implements UomMasterDatasource {
 
             console.error('ERROR: DELETE UOM MASTER :', error)
 
-            if (error === TokenExpiredException) {
-
-                await this.deleteUomMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return   await this.deleteUomMaster(params);
 
             }
 

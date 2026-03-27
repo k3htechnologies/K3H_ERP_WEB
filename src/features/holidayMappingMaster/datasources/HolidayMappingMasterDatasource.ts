@@ -33,10 +33,12 @@ export class HolidayMappingMasterDatasourceImpl implements HolidayMappingMasterD
       const response = await this.k3hHttpClient.getRequestWithAuthentication(`${HolidayMappingMasterApi.PULL}?${queryParams.toString()}`, { signal });
       return response;
     } catch (error: any) {
+      
       console.error("ERROR: PULL HOLIDAY MAPPING MASTER :", error);
 
-      if (error === TokenExpiredException) {
-        await this.pullHolidayMappingMaster(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.pullHolidayMappingMaster(params);
       }
 
       throw error;
@@ -49,10 +51,12 @@ export class HolidayMappingMasterDatasourceImpl implements HolidayMappingMasterD
 
       return response;
     } catch (error) {
+
       console.error("ERROR: ADD UPDATE HOLIDAY MAPPING MASTER :", error);
 
-      if (error === TokenExpiredException) {
-        await this.addUpdateHolidayMappingMaster(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.addUpdateHolidayMappingMaster(params);
       }
       throw error;
     }
@@ -69,10 +73,12 @@ export class HolidayMappingMasterDatasourceImpl implements HolidayMappingMasterD
 
       return response;
     } catch (error) {
+
       console.error("ERROR: DELETE HOLIDAY MAPPING MASTER :", error);
 
-      if (error === TokenExpiredException) {
-        await this.deleteHolidayMappingMaster(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.deleteHolidayMappingMaster(params);
       }
 
       throw error;

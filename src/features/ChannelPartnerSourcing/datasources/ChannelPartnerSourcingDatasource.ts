@@ -30,7 +30,7 @@ export class ChannelPartnerSourcingDatasourceImpl implements ChannelPartnerSourc
     return baseClient;
   }
 
-  async pullChannelPartnerSourcing(params: FilterWithPaginationChannelPartnerSourcingRequest,signal?: AbortSignal): Promise<ChannelPartnerSourcingListResponse> {
+  async pullChannelPartnerSourcing(params: FilterWithPaginationChannelPartnerSourcingRequest, signal?: AbortSignal): Promise<ChannelPartnerSourcingListResponse> {
     try {
       const queryParams = new URLSearchParams({
         PageSize: (params.PageSize ?? 10).toString(),
@@ -40,15 +40,15 @@ export class ChannelPartnerSourcingDatasourceImpl implements ChannelPartnerSourc
       if (params.ChannelPartnerSourcingId) {
         queryParams.append('ChannelPartnerSourcingId', params.ChannelPartnerSourcingId.toString());
       }
-      
+
       if (params.ChannelPartnerId) {
         queryParams.append('ChannelPartnerId', params.ChannelPartnerId.toString());
       }
-      
+
       if (params.ProjectId) {
         queryParams.append('ProjectId', params.ProjectId.toString());
       }
-      
+
       if (params.SortBy?.trim()) {
         queryParams.append('SortBy', params.SortBy.trim());
       }
@@ -62,8 +62,9 @@ export class ChannelPartnerSourcingDatasourceImpl implements ChannelPartnerSourc
     } catch (error: any) {
       console.error('ERROR: PULL CHANNEL PARTNER SOURCING :', error);
 
-      if (error === TokenExpiredException) {
-        await this.pullChannelPartnerSourcing(params, signal);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.pullChannelPartnerSourcing(params, signal);
       }
 
       throw error;
@@ -80,16 +81,17 @@ export class ChannelPartnerSourcingDatasourceImpl implements ChannelPartnerSourc
 
       console.error('ERROR: ADD UPDATE CHANNEL PARTNER SOURCING :', error);
 
-      if (error === TokenExpiredException) {
-        await this.addUpdateChannelPartnerSourcing(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.addUpdateChannelPartnerSourcing(params);
       }
 
       throw error;
     }
   }
 
-  async deleteChannelPartnerSourcing( params: DeleteChannelPartnerSourcingRequest): Promise<ChannelPartnerSourcingDeleteResponse> {
-    
+  async deleteChannelPartnerSourcing(params: DeleteChannelPartnerSourcingRequest): Promise<ChannelPartnerSourcingDeleteResponse> {
+
     try {
       const queryParams = new URLSearchParams({
         ChannelPartnerSourcingId: (params.ChannelPartnerSourcingId ?? 0).toString(),
@@ -105,8 +107,9 @@ export class ChannelPartnerSourcingDatasourceImpl implements ChannelPartnerSourc
 
       console.error('ERROR: DELETE CHANNEL PARTNER SOURCING :', error);
 
-      if (error === TokenExpiredException) {
-        await this.deleteChannelPartnerSourcing(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.deleteChannelPartnerSourcing(params);
       }
 
       throw error;

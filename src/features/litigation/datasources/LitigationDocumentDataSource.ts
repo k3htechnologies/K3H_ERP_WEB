@@ -45,8 +45,9 @@ export class LitigationDocumentDatasourceImpl implements LitigationDocumentDatas
 
             console.error('ERROR: PULL LITIGATION DOCUMENT :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullLitigationDocument(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullLitigationDocument(params);
             }
 
             throw error
@@ -66,8 +67,9 @@ export class LitigationDocumentDatasourceImpl implements LitigationDocumentDatas
 
             console.error('ERROR:ADD UPDATE LITIGATION DOCUMENT :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpadateLitigationDocument(formData);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpadateLitigationDocument(formData);
             }
             throw error
         }
@@ -92,9 +94,9 @@ export class LitigationDocumentDatasourceImpl implements LitigationDocumentDatas
 
             console.error('ERROR: DELETE LITIGATION DOCUMENT :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteLitigationDocument(params);
+                return  await this.deleteLitigationDocument(params);
             }
 
             throw error

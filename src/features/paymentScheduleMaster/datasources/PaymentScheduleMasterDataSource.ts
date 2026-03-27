@@ -34,7 +34,7 @@ export class PaymentScheduleMasterDatasourceImpl implements PaymentScheduleMaste
 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
             if (params.InventoryBuildingId) queryParams.append("InventoryBuildingId", params.InventoryBuildingId.toString());
-             if (params.InventoryFlatFloorBasementPodiumWingId) queryParams.append("InventoryFlatFloorBasementPodiumWingId", params.InventoryFlatFloorBasementPodiumWingId.toString());
+            if (params.InventoryFlatFloorBasementPodiumWingId) queryParams.append("InventoryFlatFloorBasementPodiumWingId", params.InventoryFlatFloorBasementPodiumWingId.toString());
             if (params.PaymentScheduleMasterId) queryParams.append("PaymentScheduleMasterId", params.PaymentScheduleMasterId.toString());
             if (params.PaymentScheduleSchemeMasterId) queryParams.append("PaymentScheduleSchemeMasterId", params.PaymentScheduleSchemeMasterId.toString());
             if (params.Stage) queryParams.append('Stage', params.Stage.toString());
@@ -50,9 +50,9 @@ export class PaymentScheduleMasterDatasourceImpl implements PaymentScheduleMaste
 
             console.error("ERROR: PULL PAYMENT SCHEDULE MASTER :", error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullPaymentScheduleMaster(params);
+                return await this.pullPaymentScheduleMaster(params);
             }
             throw error;
         }
@@ -69,8 +69,9 @@ export class PaymentScheduleMasterDatasourceImpl implements PaymentScheduleMaste
             return response;
         } catch (error) {
             console.error('ERROR: ADD UPDATE PAYMENT SCHEDULE MASTER:', error);
-            if (error === TokenExpiredException) {
-                await this.addUpdatePaymentScheduleMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdatePaymentScheduleMaster(params);
             }
             throw error;
         }
@@ -91,11 +92,11 @@ export class PaymentScheduleMasterDatasourceImpl implements PaymentScheduleMaste
             return response
 
         } catch (error) {
-            if (error === TokenExpiredException) {
+            console.error('ERROR: DELETE PAYMENT SCHEDULE MASTER:', error);
 
-                console.error('ERROR: DELETE PAYMENT SCHEDULE MASTER:', error);
+            if (error instanceof TokenExpiredException) {
 
-                await this.deletePaymentScheduleMaster(params);
+                return await this.deletePaymentScheduleMaster(params);
             }
             throw error
         }

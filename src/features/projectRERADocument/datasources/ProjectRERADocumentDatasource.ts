@@ -39,8 +39,9 @@ export class ProjectRERADocumentDatasourceImpl implements ProjectRERADocumentDat
 
             console.error('ERROR: PULL PROJECT RERA DOCUMENT :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullProjectRERADocument(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullProjectRERADocument(params);
             }
 
             throw error
@@ -59,8 +60,9 @@ export class ProjectRERADocumentDatasourceImpl implements ProjectRERADocumentDat
 
             console.error('ERROR: ADD UPDATE PROJECT RERA DOCUMENT :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateProjectRERADocument(formData);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateProjectRERADocument(formData);
             }
             throw error
         }
@@ -86,9 +88,9 @@ export class ProjectRERADocumentDatasourceImpl implements ProjectRERADocumentDat
 
             console.error('ERROR: DELETE PROJECT RERA DOCUMENT :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteProjectRERADocument(params);
+                return await this.deleteProjectRERADocument(params);
 
             }
 

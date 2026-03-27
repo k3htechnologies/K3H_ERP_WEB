@@ -41,9 +41,8 @@ export class ClosingTargetDatasourceImpl implements ClosingTargetDatasource {
 
             console.error("ERROR: PULL CLOSING TARGET :", error);
 
-            if (error === TokenExpiredException) {
-
-                await this.pullClosingTarget(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.pullClosingTarget(params);
             }
             throw error;
         }

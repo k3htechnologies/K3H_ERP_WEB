@@ -44,8 +44,8 @@ export class EnquiryFollowUpDatasourceImpl implements EnquiryFollowUpDatasource 
 
             console.error('ERROR: PULL ENQUIRY :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEnquiryFollowUp(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.pullEnquiryFollowUp(params);
             }
             throw error
         }
@@ -60,8 +60,8 @@ export class EnquiryFollowUpDatasourceImpl implements EnquiryFollowUpDatasource 
         } catch (error) {
             console.log('ERROR:ADD UPDATE ENQUIRY FOLLOW UP:', error)
 
-            if (error == TokenExpiredException) {
-                await this.addUpadateEnquiryFollowUp(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.addUpadateEnquiryFollowUp(params);
             }
             throw error
         }
@@ -84,11 +84,11 @@ export class EnquiryFollowUpDatasourceImpl implements EnquiryFollowUpDatasource 
             return response
 
         } catch (error) {
-            if (error === TokenExpiredException) {
 
-                console.error('ERROR: DELETE ENQUIRY FOLLOW UP :', error);
-
-                await this.deleteEnquiryFollowUp(params);
+            console.error('ERROR: DELETE ENQUIRY FOLLOW UP :', error);
+            
+            if (error instanceof TokenExpiredException) {
+                return await this.deleteEnquiryFollowUp(params);
 
             }
 

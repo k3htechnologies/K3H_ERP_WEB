@@ -27,8 +27,9 @@ export class LitigationDashboardDatasourceImpl implements LitigationDashboardDat
 
             console.error('ERROR: PULL LITIGATION DASHBOARD :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullLitigationDashboard(ProjectId);
+           if (error instanceof TokenExpiredException) {
+
+                return  await this.pullLitigationDashboard(ProjectId);
             }
 
             throw error

@@ -78,8 +78,9 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('Error: Pull Employee Master:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEmployeeMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.pullEmployeeMaster(params);
             }
             throw error
         }
@@ -137,8 +138,9 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('Error: Add Update Employee Master:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateEmployeeMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.addUpdateEmployeeMaster(params);
             }
 
 
@@ -158,8 +160,9 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('ERROR: UPDATE Employee Master:', error)
 
-            if (error === TokenExpiredException) {
-                await this.updateEmployeeMaster(params);
+           if (error instanceof TokenExpiredException) {
+
+                return   await this.updateEmployeeMaster(params);
             }
             throw error
         }
@@ -179,8 +182,9 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('Error: SET MPIN:', error)
 
-            if (error === TokenExpiredException) {
-                await this.setEmployeeMPIN(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.setEmployeeMPIN(params);
             }
 
 

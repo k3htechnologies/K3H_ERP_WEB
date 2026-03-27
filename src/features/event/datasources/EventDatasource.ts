@@ -43,8 +43,9 @@ export class EventDatasourceImpl implements EventDatasource {
 
             console.error('ERROR: PULL EVENT :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEvent(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullEvent(params);
             }
 
             throw error
@@ -65,8 +66,9 @@ export class EventDatasourceImpl implements EventDatasource {
 
             console.error('ERROR: ADD UPDATE EVENT :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateEvent(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.addUpdateEvent(params);
             }
             throw error
         }
@@ -89,9 +91,9 @@ export class EventDatasourceImpl implements EventDatasource {
 
             console.error('ERROR: DELETE EVENT :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteEvent(params);
+                return  await this.deleteEvent(params);
 
             }
 

@@ -63,8 +63,8 @@ export class TenantDatasourceImpl implements TenantDatasource {
 
             console.error('Error: Pull TENANT:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullTenant(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.pullTenant(params);
             }
             throw error
         }
@@ -83,8 +83,8 @@ export class TenantDatasourceImpl implements TenantDatasource {
         } catch (error) {
             console.error('Error: Add Update TENANT:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateTenant(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.addUpdateTenant(params);
             }
             throw error
         }
@@ -109,8 +109,8 @@ export class TenantDatasourceImpl implements TenantDatasource {
 
             console.error('ERRPR : DELETE TENANT:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteTenant(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.deleteTenant(params);
             }
 
             throw error
@@ -142,8 +142,8 @@ export class TenantDatasourceImpl implements TenantDatasource {
 
             console.error('Error: Pull TENANT DOCUMENT:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullTenantDocument(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.pullTenantDocument(params);
             }
 
             throw error
@@ -163,8 +163,8 @@ export class TenantDatasourceImpl implements TenantDatasource {
         } catch (error) {
             console.error('Error: Add Update TENANT DOCUMENT:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateTenantDocument(formData);
+            if (error instanceof TokenExpiredException) {
+                return await this.addUpdateTenantDocument(formData);
             }
 
             throw error
@@ -191,8 +191,8 @@ export class TenantDatasourceImpl implements TenantDatasource {
 
             console.error('ERRPR : DELETE TENANT DOCUMENT :', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteTenantDocument(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.deleteTenantDocument(params);
             }
 
             throw error

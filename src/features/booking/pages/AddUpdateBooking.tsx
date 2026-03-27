@@ -1771,10 +1771,11 @@ export const AddUpdateBooking: React.FC = () => {
             )
               :
               (
-                <div className="pt-5 p-4 bg-red-50 rounded-lg border border-red-200 text-sm text-red-700 ">
+                <div className="pt-5 mt-5 p-4 bg-red-50 rounded-lg border border-red-200 text-sm text-red-700">
                   {enquiryList?.FinalStage === "Booking Done" ? "Booking already done for this enquiry" : "No Enquiry details found for this Unique Code"}
                 </div>
-              ))}
+              )
+              )}
 
           {/* ============================================================= [APPLICANT DETAILS] ============================================================================================= */}
           <div className="space-y-4 pt-5">

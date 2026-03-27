@@ -40,8 +40,9 @@ export class ProjectDocumentDatasourceImpl implements ProjectDocumentDatasource 
 
             console.error('ERROR: PULL PROJECT DOCUMENT :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullProjectDocument(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullProjectDocument(params);
             }
 
             throw error
@@ -60,8 +61,9 @@ export class ProjectDocumentDatasourceImpl implements ProjectDocumentDatasource 
 
             console.error('ERROR: ADD UPDATE PROJECT DOCUMENT :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateProjectDocument(formData);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateProjectDocument(formData);
             }
             throw error
         }
@@ -87,9 +89,9 @@ export class ProjectDocumentDatasourceImpl implements ProjectDocumentDatasource 
 
             console.error('ERROR: DELETE PROJECT DOCUMENT :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteProjectDocument(params);
+                return await this.deleteProjectDocument(params);
 
             }
 

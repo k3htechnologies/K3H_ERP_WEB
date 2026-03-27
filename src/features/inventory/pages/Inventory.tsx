@@ -996,12 +996,21 @@ const Inventory = () => {
                 const response = await inventoryService.apiCallDeleteInventoryBuilding(params);
 
                 if (E.isRight(response)) {
+
                     setIsDeleteBuildingDialogOpen(false);
+
                     setBuildingToDelete(null);
+
+                    setSelectedBuildingIndex(null);
+
+                    setSelectedBuilding(undefined);
+                    
+                    setSelectedWing(undefined);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
                     await fetchInventory();
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -1393,58 +1402,58 @@ const Inventory = () => {
                 approvalStatus={isInventoryAvailable === true ? selectedWing?.ApprovalStatus ?? "" : ''}
 
             />
+            {selectedBuilding && isInventoryAvailable === true && (
+                <div className="flex flex-col pt-3 w-full h-[230px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4">
 
-            <div className="flex flex-col pt-3 w-full h-[230px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4">
-
-                <BuildingTabs
-                    inventory={inventory}
-                    canAction={canAction}
-                    selectedBuildingIndex={selectedBuildingIndex}
-                    onBuildingSelect={(index) => {
-                        setSelectedBuilding(inventory[index].InventoryFlatFloorBasementPodiumWingData);
-                        setSelectedBuildingIndex(index);
-                        setSelectedWing(inventory[index].InventoryFlatFloorBasementPodiumWingData[0]);
-                    }}
-                    onDeleteBuilding={handleDeleteBuilding}
-                    approvalStatus={selectedWing?.ApprovalStatus}
-                />
-                <div className="pt-3">
-                    <StatusCounters
-                        availableCount={availableFlatsCount}
-                        holdCount={holdFlatsCount}
-                        memberCount={memberFlatsCount}
-                        bookedCount={saleFlatsCount}
-                        blockedCount={blockedFlatsCount}
+                    <BuildingTabs
+                        inventory={inventory}
+                        canAction={canAction}
+                        selectedBuildingIndex={selectedBuildingIndex}
+                        onBuildingSelect={(index) => {
+                            setSelectedBuilding(inventory[index].InventoryFlatFloorBasementPodiumWingData);
+                            setSelectedBuildingIndex(index);
+                            setSelectedWing(inventory[index].InventoryFlatFloorBasementPodiumWingData[0]);
+                        }}
+                        onDeleteBuilding={handleDeleteBuilding}
+                        approvalStatus={selectedWing?.ApprovalStatus}
                     />
-                </div>
+                    <div className="pt-3">
+                        <StatusCounters
+                            availableCount={availableFlatsCount}
+                            holdCount={holdFlatsCount}
+                            memberCount={memberFlatsCount}
+                            bookedCount={saleFlatsCount}
+                            blockedCount={blockedFlatsCount}
+                        />
+                    </div>
 
-                <div className="border-b border-gray-200 pt-3" />
+                    <div className="border-b border-gray-200 pt-3" />
 
-                <div className="flex flex-col pt-3">
+                    <div className="flex flex-col pt-3">
 
-                    <div className="flex-1">
-                        {selectedBuilding && isInventoryAvailable === true && (
+                        <div className="flex-1">
+
                             <div className="flex items-center justify-between gap-3 w-full">
                                 <div className="flex-1 min-w-0">
-                                <WingTabs
-                                    canAction={canAction}
-                                    wings={selectedBuilding}
-                                    activeWingTab={activeWingTab}
-                                    onWingChange={(index) => {
+                                    <WingTabs
+                                        canAction={canAction}
+                                        wings={selectedBuilding}
+                                        activeWingTab={activeWingTab}
+                                        onWingChange={(index) => {
 
-                                        setActiveWingTab(String(index));
+                                            setActiveWingTab(String(index));
 
-                                        const newWing = selectedBuilding[index];
-                                        setSelectedWing(newWing);
+                                            const newWing = selectedBuilding[index];
+                                            setSelectedWing(newWing);
 
-                                        if (projectId && newWing?.Wing) {
+                                            if (projectId && newWing?.Wing) {
 
-                                            localStorage.setItem(`inventorySelectedWing_${projectId}`, newWing.Wing);
-                                        }
-                                    }}
-                                    onDeleteWing={handleDeleteWing}
-                                    approvalStatus={selectedWing?.ApprovalStatus}
-                                />
+                                                localStorage.setItem(`inventorySelectedWing_${projectId}`, newWing.Wing);
+                                            }
+                                        }}
+                                        onDeleteWing={handleDeleteWing}
+                                        approvalStatus={selectedWing?.ApprovalStatus}
+                                    />
                                 </div>
                                 <div className="flex items-center gap-2 flex-shrink-0">
                                     <span className="text-sm text-gray-600">Status</span>
@@ -1453,32 +1462,35 @@ const Inventory = () => {
                                     </span>
                                 </div>
                             </div>
-                        )}
-                    </div>
 
-                    <div className="flex items-center justify-between pt-2">
-                        <StatusCounters
-                            availableCount={selectedWingAvailableCount}
-                            holdCount={selectedWingHoldCount}
-                            memberCount={selectedWingMemberCount}
-                            bookedCount={selectedWingBookedCount}
-                            blockedCount={selectedWingBlockedCount}
-                        />
+                        </div>
 
-                        {selectedWing?.ApprovalStatus && (
-                            <ApprovalActions
-                                approvalStatus={selectedWing?.ApprovalStatus}
-                                showApproval={selectedWing?.IsApproval === true}
-                                displayText="Status"
-                                onHistory={handleApprovalLog}
-                                onApprove={() => handleApproveRejectDocument("approve")}
-                                onReject={() => handleApproveRejectDocument("reject")}
+
+                        <div className="flex items-center justify-between pt-2">
+                            <StatusCounters
+                                availableCount={selectedWingAvailableCount}
+                                holdCount={selectedWingHoldCount}
+                                memberCount={selectedWingMemberCount}
+                                bookedCount={selectedWingBookedCount}
+                                blockedCount={selectedWingBlockedCount}
                             />
-                        )}
-                    </div>
-                </div>
 
-            </div>
+                            {selectedWing?.ApprovalStatus && (
+                                <ApprovalActions
+                                    approvalStatus={selectedWing?.ApprovalStatus}
+                                    showApproval={selectedWing?.IsApproval === true}
+                                    displayText="Status"
+                                    onHistory={handleApprovalLog}
+                                    onApprove={() => handleApproveRejectDocument("approve")}
+                                    onReject={() => handleApproveRejectDocument("reject")}
+                                />
+                            )}
+                        </div>
+
+                    </div>
+
+                </div>
+            )}
 
             <ExportImport
                 open={showImportModal}

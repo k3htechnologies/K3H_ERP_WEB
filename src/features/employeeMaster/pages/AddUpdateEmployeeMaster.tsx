@@ -467,7 +467,10 @@ const AddUpdateEmployeePage: React.FC = () => {
     const validation = validateAddEmployeeMasterForm();
 
     if (!validation.isValid) {
+      
       setErrors(validation.errors);
+
+      addToast({ type: "error", title: "Please fill the required filed" });
 
       return;
     }

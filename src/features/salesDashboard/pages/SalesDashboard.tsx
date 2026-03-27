@@ -55,21 +55,14 @@ const SalesDashboard: React.FC = () => {
 
     return (
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
-
             <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
 
             <GenerateReport />
-
             <div className="cursor-pointer">
 
-                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 mt-5">
-                    <div className="md:col-span-12 lg:col-span-8">
-                        <Enquiries enquiryData={enquiryData} />
-                    </div>
-
-                    <div className="md:col-span-12 lg:col-span-4">
-                        <FollowUp enquiryFollowUpData={enquiryFollowUpData} />
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
+                    <Enquiries enquiryData={enquiryData} />
+                    <FollowUp enquiryFollowUpData={enquiryFollowUpData} />
                 </div>
             </div>
         </div>

@@ -13,6 +13,7 @@ export interface UserDashboardDataset {
   Table9: Table9[];
   Table10: Table10[];
   Table11: Table11[];
+  Table12: Table12[];
 }
 
 export interface Table0 {
@@ -127,6 +128,20 @@ export interface Table11 {
   TotalTime: string | null;
   Date: string | null;
   Progress: number | null;
+
+}
+
+export interface Table12 {
+  AttendanceDate: string | null;
+  EmployeeId: string | null;
+  FullName: string | null;
+  AttendanceId: number | null;
+  PunchIn: string | null;
+  PunchOut: string | null;
+  PunchInAddress: string | null;
+  PunchOutAddress: string | null;
+  WorkingHours: string | null;
+  AttendanceStatus: string | null;
 
 }
 

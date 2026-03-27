@@ -9,7 +9,7 @@ const PayrollHeader: React.FC = () => {
   return (
     <>
       <div
-        className="bg-white rounded-xl p-4 flex flex-col  lg:flex-row lg:items-center justify-between"
+        className="bg-white rounded-xl p-4 flex flex-col  lg:flex-row lg:items-center justify-between shadow-sm"
 
       >
         <div className="w-full lg:w-auto lg:mt-0 p-2 -mb-2">

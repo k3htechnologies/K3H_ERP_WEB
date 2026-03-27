@@ -781,7 +781,6 @@ const ViewLitigation: React.FC = () => {
                                   color="transparent"
                                   isborderRadius
                                   size="sm"
-                                  style={{ color: "blue", padding: "4px 8px" }}
                                   title="Edit"
                                   onClick={() => handleopenClosureModal(item)}
                                   disabled={isLoading}
@@ -948,7 +947,6 @@ const ViewLitigation: React.FC = () => {
                                   color="transparent"
                                   isborderRadius
                                   size="sm"
-                                  style={{ color: "blue" }}
                                   title="Edit Hearing"
                                   onClick={() => handleopenHearingModal(item)}
                                   disabled={isLoading}

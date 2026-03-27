@@ -44,6 +44,7 @@ const ApprovalActions = ({
                     }`}
             >
                 {isIcons ? <History size={16} /> : "History"}
+                
             </button>
 
             {/* APPROVE + REJECT only if approval required */}

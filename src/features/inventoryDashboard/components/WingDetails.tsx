@@ -41,7 +41,7 @@ const WingDetails: React.FC<Props> = ({ wingData }) => {
             },
             {
                 key: "Units",
-                label: "Units",
+                label: "Total Units",
                 align: "center",
                 render: (value: any) => (
                     <span className="font-medium text-black">
@@ -50,8 +50,8 @@ const WingDetails: React.FC<Props> = ({ wingData }) => {
                 )
             },
             {
-                key: "Flats",
-                label: "Flats",
+                key: "Units",
+                label: "Units",
                 align: "center",
                 children: [
                     { key: "AvailableFlats", label: "Available", align: "center", render: (v: number) => v || 0 },

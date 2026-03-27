@@ -58,7 +58,7 @@ export default function OverviewCards({ overViewData, attendanceAlert }: Props) 
           return (
             <div
               key={i}
-              className="bg-white rounded-xl p-4 border border-gray-100 flex flex-col justify-between h-32 relative cursor-pointer"
+              className="bg-white rounded-xl p-4 border border-gray-100 flex flex-col justify-between h-32 relative cursor-pointer shadow-sm"
             >
               <div className="text-base font-semibold " onClick={() => {
                 if (c.title === 'On Leave Today') {

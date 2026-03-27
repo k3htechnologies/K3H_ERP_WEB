@@ -587,7 +587,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                                 color="transparent"
                                 isborderRadius
                                 size="sm"
-                                style={{ color: "blue", padding: "4px 8px" }}
                                 title="Edit"
                                 onClick={() => handleOpenRemarkModal(item)}
                                 disabled={isLoading}

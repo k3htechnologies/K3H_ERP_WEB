@@ -13,7 +13,7 @@ import { Edit, Trash2 } from "lucide-react";
 import { Button, Input } from "@/ui/components/forms";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { getCallTrackerStatuscolor } from "@/features/callTracker/utils/Status";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -246,10 +246,15 @@ export const CallLog: React.FC = () => {
             newErrors.RescheduleDate = "Reschedule Date is required";
         }
 
-        if (editingCallLogData?.CallDate && formData.RescheduleDate && !isToDateGreaterOrEqualFromDate(editingCallLogData.CallDate, formData.RescheduleDate)
+        const callingDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(editingCallLogData?.CallDate ? new Date(editingCallLogData.CallDate) : undefined);
+        const rescheduleDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.RescheduleDate ? new Date(formData.RescheduleDate) : undefined);
+
+        if (
+            editingCallLogData?.CallDate &&
+            formData.RescheduleDate &&
+            !isToDateGreaterOrEqualFromDate(callingDate, rescheduleDate)
         ) {
-            newErrors.RescheduleDate =
-                "Reschedule Date must be After Call Date";
+            newErrors.RescheduleDate = "Reschedule Date must be After Call Date";
         }
 
         return {
@@ -437,39 +442,45 @@ export const CallLog: React.FC = () => {
             align: 'center',
             render: (_value, row) => (
                 <div className="flex items-center justify-center">
-                    {canAction && (
-                        <>
-                            <Button
-                                color="transparent"
-                                size="sm"
-                                style={{
-                                    color: 'blue',
-                                    padding: '0px 8px'
-                                }}
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    handleEditCallLog(row)
-                                }}
-                                leftIcon={<Edit className="h-4 w-4" />}
-                            />
 
-                            <Button
-                                color="transparent"
-                                size="sm"
-                                style={{
-                                    color: 'red',
-                                    padding: '0px 8px'
-                                }}
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    handleConfirmationDialogBoxOpen(row)
-                                }}
-                                leftIcon={<Trash2 className="h-4 w-4" />}
-                            />
-                        </>
-                    )}
+                    <Button
+                        color="transparent"
+                        size="sm"
+                        disabled={!canAction}
+                        onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            if (!canAction) return;
+                            handleEditCallLog(row)
+                        }}
+                        style={{
+                            color: canAction ? '' : '#9CA3AF',
+                            padding: '4px 8px',
+                            cursor: canAction ? 'pointer' : 'not-allowed',
+                            opacity: canAction ? 1 : 0.5
+                        }}
+                        leftIcon={<Edit className="h-4 w-4" />}
+                    />
+
+                    <Button
+                        color="transparent"
+                        size="sm"
+                        disabled={!canAction}
+                        style={{
+                            color: canAction ? 'red' : '#9CA3AF',
+                            padding: '4px 8px',
+                            cursor: canAction ? 'pointer' : 'not-allowed',
+                            opacity: canAction ? 1 : 0.5
+                        }}
+                        onClick={(e) => {
+                            e.preventDefault()
+                            e.stopPropagation()
+                            if (!canAction) return;
+                            handleConfirmationDialogBoxOpen(row)
+                        }}
+                        leftIcon={<Trash2 className="h-4 w-4" />}
+                    />
+
                 </div>
             )
         },

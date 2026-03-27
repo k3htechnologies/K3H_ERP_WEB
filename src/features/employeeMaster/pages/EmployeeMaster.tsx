@@ -42,6 +42,8 @@ import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
 import { isEmployeeComplete } from "@/features/employeeMaster/utils/employeeUtils";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { ACTIVE_INACTIVE_OPTIONS } from "@/core/constants";
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -151,6 +153,7 @@ export const EmployeeMaster: React.FC = () => {
           ToDateOfBirth: filterParams.ToDateOfBirth || undefined,
           FromJoiningDate: filterParams.FromJoiningDate || undefined,
           ToJoiningDate: filterParams.ToJoiningDate || undefined,
+          ActiveInactive:filterParams.ActiveInactive?.trim() || undefined,
 
           SortBy: getSortByParam(sortInfo ?? null, employeeColumns),
         };
@@ -239,6 +242,8 @@ export const EmployeeMaster: React.FC = () => {
           ToDateOfBirth: filters.ToDateOfBirth || undefined,
           FromJoiningDate: filters.FromJoiningDate || undefined,
           ToJoiningDate: filters.ToJoiningDate || undefined,
+
+          ActiveInactive:filters.ActiveInactive?.trim() || undefined,
 
           SortBy: getSortByParam(sortInfo ?? null, employeeColumns),
           ExportType: exportType,
@@ -921,6 +926,18 @@ export const EmployeeMaster: React.FC = () => {
                 value={tempFilters.Gender || ""}
                 onChange={(e) => handleFilterChange("Gender", e.target.value)}
                 placeholder="Enter Gender"
+              />
+            </div>
+            <div>
+              <SinglePageSelection
+                label="Active / Inactive"
+                placeholder="Select Active / Inactive"
+                value={tempFilters.ActiveInactive || ''}
+                onChange={e => handleFilterChange('ActiveInactive', String(e))}
+                options={ACTIVE_INACTIVE_OPTIONS.map(opt => ({
+                  label: opt.name,
+                  value: opt.id
+                }))}
               />
             </div>
             <div>

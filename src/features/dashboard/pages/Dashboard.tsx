@@ -15,7 +15,7 @@ import { runApiWithLoader } from '@/core/utils';
 import { useToast } from '@/core/hooks/useToast';
 import EventsMore from "@/features/dashboard/components/EventsMore";
 import { Loader } from "@/core/utils/loader";
-import type { Table7, Table0, Table2, Table3, Table4, Table1, Table6, Table5, Table8, Table10, Table11 } from "@/features/dashboard/models/UserDashboardModel";
+import type { Table7, Table0, Table2, Table3, Table4, Table1, Table6, Table5, Table8, Table10, Table11, Table12 } from "@/features/dashboard/models/UserDashboardModel";
 
 const Dashboard: React.FC = () => {
   const [attendanceSummaryData, setAttendanceSummaryData] = useState<Table7[]>([]);
@@ -32,6 +32,7 @@ const Dashboard: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
   const [workTimeOverviewTable, setWorkTimeOverviewTable] = useState<Table11[]>([]);
+  const [attendanceSummaryTableUserWorkingHours, setAttendanceSummaryTableUserWorkingHours] = useState<Table12[]>([]);
 
 
   const { addToast } = useToast()
@@ -61,6 +62,7 @@ const Dashboard: React.FC = () => {
           setReportingData(e.Table10 || []);
           setWorkTimeOverviewTable(e.Table11 || []);
           setUpcomingApprovedHolidays(e.Table5 || []);
+          setAttendanceSummaryTableUserWorkingHours(e.Table12 || []);
 
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -106,7 +108,7 @@ const Dashboard: React.FC = () => {
       {/* Work hour grid */}
       <div className="grid grid-cols-3 gap-5">
         <div className="col-span-2">
-          <WorkHourSummary workHourStatus={workHourStatus} workHourBarGraphStatus={workHourBarGraphStatus} />
+          <WorkHourSummary workHourStatus={workHourStatus} workHourBarGraphStatus={workHourBarGraphStatus} attendanceSummaryTableUserWorkingHours={attendanceSummaryTableUserWorkingHours} />
         </div>
         <div className="col-span-1">
           <QuickActions />
@@ -127,8 +129,8 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Events and More */}
-      <div className="grid grid-cols-12 gap-4">
-        <div className="col-span-12">
+      <div className=" gap-4">
+        <div className="">
           <EventsMore birthdays={birthdays} reportingData={reportingData} />
         </div>
       </div>

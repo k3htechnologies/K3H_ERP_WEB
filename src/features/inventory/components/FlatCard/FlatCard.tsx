@@ -181,9 +181,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                     {flat.FlatStatus} by {flat.ModifiedBy} on {formatDate_dd_MonthName_yy_hh_mm(flat.ModifiedDate ?? "-")}
                 </p>
             ) : (
-                <p className="text-center text-[#135BEC] font-semibold">
-                     &nbsp;
-                </p>
+                null
             )}
 
 

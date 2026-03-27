@@ -54,10 +54,13 @@ body {
   border: none !important;
 }
 
-/* Hide duplicate Quill toolbars caused by React StrictMode double-mount
-.ql-toolbar.ql-snow:nth-of-type(1) {
-  display: none !important;
-} */
+.recharts-surface{
+  outline: none;
+}
+
+path.recharts-rectangle{
+  outline: none;
+}
 
 
 

@@ -378,6 +378,8 @@ const AddUpdateProjectMaster: React.FC = () => {
 
             setErrors(validation.errors)
 
+            addToast({ type: "error", title: "Please fill the required filed" });
+
             return
         }
 

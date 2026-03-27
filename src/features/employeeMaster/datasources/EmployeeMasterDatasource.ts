@@ -65,6 +65,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
             if (params.ToJoiningDate) queryParams.append('ToJoiningDate', params.ToJoiningDate);
 
 
+            if (params.ActiveInactive?.trim()) queryParams.append('ActiveInactive', params.ActiveInactive.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

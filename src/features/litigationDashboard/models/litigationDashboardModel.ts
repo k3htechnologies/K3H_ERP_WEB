@@ -28,7 +28,7 @@ export interface Table2 {
 }
 
 export interface Table3 {
-    CaseType: string | null
+    CourtType: string | null
     OpenCases: number | 0
     TotalCases: number | 0
 }

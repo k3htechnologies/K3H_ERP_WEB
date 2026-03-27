@@ -24,6 +24,7 @@ export interface FilterWithPaginationEmployeeMasterRequest {
   FromJoiningDate?: string | ''
   ToJoiningDate?: string | ''
   SortBy?: string
+  ActiveInactive?: string
   ExportType?: 'Excel' | 'PDF'
 }
 

@@ -371,7 +371,6 @@ export const formatDate_Day_MonthName = (dateString: string | Date): string => {
   try {
     const date = new Date(dateString);
 
-    // Check if date is valid
     if (isNaN(date.getTime())) {
       return "";
     }
@@ -391,9 +390,10 @@ export const formatDate_Day_MonthName = (dateString: string | Date): string => {
       "December",
     ];
     const month = monthNames[date.getMonth()];
-    const day = date.getDay();
+    const day = date.getDate();
 
     return `${day} ${month} `;
+
   } catch (error) {
     console.error("Error formatting date:", error);
     return "";

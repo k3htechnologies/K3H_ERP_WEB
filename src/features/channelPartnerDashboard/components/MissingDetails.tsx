@@ -14,13 +14,13 @@ export default function MissingDetails({ MissingDetailsData }: Props) {
                 Missing Details
             </h2>
 
-            <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm h-[300px] overflow-y-auto thin-scroll">
+            <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm h-[300px] thin-scroll flex flex-col">
                 {MissingDetailsData.length === 0 ? (
                     <div className="flex flex-col justify-center items-center h-full">
                         <NoDataView />
                     </div>
                 ) : (
-                    <div className="space-y-4 overflow-y-auto">
+                    <div className="flex-1 overflow-y-auto thin-scroll space-y-3 pr-1">
                         {MissingDetailsData.map((item, index) => (
                             <div key={index} className="flex items-stretch bg-red-50 rounded-lg overflow-hidden">
 
@@ -28,7 +28,7 @@ export default function MissingDetails({ MissingDetailsData }: Props) {
                                 <div className="flex justify-between items-center w-full p-4">
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900">{item.Name ?? ''}</p>
-                                        <p className="text-xs text-gray-600 mt-1">{item.SystemGeneratedCode ??''}</p>
+                                        <p className="text-xs text-gray-600 mt-1">{item.SystemGeneratedCode ?? ''}</p>
                                     </div>
                                 </div>
                             </div>

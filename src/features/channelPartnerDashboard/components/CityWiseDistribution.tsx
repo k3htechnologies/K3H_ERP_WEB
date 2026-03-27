@@ -5,13 +5,13 @@ interface Props {
     cityWiseDistributionData: Table3[];
 }
 
-export default function CityWiseDistribution({ cityWiseDistributionData}: Props) {
+export default function CityWiseDistribution({ cityWiseDistributionData }: Props) {
     const maxValue = Math.max(...cityWiseDistributionData.map(item => item.TotalChannelPartner || 0), 1);
 
     return (
         <div className="pt-5">
-            <div className="bg-white rounded-lg p-6 h-[315px] shadow-sm space-y-4 overflow-y-auto thin-scroll" >
-                <h3 className="text-sm text-gray-500 font-medium mb-4">
+            <div className="bg-white rounded-lg p-6 h-[315px] shadow-sm space-y-4 thin-scroll flex flex-col" >
+                <h3 className="text-sm text-gray-500 font-medium mb-4 ml-1">
                     City Wise Distribution
                 </h3>
 
@@ -20,7 +20,7 @@ export default function CityWiseDistribution({ cityWiseDistributionData}: Props)
                         <NoDataView />
                     </div>
                 ) : (
-                    <div className="flex flex-col gap-3">
+                    <div className="flex-1 overflow-y-auto thin-scroll space-y-3 pr-1">
                         {cityWiseDistributionData.map((item, index) => {
                             const widthPercent = ((item.TotalChannelPartner || 0) / maxValue) * 100;
                             return (

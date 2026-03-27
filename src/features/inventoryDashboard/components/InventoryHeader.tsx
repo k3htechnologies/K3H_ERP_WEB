@@ -8,6 +8,7 @@ const InventoryHeader: React.FC = () => {
   const { canAction: canParkingAction } = useMenuPermissions("/parking");
 
   const navigate = useNavigate();
+
   return (
     <div className="bg-white rounded-xl p-3 flex items-center justify-end" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
       {/* RIGHT SIDE */}
@@ -31,4 +32,5 @@ const InventoryHeader: React.FC = () => {
     </div>
   );
 }
+
 export default InventoryHeader;

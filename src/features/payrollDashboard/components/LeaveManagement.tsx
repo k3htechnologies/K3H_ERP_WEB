@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import type { Table1 } from "@/features/payrollDashboard/models/PayrollDashboardModel";
+import { getSafeString } from "@/core/utils/comman";
 
 interface Props {
   leaveData: Table1[];
@@ -21,9 +22,11 @@ const LeaveManagement: React.FC<Props> = ({ leaveData }) => {
         align: 'left' as const,
         render: (value: string) => (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gray-200 shrink-0" />
+            <div className="w-9 h-9 rounded-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-lg shrink-0">
+              {getSafeString(value).charAt(0).toUpperCase() || '?'}
+            </div>
             <div className="flex flex-col">
-              <span className="text-sm font-medium text-black">{value || '-'}</span>
+              <span className="text-sm font-medium text-black">{getSafeString(value)}</span>
               <span className="text-xs text-gray-400 font-medium">Full-Stack Developer</span>
             </div>
           </div>
@@ -40,7 +43,7 @@ const LeaveManagement: React.FC<Props> = ({ leaveData }) => {
       {
         key: 'duration',
         label: 'Duration',
-        align: 'center' as const,
+        // align: 'center' as const,
         render: (_: any, record: LeaveManagementRecord) => (
           <span className="font-medium text-black text-sm">
             {formatDate_dd_MonthName_yy(record.StartDate || '')} - {formatDate_dd_MonthName_yy(record.EndDate || '')}
@@ -101,7 +104,7 @@ const LeaveManagement: React.FC<Props> = ({ leaveData }) => {
   return (
     <div className="space-y-3 pt-5">
       <h2 className="text-lg font-semibold text-gray-800">Leave Management</h2>
-      <div className="bg-white rounded-lg  p-4 h-[300px]">
+      <div className="bg-white rounded-lg  p-4 h-[300px] shadow-sm">
         <DataTableWithOutBorder
           columns={columns}
           data={leaveData?.slice(0, 4) || []}

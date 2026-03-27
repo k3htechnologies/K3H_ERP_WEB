@@ -280,6 +280,8 @@ export const MASTER_DATA = {
 
   monthsShots: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 
+  activeInactive: ['Active', 'Inactive'],
+
 } as const
 
 // ============================================================================
@@ -390,6 +392,7 @@ export const ENQUIRY_TIMELINE = toOptions(MASTER_DATA.enquiryTimeLine);
 export const SUPPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.supportType);
 export const REPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.reportType);
 export const YEAR_OPTIONS = toOptions(MASTER_DATA.year);
+export const ACTIVE_INACTIVE_OPTIONS = toOptions(MASTER_DATA.activeInactive);
 
 
 

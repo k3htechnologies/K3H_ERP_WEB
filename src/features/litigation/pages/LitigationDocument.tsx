@@ -9,7 +9,6 @@ import {
 import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
-import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Edit, Trash2 } from "lucide-react";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Loader } from "@/core/utils/loader";

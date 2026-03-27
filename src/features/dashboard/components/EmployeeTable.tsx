@@ -4,7 +4,6 @@ import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import type { Table0 } from "../models/UserDashboardModel";
 import { getSafeString } from "@/core/utils/comman";
 
-
 interface EmployeeTableData {
     EmailId?: string;
 }
@@ -23,6 +22,15 @@ export default function EmployeeTable({ employeeOverviewTable }: Props) {
 
     const columns = [
         {
+            key: "EmployeeCode",
+            label: "Employee Code",
+            align: "left" as any,
+            render: (value: string) => (
+                <span className="font-medium text-black">
+                    {(value || '')}
+                </span>),
+        },
+        {
             key: "Name",
             label: "Employee Name",
             align: "left" as any,
@@ -37,15 +45,7 @@ export default function EmployeeTable({ employeeOverviewTable }: Props) {
                     {(value || '')}
                 </span>),
         },
-        {
-            key: "EmployeeCode",
-            label: "Employee Code",
-            align: "left" as any,
-            render: (value: string) => (
-                <span className="font-medium text-black">
-                    {(value || '')}
-                </span>),
-        },
+
         {
             key: "Status",
             label: "Status",
@@ -59,19 +59,41 @@ export default function EmployeeTable({ employeeOverviewTable }: Props) {
             key: "PunchIn",
             label: "Punch In",
             align: "center" as any,
-            render: (value: string) => (
-                <span className="font-medium text-black">
-                    {getSafeString(value ? (value ?? '00:00') : '-')}
-                </span>)
+            render: (value: any) => {
+                if (!value || typeof value !== 'string') return '-';
+
+                const parts = value.split(':');
+
+                if (parts.length < 2) return '-';
+
+                const formattedTime = `${Number(parts[0])}:${parts[1]}`;
+
+                return (
+                    <span className="font-medium text-black">
+                        {getSafeString(formattedTime)}
+                    </span>
+                );
+            }
         },
         {
             key: "PunchOut",
             label: "Punch Out",
             align: "center" as any,
-            render: (value: string) => (
-                <span className="font-medium text-black">
-                    {getSafeString(value ? (value ?? '00:00') : '-')}
-                </span>)
+            render: (value: any) => {
+                if (!value || typeof value !== 'string') return '-';
+
+                const parts = value.split(':');
+
+                if (parts.length < 2) return '-';
+
+                const formattedTime = `${Number(parts[0])}:${parts[1]}`;
+
+                return (
+                    <span className="font-medium text-black">
+                        {getSafeString(formattedTime)}
+                    </span>
+                );
+            }
         },
         {
             key: "Action",
@@ -89,7 +111,7 @@ export default function EmployeeTable({ employeeOverviewTable }: Props) {
         <div className="space-y-3 pt-4 sm:pt-5">
             <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2">Team Overview</h2>
 
-            <div className="bg-white rounded-xl p-4 h-[310px] flex flex-col">
+            <div className="bg-white rounded-xl p-4 h-[310px] flex flex-col shadow-sm">
 
                 {/* Content */}
 

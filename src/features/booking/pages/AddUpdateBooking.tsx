@@ -1304,7 +1304,24 @@ export const AddUpdateBooking: React.FC = () => {
 
   //#region SUBMIT FORM
   const handleSubmit = async () => {
+
     setErrors({});
+
+    const countPrimaryApplicants = () =>
+      applicantList.filter(a =>
+        String(a.ApplicantType ?? '').toUpperCase() === 'APPLICANT'
+      ).length;
+
+    if (applicantList.length === 0) {
+      addToast({ type: 'error', title: "Atleast one applicant is required" });
+      return
+    }
+    else if (countPrimaryApplicants() === 0) {
+
+      addToast({ type: 'error', title: "In Applicant List - One Applicant is required" });
+      return
+
+    }
 
     if (paymentSchedules.length > 0 && totalPercentage !== 100) {
       addToast({ type: "error", title: `Payment schedule total must be exactly 100%. Current total is ${totalPercentage.toFixed(2)}%` });
@@ -1338,7 +1355,9 @@ export const AddUpdateBooking: React.FC = () => {
     }
 
     if (formData.BookingId === 0 && !isOtpVerified) {
+
       if (!isOtpSent) {
+
         const sent = await sendOTP({
           mobileNumber: applicantList.find((x) => x.ApplicantType === "Applicant")?.ApplicantMobileNumber || "",
           module: "BOOKING",

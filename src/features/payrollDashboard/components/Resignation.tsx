@@ -35,8 +35,18 @@ const Resignation: React.FC<Props> = ({ resignationData }) => {
         ),
       },
       {
-        key: "Reason",
-        label: "Reason",
+        key: "RelievingDate",
+        label: "Relieving Date",
+        align: "left",
+        render: (value: string | null) => (
+          <span className="font-medium text-black">
+            {value ? formatDate_dd_MonthName_yy(value) : "-"}
+          </span>
+        ),
+      },
+      {
+        key: "OfferInHand",
+        label: "Offer In Hand",
         align: "left",
         render: (value: string | null) => (
           <TooltipText
@@ -69,7 +79,7 @@ const Resignation: React.FC<Props> = ({ resignationData }) => {
   return (
     <div className="space-y-3 pt-5">
       <h2 className="text-lg font-semibold text-gray-800">Resignation</h2>
-      <div className="bg-white rounded-lg shadow-sm space-y-4 p-4 h-[300px]">
+      <div className="bg-white rounded-lg shadow-sm space-y-4 p-4 h-[300px] shadow-sm">
         <DataTableWithOutBorder
           columns={columns}
           data={resignationData?.slice(0, 4) || []}

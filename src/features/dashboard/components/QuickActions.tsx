@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Calendar1Icon, Clock1, LaptopIcon, ListTodo, DollarSignIcon, FileDown } from "lucide-react";
+import { Calendar1Icon, Clock1, LaptopIcon, ListTodo, IndianRupeeIcon, FileDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Modal } from "@/ui/components/Modal/Modal";
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
@@ -44,7 +44,7 @@ export default function QuickActions() {
 
         },
         {
-            icon: <DollarSignIcon size={24} />,
+            icon: <IndianRupeeIcon size={24} />,
             title: "Apply Advance",
             bg: "bg-yellow-100",
             text: "text-yellow-600",
@@ -64,7 +64,7 @@ export default function QuickActions() {
     return (
         <div className="space-y-3 pt-5 sm:pt-7">
 
-            <div className="bg-white rounded-xl p-4 sm:p-5 mt-10 flex flex-col h-[531px]">
+            <div className="bg-white rounded-xl p-4 sm:p-5 mt-10 flex flex-col h-[531px] shadow-sm">
                 {/* Title */}
                 <p className="text-md font-semibold text-gray-500 pb-2">
                     Quick Actions

@@ -47,8 +47,10 @@ export const Tabs: React.FC<TabsProps> = ({
 
   if (istoggleTab) {
     return (
-      <div className="inline-flex items-center bg-[#F1F1F1] rounded-md p-1"
-        style={{ border: "0.3px solid #0000003f" }} >
+      <div
+        className="inline-flex items-center bg-[#F1F1F1] rounded-md p-1"
+        style={{ border: "0.3px solid #0000003f" }}
+      >
         {tabs.map((tab) => {
           const isActive = active === tab.id;
 
@@ -56,12 +58,12 @@ export const Tabs: React.FC<TabsProps> = ({
             <button
               key={tab.id}
               onClick={() => handleChange(tab)}
-              className={`px-5 py-1 rounded-md text-sm transition-all duration-200
-                ${isActive
+              className={`px-5 h-[36px] flex items-center rounded-md text-sm transition-all duration-200
+              ${isActive
                   ? "bg-white text-blue-600 font-medium shadow-sm"
                   : "text-gray-500 hover:text-blue-500"
                 }
-              `}
+            `}
             >
               {tab.label}
             </button>
@@ -106,7 +108,7 @@ export const Tabs: React.FC<TabsProps> = ({
   return (
 
     <div className="w-full">
-      <div  className={`${islarge ? " flex flex-wrap gap-2" : " border-b border-blue-300 flex gap-2" }`}>
+      <div className={`${islarge ? " flex flex-wrap gap-2" : " border-b border-blue-300 flex gap-2"}`}>
 
         {tabs.map((tab) => {
           const isActive = active === tab.id;

@@ -1,13 +1,15 @@
 import { BarChart, Bar, XAxis, Cell, ResponsiveContainer, LabelList } from 'recharts';
-import type { Table2, Table3 } from '../models/UserDashboardModel';
+import type { Table2, Table3, Table12 } from '../models/UserDashboardModel';
 
 
 const HeaderStat = ({ label, value, subLabel, valueColor = "text-gray-900" }: { label: string, value: string, subLabel?: React.ReactNode, valueColor?: string }) => (
     <div className="flex flex-col">
-        <span className="text-sm text-gray-400 mb-1">{label}</span>
+        <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm text-gray-400">{label}</span>
+            {subLabel}
+        </div>
         <div className="flex items-center gap-2">
             <span className={`text-2xl font-bold ${valueColor}`}>{value}</span>
-            {subLabel}
         </div>
     </div>
 );
@@ -15,9 +17,10 @@ const HeaderStat = ({ label, value, subLabel, valueColor = "text-gray-900" }: { 
 interface Props {
     workHourStatus: Table2[];
     workHourBarGraphStatus: Table3[];
+    attendanceSummaryTableUserWorkingHours: Table12[];
 }
 
-export default function WorkHourSummary({ workHourStatus, workHourBarGraphStatus }: Props) {
+export default function WorkHourSummary({ workHourStatus, workHourBarGraphStatus, attendanceSummaryTableUserWorkingHours }: Props) {
 
     const today = new Date();
     const dayName = today.toLocaleString('en-us', { weekday: 'long' });
@@ -77,23 +80,24 @@ export default function WorkHourSummary({ workHourStatus, workHourBarGraphStatus
     });
 
     const uniqueDays = Object.values(aggregatedData);
-    const lateInEmployee = uniqueDays.filter((item: any) => item.isLate).length;
     const earlyLogoutEmployee = uniqueDays.filter((item: any) => item.isEarly).length;
+    const lateInCount = attendanceSummaryTableUserWorkingHours.filter((item: any) => item.AttendanceStatus === "Late In").length;
 
     return (
         <div className="space-y-5 pt-5">
             <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2 ">Work Hour Summary</h2>
 
-            {(workHourStatus.length > 0 && workHourBarGraphStatus.length > 0) && <div className="bg-white rounded-xl p-5 h-full flex flex-col">
+            {(workHourStatus.length > 0 && workHourBarGraphStatus.length > 0) && <div className="bg-white rounded-xl p-5 h-full flex flex-col shadow-sm">
                 <p className="text-md font-semibold text-gray-500 pb-2">Working Hour </p>
                 <div className="flex justify-between items-start mb-8 flex-wrap gap-4 mt-5">
 
                     <div className="flex justify-between w-full">
+
                         <HeaderStat label="This Month" value={`${Math.round(workHourStatus[0]?.ThisMonthHours || 0)} h`} />
                         <HeaderStat label="This Week" value={`${Math.round(workHourStatus[0]?.ThisWeekHours || 0)} h`} />
                         <HeaderStat label="Overtime" value={`${Math.round(workHourStatus[0]?.OvertimeHours || 0)} h`} valueColor="text-orange-500" />
                         <HeaderStat label="Avg Daily" value={`${Math.round(workHourStatus[0]?.AvgDailyHours || 0)} h`}
-                            subLabel={<span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md ml-2">This Week</span>}
+                            subLabel={<span className="text-xs text-slate-500 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-md">This Week</span>}
                         />
                     </div>
                 </div>
@@ -158,7 +162,7 @@ export default function WorkHourSummary({ workHourStatus, workHourBarGraphStatus
                 <div className="flex gap-6 mt-auto pt-4 border-t border-gray-100">
                     <div className="flex items-center gap-2">
                         <span className="text-red-500">⚠</span>
-                        <span className="text-sm text-gray-500">Late Login: <span className="text-gray-700">{lateInEmployee} days</span></span>
+                        <span className="text-sm text-gray-500">Late Login: <span className="text-gray-700">{lateInCount} days</span></span>
                     </div>
                     <div className="flex items-center gap-2">
                         <span className="text-orange-500">⏱</span>

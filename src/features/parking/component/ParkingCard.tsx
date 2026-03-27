@@ -81,9 +81,9 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction ,appr
       <FieldItem label="Dimensions" value={parking.ParkingDimensions} isRow={true} isUsedForInventoryFlat={true} />
       <FieldItem label="Size" value={parking.ParkingSubType} isRow={true} isUsedForInventoryFlat={true} />
 
-      <div className="flex items-center justify-evenly gap-2">
+      <div className="flex items-center  gap-2">
         <div className={`
-                        flex h-[30px] w-[207px]
+                        flex h-[30px] w-[250px]
                         ${colorsForParkingComponent[parking.ParkingStatus ?? "Available"].Button}
                         ${colorsForParkingComponent[parking.ParkingStatus ?? "Available"].buttonText}
                         rounded-[6px]
@@ -129,9 +129,7 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction ,appr
           {parking.ParkingStatus} by {parking.ModifiedBy} on {formatDate_dd_MonthName_yy_hh_mm(parking.ModifiedDate ?? "-")}
         </p>
       ) : (
-        <p className="text-center text-[#135BEC] font-semibold">
-
-        </p>
+        null
       )}
 
     </div>

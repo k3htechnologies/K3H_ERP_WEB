@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useDeductionMasterListState } from "@/features/deductionMaster/context/DeductionMasterListStateContext";
 import { useEffect, useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import type { DeductionMasterData, FilterWithPaginationDeductionMasterRequest } from "@/features/deductionMaster/models/DeductionMasterModel";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
@@ -175,7 +175,7 @@ const ViewDeductionMaster: React.FC = () => {
                                             label="Created Date"
                                             value={
                                                 editDeductionMasterData!.CreatedDate
-                                                    ? formatDate_dd_MonthName_yy(editDeductionMasterData!.CreatedDate)
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(editDeductionMasterData!.CreatedDate)
                                                     : "-"
                                             }
 
@@ -190,7 +190,7 @@ const ViewDeductionMaster: React.FC = () => {
                                             label="Modified Date"
                                             value={
                                                 editDeductionMasterData!.ModifiedDate
-                                                    ? formatDate_dd_MonthName_yy(editDeductionMasterData!.ModifiedDate)
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(editDeductionMasterData!.ModifiedDate)
                                                     : "-"
                                             }
 

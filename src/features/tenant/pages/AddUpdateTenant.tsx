@@ -372,11 +372,8 @@ const AddUpdateTenant: React.FC = () => {
       return
 
     }
-
-
     setErrors({})
-
-
+    
     const validation = validateAddTenantForm()
 
     if (!validation.isValid) {

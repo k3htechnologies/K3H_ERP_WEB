@@ -30,7 +30,6 @@ export interface Table2 {
   WorkingDate: string | null;
   CreatedBy: string | null;
   CreatedDate: string | null;
-  status: string | null;
 }
 
 export interface Table3 {

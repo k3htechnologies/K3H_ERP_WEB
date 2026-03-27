@@ -4,7 +4,7 @@ import CaseTypeDistribution from "@/features/litigationDashboard/components/Case
 import CourtDistribution from "@/features/litigationDashboard/components/CourtDistribution";
 import ActiveCases from "@/features/litigationDashboard/components/ActiveCases";
 import UpComingHearing from "@/features/litigationDashboard/components/UpComingHearing";
-import UploadedDocument from "@/features/litigationDashboard/components/UploadedDocumnet";
+import UploadedDocument from "@/features/litigationDashboard/components/UploadedDocument";
 import CaseAnalysis from "@/features/litigationDashboard/components/CaseAnalysis";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useToast } from "@/core/hooks/useToast";
@@ -47,7 +47,7 @@ const LitigationDashboard: React.FC = () => {
                 if (E.isRight(response)) {
 
                     const e = response.right.Data;
-                    
+
                     setOverViewData(e.Table0 || []);
                     setHearingData(e.Table1 || []);
                     setCaseTypeDistributionData(e.Table2 || []);
@@ -83,9 +83,14 @@ const LitigationDashboard: React.FC = () => {
                     <CourtDistribution courtData={courtDistributionData} />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">
-                    <ActiveCases activeCaseData={activeCaseData} />
-                    <UpComingHearing upComingHearingData={upComingHearingData} />
+                <div className="grid grid-cols-12 gap-4">
+                    <div className="col-span-12 lg:col-span-7">
+                        <ActiveCases activeCaseData={activeCaseData} />
+                    </div>
+
+                    <div className="col-span-12 lg:col-span-5">
+                        <UpComingHearing upComingHearingData={upComingHearingData} />
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-2 gap-4">

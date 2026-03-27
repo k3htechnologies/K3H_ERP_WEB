@@ -48,8 +48,8 @@ export const InventoryHeader = ({
 
 }: InventoryHeaderProps) => {
     return (
-        <div className="w-full rounded-tr-[15px] rounded-tl-[15px] border border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4">
-            <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="w-full pt-3 pb-3 rounded-tr-[15px] rounded-tl-[15px] border border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-2">
+            <div className="flex items-center justify-between gap-4">
 
                 <Tabs
                     tabs={inventoryTabList}
@@ -59,7 +59,7 @@ export const InventoryHeader = ({
                     istoggleTab={true}
                 />
                 
-                <div className="flex items-center gap-3 flex-wrap pt-2">
+                <div className="flex items-center gap-3 pt-5 h-[40px]">
                     
                     <TableActionToolbar
                         isShowSearchBar={true}

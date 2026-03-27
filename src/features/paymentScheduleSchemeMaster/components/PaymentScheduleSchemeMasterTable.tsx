@@ -21,32 +21,43 @@ interface PaymentScheduleSchemeMasterTableProps {
 export const PaymentScheduleSchemeMasterTable: React.FC<PaymentScheduleSchemeMasterTableProps> = ({ data, columns, pagination, sortInfo, onSort, onView, onDelete, canAction, loading }) => {
   const tableColumns = useMemo<TableColumn[]>(() => {
     return columns.map((col) => {
-      if (col.key === "Actions" ) {
+      if (col.key === "Actions") {
         return {
           ...col,
+          render: (_value, row: PaymentScheduleSchemeMasterData) => {
 
-          render: (_value, row: PaymentScheduleSchemeMasterData) =>
-            canAction && !row.IsExistsPaymentScheduleScheme ? (
+            const isDisabled = !canAction || row.IsExistsPaymentScheduleScheme;
+
+            return canAction ? (
               <div className="flex items-center justify-center gap-2">
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    if (isDisabled) return;
                     onDelete(row);
                   }}
                   color="transparent"
                   isborderRadius
+                  disabled={isDisabled}
                   size="sm"
                   style={{
-                    color: "red",
+                    color: isDisabled ? "#9CA3AF" : "red",
                     padding: "4px 8px",
+                    cursor: isDisabled ? "not-allowed" : "pointer",
+                    opacity: isDisabled ? 0.5 : 1,
                   }}
-                  title="Delete Scheme"
+                  title={
+                    row.IsExistsPaymentScheduleScheme
+                      ? "Cannot delete: Scheme already in use"
+                      : "Delete Scheme"
+                  }
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-            ) : null,
+            ) : null;
+          },
         };
       }
       if (col.key === "PaymentScheduleScheme") {

@@ -12,7 +12,7 @@ export default function PartnerTypeDistribution({ partnerTypeDistributionData}: 
     return (
         <div className="pt-5">
             <div className="bg-white p-4 rounded-lg shadow-sm space-y-4 h-[315px]">
-                <h3 className="text-sm text-gray-500 font-medium ml-5 mt-1">
+                <h3 className="text-sm text-gray-500 font-medium ml-3 mt-1">
                     Partner Type Distribution
                 </h3>
 

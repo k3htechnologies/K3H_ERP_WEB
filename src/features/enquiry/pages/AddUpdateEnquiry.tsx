@@ -624,6 +624,7 @@ export const AddUpdateEnquiry: React.FC = () => {
     const validation = validateAddEnquiryForm();
 
     if (!validation.isValid) {
+      
       setErrors(validation.errors);
 
       addToast({ type: "error", title: "Please fill the required filed" });

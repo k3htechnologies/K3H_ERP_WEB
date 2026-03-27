@@ -9,7 +9,7 @@ interface Props {
 export default function CourtDistribution({ courtData = [] }: Props) {
 
     return (
-        <div className="pt-5">
+        <div className="pt-4">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
                 Court Distribution
             </h2>
@@ -34,14 +34,14 @@ export default function CourtDistribution({ courtData = [] }: Props) {
                             </div>
                         </div>
 
-                        <div className="h-[260px] ">
-                            <ResponsiveContainer>
+                        <div className="h-[260px] relative [&_.recharts-wrapper_svg]:outline-none">
+                            <ResponsiveContainer >
                                 <BarChart
                                     data={courtData}
                                     layout="vertical"
                                     margin={{ top: 10, right: 60, left: 10, bottom: 10 }}
                                 >
-
+                                    
                                     <XAxis type="number" hide />
 
                                     {/* Court names */}
@@ -79,7 +79,8 @@ export default function CourtDistribution({ courtData = [] }: Props) {
                                     </Bar>
                                 </BarChart>
                             </ResponsiveContainer>
-                        </div></>
+                        </div>
+                        </>
                 )}
             </div>
         </div>

@@ -13,7 +13,7 @@ export default function OutdoorManagement({ outdoorManagementData }: Props) {
         Outdoor Management
       </h2>
       <div
-        className=" bg-white rounded-xl p-4 h-[349px]"
+        className=" bg-white rounded-xl p-4 h-[349px] shadow-sm"
       >
         <div className="mt-2">
           {outdoorManagementData?.length > 0 ? (

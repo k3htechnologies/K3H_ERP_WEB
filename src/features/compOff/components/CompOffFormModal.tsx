@@ -44,6 +44,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
     const [allowedDates, setAllowedDates] = useState<string[]>([]);
     const [, setIsLoadingDates] = useState(false);
     const [, setDisableAllDates] = useState(false);
+
     const fetchCompOffDates = (monthStart: string, monthEnd: string, abortController: AbortController) => {
         setIsLoadingDates(true);
 
@@ -138,6 +139,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
             renderChildren={({ startDate, endDate, onClearField, editingField, onUpdateDate }) => {
                 return (
                     <div className="space-y-4">
+
                         <DateInput
                             label="Working Date"
                             required
@@ -161,6 +163,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                             showClearButton={true}
                             openCalendarOnClick={false}
                         />
+
                         <DateInput
                             label="Comp Off Date"
                             required
@@ -184,11 +187,12 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                             showClearButton={true}
                             openCalendarOnClick={false}
                         />
+
                         <TextArea
                             label="Reason"
                             required
                             value={formData.Reason || ''}
-                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onFieldChange('Reason', e.target.value)}
+                            onChange={(e) => onFieldChange('Reason', e.target.value)}
                             error={errors.Reason}
                             placeholder="Enter Reason"
                             rows={3}
@@ -197,6 +201,6 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                 );
             }}
         />
+
     );
 };
-

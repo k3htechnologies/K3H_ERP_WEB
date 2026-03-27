@@ -31,7 +31,7 @@ export class PayrollApprovalDatasourceImpl implements PayrollApprovalDatasource 
                 console.error('ERROR: PULL APPROVAL STATUS :', error);
     
                 if (error === TokenExpiredException) {
-                    await this.pullApprovalStatus(params);
+                   return await this.pullApprovalStatus(params);
                 }
     
                 throw error
@@ -53,7 +53,7 @@ export class PayrollApprovalDatasourceImpl implements PayrollApprovalDatasource 
             console.error('Error: Add Payroll Approval:', error)
 
             if (error === TokenExpiredException) {
-                await this.addPayrollApproval(data)
+               return await this.addPayrollApproval(data)
             }
 
             throw error

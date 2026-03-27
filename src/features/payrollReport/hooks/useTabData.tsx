@@ -175,7 +175,7 @@ export function useTabData(
     );
   };
 
-  const loadAttendanceRegularization = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = false) => {
+  const loadAttendanceRegularization = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {

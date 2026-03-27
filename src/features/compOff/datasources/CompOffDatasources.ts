@@ -66,7 +66,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             console.error('ERROR: PULL COMP OFF :', error);
 
             if (error === TokenExpiredException) {
-                await this.pullCompOff(params);
+                return await this.pullCompOff(params);
             }
 
             throw error
@@ -98,7 +98,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             console.error('ERROR: ADD UPDATE COMP OFF :', error)
 
             if (error === TokenExpiredException) {
-                await this.addUpdateCompOff(params);
+               return await this.addUpdateCompOff(params);
             }
             throw error
         }
@@ -126,7 +126,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             console.error('ERROR: DELETE COMP OFF :', error)
 
             if (error === TokenExpiredException) {
-                await this.deleteCompOff(params);
+              return await this.deleteCompOff(params);
             }
             throw error
         }
@@ -157,7 +157,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             console.error('ERROR: PULL COMP OFF DATES :', error);
 
             if (error === TokenExpiredException) {
-                await this.pullCompOffDates(params);
+              return await this.pullCompOffDates(params);
             }
 
             throw error

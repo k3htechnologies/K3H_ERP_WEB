@@ -1,6 +1,7 @@
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import type { Table5 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 interface Props {
   upComingHearingData: Table5[];
@@ -31,14 +32,19 @@ export default function UpComingHearing({ upComingHearingData }: Props) {
                 <div>
 
                   <p className="text-sm font-semibold text-gray-900">
-                    Case No: {item.CaseNumber ?? '-'}</p>
+                    Case No: <TooltipText
+                      text={item.CaseNumber || '-'}
+                      maxWidth="180px"
+                      tooltipThreshold={18}
+                    />
+                  </p>
 
                   <p className="text-xs text-gray-600 mt-2">
                     {item.CaseType ?? '-'}</p>
 
                   <p className="text-xs text-gray-600 mt-2">
                     {item.CourtType ?? '-'}</p>
-                    
+
                 </div>
 
                 {/* Right content */}

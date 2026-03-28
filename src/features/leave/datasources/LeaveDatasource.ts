@@ -2,7 +2,6 @@ import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { LeaveApi } from '@/features/leave/api/LeaveApi'
 import type {
-    AddUpdateLeaveRequest,
     DeleteLeaveRequest,
     FilterWithPaginationLeaveConfiguredRequest,
     FilterWithPaginationLeaveRequest,
@@ -15,7 +14,7 @@ import type {
 export abstract class LeaveDatasource {
 
     abstract pullLeave(params: FilterWithPaginationLeaveRequest, signal?: AbortSignal): Promise<LeaveListResponse>;
-    abstract addUpdateLeave(data: AddUpdateLeaveRequest): Promise<LeaveSaveResponse>;
+    abstract addUpdateLeave(data: FormData): Promise<LeaveSaveResponse>;
     abstract deleteLeave(params: DeleteLeaveRequest): Promise<LeaveDeleteResponse>;
     abstract pullLeaveConfigured(params: FilterWithPaginationLeaveConfiguredRequest, signal?: AbortSignal): Promise<LeaveConfiguredListResponse>;
 }
@@ -63,43 +62,12 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
         }
     }
 
-    async addUpdateLeave(params: AddUpdateLeaveRequest): Promise<LeaveSaveResponse> {
+    async addUpdateLeave(params: FormData): Promise<LeaveSaveResponse> {
 
         try {
-
-            const formData = new FormData();
-
-            formData.append('LeaveId', String(params.LeaveId ?? 0))
-            formData.append('Uniquekey', params.Uniquekey ?? '')
-            formData.append('LeaveTypeMasterId', String(params.LeaveTypeMasterId ?? 0))
-            formData.append('StartDate', params.StartDate ?? '')
-            formData.append('EndDate', params.EndDate ?? '')
-            formData.append('StartDateLeaveDuration', params.StartDateLeaveDuration ?? '')
-            formData.append('EndDateLeaveDuration', params.EndDateLeaveDuration ?? '')
-            formData.append('Reason', params.Reason ?? '')
-
-            if (params.LeaveDocumentFiles && params.LeaveDocumentFiles.length > 0) {
-                params.LeaveDocumentFiles.forEach((file) => {
-                    if (file instanceof File) {
-                        formData.append('LeaveDocumentURL', file);
-                    }
-                });
-
-                const existingUrls = params.LeaveDocumentFiles
-                    .filter(x => typeof x === 'string' && String(x).trim().length > 0)
-                    .map(x => String(x).trim())
-                    .join(',');
-
-                if (existingUrls) {
-                    formData.append('LeaveDocumentURL', existingUrls);
-                }
-            }
-
-            formData.append('RemoveLeaveURL', params.RemoveLeaveURL ?? '')
-
             const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 LeaveApi.ADD_UPDATE,
-                formData
+                params
             )
 
             return response

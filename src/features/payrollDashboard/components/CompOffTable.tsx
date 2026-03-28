@@ -50,11 +50,10 @@ export default function CompOffTable({ compOffData = [] }: Props) {
       key: 'status',
       label: 'Status',
       align: 'center' as const,
-      render: (value: string) => (
+      render: (value: string, record: CompOffTableRecord) => (
         <div className="flex flex-col">
-          <span className="font-medium text-gray-900">{value}</span>
-          {/* <span className="text-xs text-gray-500">{record.Status}</span> */}
-          <span className="font-medium text-green-700 ">Approved</span>
+          <span className="font-medium text-gray-900">{value || record.status}</span>
+          <span className="font-medium text-green-700 ">{(value || record.status) === 'Approved' ? 'Approved' : 'Pending'}</span>
         </div>
       )
     },
@@ -63,14 +62,15 @@ export default function CompOffTable({ compOffData = [] }: Props) {
       label: 'Action',
       align: 'center' as const,
       width: "150px",
-      render: (record: CompOffTableRecord) => (
+      render: (_value: any, record: CompOffTableRecord) => (
         <button
-          className={`px-4 py-1 rounded-md text-sm font-medium text-white shadow-sm ${record.status === "Approved"
-            ? "bg-blue-500 "
-            : "bg-gray-400 cursor-not-allowed"
+          className={`px-4 py-1 rounded-md text-sm font-medium text-white shadow-sm ${record?.status === "Approved"
+            ? "bg-gray-400 cursor-not-allowed"
+            : "bg-blue-600 hover:bg-blue-700"
             }`}
+          disabled={record?.status === "Approved"}
         >
-          {record.status === "Approved" ? "Approve" : "Approved"}
+          {record?.status === "Approved" ? "Approved" : "Approve"}
         </button>
       )
     }

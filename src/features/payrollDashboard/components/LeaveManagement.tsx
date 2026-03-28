@@ -1,6 +1,5 @@
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { useNavigate } from "react-router-dom";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 
 
 interface LeaveManagementRecord {
@@ -9,7 +8,7 @@ interface LeaveManagementRecord {
   StartDate: string,
   EndDate: string,
   LeaveTypeMasterId: number
-  status: "Approved" | "Pending";
+  Status: "Approved" | "Pending";
 }
 
 interface Props {
@@ -34,7 +33,7 @@ export default function LeaveManagement({ leaveData = [] }: Props) {
       )
     },
     {
-      key: 'LeaveTypeMasterId',
+      key: 'LeaveType',
       label: 'Leave Type',
       align: 'center' as const,
       render: (value: string) => (
@@ -42,13 +41,13 @@ export default function LeaveManagement({ leaveData = [] }: Props) {
       )
     },
     {
-      key: 'duration',
+      key: 'NoOfDays',
       label: 'Duration',
       width: '350px',
       align: 'center' as const,
 
-      render: ( record: LeaveManagementRecord) => (
-        <span className="font-medium text-black text-base">{formatDate_dd_MonthName_yy(record.StartDate)} - {formatDate_dd_MonthName_yy(record.EndDate)}</span>
+      render: (value: string) => (
+        <span className="font-medium text-black text-base">{value}</span>
       )
     },
     {
@@ -63,14 +62,13 @@ export default function LeaveManagement({ leaveData = [] }: Props) {
       )
     },
     {
-      key: 'status',
+      key: 'Status',
       label: 'Status',
       align: 'center' as const,
-      render: (value: string) => (
+      render: (value: string, record: LeaveManagementRecord) => (
         <div className="flex flex-col">
-          <span className="font-medium text-gray-900">{value}</span>
-          {/* <span className="text-xs text-gray-500">{record.Status}</span> */}
-          <span className="font-medium text-red-600">Pending</span>
+          <span className="font-medium text-gray-900">{value || record.Status}</span>
+          <span className="font-medium text-red-600">{(value || record.Status) === 'Pending' ? 'Pending' : ''}</span>
         </div>
       )
     },
@@ -78,14 +76,14 @@ export default function LeaveManagement({ leaveData = [] }: Props) {
       key: 'action',
       label: 'Action',
       align: 'center' as const,
-      render: ( record: LeaveManagementRecord) => (
+      render: (_value: any, record: LeaveManagementRecord) => (
         <button
-          className={`px-4 py-1 rounded-md text-sm font-medium text-white shadow-sm ${record.status === "Approved"
+          className={`px-4 py-1 rounded-md text-sm font-medium text-white shadow-sm ${record?.Status === "Approved"
             ? "bg-gray-400 cursor-not-allowed"
             : "bg-blue-600 hover:bg-blue-700"
             }`}
         >
-          {record.status === "Approved" ? "Approved" : "Approve"}
+          {record?.Status === "Approved" ? "Approved" : "Approve"}
         </button>
       )
     },

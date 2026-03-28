@@ -200,6 +200,36 @@ export const AddUpdateLeave: React.FC = () => {
         };
     };
 
+    const buildLeaveFormData = (): FormData => {
+        const form = new FormData();
+        form.append('LeaveId', String(formData.LeaveId ?? 0));
+        form.append('Uniquekey', formData.Uniquekey ?? '');
+        form.append('LeaveTypeMasterId', String(formData.LeaveTypeMasterId ?? 0));
+        form.append('StartDate', formData.StartDate ?? '');
+        form.append('EndDate', formData.EndDate ?? '');
+        form.append('StartDateLeaveDuration', formData.StartDateLeaveDuration ?? '');
+        form.append('EndDateLeaveDuration', formData.EndDateLeaveDuration ?? '');
+        form.append('Reason', formData.Reason ?? '');
+
+        leaveDocumentFiles.forEach((file) => {
+            if (file instanceof File) {
+                form.append('LeaveDocumentURL', file);
+            }
+        });
+
+        const existingUrls = leaveDocumentFiles
+            .filter((file): file is string => typeof file === 'string' && file.trim().length > 0)
+            .join(',');
+
+        if (existingUrls) {
+            form.append('LeaveDocumentURL', existingUrls);
+        }
+
+        form.append('RemoveLeaveURL', removedLeaveUrls.join(','));
+
+        return form;
+    };
+
     // ============================================================= [ADD UPDATE FUNCTION] =============================================================================================
     const handleSave = async () => {
         setErrors({});
@@ -214,13 +244,7 @@ export const AddUpdateLeave: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-                const payload: AddUpdateLeaveRequest = {
-                    ...formData,
-                    StartDate: formData.StartDate,
-                    EndDate: formData.EndDate,
-                    LeaveDocumentFiles: leaveDocumentFiles || [],
-                    RemoveLeaveURL: removedLeaveUrls.join(','),
-                };
+                const payload = buildLeaveFormData();
                 const respEither = await LeaveService.apiCallAddUpdateLeave(payload);
 
                 if (E.isRight(respEither)) {

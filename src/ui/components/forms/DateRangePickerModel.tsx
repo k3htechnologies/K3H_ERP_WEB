@@ -287,13 +287,13 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
 
     const dateStr = formatYyyyMmDd(date)
 
-    // If a CompOff date is selected → invert logic
-    if (isSelectedDateFromAllowedDates()) {
-      return !allowedDates.includes(dateStr)
+    // If no Working Date selected: allow only allowedDates
+    if (!tempStartDate) {
+      return allowedDates.includes(dateStr)
     }
 
-    // Default: allow only allowedDates
-    return allowedDates.includes(dateStr)
+    // If Working Date is selected: allow any date for CompOff Date
+    return true
   }
 
   const handleDayClick = (date: Date | null) => {
@@ -312,14 +312,8 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     }
 
     if (editingField === 'end') {
-      if (tempStartDate && date < tempStartDate) {
-        setTempStartDate(date)
-        setTempEndDate(null)
-        setEditingField('end')
-      } else {
-        setTempEndDate(date)
-        setEditingField(null)
-      }
+      setTempEndDate(date)
+      setEditingField(null)
       return
     }
 
@@ -330,30 +324,15 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     }
 
     if (!tempEndDate) {
-      if (date < tempStartDate) {
-        setTempEndDate(tempStartDate)
-        setTempStartDate(date)
-        setEditingField(null)
-      } else {
-        setTempEndDate(date)
-        setEditingField(null)
-      }
+      setTempEndDate(date)
+      setEditingField(null)
       return
     }
 
-    if (date < tempStartDate) {
-      setTempStartDate(date)
-      setTempEndDate(null)
-      setEditingField('end')
-    } else if (date < tempEndDate) {
-      setTempStartDate(date)
-      setTempEndDate(null)
-      setEditingField('end')
-    } else {
-      setTempStartDate(tempStartDate)
-      setTempEndDate(date)
-      setEditingField(null)
-    }
+    // If both dates are set, replace working date
+    setTempStartDate(date)
+    setTempEndDate(null)
+    setEditingField('end')
   }
 
   const handleConfirm = (e: React.FormEvent) => {

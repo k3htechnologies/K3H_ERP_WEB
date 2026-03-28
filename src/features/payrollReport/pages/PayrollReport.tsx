@@ -89,7 +89,7 @@ export const PayrollReport: React.FC = () => {
   }, [activeTab]);
   // ── Debounced search ───────────────────────────────────────────────────────
   const debouncedSearch = useDebouncedCallback(
-    (_v: string) => dispatchLoad(1),
+    (v: string) => dispatchLoad(1, filters, activeTab, sortInfo, v),
     350,
   );
   useEffect(() => {
@@ -169,7 +169,7 @@ export const PayrollReport: React.FC = () => {
           onTabChange={(t) => setActiveTab(t.id as TabId)}
         />
 
-        <div className="mt-6">
+        <div className="mt-6 -mx-6 px-6">
           <TableActionToolbar
             isShowSearchBar
             searchTerm={searchTerm}
@@ -192,7 +192,7 @@ export const PayrollReport: React.FC = () => {
           />
         </div>
         {activeTab !== "Attendance" && (
-          <div className="mt-6">
+          <div className="mt-3 -mx-6 px-6">
             <div className="flex items-center justify-between">
               <Tabs
                 tabs={SUBTAB_LIST}
@@ -272,7 +272,7 @@ export const PayrollReport: React.FC = () => {
         )}
 
 
-        <div className="mt-6">
+        <div className="mt-1 -mx-6 px-6">
           {activeTab === "Attendance" ? (
             <DataTableExpandable
               ref={attendanceTableRef}

@@ -54,7 +54,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
 
             if (error === TokenExpiredException) {
 
-               return await this.pullOutDoor(params);
+                await this.pullOutDoor(params);
             }
 
             throw error
@@ -77,7 +77,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
 
             if (error === TokenExpiredException) {
 
-              return await this.addUpdateOutDoor(payload);
+                await this.addUpdateOutDoor(payload);
             }
             throw error
         }
@@ -98,7 +98,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             console.error('ERRPR : DELETE OUTDOOR:', error)
 
             if (error === TokenExpiredException) {
-               return await this.deleteOutDoor(params);
+                await this.deleteOutDoor(params);
             }
 
             throw error
@@ -120,7 +120,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             console.error('Error: PUNCH IN OUTDOOR:', error)
 
             if (error === TokenExpiredException) {
-               return await this.punchIn(params);
+                await this.punchIn(params);
             }
             throw error
         }
@@ -141,7 +141,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             console.error('Error: Add Update CONCLUSION:', error)
 
             if (error === TokenExpiredException) {
-               return await this.addUpdateConclusion(params);
+                await this.addUpdateConclusion(params);
             }
             throw error
         }

@@ -3,9 +3,7 @@ import { LeaveDatasourceImpl } from '@/features/leave/datasources/LeaveDatasourc
 import type {
     AddUpdateLeaveRequest,
     DeleteLeaveRequest,
-    FilterWithPaginationLeaveConfiguredRequest,
     FilterWithPaginationLeaveRequest,
-    LeaveConfiguredListResponse,
     LeaveDeleteResponse,
     LeaveListResponse,
     LeaveSaveResponse,
@@ -45,18 +43,6 @@ export const LeaveService = {
         try {
 
             return E.right(await leaveDatasource.deleteLeave(params));
-
-        } catch (error: any) {
-
-            return E.left({ message: error.message, code: error.code });
-
-        }
-    },
-
-      apiCallPullLeaveConfigured: async (params: FilterWithPaginationLeaveConfiguredRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, LeaveConfiguredListResponse>> => {
-        try {
-
-            return E.right(await leaveDatasource.pullLeaveConfigured(params, options?.signal));
 
         } catch (error: any) {
 

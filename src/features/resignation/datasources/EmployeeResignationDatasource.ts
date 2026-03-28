@@ -49,7 +49,7 @@ export class EmployeeResignationDatasourceImpl implements EmployeeResignationDat
             console.error('Error: Pull Employee Resignation:', error);
 
             if (error === TokenExpiredException) {
-               return await this.pullEmployeeResignation(params);
+                await this.pullEmployeeResignation(params);
             }
             throw error
         }
@@ -67,7 +67,7 @@ export class EmployeeResignationDatasourceImpl implements EmployeeResignationDat
             console.error('Error: Add Update Employee Resignation:', error);
 
             if (error === TokenExpiredException) {
-               return await this.addUpdateEmployeeResignation(params);
+                await this.addUpdateEmployeeResignation(params);
             }
             throw error
         }
@@ -90,7 +90,7 @@ export class EmployeeResignationDatasourceImpl implements EmployeeResignationDat
             console.error('Error: Delete Employee Resignation:', error);
 
             if (error === TokenExpiredException) {
-               return await this.deleteEmployeeResignation(params);
+                await this.deleteEmployeeResignation(params);
             }
             throw error
         }

@@ -4,9 +4,7 @@ import { LeaveApi } from '@/features/leave/api/LeaveApi'
 import type {
     AddUpdateLeaveRequest,
     DeleteLeaveRequest,
-    FilterWithPaginationLeaveConfiguredRequest,
     FilterWithPaginationLeaveRequest,
-    LeaveConfiguredListResponse,
     LeaveDeleteResponse,
     LeaveListResponse,
     LeaveSaveResponse,
@@ -17,7 +15,7 @@ export abstract class LeaveDatasource {
     abstract pullLeave(params: FilterWithPaginationLeaveRequest, signal?: AbortSignal): Promise<LeaveListResponse>;
     abstract addUpdateLeave(data: AddUpdateLeaveRequest): Promise<LeaveSaveResponse>;
     abstract deleteLeave(params: DeleteLeaveRequest): Promise<LeaveDeleteResponse>;
-    abstract pullLeaveConfigured(params: FilterWithPaginationLeaveConfiguredRequest, signal?: AbortSignal): Promise<LeaveConfiguredListResponse>;
+
 }
 
 export class LeaveDatasourceImpl implements LeaveDatasource {
@@ -57,8 +55,9 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
             console.error('Error: Pull LEAVE:', error);
 
             if (error === TokenExpiredException) {
-                return await this.pullLeave(params)
+                await this.pullLeave(params)
             }
+
             throw error
         }
     }
@@ -107,7 +106,7 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
             console.error('Error: Add Update LEAVE:', error)
 
             if (error === TokenExpiredException) {
-                return await this.addUpdateLeave(params)
+                await this.addUpdateLeave(params)
             }
 
             throw error
@@ -132,37 +131,12 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
             console.error('Error: Delete LEAVE:', error)
 
             if (error === TokenExpiredException) {
-                return await this.deleteLeave(params)
+                await this.deleteLeave(params)
             }
 
             throw error
         }
     }
 
-    async pullLeaveConfigured(params: FilterWithPaginationLeaveConfiguredRequest, signal?: AbortSignal): Promise<LeaveConfiguredListResponse> {
-        try {
-            const queryParams = new URLSearchParams({
-                PageSize: (params.PageSize ?? 10).toString(),
-                PageNumber: (params.PageNumber ?? 1).toString(),
-            })
-            
-            if (params.LeaveTypeMasterId) queryParams.append('LeaveTypeMasterId', params.LeaveTypeMasterId.toString())
-            if (params.LeaveType?.trim()) queryParams.append('LeaveType', params.LeaveType.trim())
-
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${LeaveApi.PULL_LEAVE_CONFIGURED}?${queryParams.toString()}`, { signal }
-            )
-            return response
-        } catch (error) {
-
-            console.error('Error: Pull LEAVE CONFIGURED:', error);
-
-            if (error === TokenExpiredException) {
-                return await this.pullLeaveConfigured(params)
-            }
-
-            throw error
-        }
-    }
 }
 

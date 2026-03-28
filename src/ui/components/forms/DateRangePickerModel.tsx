@@ -165,7 +165,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   const [tempEndDate, setTempEndDate] = useState<Date | null>(endDateObj)
   const initialDate = startDateObj ?? endDateObj ?? new Date()
   const [currentMonth, setCurrentMonth] = useState<Date>(initialDate)
-  const [editingField, setEditingField] = useState<'start' | 'end' | null>(null) 
+  const [editingField, setEditingField] = useState<'start' | 'end' | null>(null)
   const [localStartTime, setLocalStartTime] = useState(startTime)
   const [localEndTime, setLocalEndTime] = useState(endTime)
   const [localAIEnabled, setLocalAIEnabled] = useState(aiEnabled)
@@ -283,18 +283,16 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   }
 
   const isDateAllowed = (date: Date): boolean => {
-if (!allowedDates || allowedDates.length === 0) return false
+    if (!allowedDates || allowedDates.length === 0) return true
 
-    // If a CompOff date is selected, invert the logic:
-    // - Disable dates from allowedDates (CompOff dates)
-    // - Enable all other dates
+    const dateStr = formatYyyyMmDd(date)
+
+    // If a CompOff date is selected → invert logic
     if (isSelectedDateFromAllowedDates()) {
-      const dateStr = formatYyyyMmDd(date)
-      return !allowedDates.includes(dateStr) // Invert: allow dates NOT in allowedDates
+      return !allowedDates.includes(dateStr)
     }
 
-    // Default behavior: only allow dates from allowedDates
-    const dateStr = formatYyyyMmDd(date)
+    // Default: allow only allowedDates
     return allowedDates.includes(dateStr)
   }
 
@@ -591,7 +589,8 @@ if (!allowedDates || allowedDates.length === 0) return false
                     const isSelected = isStart || isEnd
                     const dateAllowed = isDateAllowed(date)
                     const dateStr = formatYyyyMmDd(date)
-                    const isFromAllowedDates = allowedDates && allowedDates.length > 0 && allowedDates.includes(dateStr)
+                    const hasAllowedDates = allowedDates && allowedDates.length > 0
+                    const isFromAllowedDates = hasAllowedDates && allowedDates.includes(dateStr)
                     const hasCompOffDateSelected = isSelectedDateFromAllowedDates()
                     const isHighlighted = hasCompOffDateSelected
                       ? (!isFromAllowedDates && !isSelected && !isInRange && isCurrentMonth && dateAllowed)

@@ -60,7 +60,7 @@ export const PayrollReport: React.FC = () => {
     clearSearch,
     handleExportPdf,
   } = useTabData(activeTab, attendanceTableRef, subActiveTab);
-  
+
 
   // ── All memoized column definitions ───────────────────────────────────────
   const { attendanceColumns, attendanceDetailsColumns, getCurrentColumns } = usePayrollColumns();
@@ -73,15 +73,15 @@ export const PayrollReport: React.FC = () => {
   const approvalRowKey = useMemo(() => {
     switch (activeTab) {
       case "Comp-Off":
-        return "CompOffId";
+        return "Comp-Off";
       case "Leave":
-        return "LeaveId";
+        return "Leave";
       case "Outdoor":
-        return "OutdoorId";
+        return "Outdoor";
       case "Attendance Regularization":
-        return "AttendanceRegularizationId";
+        return "Attendance Regularization";
       case "Resignation":
-        return "EmployeeResignationId";
+        return "Resignation";
       default:
         // Fallback for Attendance or any other tab that exposes a generic Id
         return "Id";
@@ -108,10 +108,10 @@ export const PayrollReport: React.FC = () => {
     }
   }, [selectedApprovals, activeTab, subActiveTab])
   useEffect(() => {
-  if (activeTab !== "Attendance") {
-    dispatchLoad(1);
-  }
-}, [subActiveTab]);
+    if (activeTab !== "Attendance") {
+      dispatchLoad(1);
+    }
+  }, [subActiveTab]);
   // ── Pagination & sorting ───────────────────────────────────────────────────
   const handlePageChange = useCallback(
     (page: number) => dispatchLoad(page),

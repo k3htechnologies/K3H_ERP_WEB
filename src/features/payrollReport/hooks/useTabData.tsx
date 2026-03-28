@@ -175,7 +175,7 @@ export function useTabData(
     );
   };
 
-  const loadAttendanceRegularization = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = false) => {
+  const loadAttendanceRegularization = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
@@ -216,8 +216,8 @@ export function useTabData(
           PageNumber: page,
           PageSize: pagination.pageSize,
           CompOffId: filterParams.CompOffId ? Number(filterParams.CompOffId) : 0,
-          StartDate: filterParams.StartDate || undefined,
-          EndDate: filterParams.EndDate || undefined,
+          StartDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.StartDate) || undefined,
+          EndDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.EndDate) || undefined,
           Reason: filterParams.Reason?.trim() || undefined,
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS["Comp-Off"]),
           IsReport: true,
@@ -317,11 +317,11 @@ export function useTabData(
     (page: number, f: FilterInfo = filters, tab: TabId = activeTab, sort?: SortInfo) => {
       const LOADER_MAP: Record<TabId, (p: number, f: FilterInfo, s?: SortInfo) => Promise<void>> = {
         Attendance: loadAttendance,
-        "Attendance Regularization": loadAttendanceRegularization,
-        "Comp-Off": loadCompOff,
+        "Attendance Regularization": (p, f, s) => loadAttendanceRegularization(p, f, s, subActiveTab === "Approval"),
+        "Comp-Off": (p, f, s) => loadCompOff(p, f, s, subActiveTab === "Approval"),
         Leave: (p, f, s) => loadLeave(p, f, s, subActiveTab === "Approval"),
-        Outdoor: loadOutdoor,
-        Resignation: loadResignations,
+        Outdoor: (p, f, s) => loadOutdoor(p, f, s, subActiveTab === "Approval"),
+        Resignation: (p, f, s) => loadResignations(p, f, s, subActiveTab === "Approval"),
       };
       return LOADER_MAP[tab](page, f, sort);
     },

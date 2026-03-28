@@ -17,6 +17,7 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { getInitialFormState, getCompOffColumns, REQUIRED_COLUMN_KEYS } from '@/features/compOff/constants/compOffConstants';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from '@/core/utils/dateFormat';
 
 export const useCompOff = () => {
 
@@ -100,7 +101,7 @@ export const useCompOff = () => {
 
     //#region DATA LOADING | FETCH | LOAD
 
-    const loadCompOff = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo,canApprove:boolean=false,IsReport :boolean=false) => {
+    const loadCompOff = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
         debugger
         await runApiWithLoader(
             setIsLoading,
@@ -110,8 +111,8 @@ export const useCompOff = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     CompOffId: filterParams.CompOffId ? Number(filterParams.CompOffId) : 0,
-                    StartDate: filterParams.StartDate || undefined,
-                    EndDate: filterParams.EndDate || undefined,
+                    StartDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.StartDate) || undefined,
+                    EndDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.EndDate) || undefined,
                     Reason: filterParams.Reason?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, compOffColumns),
                     IsReport: false,

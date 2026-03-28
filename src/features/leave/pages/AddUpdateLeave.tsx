@@ -80,12 +80,17 @@ export const AddUpdateLeave: React.FC = () => {
             fetchLeaveDetails();
             return;
         }
-
+        setFormData(prev => ({
+            ...prev,
+            StartDateLeaveDuration: '',
+            EndDateLeaveDuration: ''
+        }));
         setFormData(initialFormState());
         setDropdownLabels({});
         setErrors({});
         setLeaveDocumentFiles([]);
         setLeaveDocumentURL("");
+
         initialLeaveUrlsRef.current = [];
         setRemovedLeaveUrls([]);
     }, [id]);
@@ -184,8 +189,8 @@ export const AddUpdateLeave: React.FC = () => {
         if (!finalStart) newErrors.StartDate = 'Start Date is required';
         if (!finalEnd) newErrors.EndDate = 'End Date is required';
         if (!formData.StartDateLeaveDuration) newErrors.StartDateLeaveDuration = 'Start duration required';
-        if (!formData.EndDateLeaveDuration) newErrors.EndDateLeaveDuration = 'End duration required';
         if (!formData.Reason || formData.Reason.trim() === '') newErrors.Reason = 'Reason is required';
+        if (formData.StartDate === formData.EndDate && formData.StartDateLeaveDuration === 'HalfSecond' && formData.EndDateLeaveDuration === 'HalfFirst') newErrors.EndDateLeaveDuration = 'Invalid half-day combination';
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -459,7 +464,6 @@ export const AddUpdateLeave: React.FC = () => {
                                 label="End Day Duration"
                                 title="Select Duration"
                                 size="lg"
-                                required
                                 isShowClearSelection={false}
                                 dataFetchCallBack={async () => ({
                                     totalNumberOfRecord: LEAVE_DURATION_OPTIONS.length,
@@ -493,8 +497,23 @@ export const AddUpdateLeave: React.FC = () => {
                                         const days = Math.floor(diff / (1000 * 60 * 60 * 24)) + 1;
                                         const startHalf = formData.StartDateLeaveDuration?.startsWith('Half') ? 0.5 : 1;
                                         const endHalf = formData.EndDateLeaveDuration?.startsWith('Half') ? 0.5 : 1;
-                                        if (days <= 1) {
-                                            return Math.max(startHalf, endHalf).toString();
+                                        const startDur = (formData.StartDateLeaveDuration || '').toUpperCase().replace(/\s/g, '');
+                                        const endDur = (formData.EndDateLeaveDuration || '').toUpperCase().replace(/\s/g, '');
+
+                                        const isStartHalf = startDur === 'HALFFIRST' || startDur === 'HALFSECOND';
+                                        const isEndHalf = endDur === 'HALFFIRST' || endDur === 'HALFSECOND';
+
+                                        if (days === 1) {
+                                            if (isStartHalf && isEndHalf) {
+                                                return startDur !== endDur ? '1' : '0.5';
+                                            }
+                                            if (isStartHalf || isEndHalf) {
+                                                return '0.5';
+                                            }
+                                            return '1';
+                                        }
+                                        else if (start == end) {
+                                            return 0.5
                                         }
                                         return ((days - 2) + startHalf + endHalf).toString();
                                     })()

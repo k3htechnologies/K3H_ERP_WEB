@@ -9,8 +9,13 @@ import type {
 } from '@/features/attendanceCalendar/models/AttendanceModel'
 
 export abstract class AttendanceRegularizationDatasource {
-    abstract pullAttendanceRegularization(params: FilterWithPaginationAttendanceRegularizationRequest, signal?: AbortSignal): Promise<AttendanceRegularizationListResponse>;
-    abstract addUpdateAttendanceRegularization(data: AddUpdateAttendanceRegularization): Promise<AttendanceRegularizationSaveResponse>;
+    abstract pullAttendanceRegularization(
+        params: FilterWithPaginationAttendanceRegularizationRequest,
+        signal?: AbortSignal
+    ): Promise<AttendanceRegularizationListResponse>;
+    abstract addUpdateAttendanceRegularization(
+        data: AddUpdateAttendanceRegularization
+    ): Promise<AttendanceRegularizationSaveResponse>;
 }
 
 export class AttendanceRegularizationDatasourceImpl implements AttendanceRegularizationDatasource {
@@ -48,7 +53,7 @@ export class AttendanceRegularizationDatasourceImpl implements AttendanceRegular
             console.error('ERROR: PULL ATTENDANCE REGULARIZATION :', error);
 
             if (error === TokenExpiredException) {
-                return await this.pullAttendanceRegularization(params);
+                await this.pullAttendanceRegularization(params);
             }
 
             throw error
@@ -80,7 +85,7 @@ export class AttendanceRegularizationDatasourceImpl implements AttendanceRegular
             console.error('ERROR: ADD UPDATE ATTENDANCE REGULARIZATION :', error)
 
             if (error === TokenExpiredException) {
-                return await this.addUpdateAttendanceRegularization(params);
+                await this.addUpdateAttendanceRegularization(params);
             }
             throw error
         }

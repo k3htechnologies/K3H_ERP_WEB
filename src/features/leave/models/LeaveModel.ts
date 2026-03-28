@@ -1,5 +1,4 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
-import type { FileValue } from '@/ui/components/ImagePicker/MultiFilePicker'
 
 export interface FilterWithPaginationLeaveRequest {
   PageSize: number
@@ -42,6 +41,8 @@ export interface LeaveData {
   LastModifiedDate?: string | null
 }
 
+import type { FileValue } from '@/ui/components/ImagePicker/MultiFilePicker'
+
 export interface AddUpdateLeaveRequest {
   LeaveId?: number
   Uniquekey?: string
@@ -60,19 +61,6 @@ export interface DeleteLeaveRequest {
   Uniquekey: string
 }
 
-export interface FilterWithPaginationLeaveConfiguredRequest {
-  PageSize: number
-  PageNumber: number
-  LeaveTypeMasterId?: number
-  LeaveType?: string
-}
-
-export interface LeaveConfiguredData {
-  LeaveTypeMasterId: number | 0
-  LeaveType: string | null
-}
-
 export type LeaveListResponse = ApiResponse<LeaveData[]>
 export type LeaveSaveResponse = ApiResponse<LeaveData[]>
 export type LeaveDeleteResponse = ApiResponse<number>
-export type LeaveConfiguredListResponse = ApiResponse<LeaveConfiguredData[]>

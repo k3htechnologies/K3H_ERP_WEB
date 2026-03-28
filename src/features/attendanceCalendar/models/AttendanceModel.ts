@@ -91,5 +91,9 @@ export interface FilterWithPaginationAttendanceRegularizationRequest {
   ExportType?: "Excel" | "PDF";
 }
 
-export type AttendanceRegularizationListResponse = ApiResponse<AttendanceRegularizationData[]>;
-export type AttendanceRegularizationSaveResponse = ApiResponse<AttendanceRegularizationData[]>;
+export type AttendanceRegularizationListResponse = ApiResponse<
+  AttendanceRegularizationData[]
+>;
+export type AttendanceRegularizationSaveResponse = ApiResponse<
+  AttendanceRegularizationData[]
+>;

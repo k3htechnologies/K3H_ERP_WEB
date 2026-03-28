@@ -39,10 +39,12 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
   onFieldChange,
   onReset,
 }) => {
+
   const statusTextColor = useMemo(
     () => selectedAttendance ? getStatusTextColor(selectedAttendance.AttendanceStatus) : '',
     [selectedAttendance]
   );
+
   const statusLabel = useMemo(() => {
     return selectedAttendance?.AttendanceStatus ? getStatusLabel(selectedAttendance.AttendanceStatus) : '-';
   }, [selectedAttendance]);
@@ -83,6 +85,7 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
           }
         }
       }
+
       // Format: "01/01/2025 10:30:00" or "01/01/2025 10:30 AM"
       else if (punchInStr.includes(' ')) {
         const parts = punchInStr.split(' ');
@@ -96,6 +99,7 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
           }
         }
       }
+
       // Format: "10:30:00" or "10:30"
       else if (/^\d{1,2}:\d{2}/.test(punchInStr)) {
         const [hours, minutes] = punchInStr.split(':');
@@ -142,8 +146,10 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
       className="max-w-2xl w-full mx-4"
     >
       <div className="space-y-3 sm:space-y-4 p-3 sm:p-4 bg-blue-50">
+
         {selectedAttendance && (
           <div className="space-y-3 sm:space-y-4">
+
             {/* Employee Info */}
             <div className="bg-white rounded-lg p-2 sm:p-3 border border-gray-200">
               <div className="space-y-2">
@@ -153,18 +159,22 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
                   isRow
                   withBorder={false}
                 />
+
                 <div className="space-y-2">
                   <div style={{ display: 'grid', gridTemplateColumns: '180px 16px 1fr', gap: 8, alignItems: 'center', width: '100%' }}>
                     <div className="text-sm font-medium text-[#1D1D1D80] truncate">
                       Current Status
                     </div>
+
                     <div className="text-sm text-[#1D1D1D80] text-center select-none">:</div>
                     <div className="text-sm text-[#1D1D1D] font-medium break-words min-w-0">
                       <span style={{ color: statusTextColor }}>
                         {statusLabel}
                       </span>
                     </div>
+
                   </div>
+
                 </div>
                 <FieldItem
                   label="Attendance Date"
@@ -173,6 +183,7 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
                   withBorder={false}
                 />
               </div>
+              
             </div>
 
             {/* Form Fields */}
@@ -215,6 +226,7 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
 
                     />
                   </div>
+
                   <div className="w-full">
                     <TimePicker
                       label="Punch Out Time"
@@ -240,15 +252,18 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
                   placeholder="Enter reason for regularization (required)"
                   rows={4}
                 />
+
                 {!errors.Reason && formData.Reason && (
                   <p className="mt-1 text-sm text-gray-500">
                     {reasonCharCount} characters remaining
                   </p>
                 )}
               </div>
+              
             </div>
           </div>
         )}
+
       </div>
     </Modal>
   );

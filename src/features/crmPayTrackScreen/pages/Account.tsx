@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Tabs from "@/ui/components/Tab/Tab";
-import PaymentScheduleCrm from "@/features/crmPayTrackScreen/components/PaymentScheduleCRM";
+import PaymentScheduleCrm from "@/features/crmPayTrackScreen/components/PaymentScheduleCrm";
 import PaymentLedgerCrm from "@/features/crmPayTrackScreen/components/PaymentLedgerCrm";
 
 export const Account: React.FC = () => {

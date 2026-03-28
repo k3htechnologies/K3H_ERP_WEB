@@ -1,8 +1,13 @@
+
+
 const DailyActivities = () => {
     return (
         <div className="space-y-3 pt-5">
-            <div className="bg-white rounded-xl shadow p-5 mt-4 h-92">
-                <p className="text-sm text-gray-500 mb-3">Daily Activities</p>
+            <div className="bg-white rounded-xl p-5 mt-4 h-82 flex flex-col shadow-sm">
+                <p className="text-md font-semibold text-gray-500 pb-2">Daily Activities</p>
+                <div className="grow flex items-center justify-center">
+                    <h1 className="text-gray-600 text-sm">Coming Soon</h1>
+                </div>
             </div>
         </div>
     )

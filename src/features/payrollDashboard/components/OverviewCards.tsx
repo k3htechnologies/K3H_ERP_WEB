@@ -1,21 +1,18 @@
 import { MapPin, Calendar1, Clock1, NotebookPen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-interface OverViewItem {
-  OnLeave?: number;
-  Outdoor?: number;
-  PendingApproval?: number;
-  AttendanceAlert?: number;
-}
+import type { Table0, Table5 } from "../models/PayrollDashboardModel";
 
 interface Props {
-  overViewData?: OverViewItem[];
+  overViewData: Table0[];
+  attendanceAlert: Table5[];
 }
 
-export default function OverviewCards({ overViewData = [] }: Props) {
+export default function OverviewCards({ overViewData, attendanceAlert }: Props) {
+
+  const absentTotalCount = attendanceAlert[0]?.AbsentCount || 0;
+
   const navigate = useNavigate();
   const data = overViewData[0] || {};
-  
 
   const cards = [
     {
@@ -40,10 +37,9 @@ export default function OverviewCards({ overViewData = [] }: Props) {
       iconBg: "bg-green-100",
       iconColor: "text-green-600",
     },
-    { 
+    {
       title: "Attendance Alert",
-      value: data.AttendanceAlert ?? 0,
-      // value: attendanceAlertStatusLength,
+      value: absentTotalCount ?? 0,
       subData: "Late Logins",
       icon: NotebookPen,
       iconBg: "bg-purple-100",
@@ -62,7 +58,7 @@ export default function OverviewCards({ overViewData = [] }: Props) {
           return (
             <div
               key={i}
-              className="bg-white rounded-xl p-4 border border-gray-100 flex flex-col justify-between h-32 relative cursor-pointer"
+              className="bg-white rounded-xl p-4 border border-gray-100 flex flex-col justify-between h-32 relative cursor-pointer shadow-sm"
             >
               <div className="text-base font-semibold " onClick={() => {
                 if (c.title === 'On Leave Today') {
@@ -74,7 +70,7 @@ export default function OverviewCards({ overViewData = [] }: Props) {
                 else if (c.title === 'Pending Approval') {
                 }
                 else if (c.title === 'Attendance Alert') {
-                 
+
                 }
               }}>
                 <p className="text-sm text-gray-500">{c.title}</p>

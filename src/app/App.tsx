@@ -213,7 +213,7 @@ function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<Navigate to="/dashboard" replace />} />
+            {/* <Route index element={<Navigate to="/dashboard" replace />} /> */}
             <Route path="dashboard" element={<Dashboard />} />
 
             {/* SETTING -> COMPANY SETUP */}

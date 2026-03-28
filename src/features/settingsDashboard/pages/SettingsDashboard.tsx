@@ -3,26 +3,28 @@ import OverviewCards from '@/features/settingsDashboard/components/OverviewCards
 import CompanySetup from '@/features/settingsDashboard/components/CompanySetup'
 import ProcurementMaster from '@/features/settingsDashboard/components/ProcurementMaster'
 import VendorManagement from '@/features/settingsDashboard/components/VendorManagement'
-import VendorGraphCard from '@/features/settingsDashboard/components/VendorGraphCard'
 import ProjectManagement from '@/features/settingsDashboard/components/ProjectManagement'
-import ProjectStatus from '@/features/settingsDashboard/components/ProjectStatus'
 import { runApiWithLoader } from '@/core/utils'
 import { settingsDashboardService } from '@/features/settingsDashboard/services/SettingsDashboardServices';
 import { useToast } from '@/core/hooks/useToast';
 import * as E from 'fp-ts/Either';
-import { Loader } from '@/core/utils/loader'
+import { Loader } from '@/core/utils/loader';
+import type { Table0, Table1, Table2, Table3, Table4, Table5, Table6, Table7 } from "@/features/settingsDashboard/models/SettingsDashboardModel";
+
+
 
 const SettingsDashboard: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [overViewCards, setOverViewCards] = useState<any>([]);
-  const [companySetup, setCompanySetup] = useState<any>([]);
-  const [procurementMaster, setProcurementMaster] = useState<any>([]);
-  const [vendorManagement, setVendorManagement] = useState<any>([]);
-  const [vendorGraphCard, setVendorGraphCard] = useState<any>([]);
-  const [projectManagement, setProjectManagement] = useState<any>([]);
-  const [projectStatus, setProjectStatus] = useState<any>([]);
+  const [overViewCards, setOverViewCards] = useState<Table0[]>([]);
+  const [companySetup, setCompanySetup] = useState<Table1[]>([]);
+  const [procurementMaster, setProcurementMaster] = useState<Table2[]>([]);
+  const [vendorManagement, setVendorManagement] = useState<Table3[]>([]);
+  const [vendorGraphCard, setVendorGraphCard] = useState<Table5[]>([]);
+  const [projectManagement, setProjectManagement] = useState<Table4[]>([]);
+  const [projectStatus, setProjectStatus] = useState<Table7[]>([]);
+  const [vendorCount, setVendorCount] = useState<Table6[]>([]);
 
   const { addToast } = useToast();
 
@@ -49,12 +51,13 @@ const SettingsDashboard: React.FC = () => {
           setVendorManagement(e.Table3 || []);
           setProjectManagement(e.Table4 || []);
           setVendorGraphCard(e.Table5 || []);
-          setProjectStatus(e.Table6 || []);
+          setProjectStatus(e.Table7 || []);
+          setVendorCount(e.Table6 || []);
 
         } else {
 
           addToast({ type: 'error', title: response.left.message });
-          
+
         }
         return response;
       }
@@ -62,19 +65,17 @@ const SettingsDashboard: React.FC = () => {
   }
 
   return (
-    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-3">
+    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
 
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
       <OverviewCards overViewData={overViewCards} />
 
-      <div className='grid grid-cols-1 lg:grid-cols-2 gap-6'>
-        <CompanySetup companySetupData={companySetup} />
+      <div className='grid grid-cols-1 lg:grid-cols-2 gap-4'>
         <ProcurementMaster procurementMasterData={procurementMaster} />
-        <VendorManagement vendorManagementData={vendorManagement} />
-        <VendorGraphCard vendorGraphData={vendorGraphCard} />
-        <ProjectManagement projectManagementData={projectManagement} />
-        <ProjectStatus projectStatusData={projectStatus} />
+        <CompanySetup companySetupData={companySetup} />
+        <ProjectManagement projectManagementData={projectManagement} projectStatusData={projectStatus} />
+        <VendorManagement vendorManagementData={vendorManagement} vendorGraphData={vendorGraphCard} vendorCount={vendorCount} />
       </div>
 
     </div>

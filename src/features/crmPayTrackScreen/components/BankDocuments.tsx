@@ -55,8 +55,6 @@ export const BankDocuments: React.FC = () => {
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteBankDocumentPayTrackDetailsData, setDeleteBankDocumentPayTrackDetailsData] = useState<BankDocumentsPayTrackBookingFilesData | null>(null)
 
-
-
     // PAGINATION
     const { pagination, setPagination } = usePagination(20);
 
@@ -73,7 +71,7 @@ export const BankDocuments: React.FC = () => {
     const bookingId = BookingId ? Number(BookingId) : 0;
 
     // TOAST
-    const { addToast } = useToast();
+    const { addToast } = useToast();    
 
     const handleBankDocumentsModal = () => {
         setIsAddUpdateModalOpen(true);
@@ -153,7 +151,6 @@ export const BankDocuments: React.FC = () => {
                         </div>
                     );
                 }
-
             },
             {
                 key: 'CreatedBy',
@@ -184,7 +181,7 @@ export const BankDocuments: React.FC = () => {
                                 onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
-                                    //#region CONFIRMATION DIALOG BOX
+                                    //#region  EDIT DIALOG BOX
                                     handleEditBankDocumentPayTrackDetails(row)
                                     //#endregion
                                 }}

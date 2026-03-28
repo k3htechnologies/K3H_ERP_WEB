@@ -136,11 +136,11 @@ export const DataTableWithOutBorder: React.FC<DataTableWithOutBorderProps> = ({
     return (
 
 
-        <div className={`rounded-lg flex flex-col}  ${fixedHeight ? 'h-full' : ''} ${className}`}>
+        <div className={`rounded-lg flex flex-col ${fixedHeight ? 'h-full' : ''} ${className}`}>
 
             {/* Table Container with Fixed Height */}
             <div className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
-                maxHeight: recordsPerPage === 10 ? 'calc(10 * 2.5rem + 2.5rem)' : maxHeight
+                maxHeight: recordsPerPage ? `calc(${recordsPerPage} * 2.5rem + 2.5rem)` : maxHeight
             } : {}}>
                 <table className={`min-w-full border-collapse`}>
                     <thead
@@ -167,15 +167,15 @@ export const DataTableWithOutBorder: React.FC<DataTableWithOutBorderProps> = ({
                                     key={column.key}
                                     className={`px-4 py-2  bg-white text-gray-800 tracking-wider whitespace-nowrap
                                                     ${column.align === 'center' ? 'text-center' :
-                                                                                        column.align === 'right' ? 'text-right' : 'text-left'}
+                                            column.align === 'right' ? 'text-right' : 'text-left'}
                                                     ${column.width ? `w-${column.width}` : ''}
                                                     ${column.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
                                                     ${column.fixed === 'left'
-                                                                                        ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
-                                                                                        : column.fixed === 'right'
-                                                                                            ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
-                                                                                            : ''
-                                                                                    }
+                                            ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
+                                            : column.fixed === 'right'
+                                                ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
+                                                : ''
+                                        }
                                                     `}
                                     style={{
                                         ...(column.width ? { width: column.width } : {}),

@@ -51,7 +51,7 @@ export const MASTER_DATA = {
 
   flat_unit_Type: ['Commercial', 'Gym', 'Residential', 'Void'],
 
-  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK','5 BHK','6 BHK','7 BHK','8 BHK', '1 + 1 JODI', '2 + 1 JODI', '2 + 2 JODI', '2 + 3 JODI', 'PENTHOUSE'],
+  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK', '8 BHK', '1 + 1 JODI', '2 + 1 JODI', '2 + 2 JODI', '2 + 3 JODI', 'PENTHOUSE'],
 
   commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
@@ -103,8 +103,8 @@ export const MASTER_DATA = {
 
   subSubsource_channelPartner: ['Channel Partner Data Calling', 'Channel Partner Walked IN', 'Digital Activity'],
 
-  finalStage: ['Site Visit', 'Re - Visit Proposed', 'Re - Visit Scheduled', 'Negotiation', 'Unit Selection / Blocked','Booking Done','Blocked','Cancelled','Retention','Lost'],
-  
+  finalStage: ['Site Visit', 'Re - Visit Proposed', 'Re - Visit Scheduled', 'Negotiation', 'Unit Selection / Blocked', 'Booking Done', 'Blocked', 'Cancelled', 'Retention', 'Lost'],
+
   finalStageDetail: ['Purchased with competition', 'Purchased somewhere else', 'Not connected calls >7', 'Low Budget', 'Ready Posession', 'Location', 'Product Issue', 'Pricing Issue', 'Payment Issue', 'Loan Issue', 'Inventory Issue', 'General Enquiry', 'Wrong Number', 'Dropped The Idea Of Buying', 'Booked Somewhere Else'],
 
   age: ['21-25', '26-35', '36-45', '46-55', '56-65', '>65'],
@@ -120,6 +120,10 @@ export const MASTER_DATA = {
   ethnicity: ['Bengali', 'Christian', 'Gujarati', 'Jain', 'Muslim', 'Marwari', 'Maharashtrian', 'North Indian', 'Parsi', 'Punjabi', 'Sindhi', 'South Indian', 'Others'],
 
   nationality: ['Indian', 'NRI'],
+
+  paymentFor: ['Registration', 'Stamp Duty', 'Other Charges', 'TDS'],
+
+  paymentReceivedFrom: ['Bank', 'Owner'],
 
   reasonsOfJobLeaving: [
     'Better career growth opportunity',
@@ -250,7 +254,7 @@ export const MASTER_DATA = {
 
   parkingStatus: ['Available', 'Block', 'Hold', 'Member'],
 
-  unitLayout: ['Entire Flat','Living / Dining', 'Passage', 'Kitchen', 'Toilet', 'Master Bed Room', 'Main Door JAMB', 'KIT / Bed Door Jamb', 'Toilet Door Jamb'],
+  unitLayout: ['Entire Flat', 'Living / Dining', 'Passage', 'Kitchen', 'Toilet', 'Master Bed Room', 'Main Door JAMB', 'KIT / Bed Door Jamb', 'Toilet Door Jamb'],
 
   caseType: ['Civil', 'Criminal'],
 
@@ -388,6 +392,8 @@ export const ENQUIRY_TIMELINE = toOptions(MASTER_DATA.enquiryTimeLine);
 export const SUPPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.supportType);
 export const REPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.reportType);
 export const YEAR_OPTIONS = toOptions(MASTER_DATA.year);
+export const PAYMENT_FOR_OPTIONS = toOptions(MASTER_DATA.paymentFor);
+export const PAYMENT_RECEIVED_FROM_OPTIONS = toOptions(MASTER_DATA.paymentReceivedFrom);
 
 
 

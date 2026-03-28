@@ -1,149 +1,166 @@
 import { Mail, Phone, Send } from "lucide-react";
-
-
-interface BirthdayData {
-    BirthDay: number;
-    BirthMonth: number;
-    DateOfBirth: string;
-    FullName: string;
-    MetaInformation: string;
-}
-
-interface ReportingData {
-    DepartmentName: string;
-    DesignationName: string;
-    ManagerEmail: string;
-    ManagerName: string;
-    ManagerPhone: string;
-}
+import { formatDate, getSafeString } from "@/core/utils/comman";
+import type { Table8, Table10 } from "../models/UserDashboardModel";
 
 interface Props {
-    birthdays: BirthdayData[];
-    reportingData: ReportingData[];
+    birthdays: Table8[];
+    reportingData: Table10[];
 }
 
+export default function EventsMore({ birthdays, reportingData }: Props) {
 
-export default function EventsMore({ birthdays = [], reportingData = [] }: Props) {
-    console.log("reportingData", reportingData);
-
-
-    function formatDate(dateString: string) {
-        const date = new Date(dateString);
-
-        const day = date.getDate().toString().padStart(2, "0");
-        const month = date.toLocaleString("en-GB", { month: "long" });
-
-        return `${day}, ${month}`;
-    }
-
+    const hasValidManager =
+        Array.isArray(reportingData) &&
+        reportingData.length > 0 &&
+        typeof reportingData[0]?.ManagerName === "string" &&
+        reportingData[0]?.ManagerName.trim() !== "";
 
     return (
-        <div className="space-y-3 pt-5">
-            <p className="text-md font-semibold text-gray-800">Events & More</p>
-            <div className="grid grid-cols-3 gap-4">
+        <div className="space-y-3 pt-5 px-2 lg:px-0">
+            <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2">
+                Events & More
+            </h2>
+
+            <div className="flex flex-col lg:flex-row gap-4 w-full items-stretch">
+
                 {/* Card-1: Upcoming Birthday */}
+                <div className="bg-white rounded-xl p-5 flex flex-col flex-2 h-[220px] shadow-sm">
 
-                {/* Birthday Card Map here */}
-                {birthdays.length > 0 &&
-                    <div className="bg-white rounded-xl shadow p-5 flex flex-col justify-between   ">
-                        <div className="flex justify-between items-center mb-4">
-                            <p className="text-base font-semibold text-gray-800">Upcoming Birthday</p>
-                        </div>
-                        {birthdays.map((item, index) => (
-                            <div key={index}>
-                               
-                                <p className="text-sm font-semibold text-gray-800">{item.FullName}</p>
-                                <div className="flex item-center justify-between">
-                                    <p className="text-sm text-gray-500">{formatDate(item.DateOfBirth)}</p>
-                                    <button className="bg-blue-600 text-white text-xs px-4 py-1.5 rounded flex items-center gap-1 hover:bg-blue-700 transition-colors">
-                                        Send <Send size={12} />
-                                    </button>
+                    {/* Header */}
+                    <p className="text-md font-semibold text-gray-500 pb-2 shrink-0">
+                        Upcoming Birthdays
+                    </p>
+
+                    {/* Content */}
+                    <div className="flex-1 overflow-y-auto thin-scroll pr-1">
+                        {birthdays?.length > 0 ? (
+                            birthdays.map((item, index) => (
+                                <div
+                                    key={index}
+                                    className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
+                                >
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-lg shrink-0">
+                                            {getSafeString(item.FullName).charAt(0).toUpperCase() || '?'}
+                                        </div>
+
+                                        <div className="truncate">
+                                            <p className="text-sm font-semibold text-gray-800 truncate">
+                                                {getSafeString(item.FullName)}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                {getSafeString(item.DepartmentName)}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 shrink-0 ml-2">
+                                        <span className="text-xs text-gray-500 whitespace-nowrap">
+                                            {item.DateOfBirth ? formatDate(item.DateOfBirth) : '-'}
+                                        </span>
+
+                                        <button
+                                            disabled
+                                            className="bg-blue-600 text-white text-[10px] px-4 py-1.5 rounded flex items-center gap-1 opacity-50 cursor-not-allowed"
+                                        >
+                                            Send <Send size={10} />
+                                        </button>
+                                    </div>
                                 </div>
+                            ))
+                        ) : (
+                            <div className="flex items-center justify-center h-full">
+                                <p className="text-sm text-gray-500">
+                                    No upcoming birthdays
+                                </p>
                             </div>
-                        ))}
-                    </div>}
-
-                {/* Card-2: Upcoming Events */}
-
-                <div className="bg-white rounded-xl shadow p-5 flex flex-col">
-                    
-                    <p className="text-base font-semibold text-gray-800 mb-5">Upcoming Events</p>
-
-                    <div className="space-y-5">
-                        {/* Event 1 */}
-                        <div className="flex gap-6">
-                            <div className="min-w-[90px]">
-                                <p className="text-xs text-gray-500">21 October 2025</p>
-                                <p className="text-xs text-gray-500">Monday</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-bold text-gray-800">Diwali Celebration</p>
-                                <p className="text-xs text-gray-500">Andheri</p>
-                            </div>
-                        </div>
-
-                        {/* Event 2 */}
-                        <div className="flex gap-6">
-                            <div className="min-w-[90px]">
-                                <p className="text-xs text-gray-500">21 October 2025</p>
-                                <p className="text-xs text-gray-500">Monday</p>
-                            </div>
-                            <div>
-                                <p className="text-sm font-bold text-gray-800">Team Building Program</p>
-                                <p className="text-xs text-gray-500">Borivali</p>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 
+                {/* Card-2: Upcoming Events */}
+                <div className="bg-white rounded-xl p-5 flex flex-col flex-2 h-[220px] shadow-sm ">
 
-                {reportingData.length > 0 &&
-                    <div className="bg-white rounded-xl shadow p-5">
-                        <p className="text-base font-semibold text-gray-800 mb-5">Reporting Manager</p>
+                    {/* Header */}
+                    <p className="text-md font-semibold text-gray-500 pb-2 shrink-0">
+                        Upcoming Events
+                    </p>
 
-                        {reportingData.map((item, index) => (
-                            <div key={index} className="flex gap-4">
-                                <div className="w-12 h-12 rounded-full overflow-hidden shrink-0">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80"
-                                        alt="Prachin Bari"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <p className="text-sm font-bold text-gray-800">
-                                        {typeof item.ManagerName === 'object' ? JSON.stringify(item.ManagerName) : item.ManagerName}
-                                    </p>
-                                    <p className="text-xs text-gray-500 font-medium">
-                                        {typeof item.DesignationName === 'object' ? JSON.stringify(item.DesignationName) : item.DesignationName}
-                                    </p>
-                                    <p className="text-xs text-gray-400">
-                                        {typeof item.DepartmentName === 'object' ? JSON.stringify(item.DepartmentName) : item.DepartmentName}
-                                    </p>
-
-                                    <div className="pt-2 space-y-1.5">
-                                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                                            <Mail size={14} className="text-blue-600" />
-                                            <span>
-                                                {typeof item.ManagerEmail === 'object' ? JSON.stringify(item.ManagerEmail) : item.ManagerEmail}
-                                            </span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-xs text-gray-600">
-                                            <Phone size={14} className="text-blue-600" />
-                                            <span>
-                                                {typeof item.ManagerPhone === 'object' ? JSON.stringify(item.ManagerPhone) : item.ManagerPhone}
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
+                    {/* Content */}
+                    <div className="flex-1 flex items-center justify-center text-gray-600 text-sm">
+                        Coming Soon
                     </div>
-                }
+                </div>
 
                 {/* Card-3: Reporting Manager */}
+                {hasValidManager && (
+                    <div className="bg-white rounded-xl p-5 flex flex-col flex-1 h-[220px] shadow-sm">
 
+                        {/* Header */}
+                        <p className="text-md font-semibold text-gray-500 pb-2 shrink-0">
+                            Reporting Manager
+                        </p>
+
+                        {/* Content */}
+                        <div className="flex-1 overflow-y-auto thin-scroll">
+                            {reportingData?.length > 0 ? (
+                                reportingData.map((item, index) => (
+                                    <div key={index} className="flex gap-3 mt-2">
+
+                                        {/* Avatar */}
+                                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-lg shrink-0">
+                                            {getSafeString(item?.ManagerName).charAt(0).toUpperCase() || '?'}
+                                        </div>
+
+                                        {/* Info */}
+                                        <div className="min-w-0">
+                                            <p className="text-sm font-bold text-gray-800">
+                                                {getSafeString(item?.ManagerName)}
+                                            </p>
+
+                                            <p className="text-xs text-gray-500 font-medium">
+                                                {getSafeString(item.ManagerDesignation || (item as any).DesignationName)}
+                                            </p>
+
+                                            <p className="text-xs text-gray-400">
+                                                {getSafeString(item.ManagerDepartment || (item as any).DepartmentName)}
+                                            </p>
+
+                                            <div className="pt-2 space-y-1">
+                                                <div className="flex items-center gap-2 text-xs text-gray-600">
+                                                    <Mail size={14} className="text-blue-600 shrink-0" />
+                                                    <a
+                                                        href={`mailto:${getSafeString(item.ManagerEmail, "")}`}
+                                                        className="text-blue-600 text-sm hover:underline truncate"
+                                                    >
+                                                        {getSafeString(item?.ManagerEmail)}
+                                                    </a>
+                                                </div>
+
+                                                <div className="flex items-center gap-2 text-xs text-gray-600">
+                                                    <Phone size={14} className="text-blue-600 shrink-0" />
+                                                    <a
+                                                        href={`tel:${getSafeString(item.ManagerPhone, "")}`}
+                                                        className="hover:text-blue-600 transition-colors text-sm"
+                                                    >
+                                                        {getSafeString(item.ManagerPhone)}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="flex items-center justify-center h-full">
+                                    <p className="text-sm text-gray-500">
+                                        No data available
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
-    )
+    );
 }

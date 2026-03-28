@@ -26,10 +26,10 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   return (
     <div className="bg-[#F9FAFB] border border-[#135BEC30] rounded-[10px] shadow-md">
       <div className="flex items-center justify-between p-4 cursor-pointer" onClick={() => setExpandableOpen((prev) => !prev)} style={{ height: height }} >
-        <span className="font-medium text-gray-800">{title}</span>
+        <div className="font-medium text-gray-800 flex-1 pr-2">{title}</div>
 
         <div className="flex items-center gap-2">
-          
+
           {customizedIcon && (
             <div className="flex items-center rounded-md">
               {customizedIcon}

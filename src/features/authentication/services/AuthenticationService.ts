@@ -4,6 +4,7 @@ import type { Failure } from '../../../core/api/FailureResponse';
 import { AuthenticationDatasourceImpl } from '../datasources/AuthenticationDatasource';
 import * as E from 'fp-ts/Either';
 import type { AuthenticationResponse } from '../models/AuthenticationModel';
+import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 
 const authenticationDatasource = new AuthenticationDatasourceImpl();
 
@@ -43,6 +44,11 @@ export const authenticationService = {
             return E.left({ message: error.message, code: error.code });
 
         }
+    },
+
+    getUserFullName: (): string => {
+        const employeeData = LocalStorageHelper.getStoredEmployeeData();
+        return employeeData?.FullName || '';
     },
 
 }

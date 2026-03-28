@@ -181,7 +181,7 @@ export const RegularizeModal = React.memo<RegularizeModalProps>(({
               {isCheckoutMissing ? (
                 <>
                   {/* Punch In Time - Read-only display (extracted from datetime) */}
-                  <div className="bg-white rounded-lg p-2 sm:p-3 border border-gray-200">
+                  <div className="bg-white rounded-lg p-2 sm:p-3 border border-gray-200 ">
                     <FieldItem
                       label="Punch In Time"
                       value={punchInTimeDisplay}

@@ -47,8 +47,10 @@ export const BankDetails: React.FC = () => {
     const { projectId } = useProject();
     //#endregion
 
+    //#region BOOKING ID
     const { BookingId } = useParams<{ BookingId?: string }>();
     const bookingId = BookingId ? Number(BookingId) : 0;
+    //#endregion
 
 
     useEffect(() => {
@@ -56,6 +58,7 @@ export const BankDetails: React.FC = () => {
             fetchBankLoanDetails();
         }
     }, [projectId, bookingId])
+
 
     //#region Save 
     const saveBankLoanDetails = async () => {

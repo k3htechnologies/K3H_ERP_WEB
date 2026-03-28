@@ -1,19 +1,13 @@
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-
-interface CompOffTableRecord {
-  CompoffDate: string,
-  WorkingDate: string,
-  CreatedBy: string,
-  CreatedDate: string,
-  status: "Approved" | "Pending";
-}
+import type { Table2 } from "@/features/payrollDashboard/models/PayrollDashboardModel";
+import { getSafeString } from "@/core/utils/comman";
 
 interface Props {
-  compOffData: CompOffTableRecord[];
+  compOffData: Table2[];
 }
 
-export default function CompOffTable({ compOffData = [] }: Props) {
+export default function CompOffTable({ compOffData }: Props) {
   const columns = [
 
     {
@@ -22,9 +16,11 @@ export default function CompOffTable({ compOffData = [] }: Props) {
       align: "left" as const,
       render: (value: string) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gray-200 " />
+          <div className="w-9 h-9 rounded-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-lg shrink-0">
+            {getSafeString(value).charAt(0).toUpperCase() || '?'}
+          </div>
           <div className="flex flex-col">
-            <span className="text-sm font-medium text-black ">{value}</span>
+            <span className="text-sm font-medium text-black ">{getSafeString(value)}</span>
             <span className="text-xs text-gray-400 font-medium mt-1">Full-Stack Developer </span>
           </div>
         </div>
@@ -50,29 +46,28 @@ export default function CompOffTable({ compOffData = [] }: Props) {
       key: 'status',
       label: 'Status',
       align: 'center' as const,
-      render: (value: string) => (
-        <div className="flex flex-col">
-          <span className="font-medium text-gray-900">{value}</span>
-          {/* <span className="text-xs text-gray-500">{record.Status}</span> */}
-          <span className="font-medium text-green-700 ">Approved</span>
-        </div>
-      )
+      // render: (value: string) => (
+      //   <div className="flex flex-col">
+      //     <span className="font-medium text-gray-900">{value}</span>
+      //     <span className="text-xs text-gray-500">{record.Status}</span>
+      //   </div>
+      // )
     },
     {
       key: 'action',
       label: 'Action',
       align: 'center' as const,
       width: "150px",
-      render: (record: CompOffTableRecord) => (
-        <button
-          className={`px-4 py-1 rounded-md text-sm font-medium text-white shadow-sm ${record.status === "Approved"
-            ? "bg-blue-500 "
-            : "bg-gray-400 cursor-not-allowed"
-            }`}
-        >
-          {record.status === "Approved" ? "Approve" : "Approved"}
-        </button>
-      )
+      // render: (record: CompOffTableRecord) => (
+      //   <button
+      //     className={`px-4 py-1 rounded-md text-sm font-medium text-white ${record.Status === "Approved"
+      //       ? "bg-blue-500 "
+      //       : "bg-gray-400 cursor-not-allowed"
+      //       }`}
+      //   >
+      //     {record.Status === "Approved" ? "Approve" : "Approved"}
+      //   </button>
+      // )
     }
   ];
   return (
@@ -81,15 +76,25 @@ export default function CompOffTable({ compOffData = [] }: Props) {
         Comp-Off Management
       </h2>
       <div
-        className="bg-white rounded-xl p-4 h-[300px] "
-        style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
+        className="bg-white rounded-xl p-4 h-[300px] shadow-sm"
+
       >
-        <DataTableWithOutBorder
-          columns={columns}
-          data={compOffData.slice(0, 4)}
-          emptyMessage="No records Found"
-          fixedHeight={true}
-        />
+        {compOffData?.length > 0 ? (
+          <DataTableWithOutBorder
+            columns={columns}
+            data={compOffData.slice(0, 4)}
+            emptyMessage="No records Found"
+            fixedHeight={true}
+          />
+        ) : (
+          <div>
+            <DataTableWithOutBorder
+              columns={columns}
+              data={[]}
+              emptyMessage="No Data Available"
+            />
+          </div>
+        )}
       </div>
     </div>
   );

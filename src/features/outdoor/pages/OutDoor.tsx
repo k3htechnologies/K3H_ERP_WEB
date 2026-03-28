@@ -7,6 +7,7 @@ import type {
   FilterWithPaginationOutDoor,
   OutDoorMasterData,
 } from '@/features/outdoor/models/OutDoorModel';
+
 import { outDoorService } from '@/features/outdoor/services/OutDoorDataService';
 import { formatDate_dd_MonthName_yy, formatTimeFromDateTime, isPreviousDate, isToday } from '@/core/utils/dateFormat';
 import { Loader } from '@/core/utils/loader';
@@ -507,7 +508,7 @@ export const OutDoor: React.FC = () => {
               const isPunchedInAndOut = item.PunchIn && item.PunchOut;
 
               return (
-                <ExpandableCard
+                 <ExpandableCard
                   key={item.OutdoorId}
                   title={
                     <div className="flex items-center justify-between w-full gap-4">

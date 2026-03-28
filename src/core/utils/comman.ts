@@ -82,7 +82,7 @@ export const isToDateGreaterOrEqualFromDate = (
 //Common Validation: Allow Only Past N Days (Including Today)
 
 export const isDateWithinPastDays = (dateStr: string | null | undefined, pastDays: number): boolean => {
-  
+
   if (!dateStr) return false;
 
   const inputDate = new Date(dateStr);
@@ -96,7 +96,7 @@ export const isDateWithinPastDays = (dateStr: string | null | undefined, pastDay
   minAllowedDate.setDate(today.getDate() - pastDays);
 
   return inputDate >= minAllowedDate && inputDate <= today;
-  
+
 };
 
 export const format24To12Hour = (hour: string, minute: string) => {
@@ -106,4 +106,30 @@ export const format24To12Hour = (hour: string, minute: string) => {
   return `${displayHour.toString().padStart(2, "0")}:${minute} ${ampm}`
 }
 
+export const formatTime = (timeString: string | undefined) => {
+  if (!timeString) return "--";
+  try {
+    const [hours] = timeString.split(":");
+    const hourNum = parseInt(hours, 10);
+    const period = hourNum >= 12 ? "PM" : "AM";
+    const formattedHour = hourNum % 12 || 12;
+    return `${formattedHour} ${period}`;
+  } catch (e) {
+    return "--";
+  }
+}
 
+export const formatDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = date.toLocaleString("en-GB", { month: "long" });
+  return `${day}, ${month}`;
+}
+
+export const getSafeString = (value: any, fallback: string = "-"): string => {
+  if (value === null || value === undefined) return fallback;
+  if (typeof value === "object" && Object.keys(value).length === 0) return fallback;
+  if (typeof value === "object") return fallback;
+  if (String(value).trim() === "") return fallback;
+  return String(value);
+};

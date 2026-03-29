@@ -35,7 +35,7 @@ export default function AttendanceOverview({ attendanceOverviewData }: Props) {
     <div className="space-y-3 pt-5">
       <h2 className="text-lg font-semibold text-gray-800">Attendance Overview</h2>
 
-      <div className="bg-white rounded-xl p-4  border border-gray-50">
+      <div className="bg-white rounded-xl p-4  border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
         <h3 className="text-sm text-gray-500 font-medium mb-4">Team Attendance</h3>
 
         <div className="grid grid-cols-2 items-center gap-4">

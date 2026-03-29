@@ -62,7 +62,7 @@ export default function QuickActions() {
     return (
         <div className="space-y-3 pt-5 sm:pt-7">
 
-            <div className="bg-white rounded-xl p-4 sm:p-5 mt-10 flex flex-col h-[531px]">
+            <div className="bg-white rounded-xl p-4 sm:p-5 mt-10 flex flex-col h-[531px] border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                 {/* Title */}
                 <p className="text-md font-semibold text-gray-500 pb-2">
                     Quick Actions

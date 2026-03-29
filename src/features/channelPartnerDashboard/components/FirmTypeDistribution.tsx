@@ -16,7 +16,7 @@ const FirmTypeDistribution: React.FC<Props> = ({ firmTypeData }) => {
     return (
         <div className="space-y-8 pt-5 ">
 
-            <div className="bg-white p-4 rounded-lg border border-gray-100  space-y-4 flex flex-col sm:flex-row items-center justify-between">
+            <div className="bg-white p-4 rounded-lg border border-gray-100  space-y-4 flex flex-col sm:flex-row items-center justify-between"  style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                 <div className="relative h-[200px] w-full sm:h-[275px] sm:max-w-[300px] lg:h-[266px] lg:max-w-[400px]">
                     <h3 className="text-sm text-gray-500 font-medium ml-3 pt-2">
                         Firm Type Distribution

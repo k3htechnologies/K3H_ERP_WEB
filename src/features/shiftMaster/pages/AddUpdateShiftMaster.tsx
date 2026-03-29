@@ -768,6 +768,7 @@ export const AddUpdateShiftMaster: React.FC = () => {
                 <Input
                   type="text"
                   label="Late Count"
+                  required
                   value={formData.LateCount ?? ""}
                   maxLength={2}
                   onChange={(e) =>

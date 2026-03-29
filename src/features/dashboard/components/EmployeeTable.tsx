@@ -111,10 +111,8 @@ export default function EmployeeTable({ employeeOverviewTable }: Props) {
         <div className="space-y-3 pt-4 sm:pt-5">
             <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2">Team Overview</h2>
 
-            <div className="bg-white rounded-xl p-4 h-[310px] flex flex-col">
-
-                {/* Content */}
-
+            <div className="bg-white rounded-xl p-4 h-[310px] border border-gray-100 flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+               
                 {employeeOverviewTable?.length > 0 ? (
                     <div className="min-w-[500px] sm:min-w-full flex-1 overflow-hidden flex flex-col">
                         <DataTableWithOutBorder

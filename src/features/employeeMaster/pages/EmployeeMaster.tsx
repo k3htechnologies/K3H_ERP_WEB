@@ -153,7 +153,7 @@ export const EmployeeMaster: React.FC = () => {
           ToDateOfBirth: filterParams.ToDateOfBirth || undefined,
           FromJoiningDate: filterParams.FromJoiningDate || undefined,
           ToJoiningDate: filterParams.ToJoiningDate || undefined,
-          ActiveInactive:filterParams.ActiveInactive?.trim() || undefined,
+          ActiveInactive: filterParams.ActiveInactive?.trim() || undefined,
 
           SortBy: getSortByParam(sortInfo ?? null, employeeColumns),
         };
@@ -243,7 +243,7 @@ export const EmployeeMaster: React.FC = () => {
           FromJoiningDate: filters.FromJoiningDate || undefined,
           ToJoiningDate: filters.ToJoiningDate || undefined,
 
-          ActiveInactive:filters.ActiveInactive?.trim() || undefined,
+          ActiveInactive: filters.ActiveInactive?.trim() || undefined,
 
           SortBy: getSortByParam(sortInfo ?? null, employeeColumns),
           ExportType: exportType,
@@ -618,7 +618,39 @@ export const EmployeeMaster: React.FC = () => {
         width: "14",
         sortable: false,
         align: "left",
-        render: (value) => value || "-",
+        render: (value) => (value ? `+91 ${value}` : "-"),
+      },
+      {
+        key: 'CountryName',
+        label: 'Country',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => value || '-'
+      },
+      {
+        key: 'DistrictName',
+        label: 'District',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => value || '-'
+      },
+      {
+        key: 'CityName',
+        label: 'City',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => value || '-'
+      },
+      {
+        key: 'VillageName',
+        label: 'Village',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
       },
       {
         key: "LastLogin",
@@ -629,7 +661,7 @@ export const EmployeeMaster: React.FC = () => {
         render: (value) => (value ? formatDate_dd_MonthName_yy(value) : "-"),
       },
       {
-        key: "actions",
+        key: "Actions",
         label: "Actions",
         width: "12",
         fixed: "right",
@@ -663,7 +695,7 @@ export const EmployeeMaster: React.FC = () => {
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
-  const requiredEmployeeColumnKeys: string[] = ["FullName"];
+  const requiredEmployeeColumnKeys: string[] = ["FullName",'Actions'];
 
   const allEmployeeColumnKeys: string[] = employeeColumns.map((c) => c.key);
 

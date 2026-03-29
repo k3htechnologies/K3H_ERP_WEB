@@ -395,10 +395,10 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
               {isReturnAsset && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <Input type="text" label="Condition On Return" value={formData.ConditionOnReturn ?? ""} onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)} placeholder="Enter Condition On Return" maxLength={250} error={errors.ConditionOnReturn} />
+                    <Input type="text" required label="Condition On Return" value={formData.ConditionOnReturn ?? ""} onChange={(e) => handleFieldChange("ConditionOnReturn", e.target.value)} placeholder="Enter Condition On Return" maxLength={250} error={errors.ConditionOnReturn} />
                   </div>
                   <div>
-                    <DatePickerInput label="Return Date" value={formatDate_dd_mm_yyyy(formData.ReturnDate)} onChange={(val) => handleFieldChange("ReturnDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} error={errors.ReturnDate} />
+                    <DatePickerInput label="Return Date" required value={formatDate_dd_mm_yyyy(formData.ReturnDate)} onChange={(val) => handleFieldChange("ReturnDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} error={errors.ReturnDate} />
                   </div>
                 </div>
               )}

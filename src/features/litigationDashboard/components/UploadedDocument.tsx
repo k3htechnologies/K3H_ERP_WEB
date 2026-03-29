@@ -46,7 +46,7 @@ export default function UploadedDocument({ uploadedDocumentData }: Props) {
                     Recently Uploaded Documents
                 </h2>
 
-                <div className="bg-white rounded-lg space-y-4 p-4 h-[384px] thin-scroll flex flex-col">
+                <div className="bg-white rounded-lg space-y-4 p-4 h-[384px] thin-scroll flex flex-col border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
                     {uploadedDocumentData.length === 0 ? (
                         <div className="flex flex-col justify-center items-center h-[200px]">

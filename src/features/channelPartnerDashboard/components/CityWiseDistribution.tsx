@@ -10,7 +10,7 @@ export default function CityWiseDistribution({ cityWiseDistributionData }: Props
 
     return (
         <div className="pt-5">
-            <div className="bg-white rounded-lg p-6 h-[315px] border border-gray-100  space-y-4 thin-scroll flex flex-col" >
+            <div className="bg-white rounded-lg p-6 h-[315px] border border-gray-100  space-y-4 thin-scroll flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                 <h3 className="text-sm text-gray-500 font-medium mb-4 ml-1">
                     City Wise Distribution
                 </h3>

@@ -14,6 +14,7 @@ export interface UserDashboardDataset {
   Table10: Table10[];
   Table11: Table11[];
   Table12: Table12[];
+  Table13: Table13[];
 }
 
 export interface Table0 {
@@ -142,6 +143,16 @@ export interface Table12 {
   PunchOutAddress: string | null;
   WorkingHours: string | null;
   AttendanceStatus: string | null;
+
+}
+export interface Table13 {
+  ModuleName: string | null;
+  ProjectName: string | null;
+  BuildingNumber: string | null;
+  Wing: string | null;
+  Floor: string | null;
+  Flat: string | null;
+  ApplicantName: string | null;
 
 }
 

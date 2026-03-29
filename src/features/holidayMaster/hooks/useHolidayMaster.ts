@@ -266,7 +266,7 @@ export const useHolidayMaster = () => {
     }
 
     if (!hasAnyDocumentFile(holidayFiles, holidayURL, removedHolidayURLs)) {
-      newErrors.HolidayURL = "File is required.";
+      newErrors.HolidayURL = "Holiday image is required.";
     }
 
     return {

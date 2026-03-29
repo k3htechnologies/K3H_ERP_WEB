@@ -31,7 +31,7 @@ const ProjectManagement: React.FC<Props> = ({ projectManagementData, projectStat
     <div className=" flex flex-col h-full">
       <h1 className="font-semibold text-gray-800 mb-4">Project Management</h1>
 
-      <div className="w-full bg-white p-4 border border-gray-100 rounded-xl flex-1 flex flex-col gap-8">
+      <div className="w-full bg-white p-4 border border-gray-100 rounded-xl flex-1 flex flex-col gap-8" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
         {/* Top Stats Cards */}
         <div className="flex flex-col gap-4">

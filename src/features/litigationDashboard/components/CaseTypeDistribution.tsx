@@ -24,7 +24,7 @@ export default function CaseTypeDistribution({ CaseTypeData = [] }: Props) {
                 Case Type Distribution
             </h2>
 
-            <div className="bg-white p-4 rounded-lg space-y-4 mt-4 border border-gray-100 space-y-4">
+            <div className="bg-white p-4 rounded-lg space-y-4 mt-4 border border-gray-100 space-y-4" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                 {/* Donut Chart */}
                 <div className="flex justify-center relative [&_.recharts-wrapper_svg]:outline-none">
                     <PieChart width={220} height={200}>

@@ -27,7 +27,7 @@ const ProcurementMaster: React.FC<Props> = ({ procurementMasterData = [] }: Prop
   return (
     <div className="pt-5 flex flex-col h-full">
       <h1 className="font-semibold text-gray-800 mb-4">Procurement Master</h1>
-      <div className="w-full bg-white py-5 border border-gray-100 flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-gray-200 rounded-xl flex-1">
+      <div className="w-full bg-white py-5 border border-gray-100 flex flex-col sm:flex-row divide-y sm:divide-y-0 sm:divide-x divide-gray-200 rounded-xl flex-1" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
         {data.map((c, i) => {
           return (
             <div key={i} className="flex-1 px-6 py-2 flex flex-col justify-center">
@@ -39,7 +39,7 @@ const ProcurementMaster: React.FC<Props> = ({ procurementMasterData = [] }: Prop
       </div>
 
       <div className="mt-5">
-        <div className="w-full bg-yellow-50 p-3 border border-yellow-200  rounded-md flex items-center justify-between">
+        <div className="w-full bg-yellow-50 p-3 border border-yellow-200  rounded-md flex items-center justify-between" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
           <div>
             <p className="text-sm font-medium">Pending Material Setup</p>
             <p className="text-xs text-gray-600 mt-1">Requires Configuration</p>

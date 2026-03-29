@@ -62,7 +62,7 @@ export const ViewBooking: React.FC = () => {
         loadBookingFromServer();
 
     }, [projectId, bookingId]);
-    
+
     //#endregion
 
     //#region DATA LOAD OVERVIEW
@@ -476,6 +476,14 @@ export const ViewBooking: React.FC = () => {
                                                     <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
                                                     <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
                                                     <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
+                                                    <FieldItem label="Cancelled Cheque" value="" urls={applicant?.CancelledChequeURL} isIcon />
+                                                    <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon  />
+                                                    <FieldItem label="Income Docs (Form 16 / ITR)" value=""  urls={applicant?.IncomeForm16ITRURL}  isIcon />
+                                                    <FieldItem label="NRE / NRO Bank Details"  value=""  urls={applicant?.NreNroBankDetailsURL} isIcon />
+                                                    <FieldItem label="Nominee Form" value="" urls={applicant?.NomineeFormURL} isIcon />
+                                                    <FieldItem label="Statement of Source of Funds"  value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
+                                                    <FieldItem label="Payment Proof"  value="" urls={applicant?.PaymentProofURL} isIcon />
+
                                                 </div>
                                             </div>
                                         ))
@@ -828,6 +836,13 @@ export const ViewBooking: React.FC = () => {
                                                     <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
                                                     <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
                                                     <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
+                                                    <FieldItem label="Cancelled Cheque" value="" urls={applicant?.CancelledChequeURL} isIcon />
+                                                    <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon  />
+                                                    <FieldItem label="Income Docs (Form 16 / ITR)" value=""  urls={applicant?.IncomeForm16ITRURL}  isIcon />
+                                                    <FieldItem label="NRE / NRO Bank Details"  value=""  urls={applicant?.NreNroBankDetailsURL} isIcon />
+                                                    <FieldItem label="Nominee Form" value="" urls={applicant?.NomineeFormURL} isIcon />
+                                                    <FieldItem label="Statement of Source of Funds"  value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
+                                                    <FieldItem label="Payment Proof"  value="" urls={applicant?.PaymentProofURL} isIcon />
                                                 </div>
                                             </div>
                                         ))

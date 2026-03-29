@@ -79,6 +79,8 @@ export interface EmployeeMasterData {
   DistrictName: string | ''
   CityMasterId: number | 0
   CityName: string | ''
+  VillageMasterId: number | null;
+  VillageName: string;
 
   AadharCardNumber: string | ''
   PassportNumber: string | ''
@@ -141,6 +143,7 @@ export interface AddUpdateEmployeeMasterRequest {
   StateMasterId: number | null;
   DistrictMasterId: number | null;
   CityMasterId: number | null;
+  VillageMasterId: number | null;
 }
 
 export interface UpdateEmployeeMasterRequest {

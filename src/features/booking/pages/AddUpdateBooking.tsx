@@ -128,6 +128,27 @@ const initialFormStateApplicantDetails = (): AddUpdateBookingApplicantRequest =>
   GSTNumber: "",
   GSTNumberURL: null,
   RemoveGSTNumberURL: "",
+
+  CancelledChequeURL: null,
+  RemoveCancelledChequeURL: "",
+
+  POAURL: null,
+  RemovePOAURL: "",
+
+  IncomeForm16ITRURL: null,
+  RemoveIncomeForm16ITRURL: "",
+
+  NreNroBankDetailsURL: null,
+  RemoveNreNroBankDetailsURL: "",
+
+  NomineeFormURL: null,
+  RemoveNomineeFormURL: "",
+
+  StatementOfSourceOfFundsURL: null,
+  RemoveStatementOfSourceOfFundsURL: "",
+
+  PaymentProofURL: null,
+  RemovePaymentProofURL: "",
 });
 
 type BookingApplicantWithFiles = BookingApplicantData & {
@@ -138,6 +159,15 @@ type BookingApplicantWithFiles = BookingApplicantData & {
   _drivingFiles?: (File | string)[];
   _votingFiles?: (File | string)[];
   _gstFiles?: (File | string)[];
+
+  _cancelledChequeFiles?: (File | string)[];
+  _pOAFiles?: (File | string)[];
+  _incomeForm16ITRFiles?: (File | string)[];
+  _nreNroBankDetailsFiles?: (File | string)[];
+  _nomineeFormFiles?: (File | string)[];
+  _statementOfSourceOfFundsFiles?: (File | string)[];
+  _paymentProofFiles?: (File | string)[];
+
   RemovePhotoURL?: string;
   RemoveAadharCardURL?: string;
   RemovePanCardURL?: string;
@@ -145,6 +175,15 @@ type BookingApplicantWithFiles = BookingApplicantData & {
   RemoveDrivingLicenseURL?: string;
   RemoveVotingIdURL?: string;
   RemoveGSTNumberURL?: string;
+  RemoveCancelledChequeURL?: string;
+
+  RemovePOAURL?: string;
+  RemoveIncomeForm16ITRURL?: string;
+  RemoveNreNroBankDetailsURL?: string;
+  RemoveNomineeFormURL?: string;
+  RemoveStatementOfSourceOfFundsURL?: string;
+  RemovePaymentProofURL?: string;
+
 };
 
 export const AddUpdateBooking: React.FC = () => {
@@ -212,6 +251,34 @@ export const AddUpdateBooking: React.FC = () => {
   // ================= GST =================
   const [gstFiles, setGstFiles] = useState<(File | string)[]>([]);
   const [removedGstURLs, setRemovedGstURLs] = useState<string[]>([]);
+
+  // ================= Cancelled Cheque =================
+  const [cancelledChequeFiles, setCancelledChequeFiles] = useState<(File | string)[]>([]);
+  const [removedCancelledChequeURLs, setRemovedCancelledChequeURLs] = useState<string[]>([]);
+
+  // ================= POA =================
+  const [pOAFiles, setPOAFiles] = useState<(File | string)[]>([]);
+  const [removedPOAURLs, setRemovedPOAURLs] = useState<string[]>([]);
+
+  // ================= Income Form16 / ITR =================
+  const [incomeFiles, setIncomeFiles] = useState<(File | string)[]>([]);
+  const [removedIncomeURLs, setRemovedIncomeURLs] = useState<string[]>([]);
+
+  // ================= NRE / NRO Bank =================
+  const [nreNroFiles, setNreNroFiles] = useState<(File | string)[]>([]);
+  const [removedNreNroURLs, setRemovedNreNroURLs] = useState<string[]>([]);
+
+  // ================= Nominee Form =================
+  const [nomineeFiles, setNomineeFiles] = useState<(File | string)[]>([]);
+  const [removedNomineeURLs, setRemovedNomineeURLs] = useState<string[]>([]);
+
+  // ================= Source of Funds =================
+  const [sourceOfFundsFiles, setSourceOfFundsFiles] = useState<(File | string)[]>([]);
+  const [removedSourceOfFundsURLs, setRemovedSourceOfFundsURLs] = useState<string[]>([]);
+
+  // ================= Payment Proof =================
+  const [paymentProofFiles, setPaymentProofFiles] = useState<(File | string)[]>([]);
+  const [removedPaymentProofURLs, setRemovedPaymentProofURLs] = useState<string[]>([]);
 
   //ERROR SET UP
   const [errorsBookingApplicant, setErrorsBookingApplicant] = useState<{ [k: string]: string }>({});
@@ -543,6 +610,13 @@ export const AddUpdateBooking: React.FC = () => {
               _drivingFiles: parseDocumentUrls(a.DrivingLicenseURL ?? ""),
               _votingFiles: parseDocumentUrls(a.VotingIdURL ?? ""),
               _gstFiles: parseDocumentUrls(a.GSTNumberURL ?? ""),
+              _cancelledChequeFiles: parseDocumentUrls(a.CancelledChequeURL ?? ""),
+              _pOAFiles: parseDocumentUrls(a.POAURL ?? ""),
+              _incomeForm16ITRFiles: parseDocumentUrls(a.IncomeForm16ITRURL ?? ""),
+              _nreNroBankDetailsFiles: parseDocumentUrls(a.NreNroBankDetailsURL ?? ""),
+              _nomineeFormFiles: parseDocumentUrls(a.NomineeFormURL ?? ""),
+              _statementOfSourceOfFundsFiles: parseDocumentUrls(a.StatementOfSourceOfFundsURL ?? ""),
+              _paymentProofFiles: parseDocumentUrls(a.PaymentProofURL ?? ""),
             }));
 
             setApplicantList(applicantsWithFiles);
@@ -629,6 +703,14 @@ export const AddUpdateBooking: React.FC = () => {
       DrivingLicenseURL: null,
       VotingIdURL: null,
       GSTNumberURL: null,
+
+      RemoveCancelledChequeURL: "",
+      RemovePOAURL: "",
+      RemoveIncomeForm16ITRURL: "",
+      RemoveNreNroBankDetailsURL: "",
+      RemoveNomineeFormURL: "",
+      RemoveStatementOfSourceOfFundsURL: "",
+      RemovePaymentProofURL: "",
     };
 
     setEditingApplicantData({ row, index });
@@ -648,6 +730,20 @@ export const AddUpdateBooking: React.FC = () => {
     setRemovedVotingIdURLs([]);
     setGstFiles(row._gstFiles ?? []);
     setRemovedGstURLs([]);
+    setCancelledChequeFiles(row._cancelledChequeFiles ?? []);
+    setRemovedCancelledChequeURLs([]);
+    setPOAFiles(row._pOAFiles ?? []);
+    setRemovedPOAURLs([]);
+    setIncomeFiles(row._incomeForm16ITRFiles ?? []);
+    setRemovedIncomeURLs([]);
+    setNreNroFiles(row._nreNroBankDetailsFiles ?? []);
+    setRemovedNreNroURLs([]);
+    setNomineeFiles(row._nomineeFormFiles ?? []);
+    setRemovedNomineeURLs([]);
+    setSourceOfFundsFiles(row._statementOfSourceOfFundsFiles ?? []);
+    setRemovedSourceOfFundsURLs([]);
+    setPaymentProofFiles(row._paymentProofFiles ?? []);
+    setRemovedPaymentProofURLs([]);
 
     setIsAddUpdateApplicantModalOpen(true);
   }, []);
@@ -756,6 +852,118 @@ export const AddUpdateBooking: React.FC = () => {
         align: "center",
         render: (value: string, row: any) => {
           return <MultiImageViewer images={parseDocumentUrls(row.GSTNumberURL)} title="GST Document" triggerLabel={value || "-"} isWrap={false} />;
+        },
+      },
+      {
+        key: "CancelledCheque",
+        label: "Cancelled Cheque",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.CancelledChequeURL)}
+              title="Cancelled Cheque"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "POA",
+        label: "POA",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.POAURL)}
+              title="POA Document"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "Income",
+        label: "Income / ITR",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.IncomeForm16ITRURL)}
+              title="Income Document"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "NRE_NRO_Bank_Details",
+        label: "NRE / NRO Bank Details",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.NreNroBankDetailsURL)}
+              title="NRE / NRO Bank Details"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "NomineeForm",
+        label: "Nominee Form",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.NomineeFormURL)}
+              title="Nominee Form"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "SourceOfFund",
+        label: "Statement of Source of Funds",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.StatementOfSourceOfFundsURL)}
+              title="Statement of Source of Funds"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "PaymentProof",
+        label: "Payment Proof",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.PaymentProofURL)}
+              title="Payment Proof"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
         },
       },
       {
@@ -1210,6 +1418,34 @@ export const AddUpdateBooking: React.FC = () => {
     const finalRemovedVotingURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._votingFiles, votingIdFiles, removedVotingIdURLs) : removedVotingIdURLs;
     const finalRemovedGstURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._gstFiles, gstFiles, removedGstURLs) : removedGstURLs;
 
+    const finalRemovedCancelledChequeURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._cancelledChequeFiles, cancelledChequeFiles, removedCancelledChequeURLs)
+      : removedCancelledChequeURLs;
+
+    const finalRemovedPOAURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._pOAFiles, pOAFiles, removedPOAURLs)
+      : removedPOAURLs;
+
+    const finalRemovedIncomeURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._incomeForm16ITRFiles, incomeFiles, removedIncomeURLs)
+      : removedIncomeURLs;
+
+    const finalRemovedNreNroURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._nreNroBankDetailsFiles, nreNroFiles, removedNreNroURLs)
+      : removedNreNroURLs;
+
+    const finalRemovedNomineeURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._nomineeFormFiles, nomineeFiles, removedNomineeURLs)
+      : removedNomineeURLs;
+
+    const finalRemovedSourceOfFundsURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._statementOfSourceOfFundsFiles, sourceOfFundsFiles, removedSourceOfFundsURLs)
+      : removedSourceOfFundsURLs;
+
+    const finalRemovedPaymentProofURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._paymentProofFiles, paymentProofFiles, removedPaymentProofURLs)
+      : removedPaymentProofURLs;
+
     const mergedPhotoFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, finalRemovedPhotoURLs) : applicantPhotoFiles.slice();
     const mergedAadharFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._aadharFiles, aadharCardFiles, finalRemovedAadharURLs) : aadharCardFiles.slice();
     const mergedPanFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._panFiles, panCardFiles, finalRemovedPanURLs) : panCardFiles.slice();
@@ -1217,6 +1453,34 @@ export const AddUpdateBooking: React.FC = () => {
     const mergedDrivingFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._drivingFiles, drivingLicenseFiles, finalRemovedDrivingURLs) : drivingLicenseFiles.slice();
     const mergedVotingFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._votingFiles, votingIdFiles, finalRemovedVotingURLs) : votingIdFiles.slice();
     const mergedGstFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._gstFiles, gstFiles, finalRemovedGstURLs) : gstFiles.slice();
+
+    const mergedCancelledChequeFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._cancelledChequeFiles, cancelledChequeFiles, finalRemovedCancelledChequeURLs)
+      : cancelledChequeFiles.slice();
+
+    const mergedPOAFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._pOAFiles, pOAFiles, finalRemovedPOAURLs)
+      : pOAFiles.slice();
+
+    const mergedIncomeFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._incomeForm16ITRFiles, incomeFiles, finalRemovedIncomeURLs)
+      : incomeFiles.slice();
+
+    const mergedNreNroFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._nreNroBankDetailsFiles, nreNroFiles, finalRemovedNreNroURLs)
+      : nreNroFiles.slice();
+
+    const mergedNomineeFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._nomineeFormFiles, nomineeFiles, finalRemovedNomineeURLs)
+      : nomineeFiles.slice();
+
+    const mergedSourceOfFundsFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._statementOfSourceOfFundsFiles, sourceOfFundsFiles, finalRemovedSourceOfFundsURLs)
+      : sourceOfFundsFiles.slice();
+
+    const mergedPaymentProofFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._paymentProofFiles, paymentProofFiles, finalRemovedPaymentProofURLs)
+      : paymentProofFiles.slice();
 
     const applicantToSave: BookingApplicantWithFiles = {
       BookingApplicantId: editingApplicantData?.row.BookingApplicantId ?? 0,
@@ -1237,6 +1501,16 @@ export const AddUpdateBooking: React.FC = () => {
       VotingIdURL: createFileUrlString(mergedVotingFiles),
       GSTNumber: formDataForApplicant.GSTNumber || "",
       GSTNumberURL: createFileUrlString(mergedGstFiles),
+
+
+      CancelledChequeURL: createFileUrlString(mergedCancelledChequeFiles),
+      POAURL: createFileUrlString(mergedPOAFiles),
+      IncomeForm16ITRURL: createFileUrlString(mergedIncomeFiles),
+      NreNroBankDetailsURL: createFileUrlString(mergedNreNroFiles),
+      NomineeFormURL: createFileUrlString(mergedNomineeFiles),
+      StatementOfSourceOfFundsURL: createFileUrlString(mergedSourceOfFundsFiles),
+      PaymentProofURL: createFileUrlString(mergedPaymentProofFiles),
+
       CreatedById: 0,
       CreatedBy: "",
       CreatedDate: null,
@@ -1250,6 +1524,14 @@ export const AddUpdateBooking: React.FC = () => {
       _drivingFiles: mergedDrivingFiles,
       _votingFiles: mergedVotingFiles,
       _gstFiles: mergedGstFiles,
+      _cancelledChequeFiles: mergedCancelledChequeFiles,
+      _pOAFiles: mergedPOAFiles,
+      _incomeForm16ITRFiles: mergedIncomeFiles,
+      _nreNroBankDetailsFiles: mergedNreNroFiles,
+      _nomineeFormFiles: mergedNomineeFiles,
+      _statementOfSourceOfFundsFiles: mergedSourceOfFundsFiles,
+      _paymentProofFiles: mergedPaymentProofFiles,
+
       RemovePhotoURL: finalRemovedPhotoURLs.join(","),
       RemoveAadharCardURL: finalRemovedAadharURLs.join(","),
       RemovePanCardURL: finalRemovedPanURLs.join(","),
@@ -1257,6 +1539,13 @@ export const AddUpdateBooking: React.FC = () => {
       RemoveDrivingLicenseURL: finalRemovedDrivingURLs.join(","),
       RemoveVotingIdURL: finalRemovedVotingURLs.join(","),
       RemoveGSTNumberURL: finalRemovedGstURLs.join(","),
+      RemoveCancelledChequeURL: finalRemovedCancelledChequeURLs.join(","),
+      RemovePOAURL: finalRemovedPOAURLs.join(","),
+      RemoveIncomeForm16ITRURL: finalRemovedIncomeURLs.join(","),
+      RemoveNreNroBankDetailsURL: finalRemovedNreNroURLs.join(","),
+      RemoveNomineeFormURL: finalRemovedNomineeURLs.join(","),
+      RemoveStatementOfSourceOfFundsURL: finalRemovedSourceOfFundsURLs.join(","),
+      RemovePaymentProofURL: finalRemovedPaymentProofURLs.join(","),
     };
 
     setApplicantList((prev) => {
@@ -1278,6 +1567,13 @@ export const AddUpdateBooking: React.FC = () => {
     setDrivingLicenseFiles([]);
     setVotingIdFiles([]);
     setGstFiles([]);
+    setCancelledChequeFiles([]);
+    setPOAFiles([]);
+    setIncomeFiles([]);
+    setNreNroFiles([]);
+    setNomineeFiles([]);
+    setSourceOfFundsFiles([]);
+    setPaymentProofFiles([]);
   };
   //#endregion
 
@@ -1479,6 +1775,13 @@ export const AddUpdateBooking: React.FC = () => {
           formDataToSend.append(`${prefix}.RemoveDrivingLicenseURL`, app.RemoveDrivingLicenseURL ?? "");
           formDataToSend.append(`${prefix}.RemoveVotingIdURL`, app.RemoveVotingIdURL ?? "");
           formDataToSend.append(`${prefix}.RemoveGSTNumberURL`, app.RemoveGSTNumberURL ?? "");
+          formDataToSend.append(`${prefix}.RemoveCancelledChequeURL`, app.RemoveCancelledChequeURL ?? "");
+          formDataToSend.append(`${prefix}.RemovePOAURL`, app.RemovePOAURL ?? "");
+          formDataToSend.append(`${prefix}.RemoveIncomeForm16ITRURL`, app.RemoveIncomeForm16ITRURL ?? "");
+          formDataToSend.append(`${prefix}.RemoveNreNroBankDetailsURL`, app.RemoveNreNroBankDetailsURL ?? "");
+          formDataToSend.append(`${prefix}.RemoveNomineeFormURL`, app.RemoveNomineeFormURL ?? "");
+          formDataToSend.append(`${prefix}.RemoveStatementOfSourceOfFundsURL`, app.RemoveStatementOfSourceOfFundsURL ?? "");
+          formDataToSend.append(`${prefix}.RemovePaymentProofURL`, app.RemovePaymentProofURL ?? "");
 
           const realApp: any = app;
           addFilesWithExisting(formDataToSend, prefix, realApp._photoFiles, "PhotoURL");
@@ -1488,6 +1791,13 @@ export const AddUpdateBooking: React.FC = () => {
           addFilesWithExisting(formDataToSend, prefix, realApp._drivingFiles, "DrivingLicenseURL");
           addFilesWithExisting(formDataToSend, prefix, realApp._votingFiles, "VotingIdURL");
           addFilesWithExisting(formDataToSend, prefix, realApp._gstFiles, "GSTNumberURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._cancelledChequeFiles, "CancelledChequeURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._pOAFiles, "POAURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._incomeForm16ITRFiles, "IncomeForm16ITRURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._nreNroBankDetailsFiles, "NreNroBankDetailsURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._nomineeFormFiles, "NomineeFormURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._statementOfSourceOfFundsFiles, "StatementOfSourceOfFundsURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._paymentProofFiles, "PaymentProofURL");
         });
 
         const response = await bookingService.apiCallAddUpdateBooking(formDataToSend);
@@ -1775,7 +2085,7 @@ export const AddUpdateBooking: React.FC = () => {
                   {enquiryList?.FinalStage === "Booking Done" ? "Booking already done for this enquiry" : "No Enquiry details found for this Unique Code"}
                 </div>
               )
-              )}
+          )}
 
           {/* ============================================================= [APPLICANT DETAILS] ============================================================================================= */}
           <div className="space-y-4 pt-5">
@@ -1798,6 +2108,13 @@ export const AddUpdateBooking: React.FC = () => {
                     setDrivingLicenseFiles([]);
                     setVotingIdFiles([]);
                     setGstFiles([]);
+                    setCancelledChequeFiles([]);
+                    setPOAFiles([]);
+                    setIncomeFiles([]);
+                    setNreNroFiles([]);
+                    setNomineeFiles([]);
+                    setSourceOfFundsFiles([]);
+                    setPaymentProofFiles([]);
                     setRemovedApplicantPhotoURLs([]);
                     setRemovedAadharCardURLs([]);
                     setRemovedPanCardURLs([]);
@@ -1805,6 +2122,13 @@ export const AddUpdateBooking: React.FC = () => {
                     setRemovedDrivingLicenseURLs([]);
                     setRemovedVotingIdURLs([]);
                     setRemovedGstURLs([]);
+                    setRemovedCancelledChequeURLs([]);
+                    setRemovedPOAURLs([]);
+                    setRemovedIncomeURLs([]);
+                    setRemovedNreNroURLs([]);
+                    setRemovedNomineeURLs([]);
+                    setRemovedSourceOfFundsURLs([]);
+                    setRemovedPaymentProofURLs([]);
                     setIsAddUpdateApplicantModalOpen(true);
                   }}
                   color="blue"
@@ -2429,6 +2753,13 @@ export const AddUpdateBooking: React.FC = () => {
           setDrivingLicenseFiles([]);
           setVotingIdFiles([]);
           setGstFiles([]);
+          setCancelledChequeFiles([]);
+          setPOAFiles([]);
+          setIncomeFiles([]);
+          setNreNroFiles([]);
+          setNomineeFiles([]);
+          setSourceOfFundsFiles([]);
+          setPaymentProofFiles([]);
           setRemovedApplicantPhotoURLs([]);
           setRemovedAadharCardURLs([]);
           setRemovedPanCardURLs([]);
@@ -2436,6 +2767,13 @@ export const AddUpdateBooking: React.FC = () => {
           setRemovedDrivingLicenseURLs([]);
           setRemovedVotingIdURLs([]);
           setRemovedGstURLs([]);
+          setRemovedCancelledChequeURLs([]);
+          setRemovedPOAURLs([]);
+          setRemovedIncomeURLs([]);
+          setRemovedNreNroURLs([]);
+          setRemovedNomineeURLs([]);
+          setRemovedSourceOfFundsURLs([]);
+          setRemovedPaymentProofURLs([]);
         }}
         onCancel={() => {
           setIsAddUpdateApplicantModalOpen(false);
@@ -2449,6 +2787,13 @@ export const AddUpdateBooking: React.FC = () => {
           setDrivingLicenseFiles([]);
           setVotingIdFiles([]);
           setGstFiles([]);
+          setCancelledChequeFiles([]);
+          setPOAFiles([]);
+          setIncomeFiles([]);
+          setNreNroFiles([]);
+          setNomineeFiles([]);
+          setSourceOfFundsFiles([]);
+          setPaymentProofFiles([]);
           setRemovedApplicantPhotoURLs([]);
           setRemovedAadharCardURLs([]);
           setRemovedPanCardURLs([]);
@@ -2456,6 +2801,13 @@ export const AddUpdateBooking: React.FC = () => {
           setRemovedDrivingLicenseURLs([]);
           setRemovedVotingIdURLs([]);
           setRemovedGstURLs([]);
+          setRemovedCancelledChequeURLs([]);
+          setRemovedPOAURLs([]);
+          setRemovedIncomeURLs([]);
+          setRemovedNreNroURLs([]);
+          setRemovedNomineeURLs([]);
+          setRemovedSourceOfFundsURLs([]);
+          setRemovedPaymentProofURLs([]);
         }}
         title={editingApplicantData ? "Update Booking Applicant" : "Add Booking Applicant"}
         onSubmit={handleAddUpdateBookingApplicant}
@@ -2517,7 +2869,120 @@ export const AddUpdateBooking: React.FC = () => {
               <Input label="GST Number" error={errorsBookingApplicant.GSTNumber} type="text" value={formDataForApplicant.GSTNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicant("GSTNumber", filterGST(e.target.value.toUpperCase()))} placeholder="Enter GST Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="GST Documents" placeholder="Select GST Documents" error={errorsBookingApplicant.GSTNumberURL} value={gstFiles} onChange={setGstFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={5} maxSizeMB={10} onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])} />
+              <MultiFilePicker
+                label="GST Documents"
+                placeholder="Select GST Documents"
+                error={errorsBookingApplicant.GSTNumberURL}
+                value={gstFiles}
+                onChange={setGstFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={5}
+                onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])} />
+            </div>
+
+            <div>
+              <MultiFilePicker
+                label="Cancelled Cheque"
+                placeholder="Select Cancelled Cheque"
+                error={errorsBookingApplicant.CancelledChequeURL}
+                value={cancelledChequeFiles}
+                onChange={setCancelledChequeFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                onRemoveExisting={(url) =>
+                  setRemovedCancelledChequeURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="POA (if NRI Execution)"
+                placeholder="Select POA Document"
+                error={errorsBookingApplicant.POAURL}
+                value={pOAFiles}
+                onChange={setPOAFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedPOAURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Income Docs (Form 16 / ITR)"
+                placeholder="Select Income Document"
+                error={errorsBookingApplicant.IncomeForm16ITRURL}
+                value={incomeFiles}
+                onChange={setIncomeFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedIncomeURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="NRE / NRO Bank Details"
+                placeholder="Select NRE / NRO Bank Document"
+                error={errorsBookingApplicant.NreNroBankDetailsURL}
+                value={nreNroFiles}
+                onChange={setNreNroFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedNreNroURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Nominee Form"
+                placeholder="Select Nominee Form"
+                error={errorsBookingApplicant.NomineeFormURL}
+                value={nomineeFiles}
+                onChange={setNomineeFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedNomineeURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Statement of Source of Funds"
+                placeholder="Select Source Document"
+                error={errorsBookingApplicant.StatementOfSourceOfFundsURL}
+                value={sourceOfFundsFiles}
+                onChange={setSourceOfFundsFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedSourceOfFundsURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Payment Proof"
+                placeholder="Select Payment Proof"
+                error={errorsBookingApplicant.PaymentProofURL}
+                value={paymentProofFiles}
+                onChange={setPaymentProofFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedPaymentProofURLs((prev) => [...prev, url])
+                }
+              />
             </div>
           </div>
         </div>

@@ -665,7 +665,7 @@ export const ViewProjectMaster: React.FC = () => {
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                                             <FieldItem label="Employee Code" value={emp.EmployeeCode ?? '-'} />
-                                            <FieldItem label="Mobile" value={emp.PersonalMobileNumber ? `+91 ${emp.PersonalMobileNumber}` : '-'} />
+                                            <FieldItem label="Mobile Number" value={emp.PersonalMobileNumber ? `+91 ${emp.PersonalMobileNumber}` : '-'} />
                                             <FieldItem label="Email" value={emp.EmailId ?? '-'} />
                                             <FieldItem label="Department" value={emp.Department ?? '-'} />
                                             <FieldItem label="Designation" value={emp.Designation ?? '-'} />

@@ -125,6 +125,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
                 StateMasterId: params.StateMasterId ?? 0,
                 DistrictMasterId: params.DistrictMasterId ?? 0,
                 CityMasterId: params.CityMasterId ?? 0,
+                VillageMasterId: params.VillageMasterId ?? 0,
             }
 
 

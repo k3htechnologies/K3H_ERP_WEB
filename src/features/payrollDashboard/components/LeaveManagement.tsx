@@ -91,7 +91,7 @@ const LeaveManagement: React.FC<Props> = ({ leaveData }) => {
   return (
     <div className="space-y-3 pt-5">
       <h2 className="text-lg font-semibold text-gray-800">Leave Management</h2>
-      <div className="bg-white rounded-lg  p-4 h-[300px]">
+      <div className="bg-white rounded-lg  p-4 h-[300px] border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
         <DataTableWithOutBorder
           columns={columns}
           data={leaveData?.slice(0, 4) || []}

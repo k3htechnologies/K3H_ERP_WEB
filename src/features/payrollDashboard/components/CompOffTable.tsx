@@ -59,10 +59,9 @@ export default function CompOffTable({ compOffData }: Props) {
       <h2 className="text-lg font-semibold text-gray-800">
         Comp-Off Management
       </h2>
-      <div
-        className="bg-white rounded-xl p-4 h-[300px]"
+      <div className="bg-white rounded-xl p-4 h-[300px] border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
-      >
+      
         {compOffData?.length > 0 ? (
           <DataTableWithOutBorder
             columns={columns}

@@ -23,7 +23,7 @@ export interface FilterWithPaginationBookingRequest {
     AgreementValue?: number;
     BookingType?: string;
     SortBy?: string;
-    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF'| 'BOOKING FORM PDF ON MAIL';
+    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF' | 'BOOKING FORM PDF ON MAIL';
 }
 
 export interface FilterWithPaginationChannelPartnerBookingRequest {
@@ -90,7 +90,7 @@ export interface BookingData {
 
     EmployeeReferencePercentage: number | null;
     EmployeeReferenceAmount: number | null;
-    
+
     RegistrationDate: string | null;
     AgreementValue: number | null;
     AgreementValueTDS: number | null;
@@ -158,6 +158,13 @@ export interface BookingApplicantData {
     VotingIdURL: string | null;
     GSTNumber: string | null;
     GSTNumberURL: string | null;
+    CancelledChequeURL: string | null;
+    POAURL: string | null;
+    IncomeForm16ITRURL: string | null;
+    NreNroBankDetailsURL: string | null;
+    NomineeFormURL: string | null;
+    StatementOfSourceOfFundsURL: string | null;
+    PaymentProofURL: string | null;
     CreatedById: number | null;
     CreatedBy: string | null;
     CreatedDate: string | null;
@@ -278,6 +285,27 @@ export interface AddUpdateBookingApplicantRequest {
     GSTNumber: string | null;
     GSTNumberURL?: File[] | null;
     RemoveGSTNumberURL?: string | null;
+
+    CancelledChequeURL?: File[] | null;
+    RemoveCancelledChequeURL?: string | null;
+
+    POAURL?: File[] | null;
+    RemovePOAURL?: string | null;
+
+    IncomeForm16ITRURL?: File[] | null;
+    RemoveIncomeForm16ITRURL?: string | null;
+
+    NreNroBankDetailsURL?: File[] | null;
+    RemoveNreNroBankDetailsURL?: string | null;
+
+    NomineeFormURL?: File[] | null;
+    RemoveNomineeFormURL?: string | null;
+
+    StatementOfSourceOfFundsURL?: File[] | null;
+    RemoveStatementOfSourceOfFundsURL?: string | null;
+
+    PaymentProofURL?: File[] | null;
+    RemovePaymentProofURL?: string | null;
 }
 export interface AddUpdateBookingOtherChargesRequest {
     BookingOtherChargesId: number | null;

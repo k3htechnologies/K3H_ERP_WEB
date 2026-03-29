@@ -313,6 +313,10 @@ const AddUpdateProjectMaster: React.FC = () => {
             newErrors.ProjectPhotoURL = "Project Photo is required.";
         }
 
+        if (formData.ArchitectMobileNumber != "" && !isValidMobile(formData.ArchitectMobileNumber.trim())) {
+            newErrors.ArchitectMobileNumber = "Enter a valid 10-digit Architect Mobile Number";
+        }
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors

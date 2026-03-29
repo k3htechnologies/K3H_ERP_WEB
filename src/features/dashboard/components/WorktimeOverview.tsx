@@ -125,7 +125,7 @@ const WorktimeOverview: React.FC<Props> = ({ workTimeOverviewTable }) => {
         Work Overview
       </h2>
 
-      <div className="bg-white rounded-xl p-5 mt-3 h-[330px]">
+      <div className="bg-white p-4 rounded-xl mt-5 border border-gray-100 h-[330px]" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}> 
         <p className="text-md font-semibold text-gray-500  pb-2">Work Time</p>
 
         {workTimeOverviewTable.length > 0 ? (

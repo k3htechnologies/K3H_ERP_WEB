@@ -19,8 +19,7 @@ export default function AttendanceSummaryCard({ attendanceSummaryShiftData = [],
             <div className="grid grid-cols-1 sm:grid-cols-2  sm:gap-5 mt-4">
 
                 {/* Card-1: Present Days */}
-                <div className="w-full bg-green-100  rounded-md 
-                    p-3 sm:p-4 border border-green-300">
+                <div className="w-full bg-green-100  rounded-md  p-3 sm:p-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
                     <div className="text-xs sm:text-sm text-gray-500 font-medium mb-1 sm:mb-2">
                         Present Days
@@ -41,8 +40,7 @@ export default function AttendanceSummaryCard({ attendanceSummaryShiftData = [],
                 </div>
 
                 {/* Card-2: Shift Pattern */}
-                <div className="w-full bg-purple-100 rounded-md 
-                    p-3 sm:p-4 border border-purple-300">
+                <div className="w-full bg-purple-100 rounded-md  p-3 sm:p-4  border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
                     <div className="text-xs sm:text-sm text-gray-500 font-medium mb-1 sm:mb-2">
                         Shift Pattern

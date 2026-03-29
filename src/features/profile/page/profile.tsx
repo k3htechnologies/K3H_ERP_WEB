@@ -1233,17 +1233,19 @@ export const Profile: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                                         <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                                                 <FieldItem label="Country" value={safe(employeeData!.CountryName)} />
                                                 <FieldItem label="State" value={safe(employeeData!.StateName)} />
+                                                <FieldItem label="District" value={safe(employeeData!.DistrictName)} />
 
                                             </div>
                                         </div>
                                         <div className="lg:col-span-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                                <FieldItem label="District" value={safe(employeeData!.DistrictName)} />
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                
                                                 <FieldItem label="City" value={safe(employeeData!.CityName)} />
+                                                <FieldItem label="Village" value={safe(employeeData!.VillageName)} />
                                             </div>
                                         </div>
                                     </div>
@@ -1705,7 +1707,7 @@ export const Profile: React.FC = () => {
                                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                             <FieldItem label="Asset Name" value={asset.AssetName} />
                                                             <FieldItem label="Asset Code" value={asset.AssetCode} />
-                                                            <FieldItem label="Serial Type" value={asset.AssetType} />
+                                                            <FieldItem label="Asset Type" value={asset.AssetType} />
 
                                                         </div>
                                                     </div>

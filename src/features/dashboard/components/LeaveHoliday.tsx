@@ -37,7 +37,8 @@ export default function LeaveHoliday({ leaveBalanceData, holidayData, upcomingAp
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 mt-4">
 
                 {/* Leave Summary Card: */}
-                <div className="col-span-1 lg:col-span-6 bg-white p-5 rounded-xl  h-[340px] overflow-y-auto thin-scroll">
+                
+                <div className="col-span-1 lg:col-span-6 bg-white p-5 rounded-xl  h-[340px] overflow-y-auto thin-scroll  border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                     <p className="text-md font-semibold text-gray-500  pb-2">Leave Summary</p>
                     <p className="text-sm font-medium text-gray-400 mb-3 mt-3">Leave Breakdown</p>
 
@@ -77,7 +78,7 @@ export default function LeaveHoliday({ leaveBalanceData, holidayData, upcomingAp
                 </div>
 
                 {/* Leave Balance Card: */}
-                <div className="col-span-1 lg:col-span-3 bg-white rounded-xl p-5  h-[340px] overflow-y-auto thin-scroll">
+                <div className="col-span-1 lg:col-span-3 bg-white rounded-xl p-5  h-[340px] overflow-y-auto thin-scroll  border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                     <p className="text-md font-semibold text-gray-500 pb-2">
                         Leave Balance & Approved
                     </p>
@@ -129,7 +130,7 @@ export default function LeaveHoliday({ leaveBalanceData, holidayData, upcomingAp
                 </div>
 
                 {/* Holiday Card: */}
-                <div className="col-span-1 lg:col-span-3 rounded-xl bg-white p-5 h-[340px] overflow-y-auto thin-scroll">
+                <div className="col-span-1 lg:col-span-3 rounded-xl bg-white p-5 h-[340px] overflow-y-auto thin-scroll  border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                     <p className="text-md font-semibold text-gray-500  pb-2">Holiday</p>
 
                     {holidayData && holidayData.length > 0 ? (

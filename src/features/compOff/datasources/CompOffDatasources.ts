@@ -32,20 +32,20 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
                 CompOffId: (params.CompOffId ?? 0).toString(),
-            
+
             })
 
             if (params.StartDate) {
                 // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
-                const start = params.StartDate.includes('T') 
-                    ? params.StartDate 
+                const start = params.StartDate.includes('T')
+                    ? params.StartDate
                     : `${params.StartDate}T00:00:00Z`;
                 queryParams.append('StartDate', start);
             }
             if (params.EndDate) {
                 // Convert YYYY-MM-DD to ISO format if needed (already ISO if contains 'T')
-                const end = params.EndDate.includes('T') 
-                    ? params.EndDate 
+                const end = params.EndDate.includes('T')
+                    ? params.EndDate
                     : `${params.EndDate}T00:00:00Z`;
                 queryParams.append('EndDate', end);
             }
@@ -54,7 +54,8 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
-            if(params.IsReport) queryParams.append('IsReport', params.IsReport.toString());
+            if (params.IsReport!== undefined) queryParams.append('IsReport', params.IsReport.toString());
+            if (params.CanApprove !== undefined) queryParams.append('CanApprove', params.CanApprove.toString())
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${CompOffApi.PULL}?${queryParams.toString()}`, { signal }
@@ -65,7 +66,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             console.error('ERROR: PULL COMP OFF :', error);
 
             if (error === TokenExpiredException) {
-                await this.pullCompOff(params);
+                return await this.pullCompOff(params);
             }
 
             throw error
@@ -97,7 +98,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             console.error('ERROR: ADD UPDATE COMP OFF :', error)
 
             if (error === TokenExpiredException) {
-                await this.addUpdateCompOff(params);
+               return await this.addUpdateCompOff(params);
             }
             throw error
         }
@@ -125,7 +126,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             console.error('ERROR: DELETE COMP OFF :', error)
 
             if (error === TokenExpiredException) {
-                await this.deleteCompOff(params);
+              return await this.deleteCompOff(params);
             }
             throw error
         }
@@ -156,7 +157,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             console.error('ERROR: PULL COMP OFF DATES :', error);
 
             if (error === TokenExpiredException) {
-                await this.pullCompOffDates(params);
+              return await this.pullCompOffDates(params);
             }
 
             throw error

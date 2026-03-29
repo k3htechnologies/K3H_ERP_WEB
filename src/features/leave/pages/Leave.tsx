@@ -182,6 +182,7 @@ export const Leave: React.FC = () => {
   //#region DATA LOAD LEAVE
 
   const loadLeaves = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+    
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -195,9 +196,11 @@ export const Leave: React.FC = () => {
           StartDate: filterParams.StartDate?.trim() || undefined,
           EndDate: filterParams.EndDate?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, []),
-          IsReport: false
+          CanApprove: false,
+          IsReport: false,
+          IsCheckPermission: true
         };
-
+        
         const response = await LeaveService.apiCallPullLeave(params);
 
         if (E.isRight(response)) {
@@ -305,7 +308,6 @@ export const Leave: React.FC = () => {
       setLoadingMessage,
       async () => {
 
-
         const params: FilterWithPaginationLeaveRequest = {
           PageNumber: 1,
           PageSize: pagination.totalRecords,
@@ -315,6 +317,7 @@ export const Leave: React.FC = () => {
           EndDate: filters.EndDate?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, []),
           IsReport: false,
+          CanApprove: false,
           ExportType: exportType
         };
 
@@ -327,7 +330,7 @@ export const Leave: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     );
   };
 
@@ -473,7 +476,6 @@ export const Leave: React.FC = () => {
     ),
     [leaveColumns, selectedLeaveColumnKeys]
   );
-
   //#endregion
 
   //#region FILTER HELPERS
@@ -487,15 +489,12 @@ export const Leave: React.FC = () => {
     setTempFilters({});
     setShowFilterPopup(false);
   };
-
   //#endregion
 
   //#region  HANDLE CHANGE EVENT
-
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
-
   //#endregion
 
   //#region ADD LEAVE THEN NAVIGATE
@@ -508,6 +507,7 @@ export const Leave: React.FC = () => {
 
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+      
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
@@ -539,6 +539,7 @@ export const Leave: React.FC = () => {
         onExportPdf={handleExportLeavePdf}
         exportLoading={isLoading}
       />
+
       <DataTable
         data={leaveListForTable}
         columns={visibleLeaveColumns}
@@ -586,6 +587,7 @@ export const Leave: React.FC = () => {
       >
         <div className="space-y-6">
           <div className="space-y-4">
+
             <div>
               <Input
                 label='Leave Type'
@@ -595,6 +597,7 @@ export const Leave: React.FC = () => {
                 placeholder="Enter Leave Type"
               />
             </div>
+
             <div>
               <DatePickerInput
                 label='Start Date'
@@ -602,6 +605,7 @@ export const Leave: React.FC = () => {
                 onChange={(val) => handleFilterChange('StartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
               />
             </div>
+
             <div>
               <DatePickerInput
                 label='End Date'
@@ -609,6 +613,7 @@ export const Leave: React.FC = () => {
                 onChange={(val) => handleFilterChange('EndDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
               />
             </div>
+
           </div>
         </div>
       </Modal>
@@ -623,7 +628,6 @@ export const Leave: React.FC = () => {
         loading={isLoading}
         pageName='leave'
       />
-
 
     </div>
   )

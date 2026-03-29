@@ -9,13 +9,8 @@ import type {
 } from '@/features/attendanceCalendar/models/AttendanceModel'
 
 export abstract class AttendanceRegularizationDatasource {
-    abstract pullAttendanceRegularization(
-        params: FilterWithPaginationAttendanceRegularizationRequest,
-        signal?: AbortSignal
-    ): Promise<AttendanceRegularizationListResponse>;
-    abstract addUpdateAttendanceRegularization(
-        data: AddUpdateAttendanceRegularization
-    ): Promise<AttendanceRegularizationSaveResponse>;
+    abstract pullAttendanceRegularization(params: FilterWithPaginationAttendanceRegularizationRequest, signal?: AbortSignal): Promise<AttendanceRegularizationListResponse>;
+    abstract addUpdateAttendanceRegularization(data: AddUpdateAttendanceRegularization): Promise<AttendanceRegularizationSaveResponse>;
 }
 
 export class AttendanceRegularizationDatasourceImpl implements AttendanceRegularizationDatasource {
@@ -40,7 +35,9 @@ export class AttendanceRegularizationDatasourceImpl implements AttendanceRegular
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
+            if (params.CanApprove !== undefined) queryParams.append('CanApprove', params.CanApprove.toString())
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+            if (params.IsCheckPermission) queryParams.append('IsCheckPermission', params.IsCheckPermission.toString());
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${AttendanceRegularizationApi.PULL}?${queryParams.toString()}`,
@@ -51,7 +48,7 @@ export class AttendanceRegularizationDatasourceImpl implements AttendanceRegular
             console.error('ERROR: PULL ATTENDANCE REGULARIZATION :', error);
 
             if (error === TokenExpiredException) {
-                await this.pullAttendanceRegularization(params);
+                return await this.pullAttendanceRegularization(params);
             }
 
             throw error
@@ -83,7 +80,7 @@ export class AttendanceRegularizationDatasourceImpl implements AttendanceRegular
             console.error('ERROR: ADD UPDATE ATTENDANCE REGULARIZATION :', error)
 
             if (error === TokenExpiredException) {
-                await this.addUpdateAttendanceRegularization(params);
+                return await this.addUpdateAttendanceRegularization(params);
             }
             throw error
         }

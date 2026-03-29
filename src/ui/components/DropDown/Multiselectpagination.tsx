@@ -57,7 +57,6 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     lg: { fontSize: 16, paddingY: 10, paddingX: 20, height: 54, dropdownHeight: 250 },
   };
 
-  // Approximate height of the search + select-all/clear-all header sections
   const currentSize = SIZE_MAP[size as keyof typeof SIZE_MAP] || SIZE_MAP.md;
 
   const hasSelections = selectedValues.length > 0;

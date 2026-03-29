@@ -43,37 +43,26 @@ const initialFormState = (): AddUpdateLeaveCreditConfigurationRequest => ({
 
 export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
   //#region STATE MANAGEMENT
-  const [formData, setFormData] =
-    useState<AddUpdateLeaveCreditConfigurationRequest>(() =>
-      initialFormState(),
-    );
+  const [formData, setFormData] = useState<AddUpdateLeaveCreditConfigurationRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
 
-  const [leaveBalanceTypes, setLeaveBalanceTypes] = useState<
-    LeaveBalanceType[]
-  >([]);
-  const [leaveTypeLabels, setLeaveTypeLabels] = useState<{
-    [index: number]: string;
-  }>({});
-  const [designationValue, setDesignationValue] = useState<
-    string | number | null
-  >(null);
+  const [leaveBalanceTypes, setLeaveBalanceTypes] = useState<LeaveBalanceType[]>([]);
+
+  const [leaveTypeLabels, setLeaveTypeLabels] = useState<{ [index: number]: string }>({});
+
+  const [designationValue, setDesignationValue] = useState<string | number | null>(null);
 
   //SET DROP DOWN LABELS
-  const [dropdownLabels, setDropdownLabels] = useState<{
-    departmentName?: string;
-  }>({});
-  const leaveBalanceTypeRefs = useRef<{
-    [index: number]: HTMLDivElement | null;
-  }>({});
+  const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string }>({});
+  const leaveBalanceTypeRefs = useRef<{ [index: number]: HTMLDivElement | null }>({});
 
   // NAVIGATE
   const navigate = useNavigate();
 
   //GET VALUE FROM URL :ID
   const { id } = useParams<{ id?: string }>();
-
+  const isEdit = !!id;
   // TOAST
   const { addToast } = useToast();
 
@@ -85,7 +74,6 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
     fetchCallback: fetchDesignationMasterDropdown,
     autoFetchOptions: true,
   });
-
   //#endregion
 
   //#region LEAVE CREDIT CONFIGURATION LIST STATE CONTEXT
@@ -97,17 +85,13 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
   //#endregion
 
   //#region HANDLE CHNAGE EVENT WHEN INPUT BOX ANY OTHER
-  const handleFieldChange = (
-    field: keyof AddUpdateLeaveCreditConfigurationRequest,
-    value: any,
-  ) => {
+  const handleFieldChange = (field: keyof AddUpdateLeaveCreditConfigurationRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
-
   //#endregion
 
   //#region FETCH LEAVE CREDIT CONFIGURATION DETAILS
@@ -199,7 +183,6 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
       fetchLeaveCreditConfigurationDetails();
       return;
     }
-
     setFormData(initialFormState());
     setLeaveBalanceTypes([]);
     setLeaveTypeLabels({});
@@ -344,7 +327,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
       if (
         item.LeaveCredit === undefined ||
         item.LeaveCredit === null ||
-        item.LeaveCredit < 0
+        item.LeaveCredit <= 0
       ) {
         newErrors[`LeaveBalanceType_${index}_LeaveCredit`] =
           "Leave Credit must be valid.";
@@ -457,7 +440,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
           className="rounded-lg shadow-sm border border-gray-200 p-6"
           style={{ backgroundColor: "#FFFFFF" }}
         >
-          <h3 className="text-md font-medium text-gray-500 mb-4">Details</h3>
+          <h3 className="text-md font-medium text-gray-500 mb-2">Details</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <SinglePageSelection
@@ -501,7 +484,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
               label="Department"
               title="Select Department"
               required
-              // size="md"
+              disabled={isEdit}
               dataFetchCallBack={fetchDepartmentMasterDropdown}
               onSelected={(selectedItem) => {
                 const deptId = selectedItem?.value
@@ -529,6 +512,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
             <MultiSelectPagination
               label="Designation"
               title="Select Designation"
+              disabled={isEdit}
               dataFetchCallBack={fetchDesignationMasterDropdown}
               selectedValues={designationDropdown.selectedValues}
               options={designationDropdown.initialOptions}
@@ -567,6 +551,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
               <p className="text-sm text-red-600">{errors.LeaveBalanceTypes}</p>
             </div>
           )}
+
           {leaveBalanceTypes.length > 0 && (
             <div className="space-y-3">
               {leaveBalanceTypes.map((item, index) => (
@@ -577,6 +562,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                   }}
                 >
                   <div className="flex flex-col md:flex-row gap-4 items-end">
+
                     <div className="flex-1">
                       <SingleSelectDropdownWithPagination
                         key={`leave-type-${index}-${item.LeaveTypeId}`}
@@ -618,11 +604,11 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                         error={errors[`LeaveBalanceType_${index}_LeaveTypeId`]}
                       />
                     </div>
+
                     <div className="flex-1">
                       <Input
                         label="Leave Credit"
                         required
-                        size="sm"
                         type="text"
                         value={item.LeaveCredit}
                         onChange={(e) =>
@@ -634,22 +620,24 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                         }
                         placeholder="Enter Leave Credit"
                         error={errors[`LeaveBalanceType_${index}_LeaveCredit`]}
-                        min={0}
                         maxLength={2}
                         step={1}
                       />
                     </div>
+
                     <div className="flex-shrink-0 pb-2">
                       <Button
                         type="button"
-                        color="red"
-                        size="xs"
+                        color="transparent"
+                        size="sm"
+                        style={{ color: 'red' }}
                         onClick={() => handleRemoveLeaveBalanceType(index)}
                         title="Remove"
                       >
                         <Trash2 className="h-4 w-4 " />
                       </Button>
                     </div>
+
                   </div>
                 </div>
               ))}
@@ -661,9 +649,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
           cancelText="Cancel"
           saveText={
             formData.LeaveCreditConfigurationId &&
-              formData.LeaveCreditConfigurationId > 0
-              ? "Update"
-              : "Add"
+              formData.LeaveCreditConfigurationId > 0 ? "Update" : "Add"
           }
           onCancel={() => navigate(-1)}
           canAction={canAction}

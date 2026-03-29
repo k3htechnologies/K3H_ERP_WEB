@@ -37,6 +37,7 @@ export class EmployeeResignationDatasourceImpl implements EmployeeResignationDat
             if (params.ApprovalStatus?.trim()) queryParams.append('ApprovalStatus', params.ApprovalStatus.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
+            if (params.CanApprove !== undefined) queryParams.append('CanApprove', params.CanApprove.toString())
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(

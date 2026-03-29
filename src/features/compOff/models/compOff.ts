@@ -36,6 +36,7 @@ export interface FilterWithPaginationCompOff {
   EmployeeName?: string;
   SortBy?: string;
   IsReport?: boolean;
+  CanApprove?: boolean
   ExportType?: "Excel" | "PDF";
 }
 

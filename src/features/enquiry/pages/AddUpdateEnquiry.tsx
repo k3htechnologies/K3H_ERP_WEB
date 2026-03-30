@@ -1384,6 +1384,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                         onChange={(values) => {
                           const { idsString } = villageDropdown.handleChange(values);
                           setSelectedVillageValues(idsString || null);
+                          handleFieldChange("VillageMasterId", idsString || "");
                           if (errors.VillageMasterId) {
                             setErrors((prev) => ({
                               ...prev,

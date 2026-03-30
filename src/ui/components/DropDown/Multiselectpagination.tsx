@@ -141,6 +141,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     // Clear options when callback changes to force fresh fetch
     setOptions([]);
     setFilteredOptions([]);
+    setSearchTerm("");
   }, [dataFetchCallBack]);
 
   // Initial load when dropdown opens and reset when it closes
@@ -153,6 +154,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     } else {
       // Reset pagination when closing
       pageRef.current = 1;
+      setSearchTerm("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataFetchCallBack, isOpen]);
@@ -213,12 +215,15 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
           });
           return merged;
         });
+      } else if (options.length === 0) {
+        setOptions(propOptions || []);
+        setFilteredOptions(propOptions || []);
       }
       return;
     }
     setOptions(propOptions || []);
     setFilteredOptions(propOptions || []);
-  }, [propOptions, dataFetchCallBack]);
+  }, [propOptions, dataFetchCallBack, options.length]);
 
   // Toggle selection of options
   const toggleSelect = (value: string | number) => {
@@ -260,11 +265,25 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   }, []);
 
   // Selected labels and visible tags (up to 4)
-  const selectedLabels = options.filter((opt) => selectedValues.some((sv) => String(sv) === String(opt.value))).map((opt) => opt.label);
+  const allOptionCandidates = [...options, ...propOptions].reduce<DropdownOptions[]>((acc, opt) => {
+    if (!acc.some((item) => String(item.value) === String(opt.value))) {
+      acc.push(opt);
+    }
+    return acc;
+  }, []);
+
+  const selectedLabels = allOptionCandidates
+    .filter((opt) => selectedValues.some((sv) => String(sv) === String(opt.value)))
+    .map((opt) => opt.label);
 
   const visibleTags = selectedLabels.slice(0, 2);
   const remainingCount = selectedLabels.length - visibleTags.length;
-  const displayTitle = selectedLabels.length > 0 ? selectedLabels.join(", ") : title || "Select " + label;
+  const displayTitle =
+    selectedLabels.length > 0
+      ? selectedLabels.join(", ")
+      : selectedValues.length > 0
+      ? selectedValues.join(", ")
+      : title || "Select " + label;
 
   return (
     <div

@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from "recharts";
+
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import type { Table4, Table6, Table5 } from "../models/UserDashboardModel";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
@@ -24,11 +24,11 @@ export default function LeaveHoliday({ leaveBalanceData, holidayData, upcomingAp
 
     // Next Holidays (DaysRemaining between 0 and 7)
     const nextHolidays = holidayData.filter((item) => item.DaysRemaining != null && item.DaysRemaining >= 0 && item.DaysRemaining <= 7);
-    console.log('Next Holidays', nextHolidays);
+    
 
     // Upcoming Holidays (DaysRemaining > 7)
     const upcomingHolidays = holidayData.filter((item) => item.DaysRemaining != null && item.DaysRemaining > 7);
-    console.log('Upcoming Holidays', upcomingHolidays);
+    
 
     return (
         <div className="space-y-3 pt-5">
@@ -42,38 +42,39 @@ export default function LeaveHoliday({ leaveBalanceData, holidayData, upcomingAp
                     <p className="text-md font-semibold text-gray-500  pb-2">Leave Summary</p>
                     <p className="text-sm font-medium text-gray-400 mb-3 mt-3">Leave Breakdown</p>
 
-                    <div className="h-[200px] min-h-[200px] w-full min-w-0">
-                        <ResponsiveContainer width="100%" height={200}>
-                            <BarChart
-                                data={[...leaveBalanceData]}
-                                layout="vertical"
-                                barCategoryGap={10}
-                                margin={{ left: -20, right: 30 }}
-                            >
-                                <XAxis type="number" hide />
-                                <YAxis
-                                    type="category"
-                                    dataKey="LeaveTypeName"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fontSize: 11, fill: "#6b7280" }}
-                                    width={100}
-                                />
-                                <Bar
-                                    dataKey="TotalLeaves"
-                                    barSize={15}
-                                    fill="#2563eb"
-                                    radius={[0, 6, 6, 0]}
-                                    background={{ fill: "#e5e7eb", radius: 6 }}
-                                />
-                                <LabelList
-                                    dataKey="TotalLeaves"
-                                    position="right"
-                                    fill="#858a04"
-                                    fontSize={12}
-                                />
-                            </BarChart>
-                        </ResponsiveContainer>
+                    <div className="space-y-2 mt-4">
+                        {leaveBalanceData && leaveBalanceData.length > 0 ? (
+                            leaveBalanceData.map((leave, index) => {
+                                const total = parseNumber(leave.TotalLeaves);
+                                const used = parseNumber(leave.UsedLeaves);
+                                const percent = total > 0 ? (used / total) * 100 : 0;
+                                const displayName = leave.LeaveTypeName?.includes(" - ")
+                                    ? leave.LeaveTypeName.split(" - ")[1]
+                                    : leave.LeaveTypeName;
+
+                                return (
+                                    <div key={index} className="space-y-2">
+                                        <div className="flex justify-between items-center px-1">
+                                            <span className="text-sm font-medium text-gray-600">
+                                                {getSafeString(displayName)}
+                                            </span>
+                                            <span className="text-sm font-semibold text-gray-800">
+                                                {getSafeString(used)}/{getSafeString(total)}
+                                            </span>
+                                        </div>
+                                        <div className="w-full bg-gray-100 rounded-full h-[12px]">
+                                            <div  className="bg-blue-600 h-[12px] rounded-full transition-all duration-500 ease-out"
+                                                style={{ width: `${Math.min(percent, 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="flex flex-col items-center justify-center py-10">
+                                <p className="text-sm text-gray-500">No leave breakdown data</p>
+                            </div>
+                        )}
                     </div>
                 </div>
 

@@ -91,6 +91,8 @@ export const CallLog: React.FC = () => {
                     ProjectId: Number(projectId),
                     Name: searchText?.trim() || undefined,
                     MobileNumber: filterParams.MobileNumber ? Number(filterParams.MobileNumber) : undefined,
+                    RescheduleDateFromDate: filterParams.RescheduleDateFromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.RescheduleDateFromDate) || undefined : undefined,
+                    RescheduleDateToDate: filterParams.RescheduleDateToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.RescheduleDateToDate) || undefined : undefined,
                     SortBy: getSortByParam(sort ?? null, CallLogColumns),
                 };
 
@@ -183,6 +185,8 @@ export const CallLog: React.FC = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     Name: filters.Name?.trim() || undefined,
+                    RescheduleDateFromDate: filters.RescheduleDateFromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.RescheduleDateFromDate) || undefined : undefined,
+                    RescheduleDateToDate: filters.RescheduleDateToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.RescheduleDateToDate) || undefined : undefined,
                     ProjectId: Number(projectId),
                     SortBy: getSortByParam(sortInfo ?? null, CallLogColumns),
                     ExportType: exportType
@@ -240,10 +244,6 @@ export const CallLog: React.FC = () => {
 
         if (!formData.Remark || !formData.Remark.trim()) {
             newErrors.Remark = "Remark is required";
-        }
-
-        if (!formData.RescheduleDate) {
-            newErrors.RescheduleDate = "Reschedule Date is required";
         }
 
         const callingDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(editingCallLogData?.CallDate ? new Date(editingCallLogData.CallDate) : undefined);
@@ -726,6 +726,21 @@ export const CallLog: React.FC = () => {
                             placeholder="Enter Mobile Number"
                         />
                     </div>
+                    <div>
+                        <DatePickerInput
+                            label='Reschedule From Date'
+                            value={tempFilters.RescheduleDateFromDate || ''}
+                            onChange={(value) => handleFilterChange('RescheduleDateFromDate', value || '')}
+                        />
+                    </div>
+
+                    <div>
+                        <DatePickerInput
+                            label='Reschedule To Date'
+                            value={tempFilters.RescheduleDateToDate || ''}
+                            onChange={(value) => handleFilterChange('RescheduleDateToDate', value || '')}
+                        />
+                    </div>
 
                 </div>
             </Modal>
@@ -771,7 +786,6 @@ export const CallLog: React.FC = () => {
                                 label="Reschedule Date"
                                 value={formatDate_dd_mm_yyyy(formData.RescheduleDate)}
                                 onChange={(val) => handleFieldChange('RescheduleDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                required
                                 error={errors.RescheduleDate}
                             />
                         </div>

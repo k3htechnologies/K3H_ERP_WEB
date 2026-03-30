@@ -4,7 +4,7 @@ import { departmentMasterService } from '@/features/departmentMaster/services/De
 export const fetchDepartmentMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
         const responseEither = await departmentMasterService.apiCallPullDepartmentMaster({
-            PageSize: 20,
+            PageSize: 50,
             PageNumber: pageNumber,
             DepartmentName: params?.value || '',
             IsCheckPermission: false

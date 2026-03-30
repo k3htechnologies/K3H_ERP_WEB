@@ -124,7 +124,6 @@ export const ClassificationParameterFormModal: React.FC<ClassificationParameterF
                         </div>
                     )}
 
-
                     <div>
                         <MultiSelectPagination
                             label="Location"
@@ -139,8 +138,6 @@ export const ClassificationParameterFormModal: React.FC<ClassificationParameterF
                             }}
                             error={errors.VillageMasterId}
                         />
-
-
                     </div>
 
                     <div>

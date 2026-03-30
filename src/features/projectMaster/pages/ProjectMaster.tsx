@@ -24,6 +24,9 @@ import { useProjectMasterListState } from '@/features/projectMaster/context/Proj
 import { updateFilter } from '@/core/utils/filterHelper';
 import { BanknoteXIcon, Building2Icon, CheckCircle, User2 } from 'lucide-react';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME_BMC, PROJECT_SUB_SCHEME_MHADA, PROJECT_SUB_SCHEME_SRA } from '@/core/constants';
+import ToggleSwitch from '@/ui/components/forms/ToggleSwitch';
 
 export const ProjectMaster: React.FC = () => {
 
@@ -100,6 +103,13 @@ export const ProjectMaster: React.FC = () => {
           ProjectName: searchtext ?? filterParams.ProjectName?.trim() ?? undefined,
           ProjectLocation: filterParams.ProjectLocation?.trim() || undefined,
           CTCNumber: filterParams.CTCNumber?.trim() || undefined,
+          IsRedevelopment: filterParams.IsRedevelopment?.trim() || undefined,
+          ProjectStatus: filterParams.ProjectStatus?.trim() || undefined,
+          VillageName: filterParams.VillageName?.trim() || undefined,
+          ArchitectName: filterParams.ArchitectName?.trim() || undefined,
+          RERANumber: filterParams.RERANumber?.trim() || undefined,
+          ProjectScheme: filterParams.ProjectScheme?.trim() || undefined,
+          ProjectSubScheme: filterParams.ProjectSubScheme?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, projectMasterColumns)
         }
 
@@ -172,6 +182,13 @@ export const ProjectMaster: React.FC = () => {
           ProjectName: filters.ProjectName?.trim() || undefined,
           ProjectLocation: filters.ProjectLocation?.trim() || undefined,
           CTCNumber: filters.CTCNumber?.trim() || undefined,
+          IsRedevelopment: filters.IsRedevelopment?.trim() || undefined,
+          ProjectStatus: filters.ProjectStatus?.trim() || undefined,
+          VillageName: filters.VillageName?.trim() || undefined,
+          ArchitectName: filters.ArchitectName?.trim() || undefined,
+          RERANumber: filters.RERANumber?.trim() || undefined,
+          ProjectScheme: filters.ProjectScheme?.trim() || undefined,
+          ProjectSubScheme: filters.ProjectSubScheme?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, projectMasterColumns),
           ExportType: exportType
         }
@@ -221,7 +238,7 @@ export const ProjectMaster: React.FC = () => {
 
   //#region VIEW PROJECT MASTER DETAILS
   const handleViewProjectDetails = useCallback((row: ProjectMasterData) => {
-    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName, uniquekey: row.Uniquekey });
     navigate('/projectMaster/view');
   }, [navigate, updateListState]);
 
@@ -230,7 +247,7 @@ export const ProjectMaster: React.FC = () => {
   //#region VIEW BANK DETAILS
 
   const handleViewProjectBank = useCallback((row: ProjectMasterData) => {
-    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName, uniquekey: row.Uniquekey });
     navigate('/projectMaster/bank');
   }, [navigate, updateListState]);
   //#endregion
@@ -238,7 +255,7 @@ export const ProjectMaster: React.FC = () => {
   //#region VIEW EMPLOYEE DETAILS
 
   const handleViewProjectEmployee = useCallback((row: ProjectMasterData) => {
-    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName, uniquekey: row.Uniquekey });
     navigate('/projectMaster/employee');
   }, [navigate, updateListState]);
   //#endregion
@@ -246,7 +263,7 @@ export const ProjectMaster: React.FC = () => {
   //#region VIEW COMPANY DETAILS
 
   const handleViewProjectCompany = useCallback((row: ProjectMasterData) => {
-    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName, uniquekey: row.Uniquekey });
     navigate('/projectMaster/company');
   }, [navigate, updateListState]);
   //#endregion
@@ -254,7 +271,7 @@ export const ProjectMaster: React.FC = () => {
   //#region VIEW COMPANY DETAILS
 
   const handleViewProjectApproval = useCallback((row: ProjectMasterData) => {
-    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName,uniquekey:row.Uniquekey });
+    updateListState({ projectId: row.ProjectId, projectName: row.ProjectName, uniquekey: row.Uniquekey });
     navigate('/projectMaster/approval');
   }, [navigate, updateListState]);
   //#endregion
@@ -447,7 +464,7 @@ export const ProjectMaster: React.FC = () => {
                 }}
                 title="Modules Workflow Approval"
               >
-                <CheckCircle  className="h-4 w-4" />
+                <CheckCircle className="h-4 w-4" />
 
               </Button>
             </div>
@@ -457,14 +474,14 @@ export const ProjectMaster: React.FC = () => {
         )
       }
     ],
-    [handleViewProjectDetails, handleViewProjectEmployee, handleViewProjectCompany, handleViewProjectBank,handleViewProjectApproval]
+    [handleViewProjectDetails, handleViewProjectEmployee, handleViewProjectCompany, handleViewProjectBank, handleViewProjectApproval]
   )
 
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
 
-  const requiredProjectMasterColumnKeys: string[] = ['ProjectName','Actions'];
+  const requiredProjectMasterColumnKeys: string[] = ['ProjectName', 'Actions'];
 
   const [selectedProjectMasterColumnKeys, setSelectedProjectMasterColumnKeys] = useState<string[]>([]);
 
@@ -614,11 +631,21 @@ export const ProjectMaster: React.FC = () => {
         saveText="Apply"
         cancelText="Clear"
         onCancel={() => clearFilters()}
-       
+
         size="small-half"
       >
         <div className="space-y-6">
-          <div className="space-y-4">
+          <div className=" space-y-4 grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1">
+            <div>
+              <ToggleSwitch
+                label="Is Redevelopment"
+                name="IsRedevelopment"
+                value={tempFilters.IsRedevelopment === "1"}
+                onChange={(name, value) =>
+                  handleFilterChange(name, value ? "1" : "0")
+                }
+              />
+            </div>
             <div>
               <Input
                 label='Project Name'
@@ -644,6 +671,69 @@ export const ProjectMaster: React.FC = () => {
                 value={tempFilters.CTCNumber || ''}
                 onChange={(e) => handleFilterChange('CTCNumber', e.target.value)}
                 placeholder="Enter CTS Number"
+              />
+            </div>
+            <div>
+              <SinglePageSelection
+                label="Project Status"
+                placeholder="Select Project Status"
+                value={tempFilters.ProjectStatus || ''}
+                onChange={e => handleFilterChange('ProjectStatus', String(e))}
+                options={PROJECT_STATUS_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
+              />
+            </div>
+            <div>
+              <Input
+                label='Village'
+                type="text"
+                value={tempFilters.VillageName || ''}
+                onChange={(e) => handleFilterChange('VillageName', e.target.value)}
+                placeholder="Enter Village Name"
+              />
+            </div>
+            <div>
+              <Input
+                label='Architect Name'
+                type="text"
+                value={tempFilters.ArchitectName || ''}
+                onChange={(e) => handleFilterChange('ArchitectName', e.target.value)}
+                placeholder="Enter Architect Name"
+              />
+            </div>
+            <div>
+              <Input
+                label='RERA Number'
+                type="text"
+                value={tempFilters.RERANumber || ''}
+                onChange={(e) => handleFilterChange('RERANumber', e.target.value)}
+                placeholder="Enter RERA Number"
+              />
+            </div>
+            <div>
+              <SinglePageSelection
+                label="Project Scheme"
+                placeholder="Select Project Scheme"
+                value={tempFilters.ProjectScheme}
+                onChange={(val) => handleFilterChange('ProjectScheme', String(val))}
+                options={PROJECT_SCHEME.map(opt => ({ label: opt.name, value: opt.id }))}
+              />
+            </div>
+            <div>
+              <SinglePageSelection
+                label="Project Sub Scheme"
+                placeholder="Select Project Sub Scheme"
+                value={tempFilters.ProjectSubScheme}
+                onChange={(val) => handleFilterChange('ProjectSubScheme', String(val))}
+                options={
+                  tempFilters.ProjectScheme === 'BMC'
+                    ? PROJECT_SUB_SCHEME_BMC.map(opt => ({ label: opt.name, value: opt.id }))
+                    : tempFilters.ProjectScheme === 'MHADA'
+                      ? PROJECT_SUB_SCHEME_MHADA.map(opt => ({ label: opt.name, value: opt.id }))
+                      : tempFilters.ProjectScheme === 'SRA'
+                        ? PROJECT_SUB_SCHEME_SRA.map(opt => ({ label: opt.name, value: opt.id }))
+                        : []
+                }
+                disabled={!tempFilters.ProjectScheme}
               />
             </div>
           </div>

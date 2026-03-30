@@ -44,6 +44,7 @@ import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
 import { isEmployeeComplete } from "@/features/employeeMaster/utils/employeeUtils";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { ACTIVE_INACTIVE_OPTIONS } from "@/core/constants";
+import { getNameInitials } from "@/core/utils/getNameInitials";
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -372,30 +373,39 @@ export const EmployeeMaster: React.FC = () => {
         width: '220px',
         align: "left",
         render: (value, row) => {
+
           const fullName = (row?.FullName ?? "").trim();
-          const initials = fullName
-            ? fullName
-              .split(/\s+/)
-              .map((w: string) => (w && w.length ? w[0] : ""))
-              .join("")
-              .toUpperCase()
-              .slice(0, 2)
-            : "NA";
+
+          const initials = getNameInitials(fullName);
+
+          const profilePhotoURL = row?.ProfilePhotoURL;
+
+          const hasProfile =
+            profilePhotoURL &&
+            profilePhotoURL !== "" &&
+            profilePhotoURL !== "—";
 
           return (
             <div className={`flex items-center justify-between gap-3`}>
-              {/* left: avatar + name */}
+              
               <div className="flex items-center gap-3">
-                <div
-                  className="w-7 h-7 rounded-full
+                {hasProfile ? (
+                  <img
+                    src={profilePhotoURL}
+                    alt={fullName}
+                    className="w-7 h-7 rounded-full object-cover border border-gray-300"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full
                        bg-blue-200 
                        flex items-center justify-center
                        text-gray-800 font-medium text-xs
                        border border-gray-300"
-                  title={fullName || "-"}
-                >
-                  {initials}
-                </div>
+                    title={fullName || "-"}
+                  >
+                    {initials}
+                  </div>
+                )}
 
                 <div className="min-w-0">
                   <TooltipText
@@ -695,7 +705,7 @@ export const EmployeeMaster: React.FC = () => {
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
-  const requiredEmployeeColumnKeys: string[] = ["FullName",'Actions'];
+  const requiredEmployeeColumnKeys: string[] = ["FullName", 'Actions'];
 
   const allEmployeeColumnKeys: string[] = employeeColumns.map((c) => c.key);
 

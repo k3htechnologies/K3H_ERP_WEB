@@ -36,6 +36,8 @@ export class CallLogDatasourceImpl implements CallLogDatasource {
             if (params.CallLogId) queryParams.append("CallLogId", params.CallLogId.toString());
             if (params.Name) queryParams.append('Name', params.Name.toString());
             if (params.MobileNumber) queryParams.append('MobileNumber', params.MobileNumber.toString());
+            if (params.RescheduleDateFromDate) queryParams.append('RescheduleDateFromDate', params.RescheduleDateFromDate.toString());
+            if (params.RescheduleDateToDate) queryParams.append('RescheduleDateToDate', params.RescheduleDateToDate.toString());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 

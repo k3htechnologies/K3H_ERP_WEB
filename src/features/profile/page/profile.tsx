@@ -44,6 +44,7 @@ import { filterAadhaar, filterDrivingLicenseNumber, filterMobile, filterPAN, fil
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { BLOOD_GROUP_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS } from '@/core/constants';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { getNameInitials } from '@/core/utils/getNameInitials';
 
 export const Profile: React.FC = () => {
 
@@ -1197,7 +1198,7 @@ export const Profile: React.FC = () => {
                                         </div>
                                         <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Driving / Licence Number" value={safe(employeeData!.DrivingLicenceNumber)} />
+                                                <FieldItem label="Driving Licence Number" value={safe(employeeData!.DrivingLicenceNumber)} />
                                                 <FieldItem label="Voter Card Number" value={safe(employeeData!.VoterCardNumber)} />
                                             </div>
                                         </div>
@@ -1397,7 +1398,7 @@ export const Profile: React.FC = () => {
                                                     <div className="flex flex-col items-center">
 
                                                         <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold text-sm">
-                                                            {item.FullName!.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
+                                                            {getNameInitials(item.FullName!.trim())}
                                                         </div>
 
                                                         {index !== employeeReportingCycleList.length - 1 && (

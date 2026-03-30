@@ -13,12 +13,6 @@ const NewAddedChannelPartner: React.FC<Props> = ({ NewAddedChannelPartnerData })
     const NewAddedChannelPartnerColumns = useMemo<any[]>(
         () => [
             {
-                key: "Name",
-                label: "CP Name",
-                align: "left",
-                render: (value?: string) => value || ''
-            },
-            {
                 key: "SystemGeneratedCode",
                 label: "CP Code",
                 align: "left",
@@ -27,6 +21,18 @@ const NewAddedChannelPartner: React.FC<Props> = ({ NewAddedChannelPartnerData })
                         text={value || '-'}
                         maxWidth="250px"
                         tooltipThreshold={25}
+                    />
+                )
+            },
+            {
+                key: "Name",
+                label: "CP Name",
+                align: "left",
+                render: (value?:string) => (
+                    <TooltipText
+                        text={value || '-'}
+                        maxWidth="180px"
+                        tooltipThreshold={18}
                     />
                 )
             },

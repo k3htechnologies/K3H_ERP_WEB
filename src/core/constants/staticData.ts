@@ -65,7 +65,7 @@ export const MASTER_DATA = {
 
   tenure: ['Tenure 1', 'Tenure 2', 'Tenure 3', 'Tenure 4', 'Tenure 5', 'Tenure 6', 'Tenure 7', 'Tenure 8', 'Tenure 9', 'Tenure 10', 'Tenure 11', 'Tenure 12', 'Tenure 13', 'Tenure 14'],
 
-  unit_sqft_lumsum: ['Per Sq Ft', 'Lump Sum'],
+  unit_sqft_lumsum: ['Per Sq Ft', 'Lumpsum'],
 
   business_category: ['Commercial', 'Mixed Use', 'Residential'],
 

@@ -17,7 +17,7 @@ export default function OverviewCards({ overViewData = [] }: Props) {
     {
       title: "Active Channel Partner",
       value: data.ActiveChannelPartner ?? 0,
-      type: "default",
+      type: "month",
     },
     {
       title: "New Added Channel Partner",

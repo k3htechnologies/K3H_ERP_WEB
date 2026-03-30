@@ -57,6 +57,15 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
             if (params.ProjectName?.trim()) queryParams.append('ProjectName', params.ProjectName.trim());
             if (params.CTCNumber?.trim()) queryParams.append('CTCNumber', params.CTCNumber.trim());
             if (params.EmployeeId) queryParams.append('EmployeeId', params.EmployeeId.toString());
+            if (params.IsRedevelopment !== undefined) queryParams.append('IsRedevelopment', String(params.IsRedevelopment));
+
+            if (params.ProjectStatus?.trim()) queryParams.append('ProjectStatus', params.ProjectStatus.trim());
+            if (params.VillageName?.trim()) queryParams.append('VillageName', params.VillageName.trim());
+            if (params.ArchitectName?.trim()) queryParams.append('ArchitectName', params.ArchitectName.trim());
+            if (params.RERANumber?.trim()) queryParams.append('RERANumber', params.RERANumber.trim());
+            if (params.ProjectScheme?.trim()) queryParams.append('ProjectScheme', params.ProjectScheme.trim());
+            if (params.ProjectSubScheme?.trim()) queryParams.append('ProjectSubScheme', params.ProjectSubScheme.trim());
+
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

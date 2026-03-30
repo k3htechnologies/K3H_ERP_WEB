@@ -7,6 +7,8 @@ export interface FilterWithPaginationCallLogRequest {
     CallLogId?: number
     MobileNumber?: number
     Name?: string
+    RescheduleDateFromDate?: string
+    RescheduleDateToDate?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

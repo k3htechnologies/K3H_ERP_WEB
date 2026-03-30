@@ -357,7 +357,7 @@ export const getPageInfo = (path: string) => {
             }
         case 'channelPartnerDashboard':
             return {
-                title: "Chaannel Partner Dashboard",
+                title: "Channel Partner Dashboard",
                 description: "Centralized enquiry management for faster response",
             }
 

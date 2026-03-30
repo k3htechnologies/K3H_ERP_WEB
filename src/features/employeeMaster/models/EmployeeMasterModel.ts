@@ -87,7 +87,7 @@ export interface EmployeeMasterData {
   PanCardNumber: string | ''
   DrivingLicenceNumber: string | ''
   VoterCardNumber: string | ''
-
+  ProfilePhotoURL: string | ''
   ClientRegistrationId: number | 0
   CreatedById: number | 0
   CreatedBy: string | ''
@@ -106,6 +106,7 @@ export interface EmployeeReportingCycle {
   Designation: string | null;
   EmailId: string | null;
   PersonalMobileNumber: string | null;
+  ProfilePhotoURL: string | null;
 }
 
 export interface AddUpdateEmployeeMasterRequest {

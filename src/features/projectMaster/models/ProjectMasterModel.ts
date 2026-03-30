@@ -12,6 +12,13 @@ export interface FilterWithPaginationProjectMasterRequest {
     ProjectName?: string
     CTCNumber?: string
     EmployeeId?: number
+    IsRedevelopment?: string | ''
+    ProjectStatus?: string | ''
+    VillageName?: string | ''
+    ArchitectName?: string | ''
+    RERANumber?: string | ''
+    ProjectScheme?: string | ''
+    ProjectSubScheme?: string | ''
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

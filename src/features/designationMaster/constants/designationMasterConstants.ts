@@ -26,14 +26,14 @@ export const getDesignationMasterColumns = (): TableColumn[] => [
   },
   {
     key: 'NoticePeriod',
-    label: 'Notice Period',
+    label: 'Notice Period (In Days)',
     width: '30',
     sortable: false,
     align: 'center'
   },
   {
     key: 'ProbationPeriod',
-    label: 'Probation Period',
+    label: 'Probation Period (In Days)',
     width: '30',
     sortable: false,
     align: 'center'

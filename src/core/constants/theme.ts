@@ -6,6 +6,7 @@ export const THEME = {
     colors: COLORS,
 
     spacing: {
+        xss: '2px',
         xs: '4px',
         sm: '4px',
         md: '12px',
@@ -24,6 +25,7 @@ export const THEME = {
     },
 
     fontSize: {
+        xss: '6px',
         xs: '10px',
         mxs: '14px',
         sm: '14px',

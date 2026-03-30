@@ -14,7 +14,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { Edit, IdCard, Mail, Phone, Trash2 } from 'lucide-react';
-import { calculateMergedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterTAN, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidTAN, mergeFiles } from '@/core/utils/fileValidation';
+import { calculateMergedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterTAN, hasAnyDocumentFile, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidTAN, mergeFiles } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
 import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
@@ -408,6 +408,8 @@ const AddCompany: React.FC = () => {
     // Rule 2 — number entered but NO document
     if (hasGSTNumber && !hasGSTFile) {
       newErrors.GSTCertificateURL = "GST Document is required";
+    }else if (formData.GSTNumber !== "" && !hasAnyDocumentFile(gstGSTCertificateFiles, gSTCertificateURL, removedGSTCertificateUrls)) {
+      newErrors.GSTCertificateURL = "GST Document is required.";
     }
 
     // Rule 3 — document uploaded but NO number
@@ -429,6 +431,8 @@ const AddCompany: React.FC = () => {
 
     if (hasPANNumber && !hasPANFile) {
       newErrors.PanCardURL = "PAN Card Document is required";
+    }else if (formData.PanNumber !== "" && !hasAnyDocumentFile(panURLFiles, panURL, removedPanUrls)) {
+      newErrors.PanCardURL = "PAN Card Document is required.";
     }
 
     if (hasPANFile && !hasPANNumber) {
@@ -450,6 +454,8 @@ const AddCompany: React.FC = () => {
 
     if (hasCINNumber && !hasCINFile) {
       newErrors.CINURL = "CIN Document is required";
+    }else if (formData.CINNumber !== "" && !hasAnyDocumentFile(cinURLFiles, cinURL, removedCinUrls)) {
+      newErrors.CINURL = "CIN Document is required.";
     }
 
     if (hasCINFile && !hasCINNumber) {
@@ -472,11 +478,14 @@ const AddCompany: React.FC = () => {
 
     if (hasTANNumber && !hasTANFile) {
       newErrors.TANURL = "TAN Document is required";
+    } else if (formData.TANNumber !== "" && !hasAnyDocumentFile(tanURLFiles, tanURL, removedTanUrls)) {
+      newErrors.TANURL = "TAN Document is required.";
     }
 
     if (hasTANFile && !hasTANNumber) {
       newErrors.TANNumber = "TAN Number is required";
     }
+
 
 
     // Location
@@ -532,7 +541,7 @@ const AddCompany: React.FC = () => {
     if (!validation.isValid) {
 
       setErrors(validation.errors)
-      
+
       addToast({ type: "error", title: "Please fill the required filed" });
       return
     }
@@ -1723,16 +1732,16 @@ const AddCompany: React.FC = () => {
             </Button>
           </div>
 
-<div className='pt-1'>
-          <DataTable
-            data={companyListForTable ?? []}
-            columns={companyPartnerColumns}
-            emptyMessage="No company Partner found"
-            fixedHeight={true}
-            maxHeight="calc(100vh - 200px)"
-            recordsPerPage={20}
-            className="flex-1"
-          />
+          <div className='pt-1'>
+            <DataTable
+              data={companyListForTable ?? []}
+              columns={companyPartnerColumns}
+              emptyMessage="No company Partner found"
+              fixedHeight={true}
+              maxHeight="calc(100vh - 200px)"
+              recordsPerPage={20}
+              className="flex-1"
+            />
           </div>
         </div>
 

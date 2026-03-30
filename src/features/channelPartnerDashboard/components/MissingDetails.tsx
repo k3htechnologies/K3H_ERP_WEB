@@ -29,6 +29,7 @@ export default function MissingDetails({ MissingDetailsData }: Props) {
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900">{item.Name ?? ''}</p>
                                         <p className="text-xs text-gray-600 mt-1">{item.SystemGeneratedCode ?? ''}</p>
+                                        <p className="text-xs text-gray-600 mt-1">{item.MissingFields ?? ''}</p>
                                     </div>
                                 </div>
                             </div>

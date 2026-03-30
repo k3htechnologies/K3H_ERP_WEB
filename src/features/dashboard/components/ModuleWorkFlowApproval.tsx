@@ -3,12 +3,16 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { Box, Building2, Car, ClipboardCheck, FileText, Folder } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/ui/components/forms";
 
 interface Props {
     moduleApproval: any[];
 }
 
 const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
+
+    const navigate = useNavigate();
 
     const [selectedModule, setSelectedModule] = useState<any>(null);
 
@@ -33,6 +37,7 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
             <span className="font-medium text-black">{value || ''}</span>
         );
 
+
         switch (moduleName) {
 
             // ✅ INVENTORY
@@ -41,6 +46,7 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
                     { key: "ProjectName", label: "Project", render: renderText },
                     { key: "BuildingNumber", label: "Building", render: renderText },
                     { key: "Wing", label: "Wing", render: renderText },
+
                 ];
 
             // ✅ PARKING
@@ -50,6 +56,7 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
                     { key: "BuildingNumber", label: "Building", render: renderText },
                     { key: "Wing", label: "Wing", render: renderText },
                     { key: "Floor", label: "Floor", render: renderText },
+
                 ];
 
             // ✅ BOOKING
@@ -58,6 +65,7 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
                     { key: "ProjectName", label: "Project", render: renderText },
                     { key: "Flat", label: "Flat", render: renderText },
                     { key: "ApplicantName", label: "Applicant", render: renderText },
+
                 ];
 
             // ✅ DOCUMENT / RERA / APPROVAL DOCUMENT
@@ -68,6 +76,7 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
                     { key: "ProjectName", label: "Project", render: renderText },
                     { key: "ProjectDocumentName", label: "Document", render: renderText },
                     { key: "ProjectDocumentCategory", label: "Category", render: renderText },
+
                 ];
 
             // ✅ DEFAULT FALLBACK
@@ -181,7 +190,22 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
             <Modal
                 isOpen={!!selectedModule}
                 onClose={() => setSelectedModule(null)}
-                title={selectedModule?.moduleName || "Details"}
+                title={
+                    <div className="flex items-center justify-between-r w-full gap-1">
+                        <span className="font-semibold text-gray-800">
+                            {selectedModule?.moduleName || "Details"}
+                        </span>
+
+                        <Button
+                            onClick={() => navigate(selectedModule?.data?.[0]?.ModulePath)}
+                            type="button"
+                            color="transparent"
+                            variant="transparent_border_background"
+                            size="sm">
+                            View
+                        </Button>
+                    </div>
+                }
                 size="xl"
             >
                 {selectedModule?.data?.length > 0 ? (

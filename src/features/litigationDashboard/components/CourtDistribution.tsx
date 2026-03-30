@@ -1,5 +1,4 @@
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LabelList } from "recharts";
 import type { Table3 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 interface Props {
@@ -7,6 +6,7 @@ interface Props {
 }
 
 export default function CourtDistribution({ courtData = [] }: Props) {
+    const maxValue = Math.max(...courtData.map(d => Math.max(d.TotalCases, d.OpenCases)), 1);
 
     return (
         <div className="pt-4">
@@ -14,73 +14,90 @@ export default function CourtDistribution({ courtData = [] }: Props) {
                 Court Distribution
             </h2>
 
-            <div className="bg-white rounded-lg p-4 shadow-sm space-y-4 overflow-y-auto thin-scroll ">
+            <div className="bg-white rounded-lg p-4 space-y-4 overflow-y-auto thin-scroll border border-gray-100 h-[327px] flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                 {courtData.length === 0 ? (
-                    <div className="flex flex-col justify-center items-center h-[295px]">
+                    <div className="flex flex-col justify-center items-center h-[296px]">
                         <NoDataView />
                     </div>
                 ) : (
                     <>
                         {/* Legend */}
-                        <div className="flex justify-end gap-4 text-xs text-gray-500">
+                        <div className="flex justify-end gap-4 text-xs text-gray-500 mb-2">
                             <div className="flex items-center gap-2">
                                 <span className="w-4 h-4 bg-blue-600 rounded-sm" />
                                 Total Case
                             </div>
-
                             <div className="flex items-center gap-2">
                                 <span className="w-4 h-4 bg-rose-500 rounded-sm" />
                                 Open Case
                             </div>
                         </div>
 
-                        <div className="h-[260px] relative [&_.recharts-wrapper_svg]:outline-none">
-                            <ResponsiveContainer >
-                                <BarChart
-                                    data={courtData}
-                                    layout="vertical"
-                                    margin={{ top: 10, right: 60, left: 10, bottom: 10 }}
-                                >
-                                    
-                                    <XAxis type="number" hide />
+                        {/* Bars */}
+                        <div className="flex-1 gap-1 px-2 overflow-y-auto thin-scroll pr-1">
+                            {courtData.map((item, index) => {
+                                const totalPct = (item.TotalCases / maxValue) * 100;
+                                const openPct = (item.OpenCases / maxValue) * 100;
 
-                                    {/* Court names */}
-                                    
-                                    <YAxis
-                                        type="category"
-                                        dataKey="CourtType"
-                                        axisLine={false}
-                                        tickLine={false}
-                                        tick={{ fontSize: 13, fill: "#6b7280" }}
-                                    />
+                                return (
+                                    <div key={index} className="flex flex-col gap-0">
 
-                                    {/* TOTAL CASE */}
-                                    <Bar
-                                        dataKey="TotalCases"
-                                        barSize={12}
-                                        fill="#2563eb"
-                                        radius={[6, 6, 6, 6]}
-                                        background={{ fill: "#e5e7eb", radius: 6 }}
-                                    >
-                                        <LabelList dataKey="TotalCases" position="right" fill="#6b7280" fontSize={14}
-                                        />
-                                    </Bar>
+                                        <div className="text-xs font-gray-900 text-gray-500 truncate">
+                                            {item.CourtType}
+                                        </div>
 
-                                    {/* OPEN CASE */}
-                                    <Bar
-                                        dataKey="OpenCases"
-                                        barSize={12}
-                                        fill="#f43f5e"
-                                        radius={[6, 6, 6, 6]}
-                                        background={{ fill: "#e5e7eb", radius: 6 }}
-                                    >
-                                        <LabelList dataKey="OpenCases" position="right" fill="#6b7280" fontSize={14}
-                                        />
-                                    </Bar>
-                                </BarChart>
-                            </ResponsiveContainer>
+                                        {/* Total Cases bar */}
+                                        <div className="flex items-center gap-1">
+                                            <div
+                                                className="flex-1 rounded-md overflow-hidden"
+                                                style={{ height: "10px", backgroundColor: "#e5e7eb" }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        width: `${totalPct}%`,
+                                                        height: "100%",
+                                                        backgroundColor: "#2563eb",
+                                                        borderRadius: "6px",
+                                                        transition: "width 0.4s ease",
+                                                    }}
+                                                />
+                                            </div>
+                                            <div
+                                                className="flex-shrink-0 text-gray-500"
+                                                style={{ width: "32px", fontSize: "13px" }}
+                                            >
+                                                {item.TotalCases}
+                                            </div>
+                                        </div>
+
+                                        {/* Open Cases bar */}
+                                        <div className="flex items-center gap-1">
+                                            <div
+                                                className="flex-1 rounded-md overflow-hidden"
+                                                style={{ height: "10px", backgroundColor: "#e5e7eb" }}
+                                            >
+                                                <div
+                                                    style={{
+                                                        width: `${openPct}%`,
+                                                        height: "100%",
+                                                        backgroundColor: "#f43f5e",
+                                                        borderRadius: "6px",
+                                                        transition: "width 0.4s ease",
+                                                    }}
+                                                />
+                                            </div>
+                                            <div
+                                                className="flex-shrink-0 text-gray-500"
+                                                style={{ width: "32px", fontSize: "13px" }}
+                                            >
+                                                {item.OpenCases}
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
-                        </>
+                    </>
                 )}
             </div>
         </div>

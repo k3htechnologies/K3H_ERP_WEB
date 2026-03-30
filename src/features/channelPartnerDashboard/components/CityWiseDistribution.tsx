@@ -10,7 +10,7 @@ export default function CityWiseDistribution({ cityWiseDistributionData }: Props
 
     return (
         <div className="pt-5">
-            <div className="bg-white rounded-lg p-6 h-[315px] shadow-sm space-y-4 thin-scroll flex flex-col" >
+            <div className="bg-white rounded-lg p-6 h-[315px] shadow-sm space-y-4 thin-scroll flex flex-col">
                 <h3 className="text-sm text-gray-500 font-medium mb-4 ml-1">
                     City Wise Distribution
                 </h3>
@@ -25,14 +25,17 @@ export default function CityWiseDistribution({ cityWiseDistributionData }: Props
                             const widthPercent = ((item.TotalChannelPartner || 0) / maxValue) * 100;
                             return (
                                 <div key={index} className="flex items-center gap-2">
-                                    <span className="text-sm text-gray-500 w-24 shrink-0">
+                                    <span
+                                        className="text-sm text-gray-500 w-24 shrink-0 truncate"
+                                        title={item.Name ?? ''}
+                                    >
                                         {item.Name ?? ''}
                                     </span>
 
-                                    <div className="relative flex-1 h-8 rounded-lg  overflow-hidden">
+                                    <div className="relative flex-1 h-8 rounded-lg overflow-hidden">
                                         <div
                                             className="h-full rounded-lg bg-[#bfdbfe] flex items-center justify-end pr-3 transition-all duration-500"
-                                            style={{ width: `${widthPercent}%` }}
+                                            style={{ width: `${Math.max(widthPercent, 8)}%` }}
                                         >
                                             <span className="text-sm font-bold text-[#1d4ed8] whitespace-nowrap">
                                                 {item.TotalChannelPartner ?? 0}

@@ -3,6 +3,7 @@ import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWitho
 import { useMemo } from "react";
 import type { Table4 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 import { getLitigationStatuscolor } from "@/features/litigation/pages/Status";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 interface Props {
     activeCaseData: Table4[];
@@ -15,20 +16,24 @@ const ActiveCases: React.FC<Props> = ({ activeCaseData }) => {
                 key: "Title",
                 label: "Case Title",
                 align: "left",
-                render: (value: string) => (
-                    <span className="text-blue-600 cursor-pointer hover:underline">
-                        {(value || '')}
-                    </span>
+                render: (value?: string) => (
+                    <TooltipText
+                        text={value || '-'}
+                        maxWidth="180px"
+                        tooltipThreshold={18}
+                    />
                 )
             },
             {
                 key: "CaseNumber",
                 label: "Case Number",
                 align: "left",
-                render: (value: string) => (
-                    <span className="font-medium text-black">
-                        {(value || '')}
-                    </span>
+                render: (value?: string) => (
+                    <TooltipText
+                        text={value || '-'}
+                        maxWidth="180px"
+                        tooltipThreshold={18}
+                    />
                 )
             },
             {

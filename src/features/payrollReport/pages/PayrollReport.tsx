@@ -73,17 +73,16 @@ export const PayrollReport: React.FC = () => {
   const approvalRowKey = useMemo(() => {
     switch (activeTab) {
       case "Comp-Off":
-        return "Comp-Off";
+        return "CompOffId";
       case "Leave":
-        return "Leave";
+        return "LeaveId";
       case "Outdoor":
-        return "Outdoor";
+        return "OutdoorId";
       case "Attendance Regularization":
-        return "Attendance Regularization";
+        return "RegularizationId";
       case "Resignation":
-        return "Resignation";
+        return "ResignationId";
       default:
-        // Fallback for Attendance or any other tab that exposes a generic Id
         return "Id";
     }
   }, [activeTab]);
@@ -408,6 +407,7 @@ export const PayrollReport: React.FC = () => {
             setShowApprovalPopup(false);
             setApprovalRemark("");
             setSelectedApprovals([]);
+            dispatchLoad(1);
           }}
           saveText="Approve"
           cancelText="Cancel"
@@ -444,6 +444,7 @@ export const PayrollReport: React.FC = () => {
             setRejectRemark("");
             setSelectedApprovals([]);
             setIsSelectAll(false);
+            dispatchLoad(1);
           }}
           saveText="Reject"
           cancelText="Cancel"

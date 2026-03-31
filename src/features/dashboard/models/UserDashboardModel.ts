@@ -101,6 +101,7 @@ export interface Table8 {
   FullName: string | null;
   DateOfBirth: string | null;
   DepartmentName: string | null;
+  ProfilePhotoURL: string | null;
 }
 
 export interface Table9 {
@@ -114,6 +115,7 @@ export interface Table10 {
   ManagerPhone: string | "";
   ManagerDepartment: string | "";
   ManagerDesignation: string | "";
+  ProfilePhotoURL: string | null;
 }
 
 export interface Table11 {

@@ -170,9 +170,7 @@ export const CustomTable: React.FC<Props> = ({
 
   return (
 
-    <div
-      className={`bg-white rounded-lg shadow-sm  flex flex-col ${className}`}
-    >
+    <div className={`bg-white rounded-lg shadow-sm  flex flex-col ${className}`} >
 
       <div ref={scrollRef}
         className={`overflow-x-auto thin-scroll ${
@@ -191,7 +189,7 @@ export const CustomTable: React.FC<Props> = ({
 
           <thead
             className={`${fixedHeight ? "sticky top-0 z-40" : ""}`}
-            style={{ backgroundColor: "#E4F0FF" }}
+            style={{ backgroundColor: "#E4F0FF", zIndex: 30, }}
           >
 
             {buildHeaderRows().map((row, rIndex) => (

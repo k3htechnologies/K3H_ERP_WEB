@@ -120,7 +120,6 @@ const AddCompany: React.FC = () => {
   const [removedCompanyLetterHeadHeaderUrls, setRemovedCompanyLetterHeadHeaderUrls] = useState<string[]>([]);
   const [companyLetterHeadHeaderURL, setCompanyLetterHeadHeaderURL] = useState<string>();
 
-
   const [companyLetterHeadFooterFiles, setCompanyLetterHeadFooterFiles] = useState<(File | string)[]>([]);
   const [removedCompanyLetterHeadFooterUrls, setRemovedCompanyLetterHeadFooterUrls] = useState<string[]>([]);
   const [companyLetterHeadFooterURL, setCompanyLetterHeadFooterURL] = useState<string>();
@@ -408,7 +407,7 @@ const AddCompany: React.FC = () => {
     // Rule 2 — number entered but NO document
     if (hasGSTNumber && !hasGSTFile) {
       newErrors.GSTCertificateURL = "GST Document is required";
-    }else if (formData.GSTNumber !== "" && !hasAnyDocumentFile(gstGSTCertificateFiles, gSTCertificateURL, removedGSTCertificateUrls)) {
+    } else if (formData.GSTNumber !== "" && !hasAnyDocumentFile(gstGSTCertificateFiles, gSTCertificateURL, removedGSTCertificateUrls)) {
       newErrors.GSTCertificateURL = "GST Document is required.";
     }
 
@@ -431,7 +430,7 @@ const AddCompany: React.FC = () => {
 
     if (hasPANNumber && !hasPANFile) {
       newErrors.PanCardURL = "PAN Card Document is required";
-    }else if (formData.PanNumber !== "" && !hasAnyDocumentFile(panURLFiles, panURL, removedPanUrls)) {
+    } else if (formData.PanNumber !== "" && !hasAnyDocumentFile(panURLFiles, panURL, removedPanUrls)) {
       newErrors.PanCardURL = "PAN Card Document is required.";
     }
 
@@ -454,7 +453,7 @@ const AddCompany: React.FC = () => {
 
     if (hasCINNumber && !hasCINFile) {
       newErrors.CINURL = "CIN Document is required";
-    }else if (formData.CINNumber !== "" && !hasAnyDocumentFile(cinURLFiles, cinURL, removedCinUrls)) {
+    } else if (formData.CINNumber !== "" && !hasAnyDocumentFile(cinURLFiles, cinURL, removedCinUrls)) {
       newErrors.CINURL = "CIN Document is required.";
     }
 
@@ -486,8 +485,6 @@ const AddCompany: React.FC = () => {
       newErrors.TANNumber = "TAN Number is required";
     }
 
-
-
     // Location
     if (!formData.CountryMasterId) {
       newErrors.CountryMasterId = "Country is required";
@@ -509,6 +506,8 @@ const AddCompany: React.FC = () => {
 
     if (!hasCompanyLetterHeadHeaderFile) {
       newErrors.CompanyLetterheadHeaderURL = "Company Letterhead Header Document is required";
+    } else if (!hasAnyDocumentFile(companyLetterHeadHeaderFiles, companyLetterHeadHeaderURL, removedCompanyLetterHeadHeaderUrls)) {
+      newErrors.CompanyLetterheadHeaderURL = "Company Letterhead Header Document is required";
     }
 
     // ===== COMANY LETTER FOOTER FOOTER URL =====
@@ -516,6 +515,8 @@ const AddCompany: React.FC = () => {
     const hasCompanyLetterHeadFooterFile = hasAnyFile(companyLetterHeadFooterFiles, companyLetterHeadFooterURL);
 
     if (!hasCompanyLetterHeadFooterFile) {
+      newErrors.CompanyLetterheadFooterURL = "Company Letterhead Footer Document is required";
+    } else if (!hasAnyDocumentFile(companyLetterHeadFooterFiles, companyLetterHeadFooterURL, removedCompanyLetterHeadFooterUrls)) {
       newErrors.CompanyLetterheadFooterURL = "Company Letterhead Footer Document is required";
     }
 
@@ -1695,6 +1696,7 @@ const AddCompany: React.FC = () => {
                   setRemovedCompanyLetterHeadFooterUrls((prev) => [...prev, url])
                 }}
               />
+
 
             </div>
           </div>

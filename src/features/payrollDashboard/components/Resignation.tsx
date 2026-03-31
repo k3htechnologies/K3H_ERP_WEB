@@ -1,23 +1,29 @@
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
-import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { useMemo } from "react";
 import type { Table4 } from "@/features/payrollDashboard/models/PayrollDashboardModel";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import { getSafeString } from "@/core/utils/comman";
+import { getNameInitials } from "@/core/utils/getNameInitials";
 
 interface Props {
   resignationData: Table4[];
 }
 
 const Resignation: React.FC<Props> = ({ resignationData }) => {
+  const loggedInUser = LocalStorageHelper.getStoredEmployeeData();
+
   const columns = useMemo<any[]>(
     () => [
       {
         key: "FullName",
         label: "Employee Name",
         align: "left",
-        render: (value: string | null) => (
+        render: (value: string) => (
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-gray-200" />
+            <div className="w-9 h-9 rounded-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-sm shrink-0">
+               {getSafeString(getNameInitials(value))}
+            </div>
             <span className="text-sm font-medium text-black">
               {value || "-"}
             </span>
@@ -35,7 +41,7 @@ const Resignation: React.FC<Props> = ({ resignationData }) => {
         ),
       },
       {
-        key: "RelievingDate",
+        key: "ExpectedRelievingDate",
         label: "Relieving Date",
         align: "left",
         render: (value: string | null) => (
@@ -45,32 +51,36 @@ const Resignation: React.FC<Props> = ({ resignationData }) => {
         ),
       },
       {
-        key: "OfferInHand",
+        key: "IsAnyOfferInHand",
         label: "Offer In Hand",
         align: "left",
-        render: (value: string | null) => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="200px"
-            tooltipThreshold={20}
-          />
+        render: (value: boolean | null) => (
+          <span className="font-medium text-black">
+            {value ? "Yes" : "No"}
+          </span>
         )
+
       },
       {
         key: "status",
         label: "Action",
         align: "center",
-        render: (value: string | null) => (
-          <button
-            className={`px-4 py-1 rounded-md text-sm font-medium text-white shadow-sm ${value === "Approved"
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-600 hover:bg-blue-700"
-              }`}
-            disabled={value === "Approved"}
-          >
-            {value === "Approved" ? "Approved" : "Approve"}
-          </button>
-        ),
+        render: (value: string | null, record: Table4) => {
+          const isApproved = value === "Approved";
+          const isOwnRecord = loggedInUser?.FullName === record.FullName;
+
+          return (
+            <button
+              className={`px-4 py-1 rounded-md text-sm font-medium text-white shadow-sm transition-colors ${isApproved || isOwnRecord
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-blue-600 hover:bg-blue-700"
+                }`}
+              disabled={isApproved || isOwnRecord}
+            >
+              {isApproved ? "Approved" : "Approve"}
+            </button>
+          );
+        },
       },
     ],
     []

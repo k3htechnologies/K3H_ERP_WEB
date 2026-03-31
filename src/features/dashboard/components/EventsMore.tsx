@@ -2,6 +2,7 @@ import { Mail, Phone, Send } from "lucide-react";
 import { getSafeString } from "@/core/utils/comman";
 import type { Table8, Table10 } from "../models/UserDashboardModel";
 import { formatDate_Day_MonthName } from "@/core/utils/dateFormat";
+import { getNameInitials } from "@/core/utils/getNameInitials";
 
 interface Props {
     birthdays: Table8[];
@@ -41,9 +42,22 @@ export default function EventsMore({ birthdays, reportingData }: Props) {
                                     className="flex items-center justify-between py-3 border-b border-gray-100 last:border-0"
                                 >
                                     <div className="flex items-center gap-3 min-w-0">
-                                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-lg shrink-0">
-                                            {getSafeString(item.FullName).charAt(0).toUpperCase() || '?'}
-                                        </div>
+
+                                        {item?.ProfilePhotoURL && item.ProfilePhotoURL !== "" && item.ProfilePhotoURL !== "—" ? (
+
+                                            <img
+                                                src={item.ProfilePhotoURL}
+                                                alt={item.FullName ?? ""}
+                                                className="w-12 h-12 rounded-full object-cover border border-gray-300 shrink-0"
+                                            />
+
+                                        ) : (
+
+                                            <div className="w-12 h-12 rounded-full flex items-center justify-center  bg-blue-100 text-blue-600 font-bold text-lg shrink-0 border border-gray-300">
+                                                {getSafeString(getNameInitials(item.FullName ?? ""))}
+                                            </div>
+
+                                        )}
 
                                         <div className="truncate">
                                             <p className="text-sm font-semibold text-gray-800 truncate">
@@ -53,6 +67,7 @@ export default function EventsMore({ birthdays, reportingData }: Props) {
                                                 {getSafeString(item.DepartmentName)}
                                             </p>
                                         </div>
+
                                     </div>
 
                                     <div className="flex items-center gap-3 shrink-0 ml-2">
@@ -109,9 +124,21 @@ export default function EventsMore({ birthdays, reportingData }: Props) {
                                     <div key={index} className="flex gap-3 mt-2">
 
                                         {/* Avatar */}
-                                        <div className="w-12 h-12 rounded-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-lg shrink-0">
-                                            {getSafeString(item?.ManagerName).charAt(0).toUpperCase() || '?'}
-                                        </div>
+                                        {item?.ProfilePhotoURL && item.ProfilePhotoURL !== "" && item.ProfilePhotoURL !== "—" ? (
+
+                                            <img
+                                                src={item.ProfilePhotoURL}
+                                                alt={item.ManagerName}
+                                                className="w-12 h-12 rounded-full object-cover border border-gray-300 shrink-0"
+                                            />
+
+                                        ) : (
+
+                                            <div className="w-12 h-12 rounded-full flex items-center justify-center  bg-blue-100 text-blue-600 font-bold text-lg shrink-0 border border-gray-300">
+                                                {getSafeString(getNameInitials(item?.ManagerName))}
+                                            </div>
+
+                                        )}
 
                                         {/* Info */}
                                         <div className="min-w-0">
@@ -130,20 +157,14 @@ export default function EventsMore({ birthdays, reportingData }: Props) {
                                             <div className="pt-2 space-y-1">
                                                 <div className="flex items-center gap-2 text-xs text-gray-600">
                                                     <Mail size={14} className="text-blue-600 shrink-0" />
-                                                    <a
-                                                        href={`mailto:${getSafeString(item.ManagerEmail, "")}`}
-                                                        className="text-blue-600 text-sm hover:underline truncate"
-                                                    >
+                                                    <a href={`mailto:${getSafeString(item.ManagerEmail, "")}`} className="text-blue-600 text-sm hover:underline truncate" >
                                                         {getSafeString(item?.ManagerEmail)}
                                                     </a>
                                                 </div>
 
                                                 <div className="flex items-center gap-2 text-xs text-gray-600">
                                                     <Phone size={14} className="text-blue-600 shrink-0" />
-                                                    <a
-                                                        href={`tel:${getSafeString(item.ManagerPhone, "")}`}
-                                                        className="hover:text-blue-600 transition-colors text-sm"
-                                                    >
+                                                    <a href={`tel:${getSafeString(item.ManagerPhone, "")}`} className="hover:text-blue-600 transition-colors text-sm">
                                                         {getSafeString(item.ManagerPhone)}
                                                     </a>
                                                 </div>

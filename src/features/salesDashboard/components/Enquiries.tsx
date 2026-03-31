@@ -36,6 +36,7 @@ export default function Enquiries({ enquiryData }: Props) {
 
     //#region DATA LOADING | FETCH |  LOAD 
     const loadSalesDashboardData = useCallback(async () => {
+        
         await runApiWithLoader(setIsLoading,
             setLoadingMessage,
             async () => {

@@ -28,6 +28,7 @@ const PayrollDashboard: React.FC = () => {
   const [loadingMessage, setLoadingMessage] = useState('');
   const { addToast } = useToast()
   const [filters] = useState<FilterInfo>({});
+  const [outDoorProfileData, setOutDoorProfileData] = useState<Table3[]>([]);
 
   // PAGINATION STATE
   const { pagination } = usePagination(20);
@@ -64,6 +65,7 @@ const PayrollDashboard: React.FC = () => {
           setCompOffData(e.Table2 || []);
           setResignationData(e.Table4 || []);
           setOutdoorManagementData(e.Table3 || []);
+          setOutDoorProfileData(e.Table3 || []);
         } else {
 
           addToast({ type: 'error', title: response.left.message });
@@ -86,7 +88,7 @@ const PayrollDashboard: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
       <PayrollHeader />
-      <OverviewCards overViewData={overViewData} attendanceAlert={attendanceOverviewData} />
+      <OverviewCards overViewData={overViewData} attendanceAlert={attendanceOverviewData} outDoorProfileData={outDoorProfileData} leaveData={leaveData} />
       <LeaveManagement leaveData={leaveData} />
       <div className="grid grid-cols-2 gap-4">
         <OutdoorManagement outdoorManagementData={outdoorManagementData} />

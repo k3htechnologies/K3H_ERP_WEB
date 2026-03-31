@@ -47,11 +47,6 @@ const AlertsPanel: React.FC<Props> = ({ alertsData}) => {
                 <div>
                   <p className="text-sm font-semibold text-orange-800">
                     {alert.BuildingName || "-"}
-                    {alert.UnitNumber && (
-                      <span className="ml-2 font-normal text-orange-600">
-                        {alert.UnitNumber}
-                      </span>
-                    )}
                   </p>
 
                   <p className="text-sm text-orange-700 mt-1">

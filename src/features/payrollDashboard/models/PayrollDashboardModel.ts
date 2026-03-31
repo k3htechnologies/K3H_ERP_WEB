@@ -22,7 +22,8 @@ export interface Table1 {
   StartDate: string | null;
   EndDate: string | null;
   LeaveTypeMasterId: string | null;
-  status: string | null;
+  Status: string | null;
+  CanApprove: number | null;
 }
 
 export interface Table2 {
@@ -30,6 +31,9 @@ export interface Table2 {
   WorkingDate: string | null;
   CreatedBy: string | null;
   CreatedDate: string | null;
+  Status: string | null;
+  Designation: string | null;
+  CanApprove: number | null;
 }
 
 export interface Table3 {
@@ -42,8 +46,11 @@ export interface Table3 {
 export interface Table4 {
   FullName: string | null;
   ResignationDate: string | null;
-  Reason: string | null;
-  status: string | null;
+  // Reason: string | null;
+  ExpectedRelievingDate: string | null;
+  IsAnyOfferInHand: boolean | null;
+  // status: string | null;
+  CanApprove: number | null;
 }
 
 export interface Table5 {

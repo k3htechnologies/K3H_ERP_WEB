@@ -1244,7 +1244,7 @@ export const Profile: React.FC = () => {
                                         </div>
                                         <div className="lg:col-span-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                
+
                                                 <FieldItem label="City" value={safe(employeeData!.CityName)} />
                                                 <FieldItem label="Village" value={safe(employeeData!.VillageName)} />
                                             </div>
@@ -1397,14 +1397,35 @@ export const Profile: React.FC = () => {
 
                                                     <div className="flex flex-col items-center">
 
-                                                        <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold text-sm">
-                                                            {getNameInitials(item.FullName!.trim())}
-                                                        </div>
+                                                        {(() => {
+
+                                                            const fullName = item?.FullName?.trim();
+
+                                                            const profilePhotoURL = item?.ProfilePhotoURL;
+
+                                                            const hasProfile =
+                                                                profilePhotoURL &&
+                                                                profilePhotoURL !== "" &&
+                                                                profilePhotoURL !== "—";
+
+                                                            return hasProfile ? (
+                                                                <img
+                                                                    src={profilePhotoURL}
+                                                                    alt={fullName}
+                                                                    className="w-10 h-10 rounded-full object-cover border border-gray-300"
+                                                                    onError={(e) => (e.currentTarget.style.display = "none")}
+                                                                />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold text-sm">
+                                                                    {getNameInitials(fullName)}
+                                                                </div>
+                                                            );
+                                                        })()}
 
                                                         {index !== employeeReportingCycleList.length - 1 && (
-
                                                             <div className="w-px bg-gray-500 flex-1 mt-1"></div>
                                                         )}
+
                                                     </div>
 
                                                     {/* Content */}

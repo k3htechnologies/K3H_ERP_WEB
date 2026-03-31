@@ -24,6 +24,7 @@ import { usePayrollColumns } from "../hooks/usePayrollColumns";
 import { Button } from "@/ui/components/forms/Button";
 import { Check, X } from "lucide-react";
 import ModuleApprovalStatus from "../components/moduleApprovalStatus";
+import useToast from "@/core/hooks/useToast";
 
 export const PayrollReport: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>(TAB_LIST[0].id);
@@ -35,6 +36,7 @@ export const PayrollReport: React.FC = () => {
   const [rejectRemark, setRejectRemark] = useState("");
   const [isSelectAll, setIsSelectAll] = useState(false);
   const [subActiveTab, setSubActiveTab] = useState<SubTabId>(SUBTAB_LIST[0].id);
+  const { addToast } = useToast();
 
   // ── All data / filter / export logic ──────────────────────────────────────
   const {
@@ -81,7 +83,7 @@ export const PayrollReport: React.FC = () => {
       case "Attendance Regularization":
         return "RegularizationId";
       case "Resignation":
-        return "ResignationId";
+        return "EmployeeResignationId";
       default:
         return "Id";
     }
@@ -231,12 +233,14 @@ export const PayrollReport: React.FC = () => {
                       const currentData = getApprovalData()
 
                       if (!isSelectAll && selectedApprovals.length === 0) {
-                        alert("Please select at least one record or use Select All")
+                        addToast({ type: 'warning', title: "Please select at least one record or use Select All" })
                         return
                       }
 
                       if (isSelectAll && currentData.length === 0) {
-                        alert("No records available to approve")
+                        addToast({ type: 'warning', title: "No records available to approve" })
+                        return
+
                         return
                       }
 
@@ -253,7 +257,7 @@ export const PayrollReport: React.FC = () => {
                     className="flex items-center gap-1 px-4 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
                     onClick={async () => {
                       if (!isSelectAll && !selectedApprovals.length) {
-                        alert("Please select at least one record or use Select All");
+                        addToast({ type: 'warning', title: "Please select at least one record or use Select All" })
                         return;
                       }
 
@@ -328,7 +332,7 @@ export const PayrollReport: React.FC = () => {
                     id={row[approvalRowKey]}
                     moduleName={activeTab}
                     requestId={row.CreatedById}
-                    remarks={row.re}
+                    remarks={row.remarks}
                   />
                 ),
               }}

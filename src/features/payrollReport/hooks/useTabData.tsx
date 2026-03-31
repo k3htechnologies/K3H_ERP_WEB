@@ -367,7 +367,7 @@ export function useTabData(
       Outdoor: outDoorList,
       Resignation: employeeResignationList,
     };
-    return (DATA_MAP[activeTab] ?? [])
+    return (DATA_MAP[activeTab] ?? []).filter((item) => item.CanApprove);
   }, [activeTab, attendanceList, attendanceRegularizationList, compOffList, leaveList, outDoorList, employeeResignationList]);
   //#endregion
 

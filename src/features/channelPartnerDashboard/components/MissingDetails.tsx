@@ -27,8 +27,7 @@ export default function MissingDetails({ MissingDetailsData }: Props) {
                                 <div className="w-2 bg-red-500 flex-shrink-0"></div>
                                 <div className="flex justify-between items-center w-full p-4">
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-900">{item.Name ?? ''}</p>
-                                        <p className="text-xs text-gray-600 mt-1">{item.SystemGeneratedCode ?? ''}</p>
+                                        <p className="text-sm font-semibold text-gray-900">{item.SystemGeneratedCode ?? ''} - {item.Name ?? ''}</p>
                                         <p className="text-xs text-gray-600 mt-1">{item.MissingFields ?? ''}</p>
                                     </div>
                                 </div>

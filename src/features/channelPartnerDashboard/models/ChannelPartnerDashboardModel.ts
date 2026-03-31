@@ -18,6 +18,7 @@ export interface Table0 {
 
 export interface Table1 {
     FirmsType: string | null
+    FirmsTypeFullName : string | null
     TotalCount: number | 0
 }
 

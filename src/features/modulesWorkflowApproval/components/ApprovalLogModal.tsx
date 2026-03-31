@@ -35,16 +35,16 @@ export const ApprovalLogModal: React.FC<Props> = ({
     const [loading, setLoading] = useState(false);
 
     const modalTitle = (<span className="font-semibold"> {title}{" Log History "}
-      {titleText && (
-        <span className="text-gray-500 font-medium">
-          {" : "}
-          {titleText}
-          {subTitleText && <> {" > "} {subTitleText}</>}
-          {subSubTitleText && <> {" > "} {subSubTitleText}</>}
-        </span>
-      )}
+        {titleText && (
+            <span className="text-gray-500 font-medium">
+                {" : "}
+                {titleText}
+                {subTitleText && <> {" > "} {subTitleText}</>}
+                {subSubTitleText && <> {" > "} {subSubTitleText}</>}
+            </span>
+        )}
     </span>
-  );
+    );
 
     const loadApprovalLog = async () => {
 
@@ -88,7 +88,7 @@ export const ApprovalLogModal: React.FC<Props> = ({
             <Loader loading={loading} title="Loading Approval Log">
 
                 <div className="space-y-5">
-                    
+
 
                     {!loading && data.length === 0 && (
                         <div className="text-center text-sm text-gray-500 py-6">
@@ -131,7 +131,7 @@ export const ApprovalLogModal: React.FC<Props> = ({
 
                                 <div className="mt-1">
 
-                                    <span className={`px-2 py-1 text-xs font-semibold  ${getStatusColor( item?.ApprovalStatus ?? ""  )}`}>
+                                    <span className={`px-2 py-1 text-xs font-semibold  ${getStatusColor(item?.ApprovalStatus ?? "")}`}>
                                         {item.ApprovalStatus}
                                     </span>
 
@@ -139,7 +139,7 @@ export const ApprovalLogModal: React.FC<Props> = ({
 
 
                                 {item.Remarks && (
-                                    <p className="mt-2 text-sm text-gray-700">
+                                    <p className="mt-2 text-sm text-gray-700 break-all">
                                         {item.Remarks}
                                     </p>
                                 )}

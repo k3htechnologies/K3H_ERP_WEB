@@ -410,8 +410,8 @@ export const EmployeeMaster: React.FC = () => {
                 <div className="min-w-0">
                   <TooltipText
                     text={value || row.FirstName || "-"}
-                    maxWidth="260px"
-                    tooltipThreshold={26}
+                    maxWidth="230px"
+                    tooltipThreshold={22}
                     onClick={() => handleViewEmployeeDetails(row)}
                   />
                 </div>

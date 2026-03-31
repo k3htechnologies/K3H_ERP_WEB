@@ -37,21 +37,24 @@ export default function OverviewCards({ overViewData = [] }: Props) {
       <h2 className="text-lg font-semibold text-gray-800">
         Overview
       </h2>
-
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((c, i) => (
-          <div  key={i} className={`rounded-lg p-5 shadow-sm space-y-4
+          <div
+            key={i}
+            className={`rounded-2xl p-4 border h-[100px] flex flex-col justify-center
               ${c.type === "primary" && "bg-blue-900 text-white border-blue-900"}
               ${c.type === "default" && "bg-white rounded-2xl p-4 border border-gray-100"}
               ${c.type === "month" && "bg-white rounded-2xl p-4 border border-gray-100"}
               ${c.type === "warning" && "bg-white rounded-2xl p-4 border border-gray-100"}
-            `}
+      `}
+            style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
           >
             <p className={`text-sm ${c.type === "primary" ? "text-white/80" : "text-gray-500"}`}>
               {c.title}
             </p>
 
-            <div className="flex items-end gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-1">
               <p className={`text-2xl font-semibold ${c.type === "primary" ? "text-white" : "text-gray-900"}`}>
                 {c.value}
               </p>
@@ -62,10 +65,8 @@ export default function OverviewCards({ overViewData = [] }: Props) {
                 </span>
               )}
             </div>
-
           </div>
         ))}
-
       </div>
     </div>
   );

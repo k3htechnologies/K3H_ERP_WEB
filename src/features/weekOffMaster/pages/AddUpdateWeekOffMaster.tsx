@@ -143,14 +143,14 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
       newErrors.WeekOffPolicyName = 'Week Off Policy Name is required';
 
     } else if (formData.WeekOffPolicyName.trim().length > 50) {
-      newErrors.WeekOffPolicyName = 'Week Off Name must be at most 50 characters';
+      newErrors.WeekOffPolicyName = 'Week Off Policy Name must be at most 50 characters';
     }
 
     if (!formData.WeekOffPolicyCode?.trim()) {
-      newErrors.WeekOffPolicyCode = 'Week Off Code is required';
+      newErrors.WeekOffPolicyCode = 'Week Off Policy Code is required';
 
     } else if (formData.WeekOffPolicyCode.trim().length > 5) {
-      newErrors.WeekOffPolicyCode = 'Week Off Code must be at most 4 characters';
+      newErrors.WeekOffPolicyCode = 'Week Off Policy Code must be at most 4 characters';
     }
 
     if (!formData.WeekDays) {
@@ -280,7 +280,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
                 <Input
                   type="text"
                   required
-                  label='Week Off Name'
+                  label='Week Off Policy Name'
                   value={formData.WeekOffPolicyName ?? ""}
                   onChange={(e) => handleFieldChange("WeekOffPolicyName", e.target.value)}
                   placeholder="Enter Week Off Name"
@@ -293,7 +293,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
                 <Input
                   type="text"
                   required
-                  label='Week Off Code'
+                  label='Week Off  Policy Code'
                   value={formData.WeekOffPolicyCode.toUpperCase() ?? ""}
                   onChange={(e) => handleFieldChange("WeekOffPolicyCode", e.target.value)}
                   placeholder="Enter Week Off Code"
@@ -355,6 +355,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
                 <div>
                   <SinglePageSelection
                     label="Weekly Off 2 Type"
+                    required
                     placeholder="Select Type"
                     value={formData.WeeklyOff2Type}
                     onChange={(value) => handleFieldChange("WeeklyOff2Type", value)}

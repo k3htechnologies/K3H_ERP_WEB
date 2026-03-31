@@ -62,7 +62,6 @@ export default function OverviewCards({ overViewData = [] }: Props) {
               <div className="p-3 rounded-xl" style={{ backgroundColor: c.backgroundColor }}>
                 <c.icon size={20} style={{ color: c.color }} />
               </div>
-
              
               <div>
                 <p className="text-sm text-gray-500">{c.title}</p>

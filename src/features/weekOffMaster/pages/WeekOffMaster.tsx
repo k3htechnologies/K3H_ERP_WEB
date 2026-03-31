@@ -262,7 +262,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
   const WeekOffMasterColumns = useMemo<TableColumn[]>(() => [
     {
       key: 'WeekOffPolicyName',
-      label: 'Week Off Name',
+      label: 'Week Off Policy Name',
       width: '20',
       sortable: true,
       fixed: 'left',
@@ -278,7 +278,7 @@ export const WeekOffOffMasterMaster: React.FC = () => {
     },
     {
       key: 'WeekOffPolicyCode',
-      label: 'Week Off Code',
+      label: 'Week Off Policy Code',
       width: '15',
       sortable: false,
       align: 'left',

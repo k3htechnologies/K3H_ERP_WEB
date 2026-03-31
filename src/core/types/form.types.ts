@@ -104,6 +104,7 @@ export interface DatePickerProps
   minYear?: number;
   maxYear?: number;
   disabled?: boolean;
+  minDate?:string | Date;
   helperText?: string;
   isDisplayCurrentDate?:boolean;
 }

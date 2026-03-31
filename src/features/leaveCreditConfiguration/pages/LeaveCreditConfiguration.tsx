@@ -531,7 +531,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
         }}
         onConfirm={handleDeleteLeaveCreditConfiguration}
         loading={isLoading}
-        pageName='Leave Credit Configuration'
+        pageName='leaveCreditConfiguration'
       />
 
       <Modal
@@ -548,6 +548,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
         onCancel={() => {
           setTempFilters({});
           resetFilters();
+          setShowFilterPopup(false);
         }}
         size="small-half"
       >

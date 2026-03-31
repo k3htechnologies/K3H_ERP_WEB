@@ -56,7 +56,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
   //SET DROP DOWN LABELS
   const [dropdownLabels, setDropdownLabels] = useState<{ departmentName?: string }>({});
   const leaveBalanceTypeRefs = useRef<{ [index: number]: HTMLDivElement | null }>({});
-
+  const selectedLeaveTypeIds = leaveBalanceTypes.map(l => Number(l.LeaveTypeId));
   // NAVIGATE
   const navigate = useNavigate();
 
@@ -288,14 +288,14 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
       !formData.FinancialYearStartDate ||
       formData.FinancialYearStartDate.trim() === ""
     ) {
-      newErrors.StartDate = "Start Date is required.";
+      newErrors.FinancialYearStartDate = "Start Date is required.";
     }
 
     if (
       !formData.FinancialYearEndDate ||
       formData.FinancialYearEndDate.trim() === ""
     ) {
-      newErrors.EndDate = "End Date is required.";
+      newErrors.FinancialYearEndDate = "End Date is required.";
     }
 
     if (formData.FinancialYearStartDate && formData.FinancialYearEndDate) {
@@ -475,7 +475,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
               onChange={(value) =>
                 handleFieldChange("FinancialYearEndDate", value || null)
               }
-              error={errors.EndDate}
+              error={errors.FinancialYearEndDate}
             />
           </div>
 
@@ -564,7 +564,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                   <div className="flex flex-col md:flex-row gap-4 items-end">
 
                     <div className="flex-1">
-                      <SingleSelectDropdownWithPagination
+                      {/* <SingleSelectDropdownWithPagination
                         key={`leave-type-${index}-${item.LeaveTypeId}`}
                         label="Leave Type"
                         title="Select Leave Type"
@@ -573,6 +573,7 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                         dataFetchCallBack={fetchLeaveTypeMasterDropdown}
                         onSelected={(selectedItem) => {
                           const leaveTypeId = Number(selectedItem?.value);
+
                           if (leaveTypeId && leaveTypeId > 0) {
                             handleUpdateLeaveBalanceType(
                               index,
@@ -586,6 +587,56 @@ export const AddUpdateLeaveCreditConfiguration: React.FC = () => {
                             if (
                               errors[`LeaveBalanceType_${index}_LeaveTypeId`]
                             ) {
+                              setErrors((prev) => ({
+                                ...prev,
+                                [`LeaveBalanceType_${index}_LeaveTypeId`]: "",
+                              }));
+                            }
+                          }
+                        }}
+                        initialValue={
+                          item.LeaveTypeId && item.LeaveTypeId > 0
+                            ? createDropdownInitialValue(
+                              String(item.LeaveTypeId),
+                              leaveTypeLabels[index] || "",
+                            )
+                            : null
+                        }
+                        error={errors[`LeaveBalanceType_${index}_LeaveTypeId`]}
+                      /> */}
+                      <SingleSelectDropdownWithPagination
+                        key={`leave-type-${index}-${item.LeaveTypeId}`}
+                        label="Leave Type"
+                        title="Select Leave Type"
+                        size="md"
+                        required
+                        dataFetchCallBack={async (page, params) => {
+                          const res = await fetchLeaveTypeMasterDropdown(page, params);
+
+                          if (res?.itemList && Array.isArray(res.itemList)) {
+                            res.itemList = res.itemList.filter((option: any) => {
+                              const optionId = Number(option.value);
+                              return (
+                                !selectedLeaveTypeIds.includes(optionId) ||
+                                optionId === Number(item.LeaveTypeId)
+                              );
+                            });
+                          }
+
+                          return res;
+                        }}
+                        onSelected={(selectedItem) => {
+                          const leaveTypeId = Number(selectedItem?.value);
+
+                          if (leaveTypeId && leaveTypeId > 0) {
+                            handleUpdateLeaveBalanceType(index, "LeaveTypeId", leaveTypeId);
+
+                            setLeaveTypeLabels((prev) => ({
+                              ...prev,
+                              [index]: selectedItem?.label || "",
+                            }));
+
+                            if (errors[`LeaveBalanceType_${index}_LeaveTypeId`]) {
                               setErrors((prev) => ({
                                 ...prev,
                                 [`LeaveBalanceType_${index}_LeaveTypeId`]: "",

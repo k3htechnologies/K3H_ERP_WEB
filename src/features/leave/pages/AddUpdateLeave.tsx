@@ -394,11 +394,12 @@ export const AddUpdateLeave: React.FC = () => {
                         EndDate: endDate,
                     }));
                     setIsDateModalOpen(false);
-                    if (errors.StartDate || errors.EndDate) {
+                    if (errors.StartDate || errors.EndDate || errors.StartDateLeaveDuration) {
                         setErrors((prev) => {
                             const newErrors = { ...prev };
                             delete newErrors.StartDate;
                             delete newErrors.EndDate;
+                            delete newErrors.StartDateLeaveDuration;
                             return newErrors;
                         });
                     }

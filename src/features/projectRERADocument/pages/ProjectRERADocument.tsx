@@ -17,7 +17,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { Button, Input } from '@/ui/components/forms';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
-import {Edit, Plus, Trash2} from 'lucide-react';
+import { Edit, Plus, Trash2 } from 'lucide-react';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { MultiFilePicker } from '@/ui/components/ImagePicker/MultiFilePicker';
@@ -125,7 +125,8 @@ const ProjectRERADocument: React.FC = () => {
   // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-  const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+  const [rERADocumentName, setRERADocumentName] = useState<string | null>("");
+  const [rERADocumentCategory, setRERADocumentCategory] = useState<string | null>("");
 
   // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -476,7 +477,7 @@ const ProjectRERADocument: React.FC = () => {
       },
 
       {
-        key: 'actions',
+        key: 'Actions',
         label: 'Actions',
         width: '12',
         fixed: 'right',
@@ -489,23 +490,27 @@ const ProjectRERADocument: React.FC = () => {
 
               <div className="w-[34px] flex justify-center">
 
-                {showEdit ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleAddDocumentDetailsModal(row)
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Add"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (!showEdit) return;
+                    handleAddDocumentDetailsModal(row)
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showEdit}
+                  size="sm"
+                  title="Add"
+                  style={{
+                    color: showEdit ? '' : '#9CA3AF',
+                    cursor: showEdit ? 'pointer' : 'not-allowed',
+                    opacity: showEdit ? 1 : 0.5
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+
               </div>
 
             </div>
@@ -528,7 +533,8 @@ const ProjectRERADocument: React.FC = () => {
       Id: row.ProjectRERADocumentId ?? 0,
       ProjectId: row.ProjectId ?? 0,
     };
-    setApprovalDocumentName(row.ProjectRERADocumentName)
+    setRERADocumentCategory(row.ProjectRERADocumentCategory)
+    setRERADocumentName(row.ProjectRERADocumentName)
     setApprovalLogRequest(request);
     setIsApprovalLogModalOpen(true);
   };
@@ -536,6 +542,8 @@ const ProjectRERADocument: React.FC = () => {
   const handleApproveRejectDocument = (row: ProjectRERADocumentData, approvalType: "approve" | "reject") => {
 
     setApprovalRowData(row);
+    setRERADocumentCategory(row.ProjectRERADocumentCategory)
+    setRERADocumentName(row.ProjectRERADocumentName)
     setApprovalActionType(approvalType);
     setIsApprovalActionModalOpen(true);
 
@@ -591,7 +599,7 @@ const ProjectRERADocument: React.FC = () => {
         label: 'Status',
         width: '18',
         sortable: false,
-        align: 'left',
+        align: 'center',
         render: (value) => {
 
           const statusClass = getDocumentStatusColor(value);
@@ -657,7 +665,7 @@ const ProjectRERADocument: React.FC = () => {
         label: 'Last Modified Date',
         width: '33',
         sortable: false,
-        align: 'left',
+        align: 'center',
         render: (value, row) =>
           value
             ? formatDate_dd_MonthName_yy(value)
@@ -672,49 +680,60 @@ const ProjectRERADocument: React.FC = () => {
         align: 'center',
         fixed: 'right',
         render: (_value, row) => {
-          const showEdit = canAction && row.ProjectRERADocumentApprovalStatus !== "Approved" ? true : false;
+
+          const showEdit = canAction && !row.ProjectRERADocumentApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
+
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
               <div className="flex-shrink-0 ml-2">
-                {showEdit ? (
-                  <Button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleEditProjectRERADocumentDetails(row);
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Edit"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!showEdit) return;
+                    handleEditProjectRERADocumentDetails(row);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showEdit}
+                  size="sm"
+                  title="Edit"
+                  style={{
+                    color: showEdit ? '' : '#9CA3AF',
+                    cursor: showEdit ? 'pointer' : 'not-allowed',
+                    opacity: showEdit ? 1 : 0.5
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+
               </div>
 
               <div className="w-[34px] flex justify-center">
-                {showEdit ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    style={{ color: 'red' }}
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (!showEdit) return;
+                    handleConfirmationDialogBoxOpen(row)
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showEdit}
+                  size="sm"
+                  title="Delete"
+                  style={{
+                    color: showEdit ? 'red' : '#9CA3AF',
+                    cursor: showEdit ? 'pointer' : 'not-allowed',
+                    opacity: showEdit ? 1 : 0.5
+                  }}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+
               </div>
 
             </div>
@@ -722,7 +741,6 @@ const ProjectRERADocument: React.FC = () => {
           )
         },
       }
-
     ],
     // dependencies: include everything used inside that might change
     [canAction, handleConfirmationDialogBoxOpen, handleApprovalLog, handleApproveRejectDocument]
@@ -782,10 +800,10 @@ const ProjectRERADocument: React.FC = () => {
     }
 
     if (formData.ProjectRERADocumentStatus?.toUpperCase() === "ISSUED" &&
-          !hasAnyDocumentFile(projectRERADocumentFiles, projectRERADocumentURL, RemoveProjectRERADocumentUrls)
-        ) {
-          newErrors.ProjectRERADocumentURL = "File is required.";
-        }
+      !hasAnyDocumentFile(projectRERADocumentFiles, projectRERADocumentURL, RemoveProjectRERADocumentUrls)
+    ) {
+      newErrors.ProjectRERADocumentURL = "File is required.";
+    }
 
 
     return {
@@ -1097,79 +1115,78 @@ const ProjectRERADocument: React.FC = () => {
 
         />
       )}
+      <div className={`${projectRERADocumentTabList.length > 0 ? 'pt-5' : ''}`}>
+        <DataTableExpandable
+          ref={dtRef}
+          data={projectRERADocumentListForTable}
+          columns={projectRERADocumentColumns}
+          pagination={projectRERADocumentPaginationInfo}
+          sortInfo={sortInfo}
+          onSort={handleSortColumn}
+          emptyMessage='No RERA Document Data Found'
+          loading={isLoading}
+          fixedHeight
+          recordsPerPage={20}
+          expandable={{
+
+            keyField: 'ProjectRERADocumentId',
+            alwaysFetchOnOpen: true,
+            fetchRow: async (row) => {
+
+              setExpandedParentRow(row);
+              setExpandedParentId(row.ProjectRERADocumentId);
+
+              const params: FilterWithPaginationProjectRERADocument = {
+                PageNumber: 1,
+                PageSize: pagination.pageSize,
+                ProjectId: Number(row.ProjectId),
+                ProjectRERADocumentId: Number(row.ProjectRERADocumentId),
+                ProjectRERADocumentCategoryId: row.ProjectRERADocumentCategoryId
+              };
 
 
-      <DataTableExpandable
-        ref={dtRef}
-        data={projectRERADocumentListForTable}
-        columns={projectRERADocumentColumns}
-        pagination={projectRERADocumentPaginationInfo}
-        sortInfo={sortInfo}
-        onSort={handleSortColumn}
-        emptyMessage='No RERA Document Data Found'
-        loading={isLoading}
-        fixedHeight
-        recordsPerPage={20}
-        expandable={{
+              const response = await projectRERADocumentService.apiCallPullProjectRERADocument(params);
 
-          keyField: 'ProjectRERADocumentId',
-          alwaysFetchOnOpen: true,
-          fetchRow: async (row) => {
+              if (E.isRight(response)) {
 
-            setExpandedParentRow(row);
-            setExpandedParentId(row.ProjectRERADocumentId);
+                return response.right.Data ?? [];
+              }
+              return [];
 
-            const params: FilterWithPaginationProjectRERADocument = {
-              PageNumber: 1,
-              PageSize: pagination.pageSize,
-              ProjectId: Number(row.ProjectId),
-              ProjectRERADocumentId: Number(row.ProjectRERADocumentId),
-              ProjectRERADocumentCategoryId: row.ProjectRERADocumentCategoryId
-            };
+            },
 
 
-            const response = await projectRERADocumentService.apiCallPullProjectRERADocument(params);
+            renderRow: (fetchedData) => {
 
-            if (E.isRight(response)) {
+              const details: ProjectRERADocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
+              if (!details || details.length === 0) {
 
-              return response.right.Data ?? [];
-            }
-            return [];
-
-          },
-
-
-          renderRow: (fetchedData) => {
-
-            const details: ProjectRERADocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
-            if (!details || details.length === 0) {
+                return (
+                  <div className="p-1 text-xs text-gray-600 text-center">
+                    <NoDataView />
+                  </div>
+                );
+              }
 
               return (
-                <div className="p-1 text-xs text-gray-600 text-center">
-                  <NoDataView />
-                </div>
+                <DataTableWithOutBorder
+                  data={details}
+                  columns={projectRERADocumentDetailsColumns}
+                  emptyMessage="No RERA Document Data Found"
+                  fixedHeight={true}
+                  recordsPerPage={20}
+                  className="flex-1"
+                  sortInfo={sortInfo}
+                  onSort={handleSortColumn}
+                  loading={isLoading}
+                />
               );
-            }
+            },
 
-            return (
-              <DataTableWithOutBorder
-                data={details}
-                columns={projectRERADocumentDetailsColumns}
-                emptyMessage="No RERA Document Data Found"
-                fixedHeight={true}
-                recordsPerPage={20}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-                loading={isLoading}
-              />
-            );
-          },
-
-          expandButton: { openText: 'Hide', closeText: 'Show' }
-        }}
-      />
-
+            expandButton: { openText: 'Hide', closeText: 'Show' }
+          }}
+        />
+      </div>
 
       {/*  ADD EDIT UPDATE DOCUMENT DETAILS */}
       <Modal
@@ -1193,77 +1210,78 @@ const ProjectRERADocument: React.FC = () => {
         loading={isLoading}
         size='xl'
       >
-        <div className="space-y-10 p-6 bg-blue-100">
-          <div className="space-y-4" >
-            <div>
-              {editingDocumentData ?
-                <Input
-                  label='Document'
-                  required
-                  disabled
-                  type="text"
-                  value={formData.ProjectRERADocumentName}
-                  maxLength={250}
-                  placeholder="Enter Document"
-                />
-                : ""}
+        <div className="space-y-4 p-6 bg-blue-100">
 
-            </div>
-
+          {editingDocumentData ?
             <div>
-              <SinglePageSelection
-                label="Status"
-                placeholder='Select Status'
+
+              <Input
+                label='Document'
                 required
-                value={formData.ProjectRERADocumentStatus}
-                onChange={(e) => handleFieldChange('ProjectRERADocumentStatus', String(e))}
-                options={PROJECT_DOCUMENT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                error={errors.ProjectRERADocumentStatus}
+                disabled
+                type="text"
+                value={formData.ProjectRERADocumentName}
+                maxLength={250}
+                placeholder="Enter Document"
               />
-            </div>
-            <div>
-              <MultiFilePicker
-                label="Files"
-                placeholder='Select File'
-                required={formData.ProjectRERADocumentStatus?.toUpperCase() === "ISSUED" ? true : false}
-                value={projectRERADocumentFiles}
-                onChange={setProjectRERADocumentFiles}
-                availableFilesURL={projectRERADocumentURL ?? ""}
-                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                maxFiles={5}
-                maxSizeMB={10}
-                error={errors.ProjectRERADocumentURL}
-                onRemoveExisting={(url) => {
-                  setRemoveProjectRERADocumentUrls((prev) => [...prev, url])
-                }}
-              />
-            </div>
-            <div>
-              <MultiFilePicker
-                label="Screenshot"
-                placeholder='Select Screenshot'
-                value={rERAPortalScreenShotFiles}
-                onChange={setRERAPortalScreenShotFiles}
-                availableFilesURL={rERAPortalScreenShotURL ?? ""}
-                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                maxFiles={5}
-                maxSizeMB={10}
-                onRemoveExisting={(url) => {
-                  setRemoveRERAPortalScreenShotUrls((prev) => [...prev, url])
-                }}
-              />
-            </div>
-            <div>
-              <TextArea
-                label="Remark"
-                placeholder="Enter Remark"
-                className='thin-scroll'
-                value={formData.ProjectRERADocumentRemark}
-                onChange={(e) => handleFieldChange("ProjectRERADocumentRemark", e.target.value)}
-                error={errors.ProjectRERADocumentRemark} />
-            </div>
 
+
+            </div>
+            : ""}
+
+          <div>
+            <SinglePageSelection
+              label="Status"
+              placeholder='Select Status'
+              required
+              value={formData.ProjectRERADocumentStatus}
+              onChange={(e) => handleFieldChange('ProjectRERADocumentStatus', String(e))}
+              options={PROJECT_DOCUMENT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
+              error={errors.ProjectRERADocumentStatus}
+            />
           </div>
+          <div>
+            <MultiFilePicker
+              label="Files"
+              placeholder='Select File'
+              required={formData.ProjectRERADocumentStatus?.toUpperCase() === "ISSUED" ? true : false}
+              value={projectRERADocumentFiles}
+              onChange={setProjectRERADocumentFiles}
+              availableFilesURL={projectRERADocumentURL ?? ""}
+              allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+              maxFiles={5}
+              maxSizeMB={10}
+              error={errors.ProjectRERADocumentURL}
+              onRemoveExisting={(url) => {
+                setRemoveProjectRERADocumentUrls((prev) => [...prev, url])
+              }}
+            />
+          </div>
+          <div>
+            <MultiFilePicker
+              label="Screenshot"
+              placeholder='Select Screenshot'
+              value={rERAPortalScreenShotFiles}
+              onChange={setRERAPortalScreenShotFiles}
+              availableFilesURL={rERAPortalScreenShotURL ?? ""}
+              allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+              maxFiles={5}
+              maxSizeMB={10}
+              onRemoveExisting={(url) => {
+                setRemoveRERAPortalScreenShotUrls((prev) => [...prev, url])
+              }}
+            />
+          </div>
+          <div>
+            <TextArea
+              label="Remark"
+              placeholder="Enter Remark"
+              className='thin-scroll'
+              value={formData.ProjectRERADocumentRemark}
+              onChange={(e) => handleFieldChange("ProjectRERADocumentRemark", e.target.value)}
+              error={errors.ProjectRERADocumentRemark} />
+          </div>
+
         </div>
 
       </Modal>
@@ -1281,16 +1299,19 @@ const ProjectRERADocument: React.FC = () => {
 
       <ApprovalLogModal
         isOpen={isApprovalLogModalOpen}
-        documentName={approvalDocumentName ?? ""}
+        title='RERA Document'
+        titleText={rERADocumentCategory ?? ""}
+        subTitleText={rERADocumentName ?? ""}
         onClose={() => setIsApprovalLogModalOpen(false)}
         request={approvalLogRequest} />
 
       <ApprovalActionModal
-      title='Document'
+        title='Document'
         isOpen={isApprovalActionModalOpen}
         onClose={() => setIsApprovalActionModalOpen(false)}
         actionType={approvalActionType}
-        documentName={approvalRowData?.ProjectRERADocumentName ?? ""}
+        titleText={rERADocumentCategory ?? ""}
+        subTitleText={rERADocumentName ?? ""}
         onSubmit={handleApprovalSubmit}
         loading={isLoading}
       />

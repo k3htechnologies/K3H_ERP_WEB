@@ -28,9 +28,10 @@ interface FloorCardProps {
     isLastFloor?: boolean;
     canAction?: boolean;
     canBookingAction?: boolean;
+    approvalStatus?: string
 }
 
-export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDelete, onParkingUpdate, onDeleteFloor, isLastFloor, canAction, canBookingAction }: FloorCardProps) => {
+export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDelete, onParkingUpdate, onDeleteFloor, isLastFloor, canAction, canBookingAction, approvalStatus }: FloorCardProps) => {
     const navigate = useNavigate();
     const { addToast } = useToast();
 
@@ -73,10 +74,10 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
 
     const handleParkingClick = (e: React.MouseEvent) => {
         e.stopPropagation();
-         if(canAction){
-        setIsParkingModalOpen(true);
-        setParkingCount(floor.ParkingCount?.toString() || '0');
-         }
+        if (canAction && !approvalStatus?.toUpperCase().includes("APPROVED")) {
+            setIsParkingModalOpen(true);
+            setParkingCount(floor.ParkingCount?.toString() || '0');
+        }
     };
 
     const handleSaveParkingCount = async (e: React.FormEvent) => {
@@ -142,27 +143,28 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                 customizedIcon={
                     <div className="flex items-center gap-2">
                         <span className="text-sm text-gray-600">{`Slab Height: ${slabHeight} ft`}</span>
+
+                        <div
+                            className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition-colors"
+                            onClick={handleParkingClick}
+                            title="Update Parking Count">
+                            <span className="text-[#135BEC] font-medium text-sm">{floor.ParkingCount || 0}</span>
+                            <Car className="text-[#135BEC]" size={20} />
+                        </div>
                         {canAction && (
                             <>
-                                <div
-                                    className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition-colors"
-                                    onClick={handleParkingClick}
-                                    title="Update Parking Count"
+                                {!approvalStatus?.toUpperCase().includes("APPROVED") && (
+                                    <Plus
+                                        className="p-1.5 cursor-pointer hover:bg-gray-100 rounded transition-colors"
+                                        size={28}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleAddFlat();
+                                        }}
+                                    />
+                                )}
 
-                                >
-                                    <span className="text-[#135BEC] font-medium text-sm">{floor.ParkingCount || 0}</span>
-                                    <Car className="text-[#135BEC]" size={20} />
-                                </div>
-
-                                <Plus
-                                    className="p-1.5 cursor-pointer hover:bg-gray-100 rounded transition-colors"
-                                    size={28}
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleAddFlat();
-                                    }}
-                                />
-                                {onDeleteFloor && isLastFloor && wing.Wing.toUpperCase() !== 'BGP' && (
+                                {onDeleteFloor && isLastFloor && !approvalStatus?.toUpperCase().includes("APPROVED") && wing.Wing.toUpperCase() !== 'BGP' && (
                                     <Button
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -192,6 +194,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                                 buildingNumber={building?.BuildingNumber ?? ""}
                                 canAction={canAction}
                                 canBookingAction={canBookingAction}
+                                approvalStatus={approvalStatus}
                             />
                         ))}
                     </div>

@@ -31,8 +31,9 @@ export class RedevelopmentDashboardDatasourceImpl implements RedevelopmentDashbo
 
             console.error('ERROR: PULL REDEVELOPMENT DASHBOARD :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullRedevelopmentDashboard(ProjectId, BuildingId);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullRedevelopmentDashboard(ProjectId, BuildingId);
             }
 
             throw error

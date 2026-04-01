@@ -48,8 +48,9 @@ export class LitigationHearingDatasourceImpl implements LitigationHearingDatasou
 
             console.error('ERROR: PULL LITIGATION HEARING:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullLitigationHearing(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullLitigationHearing(params);
             }
 
             throw error
@@ -69,8 +70,9 @@ export class LitigationHearingDatasourceImpl implements LitigationHearingDatasou
 
             console.error('ERROR:ADD UPDATE LITIGATION HEARING:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpadateLitigationHearing(formData);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpadateLitigationHearing(formData);
             }
             throw error
         }
@@ -95,9 +97,9 @@ export class LitigationHearingDatasourceImpl implements LitigationHearingDatasou
 
             console.error('ERROR: DELETE LITIGATION HEARING:', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteLitigationHearing(params);
+                return  await this.deleteLitigationHearing(params);
             }
 
             throw error

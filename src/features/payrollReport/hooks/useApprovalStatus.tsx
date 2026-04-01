@@ -8,6 +8,7 @@ export const useApprovalStatus = (
   moduleName: string,
   id: number,
   requestId: number,
+  remarks: string
 ) => {
   const [approvalData, setApprovalData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,6 +28,7 @@ export const useApprovalStatus = (
             Id: id,
             ModuleName: moduleName,
             RequestId: requestId,
+            Remarks: remarks
           };
 
           const response =

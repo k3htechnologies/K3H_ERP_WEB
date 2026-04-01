@@ -6,7 +6,7 @@ export interface FilterProjectInventoryExistsRequest {
 
 export interface FilterInventoryRequest {
     ProjectId: number
-    ExportType?: 'Excel' | 'PDF'
+    ExportType?: 'Excel' | 'PDF' | 'SAMPLE'
 }
 
 export interface InventoryData {

@@ -9,6 +9,8 @@ export interface FilterWithPaginationAttendanceRequest {
   ApiKey?: string;
   SortBy?: string;
   IsReport?: boolean;
+  CanApprove?: boolean;
+  IsCheckPermission?: boolean
   ExportType?: "Excel" | "PDF";
   EmployeeName?: string;
 }
@@ -84,12 +86,10 @@ export interface FilterWithPaginationAttendanceRegularizationRequest {
   EmployeeName?: string;
   SortBy?: string;
   IsReport?: boolean;
+  CanApprove?: boolean;
+  IsCheckPermission?: boolean;
   ExportType?: "Excel" | "PDF";
 }
 
-export type AttendanceRegularizationListResponse = ApiResponse<
-  AttendanceRegularizationData[]
->;
-export type AttendanceRegularizationSaveResponse = ApiResponse<
-  AttendanceRegularizationData[]
->;
+export type AttendanceRegularizationListResponse = ApiResponse<AttendanceRegularizationData[]>;
+export type AttendanceRegularizationSaveResponse = ApiResponse<AttendanceRegularizationData[]>;

@@ -26,7 +26,7 @@ export abstract class ProjectMasterDatasource {
     abstract addUpdateProjectMaster(formData: FormData): Promise<ProjectMasterSaveResponse>;
 
     abstract pullProjectMasterWithEmployee(ProjectId: number, FullName?: string, signal?: AbortSignal): Promise<ProjectMasterWithEmployeeResponse>;
-    abstract pullPaginationProjectMasterWithEmployee(PageSize: number, PageNumber: number, ProjectId: number, FullName?: string,DepartmentName?: string): Promise<ProjectMasterWithEmployeeResponse>;
+    abstract pullPaginationProjectMasterWithEmployee(PageSize: number, PageNumber: number, ProjectId: number, FullName?: string, DepartmentName?: string): Promise<ProjectMasterWithEmployeeResponse>;
     abstract addUpdateProjectMasterWithEmployee(params: AddUpdateProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeSaveResponse>;
     abstract deleteProjectMasterWithEmployee(params: DeleteProjectMasterWithEmployeeRequest): Promise<ProjectMasterWithEmployeeDeleteResponse>;
 
@@ -57,6 +57,15 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
             if (params.ProjectName?.trim()) queryParams.append('ProjectName', params.ProjectName.trim());
             if (params.CTCNumber?.trim()) queryParams.append('CTCNumber', params.CTCNumber.trim());
             if (params.EmployeeId) queryParams.append('EmployeeId', params.EmployeeId.toString());
+            if (params.IsRedevelopment !== undefined) queryParams.append('IsRedevelopment', String(params.IsRedevelopment));
+
+            if (params.ProjectStatus?.trim()) queryParams.append('ProjectStatus', params.ProjectStatus.trim());
+            if (params.VillageName?.trim()) queryParams.append('VillageName', params.VillageName.trim());
+            if (params.ArchitectName?.trim()) queryParams.append('ArchitectName', params.ArchitectName.trim());
+            if (params.RERANumber?.trim()) queryParams.append('RERANumber', params.RERANumber.trim());
+            if (params.ProjectScheme?.trim()) queryParams.append('ProjectScheme', params.ProjectScheme.trim());
+            if (params.ProjectSubScheme?.trim()) queryParams.append('ProjectSubScheme', params.ProjectSubScheme.trim());
+
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
@@ -68,8 +77,9 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             console.error('ERROR: PULL PROJECT MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullProjectMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullProjectMaster(params);
             }
 
             throw error
@@ -90,8 +100,9 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             console.error('ERROR: ADD UPDATE PROJECT MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateProjectMaster(formData);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateProjectMaster(formData);
             }
             throw error
         }
@@ -112,16 +123,16 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             console.error('ERROR: PULL PROJECT MASTER WITH EMPLOYEE:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullProjectMasterWithEmployee(Number(ProjectId));
+                return await this.pullProjectMasterWithEmployee(Number(ProjectId));
             }
 
             throw error
         }
     }
 
-    async pullPaginationProjectMasterWithEmployee(PageSize: number, PageNumber: number, ProjectId: number, FullName?: string,DepartmentName?: string): Promise<ProjectMasterWithEmployeeResponse> {
+    async pullPaginationProjectMasterWithEmployee(PageSize: number, PageNumber: number, ProjectId: number, FullName?: string, DepartmentName?: string): Promise<ProjectMasterWithEmployeeResponse> {
         try {
             const queryParams = new URLSearchParams({
                 ProjectId: (ProjectId ?? 0).toString(),
@@ -129,19 +140,19 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
                 PageNumber: (PageNumber ?? 1).toString()
             })
             if (FullName) queryParams.append('FullName', FullName.trim());
-             if (DepartmentName) queryParams.append('DepartmentName', DepartmentName.trim());
+            if (DepartmentName) queryParams.append('DepartmentName', DepartmentName.trim());
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${ProjectMasterApi.PULL_PAGINATION_PROJECT_WITH_EMPLOYEE}?${queryParams.toString()}`, {signal: undefined }
+                `${ProjectMasterApi.PULL_PAGINATION_PROJECT_WITH_EMPLOYEE}?${queryParams.toString()}`, { signal: undefined }
             )
             return response;
         } catch (error: any) {
 
             console.error('ERROR: PULL PAGINATION PROJECT MASTER WITH EMPLOYEE:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullPaginationProjectMasterWithEmployee(PageSize, PageNumber, Number(ProjectId));
+                return await this.pullPaginationProjectMasterWithEmployee(PageSize, PageNumber, Number(ProjectId));
             }
 
             throw error
@@ -162,8 +173,9 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             console.error('ERROR: ADD UPDATE PROJECT MASTER WITH EMPLOYEE:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateProjectMasterWithEmployee(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateProjectMasterWithEmployee(params);
             }
             throw error
         }
@@ -187,9 +199,9 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             console.error('ERROR: DELETE PROJECT MASTER WITH EMPLOYEE :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteProjectMasterWithEmployee(params);
+                return await this.deleteProjectMasterWithEmployee(params);
 
             }
 
@@ -210,9 +222,9 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             console.error('ERROR: PULL PROJECT MASTER WITH COMPANY:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullProjectMasterWithCompany(Number(ProjectId));
+                return await this.pullProjectMasterWithCompany(Number(ProjectId));
             }
 
             throw error
@@ -233,8 +245,9 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             console.error('ERROR: ADD UPDATE PROJECT MASTER WITH EMPLOYEE:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateProjectMasterWithCompany(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateProjectMasterWithCompany(params);
             }
             throw error
         }
@@ -254,9 +267,9 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             console.error('ERROR: PULL PROJECT MASTER WITH BANK DETAILS:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullProjectMasterWithBankDetails(Number(ProjectId));
+                return await this.pullProjectMasterWithBankDetails(Number(ProjectId));
             }
 
             throw error
@@ -277,8 +290,9 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             console.error('ERROR: ADD UPDATE PROJECT MASTER WITH BANK DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateProjectMasterWithBankDetails(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateProjectMasterWithBankDetails(params);
             }
             throw error
         }
@@ -302,9 +316,9 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             console.error('ERROR: DELETE PROJECT MASTER WITH BANK DETAILS :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteProjectMasterWithBankDetails(params);
+                return await this.deleteProjectMasterWithBankDetails(params);
 
             }
 

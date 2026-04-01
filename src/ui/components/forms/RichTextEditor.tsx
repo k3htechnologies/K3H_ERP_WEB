@@ -3,6 +3,7 @@ import Quill from 'quill'
 import 'quill/dist/quill.snow.css'
 import { THEME } from '@/core/constants/theme'
 import type { RichTextEditorProps } from '@/core/types/form.types'
+import { cleanHtml } from '@/core/utils/comman'
 
 export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   name,
@@ -18,7 +19,7 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
   const containerRef = useRef<HTMLDivElement | null>(null)
   const quillRef = useRef<Quill | null>(null)
 
-  // Init Quill (StrictMode-safe)
+  // ✅ INIT QUILL
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
@@ -26,9 +27,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
     const quill = new Quill(el, {
       theme: 'snow',
       placeholder,
-      readOnly: readOnly,
+      readOnly,
       modules: readOnly
-        ? { toolbar: false }            
+        ? { toolbar: false }
         : {
           toolbar: [
             ['bold', 'italic', 'underline', 'strike'],
@@ -44,14 +45,27 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     quillRef.current = quill
 
+    // ✅ SET INITIAL VALUE
     if (value) {
-      quill.clipboard.dangerouslyPasteHTML(value)
+      quill.clipboard.dangerouslyPasteHTML(cleanHtml(value))
     }
 
+    // ✅ DEBOUNCED CHANGE HANDLER
+    let timeout: any
+
     const handler = () => {
-      const html = quill.root.innerHTML
-      const normalized = html === '<p><br></p>' ? '' : html
-      onChange(normalized)
+      clearTimeout(timeout)
+
+      timeout = setTimeout(() => {
+        const html = quill.root.innerHTML
+
+        const isEmpty =
+          !html || html.replace(/<(.|\n)*?>/g, '').trim() === ''
+
+        const cleaned = cleanHtml(isEmpty ? '' : html)
+
+        onChange(cleaned)
+      }, 200)
     }
 
     quill.on('text-change', handler)
@@ -61,26 +75,32 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
       quillRef.current = null
       el.innerHTML = ''
     }
-  }, []) 
+  }, [])
 
+  // ✅ SYNC VALUE (FIXED)
   useEffect(() => {
     const quill = quillRef.current
     if (!quill) return
 
-    const editorHtml = quill.root.innerHTML
-    const normalizedEditor = editorHtml === '<p><br></p>' ? '' : editorHtml
-    if (normalizedEditor === value) return
+    const currentHtml =
+      quill.root.innerHTML === '<p><br></p>' ? '' : quill.root.innerHTML
 
-    const selection = quill.getSelection()
-    quill.clipboard.dangerouslyPasteHTML(value || '')
-    if (selection) {
-      quill.setSelection(selection)
+    const cleanedValue = cleanHtml(value || '')
+
+    if (currentHtml !== cleanedValue) {
+      const range = quill.getSelection()
+
+      quill.setContents([]) // safer reset
+      quill.clipboard.dangerouslyPasteHTML(cleanedValue)
+
+      if (range) {
+        quill.setSelection(range)
+      }
     }
   }, [value])
 
   return (
-    <div
-      className={className}
+    <div className={`bg-white rounded-xl shadow-sm border border-[#3333334f] ${className}`}
       style={{ width: '100%', marginBottom: theme.spacing.sm }}
       data-name={name}
     >
@@ -91,7 +111,9 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
           style={{
             marginTop: theme.spacing.sm,
             fontSize: theme.fontSize.sm,
-            color: error ? theme.colors.error : theme.colors.textSecondary,
+            color: error
+              ? theme.colors.error
+              : theme.colors.textSecondary,
           }}
         >
           {error || helperText}

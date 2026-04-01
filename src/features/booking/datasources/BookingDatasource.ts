@@ -59,8 +59,9 @@ export class BookingDatasourceImpl implements BookingDatasource {
         } catch (error) {
             console.error('Error: Pull BOOKING:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullBooking(params, signal);
+           if (error instanceof TokenExpiredException) {
+
+                return await this.pullBooking(params, signal);
             }
 
             throw error
@@ -78,8 +79,9 @@ export class BookingDatasourceImpl implements BookingDatasource {
         } catch (error) {
             console.error('Error: Add Update BOOKING:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateBooking(data);
+           if (error instanceof TokenExpiredException) {
+
+                return  await this.addUpdateBooking(data);
             }
 
             throw error
@@ -97,8 +99,9 @@ export class BookingDatasourceImpl implements BookingDatasource {
         } catch (error) {
             console.error('Error: Cancel BOOKING:', error)
 
-            if (error === TokenExpiredException) {
-                await this.cancelBooking(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.cancelBooking(params);
             }
 
             throw error
@@ -136,8 +139,9 @@ export class BookingDatasourceImpl implements BookingDatasource {
         } catch (error) {
             console.error('Error: Pull CHANNEL PARTNER BOOKING:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullChannelPartnerBooking(params, signal);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullChannelPartnerBooking(params, signal);
             }
 
             throw error
@@ -160,10 +164,12 @@ export class BookingDatasourceImpl implements BookingDatasource {
 
             return response
         } catch (error) {
+            
             console.error('Error: Pull PAYMENT SCHEDULE STAGES:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullPaymentScheduleStages(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullPaymentScheduleStages(params);
             }
 
             throw error

@@ -32,6 +32,7 @@ import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import type { BranchAssociationsMasterData, FilterWithPaginationBranchAssociationsMasterRequest } from '@/features/branchAssociationsMaster/models/BranchAssociationsMasterModel';
 import { branchAssociationsService } from '@/features/branchAssociationsMaster/services/BranchAssociationsMasterService';
+import { getNameInitials } from '@/core/utils/getNameInitials';
 
 export const ViewEmployeeMaster: React.FC = () => {
 
@@ -498,13 +499,14 @@ export const ViewEmployeeMaster: React.FC = () => {
     });
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
             <HeaderActionBar
                 titleText={'Employee Details : '}
                 subTitleText={employeeName}
+                subSubTitleText={employeeData?.EmployeeCode}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListEmployeeMaster()}
@@ -547,7 +549,7 @@ export const ViewEmployeeMaster: React.FC = () => {
             </div>
 
             {activeTab === 'Overview' && employeeData && (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
                     {/* ================= LEFT SIDE (2/3) ================= */}
                     <div className="lg:col-span-2 space-y-6">
@@ -558,7 +560,6 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 Basic Details
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="First Name" value={safe(employeeData!.FirstName)} />
@@ -587,9 +588,22 @@ export const ViewEmployeeMaster: React.FC = () => {
                                         />
                                     </div>
                                 </div>
-
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Aadhaar Card Number" value={safe(employeeData!.AadharCardNumber)} />
+                                        <FieldItem label="PAN Number" value={safe(employeeData!.PanCardNumber)} />
+                                        <FieldItem label="Passport Number" value={safe(employeeData!.PassportNumber)} />
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Driving Licence Number" value={safe(employeeData!.DrivingLicenceNumber)} />
+                                        <FieldItem label="Voter Card Number" value={safe(employeeData!.VoterCardNumber)} />
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                                         <FieldItem
                                             label="Communication Address"
                                             value={safe(employeeData!.CommunicationAddress)}
@@ -597,7 +611,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="lg:col-span-3  pt-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                                         <FieldItem
                                             label="Permanent Address"
                                             value={safe(employeeData!.PermanentAddress)}
@@ -619,17 +633,19 @@ export const ViewEmployeeMaster: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                                         <FieldItem label="Country" value={safe(employeeData!.CountryName)} />
                                         <FieldItem label="State" value={safe(employeeData!.StateName)} />
+                                        <FieldItem label="District" value={safe(employeeData!.DistrictName)} />
 
                                     </div>
                                 </div>
                                 <div className="lg:col-span-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="District" value={safe(employeeData!.DistrictName)} />
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
                                         <FieldItem label="City" value={safe(employeeData!.CityName)} />
+                                        <FieldItem label="Village" value={safe(employeeData!.VillageName)} />
                                     </div>
                                 </div>
                             </div>
@@ -779,11 +795,33 @@ export const ViewEmployeeMaster: React.FC = () => {
                                     employeeReportingCycleList.map((item, index) => (
                                         <div key={index} className="flex gap-4 relative">
 
+
                                             <div className="flex flex-col items-center">
 
-                                                <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold text-sm">
-                                                    {item.FullName!.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
-                                                </div>
+                                                {(() => {
+
+                                                    const fullName = item?.FullName?.trim();
+
+                                                    const profilePhotoURL = item?.ProfilePhotoURL;
+
+                                                    const hasProfile =
+                                                        profilePhotoURL &&
+                                                        profilePhotoURL !== "" &&
+                                                        profilePhotoURL !== "—";
+
+                                                    return hasProfile ? (
+                                                        <img
+                                                            src={profilePhotoURL}
+                                                            alt={fullName}
+                                                            className="w-10 h-10 rounded-full object-cover border border-gray-300"
+                                                            onError={(e) => (e.currentTarget.style.display = "none")}
+                                                        />
+                                                    ) : (
+                                                        <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold text-sm">
+                                                            {getNameInitials(fullName)}
+                                                        </div>
+                                                    );
+                                                })()}
 
                                                 {index !== employeeReportingCycleList.length - 1 && (
                                                     <div className="w-px bg-gray-500 flex-1 mt-1"></div>
@@ -866,7 +904,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                                     : employeeEducationDetailsDataList.map(e => (
                                                         <div key={e.Uniquekey} className="mb-3 border-b border-gray-200 pb-2 last:border-b-0 last:pb-0">
                                                             <FieldItem label="Qualification" value={e.Qualification} isRow />
-                                                            <FieldItem label="College" value={e.CollegeName} isRow />
+                                                            <FieldItem label="Scholl / College Name" value={e.CollegeName} isRow />
                                                             <FieldItem label="Passing Year" value={e.Passing} isRow />
                                                         </div>
                                                     ))
@@ -915,10 +953,10 @@ export const ViewEmployeeMaster: React.FC = () => {
 
             {activeTab === 'Document' && (
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-5">
 
                     {docsWithUrls.length === 0 && (
-                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                             <NoDataView message="No Documents Found" />
                         </section>
                     )}
@@ -975,12 +1013,10 @@ export const ViewEmployeeMaster: React.FC = () => {
 
             )}
 
-
-
             {activeTab === 'Assets' && assetMappingMasterList && (
-                <div className="space-y-4">
+                <div className="space-y-4 pt-5">
                     {assetMappingMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
                             <NoDataView message='No Assets Found' />
                         </section>
                     ) : (
@@ -990,7 +1026,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 return (
                                     <>
 
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
                                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                 Asset Details
                                             </h4>
@@ -1034,15 +1070,15 @@ export const ViewEmployeeMaster: React.FC = () => {
             )}
 
             {activeTab === "Project" && (
-                <div className="space-y-4">
+                <div className="space-y-4 pt-5">
                     {projectMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
                             <NoDataView message='No Project Found' />
                         </section>
                     ) : (
                         <div className="space-y-3">
                             {projectMasterList.map((project) => (
-                                <div key={project.ProjectId} className="border border-gray-200 p-3 rounded bg-white flex justify-between mt-3">
+                                <div key={project.ProjectId} className="border border-gray-200 p-3 rounded bg-white flex justify-between">
 
                                     <div className="flex items-center gap-4">
                                         <div className="w-14 h-14 bg-gray-100 rounded-full overflow-hidden">
@@ -1066,9 +1102,9 @@ export const ViewEmployeeMaster: React.FC = () => {
             )}
 
             {activeTab === 'Shift Policy' && shiftMappingMasterList && (
-                <div className="space-y-4">
+                <div className="space-y-4 pt-5">
                     {shiftMappingMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
                             <NoDataView message='No Shift Policy Found' />
                         </section>
                     ) : (
@@ -1077,7 +1113,7 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                 return (
                                     <>
-                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
+                                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                                             {/* ================= LEFT SIDE (2/3) ================= */}
                                             <div className="lg:col-span-2 space-y-6">
@@ -1089,8 +1125,8 @@ export const ViewEmployeeMaster: React.FC = () => {
 
                                                         <div className="lg:col-span-3">
                                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                                <FieldItem label="Shift Begin Time" value={shiftMappingPolicy!.ShiftName} />
-                                                                <FieldItem label="Shift End Time" value={shiftMappingPolicy!.ShiftCode} />
+                                                                <FieldItem label="Shift Name" value={shiftMappingPolicy!.ShiftName} />
+                                                                <FieldItem label="Shift Code" value={shiftMappingPolicy!.ShiftCode} />
 
                                                             </div>
                                                         </div>
@@ -1222,9 +1258,9 @@ export const ViewEmployeeMaster: React.FC = () => {
             )}
 
             {activeTab === 'Week Off Policy' && weekOffMappingMasterList && (
-                <div className="space-y-4">
+                <div className="space-y-4 pt-5">
                     {weekOffMappingMasterList.length === 0 ? (
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3" >
+                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
                             <NoDataView message='No Week Off Policy Found' />
                         </section>
                     ) : (
@@ -1234,7 +1270,7 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 return (
                                     <>
                                         {/* ================= BASIC DETAILS ================= */}
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-3">
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
                                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                 Week Off Policy Details
                                             </h4>

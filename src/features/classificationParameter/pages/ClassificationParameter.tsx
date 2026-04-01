@@ -8,7 +8,7 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import { ClassificationParameterFormModal } from '@/features/classificationParameter/components/ClassificationParameterFromModal';
 import { createFormResetHandler } from '@/features/classificationParameter/utils/classificationParameterUtils';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
-import { ClassificationParameterViewModal } from '../components/ClassificationParameterViewModal';
+import { ClassificationParameterViewModal } from '@/features/classificationParameter/components/ClassificationParameterViewModal';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 export const ClassificationParameter: React.FC = () => {
@@ -31,6 +31,7 @@ const { projectId } = useProject();
         viewClassificationParameterDetailsData,
         canExport,
         villageDropdown,
+        dropdownResetKey,
         classificationParameterColumns,
 
         //setters
@@ -43,6 +44,7 @@ const { projectId } = useProject();
         setIsViewModalOpen,
         setViewClassificationParameterDetailsData,
         setVillageValue,
+        setDropdownResetKey,
 
         //Actions
         handlePageChange,
@@ -78,9 +80,9 @@ const { projectId } = useProject();
 
     const handleFormReset = useCallback(
 
-        createFormResetHandler(setIsAddUpdateModalOpen, setEditingClassificationParameterData, setFormData, setErrors,setVillageValue),
+        createFormResetHandler(setIsAddUpdateModalOpen, setEditingClassificationParameterData, setFormData, setErrors,setVillageValue,setDropdownResetKey),
 
-        [setIsAddUpdateModalOpen, setEditingClassificationParameterData, setFormData, setErrors, setVillageValue]
+        [setIsAddUpdateModalOpen, setEditingClassificationParameterData, setFormData, setErrors, setVillageValue,setDropdownResetKey]
 
     );
 
@@ -103,7 +105,7 @@ const { projectId } = useProject();
 
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>
 
@@ -144,6 +146,7 @@ const { projectId } = useProject();
                 editingData={editingClassificationParameterData}
                 loading={isLoading}
                 villageDropdown={villageDropdown}
+                dropdownResetKey={dropdownResetKey}
             />
 
             <DeleteDialog

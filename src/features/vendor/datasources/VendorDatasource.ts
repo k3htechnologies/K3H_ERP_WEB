@@ -51,8 +51,8 @@ export class VendorDatasourceImpl implements VendorDatasource {
 
             console.error('ERROR: PULL VENDOR :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullVendor(params);
+            if (error instanceof TokenExpiredException) {
+                return  await this.pullVendor(params);
             }
 
             throw error
@@ -73,8 +73,8 @@ export class VendorDatasourceImpl implements VendorDatasource {
 
             console.error('ERROR: ADD UPDATE VENDOR :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateVendor(formData);
+            if (error instanceof TokenExpiredException) {
+                return   await this.addUpdateVendor(formData);
             }
             throw error
         }
@@ -97,9 +97,8 @@ export class VendorDatasourceImpl implements VendorDatasource {
 
             console.error('ERROR: DELETE VENDOR :', error)
 
-            if (error === TokenExpiredException) {
-
-                await this.deleteVendor(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.deleteVendor(params);
 
             }
 

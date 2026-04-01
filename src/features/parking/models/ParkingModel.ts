@@ -11,7 +11,7 @@ export interface FilterParkingRequest {
     ParkingSubType?: string
     Dimensions?: string
     SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
+    ExportType?: 'Excel' | 'PDF' | 'SAMPLE'
 }
 
 export interface ParkingData {

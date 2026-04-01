@@ -12,6 +12,7 @@ import type { ModuleData, SubModuleData, SubSubModuleData } from '@/features/men
 import { normalizePath, mapPathToRoute } from '@/core/utils/pathMapper';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
+import { getNameInitials } from '@/core/utils/getNameInitials';
 
 interface SidebarProps {
   isOpen: boolean
@@ -46,6 +47,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   selectedSubModule,
   selectedSubSubModule
 }) => {
+
   const navigate = useNavigate()
   const location = useLocation()
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set())
@@ -148,7 +150,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     ...(modules || []).map(module => ({
       id: `module-${module.ModulesMasterId}`,
       label: module.ModuleName,
-      path:module.Path,
+      path: module.Path,
       icon: renderIcon(module.Icon, <Home className="h-5 w-5" />, { isCollapsed: !isOpen, isActive: expandedItems.has(`module-${module.ModulesMasterId}`) }),
       children: (module.SubModuleData || []).map(subModule => ({
 
@@ -183,9 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleItemClick = (item: MenuItem) => {
     if (item.children && item.children.length > 0) {
 
-      console.log(item.label)
-
-      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard"  || item.path==="payrollDashboard" || item.path==="saleDashboard" || item.path==="legalDashboard") {
+      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard" || item.path === "payrollDashboard" || item.path === "saleDashboard" || item.path === "legalDashboard" || item.path === "channelPartnerDashboard") {
 
         const route = mapPathToRoute(item.path)
 
@@ -199,7 +199,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       }
 
       toggleExpanded(item.id)
-      
+
     } else {
       if (item.path) {
 
@@ -412,6 +412,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
     )
   }
 
+  const emp = LocalStorageHelper.getStoredEmployeeData();
+  
+  const fullName = (emp?.FullName ?? "").trim();
+
+  const initials =  getNameInitials(fullName!.trim())
+
+  const profilePhotoURL = emp?.ProfilePhotoURL;
+
+  const hasProfile =
+    profilePhotoURL &&
+    profilePhotoURL !== "" &&
+    profilePhotoURL !== "—";
   return (
     <>
       {/* Mobile Overlay */}
@@ -438,14 +450,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="flex items-center space-x-3 flex-1">
 
 
-                <div className="w-10 h-10
-                                                                        rounded-full 
-                                                                        bg-gradient-to-br from-blue-200 to-gray-300 
-                                                                        flex items-center justify-center 
-                                                                        text-gray-700 font-bold text-sm
-                                                                        border border-gray-300">
-                  {LocalStorageHelper.getStoredEmployeeData()?.FullName.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
-                </div>
+                {hasProfile ? (
+                  <img
+                    src={profilePhotoURL}
+                    alt={fullName}
+                    className="w-10 h-10 rounded-full object-cover border border-gray-300"
+                    onError={(e) => (e.currentTarget.style.display = "none")}
+                  />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-200 to-gray-300 
+                    flex items-center justify-center text-gray-700 font-bold text-sm border border-gray-300">
+                    {initials}
+                  </div>
+                )}
                 <div className="flex-1 min-w-0">
                   {(() => {
 
@@ -473,14 +490,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
             ) : (
               <div className="flex items-center justify-center w-full">
-                <div className="w-8 h-8
-                                                                        rounded-full 
-                                                                        bg-gradient-to-br from-gray-200 to-gray-300 
-                                                                        flex items-center justify-center 
-                                                                        text-gray-700 font-bold text-sm
-                                                                        border border-gray-300">
-                  {LocalStorageHelper.getStoredEmployeeData()?.FullName.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
-                </div>
+
+                {hasProfile ? (
+                  <img
+                    src={profilePhotoURL}
+                    alt={fullName}
+                    className="w-8 h-8 rounded-full object-cover border border-gray-300"
+                    onError={(e) => (e.currentTarget.style.display = "none")}
+                  />
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 
+                    flex items-center justify-center text-gray-700 font-bold text-sm border border-gray-300">
+                    {initials}
+                  </div>
+                )}
+
               </div>
             )}
 
@@ -551,7 +575,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           setIsConfirmationDialogBoxOpen(false)
         }}
         onConfirm={onLogout}
-        title="You are sure you want to logout?"
+        title="Are you sure you want to logout?"
         message="Are you sure you want to logout from the application? Please save all your work before confirming."
         confirmText="Logout"
         cancelText="Cancel"

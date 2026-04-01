@@ -52,8 +52,9 @@ export class CompanyMasterDatasourceImpl implements CompanyMasterDatasource {
 
             console.error('ERROR: PULL Company MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullCompanyMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.pullCompanyMaster(params);
             }
 
             throw error
@@ -74,8 +75,9 @@ export class CompanyMasterDatasourceImpl implements CompanyMasterDatasource {
 
             console.error('ERROR: ADD UPDATE COMPANY MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateCompanyMaster(formData);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.addUpdateCompanyMaster(formData);
             }
             throw error
         }
@@ -98,9 +100,9 @@ export class CompanyMasterDatasourceImpl implements CompanyMasterDatasource {
 
             console.error('ERROR: DELETE COMPANY MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteCompanyMaster(params);
+                return   await this.deleteCompanyMaster(params);
 
             }
 

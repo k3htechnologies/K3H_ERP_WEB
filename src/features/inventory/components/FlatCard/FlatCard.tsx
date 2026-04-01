@@ -16,9 +16,10 @@ interface FlatCardProps {
     buildingNumber?: string;
     canAction?: boolean;
     canBookingAction?: boolean;
+    approvalStatus?: string;
 }
 
-export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumber, canAction, canBookingAction }: FlatCardProps) => {
+export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumber, canAction, canBookingAction, approvalStatus }: FlatCardProps) => {
     const navigate = useNavigate();
 
     const { updateListState } = useBookingListState();
@@ -44,6 +45,8 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
             state: {
                 "flat": flat,
                 "projectId": projectId,
+                "approvalStatus": approvalStatus
+
             },
         });
     };
@@ -58,7 +61,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
             bookingId: 0,
             bookingName: ""
         });
-        
+
         navigate('/booking/add', {
 
             state: {
@@ -106,7 +109,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
 
     return (
         <div
-            className={`flex flex-col justify-evenly ${flat.FlatStatus === "Available" ? "min-h-[240px]" : "h-[240px]"} w-[260px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`}
+            className={`flex flex-col justify-evenly ${flat.FlatStatus === "Available" ? "min-h-[250px]" : "h-[250px]"} w-[250px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`}
             style={gradientStyle}
         >
             <FieldItem label="Unit No " value={flat.Flat} isRow={true} isUsedForInventoryFlat={true} />
@@ -135,7 +138,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                             <Edit className="cursor-pointer" onClick={handleEdit} size={16} />
                         )}
 
-                        {(flat.FlatStatus === "Available") && (
+                        {(flat.FlatStatus === "Available" && !approvalStatus?.toUpperCase().includes("APPROVED")) && (
                             <Trash onClick={handleDelete} color="red" size={16} />
                         )}
                     </>
@@ -151,7 +154,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
 
             </div>
 
-            {flat.FlatStatus === "Available" && flat.FlatType !== "" && flat.RERACarpetAreaSqFt > 0 && canBookingAction && (
+            {flat.FlatStatus === "Available" && approvalStatus?.toUpperCase() === "APPROVED" && flat.FlatType !== "" && flat.RERACarpetAreaSqFt > 0 && canBookingAction && (
                 <div className="flex items-center justify-center mt-2">
                     <Button
                         onClick={handleBook}
@@ -167,20 +170,18 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
 
             {flat.OwnerName && (flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") ? (
                 <p
-                    className="text-center text-[#135BEC] font-semibold cursor-pointer hover:underline"
+                    className="text-center text-[#135BEC] font-medium text-sm cursor-pointer hover:underline"
                     onClick={handleOwnerNameClick}
                     title="Click to view booking details"
                 >
                     {getOwnerLabel()}{flat.OwnerName}
                 </p>
             ) : flat.FlatStatus === "Blocked" || flat.FlatStatus === "Hold" ? (
-                <p className={`text-center ${colorsForFlatComponent[flat.FlatStatus].buttonText}`}>
-                    {flat.FlatStatus} by {flat.CreatedBy} on {formatDate_dd_MonthName_yy_hh_mm(flat.CreatedDate ?? "-")}
+                <p className={`text-center font-medium text-sm ${colorsForFlatComponent[flat.FlatStatus].buttonText}`}>
+                    {flat.FlatStatus} by {flat.ModifiedBy} on {formatDate_dd_MonthName_yy_hh_mm(flat.ModifiedDate ?? "-")}
                 </p>
             ) : (
-                <p className="text-center text-[#135BEC] font-semibold">
-
-                </p>
+                null
             )}
 
 

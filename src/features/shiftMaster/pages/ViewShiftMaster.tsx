@@ -95,7 +95,7 @@ const ViewShiftMaster: React.FC = () => {
                 }}
                 isLoading={isLoading}
             />
-            
+
             {editShiftMasterData && (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
 
@@ -191,17 +191,26 @@ const ViewShiftMaster: React.FC = () => {
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Time Allowed for Late Entry Details
                             </h4>
+
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                <div className="lg:col-span-3">
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                         <FieldItem label="Grace Time In Minutes" value={editShiftMasterData!.GraceTime} />
-                                         <FieldItem label="Late Arrival Action" value={editShiftMasterData!.LateArrivalAction} />
-                                          <FieldItem label="Late Arrival Count" value={editShiftMasterData!.LateCount} />
+                                        <FieldItem label="Late Arrival Action" value={editShiftMasterData!.LateArrivalAction} />
+                                    </div>
+                                </div>
+
+
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                        <FieldItem label="Late Arrival Count" value={editShiftMasterData!.LateCount} />
 
                                     </div>
                                 </div>
                             </div>
+
                         </section>
 
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">

@@ -29,11 +29,11 @@ export class DeductionMasterDatasourceImpl implements DeductionMasterDatasource 
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
                 DeductionMasterId: (params.DeductionMasterId ?? 0).toString(),
-                Name:params.Name?? '',
-                SortBy:params.SortBy?? '',
+                Name: params.Name ?? '',
+                SortBy: params.SortBy ?? '',
                 ExportType: params.ExportType ?? ''
 
-             })
+            })
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${DeductionMasterApi.PULL}?${queryParams.toString()}`, { signal }
@@ -43,8 +43,9 @@ export class DeductionMasterDatasourceImpl implements DeductionMasterDatasource 
 
             console.error('ERROR: PULL DEDUCTION MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullDeductionMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullDeductionMaster(params);
             }
 
             throw error
@@ -64,8 +65,9 @@ export class DeductionMasterDatasourceImpl implements DeductionMasterDatasource 
 
             console.error('ERROR: ADD UPDATE DEDUCTION MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateDeductionMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateDeductionMaster(params);
             }
             throw error
         }
@@ -88,9 +90,9 @@ export class DeductionMasterDatasourceImpl implements DeductionMasterDatasource 
 
             console.error('ERROR: DELETE DEDUCTION MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteDeductionMaster(params);
+                return await this.deleteDeductionMaster(params);
 
             }
 

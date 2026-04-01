@@ -43,8 +43,9 @@ export class LeaveTypeMasterDatasourceImpl implements LeaveTypeMasterDatasource 
 
             console.error('ERROR: PULL LEAVE TYPE MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullLeaveTypeMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullLeaveTypeMaster(params);
             }
 
             throw error
@@ -65,8 +66,9 @@ export class LeaveTypeMasterDatasourceImpl implements LeaveTypeMasterDatasource 
 
             console.error('ERROR: ADD UPDATE LEAVE TYPE MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateLeaveTypeMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.addUpdateLeaveTypeMaster(params);
             }
             throw error
         }
@@ -89,9 +91,9 @@ export class LeaveTypeMasterDatasourceImpl implements LeaveTypeMasterDatasource 
 
             console.error('ERROR: DELETE LEAVE TYPE MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteLeaveTypeMaster(params);
+                return  await this.deleteLeaveTypeMaster(params);
 
             }
 

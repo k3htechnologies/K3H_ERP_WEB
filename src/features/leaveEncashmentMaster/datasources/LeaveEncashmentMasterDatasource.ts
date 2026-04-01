@@ -43,8 +43,9 @@ export class LeaveEncashmentMasterDatasourceImpl implements LeaveEncashmentMaste
 
             console.error('ERROR: PULL LEAVE ENCASHMENT MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullLeaveEncashmentMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullLeaveEncashmentMaster(params);
             }
 
             throw error
@@ -64,8 +65,9 @@ export class LeaveEncashmentMasterDatasourceImpl implements LeaveEncashmentMaste
 
             console.error('ERROR: ADD UPDATE LEAVE ENCASHMENT MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateLeaveEncashmentMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateLeaveEncashmentMaster(params);
             }
             throw error
         }
@@ -88,9 +90,9 @@ export class LeaveEncashmentMasterDatasourceImpl implements LeaveEncashmentMaste
 
             console.error('ERROR: DELETE LEAVE ENCASHMENT MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteLeaveEncashmentMaster(params);
+                return await this.deleteLeaveEncashmentMaster(params);
 
             }
 

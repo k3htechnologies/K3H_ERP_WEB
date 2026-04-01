@@ -410,6 +410,9 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
             {/* BASIC DETAILS */}
             <section className="p-4">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Basic Details
+              </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FieldItem label="CP Code" value={channelPartnerSystemGeneratedCode || '-'} />
                 <FieldItem label="Full Name" value={channelPartnerFullName || '-'} />
@@ -584,7 +587,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                                 color="transparent"
                                 isborderRadius
                                 size="sm"
-                                style={{ color: "blue", padding: "4px 8px" }}
                                 title="Edit"
                                 onClick={() => handleOpenRemarkModal(item)}
                                 disabled={isLoading}
@@ -658,10 +660,8 @@ const ViewChannelPartnerSourcing: React.FC = () => {
         loading={isLoading}
         size="xl"
       >
-        <div className="space-y-6 p-6 bg-blue-100">
-
+        <div className="space-y-4 p-6 bg-blue-100">
           <div className="flex gap-3">
-
             <RadioPill
               name="IBM_OBM"
               label="IBM"
@@ -687,16 +687,17 @@ const ViewChannelPartnerSourcing: React.FC = () => {
             />
 
           </div>
-          <TextArea
-            label="Remark"
-            placeholder="Enter Remark"
-            required
-            className='thin-scroll'
-            value={formData.SourcingRemark}
-            onChange={(e) => handleFieldChange("SourcingRemark", e.target.value)}
-            error={errors.SourcingRemark} />
-
-          <div>
+          
+            <TextArea
+              label="Remark"
+              placeholder="Enter Remark"
+              required
+              className='thin-scroll'
+              value={formData.SourcingRemark}
+              onChange={(e) => handleFieldChange("SourcingRemark", e.target.value)}
+              error={errors.SourcingRemark} />
+         
+          
 
             <SinglePageSelection
               label='Support'
@@ -709,8 +710,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
               options={SUPPORT_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
 
-
-          </div>
         </div>
       </Modal>
 

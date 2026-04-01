@@ -40,6 +40,7 @@ import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/
 import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
 import ApprovalActions from '@/features/modulesWorkflowApproval/components/ApprovalActionsButton';
 import { hasAnyDocumentFile } from '@/core/utils/fileValidation';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
 
 
 const initialFormState = (): AddUpdateApprovalDocumentRequest => ({
@@ -128,6 +129,7 @@ const ApprovalDocument: React.FC = () => {
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
   const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+  const [approvalDocumentCategory, setApprovalDocumentCategory] = useState<string | null>("");
 
   // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -480,7 +482,7 @@ const ApprovalDocument: React.FC = () => {
         }
       },
       {
-        key: 'actions',
+        key: 'Actions',
         label: 'Actions',
         width: '12',
         fixed: 'right',
@@ -492,71 +494,80 @@ const ApprovalDocument: React.FC = () => {
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
 
-
-              {/* SLOT 1: ADD */}
-
               <div className="w-[34px] flex justify-center">
 
-                {showEdit ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleAddDocumentDetailsModal(row)
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Add"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (!showEdit) return;
+                    handleAddDocumentDetailsModal(row)
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showEdit}
+                  size="sm"
+                  title="Add"
+                  style={{
+                    color: showEdit ? '' : '#9CA3AF',
+                    cursor: showEdit ? 'pointer' : 'not-allowed',
+                    opacity: showEdit ? 1 : 0.5
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+
               </div>
 
               <div className="w-[34px] flex justify-center">
 
-                {showEdit ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleEditApprovalDocument(row)
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Edit"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (!showEdit) return;
+                    handleEditApprovalDocument(row)
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showEdit}
+                  size="sm"
+                  title="Edit"
+                  style={{
+                    color: showEdit ? '' : '#9CA3AF',
+                    cursor: showEdit ? 'pointer' : 'not-allowed',
+                    opacity: showEdit ? 1 : 0.5
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+
               </div>
 
               {/* SLOT 3: DELETE */}
               <div className="w-[34px] flex justify-center">
-                {showDelete ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      handleConfirmationDialogBoxOpen(row)
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    style={{ color: 'red' }}
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    if (!showDelete) return;
+                    handleConfirmationDialogBoxOpen(row)
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showDelete}
+                  size="sm"
+                  style={{
+                    color: showDelete ? 'red' : '#9CA3AF',
+                    cursor: showDelete ? 'pointer' : 'not-allowed',
+                    opacity: showDelete ? 1 : 0.5
+                  }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+
               </div>
 
             </div>
@@ -579,7 +590,8 @@ const ApprovalDocument: React.FC = () => {
       Id: row.ApprovalDocumentId,
       ProjectId: row.ProjectId,
     };
-    setApprovalDocumentName(row.ApprovalDocumentName)
+    setApprovalDocumentName(row.ApprovalDocumentName);
+    setApprovalDocumentCategory(row.ApprovalDocumentCategory);
     setApprovalLogRequest(request);
     setIsApprovalLogModalOpen(true);
   };
@@ -587,6 +599,8 @@ const ApprovalDocument: React.FC = () => {
   const handleApproveRejectDocument = (row: ApprovalDocumentData, approvalType: "approve" | "reject") => {
 
     setApprovalRowData(row);
+    setApprovalDocumentName(row.ApprovalDocumentName);
+    setApprovalDocumentCategory(row.ApprovalDocumentCategory);
     setApprovalActionType(approvalType);
     setIsApprovalActionModalOpen(true);
 
@@ -620,7 +634,7 @@ const ApprovalDocument: React.FC = () => {
         label: 'Expiry Date',
         width: '18',
         sortable: false,
-        align: 'left',
+        align: 'center',
         render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
       },
       {
@@ -628,7 +642,7 @@ const ApprovalDocument: React.FC = () => {
         label: 'Status',
         width: '18',
         sortable: false,
-        align: 'left',
+        align: 'center',
         render: (value) => {
           const statusClass = getDocumentStatusColor(value);
 
@@ -638,7 +652,7 @@ const ApprovalDocument: React.FC = () => {
               maxWidth="180px"
               tooltipThreshold={18}
               isApplyBgTextColor
-              tooltipClassName={`inline-block px-2 py-1 rounded-full text-sm font-medium ${statusClass} overflow-hidden text-ellipsis whitespace-nowrap`}
+              tooltipClassName={`inline-block px-2 py-1 rounded-full text-xs font-medium ${statusClass} overflow-hidden text-ellipsis whitespace-nowrap`}
             />
           );
         },
@@ -693,7 +707,7 @@ const ApprovalDocument: React.FC = () => {
         label: 'Last Modified Date',
         width: '33',
         sortable: false,
-        align: 'left',
+        align: 'center',
         render: (value, row) =>
           value
             ? formatDate_dd_MonthName_yy(value)
@@ -708,50 +722,59 @@ const ApprovalDocument: React.FC = () => {
         align: 'center',
         fixed: 'right',
         render: (_value, row) => {
-          const showEdit = canAction && row.ApprovalDocumentApprovalStatus !== "Approved" ? true : false;
+          const showEdit = canAction && !row.ApprovalDocumentApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
+
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
               {/* RIGHT SIDE — Fixed Edit Button */}
               <div className="flex-shrink-0 ml-2">
-                {showEdit ? (
-                  <Button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleEditApprovalDocumentDetails(row);
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Edit"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!showEdit) return;
+                    handleEditApprovalDocumentDetails(row);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showEdit}
+                  size="sm"
+                  title="Edit"
+                  style={{
+                    color: showEdit ? '' : '#9CA3AF',
+                    cursor: showEdit ? 'pointer' : 'not-allowed',
+                    opacity: showEdit ? 1 : 0.5
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+
               </div>
 
               <div className="w-[34px] flex justify-center">
-                {showEdit ? (
+                
                   <Button
                     onClick={(e) => {
                       e.preventDefault()
                       e.stopPropagation()
+                      if (!showEdit) return;
                       handleConfirmationDialogBoxOpen(row)
                     }}
                     color="transparent"
                     isborderRadius
+                    disabled={!showEdit}
                     size="sm"
-                    style={{ color: 'red' }}
+                    style={{
+                      color: showEdit ? 'red' : '#9CA3AF',
+                      cursor: showEdit ? 'pointer' : 'not-allowed',
+                      opacity: showEdit ? 1 : 0.5
+                    }}
                     title="Delete"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+                
               </div>
 
             </div>
@@ -1304,81 +1327,81 @@ const ApprovalDocument: React.FC = () => {
         />
       )}
 
+      <div className={`${approvalDocumentTabList.length > 0 ? 'pt-5' : ''}`}>
+        <DataTableExpandable
+          ref={dtRef}
+          data={approvalDocumentListForTable}
+          columns={approvalDocumentColumns}
+          pagination={approvalDocumentPaginationInfo}
+          sortInfo={sortInfo}
+          onSort={handleSortColumn}
+          emptyMessage='No Approval Document Data Found'
+          loading={isLoading}
+          fixedHeight
+          recordsPerPage={20}
+          expandable={{
 
-      <DataTableExpandable
-        ref={dtRef}
-        data={approvalDocumentListForTable}
-        columns={approvalDocumentColumns}
-        pagination={approvalDocumentPaginationInfo}
-        sortInfo={sortInfo}
-        onSort={handleSortColumn}
-        emptyMessage='No Approval Document Data Found'
-        loading={isLoading}
-        fixedHeight
-        recordsPerPage={20}
-        expandable={{
+            keyField: 'ApprovalDocumentId',
+            alwaysFetchOnOpen: true,
+            fetchRow: async (row) => {
 
-          keyField: 'ApprovalDocumentId',
-          alwaysFetchOnOpen: true,
-          fetchRow: async (row) => {
+              setExpandedParentRow(row);
+              setExpandedParentId(row.ApprovalDocumentId);
 
-            setExpandedParentRow(row);
-            setExpandedParentId(row.ApprovalDocumentId);
-
-            const params: FilterWithPaginationApprovalDocument = {
-              PageNumber: 1,
-              PageSize: pagination.pageSize,
-              ProjectId: Number(row.ProjectId),
-              ApprovalDocumentId: Number(row.ApprovalDocumentId),
-              ApprovalDocumentName: row.ApprovalDocumentName,
-              ApprovalDocumentStatus: row.ApprovalDocumentStatus,
-              ApprovalDocumentCategory: row.ApprovalDocumentCategory,
-              ApprovalDocumentCategoryId: row.ApprovalDocumentCategoryId
-            };
-
-
-            const response = await approvalDocumentService.apiCallPullApprovalDocument(params);
-
-            if (E.isRight(response)) {
-
-              return response.right.Data ?? [];
-            }
-            return [];
-
-          },
+              const params: FilterWithPaginationApprovalDocument = {
+                PageNumber: 1,
+                PageSize: pagination.pageSize,
+                ProjectId: Number(row.ProjectId),
+                ApprovalDocumentId: Number(row.ApprovalDocumentId),
+                ApprovalDocumentName: row.ApprovalDocumentName,
+                ApprovalDocumentStatus: row.ApprovalDocumentStatus,
+                ApprovalDocumentCategory: row.ApprovalDocumentCategory,
+                ApprovalDocumentCategoryId: row.ApprovalDocumentCategoryId
+              };
 
 
-          renderRow: (fetchedData) => {
+              const response = await approvalDocumentService.apiCallPullApprovalDocument(params);
 
-            const details: ApprovalDocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
-            if (!details || details.length === 0) {
+              if (E.isRight(response)) {
+
+                return response.right.Data ?? [];
+              }
+              return [];
+
+            },
+
+
+            renderRow: (fetchedData) => {
+
+              const details: ApprovalDocumentData[] = Array.isArray(fetchedData) ? fetchedData : (fetchedData ? [fetchedData] : []);
+              if (!details || details.length === 0) {
+
+                return (
+                  <div className="p-1 text-xs text-gray-600 text-center">
+                    <NoDataView />
+                  </div>
+                );
+              }
 
               return (
-                <div className="p-1 text-xs text-gray-600 text-center">
-                  No Document Found.
-                </div>
+                <DataTableWithOutBorder
+                  data={details}
+                  columns={approvalDocumentDetailsColumns}
+                  emptyMessage="No Approval Document Data Found"
+                  fixedHeight={true}
+                  recordsPerPage={20}
+                  className="flex-1"
+                  sortInfo={sortInfo}
+                  onSort={handleSortColumn}
+                  loading={isLoading}
+                />
               );
-            }
+            },
 
-            return (
-              <DataTableWithOutBorder
-                data={details}
-                columns={approvalDocumentDetailsColumns}
-                emptyMessage="No Approval Document Data Found"
-                fixedHeight={true}
-                recordsPerPage={20}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-                loading={isLoading}
-              />
-            );
-          },
-
-          expandButton: { openText: 'Hide', closeText: 'Show' }
-        }}
-      />
-
+            expandButton: { openText: 'Hide', closeText: 'Show' }
+          }}
+        />
+      </div>
 
       {/*  ADD EDIT UPDATE DOCUMENT */}
       <Modal
@@ -1444,69 +1467,63 @@ const ApprovalDocument: React.FC = () => {
         loading={isLoading}
         size='xl'
       >
-        <div className="space-y-10 p-6 bg-blue-100">
-          <div className="space-y-4" >
+        <div className="space-y-4 p-6 bg-blue-100">
+          {editingDocumentData ?
             <div>
-              {editingDocumentData ?
-                <Input
-                  label='Document'
-                  required
-                  readOnly
-                  type="text"
-                  value={formData.ApprovalDocumentName}
-                  maxLength={250}
-                  placeholder="Enter Document"
-                />
-                : ""}
-
-            </div>
-            <div>
-              <SinglePageSelection
-                label="Status"
-                placeholder='Select Status'
+              <Input
+                label='Document'
                 required
-                value={formData.ApprovalDocumentStatus}
-                onChange={(e) => handleFieldChange('ApprovalDocumentStatus', String(e))}
-                options={PROJECT_DOCUMENT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                error={errors.ApprovalDocumentStatus}
+                disabled
+                type="text"
+                value={formData.ApprovalDocumentName}
+                maxLength={250}
+                placeholder="Enter Document"
               />
             </div>
-            <div>
-              <MultiFilePicker
-                label="Files"
-                placeholder='Select Files'
-                required={formData.ApprovalDocumentStatus?.toUpperCase() === "ISSUED" ? true : false}
-                value={approvalDocumentFiles}
-                onChange={setApprovalDocumentFiles}
-                availableFilesURL={approvalDocumentURL ?? ""}
-                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                maxFiles={5}
-                maxSizeMB={10}
-                error={errors.ApprovalDocumentURL}
-                onRemoveExisting={(url) => {
-                  setRemoveApprovalDocumentUrls((prev) => [...prev, url])
-                }}
-              />
-            </div>
-            <div>
-              <DatePickerInput
-                label="Expiry Date"
-                value={formatDate_dd_mm_yyyy(formData.ApprovalDocumentExpiryDate)}
-                onChange={(val) => handleFieldChange('ApprovalDocumentExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-              />
-            </div>
-            <div>
-              <TextArea
-                label="Remark"
-                placeholder="Enter Remark"
-                className='thin-scroll'
-                value={formData.ApprovalDocumentRemark}
-                onChange={(e) => handleFieldChange("ApprovalDocumentRemark", e.target.value)}
-                error={errors.ApprovalDocumentRemark} />
-
-
-            </div>
-
+            : ""}
+          <div>
+            <SinglePageSelection
+              label="Status"
+              placeholder='Select Status'
+              required
+              value={formData.ApprovalDocumentStatus}
+              onChange={(e) => handleFieldChange('ApprovalDocumentStatus', String(e))}
+              options={PROJECT_DOCUMENT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
+              error={errors.ApprovalDocumentStatus}
+            />
+          </div>
+          <div>
+            <MultiFilePicker
+              label="Files"
+              placeholder='Select Files'
+              required={formData.ApprovalDocumentStatus?.toUpperCase() === "ISSUED" ? true : false}
+              value={approvalDocumentFiles}
+              onChange={setApprovalDocumentFiles}
+              availableFilesURL={approvalDocumentURL ?? ""}
+              allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+              maxFiles={5}
+              maxSizeMB={10}
+              error={errors.ApprovalDocumentURL}
+              onRemoveExisting={(url) => {
+                setRemoveApprovalDocumentUrls((prev) => [...prev, url])
+              }}
+            />
+          </div>
+          <div>
+            <DatePickerInput
+              label="Expiry Date"
+              value={formatDate_dd_mm_yyyy(formData.ApprovalDocumentExpiryDate)}
+              onChange={(val) => handleFieldChange('ApprovalDocumentExpiryDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+            />
+          </div>
+          <div>
+            <TextArea
+              label="Remark"
+              placeholder="Enter Remark"
+              className='thin-scroll'
+              value={formData.ApprovalDocumentRemark}
+              onChange={(e) => handleFieldChange("ApprovalDocumentRemark", e.target.value)}
+              error={errors.ApprovalDocumentRemark} />
           </div>
         </div>
 
@@ -1534,7 +1551,9 @@ const ApprovalDocument: React.FC = () => {
 
       <ApprovalLogModal
         isOpen={isApprovalLogModalOpen}
-        documentName={approvalDocumentName ?? ""}
+        title='Approval Document'
+        titleText={approvalDocumentCategory ?? ""}
+        subTitleText={approvalDocumentName ?? ""}
         onClose={() => setIsApprovalLogModalOpen(false)}
         request={approvalLogRequest} />
 
@@ -1543,7 +1562,8 @@ const ApprovalDocument: React.FC = () => {
         isOpen={isApprovalActionModalOpen}
         onClose={() => setIsApprovalActionModalOpen(false)}
         actionType={approvalActionType}
-        documentName={approvalRowData?.ApprovalDocumentName ?? ""}
+        titleText={approvalDocumentCategory ?? ""}
+        subTitleText={approvalDocumentName ?? ""}
         onSubmit={handleApprovalSubmit}
         loading={isLoading}
       />

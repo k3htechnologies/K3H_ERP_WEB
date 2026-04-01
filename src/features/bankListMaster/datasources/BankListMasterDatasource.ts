@@ -38,8 +38,9 @@ export class BankListMasterDatasourceImpl implements BankListMasterDatasource {
 
             console.error('ERROR: PULL BANK LIST MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullBankListMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullBankListMaster(params);
             }
 
             throw error

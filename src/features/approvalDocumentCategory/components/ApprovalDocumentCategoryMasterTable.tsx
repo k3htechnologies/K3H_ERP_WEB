@@ -30,32 +30,42 @@ export const ApprovalDocumentCategoryMasterTable: React.FC<ApprovalDocumentCateg
 }) => {
   const tableColumns = useMemo<TableColumn[]>(() => {
     return columns.map(col => {
-      if (col.key === 'Actions') {
+ if (col.key === 'Actions') {
         return {
           ...col,
-          render: (_value, row: ApprovalDocumentCategoryMasterData) => (
-            canAction && !(row as any).DocumentCount ? (
+          render: (_value, row: ApprovalDocumentCategoryMasterData) => {
+            const isDisabled = !canAction || (row as any).DocumentCount > 0;
+
+            return canAction ? (
               <div className="flex items-center justify-center gap-2">
                 <Button
                   onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onDelete(row)
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (isDisabled) return;
+                    onDelete(row);
                   }}
-                  color='transparent'
+                  color="transparent"
                   isborderRadius
-                  size='sm'
+                  disabled={isDisabled}
+                  size="sm"
                   style={{
-                    color: 'red',
-                    padding: '4px 8px'
+                    color: isDisabled ? '#9CA3AF' : 'red',
+                    padding: '4px 8px',
+                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                    opacity: isDisabled ? 0.5 : 1
                   }}
-                  title="Delete Approval Document Category"
+                  title={
+                    (row as any).DocumentCount > 0
+                      ? "Cannot delete: Approval Document exist"
+                      : "Delete Project Approval Document Category"
+                  }
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-            ) : null
-          )
+            ) : null;
+          }
         };
       }
 

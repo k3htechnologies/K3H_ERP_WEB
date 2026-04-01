@@ -291,6 +291,7 @@ export const PaymentScheduleMaster: React.FC = () => {
             const newRecord = response.right.Data[0] as PaymentScheduleMasterData;
 
             setPaymentScheduleMasterList((prevData) => [newRecord, ...prevData]);
+
             setPagination({
               currentPage: pagination.currentPage,
               totalRecords: pagination.totalRecords + 1,
@@ -375,39 +376,46 @@ export const PaymentScheduleMaster: React.FC = () => {
         align: "center",
         render: (_value, row) => (
           <div className="flex items-center justify-center">
-            {canAction && (
-              <>
-                <Button
-                  color="transparent"
-                  size="sm"
-                  style={{
-                    color: "blue",
-                    padding: "0px 8px",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleEditPaymentScheduleMaster(row);
-                  }}
-                  leftIcon={<Edit className="h-4 w-4" />}
-                />
 
-                <Button
-                  color="transparent"
-                  size="sm"
-                  style={{
-                    color: "red",
-                    padding: "0px 8px",
-                  }}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleConfirmationDialogBoxOpen(row);
-                  }}
-                  leftIcon={<Trash2 className="h-4 w-4" />}
-                />
-              </>
-            )}
+            <Button
+              color="transparent"
+              size="sm"
+              style={{
+                color: canAction ? '' : '#9CA3AF',
+                padding: '4px 8px',
+                cursor: canAction ? 'pointer' : 'not-allowed',
+                opacity: canAction ? 1 : 0.5
+              }}
+
+              disabled={!canAction}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!canAction) return;
+                handleEditPaymentScheduleMaster(row);
+              }}
+              leftIcon={<Edit className="h-4 w-4" />}
+            />
+
+            <Button
+              color="transparent"
+              size="sm"
+              style={{
+                color: canAction ? 'red' : '#9CA3AF',
+                padding: '4px 8px',
+                cursor: canAction ? 'pointer' : 'not-allowed',
+                opacity: canAction ? 1 : 0.5
+              }}
+              disabled={!canAction}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!canAction) return;
+                handleConfirmationDialogBoxOpen(row);
+              }}
+              leftIcon={<Trash2 className="h-4 w-4" />}
+            />
+
           </div>
         ),
       },
@@ -461,9 +469,11 @@ export const PaymentScheduleMaster: React.FC = () => {
           if (pagination.currentPage > newTotalPages) {
 
             pageToShow = newTotalPages;
-          } else if (PaymentScheduleMasterList.length === 1 && pagination.currentPage > 1) {
+          }
+          else if (PaymentScheduleMasterList.length === 1 && pagination.currentPage > 1) {
             pageToShow = pagination.currentPage - 1;
           }
+
           setPagination({
             currentPage: pageToShow,
             totalRecords: newTotalRecords,
@@ -504,135 +514,139 @@ export const PaymentScheduleMaster: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <Loader loading={isLoading} title={loadingMessage}>
-        {" "}
-        <div />{" "}
-      </Loader>
+      <Loader loading={isLoading} title={loadingMessage}> {" "} <div />{" "} </Loader>
 
       <div className="p-4">
-        <div className="grid grid-cols-3 gap-4">
-          <div>
-            <SingleSelectDropdownWithPagination
-              key={projectId}
-              label="Payment Schedule Scheme"
-              title="Select Payment Schedule Scheme"
-              size="lg"
-              dataFetchCallBack={fetchPaymentScheduleSchemeMaster()}
-              onSelected={(item) => {
-                if (!item) {
-                  setFormData((prev) => ({
-                    ...prev,
-                    InventoryBuildingId: 0,
-                    InventoryFlatFloorBasementPodiumWingId: 0,
-                    PaymentScheduleSchemeMasterId: 0,
-                  }));
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
 
-                  handleFieldChange("PaymentScheduleSchemeMasterId", 0);
 
-                  setBuildingName("");
-                  setWingName("");
-
-                  setPaymentScheduleMasterList([]);
-
-                  return;
-                }
-
-                const schemeId = Number(item?.value);
-                const buildingId = item?.inventoryBuildingId;
-                const wingId = item?.inventoryFlatFloorBasementPodiumWingId;
-
+          <SingleSelectDropdownWithPagination
+            key={projectId}
+            label="Payment Schedule Scheme"
+            title="Select Payment Schedule Scheme"
+            size="lg"
+            dataFetchCallBack={fetchPaymentScheduleSchemeMaster()}
+            onSelected={(item) => {
+              if (!item) {
                 setFormData((prev) => ({
                   ...prev,
-                  InventoryBuildingId: buildingId ?? 0,
-                  InventoryFlatFloorBasementPodiumWingId: wingId ?? 0,
-                  PaymentScheduleSchemeMasterId: schemeId,
+                  InventoryBuildingId: 0,
+                  InventoryFlatFloorBasementPodiumWingId: 0,
+                  PaymentScheduleSchemeMasterId: 0,
                 }));
 
-                setBuildingName(item?.buildingName || "");
-                setWingName(item?.wingName || "");
+                handleFieldChange("PaymentScheduleSchemeMasterId", 0);
 
-                handleFieldChange("PaymentScheduleSchemeMasterId", schemeId);
+                setBuildingName("");
+                setWingName("");
 
                 setPaymentScheduleMasterList([]);
 
-                loadPaymentScheduleMaster(1, {}, undefined, schemeId, buildingId, wingId);
-              }}
-              error={errors.PaymentScheduleSchemeMasterId}
-            />
-          </div>
-        </div>
-      </div>
-      {Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
-        <div className="p-4">
-          <div className="space-y-4 p-4  bg-blue-50 rounded-lg border border-blue-200">
-            <div className="grid grid-cols-1 md:grid-cols-3">
-              <FieldItem label="Building" value={buildingName || "-"} />
-              <FieldItem label="Wing" value={wingName || "-"} />
-              <FieldItem
-                label="Total"
-                value={
-                  <div className="flex items-center">
-                    <span className={`font-bold ${totalPercentage === 100 ? "text-green-600" : "text-red-600"}`}>
-                      {totalPercentage.toFixed(2)}%
-                    </span>
+                return;
+              }
 
-                    {totalPercentage !== 100 && (
-                      <span className="text-xs text-red-600 ml-2">
-                        {totalPercentage < 100
-                          ? `Missing ${(100 - totalPercentage).toFixed(2)}%`
-                          : `Exceeds ${(totalPercentage - 100).toFixed(2)}%`}
+              const schemeId = Number(item?.value);
+              const buildingId = item?.inventoryBuildingId;
+              const wingId = item?.inventoryFlatFloorBasementPodiumWingId;
+
+              setFormData((prev) => ({
+                ...prev,
+                InventoryBuildingId: buildingId ?? 0,
+                InventoryFlatFloorBasementPodiumWingId: wingId ?? 0,
+                PaymentScheduleSchemeMasterId: schemeId,
+              }));
+
+              setBuildingName(item?.buildingName || "");
+              setWingName(item?.wingName || "");
+
+              handleFieldChange("PaymentScheduleSchemeMasterId", schemeId);
+
+              setPaymentScheduleMasterList([]);
+
+              loadPaymentScheduleMaster(1, {}, undefined, schemeId, buildingId, wingId);
+            }}
+            error={errors.PaymentScheduleSchemeMasterId}
+          />
+
+
+          {Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
+            <div className="col-span-3 border border-blue-200 rounded-lg pl-4 pr-4 pt-2 pb-2 bg-blue-50">
+
+              <div className="grid grid-cols-1 md:grid-cols-3">
+
+                <FieldItem label="Building" value={buildingName || "-"} />
+
+                <FieldItem label="Wing" value={wingName || "-"} />
+
+                <FieldItem
+                  label="Total" value={
+                    <div className="flex items-center">
+                      <span
+                        className={`font-bold ${totalPercentage === 100 ? "text-green-600" : "text-red-600"
+                          }`}
+                      >
+                        {totalPercentage.toFixed(2)}%
                       </span>
-                    )}
-                  </div>
-                }
-              />
-            </div>
-          </div>
-        </div>
-      )}
-      {/* TOTAL SUMMARY */}
-      <div className="space-y-4 p-4 pb-5">
-        <div className="flex items-center justify-between border-b border-gray-300 pb-2">
-          <div className="flex items-center gap-30">
-            <h3 className="text-lg font-semibold text-gray-900">Payment Schedule List</h3>
-          </div>
 
-          {canAction && totalPercentage < 100 && Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
-            <Button
-              onClick={() => {
-                setEditingPaymentScheduleMasterData(null);
-                setFormData((prev) => ({
-                  ...initialFormState(),
-                  PaymentScheduleSchemeMasterId: prev.PaymentScheduleSchemeMasterId,
-                  InventoryBuildingId: prev.InventoryBuildingId,
-                  InventoryFlatFloorBasementPodiumWingId: prev.InventoryFlatFloorBasementPodiumWingId,
-                  ProjectId: Number(projectId),
-                }));
-                setErrors({});
-                setIsAddUpdateModalOpen(true);
-              }}
-              color="blue"
-              variant="solid"
-              colorMode="extraLight"
-              style={{ width: "35px", height: "35px" }}
-              centerIcon={<Plus className="h-4 w-4" />}
-            />
+                      {totalPercentage !== 100 && (
+                        <span className="text-xs text-red-600 ml-2">
+                          {totalPercentage < 100
+                            ? `Missing ${(100 - totalPercentage).toFixed(2)}%`
+                            : `Exceeds ${(totalPercentage - 100).toFixed(2)}%`}
+                        </span>
+                      )}
+                    </div>
+                  }
+                />
+
+              </div>
+
+            </div>
           )}
         </div>
+        {/* TOTAL SUMMARY */}
+        <div className="space-y-4 pt-5">
+          <div className="flex items-center justify-between border-b border-gray-300 pb-2">
+            <div className="flex items-center gap-30">
+              <h3 className="text-lg font-semibold text-gray-900">Payment Schedule List</h3>
+            </div>
 
-        {/* DATA TABLE */}
+            {canAction && totalPercentage < 100 && Number(formData.PaymentScheduleSchemeMasterId) > 0 && (
+              <Button
+                onClick={() => {
+                  setEditingPaymentScheduleMasterData(null);
+                  setFormData((prev) => ({
+                    ...initialFormState(),
+                    PaymentScheduleSchemeMasterId: prev.PaymentScheduleSchemeMasterId,
+                    InventoryBuildingId: prev.InventoryBuildingId,
+                    InventoryFlatFloorBasementPodiumWingId: prev.InventoryFlatFloorBasementPodiumWingId,
+                    ProjectId: Number(projectId),
+                  }));
+                  setErrors({});
+                  setIsAddUpdateModalOpen(true);
+                }}
+                color="blue"
+                variant="solid"
+                colorMode="extraLight"
+                style={{ width: "35px", height: "35px" }}
+                centerIcon={<Plus className="h-4 w-4" />}
+              />
+            )}
+          </div>
 
-        <DataTable
-          data={PaymentScheduleMasterForTable}
-          columns={PaymentScheduleMasterColumns}
-          pagination={PaymentScheduleMasterPaginationInfo}
-          emptyMessage="No Payment Schedule Data Found"
-          fixedHeight={true}
-          recordsPerPage={20}
-          className="flex-1"
-        />
+          {/* DATA TABLE */}
+
+          <DataTable
+            data={PaymentScheduleMasterForTable}
+            columns={PaymentScheduleMasterColumns}
+            pagination={PaymentScheduleMasterPaginationInfo}
+            emptyMessage="No Payment Schedule Data Found"
+            fixedHeight={true}
+            recordsPerPage={20}
+            className="flex-1"
+          />
+        </div>
       </div>
-
       {/*ADD UPDATE MODAL */}
 
       <Modal
@@ -702,6 +716,7 @@ export const PaymentScheduleMaster: React.FC = () => {
                     handleFieldChange("PaymentSchedulePercentage", percentageValue);
 
                     const percentage = Number(percentageValue || 0);
+
                     const newTotal = calculateCumulative(percentage);
 
                     if (newTotal > 100) {

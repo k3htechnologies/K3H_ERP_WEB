@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { ChannelPartnerData } from "../models/ChannelPartnerModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useChannelPartnerListState } from "../context/ChannelPartnerListStateContext";
@@ -13,6 +13,7 @@ import { Loader } from "@/core/utils/loader";
 import type { FilterWithPaginationChannelPartnerRequest } from "../models/ChannelPartnerModel";
 import { ChannelPartnerService } from "../services/ChannelPartnerService";
 import { Mail, Phone } from "lucide-react";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const ViewChannelPartner: React.FC = () => {
 
@@ -181,6 +182,9 @@ const ViewChannelPartner: React.FC = () => {
 
                         {/* Basic Deatils */}
                         <section className="p-4">
+                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Basic Details
+                            </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 ">
                                 <FieldItem label="Mobile No:" value={editChannelPartnerData?.MobileNumber ? `+91 ${editChannelPartnerData?.MobileNumber}` : '-'} />
                                 <FieldItem label="E-Mail ID" value={editChannelPartnerData?.EmailId} />
@@ -235,6 +239,21 @@ const ViewChannelPartner: React.FC = () => {
                                 <FieldItem label="GST Number" value={editChannelPartnerData?.GSTNumber} urls={editChannelPartnerData?.GSTCertificateURL} isIcon />
                             </div>
                         </section>
+
+                         <hr className="border-t border-gray-200" />
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Enquiry & Booking Details
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                <FieldItem label="No Of Enquiry" value={editChannelPartnerData?.NoOfEnquiry}  />
+                                <FieldItem label="No Of Booking" value={editChannelPartnerData?.NoOfBooking}/>
+                                <FieldItem label="Brokerage Percentage (%)" value={editChannelPartnerData?.BrokeragePercentage} />
+                                <FieldItem label="Brokerage Amount (₹)" value={editChannelPartnerData?.BrokerageAmount} />
+                                <FieldItem label="Paid Brokerage Amount (₹)" value={editChannelPartnerData?.PaidBrokerageAmount} />
+                            </div>
+                        </section>
                         <hr className="border-t border-gray-200" />
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
@@ -243,11 +262,11 @@ const ViewChannelPartner: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Created By" value={editChannelPartnerData?.CreatedBy} />
-                                <FieldItem label="Created Date" value={editChannelPartnerData?.CreatedDate ? formatDate_dd_MonthName_yy(editChannelPartnerData?.CreatedDate) : ""} />
+                                <FieldItem label="Created Date" value={editChannelPartnerData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.CreatedDate) : ""} />
                                 {editChannelPartnerData?.ModifiedBy && (
                                     <>
                                         <FieldItem label="Modified By" value={editChannelPartnerData?.ModifiedBy} />
-                                        <FieldItem label="Modified Date" value={editChannelPartnerData?.ModifiedDate ? formatDate_dd_MonthName_yy(editChannelPartnerData?.ModifiedDate) : ""} />
+                                        <FieldItem label="Modified Date" value={editChannelPartnerData?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.ModifiedDate) : ""} />
                                     </>
                                 )}
                             </div>
@@ -255,26 +274,24 @@ const ViewChannelPartner: React.FC = () => {
                     </div>
                 </div>
 
-
-
                 {/*  RIGHT SIDE  */}
                 {/* RIGHT SIDE – TEAM MEMBERS */}
                 <div className="col-span-4">
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
 
                         {/* Header */}
                         <div className="pb-3 border-b border-gray-300">
-                            <h4 className="text-gray-700 font-semibold text-sm">
-                                Team Members ({filteredTeamMembers.length})
+                            <h4 className="text-lg font-semibold text-gray-900">
+                                Team Members <span className="text-gray-400 text-sm">({filteredTeamMembers.length})</span>
                             </h4>
                         </div>
 
                         {/* Team Member List */}
-                        <div className="mt-4 space-y-4 overflow-y-auto">
+                        <div className="mt-4 space-y-4 overflow-y-auto h-[1220px] thin-scroll">
 
                             {filteredTeamMembers.length === 0 && (
                                 <p className="text-sm text-gray-400 text-center">
-                                    No team members found
+                                    <NoDataView message="No team members found"/>
                                 </p>
                             )}
 

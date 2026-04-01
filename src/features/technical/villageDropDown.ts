@@ -4,7 +4,7 @@ import { technicalService } from './services/TechnicalService';
 export const fetchVillageDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
         const responseEither = await technicalService.apiCallPullVillage({
-            PageSize: 50,
+            PageSize: 500,
             PageNumber: pageNumber,
             VillageName: params?.value || ""
         });

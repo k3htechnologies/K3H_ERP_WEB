@@ -1,44 +1,61 @@
 export const handleExportFile = (
   response: any,
-  exportType: 'Excel' | 'PDF',
+  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other',
   fileName: string,
   addToast: (options: { type: 'success' | 'error'; title: string }) => void,
   message?: string
 ) => {
-  if (response.right.Data) {
-    handleBase64Export(response.right.Data, exportType, fileName, addToast, message);
-  } else {
-    addToast({
-      type: 'error',
-      title: response.ErrorMessage?.[0] || 'Export failed'
-    })
+
+  const data = response?.right?.Data;
+
+  const isEmpty = !data || (Array.isArray(data) && data.length === 0) || (typeof data === 'string' && data.trim() === '');
+
+  if (!isEmpty) {
+    handleBase64Export(data, exportType, fileName, addToast, message);
   }
-}
+  else {
+    addToast({ type: 'error', title: 'No data available for export' });
+  }
+
+};
 
 export const handleBase64Export = (
   fileData: any,
-  exportType: 'Excel' | 'PDF',
+  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other',
   fileName: string,
   addToast: (options: { type: 'success' | 'error'; title: string }) => void,
   message?: string,
 ) => {
   try {
     // Extract base64 data from response
-    const base64Data = Array.isArray(fileData) ? fileData[0] : fileData
+
+    const base64Data = Array.isArray(fileData)
+      ? fileData[0]
+      : fileData?.Base64 || fileData;
 
     if (!base64Data) {
       addToast({ type: 'error', title: 'No data available for export' })
       return
     }
 
-    // Determine MIME type based on export type
-    const mimeType = exportType === 'Excel'
-      ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-      : 'application/pdf'
+    const mimeType =
+      fileData?.ContentType ||
+      (
+        exportType === 'Excel'
+          ? 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+          : exportType === 'PDF'
+            ? 'application/pdf'
+            : exportType === 'Image'
+              ? 'image/png'
+              : exportType === 'Word'
+                ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                : 'application/octet-stream'
+      );
 
-    // Decode base64 data properly
     const binaryString = atob(base64Data)
+
     const bytes = new Uint8Array(binaryString.length)
+
     for (let i = 0; i < binaryString.length; i++) {
       bytes[i] = binaryString.charCodeAt(i)
     }
@@ -57,8 +74,21 @@ export const handleBase64Export = (
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)
 
     // Set filename with timestamp
-    const fileExtension = exportType === 'Excel' ? 'xlsx' : 'pdf'
-    link.download = `${fileName} ${timestamp}.${fileExtension}`
+    const fileExtension =
+      fileData?.FileName?.split('.').pop() ||
+      (exportType === 'Excel'
+        ? 'xlsx'
+        : exportType === 'PDF'
+          ? 'pdf'
+          : exportType === 'Image'
+            ? 'png'
+            : exportType === 'Word'
+              ? 'docx'
+              : 'bin');
+
+    link.download =
+      fileData?.FileName ||
+      `${fileName} ${timestamp}.${fileExtension}`;
 
     // Trigger download
     document.body.appendChild(link)

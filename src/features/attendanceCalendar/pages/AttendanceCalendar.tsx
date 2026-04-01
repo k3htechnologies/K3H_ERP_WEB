@@ -9,16 +9,7 @@ import { useToast } from '@/core/hooks/useToast';
 import AttendanceMonthView from '@/ui/components/AttendanceCalendar/AttendanceMonthView';
 import type { AttendanceCalendarEvent } from '@/ui/components/AttendanceCalendar/AttendanceCalendarEvent';
 
-import {
-  buildEventDateTime,
-  convertToISO,
-  getStatusColor,
-  matchesFilter,
-  normalizeStatus,
-  extractTimeFromDateTime,
-  convertTimeTo24Hour,
-  combineDateAndTime,
-} from '../utils/attendanceUtils';
+import { buildEventDateTime, convertToISO, getStatusColor, matchesFilter, normalizeStatus, extractTimeFromDateTime, convertTimeTo24Hour, combineDateAndTime, } from '../utils/attendanceUtils';
 
 import { CalendarHeader } from '../components/CalendarHeader';
 import { AttendanceDetailsCard } from '../components/AttendanceDetailsCard';
@@ -26,9 +17,9 @@ import { RegularizeModal, type RegularizeFormData } from '../components/Regulari
 import { ClockCheck } from 'lucide-react';
 import { Button } from '@/ui/components/forms/Button';
 
-/* ================= COMPONENT ================= */
 
 const AttendanceCalendar: React.FC = () => {
+
   //#region STATE
   const [displayAttendanceList, setDisplayAttendanceList] = useState<AttendanceData[]>([]);
   const [regularizationList, setRegularizationList] = useState<AttendanceRegularizationData[]>([]);
@@ -58,7 +49,6 @@ const AttendanceCalendar: React.FC = () => {
   //#endregion
 
   //#region HELPERS
-
   /** Timezone-safe local date key (FIX for Jan-1 inclusion) */
   const getLocalDateKey = (date: Date) =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
@@ -79,7 +69,7 @@ const AttendanceCalendar: React.FC = () => {
   }, []);
   //#endregion
 
-  //#region API
+  //#region LOAD ATTENDANCE
   const loadAttendance = useCallback(async () => {
     await runApiWithLoader(
       () => { },
@@ -93,7 +83,8 @@ const AttendanceCalendar: React.FC = () => {
           AttendanceId: 0,
           StartDate: fromDate.toISOString(),
           EndDate: toDate.toISOString(),
-          IsReport: false
+          IsReport: false,
+          CanApprove: false
         };
 
         const response = await attendanceService.apiCallPullAttendance(params);
@@ -114,6 +105,7 @@ const AttendanceCalendar: React.FC = () => {
     );
   }, [currentDate, getMonthDateRange, addToast]);
 
+  //#region LOAD REGULARIZATION
   const loadRegularization = useCallback(async () => {
     await runApiWithLoader(
       () => { },
@@ -126,7 +118,8 @@ const AttendanceCalendar: React.FC = () => {
           PageNumber: 1,
           StartDate: fromDate.toISOString(),
           EndDate: toDate.toISOString(),
-          IsReport: false
+          IsReport: false,
+          CanApprove: false
         };
 
         const response = await attendanceRegularizationService.apiCallPullAttendanceRegularization(params);
@@ -152,7 +145,6 @@ const AttendanceCalendar: React.FC = () => {
   //#endregion
 
   //#region CALENDAR EVENTS
-
   const calendarEvents: AttendanceCalendarEvent[] = useMemo(() => {
     return displayAttendanceList
       .map(att => {
@@ -182,7 +174,6 @@ const AttendanceCalendar: React.FC = () => {
   //#endregion
 
   //#region SELECTED DATE EVENTS (FIXED)
-
   const eventsForSelectedDate = useMemo(() => {
     const key = getLocalDateKey(selectedDate);
     const result = displayAttendanceList.filter(att => {
@@ -220,18 +211,21 @@ const AttendanceCalendar: React.FC = () => {
     },
     [handleDateChange]
   );
+  //#endregion
 
   const handlePreviousMonth = useCallback(() => {
     const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
     setCurrentDate(date);
     setSelectedDate(date);
   }, [currentDate]);
+  //#endregion
 
   const handleNextMonth = useCallback(() => {
     const date = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1);
     setCurrentDate(date);
     setSelectedDate(date);
   }, [currentDate]);
+  //#endregion
 
   // Check if attendance status allows regularization (only Absent and Checkout Missing)
   const canRegularize = useCallback((status?: string | null): boolean => {
@@ -240,6 +234,7 @@ const AttendanceCalendar: React.FC = () => {
     return normalized === 'ABSENT' || normalized === 'CHECKOUT_MISSING' ||
       normalized.includes('CHECKOUT') || normalized.includes('MISSING');
   }, []);
+  //#endregion
 
   // Get regularization data for a given attendance date
   const getRegularizationForDate = useCallback((attendanceDate?: string | null): AttendanceRegularizationData | null => {
@@ -317,7 +312,7 @@ const AttendanceCalendar: React.FC = () => {
     setRegularizeErrors({});
     setIsRegularizeModalOpen(true);
   }, []);
-
+  //#endregion
 
   const handleCloseRegularizeModal = useCallback(() => {
     setIsRegularizeModalOpen(false);
@@ -325,6 +320,7 @@ const AttendanceCalendar: React.FC = () => {
     setRegularizeFormData(initialRegularizeFormState());
     setRegularizeErrors({});
   }, []);
+  //#endregion
 
   const handleResetRegularizeForm = useCallback(() => {
     if (!selectedAttendanceForRegularize) return;
@@ -365,7 +361,7 @@ const AttendanceCalendar: React.FC = () => {
 
   const handleRegularizeFieldChange = useCallback((field: keyof RegularizeFormData, value: string | null) => {
     setRegularizeFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error for this field when user starts typing using functional update
+
     setRegularizeErrors(prev => {
       if (prev[field]) {
         const newErrors = { ...prev };
@@ -389,6 +385,14 @@ const AttendanceCalendar: React.FC = () => {
       newErrors.Reason = 'Reason is required';
     } else if (reasonTrimmed.length > 255) {
       newErrors.Reason = 'Reason must be at most 255 characters';
+    }
+
+    if (!data.PunchInTime || data.PunchInTime === '00:00') {
+      newErrors.PunchInTime = 'Punch In Time is required';
+    }
+
+    if (!data.PunchOutTime || data.PunchOutTime === '00:00') {
+      newErrors.PunchOutTime = 'Punch Out Time is required';
     }
 
     // Validate Punch Out is not less than Punch In using centralized utilities
@@ -487,6 +491,7 @@ const AttendanceCalendar: React.FC = () => {
   return (
     <div className="flex flex-col lg:flex-row bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6 gap-3 sm:gap-4 lg:gap-6 relative w-full">
       {/* LEFT - CALENDAR */}
+
       <div className="flex-1 min-w-0 p-2 sm:p-3 lg:p-4">
         <CalendarHeader
           displayedMonth={displayedMonth}
@@ -515,7 +520,7 @@ const AttendanceCalendar: React.FC = () => {
               style={{
                 backgroundColor: stableEventsForSelectedDate[0]?.AttendanceStatus
                   ? getStatusColor(stableEventsForSelectedDate[0].AttendanceStatus)
-                  : '#9ca3af',
+                  : '',
               }}
             />
             <div className="font-semibold text-base sm:text-lg flex-1 truncate">
@@ -526,29 +531,35 @@ const AttendanceCalendar: React.FC = () => {
               const hasExistingRegularization = hasRegularization(att.AttendanceDate);
               return canRegularizeStatus && !hasExistingRegularization;
             }) && (
-              <Button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  const firstRegularizable = stableEventsForSelectedDate.find(att => {
-                    const canRegularizeStatus = canRegularize(att.AttendanceStatus);
-                    const hasExistingRegularization = hasRegularization(att.AttendanceDate);
-                    return canRegularizeStatus && !hasExistingRegularization;
-                  });
-                  if (firstRegularizable) {
-                    handleRegularize(firstRegularizable);
-                  }
-                }}
-                color="transparent"
-                isborderRadius
-                size="sm"
-                style={{ color: 'blue', padding: '4px 8px' }}
-                title="Regularize"
-                className="flex-shrink-0"
-              >
-                <ClockCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              </Button>
-            )}
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const firstRegularizable = stableEventsForSelectedDate.find(att => {
+                      const canRegularizeStatus = canRegularize(att.AttendanceStatus);
+                      const hasExistingRegularization = hasRegularization(att.AttendanceDate);
+                      return canRegularizeStatus && !hasExistingRegularization;
+                    });
+
+                    if (firstRegularizable) {
+                      handleRegularize(firstRegularizable);
+                    }
+                  }}
+                  color="blue"
+                  size="mxs"
+                  variant="solid"
+                  colorMode="gradient_dark"
+                  defineWidth
+                  title="Regularize"
+                  aria-label="Regularize"
+                  style={{ width: '110px' }}
+                  leftIcon={<ClockCheck className="h-4 w-4" />}
+                >
+                  <span>Regularize</span>
+                </Button>
+
+              )}
           </div>
 
           <div className="space-y-2 sm:space-y-3">
@@ -563,6 +574,7 @@ const AttendanceCalendar: React.FC = () => {
               );
             })}
           </div>
+          
         </div>
       </aside>
 

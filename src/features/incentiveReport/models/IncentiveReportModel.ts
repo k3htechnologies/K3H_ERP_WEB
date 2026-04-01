@@ -55,8 +55,8 @@ export interface IncentiveReportData {
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
 
-    ReferelPercentage: number | null;
-    ReferelAmount: number | null;
+    ReferralPercentage: number | null;
+    ReferralAmount: number | null;
 
     LoyaltyPercentage: number | null;
     LoyaltyAmount: number | null;

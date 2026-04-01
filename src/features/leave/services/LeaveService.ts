@@ -1,9 +1,10 @@
 import type { Failure } from '@/core/api/FailureResponse';
 import { LeaveDatasourceImpl } from '@/features/leave/datasources/LeaveDatasource';
 import type {
-    AddUpdateLeaveRequest,
     DeleteLeaveRequest,
+    FilterWithPaginationLeaveConfiguredRequest,
     FilterWithPaginationLeaveRequest,
+    LeaveConfiguredListResponse,
     LeaveDeleteResponse,
     LeaveListResponse,
     LeaveSaveResponse,
@@ -27,7 +28,7 @@ export const LeaveService = {
         }
     },
 
-    apiCallAddUpdateLeave: async (params: AddUpdateLeaveRequest): Promise<E.Either<Failure, LeaveSaveResponse>> => {
+    apiCallAddUpdateLeave: async (params: FormData): Promise<E.Either<Failure, LeaveSaveResponse>> => {
         try {
 
             return E.right(await leaveDatasource.addUpdateLeave(params));
@@ -43,6 +44,18 @@ export const LeaveService = {
         try {
 
             return E.right(await leaveDatasource.deleteLeave(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+      apiCallPullLeaveConfigured: async (params: FilterWithPaginationLeaveConfiguredRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, LeaveConfiguredListResponse>> => {
+        try {
+
+            return E.right(await leaveDatasource.pullLeaveConfigured(params, options?.signal));
 
         } catch (error: any) {
 

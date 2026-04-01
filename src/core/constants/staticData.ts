@@ -13,14 +13,10 @@ export interface Option {
 // ============================================================================
 
 export const MASTER_DATA = {
-  emergencyRelations: [
-    'Father', 'Mother', 'Spouse', 'Child',
-    'Son', 'Daughter', 'Grandfather', 'Grandmother', 'Uncle', 'Aunt',
-    'Cousin', 'Friend', 'Other'
-  ],
+  emergencyRelations: ['Aunt','Brother', 'Child', 'Cousin', 'Daughter', 'Father', 'Friend', 'Grandfather', 'Grandmother', 'Mother', 'Other','Sister', 'Son', 'Spouse', 'Uncle'],
 
   employeeTypes: [
-    'Permanent', 'Contract', 'Intern', 'Part Time', 'Temporary'
+    'Permanent', 'Contract','Full - Time', 'Intern', 'Part Time', 'Temporary'
   ],
 
   genders: ['Male', 'Female', 'Other'],
@@ -65,13 +61,13 @@ export const MASTER_DATA = {
 
   tenure: ['Tenure 1', 'Tenure 2', 'Tenure 3', 'Tenure 4', 'Tenure 5', 'Tenure 6', 'Tenure 7', 'Tenure 8', 'Tenure 9', 'Tenure 10', 'Tenure 11', 'Tenure 12', 'Tenure 13', 'Tenure 14'],
 
-  unit_sqft_lumsum: ['Per Sq Ft', 'Lump Sum'],
+  unit_sqft_lumsum: ['Per Sq Ft', 'Lumpsum'],
 
   business_category: ['Commercial', 'Mixed Use', 'Residential'],
 
   project_scheme: ['BMC', 'MHADA', 'SRA'],
 
-  project_sub_scheme_BMC: ['33 (20) B', '33 (19)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
+  project_sub_scheme_BMC: ['33 (20) B', '33 (19)','33 (7)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
 
   project_sub_scheme_MHADA: ['33 (5)'],
 
@@ -280,6 +276,8 @@ export const MASTER_DATA = {
 
   monthsShots: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 
+  activeInactive: ['Active', 'Inactive'],
+
 } as const
 
 // ============================================================================
@@ -390,6 +388,7 @@ export const ENQUIRY_TIMELINE = toOptions(MASTER_DATA.enquiryTimeLine);
 export const SUPPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.supportType);
 export const REPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.reportType);
 export const YEAR_OPTIONS = toOptions(MASTER_DATA.year);
+export const ACTIVE_INACTIVE_OPTIONS = toOptions(MASTER_DATA.activeInactive);
 
 
 

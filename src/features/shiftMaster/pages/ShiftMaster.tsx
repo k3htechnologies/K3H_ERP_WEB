@@ -463,7 +463,7 @@ export const ShiftMaster: React.FC = () => {
   return (
 
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       {/* LOADER */}
 
       <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>

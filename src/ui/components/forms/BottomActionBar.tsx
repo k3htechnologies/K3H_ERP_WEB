@@ -28,7 +28,7 @@ const BottomActionBar: React.FC<BottomActionBarProps> = ({
 }) => {
   return (
 
-    <div className="flex justify-between items-center">
+    <div className="flex justify-between items-center pr-5">
 
       {/* LEFT SIDE BUTTON */}
       <div>

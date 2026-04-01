@@ -87,8 +87,8 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
             case 'warning':
                 return (
                     <div style={{
-                        width: '20px',
-                        height: '20px',
+                        width: '32px',
+                        height: '32px',
                         borderRadius: '50%',
                         backgroundColor: '#F59E0B',
                         display: 'flex',
@@ -100,7 +100,7 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
                             <path
                                 d="M12 9V13M12 17H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
                                 stroke="white"
-                                strokeWidth="2"
+                                strokeWidth="3"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                             />
@@ -110,8 +110,8 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
             case 'info':
                 return (
                     <div style={{
-                        width: '20px',
-                        height: '20px',
+                        width: '32px',
+                        height: '32px',
                         borderRadius: '50%',
                         backgroundColor: '#3B82F6',
                         display: 'flex',
@@ -123,7 +123,7 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
                             <path
                                 d="M13 16H12V12H11M12 8H12.01M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z"
                                 stroke="white"
-                                strokeWidth="2"
+                                strokeWidth="3"
                                 strokeLinecap="round"
                                 strokeLinejoin="round"
                             />

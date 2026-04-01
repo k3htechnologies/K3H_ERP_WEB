@@ -115,8 +115,8 @@ export const useHolidayMappingMaster = () => {
           DepartmentMasterId: editingHolidayMappingMasterData.DepartmentMasterId || '',
           HolidayDate: editingHolidayMappingMasterData.HolidayDate || '',
         });
-        setBranchValue(editingHolidayMappingMasterData.BranchMasterId || null);
-        setDepartmentValue(editingHolidayMappingMasterData.DepartmentMasterId || null);
+        setBranchValue(editingHolidayMappingMasterData.BranchMasterId || "");
+        setDepartmentValue(editingHolidayMappingMasterData.DepartmentMasterId || "");
         setDropdownLabels({
           branchName: editingHolidayMappingMasterData.BranchName || "",
           holidayName: editingHolidayMappingMasterData.HolidayName || "",
@@ -124,6 +124,11 @@ export const useHolidayMappingMaster = () => {
         });
       } else {
         setFormData(getInitialFormState());
+        setBranchValue("");
+        setDepartmentValue("");
+
+        setDropdownLabels({});
+        setDropdownResetKey(prev => prev + 1);
       }
       setErrors({});
     }
@@ -343,12 +348,18 @@ export const useHolidayMappingMaster = () => {
     }
   };
 
-  const handleAddHolidayMappingModal = () => {
-    setEditingHolidayMappingMasterData(null);
-    setFormData(getInitialFormState());
-    setErrors({});
-    setIsAddUpdateModalOpen(true);
-  }
+ const handleAddHolidayMappingModal = () => {
+  setEditingHolidayMappingMasterData(null);
+
+  setFormData(getInitialFormState());
+  setBranchValue(null);
+  setDepartmentValue(null);
+  setDropdownLabels({});
+  setDropdownResetKey(prev => prev + 1);
+
+  setErrors({});
+  setIsAddUpdateModalOpen(true);
+};
 
   const validateAddHolidayMappingMasterForm = (): {
     isValid: boolean

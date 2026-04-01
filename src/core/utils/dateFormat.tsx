@@ -195,18 +195,28 @@ export const convert_dd_mm_yyyy_To_Yyyy_mm_dd = (
 };
 
 export const convert_yy_mm_dd_To_dd_mm_yyyy = (
-  value?: string | null,
+  value?: string | Date | null,
 ): string | null => {
   if (!value) return null;
 
-  const trimmed = value.trim();
+  const trimmed = value.toString().trim();
   if (!trimmed) return null;
 
-  const match = /^(\d{2})-(\d{2})-(\d{4})$/.exec(trimmed);
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(trimmed);
   if (!match) return null;
 
-  const [, dd, mm, yyyy] = match;
+  const [, yyyy, mm, dd] = match;
   return `${dd}-${mm}-${yyyy}`;
+};
+
+export const convert_date_yy_mm_dd_To_dd_mm_yyyy = (date?: Date) => {
+  if (!date) return "";
+
+  const d = String(date.getDate()).padStart(2, '0');
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const y = date.getFullYear();
+
+  return `${d}-${m}-${y}`;
 };
 
 export const convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd = (date?: string | null) => {
@@ -352,3 +362,58 @@ export const formatDate_MonthName_yy = (dateString: string | Date): string => {
     return "";
   }
 };
+
+export const formatDate_Day_MonthName = (dateString: string | Date): string => {
+  if (!dateString || dateString === "") {
+    return "";
+  }
+
+  try {
+    const date = new Date(dateString);
+
+    if (isNaN(date.getTime())) {
+      return "";
+    }
+
+    const monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    const month = monthNames[date.getMonth()];
+    const day = date.getDate();
+
+    return `${day} ${month} `;
+
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return "";
+  }
+};
+
+export const convert_hh_mm_ss_to_hh_mm = (timeString?: string) => {
+
+    if (!timeString || timeString === "00:00:00") return "";
+
+    const [hours, minutes] = timeString.split(":");
+
+    const hourNum = parseInt(hours, 10);
+
+    if (isNaN(hourNum)) return "";
+
+    const period = hourNum >= 12 ? "PM" : "AM";
+    
+    const formattedHour = hourNum % 12 === 0 ? 12 : hourNum % 12;
+
+    return `${formattedHour}:${minutes} ${period}`;
+};
+

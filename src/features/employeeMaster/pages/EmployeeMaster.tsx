@@ -42,6 +42,9 @@ import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
 import { isEmployeeComplete } from "@/features/employeeMaster/utils/employeeUtils";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { ACTIVE_INACTIVE_OPTIONS } from "@/core/constants";
+import { getNameInitials } from "@/core/utils/getNameInitials";
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -151,6 +154,7 @@ export const EmployeeMaster: React.FC = () => {
           ToDateOfBirth: filterParams.ToDateOfBirth || undefined,
           FromJoiningDate: filterParams.FromJoiningDate || undefined,
           ToJoiningDate: filterParams.ToJoiningDate || undefined,
+          ActiveInactive: filterParams.ActiveInactive?.trim() || undefined,
 
           SortBy: getSortByParam(sortInfo ?? null, employeeColumns),
         };
@@ -194,7 +198,6 @@ export const EmployeeMaster: React.FC = () => {
     }
 
     updateListState({ searchTerm: searchValue, page: 1 });
-    // await loadEmployees(1, filters, sortInfo, searchValue);
   };
 
   //#endregion
@@ -240,6 +243,8 @@ export const EmployeeMaster: React.FC = () => {
           ToDateOfBirth: filters.ToDateOfBirth || undefined,
           FromJoiningDate: filters.FromJoiningDate || undefined,
           ToJoiningDate: filters.ToJoiningDate || undefined,
+
+          ActiveInactive: filters.ActiveInactive?.trim() || undefined,
 
           SortBy: getSortByParam(sortInfo ?? null, employeeColumns),
           ExportType: exportType,
@@ -336,9 +341,10 @@ export const EmployeeMaster: React.FC = () => {
       {
         key: "EmployeeCode",
         label: "Employee Code",
-        width: "14",
         sortable: true,
-        align: "center",
+        width: '150px',
+        align: "left",
+        fixed: "left",
         render: (value, row) => {
           const complete = isEmployeeComplete(row);
 
@@ -363,41 +369,49 @@ export const EmployeeMaster: React.FC = () => {
       {
         key: "FullName",
         label: "Full Name",
-        width: "22",
         sortable: true,
-        fixed: "left",
+        width: '220px',
         align: "left",
         render: (value, row) => {
+
           const fullName = (row?.FullName ?? "").trim();
-          const initials = fullName
-            ? fullName
-                .split(/\s+/)
-                .map((w: string) => (w && w.length ? w[0] : ""))
-                .join("")
-                .toUpperCase()
-                .slice(0, 2)
-            : "NA";
+
+          const initials = getNameInitials(fullName);
+
+          const profilePhotoURL = row?.ProfilePhotoURL;
+
+          const hasProfile =
+            profilePhotoURL &&
+            profilePhotoURL !== "" &&
+            profilePhotoURL !== "—";
 
           return (
             <div className={`flex items-center justify-between gap-3`}>
-              {/* left: avatar + name */}
+              
               <div className="flex items-center gap-3">
-                <div
-                  className="w-7 h-7 rounded-full
+                {hasProfile ? (
+                  <img
+                    src={profilePhotoURL}
+                    alt={fullName}
+                    className="w-7 h-7 rounded-full object-cover border border-gray-300"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-full
                        bg-blue-200 
                        flex items-center justify-center
                        text-gray-800 font-medium text-xs
                        border border-gray-300"
-                  title={fullName || "-"}
-                >
-                  {initials}
-                </div>
+                    title={fullName || "-"}
+                  >
+                    {initials}
+                  </div>
+                )}
 
                 <div className="min-w-0">
                   <TooltipText
                     text={value || row.FirstName || "-"}
-                    maxWidth="260px"
-                    tooltipThreshold={26}
+                    maxWidth="230px"
+                    tooltipThreshold={22}
                     onClick={() => handleViewEmployeeDetails(row)}
                   />
                 </div>
@@ -412,7 +426,7 @@ export const EmployeeMaster: React.FC = () => {
         label: "Gender",
         width: "14",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -489,7 +503,7 @@ export const EmployeeMaster: React.FC = () => {
       },
       {
         key: "ReportPersonName",
-        label: "Report Person Name",
+        label: "Reporting Person Name",
         width: "14",
         sortable: true,
         align: "left",
@@ -539,7 +553,7 @@ export const EmployeeMaster: React.FC = () => {
         label: "Marital Status",
         width: "14",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -547,7 +561,7 @@ export const EmployeeMaster: React.FC = () => {
         label: "Blood Group",
         width: "14",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -591,7 +605,7 @@ export const EmployeeMaster: React.FC = () => {
         label: "Account No",
         width: "14",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -613,8 +627,40 @@ export const EmployeeMaster: React.FC = () => {
         label: "Office Mobile",
         width: "14",
         sortable: false,
-        align: "center",
-        render: (value) => value || "-",
+        align: "left",
+        render: (value) => (value ? `+91 ${value}` : "-"),
+      },
+      {
+        key: 'CountryName',
+        label: 'Country',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => value || '-'
+      },
+      {
+        key: 'DistrictName',
+        label: 'District',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => value || '-'
+      },
+      {
+        key: 'CityName',
+        label: 'City',
+        width: '14',
+        sortable: false,
+        align: 'left',
+        render: value => value || '-'
+      },
+      {
+        key: 'VillageName',
+        label: 'Village',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
       },
       {
         key: "LastLogin",
@@ -625,7 +671,7 @@ export const EmployeeMaster: React.FC = () => {
         render: (value) => (value ? formatDate_dd_MonthName_yy(value) : "-"),
       },
       {
-        key: "actions",
+        key: "Actions",
         label: "Actions",
         width: "12",
         fixed: "right",
@@ -659,7 +705,7 @@ export const EmployeeMaster: React.FC = () => {
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
-  const requiredEmployeeColumnKeys: string[] = ["FullName"];
+  const requiredEmployeeColumnKeys: string[] = ["FullName", 'Actions'];
 
   const allEmployeeColumnKeys: string[] = employeeColumns.map((c) => c.key);
 
@@ -796,7 +842,7 @@ export const EmployeeMaster: React.FC = () => {
   //#endregion
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>
@@ -922,6 +968,18 @@ export const EmployeeMaster: React.FC = () => {
                 value={tempFilters.Gender || ""}
                 onChange={(e) => handleFilterChange("Gender", e.target.value)}
                 placeholder="Enter Gender"
+              />
+            </div>
+            <div>
+              <SinglePageSelection
+                label="Active / Inactive"
+                placeholder="Select Active / Inactive"
+                value={tempFilters.ActiveInactive || ''}
+                onChange={e => handleFilterChange('ActiveInactive', String(e))}
+                options={ACTIVE_INACTIVE_OPTIONS.map(opt => ({
+                  label: opt.name,
+                  value: opt.id
+                }))}
               />
             </div>
             <div>

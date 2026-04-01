@@ -15,7 +15,12 @@ export const ColorDotWithData = ({ data, color, title }: ColorDotWithDataProps) 
                 }}
                 className="rounded-full"
             />
-            <span>{data}</span>
+              <span className="text-gray-500">
+                {title}{" "}
+                <span className="text-black font-medium">
+                    {data}
+                </span>
+            </span>
         </div>
     );
 };

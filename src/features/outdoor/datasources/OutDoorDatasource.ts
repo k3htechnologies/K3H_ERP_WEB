@@ -43,6 +43,7 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
+            if (params.CanApprove !== undefined) queryParams.append('CanApprove', params.CanApprove.toString())
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(`${OutDoorApi.PULL}?${queryParams.toString()}`, { signal })
@@ -51,9 +52,9 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
 
             console.error('Error: Pull OUTDOOR:', error);
 
-            if (error === TokenExpiredException) {
+           if (error instanceof TokenExpiredException) {
 
-                await this.pullOutDoor(params);
+               return await this.pullOutDoor(params);
             }
 
             throw error
@@ -74,9 +75,9 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
 
             console.error('Error: Add Update OUTDOOR:', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.addUpdateOutDoor(payload);
+              return await this.addUpdateOutDoor(payload);
             }
             throw error
         }
@@ -96,8 +97,8 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
 
             console.error('ERRPR : DELETE OUTDOOR:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteOutDoor(params);
+           if (error instanceof TokenExpiredException) {
+               return await this.deleteOutDoor(params);
             }
 
             throw error
@@ -118,8 +119,8 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
 
             console.error('Error: PUNCH IN OUTDOOR:', error)
 
-            if (error === TokenExpiredException) {
-                await this.punchIn(params);
+            if (error instanceof TokenExpiredException) {
+               return await this.punchIn(params);
             }
             throw error
         }
@@ -139,8 +140,8 @@ export class OutDoorDataSourceImpl implements OutDoorDatasource {
 
             console.error('Error: Add Update CONCLUSION:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateConclusion(params);
+            if (error instanceof TokenExpiredException) {
+               return await this.addUpdateConclusion(params);
             }
             throw error
         }

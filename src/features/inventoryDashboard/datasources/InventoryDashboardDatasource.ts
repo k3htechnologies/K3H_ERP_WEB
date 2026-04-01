@@ -4,7 +4,6 @@ import { InventoryDashboardApi } from '@/features/inventoryDashboard/api/Invento
 import type { InventoryDashboardDatasetResponse } from '@/features/inventoryDashboard/models/InventoryDashboardModel';
 
 export abstract class InventoryDashboardDatasource {
-
     abstract pullInventoryDashboard(ProjectId: number, signal?: AbortSignal): Promise<InventoryDashboardDatasetResponse>;
 }
 
@@ -13,14 +12,12 @@ export class InventoryDashboardDatasourceImpl implements InventoryDashboardDatas
         return baseClient
     }
 
-
     async pullInventoryDashboard(ProjectId: number, signal?: AbortSignal): Promise<InventoryDashboardDatasetResponse> {
         try {
 
             const queryParams = new URLSearchParams({
                 ProjectId: ProjectId.toString()
             })
-
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(`${InventoryDashboardApi.PULL}?${queryParams.toString()}`, { signal } )
 
@@ -30,8 +27,9 @@ export class InventoryDashboardDatasourceImpl implements InventoryDashboardDatas
 
             console.error('ERROR: PULL INVENTORY DASHBOARD :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullInventoryDashboard(ProjectId);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullInventoryDashboard(ProjectId);
             }
 
             throw error

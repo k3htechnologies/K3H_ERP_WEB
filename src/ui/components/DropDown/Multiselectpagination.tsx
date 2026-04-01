@@ -50,10 +50,10 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
   const scrollRef = useRef<HTMLDivElement>(null);
   const isFetchingRef = useRef(false);
   const pageRef = useRef(1);
-  
+
   const SIZE_MAP = {
     sm: { fontSize: 12, paddingY: 6, paddingX: 12, height: 38, dropdownHeight: 150 },
-    md: { fontSize: 16, paddingY: 8, paddingX: 10, height: 46, dropdownHeight: 200 },
+    md: { fontSize: 16, paddingY: 8, paddingX: 12, height: 46, dropdownHeight: 200 },
     lg: { fontSize: 16, paddingY: 10, paddingX: 20, height: 54, dropdownHeight: 250 },
   };
 
@@ -78,18 +78,19 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
         setTotalRecords(total);
 
         if (reset) {
-          // Reset mode: replace options and merge with propOptions
-          const mergedOptions: DropdownOptions[] = [...(propOptions || [])];
-          list.forEach((newOpt) => {
-            if (!mergedOptions.some((opt) => String(opt.value) === String(newOpt.value))) {
-              mergedOptions.push(newOpt);
+          const newOptions = [...list];
+
+          (propOptions || []).forEach((opt) => {
+            if (!newOptions.some((o) => String(o.value) === String(opt.value))) {
+              newOptions.push(opt);
             }
           });
-          setOptions(mergedOptions);
-          setFilteredOptions(mergedOptions);
+
+          setOptions(newOptions);
+          setFilteredOptions(newOptions);
+
           pageRef.current = 2;
         } else {
-          // Append mode: add new options to existing ones
           setOptions((prev) => {
             const merged = [...prev];
             list.forEach((newOpt) => {
@@ -162,7 +163,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
 
     const nearBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 10;
 
-    if (nearBottom && options.length < totalRecords) {
+    if (nearBottom && filteredOptions.length < totalRecords) {
       const previousScrollHeight = el.scrollHeight;
 
       fetchOptions(false).then(() => {
@@ -321,7 +322,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
           ...style,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "6px" }} title={selectedLabels.join(", ")}>
+        <div style={{ display: "flex", alignItems: "center", flexWrap: "wrap", flex: 1, gap: "1px" }} title={selectedLabels.join(", ")}>
           {hasSelections ? (
             <>
               {visibleTags.map((tagLabel, index) => (
@@ -397,6 +398,9 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             right: 0,
             width: "100%",
             minWidth: "100%",
+            // FIX: Use flex column layout so the scroll area fills remaining space
+            display: "flex",
+            flexDirection: "column",
             maxHeight: `${currentSize.dropdownHeight}px`,
             overflow: "hidden",
             border: `1px solid ${theme.colors.border}`,
@@ -411,6 +415,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             style={{
               padding: `${currentSize.paddingY}px ${currentSize.paddingX - 1}px`,
               borderBottom: `1px solid ${theme.colors.border}`,
+              flexShrink: 0,  // FIX: prevent header from shrinking
             }}
           >
             <input
@@ -441,6 +446,7 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
               padding: `${currentSize.paddingY + 2}px ${currentSize.paddingX}px`,
               borderBottom: `1px solid ${theme.colors.border}`,
               columnGap: "12px",
+              flexShrink: 0,  // FIX: prevent header from shrinking
             }}
           >
             <span
@@ -492,11 +498,14 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
             ref={scrollRef}
             className="thin-scroll"
             style={{
-              maxHeight: currentSize.dropdownHeight - 48, // Leave room for header
+              // FIX: flex: 1 + overflow-y auto lets this div fill remaining space
+              // and scroll independently, so last items are always reachable
+              flex: 1,
               overflowY: "auto",
-              padding: 0,
+              padding: "0",
               scrollBehavior: "smooth",
               WebkitOverflowScrolling: "touch",
+              boxSizing: "border-box",
             }}
           >
             {loading && options.length === 0 && (
@@ -573,7 +582,6 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
                     Loading more...
                   </div>
                 )}
-                <div style={{ height: 12, pointerEvents: "none" }} />
               </>
             ) : !loading ? (
               <div

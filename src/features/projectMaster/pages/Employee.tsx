@@ -624,7 +624,8 @@ const Employee: React.FC = () => {
       >
         <div className="space-y-4">
 
-          <div className="px-2 py-2 border-b">
+          <div className="px-2 py-2">
+
             <div className="flex items-center gap-3 w-full">
 
               {/* Select ALL */}
@@ -645,18 +646,15 @@ const Employee: React.FC = () => {
                   }}
                   placeholder="Search By Employee"
                   leftIcon={<Search className="h-4 w-4 text-gray-400" />}
-
                 />
               </div>
 
-
-              <span className="text-sm text-gray-600 whitespace-nowrap right">
+              <span className="text-sm text-gray-600 whitespace-nowrap ml-auto">
                 {selectedEmployeeIds.length} selected
               </span>
 
             </div>
           </div>
-
 
           <div className="space-y-4">
             <div
@@ -688,7 +686,7 @@ const Employee: React.FC = () => {
                       </div>
 
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between gap-3 mt-1">
+                        <div className="flex items-center justify-between gap-3">
                           <p className="text-sm text-gray-800 whitespace-normal break-words">
                             {n.FullName}
                           </p>

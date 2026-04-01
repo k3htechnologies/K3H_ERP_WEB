@@ -42,6 +42,7 @@ export const DepartmentMaster: React.FC = () => {
     selectedDepartmentMasterColumnKeys,
     requiredDepartmentMasterColumnKeys,
     isShowCustomizeDepartmentMasterColumnsModal,
+    lastUpdatedRow,
 
     // Setters
     setSearchTerm,
@@ -124,7 +125,7 @@ export const DepartmentMaster: React.FC = () => {
 
   return (
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
       <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>
 
@@ -167,6 +168,7 @@ export const DepartmentMaster: React.FC = () => {
         onView={handleViewDepartmentDetails}
         onEdit={handleEditDepartmentMaster}
         onDelete={handleConfirmationDialogBoxOpen}
+        lastUpdatedRow={lastUpdatedRow}
         canAction={canAction}
         loading={isLoading}
       />

@@ -36,9 +36,10 @@ import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApprov
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal"
 import { useBookingListState } from "@/features/booking/context/BookingListStateContext"
 import TooltipText from "@/ui/components/Tooltip/TooltipText"
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton"
+import { getStatusColor } from "@/features/modulesWorkflowApproval/utils/Status"
 
 const Inventory = () => {
-    //#region STATE MANAGEMENT
 
     const navigate = useNavigate();
     const { updateListState } = useBookingListState();
@@ -93,7 +94,8 @@ const Inventory = () => {
     // APPROVAL LOG MODAL
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-    const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+    const [buildingName, setBuildingName] = useState<string | null>("");
+    const [wingName, setWingName] = useState<string | null>("");
 
     // APPROVAL ACTION MODAL
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -131,6 +133,9 @@ const Inventory = () => {
     // Clear all state when project changes
     useEffect(() => {
 
+        setActiveTab('Grid');
+        localStorage.setItem("inventoryActiveTab", "Grid");
+
         if (!projectId) {
             setIsInventoryAvailable(false)
             setInventory([]);
@@ -164,7 +169,6 @@ const Inventory = () => {
 
             // Clear search
             setSearchTerm('');
-            // Reset tab to Grid when project is cleared
             setActiveTab('Grid');
             localStorage.removeItem('inventoryActiveTab');
             return;
@@ -377,11 +381,54 @@ const Inventory = () => {
     //#endregion
 
     //#region COUNT INVENTORY FLAT STATUS
-    const availableFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Available"), [inventory]);
-    const saleFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Booked"), [inventory]);
-    const memberFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Member"), [inventory]);
-    const blockedFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Blocked"), [inventory]);
-    const holdFlatsCount = useMemo(() => countFlatsByStatus(inventory, "Hold"), [inventory]);
+    //#region COUNT INVENTORY FLAT STATUS
+
+    const building =
+        selectedBuildingIndex !== null && inventory[selectedBuildingIndex]
+            ? inventory[selectedBuildingIndex]
+            : undefined;
+
+    const availableFlatsCount = useMemo(
+        () =>
+            building
+                ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Available")
+                : 0,
+        [inventory, building]
+    );
+
+    const saleFlatsCount = useMemo(
+        () =>
+            building
+                ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Booked")
+                : 0,
+        [inventory, building]
+    );
+
+    const memberFlatsCount = useMemo(
+        () =>
+            building
+                ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Member")
+                : 0,
+        [inventory, building]
+    );
+
+    const blockedFlatsCount = useMemo(
+        () =>
+            building
+                ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Blocked")
+                : 0,
+        [inventory, building]
+    );
+
+    const holdFlatsCount = useMemo(
+        () =>
+            building
+                ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Hold")
+                : 0,
+        [inventory, building]
+    );
+
+    //#endregion
     //#endregion
 
     //#region COUNT WING WISE FLAT STATUS
@@ -468,12 +515,18 @@ const Inventory = () => {
             async () => {
                 const params: FilterInventoryRequest = {
                     ProjectId: Number(projectId),
-                    ExportType: "Excel"
+                    ExportType: "SAMPLE"
                 }
 
                 const response = await inventoryService.apiCallpullInventory(params);
-                handleExportFile(response, 'Excel', 'Inventory', addToast, 'Sample file download successfully')
 
+                if (E.isRight(response) && response.right.Data.length > 0) {
+
+                    handleExportFile(response, 'Excel', 'Inventory', addToast, 'Sample file download successfully')
+                }
+                else {
+                    addToast({ type: "error", title: "All records are already approved. No data available for sample export" });
+                }
                 return response;
             },
             undefined,
@@ -677,7 +730,7 @@ const Inventory = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-                
+
                 const response = await inventoryService.apiCallAddInventoryBuilding(params);
 
                 if (E.isRight(response)) {
@@ -686,7 +739,7 @@ const Inventory = () => {
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
-                    setInventory(response.right.Data);
+                    await fetchInventory();
 
                 } else {
 
@@ -855,7 +908,7 @@ const Inventory = () => {
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
                     setInventory(response.right.Data);
-                    
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -943,12 +996,21 @@ const Inventory = () => {
                 const response = await inventoryService.apiCallDeleteInventoryBuilding(params);
 
                 if (E.isRight(response)) {
+
                     setIsDeleteBuildingDialogOpen(false);
+
                     setBuildingToDelete(null);
+
+                    setSelectedBuildingIndex(null);
+
+                    setSelectedBuilding(undefined);
+                    
+                    setSelectedWing(undefined);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
                     await fetchInventory();
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -1044,6 +1106,7 @@ const Inventory = () => {
 
     // Flatten floors and flats for table view
     const tableData = useMemo(() => {
+
         if (!selectedWing) {
             return [];
         }
@@ -1181,6 +1244,7 @@ const Inventory = () => {
                         state: {
                             flat: flat,
                             projectId: projectId,
+                            approvalStatus: selectedWing?.ApprovalStatus
                         },
                     });
                 };
@@ -1205,7 +1269,7 @@ const Inventory = () => {
                                 />
                             </div>
                         )}
-                        {canAction && (flat.FlatStatus === "Blocked" || flat.FlatStatus === "Available") && (
+                        {canAction && selectedWing?.ApprovalStatus?.toUpperCase() !== "APPROVED" && (flat.FlatStatus === "Available") && (
                             <div title="Delete">
                                 <Trash
                                     onClick={() => handleDeleteFlat(flat)}
@@ -1219,7 +1283,7 @@ const Inventory = () => {
                 );
             },
         },
-    ], [inventory, navigate, handleDeleteFlat]);
+    ], [inventory, navigate, handleDeleteFlat, selectedWing, canAction]);
 
     //#endregion
 
@@ -1242,7 +1306,8 @@ const Inventory = () => {
             ProjectId: building.ProjectId,
         };
 
-        setApprovalDocumentName(`${building.BuildingNumber} - Wing ${selectedWing?.Wing}`);
+        setBuildingName(building.BuildingNumber);
+        setWingName(selectedWing?.Wing)
 
         setApprovalLogRequest(request);
         setIsApprovalLogModalOpen(true);
@@ -1258,7 +1323,8 @@ const Inventory = () => {
 
         if (!building) return;
 
-        setApprovalDocumentName(`${building.BuildingNumber} - Wing ${selectedWing?.Wing}`);
+        setBuildingName(building.BuildingNumber);
+        setWingName(selectedWing?.Wing)
 
         setIsApprovalActionModalOpen(true);
     };
@@ -1325,7 +1391,7 @@ const Inventory = () => {
                 onDownloadSampleExcel={handleDownloadExcelSampleInventory}
                 canExport={canExport && Number(projectId) > 0 && inventory.length > 0}
                 canAction={canAction && Number(projectId) > 0}
-                canImport={canExport && Number(projectId) > 0 && inventory.length > 0}
+                canImport={canAction && Number(projectId) > 0 && inventory.length > 0}
                 exportLoading={isLoading}
                 onAddBuilding={handleOpenAddBuildingModal}
                 onAddWing={handleOpenAddWingModal}
@@ -1333,17 +1399,11 @@ const Inventory = () => {
                 searchTerm={searchTerm}
                 onSearchChange={handleSearchChange}
                 onClearSearch={handleClearSearch}
+                approvalStatus={isInventoryAvailable === true ? selectedWing?.ApprovalStatus ?? "" : ''}
 
-                approvalStatus={selectedWing?.ApprovalStatus ?? ""}
-                showApprovalActions={selectedWing?.IsApproval === true}
-                onApprovalLog={handleApprovalLog}
-                onApprove={() => handleApproveRejectDocument("approve")}
-                onReject={() => handleApproveRejectDocument("reject")}
             />
-
-            <div className="flex flex-col w-full h-[120px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
-
-                <div className="flex justify-between items-center">
+            {selectedBuilding && isInventoryAvailable === true && (
+                <div className="flex flex-col pt-3 w-full h-[230px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4">
 
                     <BuildingTabs
                         inventory={inventory}
@@ -1355,10 +1415,9 @@ const Inventory = () => {
                             setSelectedWing(inventory[index].InventoryFlatFloorBasementPodiumWingData[0]);
                         }}
                         onDeleteBuilding={handleDeleteBuilding}
+                        approvalStatus={selectedWing?.ApprovalStatus}
                     />
-
-                    <div className="pt-5">
-
+                    <div className="pt-3">
                         <StatusCounters
                             availableCount={availableFlatsCount}
                             holdCount={holdFlatsCount}
@@ -1367,48 +1426,71 @@ const Inventory = () => {
                             blockedCount={blockedFlatsCount}
                         />
                     </div>
-                </div>
 
-                <div className="border-b border-gray-200" />
+                    <div className="border-b border-gray-200 pt-3" />
 
-                <div className="flex justify-between items-center pt-2 pb-2">
+                    <div className="flex flex-col pt-3">
 
-                    <div className="flex-1">
-                        {selectedBuilding && isInventoryAvailable===true && (
-                            <WingTabs
-                                canAction={canAction}
-                                wings={selectedBuilding}
-                                activeWingTab={activeWingTab}
-                                onWingChange={(index) => {
+                        <div className="flex-1">
 
-                                    setActiveWingTab(String(index));
+                            <div className="flex items-center justify-between gap-3 w-full">
+                                <div className="flex-1 min-w-0">
+                                    <WingTabs
+                                        canAction={canAction}
+                                        wings={selectedBuilding}
+                                        activeWingTab={activeWingTab}
+                                        onWingChange={(index) => {
 
-                                    const newWing = selectedBuilding[index];
-                                    setSelectedWing(newWing);
+                                            setActiveWingTab(String(index));
 
-                                    if (projectId && newWing?.Wing) {
+                                            const newWing = selectedBuilding[index];
+                                            setSelectedWing(newWing);
 
-                                        localStorage.setItem(`inventorySelectedWing_${projectId}`, newWing.Wing);
-                                    }
-                                }}
-                                onDeleteWing={handleDeleteWing}
+                                            if (projectId && newWing?.Wing) {
+
+                                                localStorage.setItem(`inventorySelectedWing_${projectId}`, newWing.Wing);
+                                            }
+                                        }}
+                                        onDeleteWing={handleDeleteWing}
+                                        approvalStatus={selectedWing?.ApprovalStatus}
+                                    />
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                    <span className="text-sm text-gray-600">Status</span>
+                                    <span className={`px-3 py-1 text-xs rounded-md ${getStatusColor(selectedWing?.ApprovalStatus ?? "")}`}>
+                                        {selectedWing?.ApprovalStatus}
+                                    </span>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        <div className="flex items-center justify-between pt-2">
+                            <StatusCounters
+                                availableCount={selectedWingAvailableCount}
+                                holdCount={selectedWingHoldCount}
+                                memberCount={selectedWingMemberCount}
+                                bookedCount={selectedWingBookedCount}
+                                blockedCount={selectedWingBlockedCount}
                             />
-                        )}
-                    </div>
 
-                    <div className="flex justify-end">
-                        <StatusCounters
-                            availableCount={selectedWingAvailableCount}
-                            holdCount={selectedWingHoldCount}
-                            memberCount={selectedWingMemberCount}
-                            bookedCount={selectedWingBookedCount}
-                            blockedCount={selectedWingBlockedCount}
-                        />
+                            {selectedWing?.ApprovalStatus && (
+                                <ApprovalActions
+                                    approvalStatus={selectedWing?.ApprovalStatus}
+                                    showApproval={selectedWing?.IsApproval === true}
+                                    displayText="Status"
+                                    onHistory={handleApprovalLog}
+                                    onApprove={() => handleApproveRejectDocument("approve")}
+                                    onReject={() => handleApproveRejectDocument("reject")}
+                                />
+                            )}
+                        </div>
+
                     </div>
 
                 </div>
-
-            </div>
+            )}
 
             <ExportImport
                 open={showImportModal}
@@ -1419,10 +1501,9 @@ const Inventory = () => {
                 }}
             />
 
-
             {activeTab === "Grid" ? (
 
-                selectedWing && isInventoryAvailable===true && getFilteredFloors.map((floor) => {
+                selectedWing && isInventoryAvailable === true && getFilteredFloors.map((floor) => {
 
                     const originalFloorIndex = selectedWing.InventoryFloorData.findIndex(f => f.InventoryFloorId === floor.InventoryFloorId);
 
@@ -1442,19 +1523,24 @@ const Inventory = () => {
                             isLastFloor={isLastFloor}
                             canAction={canAction}
                             canBookingAction={canBookingAction}
+                            approvalStatus={selectedWing?.ApprovalStatus}
                         />
                     );
                 })
             ) : (
+
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mt-4">
-                    <DataTable
-                        data={tableData}
-                        columns={tableColumns}
-                        emptyMessage="No flats found"
-                        loading={isLoading}
-                        fixedHeight={false}
-                    />
+                    {isInventoryAvailable === true && (
+                        <DataTable
+                            data={tableData}
+                            columns={tableColumns}
+                            emptyMessage="No flats found"
+                            loading={isLoading}
+                            fixedHeight={false}
+                        />
+                    )}
                 </div>
+
             )}
 
             <DeleteDialog
@@ -1683,7 +1769,9 @@ const Inventory = () => {
             {/* Approval Log History */}
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
-                documentName={approvalDocumentName ?? ""}
+                title="Inventory"
+                titleText={buildingName ?? ""}
+                subTitleText={wingName ?? ""}
                 onClose={() => setIsApprovalLogModalOpen(false)}
                 request={approvalLogRequest}
             />
@@ -1694,7 +1782,8 @@ const Inventory = () => {
                 isOpen={isApprovalActionModalOpen}
                 onClose={() => setIsApprovalActionModalOpen(false)}
                 actionType={approvalActionType}
-                documentName={approvalDocumentName ?? ""}
+                titleText={buildingName ?? ""}
+                subTitleText={wingName ?? ""}
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />

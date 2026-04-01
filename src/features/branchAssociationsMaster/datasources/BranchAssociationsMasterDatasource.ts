@@ -41,15 +41,16 @@ export class BranchAssociationsMasterDatasourceImpl implements BranchAssociation
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${BranchAssociationsMasterApi.PULL}?${queryParams.toString()}`, { signal }
             )
-            
+
             return response;
 
         } catch (error: any) {
 
             console.error('ERROR: PULL BRANCH ASSOCIATIONS MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullBranchAssociationsMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullBranchAssociationsMaster(params);
             }
 
             throw error
@@ -71,37 +72,38 @@ export class BranchAssociationsMasterDatasourceImpl implements BranchAssociation
 
             console.error('ERROR: ADD UPDATE BRANCH ASSOCIATIONS MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateBranchAssociationsMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateBranchAssociationsMaster(params);
             }
             throw error
         }
     }
 
     async deleteBranchAssociations(params: DeleteBranchAssociationsRequest): Promise<BranchAssociationsDeleteResponse> {
-            try {
-                const queryParams = new URLSearchParams({
-                    BranchAssociationsId: (params.BranchAssociationsId ?? 0).toString(),
-                    UniqueKey: params.UniqueKey ?? '',
-                })
-    
-                const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
-                    `${BranchAssociationsMasterApi.DELETE}?${queryParams.toString()}`
-                )
-    
-                return response
-    
-            } catch (error) {
-                
-                if (error === TokenExpiredException) {
-    
-                    console.error('ERROR: DELETE BRANCH ASSOCIATIONS :', error);
-    
-                    await this.deleteBranchAssociations(params);
-    
-                }
-    
-                throw error
+        try {
+            const queryParams = new URLSearchParams({
+                BranchAssociationsId: (params.BranchAssociationsId ?? 0).toString(),
+                UniqueKey: params.UniqueKey ?? '',
+            })
+
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${BranchAssociationsMasterApi.DELETE}?${queryParams.toString()}`
+            )
+
+            return response
+
+        } catch (error) {
+
+            console.error('ERROR: DELETE BRANCH ASSOCIATIONS :', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteBranchAssociations(params);
+
             }
+
+            throw error
         }
+    }
 }

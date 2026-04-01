@@ -34,6 +34,8 @@ export class PerformanceReportDatasourceImpl implements PerformanceReportDatasou
             if (params.FromDate) queryParams.append('FromDate', params.FromDate.toString());
             if (params.ToDate) queryParams.append('ToDate', params.ToDate.toString());
             if (params.ReportType?.trim()) queryParams.append("ReportType", params.ReportType.trim());
+            if (params.PeriodType?.trim()) queryParams.append("PeriodType", params.PeriodType.trim());
+
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
@@ -46,9 +48,9 @@ export class PerformanceReportDatasourceImpl implements PerformanceReportDatasou
 
             console.error("ERROR: PULL PERFORMANCE REPORT :", error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullPerformanceReportClosing(params);
+                return await this.pullPerformanceReportClosing(params);
             }
             throw error;
         }
@@ -67,6 +69,7 @@ export class PerformanceReportDatasourceImpl implements PerformanceReportDatasou
             if (params.FromDate) queryParams.append('FromDate', params.FromDate.toString());
             if (params.ToDate) queryParams.append('ToDate', params.ToDate.toString());
             if (params.ReportType?.trim()) queryParams.append("ReportType", params.ReportType.trim());
+            if (params.PeriodType?.trim()) queryParams.append("PeriodType", params.PeriodType.trim());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
@@ -79,9 +82,9 @@ export class PerformanceReportDatasourceImpl implements PerformanceReportDatasou
 
             console.error("ERROR: PULL PERFORMANCE REPORT :", error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullPerformanceReportSourcing(params);
+                return await this.pullPerformanceReportSourcing(params);
             }
             throw error;
         }

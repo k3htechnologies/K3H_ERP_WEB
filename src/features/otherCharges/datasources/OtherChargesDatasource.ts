@@ -46,9 +46,9 @@ export class OtherChargesDatasourceImpl implements OtherChargesDatasource {
 
             console.error("ERROR: PULL OTHER CHARGES :", error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullOtherCharges(params);
+                return await this.pullOtherCharges(params);
             }
             throw error;
         }
@@ -67,8 +67,9 @@ export class OtherChargesDatasourceImpl implements OtherChargesDatasource {
 
             console.error('ERROR: ADD OTHER CHARGES:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateOtherCharges(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateOtherCharges(params);
             }
             throw error
         }
@@ -89,12 +90,14 @@ export class OtherChargesDatasourceImpl implements OtherChargesDatasource {
             return response
 
         } catch (error) {
-            if (error === TokenExpiredException) {
 
-                console.error('ERROR: DELETE OTHER CHARGES:', error);
+             console.error('ERROR: DELETE OTHER CHARGES:', error);
 
-                await this.deleteOtherCharges(params);
+            if (error instanceof TokenExpiredException) {
+
+                return this.deleteOtherCharges(params);
             }
+            
             throw error
         }
     }

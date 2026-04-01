@@ -53,7 +53,7 @@ import ApprovalDocumentCategoryMaster from '@/features/approvalDocumentCategory/
 import ApprovalDocument from '@/features/approvalDocument/pages/ApprovalDocument';
 import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCategory/pages/ProjectRERADocumentCategoryMaster';
 import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRERADocument';
-import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
+import ViewCompanyMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
 import Inventory from '@/features/inventory/pages/Inventory';
 import InventorySpecification from '@/features/inventory/pages/InventorySpecification';
 import { OutDoor } from '@/features/outdoor/pages/OutDoor';
@@ -159,6 +159,14 @@ import LitigationDashboard from '@/features/litigationDashboard/pages/litigation
 import ClassificationParameter from '@/features/classificationParameter/pages/ClassificationParameter';
 import Approval from '@/features/projectMaster/pages/Approval';
 import PerformanceReport from '@/features/performanceReport/pages/PerformanceReport';
+import ChannelPartnerDashboard from '@/features/channelPartnerDashboard/pages/ChannelPartnerDashboard';
+import Brokerage from '@/features/brokerage/pages/Brokerage';
+import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoice';
+import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
+import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
+import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
+import Terms from '@/features/terms/pages/TermsAndCondition';
+import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -229,7 +237,7 @@ function App() {
             <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
 
             <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
-            <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompantMaster /></CompanyListStateProvider>} />
+            <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />
@@ -340,6 +348,8 @@ function App() {
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />
 
+            <Route path="channelPartnerDashboard" element={<ChannelPartnerDashboard />} />
+
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
@@ -422,9 +432,20 @@ function App() {
             <Route path='content' element={<MarketingContentListStateProvider><MarketingContentFolder /></MarketingContentListStateProvider>} />
             <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
+            {/* CRM */}
+
+            <Route path="brokerage" element={<Brokerage />} />
+            <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
+            <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
+            <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
+
+          <Route path='Terms' element={<Terms />} />
+          <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
+          <Route path='companyPolicy' element={<CompanyPolicy />} />
+          
         </Routes>
       </Suspense>
     </CountryStateCityDistrictVillage>

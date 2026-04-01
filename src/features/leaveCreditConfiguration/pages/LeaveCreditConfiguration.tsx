@@ -349,7 +349,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
-  const requiredLeaveCreditConfigurationColumnKeys: string[] = ['DepartmentName'];
+  const requiredLeaveCreditConfigurationColumnKeys: string[] = ['DepartmentName', 'actions'];
 
   const allLeaveCreditConfigurationColumnKeys: string[] = leaveCreditConfigurationColumns.map(c => c.key);
 
@@ -462,7 +462,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
 
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>
@@ -470,7 +470,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Department Name..."
+        searchPlaceholder="Search By Department Name"
         onSearchChange={searchLeaveCreditConfigurations}
         onClearSearch={clearSearchLeaveCreditConfigurations}
         isShowFilterButton
@@ -531,7 +531,7 @@ export const LeaveCreditConfiguration: React.FC = () => {
         }}
         onConfirm={handleDeleteLeaveCreditConfiguration}
         loading={isLoading}
-        pageName='leaveCreditConfiguration'
+        pageName='Leave Credit Configuration'
       />
 
       <Modal
@@ -548,7 +548,6 @@ export const LeaveCreditConfiguration: React.FC = () => {
         onCancel={() => {
           setTempFilters({});
           resetFilters();
-          setShowFilterPopup(false);
         }}
         size="small-half"
       >

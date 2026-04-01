@@ -320,7 +320,7 @@ export const Vendor: React.FC = () => {
         label: 'Mobile Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: value => value ? `+91 ${value}` : '-'
 
       },
@@ -337,7 +337,7 @@ export const Vendor: React.FC = () => {
         label: 'GST Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -354,7 +354,7 @@ export const Vendor: React.FC = () => {
         label: 'Pan Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
 
           return (
@@ -372,7 +372,7 @@ export const Vendor: React.FC = () => {
         label: 'Aadhaar Card',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -389,7 +389,7 @@ export const Vendor: React.FC = () => {
         label: 'State',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -397,7 +397,7 @@ export const Vendor: React.FC = () => {
         label: 'District',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -405,11 +405,11 @@ export const Vendor: React.FC = () => {
         label: 'City',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
-        key: 'actions',
+        key: 'Actions',
         label: 'Actions',
         width: '12',
         fixed: 'right',
@@ -446,7 +446,7 @@ export const Vendor: React.FC = () => {
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
-  const requiredVendorColumnKeys: string[] = ['VendorName'];
+  const requiredVendorColumnKeys: string[] = ['VendorName','Actions'];
   const allVendorColumnKeys: string[] = vendorColumns.map(c => c.key)
   const [selectedVendorColumnKeys, setSelectedVendorColumnKeys] = useState<string[]>(() => {
     try {

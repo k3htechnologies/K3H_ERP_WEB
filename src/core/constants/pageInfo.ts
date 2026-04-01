@@ -13,7 +13,7 @@ export const getPageInfo = (path: string) => {
         case 'settingDashboard':
             return {
                 title: 'Setting Dashboard',
-                description: 'Centralized department management for real estate operations',
+                description: 'One Dashboard. Complete Operational Control',
             }
         case 'departmentMaster':
             return {
@@ -68,7 +68,7 @@ export const getPageInfo = (path: string) => {
         case 'uomMaster':
             return {
                 title: 'UOM Master',
-                description: 'Manage and organize company departments with complete CRUD operations',
+                description: 'Standardized Units for Accurate Property Management.',
             }
 
         case 'vendor':
@@ -147,17 +147,17 @@ export const getPageInfo = (path: string) => {
         case 'weekOffMaster':
             return {
                 title: 'Week Off Master',
-                description: 'Manage and organize branch associations with complete CRUD operations',
+                description: 'Organized Week Offs for Efficient HR Management',
             }
         case 'weekOffMappingMaster':
             return {
                 title: 'Week Off Mapping Master',
-                description: 'Manage and organize branch associations with complete CRUD operations',
+                description: 'Right Offs, Right Teams, Right Time',
             }
         case 'leaveCreditConfiguration':
             return {
                 title: 'Leave Credit Configuration Management',
-                description: 'Manage leave credit Configuration',
+                description: 'Smart Leave Credit Setup for Seamless HR Management',
             }
 
         // PAYROLL
@@ -176,7 +176,7 @@ export const getPageInfo = (path: string) => {
 
         case 'compOff':
             return {
-                title: 'CompOff',
+                title: 'Comp Off',
                 description: 'Smartly Track Extra Work. Seamlessly Grant Comp Off',
             }
         case 'outdoor':
@@ -224,12 +224,12 @@ export const getPageInfo = (path: string) => {
         case 'approvalDocument':
             return {
                 title: 'Approval Document',
-                description: 'Structured Approvals. Trusted Records',
+                description: 'Efficient Approvals for Seamless Real Estate Operations',
             }
         case 'approvalCategory':
             return {
                 title: 'Approval Document Category',
-                description: 'Structured Categories for Smarter Approval Document',
+                description: 'Categorize Approvals, Simplify Decisions',
             }
 
         //PROFILE
@@ -292,7 +292,7 @@ export const getPageInfo = (path: string) => {
         case 'redevelopmentDashboard':
             return {
                 title: 'Redevelopment Dashboard',
-                description: 'Single source of truth for building information',
+                description: 'Structured redevelopment workflows for efficient execution',
             }
         case 'building':
             return {
@@ -348,13 +348,19 @@ export const getPageInfo = (path: string) => {
         case 'saleDashboard':
             return {
                 title: "Sales Dashboard",
-                description: "Centralized enquiry management for faster response",
+                description: "Structured sales management for real estate projects",
             }
         case 'enquiry':
             return {
                 title: "Enquiry",
                 description: "Centralized enquiry management for faster response",
             }
+        case 'channelPartnerDashboard':
+            return {
+                title: "Channel Partner Dashboard",
+                description: "Centralized enquiry management for faster response",
+            }
+
         case 'channelPartner':
             return {
                 title: "Channel Partner",
@@ -363,34 +369,34 @@ export const getPageInfo = (path: string) => {
         case 'booking':
             return {
                 title: "Booking",
-                description: "Single source of truth for channel partner information",
+                description: "Secure Bookings, Satisfied Customers",
             }
         case 'sourcing':
             return {
                 title: "Channel Partner Sourcing",
-                description: "Single source of truth for channel partner information",
+                description: "Source Smarter, Sell Faster with Channel Partners",
             }
 
         case 'callTracker':
             return {
                 title: "Call Tracker",
-                description: "Single source of truth for channel partner information",
+                description: "Monitor sales calls and follow-ups in real time",
             }
 
         case 'otherCharges':
             return {
                 title: "Other Charges",
-                description: "Single source of truth for channel partner information",
+                description: "Clear Breakdown of All Extra Charges",
             }
         case 'paymentSchedule':
             return {
                 title: "Payment Schedule",
-                description: "Single source of truth for channel partner information",
+                description: "Structured Payment Schedules for Smooth Cash Flow",
             }
         case 'paymentScheduleScheme':
             return {
                 title: "Payment Schedule Scheme",
-                description: "Single source of truth for channel partner information",
+                description: "Flexible Plans, Faster Closures",
             }
         case 'paymentScheduleReport':
             return {
@@ -400,32 +406,32 @@ export const getPageInfo = (path: string) => {
         case 'enquiryReport':
             return {
                 title: "Enquiry Report",
-                description: "Centralized enquiry management for faster response",
+                description: "Turn Enquiries into Opportunities",
             }
         case 'cpEnquiryReport':
             return {
                 title: "Channel Partner Enquiry Report",
-                description: "Centralized enquiry management for faster response",
+                description: "Maximize Enquiries through Trusted Channel Partners",
             }
         case 'target':
             return {
                 title: "Sales Target",
-                description: "Centralized enquiry management for faster response",
+                description: "Driving Sales Performance with Clear Targets",
             }
         case 'incentiveReport':
             return {
                 title: "Incentive Report",
-                description: "Centralized enquiry management for faster response",
+                description: "Turn Referrals into Rewards",
             }
         case 'classificationParameter':
             return {
                 title: "Classification Parameter",
-                description: "Manage classification parameters for the system",
+                description: "Turn Lead Insights into Sales Opportunities",
             }
         case 'performance':
             return {
                 title: "Performance",
-                description: "Manage performance-related informationss",
+                description: "Track Team Progress Against Every Target",
             }
 
 
@@ -434,13 +440,13 @@ export const getPageInfo = (path: string) => {
         case 'content':
             return {
                 title: "Content",
-                description: "Profile",
+                description: "Structured marketing materials for real estate campaigns",
             }
         // PROJECT
         case 'approvedBank':
             return {
                 title: "Approved Bank",
-                description: "Profile",
+                description: "Reliable Banks, Hassle-Free Financing",
             }
         // LITIGATION
         case 'litigation':
@@ -452,7 +458,7 @@ export const getPageInfo = (path: string) => {
         case 'legalDashboard':
             return {
                 title: "Legal Dashboard",
-                description: "Track & manage project related legal cases",
+                description: "Simplifying Legal Oversight Across Every Project",
             }
 
 

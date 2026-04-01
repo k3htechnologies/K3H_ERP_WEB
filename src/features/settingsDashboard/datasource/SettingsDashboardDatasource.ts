@@ -21,8 +21,9 @@ export class SettingsDashboardDatasourceImpl implements SettingsDashboardDatasou
 
             console.error('ERROR: PULL SETTINGS DASHBOARD :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullSettingsDashboard(signal);
+             if (error instanceof TokenExpiredException) {
+
+                return await this.pullSettingsDashboard(signal);
             }
             throw error
         }

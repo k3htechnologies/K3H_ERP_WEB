@@ -6,10 +6,11 @@ interface WingTabsProps {
     activeWingTab: string;
     onWingChange: (index: number) => void;
     onDeleteWing?: (wing: InventoryFlatFloorBasementPodiumWingData) => void;
-    canAction?:boolean
+    canAction?:boolean;
+    approvalStatus?:string;
 }
 
-export const WingTabs = ({ wings, activeWingTab, onWingChange, onDeleteWing,canAction }: WingTabsProps) => {
+export const WingTabs = ({ wings, activeWingTab, onWingChange, onDeleteWing,canAction,approvalStatus }: WingTabsProps) => {
     const handleTabClick = (index: number) => {
         onWingChange(index);
     };
@@ -21,7 +22,7 @@ export const WingTabs = ({ wings, activeWingTab, onWingChange, onDeleteWing,canA
 
     return (
         <div className="w-full pb-2">
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto thin-scroll whitespace-nowrap scrollbar-hide">
                 {wings.map((wing, index) => {
 
                     const isActive = activeWingTab === String(index);
@@ -46,7 +47,7 @@ export const WingTabs = ({ wings, activeWingTab, onWingChange, onDeleteWing,canA
                                 {wing.Wing}
                             </span>
                             
-                            {onDeleteWing && canAction && isActive && (
+                            {onDeleteWing && canAction && isActive && !approvalStatus?.toUpperCase().includes("APPROVED") && (
                                 <button
                                     onClick={(e) => handleDeleteClick(e, wing)}
                                     className="ml-1 p-0.5 rounded-full hover:bg-gray-200 transition-colors"

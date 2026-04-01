@@ -46,7 +46,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     const currentSize = sizeConfig[size]
-    
 
     // Variant styles
     const getVariantStyles = () => {
@@ -107,7 +106,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     }
 
     return (
-      <div style={{ width: fullWidth ? '100%' : 'auto', marginBottom: theme.spacing.sm }}>
+      <div style={{ width: fullWidth ? '100%' : 'auto'}}>
         {label && (
           <label style={{
             display: 'block',

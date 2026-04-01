@@ -145,6 +145,7 @@ export const Litigation: React.FC = () => {
         const response = await litigationService.apiCallPullLitigation(params);
 
         if (E.isRight(response)) {
+
           setLitigationList(response.right.Data);
           setPagination({
             currentPage: page,
@@ -153,6 +154,7 @@ export const Litigation: React.FC = () => {
               response.right.TotalNumberOfRecord / pagination.pageSize,
             ),
           });
+
         } else {
           addToast({ type: "error", title: response.left.message });
           return response;
@@ -182,39 +184,37 @@ export const Litigation: React.FC = () => {
   //#endregion
 
   //#region EXPORT / IMPORT EXCEL AND PDF
-  const handleExportLitigation = useCallback(
-    async (exportType: "Excel" | "PDF") => {
-      await runApiWithLoader(
-        setIsLoading,
-        setLoadingMessage,
-        async () => {
-          const params: FilterWithPaginationLitigationRequest = {
-            PageNumber: 1,
-            PageSize: pagination.totalRecords,
-            Title: filters.Title?.trim() || undefined,
-            CaseNumber: filters.CaseNumber ?? undefined,
-            CourtName: filters.CourtName ?? undefined,
-            ProjectId: Number(projectId),
-            SortBy: getSortByParam(sortInfo ?? null, LitigationColumns),
-            ExportType: exportType,
-          };
+  const handleExportLitigation = async (exportType: 'Excel' | 'PDF') => {
 
-          const response =
-            await litigationService.apiCallPullLitigation(params);
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+        const params: FilterWithPaginationLitigationRequest = {
+          PageNumber: 1,
+          PageSize: pagination.totalRecords,
+          Title: filters.Title?.trim() || undefined,
+          CaseNumber: filters.CaseNumber ?? undefined,
+          CourtName: filters.CourtName ?? undefined,
+          ProjectId: Number(projectId),
+          SortBy: getSortByParam(sortInfo ?? null, LitigationColumns),
+          ExportType: exportType,
+        };
 
-          handleExportFile(response, exportType, "Litigation", addToast);
+        const response =
+          await litigationService.apiCallPullLitigation(params);
 
-          return response;
-        },
-        undefined,
-        (error: any) =>
-          addToast({ type: "error", title: error.message || "Export failed" }),
-        undefined,
-        "Preparing Export",
-      );
-    },
-    [projectId, pagination.pageSize, addToast],
-  );
+        handleExportFile(response, exportType, "Litigation", addToast);
+
+        return response;
+      },
+      undefined,
+      (error: any) =>
+        addToast({ type: "error", title: error.message || "Export failed" }),
+      undefined,
+      "Preparing Export",
+    );
+  }
 
   const handleExportLitigationExcel = () => handleExportLitigation("Excel");
   const handleExportLitigationPdf = () => handleExportLitigation("PDF");
@@ -317,7 +317,7 @@ export const Litigation: React.FC = () => {
         label: "Case / Petition / Dispute Number",
         width: "16",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -325,7 +325,7 @@ export const Litigation: React.FC = () => {
         label: "Case Type",
         width: "15",
         sortable: true,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -382,7 +382,7 @@ export const Litigation: React.FC = () => {
         label: "Court Name",
         width: "15",
         sortable: true,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -390,7 +390,7 @@ export const Litigation: React.FC = () => {
         label: "Court Location",
         width: "15",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -398,7 +398,7 @@ export const Litigation: React.FC = () => {
         label: "Court Type",
         width: "16",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => value || "-",
       },
       {
@@ -406,7 +406,7 @@ export const Litigation: React.FC = () => {
         label: "Plaintiff / Complaint / Petitioner",
         width: "15",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => (
           <TooltipText
             text={value || "-"}
@@ -420,7 +420,7 @@ export const Litigation: React.FC = () => {
         label: "Defendant / Opposite Party / Respondent",
         width: "15",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => (
           <TooltipText
             text={value || "-"}
@@ -434,7 +434,7 @@ export const Litigation: React.FC = () => {
         label: "Assigned Representative",
         width: "15",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => (
           <TooltipText
             text={value || "-"}
@@ -448,7 +448,7 @@ export const Litigation: React.FC = () => {
         label: "Opposing Representative",
         width: "15",
         sortable: false,
-        align: "center",
+        align: "left",
         render: (value) => (
           <TooltipText
             text={value || "-"}
@@ -485,26 +485,28 @@ export const Litigation: React.FC = () => {
               >
                 <FileText className="h-4 w-4" />
               </Button>
-
-              {row?.IsDelete && (
+           
                 <Button
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();
+                    if(!row?.IsDelete) return;
                     handleConfirmationDialogBoxOpen(row);
                   }}
                   color="transparent"
                   isborderRadius
                   size="sm"
+                  disabled={!row?.IsDelete}
                   style={{
-                    color: "red",
-                    padding: "4px 8px",
+                    color: row?.IsDelete ? 'red' : '#9CA3AF',
+                    cursor: row?.IsDelete ? 'pointer' : 'not-allowed',
+                    opacity: row?.IsDelete ? 1 : 0.5
                   }}
                   title="Delete Litigation"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
-              )}
+              
             </div>
           );
         },
@@ -539,7 +541,7 @@ export const Litigation: React.FC = () => {
             allLitigationColumnKeys.includes(k),
           );
         }
-      } catch {}
+      } catch { }
       return allLitigationColumnKeys;
     });
 
@@ -639,7 +641,7 @@ export const Litigation: React.FC = () => {
   //#endregion
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       {/* Loader */}
       <Loader loading={isLoading} title={loadingMessage}>
         {" "}
@@ -701,7 +703,7 @@ export const Litigation: React.FC = () => {
             LocalStorageHelper.storeLitigationTableColumns?.(
               JSON.stringify(withRequired),
             );
-          } catch {}
+          } catch { }
         }}
         columns={LitigationColumns}
         selectedKeys={selectedLitigationColumnKeys}
@@ -742,10 +744,10 @@ export const Litigation: React.FC = () => {
           <div>
             <Input
               type="text"
-              label="Case Number"
+              label="Case / Petition / Dispute Number"
               value={tempFilters?.CaseNumber ?? ""}
               onChange={(e) => handleFilterChange("CaseNumber", e.target.value)}
-              placeholder="Enter Case Number"
+              placeholder="Enter Case / Petition / Dispute Number"
             />
           </div>
 

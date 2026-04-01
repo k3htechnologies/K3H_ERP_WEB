@@ -52,7 +52,6 @@ export const ProjectDocumentCategoryMasterViewModal: React.FC<ProjectDocumentCat
       size="xl"
     >
       <div className="space-y-6">
-        <div className="space-y-4">
           <FieldItem
             label="Document Category"
             value={data.ProjectDocumentCategoryName}
@@ -62,11 +61,9 @@ export const ProjectDocumentCategoryMasterViewModal: React.FC<ProjectDocumentCat
           />
           <FieldItem label="Sequence" value={data.OrderBy} isRow withBorder />
           <FieldItem label="Document Count" value={data.DocumentCount ?? 0} isRow withBorder />
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="text-lg font-semibold pb-2">Action Details</h4>
-
+        
+          <h4 className="text-lg font-semibold">Action Details</h4>
+          
           <FieldItem
             label="Created By / Date"
             isRow={true}
@@ -84,8 +81,8 @@ export const ProjectDocumentCategoryMasterViewModal: React.FC<ProjectDocumentCat
           ) : (
             ''
           )}
-        </div>
-        <div className="flex justify-between items-center pt-4">
+        
+        <div className="flex justify-between items-center">
           {canAction && (
             <>
               <Button

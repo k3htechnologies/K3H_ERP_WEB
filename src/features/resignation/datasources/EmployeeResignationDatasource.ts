@@ -37,6 +37,7 @@ export class EmployeeResignationDatasourceImpl implements EmployeeResignationDat
             if (params.ApprovalStatus?.trim()) queryParams.append('ApprovalStatus', params.ApprovalStatus.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
+            if (params.CanApprove !== undefined) queryParams.append('CanApprove', params.CanApprove.toString())
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
@@ -47,8 +48,9 @@ export class EmployeeResignationDatasourceImpl implements EmployeeResignationDat
         } catch (error) {
             console.error('Error: Pull Employee Resignation:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEmployeeResignation(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullEmployeeResignation(params);
             }
             throw error
         }
@@ -65,8 +67,9 @@ export class EmployeeResignationDatasourceImpl implements EmployeeResignationDat
         } catch (error) {
             console.error('Error: Add Update Employee Resignation:', error);
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateEmployeeResignation(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.addUpdateEmployeeResignation(params);
             }
             throw error
         }
@@ -88,8 +91,9 @@ export class EmployeeResignationDatasourceImpl implements EmployeeResignationDat
         } catch (error) {
             console.error('Error: Delete Employee Resignation:', error);
 
-            if (error === TokenExpiredException) {
-                await this.deleteEmployeeResignation(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.deleteEmployeeResignation(params);
             }
             throw error
         }

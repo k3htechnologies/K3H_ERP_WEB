@@ -36,6 +36,8 @@ export class CallLogDatasourceImpl implements CallLogDatasource {
             if (params.CallLogId) queryParams.append("CallLogId", params.CallLogId.toString());
             if (params.Name) queryParams.append('Name', params.Name.toString());
             if (params.MobileNumber) queryParams.append('MobileNumber', params.MobileNumber.toString());
+            if (params.RescheduleDateFromDate) queryParams.append('RescheduleDateFromDate', params.RescheduleDateFromDate.toString());
+            if (params.RescheduleDateToDate) queryParams.append('RescheduleDateToDate', params.RescheduleDateToDate.toString());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
@@ -48,9 +50,9 @@ export class CallLogDatasourceImpl implements CallLogDatasource {
 
             console.error("ERROR: PULL CALL LOG :", error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullCallLog(params);
+                return await this.pullCallLog(params);
             }
             throw error;
         }
@@ -69,8 +71,9 @@ export class CallLogDatasourceImpl implements CallLogDatasource {
 
             console.error('ERROR: ADD CALL LOG:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addCallLog(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addCallLog(params);
             }
             throw error
         }
@@ -89,8 +92,9 @@ export class CallLogDatasourceImpl implements CallLogDatasource {
 
             console.error('ERROR: UPDATE CALL LOG:', error)
 
-            if (error === TokenExpiredException) {
-                await this.UpdateCallLog(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.UpdateCallLog(params);
             }
             throw error
         }
@@ -111,11 +115,12 @@ export class CallLogDatasourceImpl implements CallLogDatasource {
             return response
 
         } catch (error) {
-            if (error === TokenExpiredException) {
 
-                console.error('ERROR: DELETE CALL LOG:', error);
+            console.error('ERROR: DELETE CALL LOG:', error);
 
-                await this.deleteCallLog(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteCallLog(params);
             }
             throw error
         }

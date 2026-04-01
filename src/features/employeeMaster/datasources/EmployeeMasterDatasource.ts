@@ -6,7 +6,9 @@ import type {
     EmployeeMasterListResponse,
     LocationResponse,
     SetEmployeeMPINRequest,
-    EmployeeMPINRequestResponse
+    EmployeeMPINRequestResponse,
+    UpdateEmployeeMasterRequest,
+    EmployeeMasterUpdateResponse
 } from '@/features/employeeMaster/models/EmployeeMasterModel'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 
@@ -14,6 +16,7 @@ export abstract class EmployeeMasterDatasource {
 
     abstract pullEmployeeMaster(params: FilterWithPaginationEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
     abstract addUpdateEmployeeMaster(params: AddUpdateEmployeeMasterRequest): Promise<EmployeeMasterListResponse>;
+    abstract updateEmployeeMaster(params: UpdateEmployeeMasterRequest): Promise<EmployeeMasterUpdateResponse>;
 }
 
 export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
@@ -62,6 +65,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
             if (params.ToJoiningDate) queryParams.append('ToJoiningDate', params.ToJoiningDate);
 
 
+            if (params.ActiveInactive?.trim()) queryParams.append('ActiveInactive', params.ActiveInactive.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
@@ -74,8 +78,9 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('Error: Pull Employee Master:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEmployeeMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.pullEmployeeMaster(params);
             }
             throw error
         }
@@ -120,6 +125,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
                 StateMasterId: params.StateMasterId ?? 0,
                 DistrictMasterId: params.DistrictMasterId ?? 0,
                 CityMasterId: params.CityMasterId ?? 0,
+                VillageMasterId: params.VillageMasterId ?? 0,
             }
 
 
@@ -133,11 +139,32 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('Error: Add Update Employee Master:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateEmployeeMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.addUpdateEmployeeMaster(params);
             }
 
 
+            throw error
+        }
+    }
+
+    async updateEmployeeMaster(params: UpdateEmployeeMasterRequest): Promise<EmployeeMasterUpdateResponse> {
+
+        try {
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                EmployeeMasterApi.UPDATE,
+                params
+            )
+            return response
+        } catch (error) {
+
+            console.error('ERROR: UPDATE Employee Master:', error)
+
+           if (error instanceof TokenExpiredException) {
+
+                return   await this.updateEmployeeMaster(params);
+            }
             throw error
         }
     }
@@ -156,8 +183,9 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('Error: SET MPIN:', error)
 
-            if (error === TokenExpiredException) {
-                await this.setEmployeeMPIN(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.setEmployeeMPIN(params);
             }
 
 

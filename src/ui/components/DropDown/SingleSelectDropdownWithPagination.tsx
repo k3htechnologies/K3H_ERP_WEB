@@ -403,7 +403,7 @@ export const SingleSelectDropdownWithPagination = forwardRef<
             style={{
               display: "flex", justifyContent: "space-between", alignItems: "center",
               fontWeight: theme.fontWeight.normal,
-              padding: `${sizeStyles.padding + 4}px ${sizeStyles.padding * 2}px`,
+              padding: `${sizeStyles.padding + 4}px 16px`,
               fontSize: themeFontSize,
               borderRadius: theme.borderRadius.lg,
               backgroundColor: theme.colors.background,

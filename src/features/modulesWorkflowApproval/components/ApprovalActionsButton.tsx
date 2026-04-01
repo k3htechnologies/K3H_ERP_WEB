@@ -1,24 +1,11 @@
 import { CheckCircle, XCircle, History } from "lucide-react";
+import { getStatusColor } from "../utils/Status";
 
-const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-        case "approved":
-            return "bg-green-100 text-green-700";
-
-        case "pending":
-            return "bg-yellow-100 text-yellow-700";
-
-        case "partial pending":
-            return "bg-orange-100 text-orange-700";
-
-        default:
-            return "bg-gray-100 text-gray-700";
-    }
-};
 
 interface ApprovalActionsProps {
     showApproval?: boolean;
     isIcons?: boolean;
+    displayText?: string;
     approvalStatus?: string;
     onHistory?: () => void;
     onApprove?: () => void;
@@ -28,6 +15,7 @@ interface ApprovalActionsProps {
 const ApprovalActions = ({
     showApproval = false,
     isIcons = false,
+    displayText="",
     approvalStatus = "Pending",
     onHistory,
     onApprove,
@@ -37,13 +25,14 @@ const ApprovalActions = ({
         <div className="flex items-center border border-gray-300 rounded-md overflow-hidden w-fit">
 
             {/* HISTORY - Always visible */}
-            <span
-                className={`px-2 py-1 text-xs font-medium ${getStatusColor(
+            {!displayText && (
+            <span className={`px-2 py-1 text-xs font-semibold  ${getStatusColor(
                     approvalStatus
                 )}`}
             >
                 {approvalStatus}
             </span>
+            )}
 
             <button
                 onClick={(e) => {
@@ -55,6 +44,7 @@ const ApprovalActions = ({
                     }`}
             >
                 {isIcons ? <History size={16} /> : "History"}
+                
             </button>
 
             {/* APPROVE + REJECT only if approval required */}

@@ -62,6 +62,7 @@ const CompleteVerificationSection: React.FC<CompleteVerificationSectionProps> = 
         <div className="flex gap-2 mt-2">
 
           <Input
+            autoFocus
             label={`Verify OTP ${mobileNumber ? `+91 ${mobileNumber}` : ""}`}
             value={otp}
             maxLength={4}

@@ -185,7 +185,7 @@ const ViewAssetPage: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Asset Name" value={editAssetData!.AssetName} />
                                         <FieldItem label="Asset Code" value={editAssetData!.AssetCode} />
-                                        <FieldItem label="Serial Type" value={editAssetData!.AssetType} />
+                                        <FieldItem label="Asset Type" value={editAssetData!.AssetType} />
 
                                     </div>
                                 </div>
@@ -324,7 +324,7 @@ const ViewAssetPage: React.FC = () => {
             )}
 
             {activeTab === 'Return History' && assetMappingMasterList && (
-                <div className="space-y-4">
+                <div className="space-y-4 pt-5">
                     {assetMappingMasterList.length === 0 ? (
                         <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
                             <NoDataView message='No Assets Found' />
@@ -336,7 +336,7 @@ const ViewAssetPage: React.FC = () => {
                                 return (
                                     <>
 
-                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]" >
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] " >
                                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                                 Asset Details
                                             </h4>

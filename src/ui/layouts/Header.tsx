@@ -26,6 +26,7 @@ import Tabs from '../components/Tab/Tab'
 import { Input } from '../components/forms'
 import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService'
 import { Loader } from '@/core/utils/loader'
+import { getNameInitials } from '@/core/utils/getNameInitials'
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -212,6 +213,7 @@ export const Header: React.FC<HeaderProps> = ({
     const employeeCode = emp?.EmployeeCode ?? '—';
     const branch = emp?.Branch ?? '—';
     const LastLogin = emp?.LastLogin ?? '—';
+    const profilePhotoURL = emp?.ProfilePhotoURL ?? '—';
 
     //#endregion
 
@@ -381,21 +383,26 @@ export const Header: React.FC<HeaderProps> = ({
                                 required={false}
                                 size="md"
                                 isShowClearSelection={false}
+
                                 options={(emp?.ProjectData ?? []).map(opt => ({
                                     label: opt.ProjectName,
                                     value: opt.ProjectId
                                 }))}
+
                                 value={projectId ?? undefined}
                                 onChange={(value: string | number) => {
                                     setProjectId(Number(value))
                                 }}
+
                                 placeholder="Select Project"
                                 selectedTextColor="#135BEC"
                                 disabled={readOnlyProject}
                                 leftIcon={<Info size={18} color="#135BEC" />}
+
                                 leftIconClick={() => {
 
                                     if (!projectId || projectId <= 0) return;
+
                                     setEmployeeMasterList([]);
                                     setProjectMasterList([]);
                                     setActiveTab(TabList[0].id)
@@ -483,14 +490,18 @@ export const Header: React.FC<HeaderProps> = ({
                         <div className="flex items-center space-x-4 mb-6">
                             <div className="h-16 w-16 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden">
 
-                                <div className="w-14 h-14 
-                                                                        rounded-full 
-                                                                        bg-gradient-to-br from-gray-200 to-gray-300 
-                                                                        flex items-center justify-center 
-                                                                        text-gray-700 font-bold text-lg
-                                                                        border border-gray-300">
-                                    {fullName.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
-                                </div>
+                                {profilePhotoURL && profilePhotoURL !== '—' ? (
+                                    <img
+                                        src={profilePhotoURL}
+                                        alt="Profile"
+                                        className="w-14 h-14 rounded-full object-cover border border-gray-300"
+                                    />
+                                ) : (
+                                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-700 font-bold text-lg border border-gray-300">
+                                       {getNameInitials(fullName!.trim())}
+                                    </div>
+                                )}
+
                             </div>
                             <div className="min-w-0">
                                 <h2 className="text-lg font-semibold text-gray-900 truncate">{fullName}</h2>
@@ -617,7 +628,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                                     <FieldItem label="Project Scope" value={projectMasterList[0]?.ProjectScope ?? '-'} />
                                     <FieldItem label="Project Scheme" value={projectMasterList[0]?.ProjectScheme ?? '-'} />
-                                    <FieldItem label="Project Sub Scope" value={projectMasterList[0]?.ProjectSubScheme ?? '-'} />
+                                    <FieldItem label="Project Sub Scheme" value={projectMasterList[0]?.ProjectSubScheme ?? '-'} />
                                 </div>
 
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">

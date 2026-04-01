@@ -5,6 +5,7 @@ import Checkbox from '@/ui/components/forms/Checkbox';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { LEAVE_TYPE_MASTER } from '@/core/constants';
 import type { AddUpdateLeaveTypeMasterRequest } from '@/features/leaveTypeMaster/models/LeaveTypeMasterModel';
+import { filterNumbersWithDecimal } from '@/core/utils/fileValidation';
 
 interface LeaveTypeMasterFormModalProps {
   isOpen: boolean;
@@ -81,10 +82,9 @@ export const LeaveTypeMasterFormModal: React.FC<LeaveTypeMasterFormModalProps> =
                 type="text"
                 label='Max Carry Forward'
                 value={formData.MaxCarryForward ?? ""}
-                onChange={(e) => onFieldChange("MaxCarryForward", e.target.value)}
+                onChange={e => onFieldChange('MaxCarryForward', filterNumbersWithDecimal(e.target.value) || 0)}
                 required
                 placeholder="Enter Max Carry Forward"
-                maxLength={3}
                 error={errors.MaxCarryForward}
               />
             </div>

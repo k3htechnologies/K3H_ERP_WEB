@@ -93,7 +93,7 @@ export const TimePicker: React.FC<TimePickerProps> = ({
   const sizeConfig = useMemo(
     () => ({
       sm: { height: "36px", padding: `${theme.spacing.sm} ${theme.spacing.md}`, fontSize: theme.fontSize.sm, iconSize: 16 },
-      md: { height: "44px", padding: `${theme.spacing.md} ${theme.spacing.lg}`, fontSize: theme.fontSize.md, iconSize: 20 },
+      md: { height: "44px", padding: `${theme.spacing.md} ${theme.spacing.lg}`, fontSize: theme.fontSize.md, iconSize: 18 },
       lg: { height: "52px", padding: `${theme.spacing.lg} ${theme.spacing.xl}`, fontSize: theme.fontSize.lg, iconSize: 24 },
     }),
     [theme]

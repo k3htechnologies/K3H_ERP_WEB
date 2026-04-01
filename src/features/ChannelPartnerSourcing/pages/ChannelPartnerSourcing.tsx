@@ -17,6 +17,8 @@ import { ChannelPartnerService } from '@/features/ChannelPartner/services/Channe
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import { isChannelPartnerComplete } from '@/features/ChannelPartner/utils/channelPartnerUtils';
+import { AlertTriangle } from 'lucide-react';
 
 export const ChannelPartnerSourcing: React.FC = () => {
 
@@ -56,7 +58,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
       loadChannelPartner(listState.page, listState.filters, listState.sortInfo);
 
     }
-  }, [projectId,listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
+  }, [projectId, listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   useEffect(() => {
 
@@ -195,21 +197,33 @@ export const ChannelPartnerSourcing: React.FC = () => {
         sortable: true,
         fixed: 'left',
         align: 'left',
-        render: value => (
-          <TooltipText
-            text={value || '-'}
-            maxWidth="150px"
-            tooltipThreshold={20}
-            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-          />
-        )
+        render: (value, row) => {
+          const complete = isChannelPartnerComplete(row)
+          return (
+            <div className="flex items-center justify-center gap-2">
+
+              <TooltipText
+                text={value || '-'}
+                maxWidth="150px"
+                tooltipThreshold={20}
+                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+              />
+
+              {!complete && (
+                <span title="Channel Partner Profile Incomplete">
+                  <AlertTriangle className="w-4 h-4 text-amber-500 cursor-pointer" />
+                </span>
+              )}
+
+            </div>
+          );
+        }
       },
       {
         key: 'Name',
-        label: 'Name',
+        label: 'Full Name',
         width: '20',
         sortable: true,
-        fixed: 'left',
         align: 'left',
         render: (value, row) => (
           <TooltipText
@@ -226,7 +240,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Designation',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -234,7 +248,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Company Name',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -242,7 +256,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Firm Type',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -250,7 +264,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Type',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
 
@@ -259,7 +273,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Email Id',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -278,7 +292,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Pan Number',
         width: '12',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -295,7 +309,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Aadhaar Card Number',
         width: '12',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -312,7 +326,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'GST Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -329,7 +343,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'RERA Number',
         width: '12',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -361,7 +375,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Village',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
       {
@@ -369,7 +383,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         label: 'Office Address',
         width: '12',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-'
       },
     ],
@@ -380,7 +394,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
 
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>

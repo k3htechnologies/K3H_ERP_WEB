@@ -12,6 +12,7 @@ interface TabsProps {
   onTabChange?: (tab: TabItem) => void;
   islarge?: boolean
   isChips?: boolean;
+  istoggleTab?: boolean;
 }
 
 export const Tabs: React.FC<TabsProps> = ({
@@ -19,7 +20,8 @@ export const Tabs: React.FC<TabsProps> = ({
   defaultActive,
   onTabChange,
   islarge = false,
-  isChips = false
+  isChips = false,
+  istoggleTab = false,
 }) => {
 
   const [active, setActive] = useState<string | undefined>(tabs[0]?.id);
@@ -43,9 +45,37 @@ export const Tabs: React.FC<TabsProps> = ({
     onTabChange?.(tab);
   };
 
+  if (istoggleTab) {
+    return (
+      <div
+        className="inline-flex items-center bg-[#F1F1F1] rounded-md p-1"
+        style={{ border: "0.3px solid #0000003f" }}
+      >
+        {tabs.map((tab) => {
+          const isActive = active === tab.id;
+
+          return (
+            <button
+              key={tab.id}
+              onClick={() => handleChange(tab)}
+              className={`px-5 h-[36px] flex items-center rounded-md text-sm transition-all duration-200
+              ${isActive
+                  ? "bg-white text-blue-600 font-medium shadow-sm"
+                  : "text-gray-500 hover:text-blue-500"
+                }
+            `}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
+
   if (isChips) {
     return (
-      <div className="w-full border-b border-gray-200 pb-2">
+      <div className="w-full border-b border-gray-200">
         <div className="flex gap-8">
           {tabs.map((tab) => {
             const isActive = active === tab.id;
@@ -77,11 +107,8 @@ export const Tabs: React.FC<TabsProps> = ({
 
   return (
 
-    <div className="w-full pb-2">
-      <div
-        className={`${islarge ? " flex flex-wrap gap-2" : " border-b border-blue-300 flex gap-2"
-          }`}
-      >
+    <div className="w-full">
+      <div className={`${islarge ? " flex flex-wrap gap-2" : " border-b border-blue-300 flex gap-2"}`}>
 
         {tabs.map((tab) => {
           const isActive = active === tab.id;

@@ -75,7 +75,6 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
             ...baseStyles,
             backgroundColor: theme.colors.backgroundSecondary,
             border: `1px solid ${theme.colors.border}`,
-            boxShadow: theme.shadows.sm,
           }
         case 'outlined':
           return {
@@ -87,7 +86,6 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           return {
             ...baseStyles,
             backgroundColor: theme.colors.background,
-            boxShadow: theme.shadows.sm,
           }
       }
     }
@@ -139,7 +137,6 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       <div
         style={{
           width: fullWidth ? '100%' : 'auto',
-          marginBottom: theme.spacing.lg,
         }}
       >
         {label && (

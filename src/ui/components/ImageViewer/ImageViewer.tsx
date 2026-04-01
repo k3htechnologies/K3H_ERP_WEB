@@ -2,6 +2,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { X, ChevronLeft, ChevronRight, Download, Eye, Minimize2, Maximize2 } from "lucide-react";
 import { COLORS } from "@/core/constants";
+import { technicalService } from "@/features/technical/services/TechnicalService";
+import { handleExportFile } from "@/core/utils/exportFile";
+import { useToast } from "@/core/hooks/useToast";
 
 type PanelSize = "sm" | "md" | "lg" | "xl";
 
@@ -33,6 +36,8 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
   isIcon = true,
   isWrap = true,
 }) => {
+
+
 
   const imageUrls = (images || []).filter((u) => typeof u === "string" && u.trim() !== "");
 
@@ -91,38 +96,39 @@ export const MultiImageViewer: React.FC<MultiImageViewerProps> = ({
 
   }, [isOpen]);
 
-  const readBlobOrUrl = async () => {
-    const url = imageUrls[index];
 
-    const response = await fetch(url);   // works for blob + normal url
-    const blob = await response.blob();  // REAL file data
-    return blob;
-  };
-
-  useEffect(() => {
-    if (!isOpen || !imageUrls[index]) return;
-
-    readBlobOrUrl();
-
-  }, [isOpen, index]);
 
 
   const prev = useCallback(() => setIndex((p) => (p - 1 + total) % total), [total]);
   const next = useCallback(() => setIndex((p) => (p + 1) % total), [total]);
 
-  const handleDownload = () => {
+  // TOAST
+  const { addToast } = useToast();
+
+  const handleDownload = async () => {
+
     const url = imageUrls[index];
-    try {
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    } catch {
-      window.open(imageUrls[index], "_blank", "noopener,noreferrer");
+
+    const extension = url.split('.').pop()?.toLowerCase();
+
+    let exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other' = 'Other';
+
+    if (['xls', 'xlsx'].includes(extension || '')) {
+      exportType = 'Excel';
+    } else if (extension === 'pdf') {
+      exportType = 'PDF';
+    } else if (['png', 'jpg', 'jpeg', 'gif', 'webp'].includes(extension || '')) {
+      exportType = 'Image';
+    } else if (['doc', 'docx'].includes(extension || '')) {
+      exportType = 'Word';
     }
+
+    const response = await technicalService.apiCallGetDownloadURL(url);
+
+    handleExportFile(response, exportType, title, addToast, "Download successfully");
+
   };
+
 
   const onWheel = (e: React.WheelEvent) => {
     e.preventDefault();

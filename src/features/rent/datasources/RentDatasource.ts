@@ -61,8 +61,9 @@ export class RentDatasourceImpl implements RentDatasource {
 
             console.error('ERROR: PULL TENANT APPLICANT CHARGES (RENT) :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullTenantApplicantCharges(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullTenantApplicantCharges(params);
             }
 
             throw error

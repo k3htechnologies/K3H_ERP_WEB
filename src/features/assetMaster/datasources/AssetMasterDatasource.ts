@@ -47,8 +47,9 @@ export class AssetMasterDatasourceImpl implements AssetMasterDatasource {
 
             console.error('ERROR: PULL ASSET MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullAssetMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullAssetMaster(params);
             }
             throw error
         }
@@ -64,11 +65,12 @@ export class AssetMasterDatasourceImpl implements AssetMasterDatasource {
 
             return response
         } catch (error) {
-            
+
             console.error('ERROR: ADD UPDATE ASSET MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateAssetMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateAssetMaster(params);
             }
             throw error
         }
@@ -88,11 +90,12 @@ export class AssetMasterDatasourceImpl implements AssetMasterDatasource {
             return response
 
         } catch (error) {
-            if (error === TokenExpiredException) {
 
-                console.error('ERROR: DELETE ASSET MASTER :', error);
+            console.error('ERROR: DELETE ASSET MASTER :', error);
 
-                await this.deleteAssetMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteAssetMaster(params);
 
             }
 

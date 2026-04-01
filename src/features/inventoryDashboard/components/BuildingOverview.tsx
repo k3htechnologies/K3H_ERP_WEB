@@ -1,8 +1,9 @@
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import React, { useMemo } from "react";
+import type { Table2 } from "@/features/inventoryDashboard/models/InventoryDashboardModel";
 
 interface Props {
-  buildingOverviewData: any[];
+  buildingOverviewData: Table2[];
 }
 
 const BuildingOverview: React.FC<Props> = ({ buildingOverviewData }) => {
@@ -92,7 +93,6 @@ const BuildingOverview: React.FC<Props> = ({ buildingOverviewData }) => {
       </h2>
 
       <div className="bg-white rounded-xl p-4 h-[500px]" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
-
         <DataTableWithOutBorder
           data={buildingOverviewData}
           columns={buildingColumns}

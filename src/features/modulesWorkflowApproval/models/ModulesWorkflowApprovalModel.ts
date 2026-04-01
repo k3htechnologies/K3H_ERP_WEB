@@ -78,7 +78,7 @@ export interface ModulesApprovalStatusData
      Branch? : string | null;
      ApprovalStatus? : string | null;
      Remarks? : string | null;
-     DateTime?: string | null;
+     Date?: string | null;
 }
 
 export type ModulesWorkflowApprovalListResponse = ApiResponse<ModulesWorkflowApprovalData[]>;

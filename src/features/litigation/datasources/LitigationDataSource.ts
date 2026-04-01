@@ -48,8 +48,9 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
 
             console.error('ERROR: PULL LITIGATION:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullLitigation(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullLitigation(params);
             }
             throw error
         }
@@ -68,8 +69,9 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
 
             console.error('ERROR:ADD UPDATE LITIGATION :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpadateLitigation(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.addUpadateLitigation(params);
             }
             throw error
         }
@@ -89,8 +91,9 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
 
             console.error('ERROR: LITIGATION REOPEN :', error)
 
-            if (error === TokenExpiredException) {
-                await this.UpadateLitigationReopen(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.UpadateLitigationReopen(params);
             }
             throw error
         }
@@ -114,9 +117,9 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
 
             console.error('ERROR: DELETE LITIGATION :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteLitigation(params);
+                return  await this.deleteLitigation(params);
             }
 
             throw error

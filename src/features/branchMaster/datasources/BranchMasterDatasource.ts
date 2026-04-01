@@ -46,8 +46,9 @@ export class BranchMasterDatasourceImpl implements BranchMasterDatasource {
 
             console.error('ERROR: PULL BRANCH MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullBranchMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullBranchMaster(params);
             }
 
             throw error
@@ -68,8 +69,9 @@ export class BranchMasterDatasourceImpl implements BranchMasterDatasource {
 
             console.error('ERROR: ADD UPDATE BRANCH MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateBranchMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateBranchMaster(params);
             }
             throw error
         }
@@ -92,9 +94,9 @@ export class BranchMasterDatasourceImpl implements BranchMasterDatasource {
 
             console.error('ERROR: DELETE BRANCH MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteBranchMaster(params);
+                return await this.deleteBranchMaster(params);
 
             }
 

@@ -18,7 +18,8 @@ export interface PayrollApprovalData {
 export interface FilterWithPayrollApprovalStatus{
   ModuleName: string
   Id: number
-  RequestId:number
+  RequestId: number
+  Remarks:string
 }
 
 export type PayrollApprovalListResponse = ApiResponse<PayrollApprovalData[]>

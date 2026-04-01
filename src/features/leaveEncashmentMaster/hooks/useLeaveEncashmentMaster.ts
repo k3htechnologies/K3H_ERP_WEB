@@ -289,14 +289,14 @@ export const useLeaveEncashmentMaster = () => {
     if (!formData.EncashmentRate || Number(formData.EncashmentRate) <= 0) {
       newErrors.EncashmentRate = "Encashment Rate is required";
     }
+
     if (!formData.MinSalary || Number(formData.MinSalary) <= 0) {
       newErrors.MinSalary = "Min Salary is required";
     }
+
     if (!formData.MaxSalary || Number(formData.MaxSalary) <= 0) {
       newErrors.MaxSalary = "Max Salary is required";
-    }
-
-    if (Number(formData.MinSalary) >= Number(formData.MaxSalary)) {
+    }else if (Number(formData.MinSalary) >= Number(formData.MaxSalary)) {
       newErrors.MaxSalary = "Max Salary must be greater than Min Salary";
     }
 

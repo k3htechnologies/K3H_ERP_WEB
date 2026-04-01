@@ -1133,6 +1133,30 @@ export const LocalStorageHelper = {
   },
   //#endregion
 
+  //#region STORE BROKERAGE BOOKING COLUMNS
+  storeBrokerageBookingTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Brokerage Booking Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET BROKERAGE BOOKING COLUMNS
+  getBrokerageBookingTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Brokerage Booking Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+  //#endregion
+
   //#region CLEAR LOCAL STORAGE
   clearLocalStorageData: (): void => {
     try {
@@ -1174,6 +1198,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS);
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);

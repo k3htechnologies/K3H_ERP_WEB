@@ -46,8 +46,9 @@ export class ApprovedBankWithFolderDatasourceImpl implements ApprovedBankWithFol
 
             console.error("ERROR: PULL APPROVED BANK FOLDER :", error);
 
-            if (error === TokenExpiredException) {
-                await this.pullApprovedBankFolder(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullApprovedBankFolder(params);
             }
             throw error;
         }
@@ -73,7 +74,8 @@ export class ApprovedBankWithFolderDatasourceImpl implements ApprovedBankWithFol
             console.error("ERROR: ADD UPDATE APPROVED BANK FOLDER:", error);
 
             if (error instanceof TokenExpiredException) {
-                await this.addUpdateApprovedBankFolder(params);
+
+                return await this.addUpdateApprovedBankFolder(params);
             }
             throw error;
         }
@@ -95,11 +97,11 @@ export class ApprovedBankWithFolderDatasourceImpl implements ApprovedBankWithFol
 
         } catch (error) {
 
-            if (error === TokenExpiredException) {
+            console.error("ERROR: DELETE APPROVED BANK FOLDER :", error);
+            
+            if (error instanceof TokenExpiredException) {
+                return await this.deleteApprovedBankFolder(params);
 
-                console.error("ERROR: DELETE APPROVED BANK FOLDER :", error);
-
-                await this.deleteApprovedBankFolder(params);
             }
             throw error;
         }

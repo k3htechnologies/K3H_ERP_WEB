@@ -43,8 +43,9 @@ export class ShiftMasterDatasourceImpl implements ShiftMasterDatasource {
 
             console.error('ERROR: PULL SHIFT MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullShiftMaster(params);
+           if (error instanceof TokenExpiredException) {
+
+                return await this.pullShiftMaster(params);
             }
 
             throw error
@@ -65,8 +66,9 @@ export class ShiftMasterDatasourceImpl implements ShiftMasterDatasource {
 
             console.error('ERROR: ADD UPDATE SHIFT MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateShiftMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateShiftMaster(params);
             }
             throw error
         }
@@ -89,9 +91,9 @@ export class ShiftMasterDatasourceImpl implements ShiftMasterDatasource {
 
             console.error('ERROR: DELETE SHIFT MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteShiftMaster(params);
+                return  await this.deleteShiftMaster(params);
 
             }
 

@@ -27,7 +27,7 @@ export interface FilterWithPaginationChannelPartnerRequest {
 export interface ChannelPartnerData {
     ChannelPartnerId: number
     Uniquekey: string
-    SystemGeneratedCode : string
+    SystemGeneratedCode: string
     Name: string
     CompanyName: string
 
@@ -64,7 +64,7 @@ export interface ChannelPartnerData {
     VillageName: string;
 
     Speciality: string
-    
+
     Status: string
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -74,6 +74,12 @@ export interface ChannelPartnerData {
     ModifiedDate: string | null
     LastModifiedBy: string | ''
     LastModifiedDate: string | null
+
+    NoOfEnquiry: number | 0
+    NoOfBooking: number | 0
+    BrokeragePercentage: number | 0
+    BrokerageAmount: number | 0
+    PaidBrokerageAmount: number | 0
 
     ChannelPartnerTeamData: ChannelPartnerTeamData[];
 }
@@ -99,7 +105,7 @@ export interface ChannelPartnerTeamData {
 
     PanNumber: string
     PanCardURL: string
-    
+
     AadharCardURL: string
     AadharCardNumber: string
 
@@ -119,7 +125,7 @@ export interface ChannelPartnerTeamData {
     VillageName: string;
 
     Speciality: string
-    
+
     Status: string
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -161,7 +167,7 @@ export interface AddUpdateChannelPartnerRequest {
     StateMasterId: number | null;
     CityMasterId: number | null;
     VillageMasterId: number | null;
-     OTP?: string | null;
+    OTP?: string | null;
 }
 
 export interface DeleteChannelPartnerRequest {

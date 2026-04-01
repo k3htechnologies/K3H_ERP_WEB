@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useDeductionMasterListState } from "@/features/deductionMaster/context/DeductionMasterListStateContext";
 import { useEffect, useState } from "react";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import type { DeductionMasterData, FilterWithPaginationDeductionMasterRequest } from "@/features/deductionMaster/models/DeductionMasterModel";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
@@ -141,15 +141,19 @@ const ViewDeductionMaster: React.FC = () => {
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
-                                <div className="lg:col-span-3 pt-3">
+                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Applicable" value={editDeductionMasterData!.Applicable} />
                                         <FieldItem label="Value" value={editDeductionMasterData!.Value} />
-
                                         <FieldItem label="Min Salary (₹)" value={editDeductionMasterData!.MinSalary} />
+                                    </div>
+                                </div>
+                                <div className="lg:col-span-3 pt-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Max Salary (₹)" value={editDeductionMasterData!.MaxSalary} />
                                     </div>
                                 </div>
+
                             </div>
                         </section>
                     </div>
@@ -171,7 +175,7 @@ const ViewDeductionMaster: React.FC = () => {
                                             label="Created Date"
                                             value={
                                                 editDeductionMasterData!.CreatedDate
-                                                    ? formatDate_dd_MonthName_yy(editDeductionMasterData!.CreatedDate)
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(editDeductionMasterData!.CreatedDate)
                                                     : "-"
                                             }
 
@@ -186,7 +190,7 @@ const ViewDeductionMaster: React.FC = () => {
                                             label="Modified Date"
                                             value={
                                                 editDeductionMasterData!.ModifiedDate
-                                                    ? formatDate_dd_MonthName_yy(editDeductionMasterData!.ModifiedDate)
+                                                    ? formatDate_dd_MonthName_yy_hh_mm(editDeductionMasterData!.ModifiedDate)
                                                     : "-"
                                             }
 

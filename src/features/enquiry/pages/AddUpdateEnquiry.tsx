@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateEnquiryRequest, FilterWithPaginationEnquiryRequest } from "@/features/enquiry//models/EnquiryModel";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -50,7 +50,6 @@ import { fetchChannelPartnerByMobileNumber, fetchChannelPartnerTeamMemberDropdow
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { fetchVillageDropdown } from "@/features/technical/villageDropDown";
-import { getCustomerClassification } from "@/features/enquiry/utils/customerClassification";
 import CompleteVerificationSection from "@/ui/components/TwoWayVerification/CompleteVerificationSection";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { sendOTP } from "@/features/technical/services/OTPService";
@@ -80,8 +79,8 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
   SubSource: "",
   SubSubSource: "",
   // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-  ReferelProjectId: 0,
-  ReferelInventoryFlatId: 0,
+  ReferralProjectId: 0,
+  ReferralInventoryFlatId: 0,
 
   // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
 
@@ -155,7 +154,7 @@ export const AddUpdateEnquiry: React.FC = () => {
   const [employeeDetails, setEmployeeDetails] = useState<EmployeeMasterData | null>(null);
 
   //SET EMPLOYEE MASTER DETAILS
-  const [referelInventoryFlatData, setReferelInventoryFlatData] = useState<InventoryFlatData | null>(null);
+  const [referelInventoryFlatData, setReferralInventoryFlatData] = useState<InventoryFlatData | null>(null);
   const [loyaltyInventoryFlatData, setLoyaltyInventoryFlatData] = useState<InventoryFlatData | null>(null);
 
   //COMPLETE VERIFICATION
@@ -208,16 +207,16 @@ export const AddUpdateEnquiry: React.FC = () => {
   //#endregion
 
   //#region FETCH EMPLOYEE DROPDOWN WITH DEPARTMENT
-    const fetchEmployeeDropdown = useCallback(
-        async (pageNumber: number, params?: { value?: string }) => {
-          return fetchPaginationProjectWithEmployeeDropdown(pageNumber, {
-            projectId: projectId || 0,
-            value: params?.value || "",
-            departmentName:"Sales"
-          });
-        },
-        [projectId]
-      );
+  const fetchEmployeeDropdown = useCallback(
+    async (pageNumber: number, params?: { value?: string }) => {
+      return fetchPaginationProjectWithEmployeeDropdown(pageNumber, {
+        projectId: projectId || 0,
+        value: params?.value || "",
+        departmentName: "Sales"
+      });
+    },
+    [projectId]
+  );
   //#endregion
 
   //#region INITIALIZATION
@@ -284,8 +283,8 @@ export const AddUpdateEnquiry: React.FC = () => {
               SubSubSource: e.SubSubSource ?? prev.SubSubSource,
 
               // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-              ReferelProjectId: e.ReferelProjectId ?? prev.ReferelProjectId,
-              ReferelInventoryFlatId: e.ReferelInventoryFlatId ?? prev.ReferelInventoryFlatId,
+              ReferralProjectId: e.ReferralProjectId ?? prev.ReferralProjectId,
+              ReferralInventoryFlatId: e.ReferralInventoryFlatId ?? prev.ReferralInventoryFlatId,
 
               // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
               LoyaltyProjectId: e.LoyaltyProjectId ?? prev.LoyaltyProjectId,
@@ -326,8 +325,8 @@ export const AddUpdateEnquiry: React.FC = () => {
               SourcingManager: e.SourcingManager || "",
               ChannelPartnerTeamMemberName: e.ChannelPartnerTeamMemberName || "",
 
-              referelProjectName: e.ReferelProjectName || "",
-              referelInventoryFlat: e.ReferelUnitNumber || "",
+              referelProjectName: e.ReferralProjectName || "",
+              referelInventoryFlat: e.ReferralUnitNumber || "",
 
               loyaltyProjectName: e.LoyaltyExistingProjectName || "",
               loyaltyInventoryFlat: e.LoyaltyExistingUnitNumber || "",
@@ -349,10 +348,10 @@ export const AddUpdateEnquiry: React.FC = () => {
               });
             }
 
-            if (e.ReferelInventoryFlatId) {
-             await fetchInventoryFlatDetails(Number(e.ReferelProjectId), e.ReferelInventoryFlatId).then((flat) => {
+            if (e.ReferralInventoryFlatId) {
+              await fetchInventoryFlatDetails(Number(e.ReferralProjectId), e.ReferralInventoryFlatId).then((flat) => {
                 if (!flat) return;
-                setReferelInventoryFlatData(flat);
+                setReferralInventoryFlatData(flat);
               });
             }
 
@@ -448,14 +447,14 @@ export const AddUpdateEnquiry: React.FC = () => {
 
     // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
     if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE") {
-      if (!formData.ReferelProjectId) {
-        newErrors.ReferelProjectId = "Referel Project Name is required";
+      if (!formData.ReferralProjectId) {
+        newErrors.ReferralProjectId = "Referral Project Name is required";
       }
-      if (!formData.ReferelInventoryFlatId) {
-        newErrors.ReferelInventoryFlatId = "Referel Unit Number is required";
+      if (!formData.ReferralInventoryFlatId) {
+        newErrors.ReferralInventoryFlatId = "Referral Unit Number is required";
       }
       if (!referelInventoryFlatData?.OwnerName?.trim()) {
-        newErrors.ReferelInventoryFlatId = "Selected unit does not have an Owner";
+        newErrors.ReferralInventoryFlatId = "Selected unit does not have an Owner";
       }
     }
 
@@ -493,12 +492,10 @@ export const AddUpdateEnquiry: React.FC = () => {
       newErrors.ChannelPartnerTeamMemberName = "Channel Partner Team Member Name is required";
     }
 
-    // 2️⃣ If name entered → mobile required
     if (name && !mobile) {
       newErrors.ChannelPartnerTeamMemberMobileNumber = "Mobile Number is required";
     }
 
-    // 3️⃣ If mobile entered → validate format
     if (mobile && !isValidMobile(mobile)) {
       newErrors.ChannelPartnerTeamMemberMobileNumber = "Enter a valid 10-digit mobile number";
     }
@@ -509,15 +506,28 @@ export const AddUpdateEnquiry: React.FC = () => {
       newErrors.EnquiryDate = "Enquiry date can only be today or within the previous 2 days";
     }
 
+    if (formData.Requirement?.trim() !== "" && formData.RequirementType?.trim() === "") {
+      newErrors.RequirementType = `${formData.Requirement} Type is required`;
+    }
+
     if (formData.FinalStage?.toUpperCase() === "LOST") {
       if (!formData.FinalStageDetail) {
         newErrors.FinalStageDetail = "Final Stage Detail is required";
       }
     }
 
-    if (Number(formData.EnquiryId) === 0 && formData.NextFollowUpDate != null && formData.NextFollowUpDate !== "" && !isToDateGreaterOrEqualFromDate(formData.EnquiryDate || "", formData.NextFollowUpDate!)) {
+    const enquiryDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.EnquiryDate ? new Date(formData.EnquiryDate) : undefined);
+    const nextFollowUpDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.NextFollowUpDate ? new Date(formData.NextFollowUpDate) : undefined);
+
+    if (
+      formData?.EnquiryDate &&
+      formData.NextFollowUpDate &&
+      !isToDateGreaterOrEqualFromDate(enquiryDate, nextFollowUpDate)
+    ) {
       newErrors.NextFollowUpDate = "Next Follow Up Date must be greater than or equal to Enquiry Date";
     }
+
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors,
@@ -529,13 +539,7 @@ export const AddUpdateEnquiry: React.FC = () => {
   const PushEnquiryFormData = (): AddUpdateEnquiryRequest => {
     const villageIdsString = villageDropdown.selectedValues.length > 0 ? villageDropdown.selectedValues.join(",") : "";
 
-    const customerClassification = getCustomerClassification({
-      Budget: formData.Budget,
-      PossessionType: formData.PossessionType,
-      Requirement: formData.Requirement,
-      VillageMasterId: villageIdsString,
-      Timeline: formData.Timeline ?? "",
-    });
+
 
     // =====================[DIRECT WALKING → REFERENCE]=========================
     const isDirectReference = formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE";
@@ -567,8 +571,8 @@ export const AddUpdateEnquiry: React.FC = () => {
       SubSubSource: formData.Source?.toUpperCase() === "CHANNEL PARTNER" ? String(channelPartnerId) : formData.SubSubSource,
 
       // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-      ReferelProjectId: isDirectReference ? formData.ReferelProjectId : 0,
-      ReferelInventoryFlatId: isDirectReference ? formData.ReferelInventoryFlatId : 0,
+      ReferralProjectId: isDirectReference ? formData.ReferralProjectId : 0,
+      ReferralInventoryFlatId: isDirectReference ? formData.ReferralInventoryFlatId : 0,
 
       // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
       LoyaltyProjectId: isDirectLoyalty ? formData.LoyaltyProjectId : 0,
@@ -593,12 +597,12 @@ export const AddUpdateEnquiry: React.FC = () => {
       PossessionType: formData.PossessionType,
       AreaPreferred: formData.AreaPreferred,
       DesiredFloorBand: formData.DesiredFloorBand,
-      Budget: formData.Budget,
+      Budget: formData.Budget === "" ? "<1" : formData.Budget,
 
       Requirement: formData.Requirement,
       RequirementType: formData.RequirementType || null,
 
-      CustomerClassification: customerClassification,
+      CustomerClassification: "Cold",
       SourceOfFunding: formData.SourceOfFunding,
       Ethnicity: formData.Ethnicity,
       Timeline: formData.Timeline,
@@ -629,6 +633,7 @@ export const AddUpdateEnquiry: React.FC = () => {
     const validation = validateAddEnquiryForm();
 
     if (!validation.isValid) {
+
       setErrors(validation.errors);
 
       addToast({ type: "error", title: "Please fill the required filed" });
@@ -759,19 +764,19 @@ export const AddUpdateEnquiry: React.FC = () => {
   });
   //#endregion
 
-  const fetchReferelInventoryFlats = useCallback(
+  const fetchReferralInventoryFlats = useCallback(
     async (pageNumber: number, params?: { value?: string }) => {
-      if (!formData.ReferelProjectId) {
+      if (!formData.ReferralProjectId) {
         return { totalNumberOfRecord: 0, itemList: [] };
       }
 
       return fetchPaginatedInventoryFlatDropdown(pageNumber, {
-        projectId: formData.ReferelProjectId,
+        projectId: formData.ReferralProjectId,
         flat: params?.value,
         flatStatus: "Booked,Alloted",
       });
     },
-    [formData.ReferelProjectId],
+    [formData.ReferralProjectId],
   );
 
   const fetchLoyaltyInventoryFlats = useCallback(
@@ -790,7 +795,7 @@ export const AddUpdateEnquiry: React.FC = () => {
   );
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       {/* Loader */}
 
       <Loader loading={isLoading} title={loadingMessage}>
@@ -952,8 +957,8 @@ export const AddUpdateEnquiry: React.FC = () => {
                       handleFieldChange("SubSubSource", "");
                       handleFieldChange("LoyaltyProjectId", 0);
                       handleFieldChange("LoyaltyInventoryFlatId", 0);
-                      handleFieldChange("ReferelProjectId", 0);
-                      handleFieldChange("ReferelInventoryFlatId", 0);
+                      handleFieldChange("ReferralProjectId", 0);
+                      handleFieldChange("ReferralInventoryFlatId", 0);
                       handleFieldChange("EmployeeReferenceEmployeeId", 0);
 
                       if (e !== "Channel Partner") {
@@ -980,8 +985,8 @@ export const AddUpdateEnquiry: React.FC = () => {
                         handleFieldChange("SubSubSource", "");
                         handleFieldChange("LoyaltyProjectId", 0);
                         handleFieldChange("LoyaltyInventoryFlatId", 0);
-                        handleFieldChange("ReferelProjectId", 0);
-                        handleFieldChange("ReferelInventoryFlatId", 0);
+                        handleFieldChange("ReferralProjectId", 0);
+                        handleFieldChange("ReferralInventoryFlatId", 0);
                         handleFieldChange("EmployeeReferenceEmployeeId", 0);
                       }}
                       options={SUBSOURCE_TYPE_OPTIONS.map((opt) => ({
@@ -1019,10 +1024,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                         title="Select Project"
                         size="lg"
                         dataFetchCallBack={fetchProjectDropdown}
+
                         onSelected={(item) => {
                           if (!item) {
-                            handleFieldChange("ReferelProjectId", 0);
-                            handleFieldChange("ReferelInventoryFlatId", 0);
+                            handleFieldChange("ReferralProjectId", 0);
+                            handleFieldChange("ReferralInventoryFlatId", 0);
                             setDropdownLabels((prev) => ({
                               ...prev,
                               referelInventoryFlat: "",
@@ -1031,38 +1037,39 @@ export const AddUpdateEnquiry: React.FC = () => {
                             return;
                           }
 
-                          handleFieldChange("ReferelProjectId", Number(item.value));
-                          handleFieldChange("ReferelInventoryFlatId", 0);
+                          handleFieldChange("ReferralProjectId", Number(item.value));
+                          handleFieldChange("ReferralInventoryFlatId", 0);
 
                           setDropdownLabels((prev) => ({
                             ...prev,
                             referelInventoryFlat: "",
                           }));
                         }}
-                        initialValue={createDropdownInitialValue(formData.ReferelProjectId, dropdownLabels.referelProjectName)}
-                        error={errors.ReferelProjectId}
+
+                        initialValue={createDropdownInitialValue(formData.ReferralProjectId, dropdownLabels.referelProjectName)}
+                        error={errors.ReferralProjectId}
                       />
                     </div>
                     <div>
                       <div>
                         <SingleSelectDropdownWithPagination
-                          key={`unit-${formData.ReferelProjectId}`}
+                          key={`unit-${formData.ReferralProjectId}`}
                           label="Unit Number"
                           required
                           title="Select Unit Number"
                           size="lg"
-                          dataFetchCallBack={fetchReferelInventoryFlats}
+                          dataFetchCallBack={fetchReferralInventoryFlats}
                           onSelected={(item) => {
                             if (!item) {
-                              handleFieldChange("ReferelInventoryFlatId", 0);
-                              setReferelInventoryFlatData(null);
+                              handleFieldChange("ReferralInventoryFlatId", 0);
+                              setReferralInventoryFlatData(null);
                               return;
                             }
-                            setReferelInventoryFlatData(item as unknown as InventoryFlatData);
-                            handleFieldChange("ReferelInventoryFlatId", Number(item.value));
+                            setReferralInventoryFlatData(item as unknown as InventoryFlatData);
+                            handleFieldChange("ReferralInventoryFlatId", Number(item.value));
                           }}
-                          initialValue={createDropdownInitialValue(formData.ReferelInventoryFlatId, dropdownLabels.referelInventoryFlat)}
-                          error={errors.ReferelInventoryFlatId}
+                          initialValue={createDropdownInitialValue(formData.ReferralInventoryFlatId, dropdownLabels.referelInventoryFlat)}
+                          error={errors.ReferralInventoryFlatId}
                         />
                       </div>
                     </div>
@@ -1268,7 +1275,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                 </div>
               )}
 
-              {Number(formData.ReferelInventoryFlatId) != 0 && Number(formData.ReferelProjectId) != 0 && (
+              {Number(formData.ReferralInventoryFlatId) != 0 && Number(formData.ReferralProjectId) != 0 && (
                 <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     <FieldItem label="Building" value={referelInventoryFlatData?.BuildingNumber || "-"} />
@@ -1308,12 +1315,12 @@ export const AddUpdateEnquiry: React.FC = () => {
             </div>
 
             {/* ============================================================= [ADDRESS] ============================================================================================= */}
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address</h3>
-              <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-                <div>
-                  <TextArea label="Current Location" placeholder="Enter Current Location" required className="thin-scroll" value={formData.CurrentLocation ?? ""} onChange={(e) => handleFieldChange("CurrentLocation", e.target.value)} error={errors.CurrentLocation} />
-                </div>
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300">Address</h3>
+              <div className="grid grid-cols-1 md:grid-cols-1">
+
+                <TextArea label="Current Location" placeholder="Enter Current Location" required className="thin-scroll" value={formData.CurrentLocation ?? ""} onChange={(e) => handleFieldChange("CurrentLocation", e.target.value)} error={errors.CurrentLocation} />
+
               </div>
             </div>
             {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
@@ -1342,7 +1349,19 @@ export const AddUpdateEnquiry: React.FC = () => {
                         label="Requirement"
                         placeholder="Select Requirement"
                         value={formData.Requirement ?? ""}
-                        onChange={(value) => handleFieldChange("Requirement", value)}
+
+                        onChange={(item) => {
+
+                          if (!item) {
+                            handleFieldChange("Requirement", "")
+                            handleFieldChange("RequirementType", "");
+                            return;
+                          }
+
+                          handleFieldChange("Requirement", item)
+                          handleFieldChange("RequirementType", "");
+
+                        }}
                         options={REQUIREMENT_TYPE_OPTIONS.map((opt) => ({
                           label: opt.name,
                           value: opt.id,
@@ -1350,9 +1369,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                         error={errors.Requirement}
                       />
                     </div>
+
                     {formData.Requirement && (
                       <div>
                         <SinglePageSelection
+                          required
                           label={formData.Requirement === "Residential" ? "Residential Type" : formData.Requirement === "Commercial" ? "Commercial Type" : "Commercial Leasing Type"}
                           placeholder={`Select ${formData.Requirement === "Residential" ? "Residential Type" : formData.Requirement === "Commercial" ? "Commercial Type" : "Commercial Leasing Type"}`}
                           value={formData.RequirementType ?? ""}
@@ -1360,17 +1381,17 @@ export const AddUpdateEnquiry: React.FC = () => {
                           options={
                             formData.Requirement === "Residential"
                               ? RESIDENTIAL_FLAT_CONFIGURATION.map((opt) => ({
+                                label: opt.name,
+                                value: opt.id,
+                              }))
+                              : formData.Requirement === "Commercial" || formData.Requirement === "Commercial Leasing"
+                                ? COMMERCIAL_FLAT_CONFIGURATION.map((opt) => ({
                                   label: opt.name,
                                   value: opt.id,
                                 }))
-                              : formData.Requirement === "Commercial" || formData.Requirement === "Commercial Leasing"
-                                ? COMMERCIAL_FLAT_CONFIGURATION.map((opt) => ({
-                                    label: opt.name,
-                                    value: opt.id,
-                                  }))
                                 : []
                           }
-                          error={errors.Residential}
+                          error={errors.RequirementType}
                         />
                       </div>
                     )}
@@ -1528,7 +1549,7 @@ export const AddUpdateEnquiry: React.FC = () => {
           {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
             <div className="space-y-4 pb-3">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2"> Sales Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <SingleSelectDropdownWithPagination label="Sales Advisor" title="Select Advisor" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.SalesAdvisor)} error={errors.SalesAdvisorId} />
                 </div>

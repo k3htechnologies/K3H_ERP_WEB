@@ -379,7 +379,7 @@ export const ChannelPartner: React.FC = () => {
       fixed: 'left',
       align: 'left',
       render: (value, row) => {
-        const complete = isChannelPartnerComplete(row);
+        const complete = isChannelPartnerComplete(row)
 
         return (
           <div className="flex items-center justify-center gap-2">
@@ -406,7 +406,6 @@ export const ChannelPartner: React.FC = () => {
       label: 'Full Name',
       width: '20',
       sortable: true,
-      fixed: 'left',
       align: 'left',
       render: (value, row) => (
         <TooltipText
@@ -424,7 +423,7 @@ export const ChannelPartner: React.FC = () => {
       label: 'Designation',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -440,7 +439,7 @@ export const ChannelPartner: React.FC = () => {
       label: 'Company Name',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -448,7 +447,7 @@ export const ChannelPartner: React.FC = () => {
       label: 'Firm Type',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -456,7 +455,7 @@ export const ChannelPartner: React.FC = () => {
       label: 'Type',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
 
@@ -465,7 +464,7 @@ export const ChannelPartner: React.FC = () => {
       label: 'Email Id',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -481,7 +480,7 @@ export const ChannelPartner: React.FC = () => {
       label: 'Pan Number',
       width: '12',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value: string, row: any) => {
         return (
           <MultiImageViewer
@@ -498,7 +497,7 @@ export const ChannelPartner: React.FC = () => {
       label: 'Aadhaar Card Number',
       width: '12',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value: string, row: any) => {
         return (
           <MultiImageViewer
@@ -515,7 +514,7 @@ export const ChannelPartner: React.FC = () => {
       label: 'GST Number',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value: string, row: any) => {
         return (
           <MultiImageViewer
@@ -532,7 +531,7 @@ export const ChannelPartner: React.FC = () => {
       label: 'RERA Number',
       width: '12',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -564,7 +563,7 @@ export const ChannelPartner: React.FC = () => {
       label: 'Village',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
     {
@@ -572,7 +571,7 @@ export const ChannelPartner: React.FC = () => {
       label: 'Office Address',
       width: '12',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || '-'
     },
   ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
@@ -706,7 +705,7 @@ export const ChannelPartner: React.FC = () => {
     );
   };
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
       {/* Loader */}
 

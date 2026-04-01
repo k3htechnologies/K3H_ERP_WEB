@@ -44,9 +44,9 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
 
             console.error('ERROR: PULL  DESIGNATION MASTER:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullDesignationMaster(params);
+                return  await this.pullDesignationMaster(params);
 
             }
             throw error
@@ -68,8 +68,9 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
 
             console.error('ERROR: ADD UPDATE DESIGNATION MASTER:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateDesignationMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.addUpdateDesignationMaster(params);
             }
 
             throw error
@@ -93,8 +94,9 @@ export class DesignationMasterDatasourceImpl implements DesignationMasterDatasou
 
             console.error('ERRPR : DELETE DESIGNATION MASTER:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteDesignationMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.deleteDesignationMaster(params);
             }
 
             throw error

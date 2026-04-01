@@ -7,7 +7,8 @@ export abstract class AuthenticationDatasource {
 
     abstract isValidMobileNumber(mobileNumber: string): Promise<ApiResponse<string>>;
     abstract isValidOTP(mobileNumber: string, otp: string, type: string): Promise<AuthenticationResponse>;
-    abstract sendOTPMobileNumberAndModule(mobileNumber: string, moduleName: string): Promise<ApiResponse<string>>
+    abstract sendOTPMobileNumberAndModule(mobileNumber: string, moduleName: string): Promise<ApiResponse<string>>;
+    abstract getEmployeeWithMenu(): Promise<AuthenticationResponse>;
 }
 
 export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
@@ -60,6 +61,17 @@ export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
             const response = await this.k3hHttpClient.getRequestWithoutAuthentication(`${AuthenticationApi.SEND_OTP}?${queryParams.toString()}`);
 
             return response as ApiResponse<string>;
+
+        } catch (error) {
+
+            throw error
+        }
+    }
+
+    async getEmployeeWithMenu(): Promise<AuthenticationResponse> {
+        try {
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${AuthenticationApi.EMPLOYEE_WITH_MENU}`);
 
         } catch (error) {
 

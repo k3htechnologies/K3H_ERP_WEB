@@ -35,27 +35,31 @@ export const SubMaterialMasterTable: React.FC<SubMaterialMasterTableProps> = ({
         return {
           ...col,
           render: (_value, row: SubMaterialMasterData) => (
-            canAction ? (
-              <div className="flex items-center justify-center gap-2">
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onDelete(row)
-                  }}
-                  color='transparent'
-                  isborderRadius
-                  size='sm'
-                  style={{
-                    color: 'red',
-                    padding: '4px 8px'
-                  }}
-                  title="Delete Sub Material"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            ) : null
+
+            <div className="flex items-center justify-center gap-2">
+              <Button
+                onClick={(e) => {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  if (!canAction) return;
+                  onDelete(row)
+                }}
+                color='transparent'
+                isborderRadius
+                disabled={!canAction}
+                size='sm'
+                style={{
+                  color: canAction ? 'red' : '#9CA3AF',
+                  padding: '4px 8px',
+                  cursor: canAction ? 'pointer' : 'not-allowed',
+                  opacity: canAction ? 1 : 0.5
+                }}
+                title="Delete Sub Material"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+
           )
         };
       }

@@ -1,61 +1,35 @@
-
-interface OverviewItem {
-  TotalCases?: number;
-  OpenCases?: number;
-  ClosedCases?: number;
-  ReOpenCases?: number;
-  TotalHearings?: number;
-}
+import type { Table0, Table1 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 interface Props {
-  overViewData?: OverviewItem[];
+  overViewData?: Table0[];
+  hearingData?:Table1[]
 }
 
-export default function OverviewCards({ overViewData = [] }: Props) {
+export default function OverviewCards({ overViewData = [], hearingData = [] }: Props) {
 
-  const data = overViewData[0] || {};
+  const caseData = overViewData[0] || {};
+  const hearing = hearingData[0] || {};
 
-  const cards = [
-    {
-      title: "Total Cases",
-      value: data.TotalCases ?? 0,
-      backgroundColor: "#010715",
-    },
-    {
-      title: "Open Cases",
-      value: data.OpenCases ?? 0,
-      backgroundColor: "#ECFEFF",
-    },
-    {
-      title: "Closed Cases",
-      value: data.ClosedCases ?? 0,
-      backgroundColor: "#FDF4FF",
-    },
-    {
-      title: "Reopened Cases",
-      value: data.ReOpenCases ?? 0,
-      backgroundColor: "#FFF7ED",
-    },
-    {
-      title: "Total Hearings",
-      value: data.TotalHearings ?? 0,
-      backgroundColor: "#F0FDF4",
-    },
-  ];
+const cards = [
+  { title: "Total Cases", value: Number(caseData?.TotalCases) || 0 },
+  { title: "Open Cases", value: Number(caseData?.OpenCases) || 0 },
+  { title: "Closed Cases", value: Number(caseData?.ClosedCases) || 0 },
+  { title: "Reopened Cases", value: Number(caseData?.ReOpenCases) || 0 },
+  { title: "Total Hearings", value: Number(hearing?.TotalHearings) || 0 },
+];
 
   return (
-    <div className="space-y-3 pt-5">
+    <div className="space-y-3 pt-4">
 
       <h2 className="text-lg font-semibold text-gray-800">
         Overview
       </h2>
 
-      <div className="grid grid-cols-5 gap-4">
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {cards.map((c, i) => (
           <div
             key={i}
-            className="rounded-xl shadow-sm p-4 border border-gray-100"
+            className="bg-white rounded-lg p-4 shadow-sm space-y-4 border border-gray-100"
             style={{
               backgroundColor: c.title === "Total Cases" ? "#0c3ca3" : "#ffffff",
               color: c.title === "Total Cases" ? "#ffffff" : "inherit",
@@ -63,7 +37,6 @@ export default function OverviewCards({ overViewData = [] }: Props) {
             }}
           >
             <div className="flex items-start gap-3">
-
 
               {/* Text */}
               <div>
@@ -76,7 +49,6 @@ export default function OverviewCards({ overViewData = [] }: Props) {
                 </p>
 
               </div>
-
             </div>
           </div>
         ))}

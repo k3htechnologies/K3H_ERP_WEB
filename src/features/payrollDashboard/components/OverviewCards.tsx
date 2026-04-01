@@ -1,21 +1,22 @@
 import { MapPin, Calendar1, Clock1, NotebookPen } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
-interface OverViewItem {
-  OnLeave?: number;
-  Outdoor?: number;
-  PendingApproval?: number;
-  AttendanceAlert?: number;
-}
+import type { Table0, Table5, Table3, Table1 } from "../models/PayrollDashboardModel";
+import { getSafeString } from "@/core/utils/comman";
+import { getNameInitials } from "@/core/utils/getNameInitials";
 
 interface Props {
-  overViewData?: OverViewItem[];
+  overViewData: Table0[];
+  attendanceAlert: Table5[];
+  outDoorProfileData: Table3[];
+  leaveData: Table1[];
 }
 
-export default function OverviewCards({ overViewData = [] }: Props) {
+export default function OverviewCards({ overViewData, attendanceAlert, outDoorProfileData, leaveData }: Props) {
+
+  const absentTotalCount = attendanceAlert[0]?.AbsentCount || 0;
+
   const navigate = useNavigate();
   const data = overViewData[0] || {};
-  
 
   const cards = [
     {
@@ -40,10 +41,9 @@ export default function OverviewCards({ overViewData = [] }: Props) {
       iconBg: "bg-green-100",
       iconColor: "text-green-600",
     },
-    { 
+    {
       title: "Attendance Alert",
-      value: data.AttendanceAlert ?? 0,
-      // value: attendanceAlertStatusLength,
+      value: absentTotalCount ?? 0,
       subData: "Late Logins",
       icon: NotebookPen,
       iconBg: "bg-purple-100",
@@ -62,9 +62,8 @@ export default function OverviewCards({ overViewData = [] }: Props) {
           return (
             <div
               key={i}
-              className="bg-white rounded-xl p-4 border border-gray-100 flex flex-col justify-between h-32 relative cursor-pointer"
-            >
-              <div className="text-base font-semibold " onClick={() => {
+              className="bg-white rounded-xl p-4 border border-gray-100 flex flex-col justify-between h-32 relative cursor-pointer shadow-sm"
+              onClick={() => {
                 if (c.title === 'On Leave Today') {
                   navigate('/payrollReport?tab=Leave');
                 }
@@ -74,9 +73,11 @@ export default function OverviewCards({ overViewData = [] }: Props) {
                 else if (c.title === 'Pending Approval') {
                 }
                 else if (c.title === 'Attendance Alert') {
-                 
+
                 }
-              }}>
+              }}
+            >
+              <div className="text-base font-semibold ">
                 <p className="text-sm text-gray-500">{c.title}</p>
                 <p className="mt-2 text-2xl font-bold text-gray-900">
                   {c.value}
@@ -96,9 +97,36 @@ export default function OverviewCards({ overViewData = [] }: Props) {
                   </button>
                 ) : (
                   <div className="flex -space-x-2 -mt-5">
-                    <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-200" />
-                    <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-300" />
-                    <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-300" />
+                    {["On Leave Today", "Outdoor Today"].includes(c.title) ? (
+                      <>
+                        {[0, 1, 2].map((idx) => {
+                          let name = "";
+                          if (c.title === "On Leave Today") {
+                            name = leaveData?.[idx]?.FullName || "";
+                          } else if (c.title === "Outdoor Today") {
+                            name = outDoorProfileData?.[idx]?.CreatedBy || "";
+                          }
+
+                          if (name) {
+                            return (
+                              <div
+                                key={idx}
+                                className="w-6 h-6 rounded-full border-2 border-white bg-blue-100 flex items-center justify-center text-[10px] font-bold text-blue-600 uppercase"
+                              >
+                                 {getSafeString(getNameInitials(name))}
+                              </div>
+                            );
+                          }
+                          return null;
+                        })}
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-200" />
+                        <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-300" />
+                        <div className="w-6 h-6 rounded-full border-2 border-white bg-gray-300" />
+                      </>
+                    )}
                   </div>
                 )}
               </div>

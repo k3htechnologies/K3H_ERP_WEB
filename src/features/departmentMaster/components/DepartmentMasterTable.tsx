@@ -16,6 +16,7 @@ interface DepartmentMasterTableProps {
   onDelete: (row: DepartmentMasterData) => void;
   canAction: boolean;
   loading: boolean;
+  lastUpdatedRow?: string | number | null;
 }
 
 export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
@@ -27,42 +28,52 @@ export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
   onView,
   onDelete,
   canAction,
-  loading
+  loading,
+  lastUpdatedRow
 }) => {
   const tableColumns = useMemo<TableColumn[]>(() => {
     return columns.map(col => {
 
       if (col.key === 'Actions') {
-
         return {
-
           ...col,
+          render: (_value, row: DepartmentMasterData) => {
+            
+            const isDisabled = !canAction || (row as any).NumberOfEmployee > 0;
 
-          render: (_value, row: DepartmentMasterData) => (
-            canAction && !row.NumberOfEmployee ? (
+            return canAction ? (
               <div className="flex items-center justify-center gap-2">
                 <Button
                   onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onDelete(row)
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (isDisabled) return;
+                    onDelete(row);
                   }}
-                  color='transparent'
+                  color="transparent"
                   isborderRadius
-                  size='sm'
+                  disabled={isDisabled}
+                  size="sm"
                   style={{
-                    color: 'red',
-                    padding: '4px 8px'
+                    color: isDisabled ? '#9CA3AF' : 'red',
+                    padding: '4px 8px',
+                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                    opacity: isDisabled ? 0.5 : 1
                   }}
-                  title="Delete Department"
+                  title={
+                    (row as any).DocumentCount > 0
+                      ? "Cannot delete: Department exist"
+                      : "Delete Department"
+                  }
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-            ) : null
-          )
+            ) : null;
+          }
         };
       }
+
 
       if (col.key === 'DepartmentName') {
 
@@ -93,6 +104,7 @@ export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
       data={data}
       columns={tableColumns}
       pagination={pagination}
+      rowKey="DepartmentMasterId"
       emptyMessage="No Departments Data Found"
       fixedHeight={true}
       recordsPerPage={20}
@@ -100,6 +112,7 @@ export const DepartmentMasterTable: React.FC<DepartmentMasterTableProps> = ({
       sortInfo={sortInfo}
       onSort={onSort}
       loading={loading}
+      lastUpdatedRow={lastUpdatedRow}
     />
   );
 };

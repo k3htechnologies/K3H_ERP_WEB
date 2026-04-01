@@ -21,15 +21,15 @@ export class LitigationDashboardDatasourceImpl implements LitigationDashboardDat
             })
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(`${LitigationDashboardApi.PULL}?${queryParams.toString()}`, { signal } )
-
             return response;
 
         } catch (error: any) {
 
             console.error('ERROR: PULL LITIGATION DASHBOARD :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullLitigationDashboard(ProjectId);
+           if (error instanceof TokenExpiredException) {
+
+                return  await this.pullLitigationDashboard(ProjectId);
             }
 
             throw error

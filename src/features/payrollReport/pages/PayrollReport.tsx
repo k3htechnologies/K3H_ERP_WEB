@@ -24,6 +24,7 @@ import { usePayrollColumns } from "../hooks/usePayrollColumns";
 import { Button } from "@/ui/components/forms/Button";
 import { Check, X } from "lucide-react";
 import ModuleApprovalStatus from "../components/moduleApprovalStatus";
+import useToast from "@/core/hooks/useToast";
 
 export const PayrollReport: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabId>(TAB_LIST[0].id);
@@ -33,6 +34,10 @@ export const PayrollReport: React.FC = () => {
   const [approvalRemark, setApprovalRemark] = useState("");
   const [showRejectPopup, setShowRejectPopup] = useState(false);
   const [rejectRemark, setRejectRemark] = useState("");
+  const [isSelectAll, setIsSelectAll] = useState(false);
+  const [subActiveTab, setSubActiveTab] = useState<SubTabId>(SUBTAB_LIST[0].id);
+  const { addToast } = useToast();
+
   // ── All data / filter / export logic ──────────────────────────────────────
   const {
     isLoading,
@@ -56,7 +61,8 @@ export const PayrollReport: React.FC = () => {
     handleFilterChange,
     clearSearch,
     handleExportPdf,
-  } = useTabData(activeTab, attendanceTableRef);
+  } = useTabData(activeTab, attendanceTableRef, subActiveTab);
+
 
   // ── All memoized column definitions ───────────────────────────────────────
   const { attendanceColumns, attendanceDetailsColumns, getCurrentColumns } = usePayrollColumns();
@@ -64,7 +70,6 @@ export const PayrollReport: React.FC = () => {
   // ── Grouped + sorted attendance rows for expandable table ─────────────────
   const groupedAttendanceData = useGroupedAttendance(attendanceList);
 
-  const [subActiveTab, setSubActiveTab] = useState<SubTabId>(SUBTAB_LIST[0].id);
 
   // Row key for approval grid selection should match the primary key of each module
   const approvalRowKey = useMemo(() => {
@@ -76,22 +81,38 @@ export const PayrollReport: React.FC = () => {
       case "Outdoor":
         return "OutdoorId";
       case "Attendance Regularization":
-        return "AttendanceRegularizationId";
+        return "RegularizationId";
       case "Resignation":
         return "EmployeeResignationId";
       default:
-        // Fallback for Attendance or any other tab that exposes a generic Id
         return "Id";
     }
   }, [activeTab]);
   // ── Debounced search ───────────────────────────────────────────────────────
   const debouncedSearch = useDebouncedCallback(
-    (_v: string) => dispatchLoad(1),
+    (v: string) => dispatchLoad(1, filters, activeTab, sortInfo, v),
     350,
   );
   useEffect(() => {
     setSubActiveTab(SUBTAB_LIST[0].id);
   }, [activeTab]);
+  useEffect(() => {
+    const currentData = getApprovalData()
+
+    if (
+      currentData.length > 0 &&
+      selectedApprovals.length === currentData.length
+    ) {
+      setIsSelectAll(true)
+    } else {
+      setIsSelectAll(false)
+    }
+  }, [selectedApprovals, activeTab, subActiveTab])
+  useEffect(() => {
+    if (activeTab !== "Attendance") {
+      dispatchLoad(1);
+    }
+  }, [subActiveTab]);
   // ── Pagination & sorting ───────────────────────────────────────────────────
   const handlePageChange = useCallback(
     (page: number) => dispatchLoad(page),
@@ -125,6 +146,14 @@ export const PayrollReport: React.FC = () => {
     onSort: handleSortColumn,
   } as const;
 
+  const totalCount = isSelectAll
+    ? getApprovalData().length
+    : selectedApprovals.length
+
+  const dataToApprove = isSelectAll
+    ? getApprovalData()
+    : selectedApprovals
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
@@ -141,7 +170,7 @@ export const PayrollReport: React.FC = () => {
           onTabChange={(t) => setActiveTab(t.id as TabId)}
         />
 
-        <div className="mt-6">
+        <div className="mt-6 -mx-6 px-6">
           <TableActionToolbar
             isShowSearchBar
             searchTerm={searchTerm}
@@ -164,7 +193,7 @@ export const PayrollReport: React.FC = () => {
           />
         </div>
         {activeTab !== "Attendance" && (
-          <div className="mt-6">
+          <div className="mt-3 -mx-6 px-6">
             <div className="flex items-center justify-between">
               <Tabs
                 tabs={SUBTAB_LIST}
@@ -174,16 +203,47 @@ export const PayrollReport: React.FC = () => {
               />
 
               {subActiveTab === "Approval" && (
-                <div className="flex gap-3">
+                <div className="flex items-center gap-3">
+
+                  {/* SELECT ALL CHECKBOX */}
+                  <label className="flex items-center gap-3 px-4 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={isSelectAll}
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setIsSelectAll(checked);
+                        if (checked) {
+                          const allData = getApprovalData()
+                          setSelectedApprovals(allData)
+                        } else {
+                          setSelectedApprovals([])
+                        }
+                      }} className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                    />
+                    <span className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                      Select All
+                    </span>
+                  </label>
                   <Button
                     size='sm'
                     color="green"
                     className="flex items-center gap-1 px-4 py-1 rounded bg-green-100 text-green-600 hover:bg-green-200 transition"
                     onClick={async () => {
-                      if (!selectedApprovals.length) {
-                        await handleApproval("Approved", [], "");
-                        return;
+                      const currentData = getApprovalData()
+
+                      if (!isSelectAll && selectedApprovals.length === 0) {
+                        addToast({ type: 'warning', title: "Please select at least one record or use Select All" })
+                        return
                       }
+
+                      if (isSelectAll && currentData.length === 0) {
+                        addToast({ type: 'warning', title: "No records available to approve" })
+                        return
+
+                        return
+                      }
+
                       setShowApprovalPopup(true);
                     }}
                   >
@@ -196,10 +256,11 @@ export const PayrollReport: React.FC = () => {
                     color='red'
                     className="flex items-center gap-1 px-4 py-1 rounded bg-red-500 text-white hover:bg-red-600 transition"
                     onClick={async () => {
-                      if (!selectedApprovals.length) {
-                        await handleApproval("Rejected", [], "");
+                      if (!isSelectAll && !selectedApprovals.length) {
+                        addToast({ type: 'warning', title: "Please select at least one record or use Select All" })
                         return;
                       }
+
                       setShowRejectPopup(true);
                     }}
                   >
@@ -214,7 +275,7 @@ export const PayrollReport: React.FC = () => {
         )}
 
 
-        <div className="mt-6">
+        <div className="mt-1 -mx-6 px-6">
           {activeTab === "Attendance" ? (
             <DataTableExpandable
               ref={attendanceTableRef}
@@ -244,14 +305,18 @@ export const PayrollReport: React.FC = () => {
               data={getApprovalData()}
               columns={getCurrentColumns(activeTab)}
               pagination={paginationInfo}
+              onRowSelect={(rows) => {
+                setSelectedApprovals(rows)
+                setIsSelectAll(false)
+              }}
+              selectedRowKeys={selectedApprovals.map(r => r[approvalRowKey])}
               rowKey={approvalRowKey}
-              onRowSelect={(rows) => setSelectedApprovals(rows)}
               emptyMessage={EMPTY_MESSAGES[activeTab]}
               {...sharedTableProps}
             />
 
           ) : (
-            
+
             <DataTableExpandable
               data={getCurrentData()}
               columns={getCurrentColumns(activeTab)}
@@ -267,6 +332,7 @@ export const PayrollReport: React.FC = () => {
                     id={row[approvalRowKey]}
                     moduleName={activeTab}
                     requestId={row.CreatedById}
+                    remarks={row.remarks}
                   />
                 ),
               }}
@@ -339,10 +405,11 @@ export const PayrollReport: React.FC = () => {
           title="Confirm Approval"
           onSubmit={async (e) => {
             e.preventDefault();
-            await handleApproval("Approved", selectedApprovals, approvalRemark);
+            await handleApproval("Approved", dataToApprove, approvalRemark);
             setShowApprovalPopup(false);
             setApprovalRemark("");
             setSelectedApprovals([]);
+            dispatchLoad(1);
           }}
           saveText="Approve"
           cancelText="Cancel"
@@ -354,7 +421,7 @@ export const PayrollReport: React.FC = () => {
         >
           <div className="space-y-4">
             <p className="text-sm text-gray-700">
-              You are about to approve <span className="font-semibold">{selectedApprovals.length}</span>{" "}
+              You are about to approve <span className="font-semibold">{totalCount}</span>{" "}
               record(s).
             </p>
             <TextArea
@@ -374,10 +441,12 @@ export const PayrollReport: React.FC = () => {
           title="Confirm Rejection"
           onSubmit={async (e) => {
             e.preventDefault();
-            await handleApproval("Rejected", selectedApprovals, rejectRemark);
+            await handleApproval("Rejected", dataToApprove, rejectRemark);
             setShowRejectPopup(false);
             setRejectRemark("");
             setSelectedApprovals([]);
+            setIsSelectAll(false);
+            dispatchLoad(1);
           }}
           saveText="Reject"
           cancelText="Cancel"

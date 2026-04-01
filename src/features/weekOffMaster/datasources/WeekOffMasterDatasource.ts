@@ -43,8 +43,8 @@ export class WeekOffMasterDatasourceImpl implements WeekOffMasterDatasource {
 
             console.error('ERROR: PULL WEEK OFF MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullWeekOffMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return  await this.pullWeekOffMaster(params);
             }
 
             throw error
@@ -79,8 +79,8 @@ export class WeekOffMasterDatasourceImpl implements WeekOffMasterDatasource {
 
             console.error('ERROR: ADD UPDATE WEEK OFF MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateWeekOffMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return  await this.addUpdateWeekOffMaster(params);
             }
             throw error
         }
@@ -103,9 +103,8 @@ export class WeekOffMasterDatasourceImpl implements WeekOffMasterDatasource {
 
             console.error('ERROR: DELETE WEEK OFF MASTER :', error)
 
-            if (error === TokenExpiredException) {
-
-                await this.deleteWeekOffMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.deleteWeekOffMaster(params);
 
             }
 

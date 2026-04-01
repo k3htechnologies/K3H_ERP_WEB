@@ -45,6 +45,7 @@ import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const initialFormState = (): AddUpdateProjectDocumentRequest => ({
   ProjectDocumentId: 0,
@@ -130,7 +131,8 @@ const ProjectDocument: React.FC = () => {
   // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-  const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+  const [documentName, setDocumentName] = useState<string | null>("");
+  const [documentCategory, setDocumentCategory] = useState<string | null>("");
 
   // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -464,68 +466,75 @@ const ProjectDocument: React.FC = () => {
 
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
-              {/* SLOT 1: ADD */}
 
               <div className="w-[34px] flex justify-center">
-                {showEdit ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleAddDocumentDetailsModal(row);
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Add"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!showEdit) return;
+                    handleAddDocumentDetailsModal(row);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showEdit}
+                  size="sm"
+                  title="Add"
+                  style={{
+                    color: showEdit ? '' : '#9CA3AF',
+                    cursor: showEdit ? 'pointer' : 'not-allowed',
+                    opacity: showEdit ? 1 : 0.5
+                  }}
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
               </div>
 
               <div className="w-[34px] flex justify-center">
-                {showEdit ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleEditProjectDocument(row);
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Edit"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!showEdit) return;
+                    handleEditProjectDocument(row);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showEdit}
+                  size="sm"
+                  title="Edit"
+                  style={{
+                    color: showEdit ? '' : '#9CA3AF',
+                    cursor: showEdit ? 'pointer' : 'not-allowed',
+                    opacity: showEdit ? 1 : 0.5
+                  }}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
               </div>
 
-              {/* SLOT 3: DELETE */}
               <div className="w-[34px] flex justify-center">
-                {showDelete ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleConfirmationDialogBoxOpen(row);
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    style={{ color: "red" }}
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!showDelete) return;
+                    handleConfirmationDialogBoxOpen(row);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showDelete}
+                  size="sm"
+                  style={{
+                    color: showDelete ? 'red' : '#9CA3AF',
+                    cursor: showDelete ? 'pointer' : 'not-allowed',
+                    opacity: showDelete ? 1 : 0.5
+                  }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+
               </div>
             </div>
           );
@@ -545,7 +554,8 @@ const ProjectDocument: React.FC = () => {
       Id: row.ProjectDocumentId,
       ProjectId: row.ProjectId,
     };
-    setApprovalDocumentName(row.ProjectDocumentName)
+    setDocumentName(row.ProjectDocumentName);
+    setDocumentCategory(row.ProjectDocumentCategory);
     setApprovalLogRequest(request);
     setIsApprovalLogModalOpen(true);
   };
@@ -553,7 +563,8 @@ const ProjectDocument: React.FC = () => {
   const handleApproveRejectDocument = (row: ProjectDocumentData, approvalType: "approve" | "reject") => {
 
     setApprovalRowData(row);
-    setApprovalDocumentName(row.ProjectDocumentName)
+    setDocumentName(row.ProjectDocumentName);
+    setDocumentCategory(row.ProjectDocumentCategory);
     setApprovalActionType(approvalType);
     setIsApprovalActionModalOpen(true);
 
@@ -656,51 +667,63 @@ const ProjectDocument: React.FC = () => {
         align: "center",
         fixed: "right",
         render: (_value, row) => {
-          const showEdit = canAction && row.ProjectDocumentApprovalStatus !== "Approved" ? true : false;
+
+          const showEdit = canAction && !row.ProjectDocumentApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
+
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
-              {/* RIGHT SIDE — Fixed Edit Button */}
+
               <div className="flex-shrink-0 ml-2">
-                {showEdit ? (
-                  <Button
-                    type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleEditProjectDocumentDetails(row);
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    title="Edit"
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+
+                <Button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!showEdit) return;
+                    handleEditProjectDocumentDetails(row);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showEdit}
+                  size="sm"
+                  style={{
+                    color: showEdit ? '' : '#9CA3AF',
+                    cursor: showEdit ? 'pointer' : 'not-allowed',
+                    opacity: showEdit ? 1 : 0.5
+                  }}
+                  title="Edit"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+
               </div>
 
               <div className="w-[34px] flex justify-center">
-                {showEdit ? (
-                  <Button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleConfirmationDialogBoxOpen(row);
-                    }}
-                    color="transparent"
-                    isborderRadius
-                    size="sm"
-                    style={{ color: "red" }}
-                    title="Delete"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <div className="opacity-0 h-[32px] w-[34px]" />
-                )}
+
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!showEdit) return;
+                    handleConfirmationDialogBoxOpen(row);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  disabled={!showEdit}
+                  size="sm"
+                  style={{
+                    color: showEdit ? 'red' : '#9CA3AF',
+                    cursor: showEdit ? 'pointer' : 'not-allowed',
+                    opacity: showEdit ? 1 : 0.5
+                  }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+
               </div>
+
             </div>
           );
         },
@@ -1171,6 +1194,7 @@ const ProjectDocument: React.FC = () => {
       />
 
       {projectDocumentTabList.length > 0 && (
+
         <Tabs
           tabs={projectDocumentTabList}
           defaultActive={activeTab}
@@ -1188,65 +1212,66 @@ const ProjectDocument: React.FC = () => {
           }}
         />
       )}
+      <div className={`${projectDocumentTabList.length > 0 ? 'pt-5' : ''}`}>
+        <DataTableExpandable
+          ref={dtRef}
+          data={projectDocumentListForTable}
+          columns={projectDocumentColumns}
+          pagination={projectDocumentPaginationInfo}
+          sortInfo={sortInfo}
+          onSort={handleSortColumn}
+          emptyMessage="No Project Document Data Found"
+          loading={isLoading}
+          fixedHeight
+          recordsPerPage={20}
+          expandable={{
+            keyField: "ProjectDocumentId",
+            alwaysFetchOnOpen: true,
+            fetchRow: async (row) => {
+              setExpandedParentRow(row);
+              setExpandedParentId(row.ProjectDocumentId);
 
-      <DataTableExpandable
-        ref={dtRef}
-        data={projectDocumentListForTable}
-        columns={projectDocumentColumns}
-        pagination={projectDocumentPaginationInfo}
-        sortInfo={sortInfo}
-        onSort={handleSortColumn}
-        emptyMessage="No Project Document Data Found"
-        loading={isLoading}
-        fixedHeight
-        recordsPerPage={20}
-        expandable={{
-          keyField: "ProjectDocumentId",
-          alwaysFetchOnOpen: true,
-          fetchRow: async (row) => {
-            setExpandedParentRow(row);
-            setExpandedParentId(row.ProjectDocumentId);
+              const params: FilterWithPaginationProjectDocument = {
+                PageNumber: 1,
+                PageSize: pagination.pageSize,
+                ProjectId: Number(row.ProjectId),
+                ProjectDocumentId: Number(row.ProjectDocumentId),
+                ProjectDocumentCategory: row.ProjectDocumentCategory,
+                ProjectDocumentCategoryId: row.ProjectDocumentCategoryId,
+              };
+              const response = await projectDocumentService.apiCallPullProjectDocument(params);
 
-            const params: FilterWithPaginationProjectDocument = {
-              PageNumber: 1,
-              PageSize: pagination.pageSize,
-              ProjectId: Number(row.ProjectId),
-              ProjectDocumentId: Number(row.ProjectDocumentId),
-              ProjectDocumentCategory: row.ProjectDocumentCategory,
-              ProjectDocumentCategoryId: row.ProjectDocumentCategoryId,
-            };
-            const response = await projectDocumentService.apiCallPullProjectDocument(params);
+              if (E.isRight(response)) {
+                return response.right.Data ?? [];
+              }
+              return [];
+            },
 
-            if (E.isRight(response)) {
-              return response.right.Data ?? [];
-            }
-            return [];
-          },
+            renderRow: (fetchedData) => {
+              const details: ProjectDocumentData[] = Array.isArray(fetchedData) ? fetchedData : fetchedData ? [fetchedData] : [];
+              if (!details || details.length === 0) {
+                return <div className="p-1 text-xs text-gray-600 text-center"><NoDataView /></div>;
+              }
 
-          renderRow: (fetchedData) => {
-            const details: ProjectDocumentData[] = Array.isArray(fetchedData) ? fetchedData : fetchedData ? [fetchedData] : [];
-            if (!details || details.length === 0) {
-              return <div className="p-1 text-xs text-gray-600 text-center">No Document Found.</div>;
-            }
+              return (
+                <DataTableWithOutBorder
+                  data={details}
+                  columns={projectDocumentDetailsColumns}
+                  emptyMessage="No Project Document Data Found"
+                  fixedHeight={true}
+                  recordsPerPage={20}
+                  className="flex-1"
+                  sortInfo={sortInfo}
+                  onSort={handleSortColumn}
+                  loading={isLoading}
+                />
+              );
+            },
 
-            return (
-              <DataTableWithOutBorder
-                data={details}
-                columns={projectDocumentDetailsColumns}
-                emptyMessage="No Project Document Data Found"
-                fixedHeight={true}
-                recordsPerPage={20}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-                loading={isLoading}
-              />
-            );
-          },
-
-          expandButton: { openText: "Hide", closeText: "Show" },
-        }}
-      />
+            expandButton: { openText: "Hide", closeText: "Show" },
+          }}
+        />
+      </div>
 
       {/*  ADD EDIT UPDATE DOCUMENT */}
       <Modal
@@ -1308,70 +1333,70 @@ const ProjectDocument: React.FC = () => {
         loading={isLoading}
         size="xl"
       >
-        <div className="space-y-10 p-6 bg-blue-100">
-          <div className="space-y-4">
+        <div className="space-y-4 p-6 bg-blue-100">
+          {editingDocumentData ? (
             <div>
-              {editingDocumentData ? (
-                <Input
-                  label="Document"
-                  required
-                  disabled
-                  type="text"
-                  value={formData.ProjectDocumentName}
-                  maxLength={250}
-                  placeholder="Enter Document"
-                />
-              ) : (
-                ""
-              )}
-            </div>
-            <div>
-              <SinglePageSelection
-                label="Status"
-                placeholder="Select Status"
+              <Input
+                label="Document"
                 required
-                value={formData.ProjectDocumentStatus}
-                onChange={(e) => handleFieldChange("ProjectDocumentStatus", String(e))}
-                options={PROJECT_DOCUMENT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                error={errors.ProjectDocumentStatus}
+                disabled
+                type="text"
+                value={formData.ProjectDocumentName}
+                maxLength={250}
+                placeholder="Enter Document"
               />
             </div>
-            <div>
-              <MultiFilePicker
-                label="Files"
-                placeholder="Select Files"
-                required={formData.ProjectDocumentStatus?.toUpperCase() === "ISSUED" ? true : false}
-                value={projectDocumentFiles}
-                onChange={setProjectDocumentFiles}
-                availableFilesURL={projectDocumentURL ?? ""}
-                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                maxFiles={5}
-                maxSizeMB={10}
-                error={errors.ProjectDocumentURL}
-                onRemoveExisting={(url) => {
-                  setRemoveProjectDocumentUrls((prev) => [...prev, url]);
-                }}
-              />
-            </div>
-            <div>
-              <DatePickerInput
-                label="Expiry Date"
-                value={formatDate_dd_mm_yyyy(formData.ProjectDocumentExpiryDate)}
-                onChange={(val) => handleFieldChange("ProjectDocumentExpiryDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-              />
-            </div>
+          ) : (
+            ""
+          )}
 
-            <div>
-              <TextArea
-                label="Remark"
-                placeholder="Enter Remark"
-                className="thin-scroll"
-                value={formData.ProjectDocumentRemark}
-                onChange={(e) => handleFieldChange("ProjectDocumentRemark", e.target.value)}
-                error={errors.ProjectDocumentRemark}
-              />
-            </div>
+          <div>
+            <SinglePageSelection
+              label="Status"
+              placeholder="Select Status"
+              required
+              value={formData.ProjectDocumentStatus}
+              onChange={(e) => handleFieldChange("ProjectDocumentStatus", String(e))}
+              options={PROJECT_DOCUMENT_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
+              error={errors.ProjectDocumentStatus}
+            />
           </div>
+          <div>
+            <MultiFilePicker
+              label="Files"
+              placeholder="Select Files"
+              required={formData.ProjectDocumentStatus?.toUpperCase() === "ISSUED" ? true : false}
+              value={projectDocumentFiles}
+              onChange={setProjectDocumentFiles}
+              availableFilesURL={projectDocumentURL ?? ""}
+              allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+              maxFiles={5}
+              maxSizeMB={10}
+              error={errors.ProjectDocumentURL}
+              onRemoveExisting={(url) => {
+                setRemoveProjectDocumentUrls((prev) => [...prev, url]);
+              }}
+            />
+          </div>
+          <div>
+            <DatePickerInput
+              label="Expiry Date"
+              value={formatDate_dd_mm_yyyy(formData.ProjectDocumentExpiryDate)}
+              onChange={(val) => handleFieldChange("ProjectDocumentExpiryDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+            />
+          </div>
+
+          <div>
+            <TextArea
+              label="Remark"
+              placeholder="Enter Remark"
+              className="thin-scroll"
+              value={formData.ProjectDocumentRemark}
+              onChange={(e) => handleFieldChange("ProjectDocumentRemark", e.target.value)}
+              error={errors.ProjectDocumentRemark}
+            />
+          </div>
+
         </div>
       </Modal>
 
@@ -1397,7 +1422,9 @@ const ProjectDocument: React.FC = () => {
 
       <ApprovalLogModal
         isOpen={isApprovalLogModalOpen}
-        documentName={approvalDocumentName ?? ""}
+        title='Project Document'
+        titleText={documentCategory ?? ""}
+        subTitleText={documentName ?? ""}
         onClose={() => setIsApprovalLogModalOpen(false)}
         request={approvalLogRequest} />
 
@@ -1406,7 +1433,8 @@ const ProjectDocument: React.FC = () => {
         isOpen={isApprovalActionModalOpen}
         onClose={() => setIsApprovalActionModalOpen(false)}
         actionType={approvalActionType}
-        documentName={approvalDocumentName ?? ""}
+        titleText={documentCategory ?? ""}
+        subTitleText={documentName ?? ""}
         onSubmit={handleApprovalSubmit}
         loading={isLoading}
       />

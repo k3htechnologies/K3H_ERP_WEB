@@ -1,18 +1,27 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button } from "./Button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
 
 interface HeaderActionBarProps {
     titleText?: string;
     subTitleText?: string;
     subSubTitleText?: string;
+
     cancelText?: string;
-    EditText?: string;
-    ExtraButtonText?: string;
     onCancel?: () => void;
+
+    EditText?: string;
     onEdit?: () => void;
-    onExtraButton?: () => void;
     canAction?: boolean;
+
+    ExtraButtonText?: string;
+    onExtraButton?: () => void;
+    canActionExtraButtonText?: boolean;
+
+    ExtraExtraButtonText?: string;
+    onExtraExtraButton?: () => void;
+    canActionExtraExtraButton?: boolean;
+
     isLoading?: boolean;
 }
 
@@ -21,15 +30,45 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
     subTitleText,
     subSubTitleText,
     EditText = "Edit",
+
     ExtraButtonText = "",
     onCancel,
     onEdit,
     onExtraButton,
     canAction = false,
+    canActionExtraButtonText = false,
+
+    ExtraExtraButtonText = "",
+    onExtraExtraButton,
+    canActionExtraExtraButton = false,
+
     isLoading = false,
 }) => {
 
+    const [isGenerateOpen, setIsGenerateOpen] = useState(false);
+    const generateRef = useRef<HTMLDivElement | null>(null);
 
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (generateRef.current && !generateRef.current.contains(e.target as Node)) {
+                setIsGenerateOpen(false);
+            }
+        }
+
+        function handleEsc(e: KeyboardEvent) {
+            if (e.key === "Escape") {
+                setIsGenerateOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleEsc);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+            document.removeEventListener("keydown", handleEsc);
+        };
+    }, []);
     return (
         <div className="flex items-center justify-between">
 
@@ -47,8 +86,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                     </Button>
                 )}
 
-                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2 pl-3">
-
+                <h2 className={`text-lg font-semibold text-gray-900 flex items-center gap-2 ${onCancel ? 'pl-3' : 'pl-0'}`}>
                     {titleText && <span>{titleText}</span>}
 
                     {subTitleText && (
@@ -69,20 +107,83 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
             </div>
 
-            {canAction && (
-                <div className="flex items-center gap-2">
-                    {ExtraButtonText && (
-                        <Button
-                            color="black"
-                            size="sm"
-                            title={ExtraButtonText}
-                            onClick={onExtraButton}
-                            disabled={isLoading}
-                        >
-                            {ExtraButtonText}
-                        </Button>
-                    )}
 
+            <div className="flex items-center gap-2">
+                {(onExtraButton || onExtraExtraButton ) && canActionExtraButtonText && canActionExtraExtraButton && (
+                    <div className="relative" ref={generateRef}>
+                        <Button
+                            type="button"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsGenerateOpen((s) => !s);
+                            }}
+                            color="blue"
+                            colorMode="gradient_light"
+                            size="mxs"
+                            defineWidth
+                            title="PDF"
+                            aria-haspopup="menu"
+                            style={{ width: '95px' }}
+                            leftIcon={<FileText className="h-4 w-4" />}
+                        >
+                            PDF
+                        </Button>
+
+                        {isGenerateOpen && (
+                            <div className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-100">
+
+                                {onExtraButton &&  canActionExtraButtonText &&(
+
+                                    <Button
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            onExtraButton()
+                                            setIsGenerateOpen(false)
+                                        }}
+                                        disabled={isLoading}
+                                        color="transparent"
+                                        fullWidth
+                                        isborderRadius
+                                        size="sm"
+                                        title="Generate PDF"
+                                        style={{ justifyContent: "left" }}
+                                    >
+                                        {ExtraButtonText}
+                                    </Button>
+
+
+                                )}
+
+                                {onExtraExtraButton && canActionExtraExtraButton && (
+
+                                    <Button
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            onExtraExtraButton()
+                                            setIsGenerateOpen(false)
+                                        }}
+                                        disabled={isLoading}
+                                        color="transparent"
+                                        fullWidth
+                                        isborderRadius
+                                        size="sm"
+                                        title="Send E-Mail"
+                                        style={{ justifyContent: "left" }}
+                                    >
+
+                                        {ExtraExtraButtonText}
+                                    </Button>
+
+                                )}
+                            </div>
+                        )}
+                    </div>
+                )}
+
+                {canAction && (
                     <Button
                         color="blue"
                         size="sm"
@@ -92,8 +193,9 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                     >
                         {EditText}
                     </Button>
-                </div>
-            )}
+                )}
+            </div>
+
         </div>
     );
 };

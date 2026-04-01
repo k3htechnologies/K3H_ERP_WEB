@@ -4,12 +4,14 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 
 interface Props {
   isOpen: boolean;
-  title?:string
+  title?: string
   onClose: () => void;
   onSubmit: (remark: string) => void;
   loading?: boolean;
   actionType: "approve" | "reject";
-  documentName?: string;
+  titleText?: string;
+  subTitleText?: string;
+  subSubTitleText?: string;
 }
 
 const ApprovalActionModal: React.FC<Props> = ({
@@ -19,23 +21,45 @@ const ApprovalActionModal: React.FC<Props> = ({
   onSubmit,
   loading,
   actionType,
-  documentName
+  titleText,
+  subTitleText,
+  subSubTitleText,
 }) => {
 
   const [remark, setRemark] = useState("");
+    const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
       setRemark("");
+      setError("");
     }
   }, [isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(remark);
+
+    if (!remark.trim()) {
+      setError("Remark is required");
+      return;
+    }
+
+    setError("");
+    onSubmit(remark.trim());
   };
 
-  const modalTitle = actionType === "approve" ? `Approve ${title ?? "Document"}` : `Reject ${title ?? "Document"}`;
+  const modalTitle = (<span className="font-semibold"> {actionType === "approve" ? "Approve" : "Reject"} {title}
+      {titleText && (
+        <span className="text-gray-500 font-medium">
+          {" : "}
+          {titleText}
+          {subTitleText && <> {" > "} {subTitleText}</>}
+          {subSubTitleText && <> {" > "} {subSubTitleText}</>}
+        </span>
+      )}
+    </span>
+  );
+
   return (
     <Modal
       isOpen={isOpen}
@@ -47,18 +71,19 @@ const ApprovalActionModal: React.FC<Props> = ({
       size="lg"
       loading={loading}
     >
-
+      
       <div className="space-y-6 p-6 bg-blue-100">
-
-        <div className="text-sm font-semibold text-gray-700">
-          {documentName}
-        </div>
 
         <TextArea
           label="Remark"
           placeholder="Enter Remark"
           value={remark}
-          onChange={(e) => setRemark(e.target.value)}
+          required
+          error={error}
+          onChange={(e) => {
+            setRemark(e.target.value);
+            if (error) setError("");
+          }}
         />
 
       </div>

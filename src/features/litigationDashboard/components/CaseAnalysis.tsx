@@ -1,9 +1,11 @@
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import {
     LineChart, ResponsiveContainer, Legend, Tooltip, Line, XAxis, YAxis
 } from "recharts";
+import type { Table7 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 interface Props {
-    CaseAnalysisData: any[];
+    CaseAnalysisData: Table7[];
 }
 
 export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
@@ -13,52 +15,58 @@ export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
                 Case Analysis
             </h2>
 
-            <div className="bg-white rounded p-4 space-y-4 shadow-sm">
-                <ResponsiveContainer width="100%" height={350}>
-                    <LineChart
-                        data={CaseAnalysisData}
-                    >
+            <div className="bg-white rounded-lg p-4 space-y-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+                {CaseAnalysisData.length === 0 ? (
+                    <div className="flex flex-col justify-center items-center h-[350px]">
+                        <NoDataView />
+                    </div>
+                ) : (
+                    <div className="flex justify-center relative [&_.recharts-wrapper_svg]:outline-none" >
+                        <ResponsiveContainer width="100%" height={350}>
+                            <LineChart
+                                data={CaseAnalysisData}
+                            >
+                                
+                                <XAxis dataKey="MonthName" />
+                                <YAxis
+                                    type="number"
+                                    domain={[0, 10]}
+                                    ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+                                    interval={0}
+                                    style={{ outline: "none" }}
+                                />
+                                <Tooltip />
 
-                        <XAxis dataKey="Month" />
-                        <YAxis
-                            type="number"
-                            domain={[10, 100]}
-                            allowDataOverflow={true}
-                            ticks={[10, 20, 30, 40, 50, 60, 70, 80, 90, 100]}
-                            label={{
-                                value: "CASES (YEAR)",
-                                angle: -90,
-                                position: "insideLeft"
-                            }}
-                        />
+                                <Legend
+                                    verticalAlign="top"
+                                    align="right"
+                                    iconSize={0}
+                                    formatter={(value) => `- ${value}`}
+                                />
 
-                        <Tooltip />
-                        <Legend
-                            verticalAlign="top"
-                            align="right"
-                            iconSize={0}
-                            formatter={(value) => `- ${value}`}
-                        />
+                                {/* Closed Cases*/}
+                                <Line
+                                    type="monotone"
+                                    dataKey="ClosedCases"
+                                    name="CLOSED"
+                                    stroke="#6366F1"
+                                    strokeWidth={3}
+                                    dot={false}
+                                />
 
-                        {/* Closed Cases*/}
-                        <Line
-                            type="monotone"
-                            dataKey="Closed"
-                            stroke="#6366F1"
-                            strokeWidth={3}
-                            dot={false}
-                        />
-
-                        {/* Opened Cases */}
-                        <Line
-                            type="monotone"
-                            dataKey="Opened"
-                            stroke="#EC4899"
-                            strokeWidth={3}
-                            dot={false}
-                        />
-                    </LineChart>
-                </ResponsiveContainer>
+                                {/* Open Cases*/}
+                                <Line
+                                    type="monotone"
+                                    dataKey="OpenCases"
+                                    name="OPENED"
+                                    stroke="#EC4899"
+                                    strokeWidth={3}
+                                    dot={false}
+                                />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                )}
             </div>
         </div>
     );

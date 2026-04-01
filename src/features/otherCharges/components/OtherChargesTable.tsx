@@ -33,27 +33,29 @@ export const OtherChargesTable: React.FC<OtherChargesTableProps> = ({
         return {
           ...col,
           render: (_value, row: OtherChargesData) =>
-            canAction ? (
               <div className="flex items-center justify-center gap-2">
                 <Button
                   onClick={e => {
                     e.preventDefault();
                     e.stopPropagation();
+                     if (!canAction) return;
                     onDelete(row);
                   }}
                   color="transparent"
                   isborderRadius
+                  disabled={!canAction}
                   size="sm"
                   style={{
-                    color: 'red',
-                    padding: '4px 8px'
+                    color: canAction ? 'red' : '#9CA3AF',
+                    padding: '4px 8px',
+                    cursor: canAction ? 'pointer' : 'not-allowed',
+                    opacity: canAction ? 1 : 0.5
                   }}
                   title="Delete Other Charge"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-            ) : null
         };
       }
 

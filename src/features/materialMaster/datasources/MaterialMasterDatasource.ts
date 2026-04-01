@@ -36,8 +36,9 @@ export class MaterialMasterDatasourceImpl implements MaterialMasterDatasource {
 
             console.error('ERROR: PULL MATERIAL MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullMaterialMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullMaterialMaster(params);
             }
 
             throw error
@@ -56,8 +57,9 @@ export class MaterialMasterDatasourceImpl implements MaterialMasterDatasource {
 
             console.error('ERROR: ADD UPDATE MATERIAL MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateMaterialMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateMaterialMaster(params);
             }
             throw error
         }
@@ -80,9 +82,9 @@ export class MaterialMasterDatasourceImpl implements MaterialMasterDatasource {
 
             console.error('ERROR: DELETE MATERIAL MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteMaterialMaster(params);
+                return  await this.deleteMaterialMaster(params);
 
             }
 

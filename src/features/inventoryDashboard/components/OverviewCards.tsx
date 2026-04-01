@@ -1,15 +1,8 @@
 import { Building2, Layers, Box, GitBranch, Grid3x3 } from "lucide-react";
-
-interface OverviewItem {
-  TotalBuilding?: number;
-  TotalBasement?: number;
-  TotalPodium?: number;
-  TotalWings?: number;
-  TotalFloors?: number;
-}
+import type { Table0 } from "@/features/inventoryDashboard/models/InventoryDashboardModel";
 
 interface Props {
-  overViewData?: OverviewItem[];
+  overViewData?: Table0[];
 }
 
 export default function OverviewCards({ overViewData = [] }: Props) {
@@ -46,8 +39,8 @@ export default function OverviewCards({ overViewData = [] }: Props) {
       color: "#EA580C",
     },
     {
-      title: "Floors",
-      value: data.TotalFloors ?? 0,
+      title: "Ground",
+      value: data.TotalBuilding ?? 0,
       icon: Grid3x3,
       backgroundColor: "#F0FDF4",
       color: "#16A34A",
@@ -61,25 +54,15 @@ export default function OverviewCards({ overViewData = [] }: Props) {
         Overview
       </h2>
 
-      <div className="grid grid-cols-5 gap-4">
-
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         {cards.map((c, i) => (
-          <div
-            key={i}
-            className="bg-white rounded-2xl p-4 border border-gray-100"
-            style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
-          >
+          <div  key={i} className="bg-white rounded-2xl p-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }} >
             <div className="flex items-start gap-3">
 
-              {/* Icon */}
-              <div
-                className="p-3 rounded-xl"
-                style={{ backgroundColor: c.backgroundColor }}
-              >
+              <div className="p-3 rounded-xl" style={{ backgroundColor: c.backgroundColor }}>
                 <c.icon size={20} style={{ color: c.color }} />
               </div>
-
-              {/* Text */}
+             
               <div>
                 <p className="text-sm text-gray-500">{c.title}</p>
                 <p className="text-2xl font-semibold text-gray-900">

@@ -46,8 +46,8 @@ export class MarketingContentFolderDatasourceImpl implements MarketingContentFol
 
             console.error("ERROR: PULL MARKETING CONTENT FOLDER :", error);
 
-            if (error === TokenExpiredException) {
-                await this.pullMarketingContentFolder(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.pullMarketingContentFolder(params);
             }
             throw error;
         }
@@ -94,11 +94,9 @@ export class MarketingContentFolderDatasourceImpl implements MarketingContentFol
 
         } catch (error) {
 
-            if (error === TokenExpiredException) {
-
-                console.error("ERROR: DELETE MARKETING CONTENT FOLDER :", error);
-
-                await this.deleteMarketingContentFolder(params);
+            console.error("ERROR: DELETE MARKETING CONTENT FOLDER :", error);
+            if (error instanceof TokenExpiredException) {
+                return await this.deleteMarketingContentFolder(params);
             }
             throw error;
         }

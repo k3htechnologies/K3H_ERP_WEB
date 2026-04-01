@@ -13,9 +13,9 @@ export const CallTracker: React.FC = () => {
     const [activeTab, setActiveTab] = useState(CallTrackerTabList[0].id);
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
-            <div className="pt-3">
+            <div className="pt-3 pb-5">
                 <Tabs
                     tabs={CallTrackerTabList}
                     defaultActive={activeTab}

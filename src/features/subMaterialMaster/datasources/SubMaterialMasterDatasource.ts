@@ -37,8 +37,8 @@ export class SubMaterialMasterDatasourceImpl implements SubMaterialMasterDatasou
 
             console.error('ERROR: PULL SUB MATERIAL MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullSubMaterialMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.pullSubMaterialMaster(params);
             }
 
             throw error
@@ -57,8 +57,8 @@ export class SubMaterialMasterDatasourceImpl implements SubMaterialMasterDatasou
 
             console.error('ERROR: ADD UPDATE SUB MATERIAL MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateSubMaterialMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return  await this.addUpdateSubMaterialMaster(params);
             }
             throw error
         }
@@ -81,9 +81,8 @@ export class SubMaterialMasterDatasourceImpl implements SubMaterialMasterDatasou
 
             console.error('ERROR: DELETE SUB MATERIAL MASTER :', error)
 
-            if (error === TokenExpiredException) {
-
-                await this.deleteSubMaterialMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.deleteSubMaterialMaster(params);
 
             }
 

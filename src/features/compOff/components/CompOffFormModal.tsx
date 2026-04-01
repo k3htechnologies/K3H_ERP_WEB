@@ -43,13 +43,14 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
 }) => {
     const [allowedDates, setAllowedDates] = useState<string[]>([]);
     const [, setIsLoadingDates] = useState(false);
+    const [, setDisableAllDates] = useState(false);
 
     const fetchCompOffDates = (monthStart: string, monthEnd: string, abortController: AbortController) => {
         setIsLoadingDates(true);
-        
+
         const employeeData = LocalStorageHelper.getStoredEmployeeData();
         const params: PullCompOffDatesRequest = {
-            PageSize: 1000, 
+            PageSize: 1000,
             PageNumber: 1,
             EmployeeId: employeeData?.EmployeeId,
             StartDate: monthStart,
@@ -67,13 +68,15 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                             return null;
                         })
                         .filter((date): date is string => date !== null && date !== '');
-                    
+
                     setAllowedDates(dates);
+                    setDisableAllDates(dates.length === 0);
                 }
                 setIsLoadingDates(false);
             })
             .catch(() => {
                 setIsLoadingDates(false);
+                setDisableAllDates(true);
             });
     };
 
@@ -87,7 +90,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
         if (isOpen && !editingData) {
             // Only fetch dates when adding (not editing)
             const abortController = new AbortController();
-            
+
             let monthStart: string;
             let monthEnd: string;
 
@@ -104,7 +107,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                 const lastDay = new Date(year, month + 1, 0).getDate();
                 monthEnd = `${year}-${String(month + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
             }
-            
+
             fetchCompOffDates(monthStart, monthEnd, abortController);
 
             return () => {
@@ -136,6 +139,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
             renderChildren={({ startDate, endDate, onClearField, editingField, onUpdateDate }) => {
                 return (
                     <div className="space-y-4">
+
                         <DateInput
                             label="Working Date"
                             required
@@ -159,6 +163,7 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                             showClearButton={true}
                             openCalendarOnClick={false}
                         />
+
                         <DateInput
                             label="Comp Off Date"
                             required
@@ -182,11 +187,12 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                             showClearButton={true}
                             openCalendarOnClick={false}
                         />
+
                         <TextArea
                             label="Reason"
                             required
                             value={formData.Reason || ''}
-                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onFieldChange('Reason', e.target.value)}
+                            onChange={(e) => onFieldChange('Reason', e.target.value)}
                             error={errors.Reason}
                             placeholder="Enter Reason"
                             rows={3}
@@ -195,6 +201,6 @@ export const CompOffFormModal: React.FC<CompOffFormModalProps> = ({
                 );
             }}
         />
+
     );
 };
-

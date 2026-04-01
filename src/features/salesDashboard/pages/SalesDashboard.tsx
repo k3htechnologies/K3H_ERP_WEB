@@ -8,15 +8,18 @@ import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import GenerateReport from "@/features/salesDashboard/components/GenerateReport";
 import Enquiries from "@/features/salesDashboard/components/Enquiries";
 import FollowUp from "@/features/salesDashboard/components/FollowUp";
-import ReportsSection from "../components/ReportGridSection";
-
+import type { Table0, Table1, Table2, Table3 } from "@/features/salesDashboard/models/SalesDashboardModel";
+import ClosingTarget from "@/features/salesDashboard/components/ClosingTarget";
+import SourcingTarget from "@/features/salesDashboard/components/SourcingTarget";
 
 const SalesDashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-    const [enquiryModel, setEnquiryModel] = useState<any[]>([]);
-    const [enquiryFollowUp, setEnquiryFollowUp] = useState<any[]>([]);
-
+    const [enquiryData, setEnquiryData] = useState<Table0[]>([]);
+    const [enquiryFollowUpData, setEnquiryFollowUpData] = useState<Table1[]>([]);
+    const [performanceReportClosingData, setPerformanceReportClosingData] = useState<Table2[]>([]);
+    const [performanceReportSourcingData, setPerformanceReportSourcingData] = useState<Table3[]>([]);
+    
 
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -27,7 +30,6 @@ const SalesDashboard: React.FC = () => {
     }, [projectId]);
 
     //#region DATA LOADING | FETCH |  LOAD 
-
     const loadSalesDashboardData = useCallback(async () => {
         await runApiWithLoader(setIsLoading,
             setLoadingMessage,
@@ -37,12 +39,16 @@ const SalesDashboard: React.FC = () => {
 
                     const e = response.right.Data;
 
-                    setEnquiryModel(e.Table0 || []);
-                    setEnquiryFollowUp(e.Table1 || []);
+                    setEnquiryData(e.Table0 || []);
+
+                    setEnquiryFollowUpData(e.Table1 || []);
+
+                    setPerformanceReportClosingData(e.Table2 || []);
+
+                    setPerformanceReportSourcingData(e.Table3 || []);
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
-
                 }
                 return response;
             },
@@ -59,23 +65,18 @@ const SalesDashboard: React.FC = () => {
 
     return (
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
-
             <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
-            
+
             <GenerateReport />
-           
-            <div className=" mt-8 flex flex-row gap-5 items-stretch w-full min-w-0">
-                <div className="w-2/3 min-w-0">
-                    <Enquiries enquiryData={enquiryModel} />
-                </div>
-                <div className="w-1/3 min-w-0">
-                    <FollowUp enquiryFollowUpData={enquiryFollowUp} />
+            <div className="cursor-pointer">
+
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
+                    <Enquiries enquiryData={enquiryData} />
+                    <FollowUp enquiryFollowUpData={enquiryFollowUpData} />
+                    <ClosingTarget performanceReportClosingData={performanceReportClosingData} />
+                    <SourcingTarget performanceReportSourcingData={performanceReportSourcingData} />
                 </div>
             </div>
-            <div className="mt-8">
-                <ReportsSection />
-            </div>
-            
         </div>
     )
 }

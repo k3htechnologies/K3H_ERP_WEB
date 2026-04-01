@@ -1,3 +1,4 @@
+import type { ModuleData } from "@/features/menu/models/MenuModel"
 import type { ApiResponse } from "../../../core/api/ApiResponse"
 
 export interface EmployeeData {
@@ -15,9 +16,11 @@ export interface EmployeeData {
   EmailId: string
   OfficeEmailId: string
   IsUpdateEmployee: boolean
+  ProfilePhotoURL: string | ''
   ClientRegistrationId: number
   LastLogin: string
   Token: string
+  ModuleData:ModuleData
   ProjectData: ProjectData[]
 }
 

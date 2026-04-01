@@ -37,8 +37,9 @@ export class ProjectDocumentCategoryMasterDatasourceImpl implements ProjectDocum
 
             console.error('ERROR: PULL PROJECT DOCUMENT CATEGORY MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullProjectDocumentCategoryMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullProjectDocumentCategoryMaster(params);
             }
 
             throw error
@@ -57,8 +58,9 @@ export class ProjectDocumentCategoryMasterDatasourceImpl implements ProjectDocum
 
             console.error('ERROR: ADD UPDATE PROJECT DOCUMENT CATEGORY MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateProjectDocumentCategoryMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateProjectDocumentCategoryMaster(params);
             }
             throw error
         }
@@ -82,9 +84,9 @@ export class ProjectDocumentCategoryMasterDatasourceImpl implements ProjectDocum
 
             console.error('ERROR: DELETE PROJECT DOCUMENT CATEGORY MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteProjectDocumentCategoryMaster(params);
+                return await this.deleteProjectDocumentCategoryMaster(params);
 
             }
 

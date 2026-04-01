@@ -52,22 +52,20 @@ export const SubMaterialMasterViewModal: React.FC<SubMaterialMasterViewModalProp
       size='xl'
     >
       <div className="space-y-6">
-        <div className="space-y-4">
-          <FieldItem label="Material Name" value={data.MaterialName} isRow withBorder={true} />
-          <FieldItem label="Sub Material Name" value={data.SubMaterialName} isRow withBorder={true} className='font-medium text-blue-900 ' />
-          <FieldItem label="UOM" value={data.Uom} isRow withBorder={true} />
-        </div>
-        <div className="space-y-4">
-          <h4 className="text-lg font-semibold pb-2">
-            Action Details
-          </h4>
-          <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
-          {data.ModifiedBy !== '' ?
-            <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
-            :
-            ''}
-        </div>
-        <div className="flex justify-between items-center pt-4">
+        <FieldItem label="Material Name" value={data.MaterialName} isRow withBorder={true} />
+        <FieldItem label="Sub Material Name" value={data.SubMaterialName} isRow withBorder={true} className='font-medium text-blue-900 ' />
+        <FieldItem label="UOM" value={data.Uom} isRow withBorder={true} />
+
+        <h4 className="text-lg font-semibold">
+          Action Details
+        </h4>
+        <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
+        {data.ModifiedBy !== '' ?
+          <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
+          :
+          ''}
+
+        <div className="flex justify-between items-center">
           {canAction && (
             <>
               <Button

@@ -24,6 +24,7 @@ export interface FilterWithPaginationEmployeeMasterRequest {
   FromJoiningDate?: string | ''
   ToJoiningDate?: string | ''
   SortBy?: string
+  ActiveInactive?: string
   ExportType?: 'Excel' | 'PDF'
 }
 
@@ -78,6 +79,15 @@ export interface EmployeeMasterData {
   DistrictName: string | ''
   CityMasterId: number | 0
   CityName: string | ''
+  VillageMasterId: number | null;
+  VillageName: string;
+
+  AadharCardNumber: string | ''
+  PassportNumber: string | ''
+  PanCardNumber: string | ''
+  DrivingLicenceNumber: string | ''
+  VoterCardNumber: string | ''
+  ProfilePhotoURL: string | ''
   ClientRegistrationId: number | 0
   CreatedById: number | 0
   CreatedBy: string | ''
@@ -96,8 +106,8 @@ export interface EmployeeReportingCycle {
   Designation: string | null;
   EmailId: string | null;
   PersonalMobileNumber: string | null;
+  ProfilePhotoURL: string | null;
 }
-
 
 export interface AddUpdateEmployeeMasterRequest {
   EmployeeId: number;
@@ -134,7 +144,31 @@ export interface AddUpdateEmployeeMasterRequest {
   StateMasterId: number | null;
   DistrictMasterId: number | null;
   CityMasterId: number | null;
+  VillageMasterId: number | null;
 }
+
+export interface UpdateEmployeeMasterRequest {
+  EmployeeId: number;
+  UniqueKey: string | null;
+  FirstName?: string;
+  MiddleName?: string;
+  LastName?: string;
+  Gender?: string
+  MaritalStatus?: string
+  DateOfBirth?: string
+  EmailId?: string
+  PersonalMobileNumber?: string
+  CommunicationAddress?: string
+  PermanentAddress?: string
+  BloodGroup?: string
+  
+  AadharCardNumber: string | ''
+  PassportNumber: string | ''
+  PanCardNumber: string | ''
+  DrivingLicenceNumber: string | ''
+  VoterCardNumber: string | ''
+}
+
 
 export interface FilterWithPaginationLocationRequest {
   countryId?: number;
@@ -201,4 +235,5 @@ export interface SetEmployeeMPINRequest {
 export type LocationResponse = ApiResponse<LocationDataWrapper>;
 export type EmployeeMasterListResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMasterSaveResponse = ApiResponse<EmployeeMasterData[]>;
+export type EmployeeMasterUpdateResponse = ApiResponse<EmployeeMasterData[]>;
 export type EmployeeMPINRequestResponse = ApiResponse<String>;

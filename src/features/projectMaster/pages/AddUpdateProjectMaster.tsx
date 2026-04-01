@@ -11,7 +11,7 @@ import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
-import { filterGoogleMapsUrl, filterMobile, filterNumbers, filterRERA, hasAnyDocumentFile, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
+import { filterGoogleMapsUrl, filterMobile, filterNumbers, filterNumbersWithDecimal, filterRERA, hasAnyDocumentFile, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
 import type { AddUpdateProjectMasterRequest, FilterWithPaginationProjectMasterRequest } from "@/features/projectMaster/models/ProjectMasterModel";
 import { projectMasterService } from "@/features/projectMaster/services/ProjectMasterService";
 import Checkbox from "@/ui/components/forms/Checkbox";
@@ -313,6 +313,10 @@ const AddUpdateProjectMaster: React.FC = () => {
             newErrors.ProjectPhotoURL = "Project Photo is required.";
         }
 
+        if (formData.ArchitectMobileNumber != "" && !isValidMobile(formData.ArchitectMobileNumber.trim())) {
+            newErrors.ArchitectMobileNumber = "Enter a valid 10-digit Architect Mobile Number";
+        }
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -378,6 +382,8 @@ const AddUpdateProjectMaster: React.FC = () => {
 
             setErrors(validation.errors)
 
+            addToast({ type: "error", title: "Please fill the required filed" });
+
             return
         }
 
@@ -422,18 +428,18 @@ const AddUpdateProjectMaster: React.FC = () => {
     return (
 
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
 
             <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
                 <form onSubmit={handleSubmit}>
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Basic Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                             {/* Redevelopment Checkbox */}
-                            <div className="space-y-4 pb-4">
+                            <div className="space-y-4">
                                 <Checkbox
                                     label="Is This Project a Redevelopment Project?"
                                     checked={formData.IsRedevelopment === 1}
@@ -529,7 +535,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Scheme & Scope Details */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Location Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
@@ -571,6 +577,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                             setSelectedStateId(null);
                                             setSelectedDistrictId(null);
                                             setSelectedCityId(null);
+                                            setSelectedVillageId(null);
 
                                             handleFieldChange('CountryMasterId', 0);
                                             handleFieldChange('StateMasterId', 0);
@@ -587,6 +594,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         setSelectedStateId(null);
                                         setSelectedDistrictId(null);
                                         setSelectedCityId(null);
+                                        setSelectedVillageId(null);
 
                                         handleFieldChange('CountryMasterId', id);
                                         handleFieldChange('StateMasterId', 0);
@@ -615,6 +623,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                             setSelectedStateId(null);
                                             setSelectedDistrictId(null);
                                             setSelectedCityId(null);
+                                            setSelectedVillageId(null);
 
                                             handleFieldChange("StateMasterId", 0);
                                             handleFieldChange("DistrictMasterId", 0);
@@ -629,6 +638,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         setSelectedStateId(id);
                                         setSelectedDistrictId(null);
                                         setSelectedCityId(null);
+                                        setSelectedVillageId(null);
 
                                         handleFieldChange("StateMasterId", id);
                                         handleFieldChange("DistrictMasterId", 0);
@@ -655,6 +665,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         if (!item) {
                                             setSelectedDistrictId(null);
                                             setSelectedCityId(null);
+                                            setSelectedVillageId(null);
 
                                             handleFieldChange('DistrictMasterId', 0);
                                             handleFieldChange('CityMasterId', 0);
@@ -666,6 +677,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                                         setSelectedDistrictId(id);
                                         setSelectedCityId(null);
+                                        setSelectedVillageId(null);
 
                                         handleFieldChange('DistrictMasterId', id);
                                         handleFieldChange('CityMasterId', 0);
@@ -688,6 +700,7 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                                         if (!item) {
                                             setSelectedCityId(null);
+                                            setSelectedVillageId(null);
                                             handleFieldChange('CityMasterId', 0);
                                             handleFieldChange('VillageMasterId', 0);
                                             return;
@@ -696,6 +709,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         const id = Number(item);
 
                                         setSelectedCityId(id);
+                                        setSelectedVillageId(null);
                                         handleFieldChange('CityMasterId', id);
                                         handleFieldChange('VillageMasterId', 0);
                                     }}
@@ -733,8 +747,9 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 <Input
                                     label="PIN Code"
                                     type="text"
+                                    maxLength={6}
                                     value={formData.ZipCode}
-                                    onChange={(e) => handleFieldChange('ZipCode', e.target.value)}
+                                    onChange={(e) => handleFieldChange('ZipCode', filterNumbers(e.target.value))}
                                     placeholder="Enter PIN Code"
                                 />
                             </div>
@@ -742,7 +757,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Scheme & Scope Details */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Scheme & Scope Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
@@ -788,7 +803,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Project Documentation */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Documentation</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
@@ -819,13 +834,14 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Project Financials */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Financials</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <Input
                                     label="Project Estimate Cost"
                                     type="text"
+                                    maxLength={16}
                                     value={formData.ProjectEstimateCost || ''}
                                     rightIcon={<IndianRupee className="h-6 w-6 text-gray-400" />}
                                     onChange={(e) => handleFieldChange('ProjectEstimateCost', filterNumbers(e.target.value) || 0)}
@@ -836,6 +852,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 <Input
                                     label="On Going Budget Cost"
                                     type="text"
+                                    maxLength={16}
                                     value={formData.OnGoingBudgetCost || ''}
                                     rightIcon={<IndianRupee className="h-6 w-6 text-gray-400" />}
                                     onChange={(e) => handleFieldChange('OnGoingBudgetCost', filterNumbers(e.target.value) || 0)}
@@ -847,7 +864,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     label="Project Area in (SqFt)"
                                     type="text"
                                     value={formData.ProjectAreaInSqft || ''}
-                                    onChange={(e) => handleFieldChange('ProjectAreaInSqft', filterNumbers(e.target.value) || 0)}
+                                    onChange={(e) => handleFieldChange('ProjectAreaInSqft', filterNumbersWithDecimal(e.target.value) || 0)}
                                     placeholder="Enter Area in (SqFt)"
                                 />
                             </div>
@@ -855,7 +872,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Timeline */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Timeline</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
@@ -883,13 +900,14 @@ const AddUpdateProjectMaster: React.FC = () => {
                     </div>
 
                     {/* Contact Information */}
-                    <div className="space-y-4 pb-4">
+                    <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Contact Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <Input
                                     label="Site Contact Name"
                                     type="text"
+                                    maxLength={250}
                                     value={formData.SiteContactName}
                                     onChange={(e) => handleFieldChange('SiteContactName', e.target.value)}
                                     placeholder="Enter Site Contact Name"

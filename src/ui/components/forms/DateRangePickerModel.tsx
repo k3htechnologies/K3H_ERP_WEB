@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo, useCallback } from 'react'
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react'
 import { Modal } from '@/ui/components/Modal/Modal'
 import { THEME } from '@/core/constants/theme'
+import { isToday } from '@/core/utils/dateFormat'
 
 const parseYyyyMmDd = (value?: string | null): Date | null => {
   if (!value) return null
@@ -164,11 +165,10 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   const [tempEndDate, setTempEndDate] = useState<Date | null>(endDateObj)
   const initialDate = startDateObj ?? endDateObj ?? new Date()
   const [currentMonth, setCurrentMonth] = useState<Date>(initialDate)
-  const [editingField, setEditingField] = useState<'start' | 'end' | null>(null) // Track which field is being edited
+  const [editingField, setEditingField] = useState<'start' | 'end' | null>(null)
   const [localStartTime, setLocalStartTime] = useState(startTime)
   const [localEndTime, setLocalEndTime] = useState(endTime)
   const [localAIEnabled, setLocalAIEnabled] = useState(aiEnabled)
-  // Reason is now expected via children; no internal state
 
   // Keep state in sync with external values
   useEffect(() => {
@@ -285,17 +285,15 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   const isDateAllowed = (date: Date): boolean => {
     if (!allowedDates || allowedDates.length === 0) return true
 
-    // If a CompOff date is selected, invert the logic:
-    // - Disable dates from allowedDates (CompOff dates)
-    // - Enable all other dates
-    if (isSelectedDateFromAllowedDates()) {
-      const dateStr = formatYyyyMmDd(date)
-      return !allowedDates.includes(dateStr) // Invert: allow dates NOT in allowedDates
+    const dateStr = formatYyyyMmDd(date)
+
+    // If no Working Date selected: allow only allowedDates
+    if (!tempStartDate) {
+      return allowedDates.includes(dateStr)
     }
 
-    // Default behavior: only allow dates from allowedDates
-    const dateStr = formatYyyyMmDd(date)
-    return allowedDates.includes(dateStr)
+    // If Working Date is selected: allow any date for CompOff Date
+    return true
   }
 
   const handleDayClick = (date: Date | null) => {
@@ -314,14 +312,8 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     }
 
     if (editingField === 'end') {
-      if (tempStartDate && date < tempStartDate) {
-        setTempStartDate(date)
-        setTempEndDate(null)
-        setEditingField('end')
-      } else {
-        setTempEndDate(date)
-        setEditingField(null)
-      }
+      setTempEndDate(date)
+      setEditingField(null)
       return
     }
 
@@ -332,30 +324,15 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     }
 
     if (!tempEndDate) {
-      if (date < tempStartDate) {
-        setTempEndDate(tempStartDate)
-        setTempStartDate(date)
-        setEditingField(null)
-      } else {
-        setTempEndDate(date)
-        setEditingField(null)
-      }
+      setTempEndDate(date)
+      setEditingField(null)
       return
     }
 
-    if (date < tempStartDate) {
-      setTempStartDate(date)
-      setTempEndDate(null)
-      setEditingField('end')
-    } else if (date < tempEndDate) {
-      setTempStartDate(date)
-      setTempEndDate(null)
-      setEditingField('end')
-    } else {
-      setTempStartDate(tempStartDate)
-      setTempEndDate(date)
-      setEditingField(null)
-    }
+    // If both dates are set, replace working date
+    setTempStartDate(date)
+    setTempEndDate(null)
+    setEditingField('end')
   }
 
   const handleConfirm = (e: React.FormEvent) => {
@@ -486,7 +463,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                 borderRadius: theme.borderRadius.md,
                 padding: 12,
                 boxShadow: theme.shadows.sm,
-                background: theme.colors.background,
+                background: theme.colors.primaryHover,
               }}
             >
               <div
@@ -520,7 +497,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                   style={{
                     fontSize: theme.fontSize.md,
                     fontWeight: theme.fontWeight.normal,
-                    color: theme.colors.text,
+                    color: theme.colors.textSecondary,
                     letterSpacing: '0.25px',
                   }}
                 >
@@ -583,7 +560,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                     if (!date) {
                       return <div key={`${wIdx}-${dIdx}`} style={{ height: 40 }} />
                     }
-
+                    const today = isToday(date)
                     const isCurrentMonth = date.getMonth() === month
                     const isStart = tempStartDate && isSameDay(date, tempStartDate)
                     const isEnd = tempEndDate && isSameDay(date, tempEndDate)
@@ -591,7 +568,8 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                     const isSelected = isStart || isEnd
                     const dateAllowed = isDateAllowed(date)
                     const dateStr = formatYyyyMmDd(date)
-                    const isFromAllowedDates = allowedDates && allowedDates.length > 0 && allowedDates.includes(dateStr)
+                    const hasAllowedDates = allowedDates && allowedDates.length > 0
+                    const isFromAllowedDates = hasAllowedDates && allowedDates.includes(dateStr)
                     const hasCompOffDateSelected = isSelectedDateFromAllowedDates()
                     const isHighlighted = hasCompOffDateSelected
                       ? (!isFromAllowedDates && !isSelected && !isInRange && isCurrentMonth && dateAllowed)
@@ -615,14 +593,18 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
                               ? theme.colors.backgroundSecondary
                               : isHighlighted
                                 ? '#dbeafe'
-                                : 'transparent',
+                                : today
+                                  ? '#eff6ff'
+                                  : 'transparent',
                           color: isSelected
                             ? '#ffff'
-                            : !isCurrentMonth
-                              ? theme.colors.textLight
-                              : !dateAllowed
+                            : today
+                              ? '#2563eb'
+                              : !isCurrentMonth
                                 ? theme.colors.textLight
-                                : theme.colors.text,
+                                : !dateAllowed
+                                  ? theme.colors.textLight
+                                  : theme.colors.text,
                           fontWeight: isSelected ? theme.fontWeight.medium : theme.fontWeight.normal,
                           transition: 'all 0.2s',
                           opacity: !dateAllowed ? 0.3 : 1,

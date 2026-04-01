@@ -24,7 +24,7 @@ import { EnquiryService } from "@/features/enquiry/services/EnquiryServices";
 import * as E from 'fp-ts/Either';
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Loader } from "@/core/utils/loader";
-import { Trash2 } from "lucide-react";
+import { Copy, Trash2 } from "lucide-react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { useEnquiryListState } from "@/features/enquiry/context/EnquiryListStateContext";
@@ -34,6 +34,7 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS, SUB_SUB_SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants/staticData";
+import { copyToClipboard } from "@/core/utils/comman";
 
 export const Enquiry: React.FC = () => {
 
@@ -318,25 +319,50 @@ export const Enquiry: React.FC = () => {
         {
             key: 'SystemGeneratedCode',
             label: 'Enquiry Code',
-            width: '20',
             sortable: true,
             fixed: 'left',
             align: 'left',
-            render: value => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="150px"
-                    tooltipThreshold={20}
-                    tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                />
-            )
+            render: (value) => {
+                return (
+                    <div className="flex items-center gap-2">
+
+                        <TooltipText
+                            text={value || '-'}
+                            maxWidth="150px"
+                            tooltipThreshold={20}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                        />
+
+                        {value && (
+                            <Button
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const success = await copyToClipboard(value);
+                                    if (success) {
+                                        addToast({ type: 'success', title: `${value} Copied!`});
+                                    }
+                                }}
+                                color="transparent"
+                                size="sm"
+                                style={{
+                                    padding: '2px 6px',
+                                    color: '#6B7280',
+                                    cursor: 'pointer'
+                                }}
+                                title="Copy"
+                            >
+                                <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                        )}
+                    </div>
+                );
+            }
         },
         {
             key: 'Name',
             label: 'Name',
-            width: '20',
             sortable: true,
-            fixed: 'left',
             align: 'left',
             render: (value, row) => (
                 <TooltipText
@@ -530,7 +556,7 @@ export const Enquiry: React.FC = () => {
             width: '14',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: value => value ? `+91 ${value}` : '-'
         },
         {
             key: 'CustomerClassification',
@@ -609,27 +635,31 @@ export const Enquiry: React.FC = () => {
 
                 const canDelete = canAction && row?.FinalStage?.toUpperCase() == "";
 
-                return canDelete ? (
+                return (
                     <div className="flex items-center justify-center gap-2">
                         <Button
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
+                                if (!canDelete) return;
                                 handleConfirmationDialogBoxOpen(row)
                             }}
                             color="transparent"
                             isborderRadius
+                            disabled={!canDelete}
                             size="sm"
                             style={{
-                                color: 'red',
-                                padding: '4px 8px'
+                                color: canDelete ? 'red' : '#9CA3AF',
+                                padding: '4px 8px',
+                                cursor: canDelete ? 'pointer' : 'not-allowed',
+                                opacity: canDelete ? 1 : 0.5
                             }}
                             title="Delete Enquiry"
                         >
                             <Trash2 className="h-4 w-4" />
                         </Button>
                     </div>
-                ) : null
+                )
             }
         }
 
@@ -745,7 +775,7 @@ export const Enquiry: React.FC = () => {
 
     return (
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
@@ -819,7 +849,7 @@ export const Enquiry: React.FC = () => {
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
-                title="Filter - Enquiry Master"
+                title="Filter - Enquiry"
                 onSubmit={e => {
                     e.preventDefault();
                     applyFilters();
@@ -832,7 +862,7 @@ export const Enquiry: React.FC = () => {
             >
                 <div className="space-y-6">
                     <div>
-                        <Input type="text" label="System Generated Code" value={tempFilters?.SystemGeneratedCode ?? ''} onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)} placeholder="Enter System Code" />
+                        <Input type="text" label="Enquiry Code" value={tempFilters?.SystemGeneratedCode ?? ''} onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)} placeholder="Enter System Code" />
                     </div>
 
                     <div>
@@ -979,6 +1009,8 @@ export const Enquiry: React.FC = () => {
                 onConfirm={handleDeleteEnquiry}
                 loading={isLoading}
                 pageName='Enquiry'
+                message={`Deleting this Enquiry ${deleteEnquiryData?.SystemGeneratedCode} will permanently remove all associated data.`}
+
             />
         </div>
     );

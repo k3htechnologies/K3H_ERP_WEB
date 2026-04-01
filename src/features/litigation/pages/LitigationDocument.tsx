@@ -9,7 +9,6 @@ import {
 import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
-import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Edit, Trash2 } from "lucide-react";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { Loader } from "@/core/utils/loader";
@@ -387,15 +386,55 @@ export const LitigationDocument: React.FC = () => {
         fixed: "left",
         align: "left",
         render: (value, row) => (
-          <div
-            className={`flex items-center ${canAction ? "justify-between" : "justify-start"}`}
-          >
-            <TooltipText
-              text={value || "-"}
-              maxWidth="250px"
-              tooltipThreshold={30}
-            />
 
+          <MultiImageViewer images={parseDocumentUrls(row.DocumentURL)} title="Document" triggerLabel={value || "-"} />
+
+        ),
+      },
+      {
+        key: "DocumentURL",
+        label: "Document",
+        width: "20",
+        sortable: false,
+        align: "center",
+        render: (value: string) => {
+          const urls = parseDocumentUrls(value);
+          if (urls.length === 0) return "-";
+
+          return (
+            urls.length > 0 ? urls.length : "-"
+          );
+        },
+      },
+      {
+        key: "ModifiedBy",
+        label: "Last Modified By",
+        width: "33",
+        sortable: false,
+        align: "left",
+        render: (value) => value || "-",
+      },
+      {
+        key: "ModifiedDate",
+        label: "Last Modified Date",
+        width: "33",
+        sortable: false,
+        align: "center",
+        render: (value, row) =>
+          value
+            ? formatDate_dd_MonthName_yy(value)
+            : row.CreatedDate
+              ? formatDate_dd_MonthName_yy(row.CreatedDate)
+              : "-",
+      },
+      {
+        key: "Actions",
+        label: "Actions",
+        width: "12",
+        fixed: "right",
+        align: "center",
+        render: (_value, row) => {
+          return (
             <div className="flex justify-between items-center">
               {canModifyDocument && (
                 <>
@@ -425,47 +464,8 @@ export const LitigationDocument: React.FC = () => {
                 </>
               )}
             </div>
-          </div>
-        ),
-      },
-      {
-        key: "DocumentURL",
-        label: "Document",
-        width: "20",
-        sortable: false,
-        align: "center",
-        render: (value: string) => {
-          const urls = parseDocumentUrls(value);
-          if (urls.length === 0) return "-";
-          return (
-            <MultiImageViewer
-              images={urls}
-              title="Litigation Document"
-              triggerLabel={`View (${urls.length})`}
-            />
           );
         },
-      },
-      {
-        key: "ModifiedBy",
-        label: "Last Modified By",
-        width: "33",
-        sortable: false,
-        align: "left",
-        render: (value) => value || "-",
-      },
-      {
-        key: "ModifiedDate",
-        label: "Last Modified Date",
-        width: "33",
-        sortable: false,
-        align: "left",
-        render: (value, row) =>
-          value
-            ? formatDate_dd_MonthName_yy(value)
-            : row.CreatedDate
-              ? formatDate_dd_MonthName_yy(row.CreatedDate)
-              : "-",
       },
     ],
     [
@@ -696,7 +696,7 @@ export const LitigationDocument: React.FC = () => {
   //#endregion
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       {/* ============================================================================
           COMMAN LOADER FOR PAGE
            ============================================================================ */}
@@ -733,7 +733,7 @@ export const LitigationDocument: React.FC = () => {
         exportLoading={isLoading}
       />
 
-      <div className="flex items-center gap-3 mb-6 border-b border-gray-300 pb-3">
+      <div className="flex items-center gap-3 mb-5">
         <HeaderActionBar
           titleText="Litigation Document"
           cancelText="Cancel"

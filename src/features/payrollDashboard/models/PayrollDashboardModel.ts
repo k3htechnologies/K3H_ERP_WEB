@@ -1,12 +1,63 @@
 import type { ApiResponse } from "@/core/api/ApiResponse";
-// 
+
 export interface PayrollDashboardDataset {
-  Table0: any[];
-  Table1: any[];
-  Table2: any[];
-  Table3: any[];
-  Table4: any[];
-  Table5: any[];
+  Table0: Table0[];
+  Table1: Table1[];
+  Table2: Table2[];
+  Table3: Table3[];
+  Table4: Table4[];
+  Table5: Table5[];
+}
+
+export interface Table0 {
+  OnLeave: string | null;
+  Outdoor: string | null;
+  PendingApproval: string | null;
+  AttendanceAlert: string | null;
+}
+
+export interface Table1 {
+  FullName: string | null;
+  NoOfDays: string | null;
+  StartDate: string | null;
+  EndDate: string | null;
+  LeaveTypeMasterId: string | null;
+  Status: string | null;
+  CanApprove: number | null;
+}
+
+export interface Table2 {
+  CompoffDate: string | null;
+  WorkingDate: string | null;
+  CreatedBy: string | null;
+  CreatedDate: string | null;
+  Status: string | null;
+  Designation: string | null;
+  CanApprove: number | null;
+}
+
+export interface Table3 {
+  CompanyName: string | null;
+  CreatedBy: string | null;
+  OutDoorDate: string | null;
+  OutDoorTime: string | null;
+}
+
+export interface Table4 {
+  FullName: string | null;
+  ResignationDate: string | null;
+  // Reason: string | null;
+  ExpectedRelievingDate: string | null;
+  IsAnyOfferInHand: boolean | null;
+  // status: string | null;
+  CanApprove: number | null;
+}
+
+export interface Table5 {
+  TotalEmployees: number | null;
+  PresentCount: number | null;
+  AbsentCount: number | null;
+  OnLeaveCount: number | null;
 }
 
 export interface FilterWithPaginationPayrollDashboard {
@@ -14,7 +65,6 @@ export interface FilterWithPaginationPayrollDashboard {
   PageNumber: number;
   StartDate?: string;
   EndDate?: string;
-  EmployeeName?: string | null;
 }
 
 export interface PayrollDashboardDatasetMaster {

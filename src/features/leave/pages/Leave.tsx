@@ -5,8 +5,8 @@ import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-    FilterWithPaginationLeaveRequest,
-    LeaveData,
+  FilterWithPaginationLeaveRequest,
+  LeaveData,
 } from '@/features/leave/models/LeaveModel';
 import { LeaveService } from '@/features/leave/services/LeaveService';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
@@ -182,6 +182,7 @@ export const Leave: React.FC = () => {
   //#region DATA LOAD LEAVE
 
   const loadLeaves = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
+
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -195,7 +196,9 @@ export const Leave: React.FC = () => {
           StartDate: filterParams.StartDate?.trim() || undefined,
           EndDate: filterParams.EndDate?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, []),
-          IsReport: false
+          CanApprove: false,
+          IsReport: false,
+          IsCheckPermission: true
         };
 
         const response = await LeaveService.apiCallPullLeave(params);
@@ -304,7 +307,6 @@ export const Leave: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-  
 
         const params: FilterWithPaginationLeaveRequest = {
           PageNumber: 1,
@@ -315,6 +317,7 @@ export const Leave: React.FC = () => {
           EndDate: filters.EndDate?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, []),
           IsReport: false,
+          CanApprove: false,
           ExportType: exportType
         };
 
@@ -327,7 +330,7 @@ export const Leave: React.FC = () => {
         addToast({ type: 'error', title: error.message });
       },
       undefined,
-      'Preparing Export...'
+      'Preparing Export'
     );
   };
 
@@ -434,7 +437,7 @@ export const Leave: React.FC = () => {
 
   //#region CUSTOMIZE COLUMNS
 
-  const requiredLeaveColumnKeys: string[] = ['LeaveType'];
+  const requiredLeaveColumnKeys: string[] = ['LeaveType', 'actions'];
 
   const [selectedLeaveColumnKeys, setSelectedLeaveColumnKeys] = useState<string[]>([]);
 
@@ -473,7 +476,6 @@ export const Leave: React.FC = () => {
     ),
     [leaveColumns, selectedLeaveColumnKeys]
   );
-
   //#endregion
 
   //#region FILTER HELPERS
@@ -487,15 +489,12 @@ export const Leave: React.FC = () => {
     setTempFilters({});
     setShowFilterPopup(false);
   };
-
   //#endregion
 
   //#region  HANDLE CHANGE EVENT
-
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters(prev => updateFilter(prev, key, value));
   };
-
   //#endregion
 
   //#region ADD LEAVE THEN NAVIGATE
@@ -506,12 +505,13 @@ export const Leave: React.FC = () => {
 
   return (
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
+
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Leave Type..."
+        searchPlaceholder="Search By Leave Type"
         onSearchChange={
           searchLeaves
         }
@@ -539,6 +539,7 @@ export const Leave: React.FC = () => {
         onExportPdf={handleExportLeavePdf}
         exportLoading={isLoading}
       />
+
       <DataTable
         data={leaveListForTable}
         columns={visibleLeaveColumns}
@@ -581,11 +582,12 @@ export const Leave: React.FC = () => {
         saveText="Apply "
         cancelText="Clear"
         onCancel={() => clearFilters()}
-       
+
         size="small-half"
       >
         <div className="space-y-6">
           <div className="space-y-4">
+
             <div>
               <Input
                 label='Leave Type'
@@ -595,6 +597,7 @@ export const Leave: React.FC = () => {
                 placeholder="Enter Leave Type"
               />
             </div>
+
             <div>
               <DatePickerInput
                 label='Start Date'
@@ -602,6 +605,7 @@ export const Leave: React.FC = () => {
                 onChange={(val) => handleFilterChange('StartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
               />
             </div>
+
             <div>
               <DatePickerInput
                 label='End Date'
@@ -609,6 +613,7 @@ export const Leave: React.FC = () => {
                 onChange={(val) => handleFilterChange('EndDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) || '')}
               />
             </div>
+
           </div>
         </div>
       </Modal>
@@ -623,7 +628,6 @@ export const Leave: React.FC = () => {
         loading={isLoading}
         pageName='leave'
       />
-
 
     </div>
   )

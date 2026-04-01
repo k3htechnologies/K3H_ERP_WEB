@@ -95,7 +95,8 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
 
           <div>
             <MultiSelectPagination
-              label="Branch"
+              key={dropdownResetKey}
+              label="Branch Name"
               dataFetchCallBack={fetchBranchMasterDropdown}
               selectedValues={branchValueDropdown.selectedValues}
               options={branchValueDropdown.initialOptions}
@@ -108,7 +109,8 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
 
           <div>
             <MultiSelectPagination
-              label="Department"
+              key={dropdownResetKey}
+              label="Department Name"
               dataFetchCallBack={fetchDepartmentMasterDropdown}
               selectedValues={departmentValueDropdown.selectedValues}
               options={departmentValueDropdown.initialOptions}
@@ -118,7 +120,7 @@ export const HolidayMappingMasterFormModal: React.FC<HolidayMappingMasterFormMod
               }}
             />
           </div>
-          
+
         </div>
       </div>
     </Modal>

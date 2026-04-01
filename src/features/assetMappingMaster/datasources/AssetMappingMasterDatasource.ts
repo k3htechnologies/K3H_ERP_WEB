@@ -48,8 +48,9 @@ export class AssetMappingMasterDatasourceImpl implements AssetMappingMasterDatas
 
             console.error('ERROR: PULL ASSET MAPPING MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullAssetMappingMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullAssetMappingMaster(params);
             }
             throw error
         }
@@ -80,8 +81,9 @@ export class AssetMappingMasterDatasourceImpl implements AssetMappingMasterDatas
         } catch (error) {
             console.error('ERROR: ADD UPDATE ASSET MAPPING MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateAssetMappingMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateAssetMappingMaster(params);
             }
             throw error
         }
@@ -101,11 +103,11 @@ export class AssetMappingMasterDatasourceImpl implements AssetMappingMasterDatas
             return response
 
         } catch (error) {
-            if (error === TokenExpiredException) {
+            console.error('ERROR: DELETE ASSET MAPPING MASTER :', error);
 
-                console.error('ERROR: DELETE ASSET MAPPING MASTER :', error);
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteAssetMappingMaster(params);
+                return await this.deleteAssetMappingMaster(params);
 
             }
 

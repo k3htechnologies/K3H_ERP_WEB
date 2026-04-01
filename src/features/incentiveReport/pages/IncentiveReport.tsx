@@ -393,15 +393,15 @@ export const IncentiveReport: React.FC = () => {
                 }
             },
             {
-                key: 'Referel',
+                key: 'Referral',
                 label: 'Referral (%) / Amount (₹)',
                 width: '22',
                 sortable: false,
                 align: 'right',
                 render: (_, row) => {
-                    if (!row.ReferelPercentage && !row.ReferelAmount) return '-';
+                    if (!row.ReferralPercentage && !row.ReferralAmount) return '-';
 
-                    return `${Number(row.ReferelPercentage ?? 0).toFixed(2)}% / ₹${Number(row.ReferelAmount ?? 0).toLocaleString('en-IN')}`;
+                    return `${Number(row.ReferralPercentage ?? 0).toFixed(2)}% / ₹${Number(row.ReferralAmount ?? 0).toLocaleString('en-IN')}`;
                 }
             },
             {
@@ -479,7 +479,7 @@ export const IncentiveReport: React.FC = () => {
 
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>

@@ -39,9 +39,9 @@ export class CPEnquiryReportDatasourceImpl implements CPEnquiryReportDatasource 
 
             console.error('ERROR: PULL CHANNEL PARTNER ENQUIRY REPORT :', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullCPEnquiryReport(params);
+                return   await this.pullCPEnquiryReport(params);
             }
 
             throw error

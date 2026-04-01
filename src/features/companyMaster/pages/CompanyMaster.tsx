@@ -81,7 +81,7 @@ export const CompanyMaster: React.FC = () => {
         } else {
             loadCompanys(listState.page, listState.filters, listState.sortInfo);
         }
-        
+
     }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
 
@@ -291,7 +291,7 @@ export const CompanyMaster: React.FC = () => {
                 label: 'Firms Type',
                 width: '15',
                 sortable: false,
-                align: 'center',
+                align: 'left',
                 render: (value) => value || '-'
             },
             {
@@ -307,7 +307,7 @@ export const CompanyMaster: React.FC = () => {
                 label: 'Mobile Number',
                 width: '15',
                 sortable: false,
-                align: 'center',
+                align: 'left',
                 render: value => value ? `+91 ${value}` : '-'
             },
             {
@@ -315,7 +315,7 @@ export const CompanyMaster: React.FC = () => {
                 label: 'Land Line Number',
                 width: '15',
                 sortable: false,
-                align: 'center',
+                align: 'left',
                 render: (value) => value || '-'
             },
             {
@@ -332,7 +332,7 @@ export const CompanyMaster: React.FC = () => {
                 label: 'GST Number',
                 width: '15',
                 sortable: false,
-                align: 'center',
+                align: 'left',
                 render: (value: string, row: any) => {
                     return (
                         <MultiImageViewer
@@ -349,7 +349,7 @@ export const CompanyMaster: React.FC = () => {
                 label: 'Pan Number',
                 width: '15',
                 sortable: false,
-                align: 'center',
+                align: 'left',
                 render: (value: string, row: any) => {
 
                     return (
@@ -367,7 +367,7 @@ export const CompanyMaster: React.FC = () => {
                 label: 'CIN Number',
                 width: '15',
                 sortable: false,
-                align: 'center',
+                align: 'left',
                 render: (value: string, row: any) => {
                     return (
                         <MultiImageViewer
@@ -380,12 +380,12 @@ export const CompanyMaster: React.FC = () => {
                 }
             },
 
-             {
+            {
                 key: 'TANNumber',
                 label: 'TAN Number',
                 width: '15',
                 sortable: false,
-                align: 'center',
+                align: 'left',
                 render: (value: string, row: any) => {
                     return (
                         <MultiImageViewer
@@ -403,7 +403,7 @@ export const CompanyMaster: React.FC = () => {
                 label: 'State',
                 width: '15',
                 sortable: false,
-                align: 'center',
+                align: 'left',
                 render: (value) => value || '-'
             },
             {
@@ -411,7 +411,7 @@ export const CompanyMaster: React.FC = () => {
                 label: 'District',
                 width: '15',
                 sortable: false,
-                align: 'center',
+                align: 'left',
                 render: (value) => value || '-'
             },
             {
@@ -419,7 +419,7 @@ export const CompanyMaster: React.FC = () => {
                 label: 'City',
                 width: '15',
                 sortable: false,
-                align: 'center',
+                align: 'left',
                 render: (value) => value || '-'
             },
             {
@@ -428,30 +428,37 @@ export const CompanyMaster: React.FC = () => {
                 width: '12',
                 fixed: 'right',
                 align: 'center',
-                render: (_value, row) => (
-                    canAction && !row.NumberOfEmployee ? (
-                        <div className="flex items-center justify-center gap-2">
+                
+                render: (_value, row) => {
 
+                    const canDelete = canAction && !row.NumberOfEmployee;
+
+                    return (
+                        <div className="flex items-center justify-center gap-2">
                             <Button
                                 onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
+                                    if (!canDelete) return;
                                     handleConfirmationDialogBoxOpen(row)
                                 }}
-                                color='transparent'
+                                color="transparent"
                                 isborderRadius
-                                size='sm'
+                                disabled={!canDelete}
+                                size="sm"
                                 style={{
-                                    color: 'red',
-                                    padding: '4px 8px'
+                                    color: canDelete ? 'red' : '#9CA3AF',
+                                    padding: '4px 8px',
+                                    cursor: canDelete ? 'pointer' : 'not-allowed',
+                                    opacity: canDelete ? 1 : 0.5
                                 }}
                                 title="Delete Company"
                             >
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                         </div>
-                    ) : null
-                )
+                    )
+                }
             }
         ],
         [canAction, handleViewCompanyDetails, handleConfirmationDialogBoxOpen]
@@ -460,7 +467,7 @@ export const CompanyMaster: React.FC = () => {
     //#endregion
 
     //#region CUSTOMIZE COLUMNS
-    const requiredCompanyColumnKeys: string[] = ['CompanyName','Actions'];
+    const requiredCompanyColumnKeys: string[] = ['CompanyName', 'Actions'];
 
     const allCompanyColumnKeys: string[] = companyColumns.map(c => c.key);
 
@@ -655,7 +662,7 @@ export const CompanyMaster: React.FC = () => {
 
     return (
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>

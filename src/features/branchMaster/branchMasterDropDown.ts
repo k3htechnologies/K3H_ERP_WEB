@@ -4,7 +4,7 @@ import { branchMasterService } from '@/features/branchMaster/services/BranchMast
 export const fetchBranchMasterDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
         const responseEither = await branchMasterService.apiCallPullBranchMaster({
-            PageSize: 20,
+            PageSize: 100,
             PageNumber: pageNumber,
             BranchName: params?.value || "",
             IsCheckPermission: false,

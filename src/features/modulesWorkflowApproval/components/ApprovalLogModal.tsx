@@ -8,23 +8,43 @@ import type {
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Loader } from "@/core/utils/loader";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { getStatusColor } from "../utils/Status";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 
 interface Props {
     isOpen: boolean;
     onClose: () => void;
-    documentName: string;
     request: ModulesApprovalStatusRequest | null;
+    title?: string
+    titleText?: string;
+    subTitleText?: string;
+    subSubTitleText?: string;
 }
 
 export const ApprovalLogModal: React.FC<Props> = ({
     isOpen,
     onClose,
-    documentName,
-    request
+    request,
+    title,
+    titleText,
+    subTitleText,
+    subSubTitleText,
 }) => {
 
     const [data, setData] = useState<ModulesApprovalStatusData[]>([]);
     const [loading, setLoading] = useState(false);
+
+    const modalTitle = (<span className="font-semibold"> {title}{" Log History "}
+        {titleText && (
+            <span className="text-gray-500 font-medium">
+                {" : "}
+                {titleText}
+                {subTitleText && <> {" > "} {subTitleText}</>}
+                {subSubTitleText && <> {" > "} {subSubTitleText}</>}
+            </span>
+        )}
+    </span>
+    );
 
     const loadApprovalLog = async () => {
 
@@ -60,21 +80,19 @@ export const ApprovalLogModal: React.FC<Props> = ({
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title="Approval Log History"
-            size="xl"
+            title={modalTitle}
+            size="xxl"
             cancelText="Close"
             onCancel={onClose}
         >
             <Loader loading={loading} title="Loading Approval Log">
 
                 <div className="space-y-5">
-                    <div className="text-sm font-semibold text-gray-700">
-                        {documentName}
-                    </div>
+
 
                     {!loading && data.length === 0 && (
                         <div className="text-center text-sm text-gray-500 py-6">
-                           <NoDataView message="No Approval Log History Found"/>
+                            <NoDataView message="No Approval Log History Found" />
                         </div>
                     )}
                     {data.map((item, index) => (
@@ -106,20 +124,14 @@ export const ApprovalLogModal: React.FC<Props> = ({
                                     </span>
 
                                     <span className="text-xs text-gray-500 whitespace-nowrap">
-                                        {item.DateTime}
+                                        {formatDate_dd_MonthName_yy_hh_mm(item.Date ?? '-')}
                                     </span>
 
                                 </div>
 
                                 <div className="mt-1">
 
-                                    <span className={`px-2 py-1 rounded-full text-xs font-medium
-                                                ${item.ApprovalStatus === "Approved"
-                                            ? "bg-green-100 text-green-700"
-                                            : item.ApprovalStatus === "Rejected"
-                                                ? "bg-red-100 text-red-700"
-                                                : "bg-yellow-100 text-yellow-700"
-                                        }`} >
+                                    <span className={`px-2 py-1 text-xs font-semibold  ${getStatusColor(item?.ApprovalStatus ?? "")}`}>
                                         {item.ApprovalStatus}
                                     </span>
 
@@ -127,7 +139,7 @@ export const ApprovalLogModal: React.FC<Props> = ({
 
 
                                 {item.Remarks && (
-                                    <p className="mt-2 text-sm text-gray-700">
+                                    <p className="mt-2 text-sm text-gray-700 break-all">
                                         {item.Remarks}
                                     </p>
                                 )}

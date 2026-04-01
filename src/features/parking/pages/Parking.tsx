@@ -43,6 +43,8 @@ import type {
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
+import { getStatusColor } from "@/features/modulesWorkflowApproval/utils/Status";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 
 interface ParkingGroupedByBuilding {
   BuildingNumber: string;
@@ -105,7 +107,8 @@ const Parking = () => {
   // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-  const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+  const [buildingName, setBuildingName] = useState<string | null>("");
+  const [floor, setFloor] = useState<string | null>("");
 
   // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -172,7 +175,7 @@ const Parking = () => {
 
     data.forEach((parking) => {
       const buildingKey = parking.BuildingNumber || "Unknown";
-      const floorKey = parking.Floor || "Unknown";
+      const floorKey = `${parking.Wing} / ${parking.Floor}`;
 
       if (!grouped[buildingKey]) {
         grouped[buildingKey] = {
@@ -191,8 +194,8 @@ const Parking = () => {
           InventoryFloorId: parking.InventoryFloorId,
           InventoryFlatFloorBasementPodiumWingId: parking.InventoryFlatFloorBasementPodiumWingId,
           Wing: parking.Wing || "",
-          IsApproval:parking.IsApproval,
-          ApprovalStatus:parking.ApprovalStatus || "Pending",
+          IsApproval: parking.IsApproval,
+          ApprovalStatus: parking.ApprovalStatus || "Pending",
           ParkingData: [],
         };
         building.Floors.push(floor);
@@ -216,9 +219,13 @@ const Parking = () => {
         const response = await parkingService.apiCallPullParking(params);
 
         if (E.isRight(response)) {
+
           setParkingData(response.right.Data || []);
+
           const grouped = groupParkingData(response.right.Data || []);
+
           setGroupedParking(grouped);
+
         } else {
           addToast({ type: "error", title: response.left.message });
         }
@@ -230,7 +237,7 @@ const Parking = () => {
         addToast({ type: "error", title: error.message });
       },
       undefined,
-      "Loading Parking Data",
+      "Loading Parking",
     );
   }, [projectId, groupParkingData, addToast]);
 
@@ -239,6 +246,12 @@ const Parking = () => {
   //#region STATUS COUNTERS
 
   const parkingStatusCounts = useMemo(() => {
+     if (selectedBuildingIndex === null || !groupedParking[selectedBuildingIndex]) {
+        return { available: 0, hold: 0, booked: 0, blocked: 0, member: 0 };
+    }
+
+    const building = groupedParking[selectedBuildingIndex];
+
     const counts = {
       available: 0,
       hold: 0,
@@ -247,17 +260,23 @@ const Parking = () => {
       member: 0,
     };
 
-    parkingData.forEach((parking) => {
-      const status = parking.ParkingStatus?.toLowerCase() || "";
-      if (status === "available") counts.available++;
-      else if (status === "hold") counts.hold++;
-      else if (status === "booked") counts.booked++;
-      else if (status === "blocked") counts.blocked++;
-      else if (status === "member") counts.member++;
-    });
+    
+   building.Floors.forEach((floor) => {
+        floor.ParkingData.forEach((parking) => {
 
+            const status = parking.ParkingStatus?.toLowerCase() || "";
+
+            if (status === "available") counts.available++;
+            else if (status === "hold") counts.hold++;
+            else if (status === "booked") counts.booked++;
+            else if (status === "blocked") counts.blocked++;
+            else if (status === "member") counts.member++;
+
+        });
+    });
     return counts;
-  }, [parkingData]);
+    
+  }, [parkingData,selectedBuildingIndex]);
 
   const selectedFloorParkingCounts = useMemo(() => {
     if (selectedBuildingIndex === null || selectedFloorIndex === null || !groupedParking[selectedBuildingIndex]) {
@@ -472,13 +491,18 @@ const Parking = () => {
       async () => {
         const params: FilterParkingRequest = {
           ProjectId: Number(projectId),
-          ExportType: "Excel",
+          ExportType: "SAMPLE",
         };
 
         const response = await parkingService.apiCallPullParking(params);
 
-        handleExportFile(response, "Excel", "Parking", addToast, "Sample file download successfully");
+        if (E.isRight(response) && response.right.Data.length > 0) {
 
+          handleExportFile(response, "Excel", "Parking", addToast, "Sample file download successfully");
+        }
+        else {
+          addToast({ type: "error", title: "All records are already approved. No data available for sample export" });
+        }
         return response;
       },
       undefined,
@@ -507,6 +531,7 @@ const Parking = () => {
         const response = await technicalService.apiCallExcelImport(fd);
 
         if (E.isRight(response)) {
+
           addToast({ type: "success", title: "Excel imported sucessfully" });
 
           fetchParking();
@@ -596,12 +621,12 @@ const Parking = () => {
 
           return (
             <div className="flex items-center gap-2">
-              {(parking.ParkingStatus === "Booked" || parking.ParkingStatus === "Member") && (
+              {approvalStatus?.toUpperCase() === "APPROVED" && (
                 <div title="View Details">
                   <Eye size={16} className="cursor-pointer text-blue-600 hover:text-blue-800" onClick={() => handleEditParking(parking)} />
                 </div>
               )}
-              {(parking.ParkingStatus === "Blocked" || parking.ParkingStatus === "Available" || parking.ParkingStatus === "Hold") &&
+              {!approvalStatus?.toUpperCase().includes("APPROVED") &&
                 canAction && (
                   <div title="Edit">
                     <Edit
@@ -639,7 +664,8 @@ const Parking = () => {
       ProjectId: Number(projectId),
     };
 
-    setApprovalDocumentName(`${building.BuildingNumber} - ${floor.Floor}`);
+    setBuildingName(building.BuildingNumber);
+    setFloor(floor.Floor)
 
     setApprovalLogRequest(request);
     setIsApprovalLogModalOpen(true);
@@ -655,7 +681,8 @@ const Parking = () => {
 
     if (!building || !floor) return;
 
-    setApprovalDocumentName(`${building.BuildingNumber} - ${floor.Floor}`);
+    setBuildingName(building.BuildingNumber);
+    setFloor(floor.Floor)
 
     setIsApprovalActionModalOpen(true);
   };
@@ -706,15 +733,14 @@ const Parking = () => {
   };
 
   //#endregion
+
+  const approvalStatus = selectedBuildingIndex !== null && selectedFloorIndex !== null ? groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.ApprovalStatus : undefined
   const isChange = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? false : true;
-  const disabled = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? true : false;
+  const disabled = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" || approvalStatus?.toUpperCase().includes("APPROVED") ? true : false;
 
   return (
     <>
-      <Loader loading={isLoading} title={loadingMessage}>
-        {" "}
-        <div></div>
-      </Loader>
+      <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div></Loader>
 
       <ParkingHeader
         activeTab={activeTab}
@@ -723,25 +749,13 @@ const Parking = () => {
         onExportPdf={handleExportParkingPdf}
         onUploadExcel={() => setShowImportModal(true)}
         onDownloadSampleExcel={handleDownloadExcelSampleInventory}
-        canExport={canExport && Number(projectId) > 0}
+        canExport={canExport && Number(projectId) > 0 && parkingData.length > 0}
         exportLoading={isLoading}
         searchTerm={searchTerm}
         onSearchChange={handleSearchChange}
         onClearSearch={handleClearSearch}
-        canAction={canAction && Number(projectId) > 0}
-        approvalStatus={
-          selectedBuildingIndex !== null && selectedFloorIndex !== null
-            ? groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.ApprovalStatus
-            : undefined
-        }
-        showApprovalActions={
-          selectedBuildingIndex !== null &&
-          selectedFloorIndex !== null &&
-          groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.IsApproval === true
-        }
-        onApprovalLog={handleApprovalLog}
-        onApprove={() => handleApproveRejectDocument("approve")}
-        onReject={() => handleApproveRejectDocument("reject")}
+        canAction={canAction && Number(projectId) > 0 && parkingData.length > 0}
+        approvalStatus={approvalStatus}
       />
 
       <ExportImport
@@ -753,78 +767,108 @@ const Parking = () => {
         }}
       />
 
-      <div className="flex flex-col w-full h-[120px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4 py-1">
-        <div className="flex justify-between items-center">
-          <div className="flex gap-5">
-            {groupedParking.map((building, index) => (
-              <span
-                key={index}
-                onClick={() => {
-                  setSelectedBuildingIndex(index);
-                  if (building.Floors.length > 0) {
-                    setSelectedFloorIndex(0);
-                  } else {
-                    setSelectedFloorIndex(null);
-                  }
-                }}
-                className={`relative pb-2 text-sm font-medium transition-all duration-200 flex items-center gap-2 ${
-                  selectedBuildingIndex === index
-                    ? "text-blue-600 font-medium text-[16px] leading-[140%] tracking-[0.01em]"
-                    : "text-gray-400 font-normal text-[14px] leading-[140%] tracking-[0.01em] hover:text-blue-500"
-                }`}
-              >
-                {building.BuildingNumber}
-                {selectedBuildingIndex === index && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full" />}
-              </span>
-            ))}
-          </div>
+      <div className="flex flex-col pt-3 w-full h-[230px] rounded-br-[15px] rounded-bl-[15px] border-[1px] border-gray-300 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] px-4">
+        <div className="flex gap-5">
+          {groupedParking.map((building, index) => (
 
-          <div className="pt-5">
-            <StatusCounters
-              availableCount={parkingStatusCounts.available}
-              holdCount={parkingStatusCounts.hold}
-              memberCount={parkingStatusCounts.member}
-              bookedCount={parkingStatusCounts.booked}
-              blockedCount={parkingStatusCounts.blocked}
-            />
-          </div>
+            <span
+              key={index}
+              onClick={() => {
+                setSelectedBuildingIndex(index);
+                if (building.Floors.length > 0) {
+                  setSelectedFloorIndex(0);
+                } else {
+                  setSelectedFloorIndex(null);
+                }
+              }}
+              className={`relative pb-2 text-sm font-medium transition-all duration-200 flex items-center gap-2 ${selectedBuildingIndex === index
+                ? "text-blue-600 font-medium text-[16px] leading-[140%] tracking-[0.01em]"
+                : "text-gray-400 font-normal text-[14px] leading-[140%] tracking-[0.01em] hover:text-blue-500"
+                }`}
+            >
+              {building.BuildingNumber}
+              {selectedBuildingIndex === index && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-blue-600 rounded-full" />}
+            </span>
+          ))}
         </div>
 
-        <div className="border-b border-gray-200" />
+        <div className="pt-3">
+          <StatusCounters
+            availableCount={parkingStatusCounts.available}
+            holdCount={parkingStatusCounts.hold}
+            memberCount={parkingStatusCounts.member}
+            bookedCount={parkingStatusCounts.booked}
+            blockedCount={parkingStatusCounts.blocked}
+          />
+        </div>
 
-        <div className="flex justify-between items-center pt-2 pb-2">
-          {selectedBuildingIndex !== null &&
-            groupedParking[selectedBuildingIndex] &&
-            groupedParking[selectedBuildingIndex].Floors.length > 0 && (
-              <>
-                <div className="flex-1 flex gap-2">
-                  {groupedParking[selectedBuildingIndex].Floors.map((floor, index) => (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedFloorIndex(index)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                        selectedFloorIndex === index
-                          ? "bg-blue-600 text-white"
-                          : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-300"
-                      }`}
-                    >
-                      {floor.Floor}
-                    </button>
-                  ))}
-                </div>
+        <div className="border-b border-gray-200 pt-4" />
 
-                {/* FLOOR STATUS */}
-                <div className="ml-auto">
-                  <StatusCounters
-                    availableCount={selectedFloorParkingCounts.available}
-                    holdCount={selectedFloorParkingCounts.hold}
-                    memberCount={selectedFloorParkingCounts.member}
-                    bookedCount={selectedFloorParkingCounts.booked}
-                    blockedCount={selectedFloorParkingCounts.blocked}
-                  />
+        <div className="flex flex-col pt-2 pb-1">
+          <div className="flex-1">
+            {selectedBuildingIndex !== null &&
+              groupedParking[selectedBuildingIndex] &&
+              groupedParking[selectedBuildingIndex].Floors.length > 0 && (
+                <div className="flex items-center justify-between gap-3">
+                 <div className="flex-1 min-w-0">
+                     <div className="flex gap-2 overflow-x-auto thin-scroll whitespace-nowrap scrollbar-hide">
+                      {groupedParking[selectedBuildingIndex].Floors.map((floor, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setSelectedFloorIndex(index)}
+                          className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedFloorIndex === index
+                            ? "bg-blue-600 text-white"
+                            : "bg-white text-gray-600 hover:bg-gray-100 border border-gray-300"
+                            }`}
+                        >
+                          {floor.Floor}
+                        </button>
+
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+
+                    <span className="text-sm font-medium text-gray-600">
+                      Status
+                    </span>
+
+                    <span className={`px-3 py-1 text-xs font-medium rounded-md ${getStatusColor(approvalStatus ?? "")}`}>
+                      {approvalStatus}
+                    </span>
+
+                  </div>
                 </div>
-              </>
+              )}
+          </div>
+
+          {/* FLOOR STATUS */}
+          <div className="flex items-center justify-between pt-3">
+            <StatusCounters
+              availableCount={selectedFloorParkingCounts.available}
+              holdCount={selectedFloorParkingCounts.hold}
+              memberCount={selectedFloorParkingCounts.member}
+              bookedCount={selectedFloorParkingCounts.booked}
+              blockedCount={selectedFloorParkingCounts.blocked}
+            />
+
+            {approvalStatus && (
+              <ApprovalActions
+                approvalStatus={approvalStatus}
+                showApproval={
+                  selectedBuildingIndex !== null &&
+                  selectedFloorIndex !== null &&
+                  groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.IsApproval === true
+                }
+                displayText="Status"
+                onHistory={handleApprovalLog}
+                onApprove={() => handleApproveRejectDocument("approve")}
+                onReject={() => handleApproveRejectDocument("reject")}
+              />
             )}
+          </div>
+
+
         </div>
       </div>
 
@@ -833,7 +877,7 @@ const Parking = () => {
         selectedFloorIndex !== null &&
         groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex] &&
         (activeTab === "Grid" ? (
-          <div className="flex flex-wrap gap-4 p-4 mt-5 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] rounded-[15px]">
+          <div className="flex flex-wrap gap-4 p-4 mt-2 shadow-[0_1px_2px_1px_rgba(0,0,0,0.15)] bg-[#F9FAFB] rounded-[15px]">
             {getFilteredParkingData.map((parking, index) => (
               <ParkingCard
                 key={parking.ParkingId || index}
@@ -841,6 +885,11 @@ const Parking = () => {
                 onEdit={handleEditParking}
                 canAction={canAction}
                 canBookingAction={canBookingAction}
+                approvalStatus={
+                  selectedBuildingIndex !== null && selectedFloorIndex !== null
+                    ? groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.ApprovalStatus
+                    : undefined
+                }
               />
             ))}
           </div>
@@ -864,7 +913,7 @@ const Parking = () => {
         }}
         title="Update Parking"
         onSubmit={handleUpdateParking}
-        saveText={canAction === true && isChange ? "Update" : ""}
+        saveText={canAction === true && !approvalStatus?.toUpperCase().includes("APPROVED") && isChange ? "Update" : ""}
         onCancel={() => {
           setIsUpdateParkingModalOpen(false);
         }}
@@ -941,6 +990,7 @@ const Parking = () => {
             <Input
               label="Dimensions"
               value={formData.ParkingDimensions || ""}
+              maxLength={15}
               onChange={(e) => handleFieldChange("ParkingDimensions", e.target.value)}
               placeholder="Enter Dimensions"
               required
@@ -971,7 +1021,9 @@ const Parking = () => {
       {/* Approval Log History */}
       <ApprovalLogModal
         isOpen={isApprovalLogModalOpen}
-        documentName={approvalDocumentName ?? ""}
+        title="Parking"
+        titleText={buildingName ?? ""}
+        subTitleText={floor ?? ""}
         onClose={() => setIsApprovalLogModalOpen(false)}
         request={approvalLogRequest}
       />
@@ -982,7 +1034,8 @@ const Parking = () => {
         isOpen={isApprovalActionModalOpen}
         onClose={() => setIsApprovalActionModalOpen(false)}
         actionType={approvalActionType}
-        documentName={approvalDocumentName ?? ""}
+        titleText={buildingName ?? ""}
+        subTitleText={floor ?? ""}
         onSubmit={handleApprovalSubmit}
         loading={isLoading}
       />

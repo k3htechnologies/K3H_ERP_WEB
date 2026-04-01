@@ -23,7 +23,7 @@ export interface FilterWithPaginationBookingRequest {
     AgreementValue?: number;
     BookingType?: string;
     SortBy?: string;
-    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF';
+    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF' | 'BOOKING FORM PDF ON MAIL';
 }
 
 export interface FilterWithPaginationChannelPartnerBookingRequest {
@@ -82,15 +82,15 @@ export interface BookingData {
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
 
-    ReferelPercentage: number | null;
-    ReferelAmount: number | null;
+    ReferralPercentage: number | null;
+    ReferralAmount: number | null;
 
     LoyaltyPercentage: number | null;
     LoyaltyAmount: number | null;
 
     EmployeeReferencePercentage: number | null;
     EmployeeReferenceAmount: number | null;
-    
+
     RegistrationDate: string | null;
     AgreementValue: number | null;
     AgreementValueTDS: number | null;
@@ -158,6 +158,13 @@ export interface BookingApplicantData {
     VotingIdURL: string | null;
     GSTNumber: string | null;
     GSTNumberURL: string | null;
+    CancelledChequeURL: string | null;
+    POAURL: string | null;
+    IncomeForm16ITRURL: string | null;
+    NreNroBankDetailsURL: string | null;
+    NomineeFormURL: string | null;
+    StatementOfSourceOfFundsURL: string | null;
+    PaymentProofURL: string | null;
     CreatedById: number | null;
     CreatedBy: string | null;
     CreatedDate: string | null;
@@ -188,9 +195,11 @@ export interface BookingPaymentScheduleData {
     Name: string | null;
     Date: string | null;
     PaymentSchedulePercentage: number | null;
+    PaymentScheduleCumulative: number | null;
     PaymentScheduleAmount: number | null;
     PaymentScheduleGSTAmount: number | null;
     PaymentScheduleTDSAmount: number | null;
+    Rank: number | null;
     CreatedById: number | null;
     CreatedBy: string | null;
     CreatedDate: string | null;
@@ -211,8 +220,8 @@ export interface AddUpdateBookingRequest {
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
 
-    ReferelPercentage: number | null;
-    ReferelAmount: number | null;
+    ReferralPercentage: number | null;
+    ReferralAmount: number | null;
 
     LoyaltyPercentage: number | null;
     LoyaltyAmount: number | null;
@@ -276,6 +285,27 @@ export interface AddUpdateBookingApplicantRequest {
     GSTNumber: string | null;
     GSTNumberURL?: File[] | null;
     RemoveGSTNumberURL?: string | null;
+
+    CancelledChequeURL?: File[] | null;
+    RemoveCancelledChequeURL?: string | null;
+
+    POAURL?: File[] | null;
+    RemovePOAURL?: string | null;
+
+    IncomeForm16ITRURL?: File[] | null;
+    RemoveIncomeForm16ITRURL?: string | null;
+
+    NreNroBankDetailsURL?: File[] | null;
+    RemoveNreNroBankDetailsURL?: string | null;
+
+    NomineeFormURL?: File[] | null;
+    RemoveNomineeFormURL?: string | null;
+
+    StatementOfSourceOfFundsURL?: File[] | null;
+    RemoveStatementOfSourceOfFundsURL?: string | null;
+
+    PaymentProofURL?: File[] | null;
+    RemovePaymentProofURL?: string | null;
 }
 export interface AddUpdateBookingOtherChargesRequest {
     BookingOtherChargesId: number | null;

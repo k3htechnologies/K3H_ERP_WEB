@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react'
 import useToast from '@/core/hooks/useToast';
 import { runApiWithLoader } from '@/core/utils/apiLoaderHelper';
-import type { EmployeeMasterData, EmployeeReportingCycle, FilterWithPaginationEmployeeMasterRequest } from '@/features/employeeMaster/models/EmployeeMasterModel';
+import type { EmployeeMasterData, EmployeeReportingCycle, FilterWithPaginationEmployeeMasterRequest, UpdateEmployeeMasterRequest } from '@/features/employeeMaster/models/EmployeeMasterModel';
 import * as E from 'fp-ts/Either';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService';
 import { Loader } from '@/core/utils/loader';
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { useNavigate } from 'react-router-dom';
 import { useEmployeeListState } from '@/features/employeeMaster/context/EmployeeListStateContext';
@@ -31,7 +31,7 @@ import { employeeExperienceDetailsService } from '@/features/employeeMaster/serv
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Input } from '@/ui/components/forms/Input';
 import { ConfirmationDialogBox } from '@/core/utils/confirmationDialogBox';
-import { Edit, Plus, Trash2 } from 'lucide-react';
+import { Edit, IdCardIcon, Mail, Phone, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/ui/components/forms/Button';
 import type { DeleteEmployeeEducationDetailsRequest } from '@/features/employeeMaster/models/EmployeeEducationDetailsModel';
 import type { DeleteEmployeeExperienceDetailsRequest } from '@/features/employeeMaster/models/EmployeeExperienceDetailsModal';
@@ -39,6 +39,12 @@ import type { BranchAssociationsMasterData, FilterWithPaginationBranchAssociatio
 import { branchAssociationsService } from '@/features/branchAssociationsMaster/services/BranchAssociationsMasterService';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
+import DatePickerInput from '@/ui/components/forms/Datepicker';
+import { filterAadhaar, filterDrivingLicenseNumber, filterMobile, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidDrivingLicenseNumber, isValidPAN, isValidPassportNumber, isValidVoterId } from '@/core/utils/fileValidation';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { BLOOD_GROUP_OPTIONS, GENDER_OPTIONS, MARITAL_STATUS_OPTIONS } from '@/core/constants';
+import { TextArea } from '@/ui/components/forms/Textarea';
+import { getNameInitials } from '@/core/utils/getNameInitials';
 
 export const Profile: React.FC = () => {
 
@@ -66,8 +72,10 @@ export const Profile: React.FC = () => {
     // Modal states
     const [isEducationModalOpen, setIsEducationModalOpen] = useState(false);
     const [isExperienceModalOpen, setIsExperienceModalOpen] = useState(false);
+    const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
     const [isEditEducationMode, setIsEditEducationMode] = useState(false);
     const [isEditExperienceMode, setIsEditExperienceMode] = useState(false);
+    const [isEditEmployeeMode, setIsEditEmployeeMode] = useState(false);
 
     // Delete confirmation states
     const [isDeleteEducationDialogOpen, setIsDeleteEducationDialogOpen] = useState(false);
@@ -103,6 +111,47 @@ export const Profile: React.FC = () => {
         CompanyName?: string;
         Role?: string;
         Tenure?: string;
+    }>({});
+
+    // Employee form state
+    const [employeeFormData, setEmployeeFormData] = useState<UpdateEmployeeMasterRequest>({
+        EmployeeId: 0,
+        UniqueKey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+        FirstName: '',
+        MiddleName: '',
+        LastName: '',
+        Gender: '',
+        MaritalStatus: '',
+        BloodGroup: '',
+        DateOfBirth: '',
+        EmailId: '',
+        PersonalMobileNumber: '',
+        CommunicationAddress: '',
+        PermanentAddress: '',
+
+        AadharCardNumber: '',
+        PassportNumber: '',
+        PanCardNumber: '',
+        DrivingLicenceNumber: '',
+        VoterCardNumber: '',
+    });
+    const [employeeFormErrors, setEmployeeFormErrors] = useState<{
+        FirstName?: string;
+        LastName?: string;
+        MiddleName?: string
+        BloodGroup?: string;
+        Gender?: string;
+        MaritalStatus?: string;
+        DateOfBirth?: string;
+        EmailId?: string;
+        PersonalMobileNumber?: string;
+        PermanentAddress?: string;
+        CommunicationAddress?: string,
+        AadharCardNumber?: string,
+        PassportNumber?: string,
+        PanCardNumber?: string,
+        DrivingLicenceNumber?: string,
+        VoterCardNumber?: string,
     }>({});
 
     // TOAST
@@ -827,6 +876,207 @@ export const Profile: React.FC = () => {
 
     //#endregion
 
+    //#region EMPLOYEE MODAL HANDLERS
+    const handleOpenEmployeeModal = (item?: EmployeeMasterData) => {
+        if (item) {
+            // Edit mode
+            setEmployeeFormData({
+                EmployeeId: item.EmployeeId,
+                UniqueKey: item.UniqueKey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                FirstName: item.FirstName || '',
+                LastName: item.LastName || '',
+                MiddleName: item.MiddleName || '',
+                BloodGroup: item.BloodGroup || '',
+                Gender: item.Gender || '',
+                MaritalStatus: item.MaritalStatus || '',
+                DateOfBirth: item.DateOfBirth || '',
+                EmailId: item.EmailId || '',
+                PersonalMobileNumber: item.PersonalMobileNumber || '',
+                CommunicationAddress: item.CommunicationAddress || '',
+                PermanentAddress: item.PermanentAddress || '',
+                AadharCardNumber: item.AadharCardNumber || '',
+                PassportNumber: item.PassportNumber || '',
+                PanCardNumber: item.PanCardNumber || '',
+                DrivingLicenceNumber: item.DrivingLicenceNumber || '',
+                VoterCardNumber: item.VoterCardNumber || '',
+            });
+            setIsEditEmployeeMode(true);
+        }
+        setEmployeeFormErrors({});
+        setIsEmployeeModalOpen(true);
+    };
+
+    const handleCloseEmployeeModal = () => {
+        setIsEmployeeModalOpen(false);
+        setIsEditEmployeeMode(false);
+        setEmployeeFormData({
+            EmployeeId: 0,
+            UniqueKey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            FirstName: '',
+            MiddleName: '',
+            LastName: '',
+            BloodGroup: '',
+            Gender: '',
+            MaritalStatus: '',
+            DateOfBirth: '',
+            EmailId: '',
+            PersonalMobileNumber: '',
+            CommunicationAddress: '',
+            PermanentAddress: '',
+
+            AadharCardNumber: '',
+            PassportNumber: '',
+            PanCardNumber: '',
+            DrivingLicenceNumber: '',
+            VoterCardNumber: '',
+
+        });
+        setEmployeeFormErrors({});
+    };
+
+    const validateEmployeeForm = (): boolean => {
+        const errors: {
+            FirstName?: string;
+            LastName?: string;
+            BloodGroup?: string;
+            MiddleName?: string;
+            MaritalStatus?: string;
+            DateOfBirth?: string;
+            EmailId?: string;
+            PersonalMobileNumber?: string;
+            CommunicationAddress?: string;
+            PermanentAddress?: string;
+            Gender?: string;
+            AadharCardNumber?: string,
+            PassportNumber?: string,
+            PanCardNumber?: string,
+            DrivingLicenceNumber?: string,
+            VoterCardNumber?: string,
+        } = {};
+
+        if (!employeeFormData.FirstName?.trim()) {
+            errors.FirstName = 'First Name is required';
+        }
+        if (!employeeFormData.LastName?.trim()) {
+            errors.LastName = 'Last Name is required';
+        }
+        if (!employeeFormData.MiddleName?.trim()) {
+            errors.MiddleName = 'Middle Name is required';
+        }
+        if (!employeeFormData.MaritalStatus) {
+            errors.MaritalStatus = 'Marital Status is required';
+        }
+        if (!employeeFormData.DateOfBirth) {
+            errors.DateOfBirth = 'Date Of Birth is required';
+        }
+        if (!employeeFormData.BloodGroup) {
+            errors.BloodGroup = 'Blood Group is required';
+        }
+        if (!employeeFormData.EmailId?.trim()) {
+            errors.EmailId = 'Email Id is required';
+        }
+        if (!employeeFormData.PersonalMobileNumber?.trim()) {
+            errors.PersonalMobileNumber = 'Personal Mobile Number is required';
+        }
+        if (!employeeFormData.CommunicationAddress?.trim()) {
+            errors.CommunicationAddress = 'Communication Address is required';
+        }
+        if (!employeeFormData.PermanentAddress?.trim()) {
+            errors.PermanentAddress = 'Permanent Address is required';
+        }
+        if (!employeeFormData.Gender) {
+            errors.Gender = 'Gender is required';
+        }
+
+        if (!employeeFormData.AadharCardNumber?.trim()) {
+            errors.AadharCardNumber = "Aadhaar Card Number is required";
+        } else if (!isValidAadhaar(employeeFormData.AadharCardNumber?.trim())) {
+            errors.AadharCardNumber = "Enter a valid Aadhaar Card Number";
+        }
+
+        if (!employeeFormData.PanCardNumber?.trim()) {
+            errors.PanCardNumber = "PAN Card Number is required";
+        } else if (!isValidPAN(employeeFormData.PanCardNumber?.trim())) {
+            errors.PanCardNumber = "Enter a valid PAN Card Number";
+        }
+
+        if (employeeFormData.PassportNumber?.trim() !== "" && !isValidPassportNumber(employeeFormData.PassportNumber?.trim())) {
+            errors.PassportNumber = "Enter a valid Passport Number";
+        }
+
+        if (employeeFormData.DrivingLicenceNumber?.trim() !== "" && !isValidDrivingLicenseNumber(employeeFormData.DrivingLicenceNumber?.trim())) {
+            errors.DrivingLicenceNumber = "Enter a valid Driving Licence Number";
+        }
+
+        if (employeeFormData.VoterCardNumber?.trim() !== "" && !isValidVoterId(employeeFormData.VoterCardNumber?.trim())) {
+            errors.VoterCardNumber = "Enter a valid Voter Card Number";
+        }
+
+        setEmployeeFormErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
+    const handleEmployeeFormSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!validateEmployeeForm()) {
+            return;
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: UpdateEmployeeMasterRequest = {
+                    EmployeeId: employeeFormData.EmployeeId,
+                    UniqueKey: employeeFormData.UniqueKey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                    FirstName: employeeFormData.FirstName?.trim() || '',
+                    MiddleName: employeeFormData.MiddleName?.trim() || '',
+                    LastName: employeeFormData.LastName?.trim() || '',
+                    MaritalStatus: employeeFormData.MaritalStatus?.trim() || '',
+                    DateOfBirth: employeeFormData.DateOfBirth || '',
+                    EmailId: employeeFormData.EmailId?.trim() || '',
+                    PersonalMobileNumber: employeeFormData.PersonalMobileNumber?.trim() || '',
+                    CommunicationAddress: employeeFormData.CommunicationAddress?.trim() || '',
+                    PermanentAddress: employeeFormData.PermanentAddress?.trim() || '',
+                    BloodGroup: employeeFormData.BloodGroup?.trim() || '',
+                    Gender: employeeFormData.Gender?.trim() || '',
+
+                    AadharCardNumber: employeeFormData.AadharCardNumber?.trim() || '',
+                    PassportNumber: employeeFormData.PassportNumber?.trim() || '',
+                    PanCardNumber: employeeFormData.PanCardNumber?.trim() || '',
+                    DrivingLicenceNumber: employeeFormData.DrivingLicenceNumber?.trim() || '',
+                    VoterCardNumber: employeeFormData.VoterCardNumber?.trim() || '',
+                };
+
+                const response = await employeeMasterService.apiCallUpdateEmployeeMaster(params);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+                    handleCloseEmployeeModal();
+
+                    setEmployeeMasterList(response.right.Data);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Update Employee Details'
+        );
+    };
+
+    //#endregion
+
 
     const employeeData = employeeMasterList.length > 0 ? employeeMasterList[0] : null
 
@@ -840,10 +1090,12 @@ export const Profile: React.FC = () => {
     });
     return (
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <div className="space-y-4">
                 <HeaderActionBar
-                    titleText={'Profile Details'}
+                    titleText={'Profile Details : '}
+                    subTitleText={employeeData?.FirstName}
+                    subSubTitleText={employeeData?.EmployeeCode}
                     cancelText="Cancel"
                     EditText={activeTab === "Document" ? "Edit" : ""}
                     onCancel={() => navigate(-1)}
@@ -887,16 +1139,26 @@ export const Profile: React.FC = () => {
 
                 {activeTab === 'Overview' && employeeData && (
                     <>
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pt-5">
+                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
                             {/* ================= LEFT SIDE (2/3) ================= */}
                             <div className="lg:col-span-2 space-y-6">
 
                                 {/* ================== BASIC DETAILS ================== */}
                                 <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Basic Details
-                                    </h4>
+                                    <div className='flex justify-between'>
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                            Basic Details
+                                        </h4>
+
+                                        <Button
+                                            color="transparent"
+                                            size="sm"
+                                            style={{ color: "blue", padding: "0px 8px" }}
+                                            onClick={() => handleOpenEmployeeModal(employeeData)}
+                                            leftIcon={<Edit className="h-4 w-4" />}
+                                        />
+                                    </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
 
                                         <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
@@ -925,6 +1187,19 @@ export const Profile: React.FC = () => {
                                                     ? `+91 ${safe(employeeData?.PersonalMobileNumber)}`
                                                     : '-'}
                                                 />
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Aadhaar Card Number" value={safe(employeeData!.AadharCardNumber)} />
+                                                <FieldItem label="PAN Number" value={safe(employeeData!.PanCardNumber)} />
+                                                <FieldItem label="Passport Number" value={safe(employeeData!.PassportNumber)} />
+                                            </div>
+                                        </div>
+                                        <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <FieldItem label="Driving Licence Number" value={safe(employeeData!.DrivingLicenceNumber)} />
+                                                <FieldItem label="Voter Card Number" value={safe(employeeData!.VoterCardNumber)} />
                                             </div>
                                         </div>
 
@@ -959,17 +1234,19 @@ export const Profile: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                                         <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
                                                 <FieldItem label="Country" value={safe(employeeData!.CountryName)} />
                                                 <FieldItem label="State" value={safe(employeeData!.StateName)} />
+                                                <FieldItem label="District" value={safe(employeeData!.DistrictName)} />
 
                                             </div>
                                         </div>
                                         <div className="lg:col-span-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                                <FieldItem label="District" value={safe(employeeData!.DistrictName)} />
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
                                                 <FieldItem label="City" value={safe(employeeData!.CityName)} />
+                                                <FieldItem label="Village" value={safe(employeeData!.VillageName)} />
                                             </div>
                                         </div>
                                     </div>
@@ -1015,6 +1292,10 @@ export const Profile: React.FC = () => {
                                                 <FieldItem
                                                     label="Probation Date"
                                                     value={formatDate_dd_MonthName_yy(safe(employeeData!.ProbationDate))}
+                                                />
+                                                <FieldItem
+                                                    label="Id Card Issued Date"
+                                                    value={formatDate_dd_MonthName_yy(safe(employeeData!.IdCardIssuedDate))}
                                                 />
                                             </div>
                                         </div>
@@ -1116,14 +1397,35 @@ export const Profile: React.FC = () => {
 
                                                     <div className="flex flex-col items-center">
 
-                                                        <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold text-sm">
-                                                            {item.FullName!.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 2)}
-                                                        </div>
+                                                        {(() => {
+
+                                                            const fullName = item?.FullName?.trim();
+
+                                                            const profilePhotoURL = item?.ProfilePhotoURL;
+
+                                                            const hasProfile =
+                                                                profilePhotoURL &&
+                                                                profilePhotoURL !== "" &&
+                                                                profilePhotoURL !== "—";
+
+                                                            return hasProfile ? (
+                                                                <img
+                                                                    src={profilePhotoURL}
+                                                                    alt={fullName}
+                                                                    className="w-10 h-10 rounded-full object-cover border border-gray-300"
+                                                                    onError={(e) => (e.currentTarget.style.display = "none")}
+                                                                />
+                                                            ) : (
+                                                                <div className="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-semibold text-sm">
+                                                                    {getNameInitials(fullName)}
+                                                                </div>
+                                                            );
+                                                        })()}
 
                                                         {index !== employeeReportingCycleList.length - 1 && (
-
                                                             <div className="w-px bg-gray-500 flex-1 mt-1"></div>
                                                         )}
+
                                                     </div>
 
                                                     {/* Content */}
@@ -1229,7 +1531,7 @@ export const Profile: React.FC = () => {
                                                                     className="border-b last:border-b-0 border-gray-200 py-2 last:border-b-0 last:pb-0"
                                                                 >
                                                                     <FieldItem label="Qualification" value={e.Qualification} isRow />
-                                                                    <FieldItem label="College" value={e.CollegeName} isRow />
+                                                                    <FieldItem label="School / College Name" value={e.CollegeName} isRow />
                                                                     <FieldItem label="Passing Year" value={e.Passing} isRow />
 
                                                                     <div className="flex justify-end gap-2">
@@ -1427,7 +1729,7 @@ export const Profile: React.FC = () => {
                                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                             <FieldItem label="Asset Name" value={asset.AssetName} />
                                                             <FieldItem label="Asset Code" value={asset.AssetCode} />
-                                                            <FieldItem label="Serial Type" value={asset.AssetType} />
+                                                            <FieldItem label="Asset Type" value={asset.AssetType} />
 
                                                         </div>
                                                     </div>
@@ -1514,8 +1816,8 @@ export const Profile: React.FC = () => {
 
                                                             <div className="lg:col-span-3">
                                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                                    <FieldItem label="Shift Begin Time" value={shiftMappingPolicy!.ShiftName} />
-                                                                    <FieldItem label="Shift End Time" value={shiftMappingPolicy!.ShiftCode} />
+                                                                    <FieldItem label="Shift Name" value={shiftMappingPolicy!.ShiftName} />
+                                                                    <FieldItem label="Shift Code" value={shiftMappingPolicy!.ShiftCode} />
 
                                                                 </div>
                                                             </div>
@@ -1725,36 +2027,44 @@ export const Profile: React.FC = () => {
                 title={isEditEducationMode ? "Update Education Details" : "Add Education Details"}
                 onSubmit={handleEducationFormSubmit}
                 saveText={isEditEducationMode ? "Update" : "Add"}
-                cancelText="Cancel"
-                onCancel={handleCloseEducationModal}
                 loading={isLoading}
                 size="xl"
             >
                 <div className="space-y-4">
-                    <Input
-                        label="Qualification"
-                        value={educationFormData.Qualification || ''}
-                        onChange={(e) => setEducationFormData({ ...educationFormData, Qualification: e.target.value })}
-                        required
-                        error={educationFormErrors.Qualification}
-                        placeholder="Enter Qualification"
-                    />
-                    <Input
-                        label="College Name"
-                        value={educationFormData.CollegeName || ''}
-                        onChange={(e) => setEducationFormData({ ...educationFormData, CollegeName: e.target.value })}
-                        required
-                        error={educationFormErrors.CollegeName}
-                        placeholder="Enter College Name"
-                    />
-                    <Input
-                        label="Passing Year"
-                        value={educationFormData.Passing || ''}
-                        onChange={(e) => setEducationFormData({ ...educationFormData, Passing: e.target.value })}
-                        required
-                        error={educationFormErrors.Passing}
-                        placeholder="Enter Passing Year"
-                    />
+                    <div>
+                        <Input
+                            label="Qualification"
+                            value={educationFormData.Qualification || ''}
+                            onChange={(e) => setEducationFormData({ ...educationFormData, Qualification: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={educationFormErrors.Qualification}
+                            placeholder="Enter Qualification"
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            label="School / College Name"
+                            value={educationFormData.CollegeName || ''}
+                            onChange={(e) => setEducationFormData({ ...educationFormData, CollegeName: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={educationFormErrors.CollegeName}
+                            placeholder="Enter School / College Name"
+                        />
+
+                    </div>
+                    <div>
+                        <Input
+                            label="Passing Year"
+                            value={educationFormData.Passing || ''}
+                            onChange={(e) => setEducationFormData({ ...educationFormData, Passing: e.target.value })}
+                            required
+                            maxLength={7}
+                            error={educationFormErrors.Passing}
+                            placeholder="Enter Passing Year"
+                        />
+                    </div>
                 </div>
             </Modal>
 
@@ -1765,41 +2075,236 @@ export const Profile: React.FC = () => {
                 title={isEditExperienceMode ? "Update Experience Details" : "Add Experience Details"}
                 onSubmit={handleExperienceFormSubmit}
                 saveText={isEditExperienceMode ? "Update" : "Add"}
-                cancelText="Cancel"
-                onCancel={handleCloseExperienceModal}
                 loading={isLoading}
                 size="xl"
             >
                 <div className="space-y-4">
-                    <Input
-                        label="Company Name"
-                        value={experienceFormData.CompanyName || ''}
-                        onChange={(e) => setExperienceFormData({ ...experienceFormData, CompanyName: e.target.value })}
-                        required
-                        error={experienceFormErrors.CompanyName}
-                        placeholder="Enter Company Name"
-                    />
-                    <Input
-                        label="Role"
-                        value={experienceFormData.Role || ''}
-                        onChange={(e) => setExperienceFormData({ ...experienceFormData, Role: e.target.value })}
-                        required
-                        error={experienceFormErrors.Role}
-                        placeholder="Enter Role"
-                    />
-                    <Input
-                        label="Tenure"
-                        value={experienceFormData.Tenure || ''}
-                        onChange={(e) => setExperienceFormData({ ...experienceFormData, Tenure: e.target.value })}
-                        required
-                        error={experienceFormErrors.Tenure}
-                        placeholder="Enter Tenure"
-                    />
+                    <div>
+                        <Input
+                            label="Company Name"
+                            value={experienceFormData.CompanyName || ''}
+                            onChange={(e) => setExperienceFormData({ ...experienceFormData, CompanyName: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={experienceFormErrors.CompanyName}
+                            placeholder="Enter Company Name"
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            label="Role"
+                            value={experienceFormData.Role || ''}
+                            onChange={(e) => setExperienceFormData({ ...experienceFormData, Role: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={experienceFormErrors.Role}
+                            placeholder="Enter Role"
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            label="Tenure"
+                            value={experienceFormData.Tenure || ''}
+                            onChange={(e) => setExperienceFormData({ ...experienceFormData, Tenure: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={experienceFormErrors.Tenure}
+                            placeholder="Enter Tenure (e.g.  2 years)"
+                        />
+                    </div>
                 </div>
             </Modal>
 
+            {/* Employee Details Modal */}
+            <Modal
+                isOpen={isEmployeeModalOpen}
+                onClose={handleCloseEmployeeModal}
+                title={isEditEmployeeMode ? "Update Basic Details" : "Add Basic Details"}
+                onSubmit={handleEmployeeFormSubmit}
+                saveText={isEditEmployeeMode ? "Update" : "Add"}
+                loading={isLoading}
+                size="xxl"
+            >
+                <div className="space-y-4">
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Input
+                            label="First Name"
+                            value={employeeFormData.FirstName || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, FirstName: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={employeeFormErrors.FirstName}
+                            placeholder="Enter First Name"
+                        />
+                        <Input
+                            label="Middle Name"
+                            value={employeeFormData.MiddleName || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, MiddleName: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={employeeFormErrors.MiddleName || ''}
+                            placeholder="Enter Middle Name"
+                        />
+                        <Input
+                            label="Last Name"
+                            value={employeeFormData.LastName || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, LastName: e.target.value })}
+                            required
+                            maxLength={50}
+                            error={employeeFormErrors.LastName || ''}
+                            placeholder="Enter Last Name"
+                        />
+                        <Input
+                            label="E-mail Id"
+                            placeholder="Enter E-mail Id"
+                            rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
+                            value={employeeFormData.EmailId || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, EmailId: e.target.value })}
+                            required
+                            error={employeeFormErrors.EmailId || ''}
+                        />
+                        <Input
+                            leftIcon="+91"
+                            label="Personal Mobile Number"
+                            placeholder="Enter Personal Mobile Number"
+                            required
+                            disabled
+                            value={employeeFormData.PersonalMobileNumber}
+                            rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, PersonalMobileNumber: filterMobile(e.target.value) })}
+                            error={employeeFormErrors.PersonalMobileNumber} />
+
+                        <SinglePageSelection
+                            label="Gender"
+                            placeholder="Select Gender"
+                            required
+                            value={employeeFormData.Gender}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, Gender: String(e) })}
+                            options={GENDER_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                            error={employeeFormErrors.Gender} />
+                        <DatePickerInput
+                            label="DOB"
+                            value={employeeFormData.DateOfBirth ? formatDate_dd_mm_yyyy(employeeFormData.DateOfBirth) : ''}
+                            onChange={(val) => setEmployeeFormData(prev => ({ ...prev, DateOfBirth: val ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) ?? '' : '' }))}
+                            required
+                            error={employeeFormErrors.DateOfBirth}
+                        />
+                        <SinglePageSelection
+                            label="Marital Status"
+                            placeholder="Select Marital Status"
+                            value={employeeFormData.MaritalStatus}
+                            onChange={(val) => setEmployeeFormData({ ...employeeFormData, MaritalStatus: String(val) })}
+                            options={MARITAL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                            required
+                            error={employeeFormErrors.MaritalStatus} />
+                        <SinglePageSelection
+                            value={employeeFormData.BloodGroup}
+                            label="Blood Group"
+                            placeholder="Select Blood Group"
+                            onChange={(val) => setEmployeeFormData({ ...employeeFormData, BloodGroup: String(val) })}
+                            required
+                            options={BLOOD_GROUP_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                            error={employeeFormErrors.BloodGroup} />
+                        <Input
+                            label="Aadhaar Number"
+                            error={employeeFormErrors.AadharCardNumber}
+                            required
+                            type="text"
+                            value={employeeFormData.AadharCardNumber ?? ""}
+                            maxLength={12}
+                            onChange={(e) =>
+                                setEmployeeFormData({
+                                    ...employeeFormData,
+                                    AadharCardNumber: filterAadhaar(e.target.value)
+                                })
+                            }
+                            placeholder="Enter Aadhaar Number"
+                            rightIcon={<IdCardIcon />} />
+                        <Input
+                            label="PAN Number"
+                            required error={employeeFormErrors.PanCardNumber}
+                            type="text"
+                            value={employeeFormData.PanCardNumber ?? ""}
+                            maxLength={10}
+                            onChange={(e) =>
+                                setEmployeeFormData({
+                                    ...employeeFormData,
+                                    PanCardNumber: filterPAN(e.target.value).toUpperCase()
+                                })
+                            }
+                            placeholder="Enter PAN Number"
+                            rightIcon={<IdCardIcon />} />
+                        <Input
+                            label="Passport Number"
+                            error={employeeFormErrors.PassportNumber}
+                            type="text"
+                            value={employeeFormData.PassportNumber ?? ""}
+                            maxLength={8}
+                            onChange={(e) =>
+                                setEmployeeFormData({
+                                    ...employeeFormData,
+                                    PassportNumber: filterPassportNumber(e.target.value).toUpperCase()
+                                })
+                            }
+                            placeholder="Enter Passport Number"
+                            rightIcon={<IdCardIcon />} />
+
+                        <Input label="Driving License Number"
+                            error={employeeFormErrors.DrivingLicenceNumber}
+                            type="text" value={employeeFormData.DrivingLicenceNumber ?? ""}
+                            maxLength={15}
+                            onChange={(e) =>
+                                setEmployeeFormData({
+                                    ...employeeFormData,
+                                    DrivingLicenceNumber: filterDrivingLicenseNumber(e.target.value).toUpperCase()
+                                })
+                            }
+                            placeholder="Enter Driving License Number"
+                            rightIcon={<IdCardIcon />} />
+
+                        <Input label="Voting Card Number"
+                            error={employeeFormErrors.VoterCardNumber}
+                            type="text"
+                            value={employeeFormData.VoterCardNumber ?? ""}
+                            maxLength={10}
+                            onChange={(e) =>
+                                setEmployeeFormData({
+                                    ...employeeFormData,
+                                    VoterCardNumber: filterVoterId(e.target.value).toUpperCase()
+                                })
+                            }
+                            placeholder="Enter Voting Card Number"
+                            rightIcon={<IdCardIcon />} />
+
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-1 gap-2">
+
+                        <TextArea
+                            label="Communication Address"
+                            className="thin-scroll"
+                            value={employeeFormData.CommunicationAddress || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, CommunicationAddress: e.target.value })}
+                            required
+                            error={employeeFormErrors.CommunicationAddress}
+                            placeholder="Enter Communication Address"
+                        />
+                        <TextArea
+                            label="Permanent Address"
+                            className="thin-scroll"
+                            value={employeeFormData.PermanentAddress || ''}
+                            onChange={(e) => setEmployeeFormData({ ...employeeFormData, PermanentAddress: e.target.value })}
+                            required
+                            error={employeeFormErrors.PermanentAddress}
+                            placeholder="Enter Permanent Address"
+                        />
+                    </div>
+                </div>
+            </Modal >
+
             {/* Delete Confirmation Dialogs */}
-            <ConfirmationDialogBox
+            < ConfirmationDialogBox
                 isOpen={isDeleteEducationDialogOpen}
                 onClose={() => {
                     setIsDeleteEducationDialogOpen(false);

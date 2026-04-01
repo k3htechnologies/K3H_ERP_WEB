@@ -40,9 +40,9 @@ export class CallingDataDatasourceImpl implements CallingDataDatasource {
 
             console.error("ERROR: PULL CALLING DATA :", error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullCallingData(params);
+                return   await this.pullCallingData(params);
             }
             throw error;
         }

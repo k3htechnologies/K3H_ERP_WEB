@@ -9,6 +9,7 @@ export interface FilterWithPaginationPerformanceReportRequest {
     FromDate?: string
     ToDate?: string
     ReportType?: string
+    PeriodType?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

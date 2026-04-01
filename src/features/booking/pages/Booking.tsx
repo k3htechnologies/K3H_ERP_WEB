@@ -54,7 +54,9 @@ export const Booking: React.FC = () => {
     // APPROVAL LOG MODAL
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-    const [approvalDocumentName, setApprovalDocumentName] = useState<string | null>("");
+    const [ownerName, setOwnerName] = useState<string | null>("");
+    const [wing, setwing] = useState<string | null>("");
+    const [unitNumber, setUnitNumber] = useState<string | null>("");
 
     // APPROVAL ACTION MODAL
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -261,9 +263,12 @@ export const Booking: React.FC = () => {
         updateListState({ page: newPage });
     }, [updateListState]);
 
-    const handleSortColumn = useCallback((sort: SortInfo) => {
-        updateListState({ sortInfo: sort, page: 1 });
-    }, [updateListState]);
+    const handleSortColumn = useCallback(
+        (sort: SortInfo) => {
+            updateListState({ sortInfo: sort, page: 1 });
+        },
+        [filters, updateListState, searchTerm],
+    );
 
     const bookingPaginationInfo: PaginationInfo = useMemo(
         () => ({
@@ -289,10 +294,7 @@ export const Booking: React.FC = () => {
     }, [navigate, updateListState]);
     //#endregion
 
-
-
     //#region TABLE COLUMN
-
 
     const handleApprovalLog = (row: BookingData) => {
         const request: ModulesApprovalStatusRequest = {
@@ -300,7 +302,10 @@ export const Booking: React.FC = () => {
             Id: row.BookingId ?? 0,
             ProjectId: row.ProjectId ?? 0,
         };
-        setApprovalDocumentName(`Applicant : ${row.ApplicantName}  Wing : ${row?.Wing}  Unit : ${row?.Flat}`);
+        setOwnerName(row.ApplicantName);
+        setwing(row?.Wing)
+        setUnitNumber(row?.Flat);
+
         setApprovalLogRequest(request);
         setIsApprovalLogModalOpen(true);
     };
@@ -308,7 +313,9 @@ export const Booking: React.FC = () => {
     const handleApproveRejectDocument = (row: BookingData, approvalType: "approve" | "reject") => {
 
         setApprovalRowData(row);
-        setApprovalDocumentName(`Applicant : ${row.ApplicantName}  Wing : ${row?.Wing}  Unit : ${row?.Flat}`);
+        setOwnerName(row.ApplicantName);
+        setwing(row?.Wing)
+        setUnitNumber(row?.Flat);
         setApprovalActionType(approvalType);
         setIsApprovalActionModalOpen(true);
 
@@ -320,7 +327,7 @@ export const Booking: React.FC = () => {
                 key: 'SystemGeneratedCode',
                 label: 'Enquiry Code',
                 width: '20',
-                sortable: true,
+                sortable: false,
                 fixed: 'left',
                 align: 'left',
                 render: value => (
@@ -337,7 +344,6 @@ export const Booking: React.FC = () => {
                 label: 'Applicant Name',
                 width: '20',
                 sortable: true,
-                fixed: 'left',
                 align: 'left',
                 render: (value, row) => (
                     <div className="flex items-center justify-between gap-3">
@@ -358,7 +364,7 @@ export const Booking: React.FC = () => {
                 key: 'BookingType',
                 label: 'Booking Type',
                 width: '14',
-                sortable: true,
+                sortable: false,
                 align: 'left',
                 render: value => value || '-'
             },
@@ -390,7 +396,7 @@ export const Booking: React.FC = () => {
                 key: 'AgreementValue',
                 label: 'Agreement Value (₹)',
                 width: '18',
-                sortable: true,
+                sortable: false,
                 align: 'right',
                 render: value => value ? `₹${Number(value).toLocaleString('en-IN')}` : '-'
             },
@@ -398,7 +404,7 @@ export const Booking: React.FC = () => {
                 key: 'RegistrationDate',
                 label: 'Expected Registration Date',
                 width: '16',
-                sortable: true,
+                sortable: false,
                 align: 'center',
                 render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
             },
@@ -407,7 +413,7 @@ export const Booking: React.FC = () => {
                 label: "Approval Status",
                 width: "18",
                 sortable: false,
-                align: "left",
+                align: "center",
                 render: (value, row) => (
 
                     <ApprovalActions
@@ -423,7 +429,7 @@ export const Booking: React.FC = () => {
             },
 
         ],
-        [canAction, handleViewBookingDetails,handleApprovalLog, handleApproveRejectDocument]
+        [canAction, handleViewBookingDetails, handleApprovalLog, handleApproveRejectDocument]
     );
     //#endregion
 
@@ -469,53 +475,53 @@ export const Booking: React.FC = () => {
 
     //#endregion
 
-     const handleApprovalSubmit = async (remark: string) => {
-    
+    const handleApprovalSubmit = async (remark: string) => {
+
         if (!approvalRowData) return;
-    
+
         const payload: UpdateModulesWorkflowApprovalRequest = {
-          ModuleName: "BOOKING APPROVAL",
-          Id: approvalRowData.BookingId ?? 0,
-          ProjectId: approvalRowData.ProjectId ??0,
-          IsApproved: approvalActionType === "approve",
-          Remarks: remark ?? null
+            ModuleName: "BOOKING APPROVAL",
+            Id: approvalRowData.BookingId ?? 0,
+            ProjectId: approvalRowData.ProjectId ?? 0,
+            IsApproved: approvalActionType === "approve",
+            Remarks: remark ?? null
         };
-    
+
         await runApiWithLoader(
-          setIsLoading,
-          setLoadingMessage,
-          async () => {
-    
-            const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
-    
-            if (E.isRight(response)) {
-    
-              addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
-    
-              setIsApprovalActionModalOpen(false);
-              
-              await loadBookings(page, filters, sortInfo);
-              
-            } else {
-    
-              addToast({ type: "error", title: response.left.message });
-    
-            }
-    
-            return response;
-          },
-          undefined,
-          (error: any) => {
-            addToast({ type: "error", title: error.message });
-          },
-          undefined,
-          approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsApprovalActionModalOpen(false);
+
+                    await loadBookings(page, filters, sortInfo);
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
+
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
         );
-      };
+    };
 
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
@@ -588,7 +594,6 @@ export const Booking: React.FC = () => {
                 onCancel={() => {
                     setTempFilters({});
                     resetFilters();
-                    setShowFilterPopup(false);
                 }}
 
 
@@ -749,22 +754,27 @@ export const Booking: React.FC = () => {
                 </div>
             </Modal>
 
-            
-      <ApprovalLogModal
-        isOpen={isApprovalLogModalOpen}
-        documentName={approvalDocumentName ?? ""}
-        onClose={() => setIsApprovalLogModalOpen(false)}
-        request={approvalLogRequest} />
 
-      <ApprovalActionModal
-        title="Booking"
-        isOpen={isApprovalActionModalOpen}
-        onClose={() => setIsApprovalActionModalOpen(false)}
-        actionType={approvalActionType}
-        documentName={approvalDocumentName ?? ""}
-        onSubmit={handleApprovalSubmit}
-        loading={isLoading}
-      />
+            <ApprovalLogModal
+                isOpen={isApprovalLogModalOpen}
+                title='Booking'
+                titleText={ownerName ?? ""}
+                subTitleText={wing ?? ""}
+                subSubTitleText={unitNumber ?? ""}
+                onClose={() => setIsApprovalLogModalOpen(false)}
+                request={approvalLogRequest} />
+
+            <ApprovalActionModal
+                title="Booking"
+                isOpen={isApprovalActionModalOpen}
+                onClose={() => setIsApprovalActionModalOpen(false)}
+                actionType={approvalActionType}
+                titleText={ownerName ?? ""}
+                subTitleText={wing ?? ""}
+                subSubTitleText={unitNumber ?? ""}
+                onSubmit={handleApprovalSubmit}
+                loading={isLoading}
+            />
         </div >
     );
 };

@@ -282,14 +282,11 @@ export const SinglePageSelection = forwardRef<
             height: currentSize.height,
             fontSize: currentSize.fontSize,
             padding: currentSize.padding,
-            paddingLeft: leftIcon ? "38px" : "8px",
+            paddingLeft: leftIcon ? "38px" : currentSize.padding.split(" ")[1],
             borderRadius: "6px",
             backgroundColor: disabled ? theme.colors.backgroundSecondary : theme.colors.backgroundSecondary,
-
             color: disabled ? theme.colors.textLight : theme.colors.text,
-
             cursor: disabled ? "not-allowed" : "pointer",
-
             opacity: disabled ? 0.6 : 1,
             display: "flex",
             alignItems: "center",

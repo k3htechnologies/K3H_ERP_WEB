@@ -5,7 +5,7 @@ import { Button } from '../forms';
 export interface ModalProps {
     isOpen: boolean
     onClose: () => void
-    title: string
+    title: React.ReactNode
     onSubmit?: (e: React.FormEvent) => void
     children: React.ReactNode
     saveText?: string
@@ -173,8 +173,9 @@ export const Modal: React.FC<ModalProps> = ({
                     <Button
                         onClick={onClose}
                         color="transparent"
+                        variant='transparent_border_background'
                         isborderRadius
-                        size="sm"
+                        size="xss"
                         disabled={loading}
                     >
                         <X className="h-5 w-5" />

@@ -12,6 +12,9 @@ import { getPageInfo } from '@/core/constants/pageInfo';
 import { MenuProvider } from '@/features/menu/context/MenuContext';
 import ToastContainer from '@/ui/components/Toast/ToastContainer';
 import { useToast } from '@/core/hooks/useToast';
+import { runApiWithLoader } from '@/core/utils';
+import { Loader } from '@/core/utils/loader';
+import { useNavigate } from 'react-router-dom'
 
 export const Layout: React.FC = () => {
 
@@ -23,51 +26,61 @@ export const Layout: React.FC = () => {
     const [selectedSubSubModule, setSelectedSubSubModule] = useState<SubSubModuleData | null>(null)
     const pageInfo = getPageInfo(location.pathname);
     const { toasts, removeToast } = useToast()
+    const [isLoading, setIsLoading] = useState(false);
+    const [loadingMessage, setLoadingMessage] = useState('');
+    const navigate = useNavigate();
 
     useNetworkStatus();
 
     //#region LOAD MENU
 
     const loadMenuData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
 
-        try {
-            // CHECK MENU IS AVAILABLE IN LOCAL STORAGE
-            const storedMenu = LocalStorageHelper.getMenuData();
+                // CHECK MENU IS AVAILABLE IN LOCAL STORAGE
 
-            if (storedMenu && storedMenu.length > 0) {
-                setMenuData(storedMenu);
-                return;
-            }
+                const storedMenu = LocalStorageHelper.getMenuData();
 
-            const request: PullMenuRequest = {
-
-                EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
-            };
-
-            const response = await menuService.apiCallPullMenu(request);
-
-            if (E.isRight(response)) {
-
-                const menu = response.right.Data;
-
-                LocalStorageHelper.storeMenuData(menu);
-
-                if (menu) {
-
-                    setMenuData(response.right.Data);
-
-                } else {
-
-                    setMenuData([]);
-
+                if (storedMenu && storedMenu.length > 0) {
+                    setMenuData(storedMenu);
+                    return;
                 }
-            }
-        } catch (err: any) {
-            throw err;
-        } finally {
 
-        }
-    }
+                const request: PullMenuRequest = {
+
+                    EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId ?? 0,
+                };
+
+                const response = await menuService.apiCallPullMenu(request);
+
+                if (E.isRight(response)) {
+
+                    const menu = response.right.Data;
+
+                    LocalStorageHelper.storeMenuData(menu);
+
+                    if (menu) {
+
+                        setMenuData(response.right.Data);
+
+                    } else {
+
+                        setMenuData([]);
+
+                    }
+                }
+            },
+            undefined,
+            (_error: any) => {
+
+            },
+            undefined,
+            'Loading Menu'
+        );
+    };
 
     //#endregion
 
@@ -130,15 +143,21 @@ export const Layout: React.FC = () => {
         setSelectedSubModule(null)
     }
 
-    const handleLogout = () => {
-
+    const handleLogout = async () => {
+        setIsLoading(true)
+        setLoadingMessage("Please wait")
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         LocalStorageHelper.clearLocalStorageData();
-
-        window.location.href = '/sign-in'
+        navigate('/sign-in', { replace: true });
     }
 
     return (
+
+
         <MenuProvider menu={menuData}>
+            <Loader loading={isLoading} title={loadingMessage}>
+                <div />
+            </Loader>
             <div className="h-screen  flex overflow-hidden">
                 {/* Sidebar */}
                 <Sidebar

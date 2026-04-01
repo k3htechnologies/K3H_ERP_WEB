@@ -38,6 +38,7 @@ export const useClassificationParameter = () => {
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteClassificationParameterDetailsData, setDeleteClassificationParameterDetailsData] = useState<ClassificationParameterData | null>(null)
     const [villageValue, setVillageValue] = useState<string | number | null>(null);
+    const [dropdownResetKey, setDropdownResetKey] = useState(0);
 
     //#region MENU PERMISSIONS
     const { canAction, canExport } = useMenuPermissions();
@@ -59,6 +60,28 @@ export const useClassificationParameter = () => {
         fetchClassificationParameterList();
 
     }, [projectId]);
+
+
+    useEffect(() => {
+
+        if (isAddUpdateModalOpen) {
+
+            if (editingClassificationParameterData) {
+                
+                setVillageValue(editingClassificationParameterData.VillageMasterId || "");
+
+            } else {
+
+                setFormData(getInitialFormState());
+
+                setVillageValue(""); 
+
+                setDropdownResetKey(prev => prev + 1);
+            }
+
+            setErrors({});
+        }
+    }, [isAddUpdateModalOpen, editingClassificationParameterData]);
 
     //#region TABLE COLUMN DEFINITION
     const classificationParameterColumns = useMemo<TableColumn[]>(() => getClassificationParameterColumns(), []);
@@ -214,7 +237,7 @@ export const useClassificationParameter = () => {
         });
 
         setIsAddUpdateModalOpen(true);
-        
+
     }, [projectId])
     //#endregion
 
@@ -248,7 +271,7 @@ export const useClassificationParameter = () => {
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: error.message || 'Export failed' })
+                addToast({ type: 'error', title: error.message })
             },
             undefined,
             'Preparing Export'
@@ -270,6 +293,7 @@ export const useClassificationParameter = () => {
         setFormData(getInitialFormState());
         setErrors({});
         setVillageValue(null);
+        setDropdownResetKey(prev => prev + 1);
         setIsAddUpdateModalOpen(true);
     }
 
@@ -295,7 +319,7 @@ export const useClassificationParameter = () => {
             newErrors.TimeLine = "Timeline is required";
         }
 
-        if (!formData.VillageMasterId  || formData.VillageMasterId.trim() === "") {
+        if (!formData.VillageMasterId || formData.VillageMasterId.trim() === "") {
             newErrors.VillageMasterId = "Location is required";
         }
 
@@ -307,12 +331,12 @@ export const useClassificationParameter = () => {
 
     const PushClassificationParameterFormData = (): AddUpdateClassificationParameterRequest => {
         const villageIdsString = villageDropdown.selectedValues.length > 0 ? villageDropdown.selectedValues.join(",") : "";
-       
+
         return {
             ClassificationParameterId: formData.ClassificationParameterId || 0,
             Uniquekey: formData.Uniquekey,
             ProjectId: formData.ProjectId || Number(projectId),
-            MinBudget: formData.MinBudget==="" ? "<1" :formData.MinBudget,
+            MinBudget: formData.MinBudget === "" ? "<1" : formData.MinBudget,
             PossessionType: formData.PossessionType || '',
             Requirement: formData.Requirement || '',
             RequirementType: formData.RequirementType ?? '',
@@ -419,9 +443,10 @@ export const useClassificationParameter = () => {
         villageDropdown,
         villageValue,
         classificationParameterColumns,
+        dropdownResetKey,
+
         setVillageValue,
-
-
+        setDropdownResetKey,
         //setters
         setErrors,
         setFormData,

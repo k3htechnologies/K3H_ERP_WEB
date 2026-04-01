@@ -43,8 +43,9 @@ export class EarningMasterDatasourceImpl implements EarningMasterDatasource {
 
             console.error('ERROR: PULL EARNING MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEarningMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullEarningMaster(params);
             }
 
             throw error
@@ -64,8 +65,9 @@ export class EarningMasterDatasourceImpl implements EarningMasterDatasource {
 
             console.error('ERROR: ADD UPDATE EARNING MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateEarningMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.addUpdateEarningMaster(params);
             }
             throw error
         }
@@ -88,9 +90,9 @@ export class EarningMasterDatasourceImpl implements EarningMasterDatasource {
 
             console.error('ERROR: DELETE EARNING MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteEarningMaster(params);
+                return   await this.deleteEarningMaster(params);
 
             }
 

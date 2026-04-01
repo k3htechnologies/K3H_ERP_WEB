@@ -30,6 +30,7 @@ import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { cleanHtml } from '@/core/utils/comman';
 
 const initialFormState = (): AddUpdateTncMasterRequest => ({
   TermsAndConditionsMasterId: 0,
@@ -437,7 +438,7 @@ export const TncMaster: React.FC = () => {
         }}
         cancelText="Close"
         loading={false}
-        size='xl'
+        size='large-half'
       >
         <div className="space-y-6">
           <div className="space-y-4">
@@ -533,10 +534,10 @@ export const TncMaster: React.FC = () => {
 
   const handleFieldChange = (field: keyof AddUpdateTncMasterRequest, value: any) => {
 
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }))
 
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: "" }))
     }
   };
 
@@ -578,7 +579,7 @@ export const TncMaster: React.FC = () => {
       Uniquekey: formData.Uniquekey,
       Title: formData.Title,
       ModuleName: activeTab?.trim() || "",
-      Description: formData.Description
+      Description: cleanHtml(formData.Description)
     };
 
   };
@@ -736,7 +737,7 @@ export const TncMaster: React.FC = () => {
 
   return (
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>
@@ -783,25 +784,26 @@ export const TncMaster: React.FC = () => {
 
         }}
       />
-
-      <DataTable
-        data={tncListForTable}
-        columns={visibleTncColumns}
-        pagination={tncPaginationInfo}
-        emptyMessage="No terms & conditions found"
-        recordsPerPage={20}
-        className="flex-1"
-        sortInfo={sortInfo}
-        onSort={handleSortColumn}
-      />
-      <ViewTncDetailsModal
-        isOpen={isViewModalOpen}
-        onClose={() => {
-          setIsViewModalOpen(false);
-          setViewTncData(null);
-        }}
-        data={viewTncData}
-      />
+      <div className='pt-5'>
+        <DataTable
+          data={tncListForTable}
+          columns={visibleTncColumns}
+          pagination={tncPaginationInfo}
+          emptyMessage="No terms & conditions found"
+          recordsPerPage={20}
+          className="flex-1"
+          sortInfo={sortInfo}
+          onSort={handleSortColumn}
+        />
+        <ViewTncDetailsModal
+          isOpen={isViewModalOpen}
+          onClose={() => {
+            setIsViewModalOpen(false);
+            setViewTncData(null);
+          }}
+          data={viewTncData}
+        />
+      </div>
       {/*  ADD EDIT UPDATE TNC MODAL */}
 
       <Modal
@@ -822,7 +824,7 @@ export const TncMaster: React.FC = () => {
         onSubmit={handleAddUpdateTncMaster}
         saveText={editingTncMasterData ? 'Update' : 'Add'}
         loading={isLoading}
-        size='xl'
+        size='large-half'
       >
         <div className="space-y-6 p-6  bg-blue-100">
           <div className="space-y-4">

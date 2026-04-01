@@ -36,10 +36,12 @@ export class PaymentScheduleSchemeMasterDatasourceImpl implements PaymentSchedul
 
       return response;
     } catch (error: any) {
+      
       console.error("ERROR: PULL PAYMENT SCHEDULE SCHEME MASTER :", error);
 
-      if (error === TokenExpiredException) {
-        await this.pullPaymentScheduleSchemeMaster(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.pullPaymentScheduleSchemeMaster(params);
       }
 
       throw error;
@@ -51,17 +53,19 @@ export class PaymentScheduleSchemeMasterDatasourceImpl implements PaymentSchedul
       return await this.k3hHttpClient.postRequestWithAuthentication(PaymentScheduleSchemeMasterApi.ADD_UPDATE, params);
 
     } catch (error) {
+
       console.error("ERROR: ADD UPDATE PAYMENT SCHEDULE SCHEME MASTER :", error);
 
-      if (error === TokenExpiredException) {
-        await this.addUpdatePaymentScheduleSchemeMaster(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.addUpdatePaymentScheduleSchemeMaster(params);
       }
       throw error;
     }
   }
 
   async deletePaymentScheduleSchemeMaster(params: DeletePaymentScheduleSchemeMasterRequest): Promise<PaymentScheduleSchemeMasterDeleteResponse> {
-   
+
     try {
       const queryParams = new URLSearchParams({
         PaymentScheduleSchemeMasterId: (params.PaymentScheduleSchemeMasterId ?? 0).toString(),
@@ -72,10 +76,12 @@ export class PaymentScheduleSchemeMasterDatasourceImpl implements PaymentSchedul
       return await this.k3hHttpClient.deleteRequestWithAuthentication(`${PaymentScheduleSchemeMasterApi.DELETE}?${queryParams.toString()}`);
 
     } catch (error) {
+
       console.error("ERROR: DELETE PAYMENT SCHEDULE SCHEME MASTER :", error);
 
-      if (error === TokenExpiredException) {
-        await this.deletePaymentScheduleSchemeMaster(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.deletePaymentScheduleSchemeMaster(params);
       }
 
       throw error;

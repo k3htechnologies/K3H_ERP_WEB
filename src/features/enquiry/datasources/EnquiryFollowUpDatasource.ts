@@ -58,7 +58,7 @@ export class EnquiryFollowUpDatasourceImpl implements EnquiryFollowUpDatasource 
             )
             return response
         } catch (error) {
-            console.log('ERROR:ADD UPDATE ENQUIRY FOLLOW UP:', error)
+            console.error('ERROR:ADD UPDATE ENQUIRY FOLLOW UP:', error)
 
             if (error instanceof TokenExpiredException) {
                 return await this.addUpadateEnquiryFollowUp(params);

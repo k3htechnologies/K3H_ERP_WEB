@@ -16,16 +16,17 @@ const developmentConfig: EnvironmentConfig = {
 
 //============================ [PRODUCTION CONFIGURATION ] ========================================================
 const productionConfig: EnvironmentConfig = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "https://k3herpapi.k3htechnologies.com/api",
-  apiKey: import.meta.env.VITE_API_KEY || "wedNfr4rZCr4IkpEede+5gSPN76RC5pchp9sDl3epZaNyvUlSt7cXY+/puYhJoiGgcp50WuqNCVtlf8i6A/LdA==",
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://202.168.146.8:402/api",
+  apiKey: import.meta.env.VITE_API_KEY || "TpBgVhTojiO2Ue3kztqI2N/lv7NgtUZgBs0olZHw6HQ/phXqXpadHfJO059HQVTLNyUDi/AbSPGcmP3MdRNtBw==",
   apiTimeout: 30000,
   environment: "PRODUCTION",
 };
 
 //============================ [GET CURRENT ENVIRONMENT ] ========================================================
 const getCurrentEnvironment = (): "DEVELOPMENT" | "PRODUCTION" => {
-  // const env = import.meta.env.VITE_APP_ENVIRONMENT || import.meta.env.MODE;
-  const env = "PRODUCTION";
+
+  const env = (import.meta.env.VITE_APP_ENVIRONMENT || import.meta.env.MODE)?.toUpperCase();
+
   switch (env) {
     case "PRODUCTION":
       return "PRODUCTION";

@@ -100,7 +100,9 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
             console.error('Error: Delete LEAVE:', error)
 
             if (error === TokenExpiredException) {
+
                 return await this.deleteLeave(params)
+                
             }
 
             throw error

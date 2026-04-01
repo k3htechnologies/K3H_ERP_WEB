@@ -90,7 +90,7 @@ export class EnquiryDatasourceImpl implements EnquiryDatasource {
             )
             return response
         } catch (error) {
-            console.log('ERROR:ADD UPDATE ENQUIRY:', error)
+            console.error('ERROR:ADD UPDATE ENQUIRY:', error)
 
             if (error instanceof TokenExpiredException) {
 

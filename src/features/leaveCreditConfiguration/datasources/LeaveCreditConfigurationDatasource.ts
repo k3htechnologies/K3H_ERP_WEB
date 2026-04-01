@@ -41,7 +41,7 @@ export class LeaveCreditConfigurationDatasourceImpl implements LeaveCreditConfig
 
             console.error('ERROR: PULL LEAVE CREDIT CONFIGURATION :', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 await this.pullLeaveCreditConfiguration(params);
             }
 
@@ -62,7 +62,7 @@ export class LeaveCreditConfigurationDatasourceImpl implements LeaveCreditConfig
 
             console.error('ERROR: ADD UPDATE LEAVE CREDIT CONFIGURATION :', error)
 
-            if (error === TokenExpiredException) {
+           if (error instanceof TokenExpiredException) {
                 await this.addUpdateLeaveCreditConfiguration(params);
             }
             throw error
@@ -86,7 +86,7 @@ export class LeaveCreditConfigurationDatasourceImpl implements LeaveCreditConfig
 
             console.error('ERROR: DELETE LEAVE CREDIT CONFIGURATION :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
                 await this.deleteLeaveCreditConfiguration(params);
 

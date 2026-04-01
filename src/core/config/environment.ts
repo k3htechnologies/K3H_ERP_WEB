@@ -16,7 +16,7 @@ const developmentConfig: EnvironmentConfig = {
 
 //============================ [PRODUCTION CONFIGURATION ] ========================================================
 const productionConfig: EnvironmentConfig = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://202.168.146.8:402/api",
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "https://k3herpapi.k3htechnologies.com/api",
   apiKey: import.meta.env.VITE_API_KEY || "TpBgVhTojiO2Ue3kztqI2N/lv7NgtUZgBs0olZHw6HQ/phXqXpadHfJO059HQVTLNyUDi/AbSPGcmP3MdRNtBw==",
   apiTimeout: 30000,
   environment: "PRODUCTION",

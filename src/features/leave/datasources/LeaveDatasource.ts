@@ -55,7 +55,7 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
 
             console.error('Error: Pull LEAVE:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.pullLeave(params)
             }
             throw error
@@ -74,7 +74,7 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
         } catch (error) {
             console.error('Error: Add Update LEAVE:', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.addUpdateLeave(params)
             }
 
@@ -99,7 +99,7 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
 
             console.error('Error: Delete LEAVE:', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
                 return await this.deleteLeave(params)
                 
@@ -127,7 +127,7 @@ export class LeaveDatasourceImpl implements LeaveDatasource {
 
             console.error('Error: Pull LEAVE CONFIGURED:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.pullLeaveConfigured(params)
             }
 

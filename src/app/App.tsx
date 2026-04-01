@@ -166,6 +166,7 @@ import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageIn
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
 import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
 import Terms from '@/features/terms/pages/TermsAndCondition';
+import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -443,6 +444,7 @@ function App() {
 
           <Route path='Terms' element={<Terms />} />
           <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
+          <Route path='companyPolicy' element={<CompanyPolicy />} />
           
         </Routes>
       </Suspense>

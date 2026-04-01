@@ -25,6 +25,7 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { Edit, Trash2 } from 'lucide-react';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { filterNumbersWithDecimal } from '@/core/utils/fileValidation';
 
 const initialFormState = (): AddUpdateEmployeeResignationRequest => ({
   EmployeeResignationId: 0,
@@ -126,8 +127,8 @@ export const EmployeeResignation: React.FC = () => {
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
-          IsReport:false,
-          CanApprove:false,
+          IsReport: false,
+          CanApprove: false,
           EmployeeId: LocalStorageHelper.getStoredEmployeeData()?.EmployeeId || 0,
         }
 
@@ -415,29 +416,30 @@ export const EmployeeResignation: React.FC = () => {
 
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
 
-      <TableActionToolbar
-        isShowSearchBar={false}
-        // ADD
-        isShowAddButton={canAddResignation}
-        addTitle="Add"
-        onAdd={handleAddResignationModal}
-        exportLoading={isLoading}
-      />
+      {canAddResignation && (
+        <TableActionToolbar
+          isShowSearchBar={false}
+          isShowAddButton={true}
+          addTitle="Add"
+          onAdd={handleAddResignationModal}
+          exportLoading={isLoading}
+        />
+      )}
 
       <div className="space-y-4 p-4">
         {employeeResignationList?.length ? (
           employeeResignationList.map(data => {
             return (
-              <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] mb-4">
+              <section className="bg-white rounded-xl shadow-sm border border-[#3333334f] p-4 space-y-4 ">
 
                 {/* Header Row */}
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center">
 
                   <h3 className="font-semibold text-lg">
                     {data.EmployeeName}
                   </h3>
 
-                  <div className="flex justify-end gap-2">
+                  <div className="flex justify-end gap-0">
                     <Button
                       color='transparent'
                       isborderRadius
@@ -563,9 +565,10 @@ export const EmployeeResignation: React.FC = () => {
                   <Input
                     label='Offer Amount '
                     required
+                    type='number'
                     error={errors.OfferAmount}
                     value={formData.OfferAmount?.toString() || ''}
-                    onChange={(e) => handleFieldChange('OfferAmount', e.target.value ? Number(e.target.value) : null)}
+                    onChange={(e) => handleFieldChange('OfferAmount', e.target.value ? filterNumbersWithDecimal(e.target.value) : null)}
                     placeholder="Enter Offer Amount"
                   />
                 </div>

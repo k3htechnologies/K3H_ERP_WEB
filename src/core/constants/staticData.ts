@@ -45,7 +45,7 @@ export const MASTER_DATA = {
 
   landOwnershipType: ['Government', 'Landlord', 'Society'],
 
-  flat_unit_Type: ['Commercial', 'Gym', 'Residential', 'Void'],
+  flat_unit_Type: ['BMC','Commercial', 'eDeck','Fitness Center','Gym','MHADA','Multi Purpose Room','Land Lord','Lien','Part Terrace','Refuge','Religious Structure', 'Residential','Society Office','SRA','Upashray', 'Void'],
 
   residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK', '8 BHK', '1 + 1 JODI', '2 + 1 JODI', '2 + 2 JODI', '2 + 3 JODI', 'PENTHOUSE'],
 

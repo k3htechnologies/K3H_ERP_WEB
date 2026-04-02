@@ -288,12 +288,17 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
 
     const dateStr = formatYyyyMmDd(date)
 
-    // If no Working Date selected: allow only allowedDates
-    if (!tempStartDate) {
+    // If no Working Date selected or if the user is editing Working Date:
+    // allow only valid working dates from the API response.
+    if (!tempStartDate || editingField === 'start') {
       return allowedDates.includes(dateStr)
     }
 
-    // If Working Date is selected: allow any date for CompOff Date
+    // If Working Date is selected: allow any date for CompOff Date except the selected Working Date itself
+    if (editingField === 'end' && tempStartDate && isSameDay(date, tempStartDate)) {
+      return false
+    }
+
     return true
   }
 
@@ -303,9 +308,15 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     // Check if date is allowed
     if (!isDateAllowed(date)) return
 
+    // If both dates are already selected, do not allow any new date selection
+    // until one of them is cleared explicitly.
+    if (tempStartDate && tempEndDate) {
+      return
+    }
+
     if (editingField === 'start') {
       setTempStartDate(date)
-      if (!tempEndDate || date > tempEndDate) {
+      if (tempEndDate && isSameDay(tempEndDate, date)) {
         setTempEndDate(null)
       }
       setEditingField('end')
@@ -320,6 +331,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
 
     if (!tempStartDate) {
       setTempStartDate(date)
+      setTempEndDate(null)
       setEditingField('end')
       return
     }
@@ -330,10 +342,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
       return
     }
 
-    // If both dates are set, replace working date
-    setTempStartDate(date)
-    setTempEndDate(null)
-    setEditingField('end')
+    // No active field and both dates are set: leave current selection unchanged.
   }
 
   const handleConfirm = (e: React.FormEvent) => {
@@ -341,7 +350,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
     // Allow confirming with at least one date selected
     if (tempStartDate || tempEndDate) {
       const start = tempStartDate ? formatLocalDate(tempStartDate) : null
-      const end = tempEndDate ? formatLocalDate(tempEndDate) : null
+      const end = tempEndDate ? formatLocalDate(tempEndDate) : (tempStartDate ? formatLocalDate(tempStartDate) : null)
       onConfirm(start, end)
       if (onTimeChange) {
         onTimeChange(localStartTime, localEndTime)

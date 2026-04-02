@@ -44,7 +44,6 @@ export interface Table2 {
 export interface Table3 {
   BuildingName: string | null
   Issue: string | null
-  UnitNumber: string | null
 }
 
 export interface Table4 {

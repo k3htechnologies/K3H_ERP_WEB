@@ -7,7 +7,7 @@ export interface EnvironmentConfig {
 
 //============================ [ DEVELOPMENT CONFIGURATION ] ========================================================
 const developmentConfig: EnvironmentConfig = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://202.168.146.8:402/api",
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "https://localhost:7034/api",
 
   apiKey: import.meta.env.VITE_API_KEY || "TpBgVhTojiO2Ue3kztqI2N/lv7NgtUZgBs0olZHw6HQ/phXqXpadHfJO059HQVTLNyUDi/AbSPGcmP3MdRNtBw==",
   apiTimeout: 30000,
@@ -24,8 +24,9 @@ const productionConfig: EnvironmentConfig = {
 
 //============================ [GET CURRENT ENVIRONMENT ] ========================================================
 const getCurrentEnvironment = (): "DEVELOPMENT" | "PRODUCTION" => {
-  // const env = import.meta.env.VITE_APP_ENVIRONMENT || import.meta.env.MODE;
-  const env = "PRODUCTION";
+
+  const env = (import.meta.env.VITE_APP_ENVIRONMENT || import.meta.env.MODE)?.toUpperCase();
+
   switch (env) {
     case "PRODUCTION":
       return "PRODUCTION";

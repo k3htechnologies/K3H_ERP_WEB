@@ -321,7 +321,8 @@ export class BaseClient {
 
             console.error('ERROR: REFRESH TOKEN :', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
+                
                 await this.refreshToken();
             }
 

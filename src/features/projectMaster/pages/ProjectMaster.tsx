@@ -338,6 +338,14 @@ export const ProjectMaster: React.FC = () => {
         )
       },
       {
+        key: 'RERANumber',
+        label: 'RERA Number',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
         key: 'BussinessCategory',
         label: 'Business Category',
         width: '15',

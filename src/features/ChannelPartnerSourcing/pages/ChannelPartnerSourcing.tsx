@@ -221,7 +221,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
       },
       {
         key: 'Name',
-        label: 'Name',
+        label: 'Full Name',
         width: '20',
         sortable: true,
         align: 'left',

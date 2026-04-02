@@ -269,7 +269,7 @@ export const CallLog: React.FC = () => {
             CallLogId: formData.CallLogId,
             Uniquekey: formData.Uniquekey,
             Remark: formData.Remark,
-            RescheduleDate: formData.RescheduleDate,
+            RescheduleDate: formData.RescheduleDate === "" ? null : formData.RescheduleDate,
             ProjectId: Number(projectId),
         };
     };
@@ -440,49 +440,54 @@ export const CallLog: React.FC = () => {
             width: '12',
             fixed: 'right',
             align: 'center',
-            render: (_value, row) => (
-                <div className="flex items-center justify-center">
+            render: (_value, row) => {
 
-                    <Button
-                        color="transparent"
-                        size="sm"
-                        disabled={!canAction}
-                        onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            if (!canAction) return;
-                            handleEditCallLog(row)
-                        }}
-                        style={{
-                            color: canAction ? '' : '#9CA3AF',
-                            padding: '4px 8px',
-                            cursor: canAction ? 'pointer' : 'not-allowed',
-                            opacity: canAction ? 1 : 0.5
-                        }}
-                        leftIcon={<Edit className="h-4 w-4" />}
-                    />
+                const isLocked = !canAction || !!row.RescheduleDate || !!row.Remark;
 
-                    <Button
-                        color="transparent"
-                        size="sm"
-                        disabled={!canAction}
-                        style={{
-                            color: canAction ? 'red' : '#9CA3AF',
-                            padding: '4px 8px',
-                            cursor: canAction ? 'pointer' : 'not-allowed',
-                            opacity: canAction ? 1 : 0.5
-                        }}
-                        onClick={(e) => {
-                            e.preventDefault()
-                            e.stopPropagation()
-                            if (!canAction) return;
-                            handleConfirmationDialogBoxOpen(row)
-                        }}
-                        leftIcon={<Trash2 className="h-4 w-4" />}
-                    />
+                return (
+                    <div className="flex items-center justify-center">
 
-                </div>
-            )
+                        <Button
+                            color="transparent"
+                            size="sm"
+                            disabled={isLocked}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                if (isLocked) return;
+                                handleEditCallLog(row)
+                            }}
+                            style={{
+                                color: isLocked ? '#9CA3AF' : '',
+                                padding: '4px 8px',
+                                cursor: isLocked ? 'not-allowed' : 'pointer',
+                                opacity: isLocked ? 0.5 : 1
+                            }}
+                            leftIcon={<Edit className="h-4 w-4" />}
+                        />
+
+                        <Button
+                            color="transparent"
+                            size="sm"
+                            disabled={isLocked}
+                            style={{
+                                color: isLocked ? '#9CA3AF' : 'red',
+                                padding: '4px 8px',
+                                cursor: isLocked ? 'not-allowed' : 'pointer',
+                                opacity: isLocked ? 0.5 : 1
+                            }}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                if (isLocked) return;
+                                handleConfirmationDialogBoxOpen(row)
+                            }}
+                            leftIcon={<Trash2 className="h-4 w-4" />}
+                        />
+
+                    </div>
+                )
+            }
         },
 
     ], [canAction, handleEditCallLog, handleConfirmationDialogBoxOpen])

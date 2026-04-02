@@ -12,8 +12,8 @@ export default function OutdoorManagement({ outdoorManagementData }: Props) {
       <h2 className="text-lg font-semibold text-gray-800">
         Outdoor Management
       </h2>
-      <div className=" bg-white rounded-xl p-4 h-[349px] border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
-      
+      <div className=" bg-white rounded-xl p-4 h-[349px] border border-gray-100 overflow-y-auto thin-scroll" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+
         <div className="mt-2">
           {outdoorManagementData?.length > 0 ? (
             outdoorManagementData.map((item, index) => (

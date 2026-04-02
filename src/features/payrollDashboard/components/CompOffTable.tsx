@@ -2,12 +2,15 @@ import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWitho
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import type { Table2 } from "@/features/payrollDashboard/models/PayrollDashboardModel";
 import { getSafeString } from "@/core/utils/comman";
+import { getNameInitials } from "@/core/utils/getNameInitials";
 
 interface Props {
   compOffData: Table2[];
 }
 
 export default function CompOffTable({ compOffData }: Props) {
+
+
   const columns = [
 
     {
@@ -15,13 +18,13 @@ export default function CompOffTable({ compOffData }: Props) {
       label: "Employee Name",
       align: "left" as const,
       render: (value: string) => (
+
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-lg shrink-0">
-            {getSafeString(value).charAt(0).toUpperCase() || '?'}
+          <div className="w-9 h-9 rounded-full flex items-center justify-center bg-blue-100 text-blue-600 font-bold text-sm shrink-0">
+            {getSafeString(getNameInitials(value))}
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-medium text-black ">{getSafeString(value)}</span>
-            <span className="text-xs text-gray-400 font-medium mt-1">Full-Stack Developer </span>
           </div>
         </div>
       ),
@@ -46,12 +49,34 @@ export default function CompOffTable({ compOffData }: Props) {
       key: 'status',
       label: 'Status',
       align: 'center' as const,
+      render: (_value: string, row: any) => (
+        <span className=" text-sm font-medium text-red-800">
+          {row.Status}
+        </span>
+      ),
+
     },
     {
       key: 'action',
       label: 'Action',
       align: 'center' as const,
       width: "150px",
+      render: (_: any, record: Table2) => {
+
+        const isDisabled = record.CanApprove === 0;
+
+        return (
+          <button
+            className={`px-4 py-1 rounded-md text-sm font-medium text-white transition-colors ${isDisabled
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-blue-600 hover:bg-blue-700"
+              }`}
+            disabled={isDisabled}
+          >
+            {record.Status === "Approved" ? "Approved" : "Approve"}
+          </button>
+        );
+      }
     }
   ];
   return (
@@ -61,7 +86,7 @@ export default function CompOffTable({ compOffData }: Props) {
       </h2>
       <div className="bg-white rounded-xl p-4 h-[300px] border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
-      
+
         {compOffData?.length > 0 ? (
           <DataTableWithOutBorder
             columns={columns}

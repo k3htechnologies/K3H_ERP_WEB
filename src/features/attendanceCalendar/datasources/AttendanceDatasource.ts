@@ -42,7 +42,7 @@ export class AttendanceDatasourceImpl implements AttendanceDatasource {
 
             console.error('ERROR: PULL ATTENDANCE :', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
               return await this.pullAttendance(params);
             }
 
@@ -59,7 +59,7 @@ export class AttendanceDatasourceImpl implements AttendanceDatasource {
 
             console.error('ERROR: ADD UPDATE ATTENDANCE :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
                return await this.addUpdateAttendance(params);
             }

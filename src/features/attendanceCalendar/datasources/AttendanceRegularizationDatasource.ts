@@ -47,7 +47,7 @@ export class AttendanceRegularizationDatasourceImpl implements AttendanceRegular
         } catch (error: any) {
             console.error('ERROR: PULL ATTENDANCE REGULARIZATION :', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.pullAttendanceRegularization(params);
             }
 
@@ -79,7 +79,7 @@ export class AttendanceRegularizationDatasourceImpl implements AttendanceRegular
         } catch (error) {
             console.error('ERROR: ADD UPDATE ATTENDANCE REGULARIZATION :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.addUpdateAttendanceRegularization(params);
             }
             throw error

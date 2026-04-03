@@ -73,7 +73,7 @@ export const useDepartmentMaster = () => {
     fetchDepartmentList()
   }, [])
 
- 
+
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
@@ -410,7 +410,7 @@ export const useDepartmentMaster = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
           } else {
-debugger
+            
             const updatedRecord = response.right.Data[0] as DepartmentMasterData;
             setLastUpdatedRow(updatedRecord.DepartmentMasterId);
 
@@ -421,7 +421,7 @@ debugger
                   : item
               )
             )
-            
+
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
           }
 

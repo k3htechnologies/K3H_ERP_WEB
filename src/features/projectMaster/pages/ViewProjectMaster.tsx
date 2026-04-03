@@ -611,10 +611,7 @@ export const ViewProjectMaster: React.FC = () => {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-5">
                                         <FieldItem label="Modified By" value={editProjectData?.ModifiedBy ?? '-'} />
-                                        <FieldItem
-                                            label="Modified Date"
-                                            value={formatDate_dd_MonthName_yy_hh_mm(editProjectData?.ModifiedDate ?? '-')}
-                                        />
+                                        <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(editProjectData?.ModifiedDate ?? '-')} />
                                     </div>
                                 </section>
 
@@ -652,7 +649,7 @@ export const ViewProjectMaster: React.FC = () => {
                                     <section
                                         key={emp.EmployeeCode}
                                         className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                                            
+
                                         <div className="flex items-center gap-3 mb-4">
                                             <div className="w-8 h-8 rounded-full bg-blue-200 text-gray-800 flex items-center justify-center text-xs font-medium border border-gray-300">
                                                 {initials}

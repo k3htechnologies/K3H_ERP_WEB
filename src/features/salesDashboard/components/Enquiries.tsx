@@ -180,7 +180,10 @@ export default function Enquiries({ enquiryData }: Props) {
         <div className="space-y-3 pt-4">
 
             <h2 className="text-lg font-semibold text-gray-800">
-                Enquiries (Todays)
+               Enquiries{" "}
+                <span className="text-sm font-normal text-gray-500">
+                    (Todays)
+                </span>
             </h2>
 
             <div className="flex-1 bg-white rounded-xl p-5 h-[310px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
@@ -205,6 +208,7 @@ export default function Enquiries({ enquiryData }: Props) {
                 confirmText="Mark Time Out"
                 cancelText="Cancel"
                 loading={isLoading}
+                variant='logout'
             />
 
         </div>

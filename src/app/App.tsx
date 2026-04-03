@@ -167,6 +167,9 @@ import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokera
 import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
 import Terms from '@/features/terms/pages/TermsAndCondition';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
+import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
+import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
+import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -434,6 +437,9 @@ function App() {
 
             {/* CRM */}
 
+            <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
+            <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
+
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
             <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
@@ -445,7 +451,7 @@ function App() {
           <Route path='Terms' element={<Terms />} />
           <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
-          
+
         </Routes>
       </Suspense>
     </CountryStateCityDistrictVillage>

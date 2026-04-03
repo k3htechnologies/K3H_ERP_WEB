@@ -3,7 +3,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
 import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
 
-export type BookingListState = {
+export type PayTrackBookingListState = {
   page: number;
   pageSize: number;
   searchTerm: string;
@@ -11,11 +11,13 @@ export type BookingListState = {
   sortInfo: SortInfo | undefined;
   bookingId: number;
   bookingName: string;
+  bookingType: string;
+  flat: string;
 };
 
-const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING;
+const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.PAY_TRACK_BOOKING;
 
-const getInitialState = (projectId: number | null): BookingListState => {
+const getInitialState = (projectId: number | null): PayTrackBookingListState => {
   if (!projectId) {
     return {
       page: 1,
@@ -25,19 +27,23 @@ const getInitialState = (projectId: number | null): BookingListState => {
       sortInfo: undefined,
       bookingId: 0,
       bookingName: "",
+      bookingType: "",
+      flat: "",
     };
   }
 
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    
+
     if (stored) {
-      const parsed = JSON.parse(stored) as { projectId: number; state: BookingListState };
+      const parsed = JSON.parse(stored) as { projectId: number; state: PayTrackBookingListState };
       if (parsed.projectId === projectId) {
         return {
           ...parsed.state,
           bookingId: parsed.state.bookingId || 0,
           bookingName: parsed.state.bookingName || "",
+          bookingType: parsed.state.bookingType || "",
+          flat: parsed.state.flat || "",
         };
       }
     }
@@ -53,28 +59,30 @@ const getInitialState = (projectId: number | null): BookingListState => {
     sortInfo: undefined,
     bookingId: 0,
     bookingName: "",
+    bookingType: "",
+    flat: "",
   };
 };
 
-type BookingListStateContextType = {
-  listState: BookingListState;
-  updateListState: (updates: Partial<BookingListState>) => void;
+type PayTrackBookingListStateContextType = {
+  listState: PayTrackBookingListState;
+  updateListState: (updates: Partial<PayTrackBookingListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setBookingContext: (bookingId: number, bookingName: string) => void;
-  clearBookingContext: () => void;
+  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string) => void;
+  clearPayTrackBookingContext: () => void;
 };
 
-const BookingListStateContext = createContext<BookingListStateContextType | null>(null);
+const PayTrackBookingListStateContext = createContext<PayTrackBookingListStateContextType | null>(null);
 
-export const BookingListStateProvider = ({ children }: { children: ReactNode }) => {
+export const PayTrackBookingListStateProvider = ({ children }: { children: ReactNode }) => {
   const { projectId } = useProject();
-  const [listState, setListState] = useState<BookingListState>(() => getInitialState(projectId));
+  const [listState, setListState] = useState<PayTrackBookingListState>(() => getInitialState(projectId));
   const [lastProjectId, setLastProjectId] = useState<number | null>(projectId);
 
   useEffect(() => {
     if (projectId !== lastProjectId && lastProjectId !== null) {
-      const defaultState: BookingListState = {
+      const defaultState: PayTrackBookingListState = {
         page: 1,
         pageSize: 20,
         searchTerm: "",
@@ -82,6 +90,8 @@ export const BookingListStateProvider = ({ children }: { children: ReactNode }) 
         sortInfo: undefined,
         bookingId: 0,
         bookingName: "",
+        bookingType: "",
+        flat: "",
       };
       setListState(defaultState);
       try {
@@ -107,7 +117,7 @@ export const BookingListStateProvider = ({ children }: { children: ReactNode }) 
     }
   }, [listState, projectId]);
 
-  const updateListState = useCallback((updates: Partial<BookingListState>) => {
+  const updateListState = useCallback((updates: Partial<PayTrackBookingListState>) => {
     setListState((prev) => ({ ...prev, ...updates }));
   }, []);
 
@@ -122,7 +132,7 @@ export const BookingListStateProvider = ({ children }: { children: ReactNode }) 
   }, []);
 
   const resetToDefault = useCallback(() => {
-    const defaultState: BookingListState = {
+    const defaultState: PayTrackBookingListState = {
       page: 1,
       pageSize: 20,
       searchTerm: "",
@@ -130,47 +140,53 @@ export const BookingListStateProvider = ({ children }: { children: ReactNode }) 
       sortInfo: undefined,
       bookingId: 0,
       bookingName: "",
+      bookingType: "",
+      flat: "",
     };
     setListState(defaultState);
   }, []);
 
-  const setBookingContext = useCallback((bookingId: number, bookingName: string) => {
+  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string,bookingType: string, flat: string) => {
     setListState((prev) => ({
       ...prev,
       bookingId,
       bookingName,
+      bookingType,
+      flat
     }));
   }, []);
 
-  const clearBookingContext = useCallback(() => {
+  const clearPayTrackBookingContext = useCallback(() => {
     setListState((prev) => ({
       ...prev,
       bookingId: 0,
       bookingName: "",
+      bookingType: "",
+      flat: "",
     }));
   }, []);
 
-  const contextValue = useMemo<BookingListStateContextType>(
+  const contextValue = useMemo<PayTrackBookingListStateContextType>(
     () => ({
       listState,
       updateListState,
       resetFilters,
       resetToDefault,
-      setBookingContext,
-      clearBookingContext,
+      setPayTrackBookingContext,
+      clearPayTrackBookingContext,
     }),
-    [listState, updateListState, resetFilters, resetToDefault, setBookingContext, clearBookingContext]
+    [listState, updateListState, resetFilters, resetToDefault, setPayTrackBookingContext, clearPayTrackBookingContext]
   );
 
   return (
-    <BookingListStateContext.Provider value={contextValue}>
+    <PayTrackBookingListStateContext.Provider value={contextValue}>
       {children}
-    </BookingListStateContext.Provider>
+    </PayTrackBookingListStateContext.Provider>
   );
 };
 
-export const useBookingListState = () => {
-  const ctx = useContext(BookingListStateContext);
+export const usePayTrackBookingListState = () => {
+  const ctx = useContext(PayTrackBookingListStateContext);
   if (!ctx) {
     throw new Error("useBookingListState must be used inside BookingListStateProvider");
   }

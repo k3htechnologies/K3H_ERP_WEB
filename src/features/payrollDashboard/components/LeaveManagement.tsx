@@ -33,9 +33,9 @@ const LeaveManagement: React.FC<Props> = ({ leaveData }) => {
         )
       },
       {
-        key: 'LeaveTypeMasterId',
+        key: 'LeaveType',
         label: 'Leave Type',
-        align: 'center' as const,
+        align: 'left' as const,
         render: (value: string) => (
           <span className="font-medium text-black text-sm">{value || '-'}</span>
         )
@@ -63,7 +63,7 @@ const LeaveManagement: React.FC<Props> = ({ leaveData }) => {
         label: 'Status',
         align: 'center' as const,
         render: (value: string) => {
-          if (value === "Pending") {
+          if (value === "Rejected") {
             return (
               <span className="font-medium text-red-600 text-sm">{value}</span>
             )

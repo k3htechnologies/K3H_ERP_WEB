@@ -461,6 +461,12 @@ export const getPageInfo = (path: string) => {
                 description: "Simplifying Legal Oversight Across Every Project",
             }
 
+        //CRM  
+        case 'payTrack':
+            return {
+                title: "Pay Track",
+                description: "Secure your unit by completing the booking process",
+            }
 
         default:
             return {

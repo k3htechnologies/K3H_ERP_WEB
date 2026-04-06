@@ -1156,6 +1156,29 @@ export const LocalStorageHelper = {
     return null
   },
   //#endregion
+  //#region STORE INWARD OUTWARD COLUMNS
+  storeInwardOutwardTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Inward Outward Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET INWARD OUTWARD COLUMNS
+  getInwardOutwardTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Inward Outward Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+  //#endregion
 
   //#region CLEAR LOCAL STORAGE
   clearLocalStorageData: (): void => {

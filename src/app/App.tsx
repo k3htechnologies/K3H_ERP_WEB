@@ -166,9 +166,10 @@ import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageIn
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
 import PrivacyPolicy from '@/features/PrivacyPolicy/pages/PrivacyPolicy';
 import Terms from '@/features/Terms/pages/TermsAndCondition';
-import { Inward } from '@/features/inwardAndOutWard/pages/InwardAndOutWard';
-import AddUpdateInward from '@/features/inwardAndOutWard/pages/AddUpdateInward';
-import ViewInward from '@/features/inwardAndOutWard/pages/ViewInward';
+import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
+import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
+import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
+import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -386,9 +387,9 @@ function App() {
 
             <Route path="performance" element={<PerformanceReport />} />
 
-            <Route path="inwardAndoutward" element={<Inward />} />
-            <Route path='AddInward' element={<AddUpdateInward />} />
-            <Route path='ViewInward' element={<ViewInward />} />
+            <Route path="inwardOutword" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
+            <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
+            <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
 
             {/* REDEVELOPMENT */}
 

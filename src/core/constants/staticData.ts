@@ -71,7 +71,7 @@ export const MASTER_DATA = {
 
   project_scheme: ['BMC', 'MHADA', 'SRA'],
 
-  project_sub_scheme_BMC: ['33 (20) B', '33 (19)','33 (7)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
+  project_sub_scheme_BMC: ['33 (20) B', '33 (19)', '33 (7)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
 
   project_sub_scheme_MHADA: ['33 (5)'],
 
@@ -280,6 +280,14 @@ export const MASTER_DATA = {
 
   monthsShots: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 
+  priority: ['High', 'Medium', 'Low'],
+
+  deliveryStatus: ['Assigned', 'Acknowledged', 'Delivered'],
+
+  deliveryMode: ['Courier', 'Hand-To-Hand'],
+
+  documentType: ['Inward', 'Outward'],
+
 } as const
 
 // ============================================================================
@@ -390,7 +398,10 @@ export const ENQUIRY_TIMELINE = toOptions(MASTER_DATA.enquiryTimeLine);
 export const SUPPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.supportType);
 export const REPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.reportType);
 export const YEAR_OPTIONS = toOptions(MASTER_DATA.year);
-
+export const PRIORITY = toOptions(MASTER_DATA.priority);
+export const DELIVERY_STATUS = toOptions(MASTER_DATA.deliveryStatus);
+export const DELIVERY_MODE = toOptions(MASTER_DATA.deliveryMode);
+export const DOCUMENT_TYPE = toOptions(MASTER_DATA.documentType);
 
 
 // ============================================================================

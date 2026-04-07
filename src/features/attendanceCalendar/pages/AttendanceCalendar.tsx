@@ -492,7 +492,7 @@ const AttendanceCalendar: React.FC = () => {
     <div className="flex flex-col lg:flex-row bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4 lg:p-6 gap-3 sm:gap-4 lg:gap-6 relative w-full">
       {/* LEFT - CALENDAR */}
 
-      <div className="flex-1 min-w-0 p-2 sm:p-3 lg:p-4">
+      <div className="flex-1 min-w-0">
         <CalendarHeader
           displayedMonth={displayedMonth}
           activeTab={activeTab}
@@ -574,7 +574,7 @@ const AttendanceCalendar: React.FC = () => {
               );
             })}
           </div>
-          
+
         </div>
       </aside>
 

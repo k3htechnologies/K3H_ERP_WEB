@@ -1,7 +1,7 @@
 import type { ApiResponse } from "@/core/api/ApiResponse";
 
 export interface FilterProjectInventoryExistsRequest {
-    ProjectId: number
+    ProjectId: number;
 }
 
 export interface FilterInventoryRequest {
@@ -64,7 +64,7 @@ export interface InventoryFlatData {
     FlatConfiguration: string;
     FlatStatus: 'Alloted' | "Available" | "Booked" | "Blocked" | "Hold";
     FlatFacing: string;
-    
+
     CreatedById: number;
     CreatedBy: string;
     CreatedDate: string;
@@ -132,7 +132,7 @@ export interface UpdateInventoryFlatRequest {
     FlatStatus?: string
     FlatFacing?: string
     InventoryFlatSpecificationJSON?: string
-    IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt:boolean;
+    IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt: boolean;
 }
 
 export interface UpdateInventoryWingRequest {
@@ -200,7 +200,7 @@ export interface AddInventoryFlatRequest {
     FlatStatus?: string
     FlatFacing?: string
     InventoryFlatSpecificationJSON?: string
-    IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt:boolean;
+    IsSameInventoryFlatSpecificationForSameRERACarpetAreaSqFt: boolean;
 }
 
 export interface AddUpdateInventoryFloorParkingCountRequest {

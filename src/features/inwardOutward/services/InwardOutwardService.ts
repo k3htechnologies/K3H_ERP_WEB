@@ -1,7 +1,7 @@
 import type { Failure } from '@/core/api/FailureResponse';
 
 import * as E from 'fp-ts/Either';
-import type { DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, FilterWithPaginationSenderReceiverByMobileNoRequest, InwardAndOutWardDeleteResponse, InwardAndOutWardListResponse, InwardAndOutWardSaveResponse, SenderReceiverByMobileNoDataListResponse } from '@/features/inwardOutward/models/InwardOutwardModel';
+import type { DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, FilterWithPaginationSenderReceiverByMobileNoRequest, InwardAndOutWardDeleteResponse, InwardAndOutWardListResponse, InwardAndOutWardSaveResponse, RevertedInwardOutwardSaveResponse, SenderReceiverByMobileNoDataListResponse } from '@/features/inwardOutward/models/InwardOutwardModel';
 import { InwardAndOutWardDatasourceImpl } from '@/features/inwardOutward/datasources/InwardOutwardDataSource';
 
 const InwardOutwardDatasource = new InwardAndOutWardDatasourceImpl();
@@ -41,6 +41,19 @@ export const inwardOutwardService = {
         } catch (error: any) {
 
             return E.left({ message: error.message, code: error.code });
+        }
+    },
+
+
+    apiCallAddRevertInwardOutward: async (formData: FormData): Promise<E.Either<Failure, RevertedInwardOutwardSaveResponse>> => {
+        try {
+
+            return E.right(await InwardOutwardDatasource.addRevertInwardAndOutWard(formData));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
         }
     },
 

@@ -33,6 +33,15 @@ export interface InwardAndOutWardData {
     EmployeeNames: string | null
     InvoiceDate: string | null,
     DepartmentName: string | null,
+    InwardNumber: number | 0,
+    InvoiceNumber: number | 0,
+    HandoverDate: string | null,
+    Name: string | null,
+
+    RevertedInwardOutwardId: number | 0,
+    RevertDate: string | null
+    Remark: string | null
+    RevertDocumentURL: string | null
 
     SenderName: string | null,
     SenderEmailId: string | null,
@@ -67,6 +76,7 @@ export interface AddUpdateInwardAndOutWardRequest {
     Amount: number | 0,
     DeliveryType: string | null,
     ReceiversSignature: string | null,
+    RemoveReceiversSignature: string | ''
     ReceivedBy: string | null,
     ChequeNo: string | null,
     Priority: string | null,
@@ -78,6 +88,10 @@ export interface AddUpdateInwardAndOutWardRequest {
     AcknowledgementRemark: string | null,
     EmployeeNames: string | null
     InvoiceDate: string | null,
+    InwardNumber: number | 0,
+    InvoiceNumber: number | 0,
+    HandoverDate: string | null,
+    Name: string | null,
 
     SenderName: string | null,
     SenderEmailId: string | null,
@@ -94,6 +108,24 @@ export interface DeleteInwardAndOutWardRequest {
     UniqueKey: string
     InwardOutwardId: number
 
+}
+
+export interface RevertedInwardOutwardData {
+    RevertedInwardOutwardId: number | 0,
+    Uniquekey: string | null
+    RevertDate: string | null
+    Remark: string | null
+    RevertDocumentURL: string | null
+    RemoveRevertDocumentURL: string | ''
+}
+
+export interface AddRevertInwardOutwardRequest {
+    RevertedInwardOutwardId: number | 0,
+    Uniquekey: string | null
+    RevertDate: string | null
+    Remark: string | null
+    RevertDocumentURL: string | null
+    RemoveRevertDocumentURL: string | ''
 }
 
 export interface FilterWithPaginationSenderReceiverByMobileNoRequest {
@@ -114,4 +146,6 @@ export interface SenderReceiverByMobileNoData {
 export type InwardAndOutWardListResponse = ApiResponse<InwardAndOutWardData[]>
 export type InwardAndOutWardSaveResponse = ApiResponse<InwardAndOutWardData[]>
 export type InwardAndOutWardDeleteResponse = ApiResponse<number>
+export type RevertedInwardOutwardSaveResponse = ApiResponse<RevertedInwardOutwardData[]>
+
 export type SenderReceiverByMobileNoDataListResponse = ApiResponse<SenderReceiverByMobileNoData[]>

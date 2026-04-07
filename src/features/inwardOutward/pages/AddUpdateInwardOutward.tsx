@@ -47,12 +47,17 @@ const initialFormState = (): AddUpdateInwardAndOutWardRequest => ({
     AcknowledgementURL: null,
     RemoveAcknowledgementURL: '',
     AcknowledgementRemark: "",
-    ReceiversSignature: "",
+    ReceiversSignature: null,
+    RemoveReceiversSignature: '',
     ReceivedBy: "",
     ChequeNo: "",
     DocumentType: "",
     EmployeeNames: "",
-    InvoiceDate: ""
+    InvoiceDate: "",
+    InwardNumber: 0,
+    InvoiceNumber: 0,
+    HandoverDate: "",
+    Name: "",
 
 })
 
@@ -68,6 +73,9 @@ export const AddUpdateInwardOutward: React.FC = () => {
     const [documentURLFiles, setDocumentURLFiles] = useState<(File | string)[]>([]);
     const [documentURL, setDocumentURL] = useState<string>();
     const [removedDocumentURLs, setRemovedDocumentURLs] = useState<string[]>([]);
+    const [receiversSignatureFiles, setReceiversSignatureFiles] = useState<(File | string)[]>([]);
+    const [receiversSignatureURL, setReceiversSignatureURL] = useState<string>();
+    const [removedReceiversSignatureURLs, setRemovedReceiversSignatureURLs] = useState<string[]>([]);
     const [selectedEmployeeValues, setSelectedEmployeeValues] = useState<string | number | null>(null);
 
     // NAVIGATE
@@ -161,7 +169,11 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             DocumentURL: e.DocumentURL ?? prev.DocumentURL,
                             AcknowledgementURL: e.AcknowledgementURL ?? prev.AcknowledgementURL,
                             ReceiversSignature: e.ReceiversSignature ?? prev.ReceiversSignature,
-                            InvoiceDate: e.InvoiceDate ?? prev.InvoiceDate
+                            InvoiceDate: e.InvoiceDate ?? prev.InvoiceDate,
+                            InvoiceNumber: e.InvoiceNumber ?? prev.InvoiceNumber,
+                            HandoverDate: e.HandoverDate ?? prev.HandoverDate,
+                            Name: e.Name ?? prev.Name
+
                         }));
 
                         setSelectedEmployeeValues(e.EmployeeId || null);
@@ -171,6 +183,10 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
                         setAcknowledgementURL(e.AcknowledgementURL || '');
                         setRemovedAcknowledgementURLs([]);
+                        setAcknowledgementURLFiles([]);
+
+                        setReceiversSignatureURL(e.ReceiversSignature || '');
+                        setRemovedReceiversSignatureURLs([]);
                         setAcknowledgementURLFiles([]);
                     }
 
@@ -272,8 +288,20 @@ export const AddUpdateInwardOutward: React.FC = () => {
                 newErrors.InvoiceDate = "Invoice Date cannot be in the past";
             }
         }
-        if (!formData.EmployeeId) {
-            newErrors.EmployeeId = "Employee is required";
+        if (!formData.InvoiceNumber) {
+            newErrors.InvoiceNumber = "Invoice Number is required";
+        }
+        if (!formData.InwardNumber) {
+            newErrors.InwardNumber = "Inward Number is required";
+        }
+        if (!formData.Name) {
+            newErrors.Name = "Name is required";
+        }
+        if (!formData.HandoverDate) {
+            newErrors.HandoverDate = "Handover Date is required";
+        }
+        if (!formData.ReceiverAddress) {
+            newErrors.ReceiverAddress = "Receiver Address is required";
         }
         if (!hasAnyDocumentFile(documentURLFiles, documentURL, removedDocumentURLs)) {
             newErrors.DocumentURL = "File is required.";
@@ -281,6 +309,9 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
         if (!hasAnyDocumentFile(acknowledgementURLFiles, acknowledgementURL, removedAcknowledgementURLs)) {
             newErrors.AcknowledgementURL = "File is required.";
+        }
+        if (!hasAnyDocumentFile(receiversSignatureFiles, receiversSignatureURL, removedReceiversSignatureURLs)) {
+            newErrors.ReceiversSignature = "File is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -318,6 +349,10 @@ export const AddUpdateInwardOutward: React.FC = () => {
         fd.append("ReceiverEmailId", formData.ReceiverEmailId ?? "");
         fd.append("ReceiverAddress", formData.ReceiverAddress ?? "");
         fd.append("InvoiceDate", formData.InvoiceDate ?? "");
+        fd.append("InwardNumber", String(formData.InwardNumber ?? 0));
+        fd.append("InvoiceNumber", String(formData.InvoiceNumber ?? 0));
+        fd.append("HandoverDate", formData.HandoverDate ?? "");
+        fd.append("Name", formData.Name ?? "");
 
         documentURLFiles.forEach((file) => {
             if (file instanceof File) {
@@ -334,6 +369,14 @@ export const AddUpdateInwardOutward: React.FC = () => {
         });
 
         fd.append("RemoveAcknowledgementURL", removedAcknowledgementURLs.join(","));
+
+        receiversSignatureFiles.forEach((file) => {
+            if (file instanceof File) {
+                fd.append("ReceiversSignature", file);
+            }
+        })
+
+        fd.append("RemoveReceiversSignature", removedReceiversSignatureURLs.join(","));
 
         return fd;
     };
@@ -469,14 +512,15 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     </div>
 
                     <div>
-                        <SinglePageSelection
-                            label="Priority"
+                        <Input
+                            type="text"
                             required
-                            placeholder='Select Priority'
-                            value={formData.Priority || ''}
-                            onChange={(e) => handleFieldChange('Priority', String(e))}
-                            options={PRIORITY.map((opt) => ({ label: opt.name, value: opt.id }))}
-                            error={errors.Priority}
+                            label='Inward Number'
+                            value={formData.InwardNumber ?? ""}
+                            onChange={(e) => handleFieldChange("InwardNumber", filterNumbersWithDecimal(e.target.value) || 0)}
+                            placeholder="Enter Inward Number"
+                            maxLength={15}
+                            error={errors.InwardNumber}
                         />
                     </div>
 
@@ -493,12 +537,38 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     </div>
 
                     <div>
+                        <SinglePageSelection
+                            label="Priority"
+                            required
+                            placeholder='Select Priority'
+                            value={formData.Priority || ''}
+                            onChange={(e) => handleFieldChange('Priority', String(e))}
+                            options={PRIORITY.map((opt) => ({ label: opt.name, value: opt.id }))}
+                            error={errors.Priority}
+                        />
+                    </div>
+
+
+                    <div>
                         <DatePickerInput
                             label="Date"
                             value={formatDate_dd_mm_yyyy(formData.InwardOutwardDate ?? '')}
                             onChange={(val) => handleFieldChange('InwardOutwardDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                             required
                             disabled={!!formData.InwardOutwardDate}
+                        />
+                    </div>
+
+                    <div>
+                        <Input
+                            type="text"
+                            required
+                            label='Invoice Number'
+                            value={formData.InvoiceNumber ?? ""}
+                            onChange={(e) => handleFieldChange("InvoiceNumber", filterNumbersWithDecimal(e.target.value) || 0)}
+                            placeholder="Enter Invoice Number"
+                            maxLength={15}
+                            error={errors.InvoiceNumber}
                         />
                     </div>
 
@@ -777,13 +847,20 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     </div>
 
                     <div>
-                        <Input
-                            label="Receivers Signature"
-                            value={formData.ReceiversSignature ?? ''}
+                        <MultiFilePicker
+                            label="Receiver’s Signature"
                             required
-                            onChange={e => handleFieldChange("ReceiversSignature", e.target.value)}
+                            placeholder="select file"
+                            value={receiversSignatureFiles}
+                            onChange={setReceiversSignatureFiles}
+                            availableFilesURL={receiversSignatureURL ?? ''}
+                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                            maxFiles={5}
+                            maxSizeMB={10}
+                            onRemoveExisting={(url) => {
+                                setRemovedReceiversSignatureURLs((prev) => [...prev, url]);
+                            }}
                             error={errors.ReceiversSignature}
-                            maxLength={50}
                         />
                     </div>
 
@@ -804,7 +881,31 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             error={errors.AcknowledgementURL}
                         />
                     </div>
+                </div>
 
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                    <div>
+                        <Input
+                            label="Handover To"
+                            value={formData.Name ?? ''}
+                            required
+                            onChange={e => handleFieldChange("Name", e.target.value)}
+                            error={errors.Name}
+                            maxLength={50}
+                            placeholder="Enter Name"
+                        />
+                    </div>
+
+                    <div>
+                        <DatePickerInput
+                            label="Handover Date"
+                            value={formatDate_dd_mm_yyyy(formData.HandoverDate ?? '')}
+                            onChange={(val) => handleFieldChange('HandoverDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                            required
+                            error={errors.HandoverDate}
+                        />
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-6">

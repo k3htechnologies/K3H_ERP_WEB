@@ -9,7 +9,7 @@ import type { PaginationInfo } from "@/ui/components/DataTable/DataTableWithoutB
 import { Loader } from "@/core/utils/loader";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { inwardOutwardService } from "@/features/inwardOutward/services/InwardOutwardService";
-import type { DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData } from "@/features/inwardOutward/models/InwardOutwardModel";
+import type { AddRevertInwardOutwardRequest, DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData, RevertedInwardOutwardData } from "@/features/inwardOutward/models/InwardOutwardModel";
 import { useInwardOutwardListState } from "../context/InwardOutwardListStateContext";
 import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -21,17 +21,37 @@ import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeCol
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
-import { Trash2 } from "lucide-react";
+import { RotateCw, Trash2 } from "lucide-react";
 import Tabs from "@/ui/components/Tab/Tab";
 import { getInwardOutwardStatusColor } from "@/features/inwardOutward/utils/Status";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { getPriorityStatusColor } from "../utils/PriorityStatus";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { TextArea } from "@/ui/components/forms/Textarea";
+import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
+import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+
+const initialFormState = (): AddRevertInwardOutwardRequest => ({
+    RevertedInwardOutwardId: 0,
+    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    RevertDate: '',
+    RevertDocumentURL: '',
+    RemoveRevertDocumentURL: '',
+    Remark: '',
+});
 
 export const InwardOutward: React.FC = () => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [inwardOutwardDataList, setInwardOutwardDataList] = useState<InwardAndOutWardData[]>([]);
+    const [revertedInwardOutwardDataList, setRevertedInwardOutwardDataList] = useState<RevertedInwardOutwardData[]>([]);
+
+    const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
+    const [formData, setFormData] = useState<AddRevertInwardOutwardRequest>(() => initialFormState());
+    const [revertDocumentURLFiles, setRevertDocumentURLFiles] = useState<(File | string)[]>([]);
+    const [revertDocumentURL, setRevertDocumentURL] = useState<string>();
+    const [removedRevertDocumentURLs, setRemovedRevertDocumentURLs] = useState<string[]>([]);
 
     //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -52,6 +72,9 @@ export const InwardOutward: React.FC = () => {
 
     // USE NAVIGATE
     const navigate = useNavigate();
+
+    //ERROR SET UP
+    const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     //DELETE INWARD OUTWARD
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
@@ -140,6 +163,116 @@ export const InwardOutward: React.FC = () => {
     };
     //#endregion
 
+   
+    const handleFieldChange = (field: keyof AddRevertInwardOutwardRequest, value: any) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
+    //#endregion
+
+    //#region ADD REVERT INWARD OUTWARD
+    const handleRevert = (row: InwardAndOutWardData) => {
+        setFormData({
+            ...initialFormState(),
+            Uniquekey: row.UniqueKey || "",
+        });
+
+        setIsAddUpdateModalOpen(true);
+    };
+    //#endregion
+
+    //#region PUSH INWARD OUTWARD DATA
+    const PushRevertedInwardOutwardFormData = (): FormData => {
+        const fd = new FormData();
+        fd.append("RevertedInwardOutwardId", formData.RevertedInwardOutwardId.toString());
+        fd.append("Uniquekey", formData.Uniquekey ?? "");
+        fd.append("RevertDate", formData.RevertDate ?? "");
+        fd.append("Remark", formData.Remark ?? "");
+
+        revertDocumentURLFiles.forEach((file) => {
+            if (file instanceof File) {
+                fd.append("RevertDocumentURL", file);
+            }
+        })
+        fd.append("RemoveRevertDocumentURL", removedRevertDocumentURLs.join(","));
+
+        return fd;
+    };
+    //#endregion
+    // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+
+    const validateUpdateCallLogForm = (): {
+        isValid: boolean;
+        errors: { [key: string]: string };
+    } => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (!formData.Remark || !formData.Remark.trim()) {
+            newErrors.Remark = "Remark is required";
+        }
+
+        if (!formData.RevertDate) {
+            newErrors.RevertDate = "Revert Date is required";
+        }
+
+        if (!hasAnyDocumentFile(revertDocumentURLFiles, revertDocumentURL, removedRevertDocumentURLs)) {
+            newErrors.RevertDocumentURL = "File is required.";
+        }
+
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors,
+        };
+    };
+
+
+    const handleAddEditRevertedInwardOutward = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        setErrors({})
+        const validation = validateUpdateCallLogForm()
+
+        if (!validation.isValid) {
+            setErrors(validation.errors)
+            return
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const payload = PushRevertedInwardOutwardFormData();
+
+                const response = await inwardOutwardService.apiCallAddRevertInwardOutward(payload);
+
+                if (E.isRight(response)) {
+
+                    setIsAddUpdateModalOpen(false);
+
+                    const newRecord = response.right.Data[0] as RevertedInwardOutwardData;
+
+                    setRevertedInwardOutwardDataList(prev => [newRecord, ...prev]);
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+                } else {
+                    addToast({ type: "error", title: response.left?.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Add Reverted Inward Outward'
+        )
+    };
+    //#endregion
+
     //#region NAVIGATE TO  VIEW INWARD OUTWARD
     const handleNavigateToView = (row: InwardAndOutWardData) => {
         updateListState({
@@ -175,6 +308,7 @@ export const InwardOutward: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
+            fixed: 'left',
             render: (value, row) => (
                 <TooltipText
                     text={value || '-'}
@@ -351,13 +485,14 @@ export const InwardOutward: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'center',
-            render: (value) => (
-                <TooltipText
-                    text={value || '-'}
-                    tooltipThreshold={20}
-                    maxWidth="180px"
-                />
-            )
+            render: (_value, row) => {
+                return (
+                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-sm">
+                        {row.EmployeeNames.trim().split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 3)}
+                    </div>
+
+                )
+            }
         },
         {
             key: 'DepartmentName',
@@ -387,27 +522,45 @@ export const InwardOutward: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'center',
+            fixed: 'right',
             render: (_value, row) => {
                 if (!canAction) return null;
 
                 return (
-                    <Button
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleConfirmationDialogBoxOpen(row);
-                        }}
-                        color="transparent"
-                        isborderRadius
-                        size="sm"
-                        style={{
-                            color: "red",
-                            padding: "4px 8px",
-                        }}
-                        title="Delete Inward Outward"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <div className="flex justify-between">
+                        <Button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleConfirmationDialogBoxOpen(row);
+                            }}
+                            color="transparent"
+                            isborderRadius
+                            size="sm"
+                            style={{
+                                color: "red",
+                                padding: "4px 8px",
+                            }}
+                            title="Delete Inward Outward"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+
+                        <Button
+                            color="transparent"
+                            size="sm"
+                            style={{
+                                color: 'green',
+                                padding: '0px 8px'
+                            }}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                handleRevert(row)
+                            }}
+                            leftIcon={<RotateCw className="h-4 w-4" />}
+                        />
+                    </div>
                 );
             }
         },
@@ -657,6 +810,73 @@ export const InwardOutward: React.FC = () => {
                 requiredKeys={requiredInwardOutwardColumnKeys}
                 title="Customize Table Columns"
             />
+
+            {/* UPDATE REVERT MODAL */}
+
+            <Modal
+                isOpen={isAddUpdateModalOpen}
+                onClose={() => {
+                    setIsAddUpdateModalOpen(false);
+                    setFormData(initialFormState());
+                    setErrors({});
+                }}
+                onCancel={() => {
+                    setIsAddUpdateModalOpen(false);
+                    setFormData(initialFormState());
+                    setErrors({});
+                }}
+
+                title="Revert"
+                saveText="Save"
+                onSubmit={handleAddEditRevertedInwardOutward}
+                loading={isLoading}
+                size="xl"
+            >
+                <div className="space-y-10 p-6 bg-blue-100">
+                    <div className="space-y-4" >
+
+                        <div>
+                            <DatePickerInput
+                                label="Revert Date"
+                                value={formatDate_dd_mm_yyyy(formData.RevertDate)}
+                                onChange={(val) => handleFieldChange('RevertDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                required
+                                error={errors.RevertDate}
+                            />
+                        </div>
+
+                        <div>
+                            <MultiFilePicker
+                                label="Upload Document"
+                                required
+                                placeholder="select file"
+                                value={revertDocumentURLFiles}
+                                onChange={setRevertDocumentURLFiles}
+                                availableFilesURL={revertDocumentURL ?? ''}
+                                allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                maxFiles={5}
+                                maxSizeMB={10}
+                                error={errors.RevertDocumentURL}
+                                onRemoveExisting={(url) => {
+                                    setRemovedRevertDocumentURLs((prev) => [...prev, url]);
+                                }}
+                            />
+                        </div>
+
+                        <div>
+                            <TextArea
+                                label="Remark"
+                                required
+                                className='thin-scroll'
+                                value={formData.Remark ?? ""}
+                                placeholder="Enter Remark"
+                                onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                                error={errors.Remark} />
+                        </div>
+
+                    </div>
+                </div>
+            </Modal>
 
             {/* FILTER INWARD OUTWARD MODAL */}
 

@@ -51,6 +51,8 @@ const PayTrack: React.FC = () => {
     const { listState, updateListState, resetFilters, clearPayTrackBookingContext } = usePayTrackBookingListState();
 
     const { page, filters, sortInfo, searchTerm } = listState;
+
+   
     //#endregion
 
     //#region DATA LOADING |  LOAD | SEARCH 
@@ -242,12 +244,15 @@ const PayTrack: React.FC = () => {
             bookingName: row.ApplicantName ?? '',
             bookingType: row.BookingType ?? '',
             flat: row.Flat ?? '',
+            bookingOtherChargesData: row.BookingOtherChargesData ?? [],
         });
         navigate('/payTrack/view');
     }, [navigate, updateListState]);
     //#endregion
 
     //#region TABLE COLUMN
+
+    
     const payTrackColumns = useMemo<TableColumn[]>(
         () => [
             {
@@ -380,9 +385,7 @@ const PayTrack: React.FC = () => {
         }
 
     ], []);
-    //#endregion
 
-    //#region CUSTOMIZE COLUMNS
     const requiredPayTrackBookingColumnKeys: string[] = ['ApplicantName', 'Actions'];
 
     const allPayTrackBookingColumnKeys: string[] = payTrackColumns.map(c => c.key);
@@ -414,17 +417,14 @@ const PayTrack: React.FC = () => {
         () => payTrackColumns.filter(col => selectedPayTrackBookingColumnKeys.includes(col.key)),
         [payTrackColumns, selectedPayTrackBookingColumnKeys]
     );
-    //#endregion
 
-    //#region  HANDLE CHANGE EVENT
 
     const handleFilterChange = (key: string, value: string) => {
         setTempFilters(prev => updateFilter(prev, key, value));
     };
 
-    //#endregion
+  
 
-    
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
 
@@ -473,16 +473,6 @@ const PayTrack: React.FC = () => {
                     fetchRow: async (row) => {
                         return [
                             {
-                                type: 'Agreement',
-                                total: row.AgreementValue || 0,
-                                paid: row.ReceivedAgreementValue || 0,
-                            },
-                            {
-                                type: 'GST',
-                                total: row.AgreementValueGSTAmount || 0,
-                                paid: row.ReceivedAgreementValueGSTAmount || 0,
-                            },
-                            {
                                 type: 'Stamp Duty',
                                 total: row.StampDutyAmount || 0,
                                 paid: row.ReceivedStampDutyAmount || 0,
@@ -493,10 +483,33 @@ const PayTrack: React.FC = () => {
                                 paid: row.ReceivedRegistrationFees || 0,
                             },
                             {
-                                type: 'TDS',
+                                type: 'Agreement Value',
+                                total: row.AgreementValue || 0,
+                                paid: row.ReceivedAgreementValue || 0,
+                            },
+                            {
+                                type: 'Agreement Value GST',
+                                total: row.AgreementValueGSTAmount || 0,
+                                paid: row.ReceivedAgreementValueGSTAmount || 0,
+                            },
+                            {
+                                type: 'Agreement Value TDS',
                                 total: row.AgreementValueTDS || 0,
                                 paid: row.ReceivedAgreementValueTDS || 0,
-                            }
+                            },
+
+                             {
+                                type: 'Other Charges Value',
+                                total: row.OtherChargesAmount || 0,
+                                paid: row.ReceivedOtherChargesAmount || 0,
+                            },
+                            {
+                                type: 'Other Charges GST',
+                                total: row.OtherChargesGSTAmount || 0,
+                                paid: row.ReceivedOtherChargesGSTAmount || 0,
+                            },
+                            
+                            
                         ];
                     },
 
@@ -634,6 +647,8 @@ const PayTrack: React.FC = () => {
                     </div>
                 </div>
             </Modal>
+
+          
         </div>
     )
 }

@@ -1,16 +1,31 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
-export interface FilterWithPaginationPaymentLedgerCrm {
+export interface FilterWithPaginationPaymentLedger {
     ProjectId?: number;
     BookingId?: number;
+    PaymentFor?: string;
     ExportType?: 'Excel' | 'PDF';
 }
 
-export interface PaymentLedgerCrmModelData {
+export interface PaymentLedgerData {
+    BookingId: number | null;
+    ProjectId: number | null;
+    PaymentFor?: string;
+    TotalAmount: number;
+    ReceivedAmount: number;
+    UploadedPaymentLedgerCount: number;
+    ApprovalPendingPaymentLedgerCount: number;
+}
+
+export interface PaymentLedgerSummaryModelData {
     PayTrackPaymentLedgerId: number;
     Uniquekey?: string;
     BookingId: number;
     ProjectId: number;
+
+    ApplicantName: string;
+    Wing: string;
+    Flat: string;
     BookingOtherChargesId: number;
 
     ChargeName: string;
@@ -20,7 +35,7 @@ export interface PaymentLedgerCrmModelData {
 
     BankListMasterId: number;
     BankName: string;
-    
+
     ProjectBankListMasterId: number;
     ProjectBankName: string;
     ProjectAccountNumber: string;
@@ -30,7 +45,7 @@ export interface PaymentLedgerCrmModelData {
     TransactionChequeDemandDraftNumber: string;
     TransactionChequeDemandDraftURL: string;
     TransactionChequeDemandDraftDate: string;
-    
+
     ApprovalStatus: string;
     IsApproval: boolean;
     PaymentReceiptURL: string;
@@ -42,7 +57,7 @@ export interface PaymentLedgerCrmModelData {
     ModifiedDate: string;
 }
 
-export interface AddUpdatePaymentLedgerCrm {
+export interface AddUpdatePaymentLedger {
     PayTrackPaymentLedgerId: number;
     Uniquekey: string;
     BookingId: number | null;
@@ -55,18 +70,19 @@ export interface AddUpdatePaymentLedgerCrm {
     BankListMasterId: number;
     ReceivedAmount: number;
     TransactionChequeDemandDraftNumber: string;
-    TransactionChequeDemandDraftURL? : File[] | null; 
+    TransactionChequeDemandDraftURL?: File[] | null;
     RemoveTransactionChequeDemandDraftURL: string;
     TransactionChequeDemandDraftDate: string;
-    
+
 }
 
-export interface DeletePaymentLedgerCrmRequest {
+export interface DeletePaymentLedgerRequest {
     PayTrackPaymentLedgerId: number;
     Uniquekey: string,
     ProjectId: number;
 }
 
-export type PaymentLedgerCrmListResponse = ApiResponse<PaymentLedgerCrmModelData[]>;
-export type PaymentLedgerCrmSaveResponse = ApiResponse<PaymentLedgerCrmModelData[]>;
-export type PaymentLedgerCrmDeleteResponse = ApiResponse<number>;
+export type PaymentLedgerListResponse = ApiResponse<PaymentLedgerData[]>;
+export type PaymentLedgerSummaryListResponse = ApiResponse<PaymentLedgerSummaryModelData[]>;
+export type PaymentLedgerSaveResponse = ApiResponse<PaymentLedgerSummaryModelData[]>;
+export type PaymentLedgerDeleteResponse = ApiResponse<number>;

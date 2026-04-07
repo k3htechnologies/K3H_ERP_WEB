@@ -1,4 +1,5 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
+import type { BookingOtherChargesData } from "@/features/booking/models/BookingModel";
 
 export interface FilterWithPaginationPayTrackBooking {
     PageNumber: number;
@@ -83,6 +84,8 @@ export interface PayTrackBookingData {
     BookingApplicantModificationRequestApprovalStatus: string | null;
 
     TenantId: number | null;
+
+    BookingOtherChargesData?: BookingOtherChargesData[] | null;
 }
 
 export interface PayTrackBookingApplicantData {

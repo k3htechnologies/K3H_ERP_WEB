@@ -278,7 +278,7 @@ export const MASTER_DATA = {
 
   activeInactive: ['Active', 'Inactive'],
 
-  paymentFor: ['Agreement Value','GST','Other Charges','Registration', 'Stamp Duty','TDS'],
+  paymentFor: ['Agreement Value','Agreement Value GST','Other Charges Value','Other Charges GST','Registration', 'Stamp Duty','TDS'],
 
   paymentReceivedFrom: ['Bank', 'Owner'],
 

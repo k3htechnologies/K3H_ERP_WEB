@@ -1,7 +1,7 @@
 import type { ApiResponse } from "@/core/api/ApiResponse";
 
 export interface FilterProjectInventoryExistsRequest {
-    ProjectId: number;
+    ProjectId: number,
 }
 
 export interface FilterInventoryRequest {

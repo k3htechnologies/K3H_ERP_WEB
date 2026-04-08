@@ -54,7 +54,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
-            if (params.IsReport!== undefined) queryParams.append('IsReport', params.IsReport.toString());
+            if (params.IsReport !== undefined) queryParams.append('IsReport', params.IsReport.toString());
             if (params.CanApprove !== undefined) queryParams.append('CanApprove', params.CanApprove.toString())
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
@@ -65,7 +65,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
 
             console.error('ERROR: PULL COMP OFF :', error);
 
-           if (error instanceof TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.pullCompOff(params);
             }
 
@@ -98,7 +98,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             console.error('ERROR: ADD UPDATE COMP OFF :', error)
 
             if (error instanceof TokenExpiredException) {
-               return await this.addUpdateCompOff(params);
+                return await this.addUpdateCompOff(params);
             }
             throw error
         }
@@ -125,7 +125,7 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             console.error('ERROR: DELETE COMP OFF :', error)
 
             if (error instanceof TokenExpiredException) {
-              return await this.deleteCompOff(params);
+                return await this.deleteCompOff(params);
             }
             throw error
         }
@@ -156,7 +156,8 @@ export class CompOffDatasourceImpl implements CompOffDatasource {
             console.error('ERROR: PULL COMP OFF DATES :', error);
 
             if (error instanceof TokenExpiredException) {
-              return await this.pullCompOffDates(params);
+
+                return await this.pullCompOffDates(params);
             }
 
             throw error

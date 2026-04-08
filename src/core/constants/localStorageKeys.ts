@@ -101,4 +101,6 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     CHANNEL_PARTNER: 'channelPartner.listState',
     CHANNEL_PARTNER_SOURCING: 'channelPartnerSourcing.listState',
     INCENTIVE_REPORT: 'incentive_report.listState',
+    BOOKING: 'booking.listState',
+    PAY_TRACK_BOOKING: 'payTrackBooking.listState'
 } as const

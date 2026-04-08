@@ -9,6 +9,7 @@ interface Props {
 }
 
 const ProjectManagement: React.FC<Props> = ({ projectManagementData, projectStatusData }: Props) => {
+
   const totalProjects = projectManagementData[0]?.TotalProjects || 0;
   const redevelopment = projectManagementData[0]?.Redevelopment || 0;
   const reraRegistered = projectManagementData[0]?.RERARegistered || 0;
@@ -18,6 +19,8 @@ const ProjectManagement: React.FC<Props> = ({ projectManagementData, projectStat
   const completedProjects = projectStatusData[0]?.CompletedProjects || 0;
   const cancelledProjects = projectStatusData[0]?.CancelledProjects || 0;
   const planningProjects = projectStatusData[0]?.PlanningProjects || 0;
+
+  const totalProjectCount = activeProjects + onHoldProjects + completedProjects + cancelledProjects + planningProjects;
 
   const chartData = [
     { name: "Ongoing Projects", value: activeProjects, color: "#2563eb" },
@@ -73,7 +76,7 @@ const ProjectManagement: React.FC<Props> = ({ projectManagementData, projectStat
               </PieChart>
             </ResponsiveContainer>
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-2xl font-bold text-gray-800">{totalProjects}</span>
+              <span className="text-2xl font-bold text-gray-800">{totalProjectCount}</span>
             </div>
           </div>
 

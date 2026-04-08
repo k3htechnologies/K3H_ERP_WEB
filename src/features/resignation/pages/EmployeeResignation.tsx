@@ -616,4 +616,3 @@ export const EmployeeResignation: React.FC = () => {
 }
 
 export default EmployeeResignation
-

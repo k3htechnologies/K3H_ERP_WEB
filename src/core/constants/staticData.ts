@@ -13,10 +13,10 @@ export interface Option {
 // ============================================================================
 
 export const MASTER_DATA = {
-  emergencyRelations: ['Aunt','Brother', 'Child', 'Cousin', 'Daughter', 'Father', 'Friend', 'Grandfather', 'Grandmother', 'Mother', 'Other','Sister', 'Son', 'Spouse', 'Uncle'],
+  emergencyRelations: ['Aunt', 'Brother', 'Child', 'Cousin', 'Daughter', 'Father', 'Friend', 'Grandfather', 'Grandmother', 'Mother', 'Other', 'Sister', 'Son', 'Spouse', 'Uncle'],
 
   employeeTypes: [
-    'Permanent', 'Contract','Full - Time', 'Intern', 'Part Time', 'Temporary'
+    'Permanent', 'Contract', 'Full - Time', 'Intern', 'Part Time', 'Temporary'
   ],
 
   genders: ['Male', 'Female', 'Other'],
@@ -45,7 +45,7 @@ export const MASTER_DATA = {
 
   landOwnershipType: ['Government', 'Landlord', 'Society'],
 
-  flat_unit_Type: ['Commercial', 'Gym', 'Residential', 'Void'],
+  flat_unit_Type: ['BMC', 'Commercial', 'eDeck', 'Fitness Center', 'Gym', 'MHADA', 'Multi Purpose Room', 'Land Lord', 'Lien', 'Part Terrace', 'Refuge', 'Religious Structure', 'Residential', 'Society Office', 'SRA', 'Upashray', 'Void'],
 
   residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK', '8 BHK', '1 + 1 JODI', '2 + 1 JODI', '2 + 2 JODI', '2 + 3 JODI', 'PENTHOUSE'],
 
@@ -67,7 +67,7 @@ export const MASTER_DATA = {
 
   project_scheme: ['BMC', 'MHADA', 'SRA'],
 
-  project_sub_scheme_BMC: ['33 (20) B', '33 (19)','33 (7)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
+  project_sub_scheme_BMC: ['33 (20) B', '33 (19)', '33 (7)', '33 (7) B', '33 (7) A', '33 (9)', '33 (12) B'],
 
   project_sub_scheme_MHADA: ['33 (5)'],
 
@@ -278,6 +278,12 @@ export const MASTER_DATA = {
 
   activeInactive: ['Active', 'Inactive'],
 
+  paymentFor: ['Agreement Value','GST','Other Charges','Registration', 'Stamp Duty','TDS'],
+
+  paymentReceivedFrom: ['Bank', 'Owner'],
+
+  crmPayTrackFileName: ['Possession Letter', 'OC/CC Letter', 'Tax Receipt', 'Society Deed', 'Electricity & Water', 'Maintenance Docs', 'Registered Agreement', 'Parking Allotment'],
+
 } as const
 
 // ============================================================================
@@ -389,7 +395,9 @@ export const SUPPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.supportType);
 export const REPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.reportType);
 export const YEAR_OPTIONS = toOptions(MASTER_DATA.year);
 export const ACTIVE_INACTIVE_OPTIONS = toOptions(MASTER_DATA.activeInactive);
-
+export const PAYMENT_FOR_OPTIONS = toOptions(MASTER_DATA.paymentFor);
+export const PAYMENT_RECEIVED_FROM_OPTIONS = toOptions(MASTER_DATA.paymentReceivedFrom);
+export const CRM_PAY_TRACK_FILE_NAME_OPTIONS = toOptions(MASTER_DATA.crmPayTrackFileName);
 
 
 // ============================================================================

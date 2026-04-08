@@ -820,7 +820,7 @@ export const TncMaster: React.FC = () => {
           setFormData(initialFormState());
           setErrors({});
         }}
-        title={editingTncMasterData ? 'Update Terms & Condtion' : 'Add Terms & Condtion'}
+        title={editingTncMasterData ? 'Update Terms & conditions' : 'Add Terms & conditions'}
         onSubmit={handleAddUpdateTncMaster}
         saveText={editingTncMasterData ? 'Update' : 'Add'}
         loading={isLoading}

@@ -171,6 +171,7 @@ import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
 import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRequisition';
+import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -446,9 +447,12 @@ function App() {
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
             <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
             <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
+
+            <Route path="materialRequisition" element={<MaterialRequisition />} />
+            <Route path="materialRequisition/view/:MaterialRequisitionId" element={<ViewMaterialRequisition />} />
+
           </Route>
 
-          <Route path="materialRequisition" element={<MaterialRequisition />} />
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 

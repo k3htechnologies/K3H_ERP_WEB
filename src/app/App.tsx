@@ -170,6 +170,7 @@ import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
 import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
+import { MaterialRequisition } from '@/features/materialRequisition/pages/MaterialRequisition';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -215,6 +216,7 @@ function App() {
           {/* Public Routes */}
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
+
           <Route
             path="/"
             element={
@@ -445,6 +447,8 @@ function App() {
             <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
             <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
           </Route>
+
+          <Route path="materialRequisition" element={<MaterialRequisition />} />
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 

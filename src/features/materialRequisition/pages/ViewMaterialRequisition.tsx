@@ -2,7 +2,7 @@ import { useState } from "react";
 import Tabs from "@/ui/components/Tab/Tab";
 import Details from "../components/Details";
 
-export const MaterialRequisition: React.FC = () => {
+export const ViewMaterialRequisition: React.FC = () => {
 
     const MaterialRequisitionTabList = [
         { id: 'Details', label: 'Details' },
@@ -32,4 +32,4 @@ export const MaterialRequisition: React.FC = () => {
     );
 };
 
-export default MaterialRequisition;
+export default ViewMaterialRequisition;

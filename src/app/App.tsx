@@ -170,7 +170,7 @@ import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
 import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
-import { MaterialRequisition } from '@/features/materialRequisition/pages/MaterialRequisition';
+import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRequisition';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (

@@ -280,8 +280,6 @@ export const MASTER_DATA = {
 
   monthsShots: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 
-  priority: ['High', 'Medium', 'Low'],
-
   deliveryStatus: ['Assigned', 'Acknowledged', 'Delivered'],
 
   deliveryMode: ['Courier', 'Hand-To-Hand'],
@@ -398,7 +396,6 @@ export const ENQUIRY_TIMELINE = toOptions(MASTER_DATA.enquiryTimeLine);
 export const SUPPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.supportType);
 export const REPORT_TYPE_OPTIONS = toOptions(MASTER_DATA.reportType);
 export const YEAR_OPTIONS = toOptions(MASTER_DATA.year);
-export const PRIORITY = toOptions(MASTER_DATA.priority);
 export const DELIVERY_STATUS = toOptions(MASTER_DATA.deliveryStatus);
 export const DELIVERY_MODE = toOptions(MASTER_DATA.deliveryMode);
 export const DOCUMENT_TYPE = toOptions(MASTER_DATA.documentType);

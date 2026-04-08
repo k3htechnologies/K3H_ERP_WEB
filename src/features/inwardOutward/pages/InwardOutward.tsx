@@ -25,7 +25,6 @@ import { RotateCw, Trash2 } from "lucide-react";
 import Tabs from "@/ui/components/Tab/Tab";
 import { getInwardOutwardStatusColor } from "@/features/inwardOutward/utils/Status";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import { getPriorityStatusColor } from "../utils/PriorityStatus";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
@@ -134,9 +133,9 @@ export const InwardOutward: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     InwardOutwardId: filterParams.InwardOutwardId ? Number(filterParams.InwardOutwardId) : undefined,
-                    SenderName: searchtext ?? filterParams.SenderName?.trim() ?? undefined,
+                    DeliveryType: searchtext ?? filterParams.DeliveryType?.trim() ?? undefined,
                     ReceiverName: filterParams.ReceiverName ?? undefined,
-                    DeliveryType: filterParams.DeliveryType ?? undefined,
+                    SenderName: filterParams.SenderName ?? undefined,
                     SortBy: getSortByParam(sort ?? null, InwardOutwardDataColumns),
                 }
 
@@ -177,6 +176,7 @@ export const InwardOutward: React.FC = () => {
         setFormData({
             ...initialFormState(),
             UniqueKey: row.UniqueKey || "",
+            InwardOutwardId: row.InwardOutwardId || 0,
         });
 
         setIsAddUpdateModalOpen(true);
@@ -210,7 +210,7 @@ export const InwardOutward: React.FC = () => {
         const newErrors: { [key: string]: string } = {};
 
         if (!formData.RevertRemark || !formData.RevertRemark.trim()) {
-            newErrors.Remark = "Remark is required";
+            newErrors.RevertRemark = "Remark is required";
         }
 
         if (!formData.RevertDate) {
@@ -226,7 +226,6 @@ export const InwardOutward: React.FC = () => {
             errors: newErrors,
         };
     };
-
 
     const handleAddEditRevertedInwardOutward = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -414,27 +413,6 @@ export const InwardOutward: React.FC = () => {
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
         },
         {
-            key: 'Priority',
-            label: 'Priority',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: (value) => {
-                const { bg, text } = getPriorityStatusColor(value);
-                return (
-                    <span
-                        className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                        style={{
-                            backgroundColor: bg,
-                            color: text,
-                        }}
-                    >
-                        {value || "-"}
-                    </span>
-                );
-            },
-        },
-        {
             key: 'Amount',
             label: 'Amount',
             width: '15',
@@ -568,7 +546,7 @@ export const InwardOutward: React.FC = () => {
     //#endregion
 
     //#region COLUMN CUSTOMIZATION
-    const requiredInwardOutwardColumnKeys: string[] = ['SenderName', 'Actions'];
+    const requiredInwardOutwardColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
 
     const allInwardOutwardColumnKeys: string[] = InwardOutwardDataColumns.map(c => c.key);
 

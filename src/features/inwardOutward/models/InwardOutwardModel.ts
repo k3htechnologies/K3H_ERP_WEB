@@ -35,8 +35,8 @@ export interface InwardAndOutWardData {
     DepartmentName: string | null,
     InwardNumber: number | 0,
     InvoiceNumber: number | 0,
-    HandoverDate: string | null,
-    Name: string | null,
+    HandOverDate: string | null,
+    HandOverTo: string | null,
 
     RevertedInwardOutwardId: number | 0,
     InwardOutwardRevertDate: string | null
@@ -87,11 +87,11 @@ export interface AddUpdateInwardAndOutWardRequest {
     RemoveAcknowledgementURL: string | ''
     AcknowledgementRemark: string | null,
     EmployeeNames: string | null
-    InvoiceDate: string | null,
+    InVoiceDate: string | null,
     InwardNumber: number | 0,
-    InvoiceNumber: number | 0,
-    HandoverDate: string | null,
-    Name: string | null,
+    InVoiceNumber: number | 0,
+    HandOverDate: string | null,
+    HandOverTo: string | null,
 
     SenderName: string | null,
     SenderEmailId: string | null,

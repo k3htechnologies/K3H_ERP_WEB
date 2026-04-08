@@ -20,7 +20,7 @@ import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { DELIVERY_MODE, DELIVERY_STATUS, DOCUMENT_TYPE, PRIORITY } from "@/core/constants";
+import { DELIVERY_MODE, DELIVERY_STATUS, DOCUMENT_TYPE } from "@/core/constants";
 
 const initialFormState = (): AddUpdateInwardAndOutWardRequest => ({
     InwardOutwardId: 0,
@@ -29,7 +29,7 @@ const initialFormState = (): AddUpdateInwardAndOutWardRequest => ({
     InwardOutwardDate: new Date().toISOString().split("T")[0],
     DocumentURL: null,
     RemoveDocumentURL: '',
-    DeliveryType: "",
+    DeliveryType: "Others",
     DocumentTitle: "",
     DeliveryStatus: "",
     Priority: "",
@@ -53,11 +53,11 @@ const initialFormState = (): AddUpdateInwardAndOutWardRequest => ({
     ChequeNo: "",
     DocumentType: "",
     EmployeeNames: "",
-    InvoiceDate: "",
+    InVoiceDate: "",
     InwardNumber: 0,
-    InvoiceNumber: 0,
-    HandoverDate: "",
-    Name: "",
+    InVoiceNumber: 0,
+    HandOverDate: "",
+    HandOverTo: "",
 
 })
 
@@ -148,7 +148,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             DeliveryType: e.DeliveryType ?? prev.DeliveryType,
                             DocumentTitle: e.DocumentTitle ?? prev.DocumentTitle,
                             DeliveryStatus: e.DeliveryStatus ?? prev.DeliveryStatus,
-                            Priority: e.Priority ?? prev.Priority,
                             AcknowledgementRemark: e.AcknowledgementRemark ?? prev.AcknowledgementRemark,
                             Amount: e.Amount ?? prev.Amount,
                             ChequeNo: e.ChequeNo ?? prev.ChequeNo,
@@ -169,10 +168,11 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             DocumentURL: e.DocumentURL ?? prev.DocumentURL,
                             AcknowledgementURL: e.AcknowledgementURL ?? prev.AcknowledgementURL,
                             ReceiversSignature: e.ReceiversSignature ?? prev.ReceiversSignature,
-                            InvoiceDate: e.InvoiceDate ?? prev.InvoiceDate,
-                            InvoiceNumber: e.InvoiceNumber ?? prev.InvoiceNumber,
-                            HandoverDate: e.HandoverDate ?? prev.HandoverDate,
-                            Name: e.Name ?? prev.Name
+                            InVoiceDate: e.InvoiceDate ?? prev.InVoiceDate,
+                            InVoiceNumber: e.InvoiceNumber ?? prev.InVoiceNumber,
+                            HandOverDate: e.HandOverDate ?? prev.HandOverDate,
+                            HandOverTo: e.HandOverTo ?? prev.HandOverTo,
+                            InwardNumber: e.InwardNumber ?? prev.InwardNumber
 
                         }));
 
@@ -222,9 +222,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
         }
         if (!formData.DeliveryStatus) {
             newErrors.DeliveryStatus = "Delivery Status is required";
-        }
-        if (!formData.Priority) {
-            newErrors.Priority = "Priority is required";
         }
         if (!formData.DeliveryMode) {
             newErrors.DeliveryMode = "Delivery Mode is required";
@@ -280,25 +277,25 @@ export const AddUpdateInwardOutward: React.FC = () => {
         if (!formData.ReceiverAddress) {
             newErrors.ReceiverAddress = "Receiver Address is required";
         }
-        if (!formData.InvoiceDate) {
-            newErrors.InvoiceDate = "Invoice Date required";
+        if (!formData.InVoiceDate) {
+            newErrors.InVoiceDate = "Invoice Date required";
         } else {
-            const invoiceDate = new Date(formData.InvoiceDate);
+            const invoiceDate = new Date(formData.InVoiceDate);
             if (isPreviousDate(invoiceDate) && !isToday(invoiceDate)) {
-                newErrors.InvoiceDate = "Invoice Date cannot be in the past";
+                newErrors.InVoiceDate = "Invoice Date cannot be in the past";
             }
         }
-        if (!formData.InvoiceNumber) {
-            newErrors.InvoiceNumber = "Invoice Number is required";
+        if (!formData.InVoiceNumber) {
+            newErrors.InVoiceNumber = "Invoice Number is required";
         }
         if (!formData.InwardNumber) {
             newErrors.InwardNumber = "Inward Number is required";
         }
-        if (!formData.Name) {
-            newErrors.Name = "Name is required";
+        if (!formData.HandOverTo) {
+            newErrors.HandOverTo = "Name is required";
         }
-        if (!formData.HandoverDate) {
-            newErrors.HandoverDate = "Handover Date is required";
+        if (!formData.HandOverDate) {
+            newErrors.HandOverDate = "Handover Date is required";
         }
         if (!formData.ReceiverAddress) {
             newErrors.ReceiverAddress = "Receiver Address is required";
@@ -307,12 +304,9 @@ export const AddUpdateInwardOutward: React.FC = () => {
             newErrors.DocumentURL = "File is required.";
         }
 
-        if (!hasAnyDocumentFile(acknowledgementURLFiles, acknowledgementURL, removedAcknowledgementURLs)) {
-            newErrors.AcknowledgementURL = "File is required.";
-        }
-        if (!hasAnyDocumentFile(receiversSignatureFiles, receiversSignatureURL, removedReceiversSignatureURLs)) {
-            newErrors.ReceiversSignature = "File is required.";
-        }
+        // if (!hasAnyDocumentFile(receiversSignatureFiles, receiversSignatureURL, removedReceiversSignatureURLs)) {
+        //     newErrors.ReceiversSignature = "File is required.";
+        // }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors,
@@ -338,7 +332,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
         fd.append("AcknowledgementRemark", formData.AcknowledgementRemark ?? "");
         fd.append("ReceivedBy", formData.ReceivedBy ?? "");
         fd.append("DocumentType", formData.DocumentType ?? "");
-        fd.append("Priority", formData.Priority ?? "");
         fd.append("ChequeNo", formData.ChequeNo ?? "");
         fd.append("SenderName", formData.SenderName ?? "");
         fd.append("SenderMobileNo", formData.SenderMobileNo ?? "");
@@ -348,11 +341,11 @@ export const AddUpdateInwardOutward: React.FC = () => {
         fd.append("ReceiverMobileNo", formData.ReceiverMobileNo ?? "");
         fd.append("ReceiverEmailId", formData.ReceiverEmailId ?? "");
         fd.append("ReceiverAddress", formData.ReceiverAddress ?? "");
-        fd.append("InvoiceDate", formData.InvoiceDate ?? "");
+        fd.append("InVoiceDate", formData.InVoiceDate ?? "");
         fd.append("InwardNumber", String(formData.InwardNumber ?? 0));
-        fd.append("InvoiceNumber", String(formData.InvoiceNumber ?? 0));
-        fd.append("HandoverDate", formData.HandoverDate ?? "");
-        fd.append("Name", formData.Name ?? "");
+        fd.append("InVoiceNumber", String(formData.InVoiceNumber ?? 0));
+        fd.append("HandOverDate", formData.HandOverDate ?? "");
+        fd.append("HandOverTo", formData.HandOverTo ?? "");
 
         documentURLFiles.forEach((file) => {
             if (file instanceof File) {
@@ -537,19 +530,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     </div>
 
                     <div>
-                        <SinglePageSelection
-                            label="Priority"
-                            required
-                            placeholder='Select Priority'
-                            value={formData.Priority || ''}
-                            onChange={(e) => handleFieldChange('Priority', String(e))}
-                            options={PRIORITY.map((opt) => ({ label: opt.name, value: opt.id }))}
-                            error={errors.Priority}
-                        />
-                    </div>
-
-
-                    <div>
                         <DatePickerInput
                             label="Date"
                             value={formatDate_dd_mm_yyyy(formData.InwardOutwardDate ?? '')}
@@ -564,21 +544,21 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             type="text"
                             required
                             label='Invoice Number'
-                            value={formData.InvoiceNumber ?? ""}
-                            onChange={(e) => handleFieldChange("InvoiceNumber", filterNumbersWithDecimal(e.target.value) || 0)}
+                            value={formData.InVoiceNumber ?? ""}
+                            onChange={(e) => handleFieldChange("InVoiceNumber", filterNumbersWithDecimal(e.target.value) || 0)}
                             placeholder="Enter Invoice Number"
                             maxLength={15}
-                            error={errors.InvoiceNumber}
+                            error={errors.InVoiceNumber}
                         />
                     </div>
 
                     <div>
                         <DatePickerInput
                             label="Invoice Date"
-                            value={formatDate_dd_mm_yyyy(formData.InvoiceDate ?? '')}
-                            onChange={(val) => handleFieldChange('InvoiceDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                            value={formatDate_dd_mm_yyyy(formData.InVoiceDate ?? '')}
+                            onChange={(val) => handleFieldChange('InVoiceDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                             required
-                            error={errors.InvoiceDate}
+                            error={errors.InVoiceDate}
                         />
                     </div>
 
@@ -888,10 +868,10 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <Input
                             label="Handover To"
-                            value={formData.Name ?? ''}
+                            value={formData.HandOverTo ?? ''}
                             required
-                            onChange={e => handleFieldChange("Name", e.target.value)}
-                            error={errors.Name}
+                            onChange={e => handleFieldChange("HandOverTo", e.target.value)}
+                            error={errors.HandOverTo}
                             maxLength={50}
                             placeholder="Enter Name"
                         />
@@ -900,10 +880,10 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <DatePickerInput
                             label="Handover Date"
-                            value={formatDate_dd_mm_yyyy(formData.HandoverDate ?? '')}
-                            onChange={(val) => handleFieldChange('HandoverDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                            value={formatDate_dd_mm_yyyy(formData.HandOverDate ?? '')}
+                            onChange={(val) => handleFieldChange('HandOverDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                             required
-                            error={errors.HandoverDate}
+                            error={errors.HandOverDate}
                         />
                     </div>
                 </div>

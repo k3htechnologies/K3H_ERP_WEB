@@ -168,9 +168,9 @@ const ViewInwardOutward: React.FC = () => {
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Basic Details</h4>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                     <FieldItem label="Document Title" value={inwardOutwardData?.DocumentTitle} />
-                                    <FieldItem label="Document Type" value={inwardOutwardData?.DeliveryType} />
+                                    <FieldItem label="Document Type" value={inwardOutwardData?.DocumentType} />
+                                    <FieldItem label="Delivery Type" value={inwardOutwardData?.DeliveryType} />
                                     <FieldItem label="Inward Number" value={inwardOutwardData?.InwardNumber} />
-                                    <FieldItem label="Priority" value={inwardOutwardData?.Priority} />
                                     <FieldItem label="Date" value={inwardOutwardData?.InwardOutwardDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InwardOutwardDate) : ""} />
                                     <FieldItem label="Invoice Number" value={inwardOutwardData?.InvoiceNumber} />
                                     <FieldItem label="Invoice Date" value={inwardOutwardData?.InvoiceDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InvoiceDate) : ""} />
@@ -220,7 +220,7 @@ const ViewInwardOutward: React.FC = () => {
                             </section>
 
                             {/* ================= DELIVERY DETAILS ================= */}
-                            <section className="bg-white  p-4">
+                            <section className="bg-white border-b border-[#135bec2e] p-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Delivery Details</h4>
                                 <div className="lg:col-span-3 pb-1">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
@@ -237,8 +237,8 @@ const ViewInwardOutward: React.FC = () => {
                                 <div className="lg:col-span-3 pb-1">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                         <FieldItem label="Received By" value={inwardOutwardData?.ReceivedBy} />
-                                        <FieldItem label="Handover To" value={inwardOutwardData?.Name} />
-                                        <FieldItem label="Handover Date" value={inwardOutwardData?.HandoverDate} />
+                                        <FieldItem label="Handover To" value={inwardOutwardData?.HandOverTo} />
+                                        <FieldItem label="Handover Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.HandOverDate ?? '')} />
 
                                     </div>
                                 </div>
@@ -306,12 +306,12 @@ const ViewInwardOutward: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-4 h-[310px]">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-4 h-[350px]">
                             <h1 className="text-lg font-semibold text-black border-b border-gray-400 pb-1">
                                 Assigned Employees
                             </h1>
 
-                            <div className="mt-1 overflow-y-auto h-[200px] thin-scroll pr-2">
+                            <div className="mt-1 overflow-y-auto h-[350px] thin-scroll pr-2">
                                 {(() => {
                                     const employeeNames = inwardOutwardData?.EmployeeNames?.split(',').map(name => name.trim()).filter(name => name) || [];
                                     const departmentNames = inwardOutwardData?.DepartmentName?.split(',').map(dept => dept.trim()).filter(dept => dept) || [];
@@ -374,6 +374,7 @@ const ViewInwardOutward: React.FC = () => {
                                                 <FieldItem label="Remark" value={item.RevertRemark || "-"} />
                                                 {parseDocumentUrls(item.RevertDocumentURL).length > 0 && (
                                                     <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded-[4px] mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
+                                                        <p>Document</p>
                                                         <MultiImageViewer
                                                             images={parseDocumentUrls(item.RevertDocumentURL)}
                                                             title="Revert Document"

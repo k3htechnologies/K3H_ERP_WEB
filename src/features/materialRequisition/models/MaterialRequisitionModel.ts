@@ -77,18 +77,14 @@ export interface AddUpdateMaterialRequisitionRequest{
     AttachmentsURL: string | null;
     RemoveAttachmentsURL: string | null;
     MaterialRequisitionDetailJSON: string;
- }
+}
+ //used in delete and close both as the payload is same
 export interface DeleteMaterialRequisitionRequest {
     MaterialRequisitionId : number,
     Uniquekey: string | null,
     ProjectId: number | 0,
 }
-export interface CloseMaterialRequisitionRequest {
-    MaterialRequisitionId : number,
-    Uniquekey: string | null,
-    ProjectId: number | 0,
 
- }
 
 export type MaterialRequisitionListResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionSaveReponse = ApiResponse<MaterialRequisitionData>;

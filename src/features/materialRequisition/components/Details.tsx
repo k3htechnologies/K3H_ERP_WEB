@@ -86,12 +86,15 @@ export const Details: React.FC = () => {
                         <FieldItem label="Unique ID" value={matrialRequisitionData?.SystemGeneratedCode} />
                         <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
                         <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
-                        <MultiImageViewer
-                            images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL)}
-                            title="Attachment"
-                            isIcon={false}
-                            triggerLabel="Attachment"
-                        />
+                        <div>
+                            <p className="text-gray-500">Attachment</p>
+                            <MultiImageViewer
+                                images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL)}
+                                title="Attachment"
+                                isIcon={false}
+                                triggerLabel="Attachment"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>

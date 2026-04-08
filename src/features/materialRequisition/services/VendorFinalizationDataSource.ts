@@ -7,7 +7,7 @@ import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
 const VendorFinalizationDatasource = new VendorFinalizationDatasourceImpl
 
-export const materialRequisitionService = {
+export const MaterialRequisitionService = {
    
 
     

@@ -68,7 +68,7 @@ export const Details: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             {/* Loader */}
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
-            <h1>hhh</h1>
+            <h1>Material Requisition Details</h1>
         </div>
     )
 }

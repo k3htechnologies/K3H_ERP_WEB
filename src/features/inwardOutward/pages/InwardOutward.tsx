@@ -9,7 +9,7 @@ import type { PaginationInfo } from "@/ui/components/DataTable/DataTableWithoutB
 import { Loader } from "@/core/utils/loader";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { inwardOutwardService } from "@/features/inwardOutward/services/InwardOutwardService";
-import type { AddRevertInwardOutwardRequest, DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData, RevertedInwardOutwardData } from "@/features/inwardOutward/models/InwardOutwardModel";
+import type { AddRevertInwardOutwardData, DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData } from "@/features/inwardOutward/models/InwardOutwardModel";
 import { useInwardOutwardListState } from "../context/InwardOutwardListStateContext";
 import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -31,13 +31,13 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
-const initialFormState = (): AddRevertInwardOutwardRequest => ({
-    RevertedInwardOutwardId: 0,
-    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+const initialFormState = (): AddRevertInwardOutwardData => ({
+    InwardOutwardRevertId: 0,
+    InwardOutwardId: 0,
+    UniqueKey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     RevertDate: '',
     RevertDocumentURL: '',
-    RemoveRevertDocumentURL: '',
-    Remark: '',
+    RevertRemark: '',
 });
 
 export const InwardOutward: React.FC = () => {
@@ -45,10 +45,10 @@ export const InwardOutward: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [inwardOutwardDataList, setInwardOutwardDataList] = useState<InwardAndOutWardData[]>([]);
-    const [revertedInwardOutwardDataList, setRevertedInwardOutwardDataList] = useState<RevertedInwardOutwardData[]>([]);
+    const [revertedInwardOutwardDataList, setRevertedInwardOutwardDataList] = useState<AddRevertInwardOutwardData[]>([]);
 
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-    const [formData, setFormData] = useState<AddRevertInwardOutwardRequest>(() => initialFormState());
+    const [formData, setFormData] = useState<AddRevertInwardOutwardData>(() => initialFormState());
     const [revertDocumentURLFiles, setRevertDocumentURLFiles] = useState<(File | string)[]>([]);
     const [revertDocumentURL, setRevertDocumentURL] = useState<string>();
     const [removedRevertDocumentURLs, setRemovedRevertDocumentURLs] = useState<string[]>([]);
@@ -163,8 +163,8 @@ export const InwardOutward: React.FC = () => {
     };
     //#endregion
 
-   
-    const handleFieldChange = (field: keyof AddRevertInwardOutwardRequest, value: any) => {
+
+    const handleFieldChange = (field: keyof AddRevertInwardOutwardData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
@@ -176,27 +176,27 @@ export const InwardOutward: React.FC = () => {
     const handleRevert = (row: InwardAndOutWardData) => {
         setFormData({
             ...initialFormState(),
-            Uniquekey: row.UniqueKey || "",
+            UniqueKey: row.UniqueKey || "",
         });
 
         setIsAddUpdateModalOpen(true);
     };
     //#endregion
 
-    //#region PUSH INWARD OUTWARD DATA
+    //#region PUSH REVERT INWARD OUTWARD DATA
     const PushRevertedInwardOutwardFormData = (): FormData => {
         const fd = new FormData();
-        fd.append("RevertedInwardOutwardId", formData.RevertedInwardOutwardId.toString());
-        fd.append("Uniquekey", formData.Uniquekey ?? "");
+        fd.append("InwardOutwardRevertId", formData.InwardOutwardRevertId.toString());
+        fd.append("InwardOutwardId", formData.InwardOutwardId.toString());
+        fd.append("UniqueKey", formData.UniqueKey ?? "");
         fd.append("RevertDate", formData.RevertDate ?? "");
-        fd.append("Remark", formData.Remark ?? "");
+        fd.append("RevertRemark", formData.RevertRemark ?? "");
 
         revertDocumentURLFiles.forEach((file) => {
             if (file instanceof File) {
                 fd.append("RevertDocumentURL", file);
             }
         })
-        fd.append("RemoveRevertDocumentURL", removedRevertDocumentURLs.join(","));
 
         return fd;
     };
@@ -209,7 +209,7 @@ export const InwardOutward: React.FC = () => {
     } => {
         const newErrors: { [key: string]: string } = {};
 
-        if (!formData.Remark || !formData.Remark.trim()) {
+        if (!formData.RevertRemark || !formData.RevertRemark.trim()) {
             newErrors.Remark = "Remark is required";
         }
 
@@ -252,7 +252,7 @@ export const InwardOutward: React.FC = () => {
 
                     setIsAddUpdateModalOpen(false);
 
-                    const newRecord = response.right.Data[0] as RevertedInwardOutwardData;
+                    const newRecord = response.right.Data[0] as AddRevertInwardOutwardData;
 
                     setRevertedInwardOutwardDataList(prev => [newRecord, ...prev]);
 
@@ -868,10 +868,10 @@ export const InwardOutward: React.FC = () => {
                                 label="Remark"
                                 required
                                 className='thin-scroll'
-                                value={formData.Remark ?? ""}
+                                value={formData.RevertRemark ?? ""}
                                 placeholder="Enter Remark"
-                                onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                error={errors.Remark} />
+                                onChange={(e) => handleFieldChange("RevertRemark", e.target.value)}
+                                error={errors.RevertRemark} />
                         </div>
 
                     </div>

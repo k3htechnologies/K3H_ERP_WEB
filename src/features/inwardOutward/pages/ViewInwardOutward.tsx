@@ -249,7 +249,7 @@ const ViewInwardOutward: React.FC = () => {
 
                     {/* RIGHT SIDE */}
                     <div className="col-span-5">
-                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-[280px]">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-[310px]">
                             <h1 className="text-lg font-semibold text-black mb-3 border-b border-gray-400 pb-1">
                                 Document Tracking
                             </h1>
@@ -367,11 +367,11 @@ const ViewInwardOutward: React.FC = () => {
                                         return (
                                             <div key={item.RevertedInwardOutwardId} className="mb-4 pb-4 border-b border-gray-300 last:border-b-0 last:pb-0">
                                                 <div className="flex pb-2 justify-between">
-                                                    <FieldItem label=" Date" value={formatDate_dd_MonthName_yy(item.RevertDate || '-')} />
+                                                    <FieldItem label=" Date" value={formatDate_dd_MonthName_yy(item.InwardOutwardRevertDate || '-')} />
 
                                                 </div>
 
-                                                <FieldItem label="Remark" value={item.Remark || "-"} />
+                                                <FieldItem label="Remark" value={item.RevertRemark || "-"} />
                                                 {parseDocumentUrls(item.RevertDocumentURL).length > 0 && (
                                                     <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded-[4px] mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
                                                         <MultiImageViewer

@@ -1,6 +1,6 @@
 import baseClient from "@/core/config/baseClient"
 import { TokenExpiredException } from "@/core/config/baseClientexceptions"
-import type { DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, FilterWithPaginationSenderReceiverByMobileNoRequest, InwardAndOutWardDeleteResponse, InwardAndOutWardListResponse, InwardAndOutWardSaveResponse, RevertedInwardOutwardSaveResponse, SenderReceiverByMobileNoDataListResponse } from "@/features/inwardOutward/models/InwardOutwardModel"
+import type { DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, FilterWithPaginationSenderReceiverByMobileNoRequest, InwardAndOutWardDeleteResponse, InwardAndOutWardListResponse, InwardAndOutWardSaveResponse, InwardOutwardRevertSaveResponse, SenderReceiverByMobileNoDataListResponse } from "@/features/inwardOutward/models/InwardOutwardModel"
 import { InwardOutwardApi } from "@/features/inwardOutward/api/InwardOutwardApi"
 
 export abstract class InwardAndOutWardDatasource {
@@ -8,7 +8,7 @@ export abstract class InwardAndOutWardDatasource {
     abstract pullInwardAndOutWard(params: FilterWithPaginationInwardAndOutWardRequest, signal?: AbortSignal): Promise<InwardAndOutWardListResponse>;
     abstract addUpdateInwardAndOutWard(data: FormData): Promise<InwardAndOutWardSaveResponse>;
     abstract deleteInwardAndOutWardRequest(params: DeleteInwardAndOutWardRequest): Promise<InwardAndOutWardDeleteResponse>;
-    abstract addRevertInwardAndOutWard(data: FormData): Promise<RevertedInwardOutwardSaveResponse>;
+    abstract addRevertInwardAndOutWard(data: FormData): Promise<InwardOutwardRevertSaveResponse>;
     abstract pullSenderReceiverByMobileNoData(params: FilterWithPaginationSenderReceiverByMobileNoRequest, signal?: AbortSignal): Promise<SenderReceiverByMobileNoDataListResponse>;
 
 }
@@ -85,7 +85,7 @@ export class InwardAndOutWardDatasourceImpl implements InwardAndOutWardDatasourc
         }
     }
 
-    async addRevertInwardAndOutWard(formData: FormData): Promise<RevertedInwardOutwardSaveResponse> {
+    async addRevertInwardAndOutWard(formData: FormData): Promise<InwardOutwardRevertSaveResponse> {
         try {
 
             return await this.k3hHttpClient.multipartRequestWithAuthentication(
@@ -95,7 +95,7 @@ export class InwardAndOutWardDatasourceImpl implements InwardAndOutWardDatasourc
 
         } catch (error) {
 
-            console.error('ERROR: ADD REVERT INWARD OUTWARD :', error)
+            console.error('ERROR: ADD INWARD OUTWARD REVERT:', error)
 
             if (error === TokenExpiredException) {
                 await this.addRevertInwardAndOutWard(formData);

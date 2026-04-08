@@ -39,8 +39,8 @@ export interface InwardAndOutWardData {
     Name: string | null,
 
     RevertedInwardOutwardId: number | 0,
-    RevertDate: string | null
-    Remark: string | null
+    InwardOutwardRevertDate: string | null
+    RevertRemark: string | null
     RevertDocumentURL: string | null
 
     SenderName: string | null,
@@ -110,22 +110,13 @@ export interface DeleteInwardAndOutWardRequest {
 
 }
 
-export interface RevertedInwardOutwardData {
-    RevertedInwardOutwardId: number | 0,
-    Uniquekey: string | null
+export interface AddRevertInwardOutwardData {
+    InwardOutwardRevertId: number | 0,
+    InwardOutwardId: number | 0,
+    UniqueKey: string | null
     RevertDate: string | null
-    Remark: string | null
+    RevertRemark: string | null
     RevertDocumentURL: string | null
-    RemoveRevertDocumentURL: string | ''
-}
-
-export interface AddRevertInwardOutwardRequest {
-    RevertedInwardOutwardId: number | 0,
-    Uniquekey: string | null
-    RevertDate: string | null
-    Remark: string | null
-    RevertDocumentURL: string | null
-    RemoveRevertDocumentURL: string | ''
 }
 
 export interface FilterWithPaginationSenderReceiverByMobileNoRequest {
@@ -146,6 +137,6 @@ export interface SenderReceiverByMobileNoData {
 export type InwardAndOutWardListResponse = ApiResponse<InwardAndOutWardData[]>
 export type InwardAndOutWardSaveResponse = ApiResponse<InwardAndOutWardData[]>
 export type InwardAndOutWardDeleteResponse = ApiResponse<number>
-export type RevertedInwardOutwardSaveResponse = ApiResponse<RevertedInwardOutwardData[]>
+export type InwardOutwardRevertSaveResponse = ApiResponse<AddRevertInwardOutwardData[]>
 
 export type SenderReceiverByMobileNoDataListResponse = ApiResponse<SenderReceiverByMobileNoData[]>

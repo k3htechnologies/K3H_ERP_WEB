@@ -3,7 +3,7 @@ import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionDeleteResponse, MaterialRequisitionListResponse, MaterialRequisitionSaveReponse } from "../models/MaterialRequisitionModel";
 import { MaterialRequisitionApi } from "../api/MaterialRequisitionApi";
 
-export abstract class MaterialRequisitionDatasource {
+export abstract class MaterialRequisitionGRNDatasource {
     abstract pullMaterialRequisition(params: FilterWithPaginationMaterialRequisition, signal?: AbortSignal): Promise<MaterialRequisitionListResponse>;
     abstract addUpdateMaterialRequisition(data: FormData): Promise<MaterialRequisitionSaveReponse>;
     abstract deleteMaterialRequisition(params: DeleteMaterialRequisitionRequest): Promise<MaterialRequisitionDeleteResponse>;
@@ -11,7 +11,7 @@ export abstract class MaterialRequisitionDatasource {
 
 }
 
-export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDatasource {
+export class MaterialRequisitionGRNDatasourceImpl implements MaterialRequisitionGRNDatasource {
 
     private get k3hHttpClient() {
         return baseClient;

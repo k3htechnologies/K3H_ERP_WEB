@@ -125,8 +125,8 @@ const ViewInwardOutward: React.FC = () => {
             {/* Header Details*/}
 
             <HeaderActionBar
-                subTitleText={inwardOutwardData?.DocumentTitle ?? ""}
-                subSubTitleText={inwardOutwardData?.DeliveryStatus ?? ""}
+                subTitleText={inwardOutwardData?.SystemGeneratedCode ?? ""}
+                subSubTitleText={inwardOutwardData?.DocumentType ?? ""}
                 cancelText="Cancel"
                 onCancel={() => handleBackToInwardList()}
                 EditText="Edit"

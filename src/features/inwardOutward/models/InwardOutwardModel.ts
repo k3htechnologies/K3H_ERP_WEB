@@ -14,6 +14,7 @@ export interface FilterWithPaginationInwardAndOutWardRequest {
 export interface InwardAndOutWardData {
     InwardOutwardId: number | 0,
     UniqueKey: string | null
+    SystemGeneratedCode:string | null,
     DocumentTitle: string | null,
     InwardOutwardDate: string | null,
     DocumentType: string | null,

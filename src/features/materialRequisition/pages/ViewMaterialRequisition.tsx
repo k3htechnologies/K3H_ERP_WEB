@@ -2,6 +2,9 @@ import { useState } from "react";
 import Tabs from "@/ui/components/Tab/Tab";
 import Details from "../components/Details";
 import { Overview } from "../components/Overview";
+import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
+import { useNavigate } from "react-router-dom";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
@@ -16,9 +19,26 @@ export const ViewMaterialRequisition: React.FC = () => {
 
     const [activeTab, setActiveTab] = useState(MaterialRequisitionTabList[0].id);
 
+    // NAVIGATION
+    const navigate = useNavigate();
+    const { listState } = useMaterialRequisitionListState();
+    const systemGeneratedCode = listState.SystemGeneratedCode;
+
+    //#region BACK MATERIAL REQUISITION PAGE
+    const handleBackToListMaterialRequisition = () => {
+        navigate('/materialRequisition');
+    };
+    //#endregion
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
+            <HeaderActionBar
+                titleText={systemGeneratedCode ?? "-"}
+                cancelText="Cancel"
+                EditText="Edit"
+                onCancel={() => handleBackToListMaterialRequisition()}
+            />
 
             <div className="pt-3 pb-5">
                 <Tabs

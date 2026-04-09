@@ -86,7 +86,7 @@ export const MASTER_DATA = {
   budget: ['<1', '2', '3', '4', '5', '6', '8', '10', '12', '15', '20', '25+'],
 
   accomodation: ["Rented", "Self-Owned"],
-
+  
   requirement: ["Commercial", "Commercial Leasing", "Residential"],
 
   possessionType: ['RTMI', 'Under 1 Year', '1 Years To 2 Years', '2 Years To 3 Years', '3 Years & Above'],
@@ -116,6 +116,10 @@ export const MASTER_DATA = {
   ethnicity: ['Bengali', 'Christian', 'Gujarati', 'Jain', 'Muslim', 'Marwari', 'Maharashtrian', 'North Indian', 'Parsi', 'Punjabi', 'Sindhi', 'South Indian', 'Others'],
 
   nationality: ['Indian', 'NRI'],
+
+  materialRequisitionStages : [' Get Quotation','Finalize Vendor','Get Purchase Order','Add GRN','Add Invoice'],
+
+  materialRequisitionStatus: ['Pending', 'Approved', 'Rejected', 'Completed', 'Cancelled'],
 
   reasonsOfJobLeaving: [
     'Better career growth opportunity',
@@ -398,6 +402,8 @@ export const ACTIVE_INACTIVE_OPTIONS = toOptions(MASTER_DATA.activeInactive);
 export const PAYMENT_FOR_OPTIONS = toOptions(MASTER_DATA.paymentFor);
 export const PAYMENT_RECEIVED_FROM_OPTIONS = toOptions(MASTER_DATA.paymentReceivedFrom);
 export const CRM_PAY_TRACK_FILE_NAME_OPTIONS = toOptions(MASTER_DATA.crmPayTrackFileName);
+export const MATERIAL_REQUISITION_STAGES_OPTIONS =toOptions(MASTER_DATA.materialRequisitionStages)
+export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus)
 
 
 // ============================================================================

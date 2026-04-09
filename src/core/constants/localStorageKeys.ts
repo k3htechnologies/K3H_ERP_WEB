@@ -45,6 +45,8 @@ export const LOCAL_STORAGE_KEYS = {
     TNC_MASTER_SELECTED_COLUMNS: 'tncMaster.selectedColumns',
     VENDOR_SELECTED_COLUMNS: 'vendor.selectedColumns',
 
+    //PURCHASE 
+    MATERIAL_REQUISITION_SELECTED_COLUMNS: 'materialRequisition.selectedColumns',
     //LITIGATION
     LITIGATION_SELECTED_COLUMNS: 'litigation.selectedColumns',
 

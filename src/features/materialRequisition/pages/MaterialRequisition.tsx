@@ -9,7 +9,6 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 import { materialRequisitionService } from "../services/MaterialRequisitionService";
 import * as E from "fp-ts/Either";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
-import { useMaterialRequisitionListState } from "../context/materialRequisitionListStateContext";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import usePagination from "@/core/hooks/usePagination";
 import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
@@ -27,6 +26,7 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { MATERIAL_REQUISITION_STAGES_OPTIONS, MATERIAL_REQUISITION_STATUS_OPTIONS } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { DateInput } from "@/ui/components/forms/DateInput";
+import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 
 export const MaterialRequisition: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -77,7 +77,7 @@ export const MaterialRequisition: React.FC = () => {
         await loadDetailsdata(1, filters, sortInfo, searchValue);
     };
     const handleNavigateToView = (row: MaterialRequisitionData) => {
-        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage });
+        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage ,    SystemGeneratedCode: row.SystemGeneratedCode});
         navigate('/MaterialRequisition/view');
     };
     const handlePageChange = useCallback((page: number) => {
@@ -157,7 +157,7 @@ export const MaterialRequisition: React.FC = () => {
             width: '12',
             fixed: 'right',
             align: 'center',
-            render: (_value, row) => (
+            render: (_value) => (
                 canAction ? (
                     <div className="flex items-center justify-center gap-2">
 
@@ -237,8 +237,7 @@ export const MaterialRequisition: React.FC = () => {
                     SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionColumns)
 
                 };
-                debugger
-
+            
                 const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
 
                 if (E.isRight(response)) {

@@ -745,6 +745,28 @@ export const LocalStorageHelper = {
     return null;
   },
   //#endregion
+  //#region MATERIAL REQUISITION
+
+   storeMaterialRequisitionTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Material Requisition Columns Details:", error);
+    }
+  },
+    getMaterialRequisitionTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Material Requisition Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  }, 
+  //#endregion
   //#region STORE SUB MATERIAL MASTER COLUMNS
   storeSubMaterialMasterTableColumns: (columns: string): void => {
     try {

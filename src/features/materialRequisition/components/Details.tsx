@@ -51,8 +51,7 @@ export const Details: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 1,
                     ProjectId: Number(projectId),
-                    MaterialRequisitionId: filterParams?.MaterialRequisitionId ? Number(filterParams.MaterialRequisitionId)
-                        : currentMaterialRequisitionId || undefined,
+                    MaterialRequisitionId: currentMaterialRequisitionId,
                     MaterialRequisitionStatus: filterParams?.MaterialRequisitionStatus ?? undefined,
                     MaterialRequisitionStage: filterParams?.MaterialRequisitionStage ?? undefined,
                     FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,

@@ -60,7 +60,7 @@ const getInitialState = (currentProjectId: number | null): MaterialRequisitionLi
         sortInfo: undefined,
         projectId: currentProjectId,
         MaterialRequisitionId: undefined,
-        SystemGeneratedCode: undefined,
+        SystemGeneratedCode: "",
         FromDate: undefined,
         ToDate: undefined,
         MaterialRequisitionStage: undefined,

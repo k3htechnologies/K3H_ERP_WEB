@@ -6,12 +6,12 @@ import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
 import { materialRequisitionService } from "../services/MaterialRequisitionService";
 import { useParams } from "react-router-dom";
-import type { FilterInfo } from "@/ui/components/DataTable/DataTableWithoutBorder";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { Loader } from "@/core/utils/loader";
+import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 
 export const Overview: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -21,15 +21,16 @@ export const Overview: React.FC = () => {
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
 
     const { projectId } = useProject();
-    const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
-    const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : 0;
+    const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
+    const { listState } = useMaterialRequisitionListState();
+    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
 
     useEffect(() => {
         if (!projectId) return;
         fetchDetailsdata();
-    }, [projectId])
+    }, [projectId, currentMaterialRequisitionId]);
 
-    const fetchDetailsdata = async (filterParams?: FilterInfo) => {
+    const fetchDetailsdata = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -38,12 +39,7 @@ export const Overview: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 1,
                     ProjectId: Number(projectId),
-                    MaterialRequisitionId: filterParams?.MaterialRequisitionId ? Number(filterParams.MaterialRequisitionId)
-                        : currentMaterialRequisitionId || undefined,
-                    MaterialRequisitionStatus: filterParams?.MaterialRequisitionStatus ?? undefined,
-                    MaterialRequisitionStage: filterParams?.MaterialRequisitionStage ?? undefined,
-                    FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
-                    ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
+                    MaterialRequisitionId: currentMaterialRequisitionId,
                 };
 
                 const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
@@ -110,7 +106,7 @@ export const Overview: React.FC = () => {
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Vendor And Amount Details</h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Vendor Name" value={matrialRequisitionData?.MaterialRequisitionStage} />
+                                <FieldItem label="Vendor Name" value={matrialRequisitionData?.FinalVendor} />
                                 <FieldItem label="Vendor Company" value={matrialRequisitionData?.MaterialRequisitionStage} />
                                 <FieldItem label="Base Amount" value={matrialRequisitionData?.MaterialRequisitionStatus} />
                                 <FieldItem label="Total Tax" value={matrialRequisitionData?.MaterialRequisitionStage} />

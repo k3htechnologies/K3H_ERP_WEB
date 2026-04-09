@@ -8,7 +8,13 @@ export const getPageInfo = (path: string) => {
                 title: 'Dashboard',
                 description: 'Quick insights, smarter decisions',
             }
-
+            {/* PURCHASE -MATERIALREQUISITION*/ }
+        case 'materialRequisition':
+            return {
+                title: 'Material Requisition',
+                description: 'Streamlined material requests for efficient project execution',       
+            }
+    
             {/* SETTING -> COMPANY SETUP */ }
         case 'settingDashboard':
             return {

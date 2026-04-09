@@ -1,10 +1,12 @@
 import { useState } from "react";
 import Tabs from "@/ui/components/Tab/Tab";
 import Details from "../components/Details";
+import { Overview } from "../components/Overview";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
     const MaterialRequisitionTabList = [
+        { id: 'Overview', label: 'Overview' },
         { id: 'Details', label: 'Details' },
         { id: 'Finalize Vendor', label: 'Finalize Vendor' },
         { id: 'Purchase Order', label: 'Purchase Order' },
@@ -17,6 +19,7 @@ export const ViewMaterialRequisition: React.FC = () => {
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
+
             <div className="pt-3 pb-5">
                 <Tabs
                     tabs={MaterialRequisitionTabList}
@@ -27,6 +30,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             </div>
 
             {activeTab === 'Details' && <Details />}
+            {activeTab === 'Overview' && <Overview />}
 
         </div>
     );

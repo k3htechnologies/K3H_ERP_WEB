@@ -300,6 +300,9 @@ export const AddUpdateInwardOutward: React.FC = () => {
         if (!formData.ReceiverAddress) {
             newErrors.ReceiverAddress = "Receiver Address is required";
         }
+        if (!formData.EmployeeId) {
+            newErrors.EmployeeId = "Assign Employee is required";
+        }
         if (!hasAnyDocumentFile(documentURLFiles, documentURL, removedDocumentURLs)) {
             newErrors.DocumentURL = "File is required.";
         }

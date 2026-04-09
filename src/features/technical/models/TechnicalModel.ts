@@ -54,6 +54,11 @@ export interface CountryStateCityDistrictVillageData {
 export interface CountryStateCityDistrictVillageDataWrapper {
     CountryStateCityDistrictVillageData: CountryStateCityDistrictVillageData[];
 }
+export interface UomMasterData
+{
+    UomMasterId: number
+    UomCode: string 
+}
 export interface MaterialSubMaterialUOM {
     MaterialMasterId: number
     MaterialName: string
@@ -105,5 +110,7 @@ export interface VillageData {
 export type TechnicalListResponse = ApiResponse<TechnicalData[]>;
 export type NotificationListResponse = ApiResponse<NotificationData[]>;
 export type CountryStateCityDistrictVillageListResponse = ApiResponse<CountryStateCityDistrictVillageDataWrapper[]>;
-export type MaterialSubMaterialMasterUOMListResponse = ApiResponse<{ MaterialMasterSubMaterialMasterData: MaterialSubMaterialUOM[] }>
+export type MaterialSubMaterialMasterUOMListResponse = ApiResponse<{
+    UomMasterData():UomMasterData[] ; MaterialMasterSubMaterialMasterData: MaterialSubMaterialUOM[] 
+}>
 export type VillageListResponse = ApiResponse<VillageData[]>;

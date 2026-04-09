@@ -46,6 +46,20 @@ export interface MaterialRequisitionData {
     PurchaseOrderURL:string;
     MaterialRequisitionDetailData:MaterialRequisitionDetailData[];
 }
+export interface AddUpdateMaterialRequisitionDetailRequest {
+    MaterialRequisitionDetailId:number;
+    Uniquekey:string;
+    MaterialMasterId:number;
+    MaterialCode:string;
+    MaterialName:string;
+    SubMaterialName:string;
+    SubMaterialMasterId:number;
+    MaterialQuantity:number;
+    UomMasterId:number;
+    UomCode:string;
+    Uom: string;
+    RequiredDate:Date;
+}
 export interface MaterialRequisitionDetailData{
     MaterialRequisitionDetailId:number;
     Uniquekey:string;

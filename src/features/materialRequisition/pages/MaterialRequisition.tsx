@@ -77,7 +77,7 @@ export const MaterialRequisition: React.FC = () => {
         await loadDetailsdata(1, filters, sortInfo, searchValue);
     };
     const handleNavigateToView = (row: MaterialRequisitionData) => {
-        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage ,    SystemGeneratedCode: row.SystemGeneratedCode});
+        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage ,SystemGeneratedCode: row.SystemGeneratedCode});
         navigate('/MaterialRequisition/view');
     };
     const handlePageChange = useCallback((page: number) => {
@@ -207,13 +207,19 @@ export const MaterialRequisition: React.FC = () => {
         updateListState({ sortInfo: sort, page: 1 });
         loadDetailsdata(1, filters, sort, searchTerm || undefined);
     }, [filters, updateListState, searchTerm]);
+
     useEffect(() => {
+
         setPagination({ currentPage: listState.page });
+
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
+
             loadDetailsdata(listState.page, { WeekOffPolicyName: String(listState.searchTerm).trim() }, listState.sortInfo);
+
         } else {
             loadDetailsdata(listState.page, listState.filters, listState.sortInfo);
         }
+
     }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
     const fetchLoadDetailsList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
@@ -265,18 +271,21 @@ export const MaterialRequisition: React.FC = () => {
 
     const clearSearchMaterialRequisition = () => {
         debouncedSearch.cancel?.();
+
         updateListState({ searchTerm: '', filters: {}, page: 1 });
+
         setTempFilters({});
         loadDetailsdata(1, { SystemGeneratedCode: '' }, sortInfo, undefined);
     };
+
     const handleAddMaterialRequisitionModal = useCallback(() => {
         navigate('/materialRequisition/add');
     }, [navigate]);
 
     const getMaterialRequisition = async (filterParams: FilterWithPaginationMaterialRequisition) => {
-
         return await materialRequisitionService.apiCallPullMaterialRequisition(filterParams);
     }
+
     const handleExportMaterialRequisition = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -311,10 +320,12 @@ export const MaterialRequisition: React.FC = () => {
 
     const handleExportMaterialRequisitionsExcel = () => handleExportMaterialRequisition('Excel')
     const handleExportMaterialRequisitionPdf = () => handleExportMaterialRequisition('PDF')
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             {/* Loader */}
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
+
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
@@ -323,6 +334,7 @@ export const MaterialRequisition: React.FC = () => {
                     updateListState({ searchTerm: v });
                     debouncedSearch(v);
                 }}
+
                 onClearSearch={clearSearchMaterialRequisition}
                 isShowFilterButton
                 filters={filters}
@@ -330,6 +342,7 @@ export const MaterialRequisition: React.FC = () => {
                     setTempFilters(filters)
                     setShowFilterPopup(true)
                 }}
+
                 isShowCustomizeButton
                 onCustomize={() => setIsShowCustomizeMaterialRequisitionColumnsModal(true)}
 
@@ -347,6 +360,7 @@ export const MaterialRequisition: React.FC = () => {
                 onExportPdf={handleExportMaterialRequisitionPdf}
                 exportLoading={isLoading}
             />
+
             <DataTable
                 data={materialRequisitionData}
                 columns={MaterialRequisitionColumns}
@@ -358,6 +372,7 @@ export const MaterialRequisition: React.FC = () => {
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}
             />
+            
             <CustomizeColumnsModal
                 isOpen={isShowCustomizeMaterialRequisitionColumnsModal}
                 onClose={() => setIsShowCustomizeMaterialRequisitionColumnsModal(false)}

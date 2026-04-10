@@ -17,6 +17,7 @@ import Checkbox from "@/ui/components/forms/Checkbox";
 import { X } from "lucide-react";
 import { ConfirmationDialogBox } from "@/core/utils/confirmationDialogBox";
 import { Button } from "@/ui/components/forms";
+import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 
 export const Details: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -32,8 +33,9 @@ export const Details: React.FC = () => {
     const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
 
     const { projectId } = useProject();
-    const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
-    const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : 0;
+    const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
+    const { listState } = useMaterialRequisitionListState();
+    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
 
     useEffect(() => {
         if (!projectId) return;

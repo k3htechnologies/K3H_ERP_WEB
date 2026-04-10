@@ -1,11 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceData } from "../../models/MaterialRequisitionInvoiceModel";
 import { runApiWithLoader } from "@/core/utils";
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { usePagination } from "@/core/hooks/usePagination";
 import { useNavigate, useParams } from "react-router";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
-import { materialRequisitionInvoiceService } from "../../services/MaterialRequisitionInvoiceService";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
@@ -14,10 +12,12 @@ import { Button } from "@/ui/components/forms";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useMaterialRequisitionListState } from "../../context/MaterialRequisitionListStateContext";
+import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
+import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
 
 
 export const Invoice: React.FC = () => {
-    const [invoiceList, setInvoiceList] = useState<MaterialRequisitionInvoiceData[]>([]);
+    const [invoiceList, setInvoiceList] = useState<MaterialRequisitionGRNData[]>([]);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { pagination, setPagination } = usePagination(20);
@@ -34,23 +34,23 @@ export const Invoice: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
         loadInvoiceData(1, {});
-    }, [projectId])
+    }, [projectId,currentMaterialRequisitionId])
 
     const loadInvoiceData = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo,) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-                const params: FilterWithPaginationMaterialRequisitionInvoice = {
+                const params: FilterWithPaginationMaterialRequisitionGRN = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
-                    MaterialRequisitionInvoiceId: filterParams?.MaterialRequisitionInvoiceId ? Number(filterParams.MaterialRequisitionInvoiceId) : undefined,
+                    MaterialRequisitionGRNId: filterParams?.MaterialRequisitionGRNId ? Number(filterParams.MaterialRequisitionGRNId) : undefined,
                     SortBy: getSortByParam(sortInfo ?? null, InvoiceColumns),
                 };
 
-                const response = await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoice(params);
+                const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
                 if (E.isRight(response)) {
                     setInvoiceList(response.right.Data);
@@ -70,13 +70,13 @@ export const Invoice: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            "Loading Invoice",
+            "Loading GRN",
         );
     };
 
     //#region NAVIGATE CREATE INVOICE
-    const handleCreateInvoice = useCallback((row: MaterialRequisitionInvoiceData) => {
-        navigate(`/materialRequisitionInvoice/view/${row.MaterialRequisitionInvoiceId}`);
+    const handleCreateInvoice = useCallback(() => {
+        navigate(`/addInvoice/add`);
     }, [navigate]);
     //#endregion
 
@@ -109,7 +109,7 @@ export const Invoice: React.FC = () => {
 
     const InvoiceColumns = useMemo<TableColumn[]>(() => [
         {
-            key: 'InvoiceDate',
+            key: 'CreatedDate',
             label: 'Date',
             width: '15',
             sortable: false,
@@ -138,7 +138,7 @@ export const Invoice: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'center',
-            render: (_value, row) => (
+            render: (_value) => (
                 <div className="flex items-center justify-center">
                     {canAction && (
                         <>
@@ -146,7 +146,7 @@ export const Invoice: React.FC = () => {
                                 color="blue"
                                 size="sm"
                                 onClick={() => {
-                                    handleCreateInvoice(row)
+                                    handleCreateInvoice()
                                 }}
                             >
                                 Create Invoice
@@ -167,7 +167,7 @@ export const Invoice: React.FC = () => {
                 data={InvoiceForTable}
                 columns={InvoiceColumns}
                 pagination={InvoicePaginationInfo}
-                emptyMessage="No Invoice Data found"
+                emptyMessage="No GRN Data found"
                 fixedHeight
                 recordsPerPage={20}
                 className="flex-1"

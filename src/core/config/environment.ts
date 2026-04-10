@@ -6,7 +6,7 @@ export interface EnvironmentConfig {
 }
 //============================ [ DEVELOPMENT CONFIGURATION ] ========================================================
 const developmentConfig: EnvironmentConfig = {
-  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://10.8.2.104:409/api",
+  apiBaseUrl: import.meta.env.VITE_API_BASE_URL || "http://10.8.2.9:402/api",
 
   apiKey: import.meta.env.VITE_API_KEY || "TpBgVhTojiO2Ue3kztqI2N/lv7NgtUZgBs0olZHw6HQ/phXqXpadHfJO059HQVTLNyUDi/AbSPGcmP3MdRNtBw==",
   apiTimeout: 30000,

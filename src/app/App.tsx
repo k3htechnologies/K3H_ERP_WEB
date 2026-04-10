@@ -171,9 +171,10 @@ import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
 import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRequisition';
-import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
 import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
+import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
 import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/MaterialRequisitionListStateContext';
+import AddUpdateInovice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -444,6 +445,8 @@ function App() {
 
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
+            <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/add" element={<AddUpdateMaterialRequisition />} />
 
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
@@ -453,6 +456,7 @@ function App() {
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/add" element={<AddUpdateMaterialRequisition />} />
             <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="addInvoice/add" element={<MaterialRequisitionListStateProvider><AddUpdateInovice /></MaterialRequisitionListStateProvider>} />
 
           </Route>
 

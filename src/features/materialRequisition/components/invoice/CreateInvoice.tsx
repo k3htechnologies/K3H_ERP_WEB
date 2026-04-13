@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { AddUpdateMaterialRequisitionInvoice } from "../../models/MaterialRequisitionInvoiceModel";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
@@ -20,6 +20,10 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
+import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
+import { materialRequisitionService } from "../../services/MaterialRequisitionService";
+import type { TableColumn } from "@/ui/components/DataTable/DataTable";
+import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 
 const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     MaterialRequisitionId: 0,
@@ -40,6 +44,8 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
 const AddUpdateInovice: React.FC = () => {
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionInvoice>(() => initialFormState());
     const [invoiceData, setInvoiceData] = useState<MaterialRequisitionGRNData | null>(null);
+    const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
+
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { projectId } = useProject();
@@ -65,6 +71,7 @@ const AddUpdateInovice: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
         loadInvoiceData();
+        fetchMaterialRequisitionDetailData();
     }, [projectId])
 
     const loadInvoiceData = async () => {
@@ -98,6 +105,68 @@ const AddUpdateInovice: React.FC = () => {
             "Loading Invoice",
         );
     };
+
+    const fetchMaterialRequisitionDetailData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationMaterialRequisition = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    ProjectId: Number(projectId),
+                    MaterialRequisitionId: currentMaterialRequisitionId,
+                };
+
+                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
+
+                if (E.isRight(response)) {
+
+                    const data = response.right.Data;
+
+                    const Item = Array.isArray(data) ? data[0] : data;
+
+                    setMaterialRequisitionDetailData(Item?.MaterialRequisitionDetailData ?? []);
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            "Loading Material Requisition",
+        );
+    };
+
+    const MaterialRequisitionDetailColumns = useMemo<TableColumn[]>(() => [
+        {
+            key: 'MaterialName',
+            label: 'Material Name',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value) => value || '-'
+        },
+        {
+            key: 'SubMaterialName',
+            label: 'Sub Material',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value) => value || '-'
+        },
+        {
+            key: 'MaterialQuantity',
+            label: 'Quantity',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value) => value || '-'
+        },
+    ], []);
 
     //#region HANDLE FIELD CHANGE EVENT
     const handleFieldChange = (field: keyof AddUpdateMaterialRequisitionInvoice, value: any) => {
@@ -250,6 +319,16 @@ const AddUpdateInovice: React.FC = () => {
                         <FieldItem label="Paid  Requisition Amount" value={invoiceData?.VehicleNumber} />
                         <FieldItem label="Remaining Requisition Amount " value={invoiceData?.VehicleNumber} />
                     </div>
+                </div>
+
+                <div className="bg-white rounded-lg p-4 space-y-4 h-[110px] shadow-sm border border-gray-300 ">
+                    <DataTableWithOutBorder
+                        columns={MaterialRequisitionDetailColumns}
+                        data={matrialRequisitionDetailData}
+                        emptyMessage="No Material Requisition Found"
+                        fixedHeight={true}
+                        className="flex-1"
+                    />
                 </div>
             </div>
 

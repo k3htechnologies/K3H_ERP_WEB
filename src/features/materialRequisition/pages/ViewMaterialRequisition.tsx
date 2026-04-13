@@ -6,6 +6,7 @@ import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import { useNavigate } from "react-router-dom";
 import { Invoice } from "../components/invoice/Invoice";
+import PurchaseOrder from "../components/PurchaseOrder";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
@@ -53,7 +54,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             {activeTab === 'Details' && <Details />}
             {activeTab === 'Overview' && <Overview />}
             {activeTab === 'Invoice' && <Invoice />}
-            
+            {activeTab === 'Purchase Order' && <PurchaseOrder />}
         </div>
     );
 };

@@ -28,7 +28,6 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 const initialFormState = (): AddRevertInwardOutwardData => ({
     InwardOutwardRevertId: 0,
@@ -44,13 +43,11 @@ export const InwardOutward: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [inwardOutwardDataList, setInwardOutwardDataList] = useState<InwardAndOutWardData[]>([]);
-    const [revertedInwardOutwardDataList, setRevertedInwardOutwardDataList] = useState<AddRevertInwardOutwardData[]>([]);
+    const [, setRevertedInwardOutwardDataList] = useState<AddRevertInwardOutwardData[]>([]);
 
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [formData, setFormData] = useState<AddRevertInwardOutwardData>(() => initialFormState());
     const [revertDocumentURLFiles, setRevertDocumentURLFiles] = useState<(File | string)[]>([]);
-    const [revertDocumentURL, setRevertDocumentURL] = useState<string>();
-    const [removedRevertDocumentURLs, setRemovedRevertDocumentURLs] = useState<string[]>([]);
 
     //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -133,7 +130,7 @@ export const InwardOutward: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     InwardOutwardId: filterParams.InwardOutwardId ? Number(filterParams.InwardOutwardId) : undefined,
-                    DeliveryType: searchtext ?? filterParams.DeliveryType?.trim() ?? undefined,
+                    DocumentType: searchtext ?? filterParams.DocumentType?.trim() ?? undefined,
                     ReceiverName: filterParams.ReceiverName ?? undefined,
                     SenderName: filterParams.SenderName ?? undefined,
                     SortBy: getSortByParam(sort ?? null, InwardOutwardDataColumns),
@@ -162,7 +159,6 @@ export const InwardOutward: React.FC = () => {
     };
     //#endregion
 
-
     const handleFieldChange = (field: keyof AddRevertInwardOutwardData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
         if (errors[field]) {
@@ -178,13 +174,13 @@ export const InwardOutward: React.FC = () => {
             UniqueKey: row.UniqueKey || "",
             InwardOutwardId: row.InwardOutwardId || 0,
         });
-
         setIsAddUpdateModalOpen(true);
     };
     //#endregion
 
-    //#region PUSH REVERT INWARD OUTWARD DATA
-    const PushRevertedInwardOutwardFormData = (): FormData => {
+    //#region PUSH INWARD OUTWARD REVERT DATA
+    const PushInwardOutwardRevertFormData = (): FormData => {
+
         const fd = new FormData();
         fd.append("InwardOutwardRevertId", formData.InwardOutwardRevertId.toString());
         fd.append("InwardOutwardId", formData.InwardOutwardId.toString());
@@ -197,7 +193,6 @@ export const InwardOutward: React.FC = () => {
                 fd.append("RevertDocumentURL", file);
             }
         })
-
         return fd;
     };
     //#endregion
@@ -217,7 +212,7 @@ export const InwardOutward: React.FC = () => {
             newErrors.RevertDate = "Revert Date is required";
         }
 
-        if (!hasAnyDocumentFile(revertDocumentURLFiles, revertDocumentURL, removedRevertDocumentURLs)) {
+        if (!revertDocumentURLFiles || revertDocumentURLFiles.length === 0) {
             newErrors.RevertDocumentURL = "File is required.";
         }
 
@@ -227,7 +222,7 @@ export const InwardOutward: React.FC = () => {
         };
     };
 
-    const handleAddEditRevertedInwardOutward = async (e: React.FormEvent) => {
+    const handleAddInwardOutwardRevert = async (e: React.FormEvent) => {
         e.preventDefault();
 
         setErrors({})
@@ -237,13 +232,12 @@ export const InwardOutward: React.FC = () => {
             setErrors(validation.errors)
             return
         }
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
 
-                const payload = PushRevertedInwardOutwardFormData();
+                const payload = PushInwardOutwardRevertFormData();
 
                 const response = await inwardOutwardService.apiCallAddRevertInwardOutward(payload);
 
@@ -267,7 +261,7 @@ export const InwardOutward: React.FC = () => {
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
-            'Add Reverted Inward Outward'
+            'Add Inward Outward Revert'
         )
     };
     //#endregion
@@ -318,14 +312,6 @@ export const InwardOutward: React.FC = () => {
             )
         },
         {
-            key: 'DocumentTitle',
-            label: 'Title',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-        },
-        {
             key: 'DocumentType',
             label: 'Type',
             width: '15',
@@ -335,102 +321,8 @@ export const InwardOutward: React.FC = () => {
 
         },
         {
-            key: 'SenderName',
-            label: 'Sender Name',
-            width: '15',
-            sortable: true,
-            align: 'center',
-            render: value => value || '-'
-
-        },
-        {
-            key: 'SenderEmailId',
-            label: 'Sender Email Id',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-
-        },
-        {
-            key: 'SenderMobileNo',
-            label: 'Sender Mobile No',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: value => value ? `+91 ${value}` : '-'
-
-        },
-        {
-            key: 'SenderAddress',
-            label: 'Sender Address',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-
-        },
-        {
-            key: 'ReceiverName',
-            label: 'Receiver Name',
-            width: '15',
-            sortable: true,
-            align: 'center',
-            render: value => value || '-'
-
-        },
-        {
-            key: 'ReceiverEmailId',
-            label: 'Receiver Email Id',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-
-        },
-        {
-            key: 'ReceiverMobileNo',
-            label: 'Receiver Mobile No',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: value => value ? `+91 ${value}` : '-'
-        },
-        {
-            key: 'ReceiverAddress',
-            label: 'Receiver Address',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-        },
-        {
-            key: 'InwardOutwardDate',
-            label: 'Date',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
-        },
-        {
-            key: 'Amount',
-            label: 'Amount',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: value => value ? `₹ ${value}` : '-'
-        },
-        {
-            key: 'DeliveryMode',
-            label: 'DeliveryMode',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: value => value || '-'
-        },
-        {
-            key: 'DeliveryType',
-            label: 'Delivery Type',
+            key: 'DocumentTitle',
+            label: 'Title',
             width: '15',
             sortable: false,
             align: 'center',
@@ -464,17 +356,36 @@ export const InwardOutward: React.FC = () => {
             sortable: false,
             align: 'center',
             render: (_value, row) => {
-                return (
-                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-sm">
-                        {row.EmployeeNames.trim().split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 3)}
-                    </div>
+                const employees = row.EmployeeNames?.split(",") || [];
 
-                )
+                return (
+                    <div className="flex -space-x-2">
+                        {employees.map((emp: string, index: number) => {
+                            const initials = emp
+                                .trim()
+                                .split(" ")
+                                .map((w: string) => w[0])
+                                .join("")
+                                .toUpperCase()
+                                .slice(0, 2);
+
+                            return (
+                                <div
+                                    key={index}
+                                    className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white text-xs border-2 border-white"
+                                    title={emp.trim()}
+                                >
+                                    {initials}
+                                </div>
+                            );
+                        })}
+                    </div>
+                );
             }
         },
         {
             key: 'DepartmentName',
-            label: 'Department Name',
+            label: 'Department',
             width: '15',
             sortable: false,
             align: 'center',
@@ -487,8 +398,144 @@ export const InwardOutward: React.FC = () => {
             )
         },
         {
+            key: 'SenderName',
+            label: 'Sender Name',
+            width: '15',
+            sortable: true,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'SenderEmailId',
+            label: 'Sender Email Id',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'SenderMobileNo',
+            label: 'Sender Mobile No',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value ? `+91 ${value}` : '-'
+        },
+        {
+            key: 'SenderAddress',
+            label: 'Sender Address',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'ReceiverName',
+            label: 'Receiver Name',
+            width: '15',
+            sortable: true,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'ReceiverEmailId',
+            label: 'Receiver Email Id',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'ReceiverMobileNo',
+            label: 'Receiver Mobile No',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value ? `+91 ${value}` : '-'
+        },
+        {
+            key: 'ReceiverAddress',
+            label: 'Receiver Address',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'InwardOutwardDate',
+            label: 'Date',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
+        },
+        {
+            key: 'InwardNumber',
+            label: 'Inward Number',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
             key: 'InvoiceDate',
             label: 'Invoice Date',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
+        },
+        {
+            key: 'InvoiceNumber',
+            label: 'Invoice Number',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'Amount',
+            label: 'Amount',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value ? `₹ ${value}` : '-'
+        },
+        {
+            key: 'DeliveryMode',
+            label: 'DeliveryMode',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'DeliveryType',
+            label: 'Delivery Type',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'ReceivedBy',
+            label: 'Received By',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'HandOverTo',
+            label: 'HandOver To',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '-'
+        },
+        {
+            key: 'HandOverDate',
+            label: 'HandOver Date',
             width: '15',
             sortable: false,
             align: 'center',
@@ -655,7 +702,12 @@ export const InwardOutward: React.FC = () => {
         }),
         [pagination, handlePageChange]
     )
-    const InwardOutwardDataForTable = useMemo(() => inwardOutwardDataList, [inwardOutwardDataList]);
+    const InwardOutwardDataForTable = useMemo(() => {
+        if (activeTab === 'All') return inwardOutwardDataList;
+        return inwardOutwardDataList.filter(
+            (item) => item.DocumentType === activeTab
+        );
+    }, [inwardOutwardDataList, activeTab]);
     //#endregion
 
     //#region DELETE INWARD OUTWARD
@@ -727,7 +779,7 @@ export const InwardOutward: React.FC = () => {
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
-                searchPlaceholder="Search By Sender Name"
+                searchPlaceholder="Search By Document Type"
                 onSearchChange={v => {
                     updateListState({ searchTerm: v });
                     debouncedSearch(v);
@@ -754,12 +806,6 @@ export const InwardOutward: React.FC = () => {
                     islarge={true}
                     onTabChange={(t) => {
                         setActiveTab(t.id);
-
-                        if (t.id === "All") {
-                            fetchInwardOutwardList();
-                        } else if (t.id === "Inward") {
-                            fetchInwardOutwardList();
-                        }
                     }}
                 />
             </div>
@@ -789,7 +835,7 @@ export const InwardOutward: React.FC = () => {
                 title="Customize Table Columns"
             />
 
-            {/* UPDATE REVERT MODAL */}
+            {/* ADD REVERT MODAL */}
 
             <Modal
                 isOpen={isAddUpdateModalOpen}
@@ -803,10 +849,9 @@ export const InwardOutward: React.FC = () => {
                     setFormData(initialFormState());
                     setErrors({});
                 }}
-
                 title="Revert"
                 saveText="Save"
-                onSubmit={handleAddEditRevertedInwardOutward}
+                onSubmit={handleAddInwardOutwardRevert}
                 loading={isLoading}
                 size="xl"
             >
@@ -830,14 +875,10 @@ export const InwardOutward: React.FC = () => {
                                 placeholder="select file"
                                 value={revertDocumentURLFiles}
                                 onChange={setRevertDocumentURLFiles}
-                                availableFilesURL={revertDocumentURL ?? ''}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                 maxFiles={5}
                                 maxSizeMB={10}
                                 error={errors.RevertDocumentURL}
-                                onRemoveExisting={(url) => {
-                                    setRemovedRevertDocumentURLs((prev) => [...prev, url]);
-                                }}
                             />
                         </div>
 
@@ -890,16 +931,17 @@ export const InwardOutward: React.FC = () => {
 
                     <div>
                         <Input type="text"
-                            label='Delivery Type'
-                            value={tempFilters?.DeliveryType ?? ''}
-                            onChange={e => handleFilterChange('DeliveryType', e.target.value)}
-                            placeholder="Enter Delivery Type" />
+                            label='Document Type'
+                            value={tempFilters?.DocumentType ?? ''}
+                            onChange={e => handleFilterChange('DocumentType', e.target.value)}
+                            placeholder="Enter Document Type" />
                     </div>
 
                 </div>
             </Modal>
 
             {/* DATA TABLE */}
+
             <DataTable
                 data={InwardOutwardDataForTable}
                 columns={visibleInwardOutwardColumns}
@@ -913,6 +955,7 @@ export const InwardOutward: React.FC = () => {
             />
 
             {/* DELETE CONFIRMATION INWARD OUTWARD MODAL */}
+
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
                 onClose={() => {

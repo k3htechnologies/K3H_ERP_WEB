@@ -6,7 +6,7 @@ export interface FilterWithPaginationInwardAndOutWardRequest {
     InwardOutwardId?: number
     SenderName?: string
     ReceiverName?: string
-    DeliveryType?: string
+    DocumentType?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -14,7 +14,7 @@ export interface FilterWithPaginationInwardAndOutWardRequest {
 export interface InwardAndOutWardData {
     InwardOutwardId: number | 0,
     UniqueKey: string | null
-    SystemGeneratedCode:string | null,
+    SystemGeneratedCode: string | null,
     DocumentTitle: string | null,
     InwardOutwardDate: string | null,
     DocumentType: string | null,
@@ -39,11 +39,6 @@ export interface InwardAndOutWardData {
     HandOverDate: string | null,
     HandOverTo: string | null,
 
-    RevertedInwardOutwardId: number | 0,
-    InwardOutwardRevertDate: string | null
-    RevertRemark: string | null
-    RevertDocumentURL: string | null
-
     SenderName: string | null,
     SenderEmailId: string | null,
     SenderMobileNo: string | null,
@@ -53,6 +48,7 @@ export interface InwardAndOutWardData {
     ReceiverEmailId: string | null,
     ReceiverMobileNo: string | null
     ReceiverAddress: string | null
+    RevertDetailsList: InwardOutwardRevertDetail[];
 
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -111,6 +107,15 @@ export interface DeleteInwardAndOutWardRequest {
 
 }
 
+export interface InwardOutwardRevertDetail {
+    InwardOutwardRevertId: number
+    InwardOutwardId: number
+    UniqueKey: string | null
+    RevertDate: string | null
+    RevertRemark: string | null
+    RevertDocumentURL: string | null
+}
+
 export interface AddRevertInwardOutwardData {
     InwardOutwardRevertId: number | 0,
     InwardOutwardId: number | 0,
@@ -121,11 +126,9 @@ export interface AddRevertInwardOutwardData {
 }
 
 export interface FilterWithPaginationSenderReceiverByMobileNoRequest {
-    PageSize: number
-    PageNumber: number
+    PageSize?: number
+    PageNumber?: number
     MobileNumber?: string
-    SortBy?: string
-    ExportType?: 'Excel' | 'PDF'
 }
 
 export interface SenderReceiverByMobileNoData {
@@ -139,5 +142,4 @@ export type InwardAndOutWardListResponse = ApiResponse<InwardAndOutWardData[]>
 export type InwardAndOutWardSaveResponse = ApiResponse<InwardAndOutWardData[]>
 export type InwardAndOutWardDeleteResponse = ApiResponse<number>
 export type InwardOutwardRevertSaveResponse = ApiResponse<AddRevertInwardOutwardData[]>
-
 export type SenderReceiverByMobileNoDataListResponse = ApiResponse<SenderReceiverByMobileNoData[]>

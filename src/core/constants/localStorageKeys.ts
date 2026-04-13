@@ -79,6 +79,8 @@ export const LOCAL_STORAGE_KEYS = {
 
     //CRM
     BROKERAGE_BOOKING_SELECTED_COLUMNS: 'brokerage.selectedColumns',
+
+    //MORE
     INWARD_OUTWARD_SELECTED_COLUMNS: 'inwardOutward.selectedColumns',
 
 
@@ -102,5 +104,5 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     CHANNEL_PARTNER_SOURCING: 'channelPartnerSourcing.listState',
     INCENTIVE_REPORT: 'incentive_report.listState',
     INWARD_OUTWARD: 'inwardOutward.listState'
-    
+
 } as const

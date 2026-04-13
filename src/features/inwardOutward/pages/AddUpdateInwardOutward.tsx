@@ -117,13 +117,13 @@ export const AddUpdateInwardOutward: React.FC = () => {
     //#region INIT
     useEffect(() => {
         if (!isAddMode) {
-            fetchInwardDetails();
+            fetchInwardOutwardDetails();
         }
     }, [inwardOutwardId])
     //#endregion
 
-    //#region FETCH INWARD DETAILS
-    const fetchInwardDetails = async () => {
+    //#region FETCH INWARD OUTWARD DETAILS
+    const fetchInwardOutwardDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -173,7 +173,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             HandOverDate: e.HandOverDate ?? prev.HandOverDate,
                             HandOverTo: e.HandOverTo ?? prev.HandOverTo,
                             InwardNumber: e.InwardNumber ?? prev.InwardNumber
-
                         }));
 
                         setSelectedEmployeeValues(e.EmployeeId || null);
@@ -306,10 +305,9 @@ export const AddUpdateInwardOutward: React.FC = () => {
         if (!hasAnyDocumentFile(documentURLFiles, documentURL, removedDocumentURLs)) {
             newErrors.DocumentURL = "File is required.";
         }
-
-        // if (!hasAnyDocumentFile(receiversSignatureFiles, receiversSignatureURL, removedReceiversSignatureURLs)) {
-        //     newErrors.ReceiversSignature = "File is required.";
-        // }
+        if (!hasAnyDocumentFile(receiversSignatureFiles, receiversSignatureURL, removedReceiversSignatureURLs)) {
+            newErrors.ReceiversSignature = "File is required.";
+        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors,
@@ -401,6 +399,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                 if (E.isRight(response)) {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
+
                     navigate("/inwardoutword");
                 } else {
                     addToast({ type: "error", title: response.left.message });
@@ -586,7 +585,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 required
                                 onChange={e => handleFieldChange('ChequeNo', e.target.value)}
                                 error={errors.ChequeNo}
-                                maxLength={50}
+                                maxLength={20}
                                 placeholder="Enter Cheque No"
                             />
                         </div>
@@ -916,7 +915,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                 }}
                 isLoading={isLoading}
             />
-
         </div>
     )
 }

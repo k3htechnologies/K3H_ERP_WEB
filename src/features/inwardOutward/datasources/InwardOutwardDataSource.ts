@@ -12,7 +12,6 @@ export abstract class InwardAndOutWardDatasource {
     abstract pullSenderReceiverByMobileNoData(params: FilterWithPaginationSenderReceiverByMobileNoRequest, signal?: AbortSignal): Promise<SenderReceiverByMobileNoDataListResponse>;
 
 }
-
 export class InwardAndOutWardDatasourceImpl implements InwardAndOutWardDatasource {
     private get k3hHttpClient() {
         return baseClient
@@ -27,7 +26,7 @@ export class InwardAndOutWardDatasourceImpl implements InwardAndOutWardDatasourc
             if (params.InwardOutwardId?.toString()) queryParams.append('InwardOutwardId', params.InwardOutwardId.toString().trim());
             if (params.SenderName?.trim()) queryParams.append('SenderName', params.SenderName.trim());
             if (params.ReceiverName?.trim()) queryParams.append('ReceiverName', params.ReceiverName.trim());
-            if (params.DeliveryType?.trim()) queryParams.append('DeliveryType', params.DeliveryType.trim());
+            if (params.DocumentType?.trim()) queryParams.append('DocumentType', params.DocumentType.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
@@ -112,9 +111,6 @@ export class InwardAndOutWardDatasourceImpl implements InwardAndOutWardDatasourc
             })
 
             if (params.MobileNumber?.trim()) queryParams.append('MobileNumber', params.MobileNumber.trim());
-            if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
-            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
-
             return await this.k3hHttpClient.getRequestWithAuthentication(`${InwardOutwardApi.PULL_SENDER_RECEIVER_BY_MOBILE_NO}?${queryParams.toString()}`, { signal });
 
         } catch (error: any) {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData, } from "@/features/inwardOutward/models/InwardOutwardModel";
+import type { FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData, InwardOutwardRevertDetail, } from "@/features/inwardOutward/models/InwardOutwardModel";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/core/hooks/useToast";
 import { runApiWithLoader } from "@/core/utils";
@@ -23,6 +23,7 @@ const ViewInwardOutward: React.FC = () => {
     //#region STATE MANAGEMENT
     const [inwardOutwardData, setInwardOutwardData] = useState<InwardAndOutWardData | null>(null);
     const [trackingList, setTrackingList] = useState<InwardAndOutWardData[]>([]);
+    const [inwardOutwardRevertData, setInwardOutwardRevertData] = useState<InwardOutwardRevertDetail[]>([]);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
@@ -84,9 +85,13 @@ const ViewInwardOutward: React.FC = () => {
                 if (E.isRight(response)) {
                     const data = response.right.Data;
 
-                    setInwardOutwardData(Array.isArray(data) ? (data[0] ?? null) : data);
+                    const firstItem = Array.isArray(data) ? (data[0] ?? null) : data;
+
+                    setInwardOutwardData(firstItem);
+
                     setTrackingList(response.right.Data);
 
+                    setInwardOutwardRevertData(firstItem?.RevertDetailsList ?? []);
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -356,22 +361,28 @@ const ViewInwardOutward: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-4 h-[260px]">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-4 h-[492px]">
                             <h1 className="text-lg font-semibold text-black border-b border-gray-400 pb-1">
                                 Revert
                             </h1>
 
                             <div className="mt-1 overflow-y-auto h-[200px] thin-scroll pr-2">
-                                {(() => {
-                                    return trackingList.map((item) => {
+                                {inwardOutwardRevertData.length > 0 ? (
+                                    inwardOutwardRevertData.map((item) => {
                                         return (
-                                            <div key={item.RevertedInwardOutwardId} className="mb-4 pb-4 border-b border-gray-300 last:border-b-0 last:pb-0">
+                                            <div
+                                                key={item.InwardOutwardRevertId}
+                                                className="mb-4 pb-4 border-b border-gray-300 last:border-b-0 last:pb-0"
+                                            >
                                                 <div className="flex pb-2 justify-between">
-                                                    <FieldItem label=" Date" value={formatDate_dd_MonthName_yy(item.InwardOutwardRevertDate || '-')} />
-
+                                                    <FieldItem
+                                                        label="Date"
+                                                        value={formatDate_dd_MonthName_yy(item.RevertDate || "-")}
+                                                    />
                                                 </div>
 
                                                 <FieldItem label="Remark" value={item.RevertRemark || "-"} />
+
                                                 {parseDocumentUrls(item.RevertDocumentURL).length > 0 && (
                                                     <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded-[4px] mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
                                                         <p>Document</p>
@@ -385,8 +396,12 @@ const ViewInwardOutward: React.FC = () => {
                                                 )}
                                             </div>
                                         );
-                                    });
-                                })()}
+                                    })
+                                ) : (
+                                    <div className="flex justify-center items-center h-full text-gray-500 text-sm">
+                                        No revert data found
+                                    </div>
+                                )}
                             </div>
                         </div>
 

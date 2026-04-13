@@ -326,6 +326,12 @@ export const getPageInfo = (path: string) => {
                 title: 'Event',
                 description: 'Profile',
             }
+        case 'inwardoutward':
+            return {
+                title: 'Inward/Outward',
+                description: 'Profile',
+            }
+
             {/* INVENTORY */ }
 
         case 'inventoryDashboard':

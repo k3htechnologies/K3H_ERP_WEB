@@ -4,7 +4,7 @@ export const PurchaseOrder: React.FC = () => {
 
     
     return (
-        <div>jjj</div>
+        <div>Purchase Order</div>
     )
 }
 export default PurchaseOrder;

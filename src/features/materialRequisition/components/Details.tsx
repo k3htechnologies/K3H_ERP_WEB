@@ -89,9 +89,7 @@ export const Details: React.FC = () => {
         const fd = new FormData();
 
         fd.append("ProjectId", Number(projectId).toString());
-        fd.append("MaterialRequisitionId", currentMaterialRequisitionId.toString());
-        fd.append("IsSplit", "true");
-        fd.append("IsCopy", "true");
+        fd.append("MaterialRequisitionId", (currentMaterialRequisitionId ?? 0).toString());
         fd.append("Uniquekey", matrialRequisitionData?.Uniquekey ?? '');
         fd.append("Remarks", matrialRequisitionData?.Remarks ?? '');
         fd.append("MaterialRequisitionDetailJSON", JSON.stringify(matrialRequisitionDetailData
@@ -180,6 +178,8 @@ export const Details: React.FC = () => {
                 if (E.isRight(response)) {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0], });
+                    setIsCloseRequisitionDialogOpen(false);
+
                     fetchDetailsdata();
 
                 } else {
@@ -201,17 +201,18 @@ export const Details: React.FC = () => {
             {/* Loader */}
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
-            <Button
-                size="sm"
-                onClick={() => {
-                    setSelectedMaterialRequisitionItem(matrialRequisitionData);
-                    setIsCloseRequisitionDialogOpen(true);
-                }}
-
-            >
-                <X className="h-4 w-4" color="red" />
-                Close Requisition
-            </Button>
+            <div className="flex justify-end pb-2">
+                <Button
+                    size="sm"
+                    onClick={() => {
+                        setSelectedMaterialRequisitionItem(matrialRequisitionData);
+                        setIsCloseRequisitionDialogOpen(true);
+                    }}
+                >
+                    <X className="h-4 w-4" color="red" />
+                    Close Requisition
+                </Button>
+            </div>
 
             <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <h1 className="text-lg font-semibold text-gray-900 pb-2">Basic Details</h1>

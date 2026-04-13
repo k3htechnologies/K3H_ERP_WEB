@@ -10,7 +10,7 @@ import { Input } from "@/ui/components/forms";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { Mail } from "lucide-react";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, isPreviousDate, isToday } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, } from "@/core/utils/dateFormat";
 import { inwardOutwardService } from "@/features/inwardOutward/services/InwardOutwardService";
 import RadioButton from "@/ui/components/forms/RadioButton";
 import { TextArea } from "@/ui/components/forms/Textarea";
@@ -90,7 +90,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
     const { addToast } = useToast();
 
     //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions("/inwardoutword");
+    const { canAction } = useMenuPermissions("/inwardoutward");
     //#endregion
 
     // ERROR SET UP
@@ -219,20 +219,11 @@ export const AddUpdateInwardOutward: React.FC = () => {
         if (!formData.DocumentTitle) {
             newErrors.DocumentTitle = "Document Title is required";
         }
-        if (!formData.DeliveryStatus) {
-            newErrors.DeliveryStatus = "Delivery Status is required";
-        }
-        if (!formData.DeliveryMode) {
-            newErrors.DeliveryMode = "Delivery Mode is required";
-        }
         if (!formData.DocumentDescription) {
-            newErrors.DocumentDescription = "Document Descriptionis required";
+            newErrors.DocumentDescription = "Document Description is required";
         }
         if (!formData.AcknowledgementRemark) {
             newErrors.AcknowledgementRemark = "Acknowledgement Remark is required";
-        }
-        if (!formData.ReceivedBy) {
-            newErrors.ReceivedBy = "Received By is required";
         }
         if (!formData.DocumentType) {
             newErrors.DocumentType = "Document Type is required";
@@ -278,23 +269,12 @@ export const AddUpdateInwardOutward: React.FC = () => {
         }
         if (!formData.InVoiceDate) {
             newErrors.InVoiceDate = "Invoice Date required";
-        } else {
-            const invoiceDate = new Date(formData.InVoiceDate);
-            if (isPreviousDate(invoiceDate) && !isToday(invoiceDate)) {
-                newErrors.InVoiceDate = "Invoice Date cannot be in the past";
-            }
-        }
+        } 
         if (!formData.InVoiceNumber) {
             newErrors.InVoiceNumber = "Invoice Number is required";
         }
         if (!formData.InwardNumber) {
             newErrors.InwardNumber = "Inward Number is required";
-        }
-        if (!formData.HandOverTo) {
-            newErrors.HandOverTo = "Name is required";
-        }
-        if (!formData.HandOverDate) {
-            newErrors.HandOverDate = "Handover Date is required";
         }
         if (!formData.ReceiverAddress) {
             newErrors.ReceiverAddress = "Receiver Address is required";
@@ -304,9 +284,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
         }
         if (!hasAnyDocumentFile(documentURLFiles, documentURL, removedDocumentURLs)) {
             newErrors.DocumentURL = "File is required.";
-        }
-        if (!hasAnyDocumentFile(receiversSignatureFiles, receiversSignatureURL, removedReceiversSignatureURLs)) {
-            newErrors.ReceiversSignature = "File is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -319,7 +296,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
     const PushInwardOutwardFormData = (): FormData => {
 
         const fd = new FormData();
-
         fd.append("InwardOutwardId", formData.InwardOutwardId.toString());
         fd.append("UniqueKey", formData.UniqueKey ?? "");
         fd.append("EmployeeId", formData.EmployeeId ?? "");
@@ -400,7 +376,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-                    navigate("/inwardoutword");
+                    navigate("/inwardoutward");
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -791,24 +767,20 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <SinglePageSelection
                             label="Delivery Mode"
-                            required
                             placeholder='Select Delivery Mode'
                             value={formData.DeliveryMode || ''}
                             onChange={(e) => handleFieldChange('DeliveryMode', String(e))}
                             options={DELIVERY_MODE.map((opt) => ({ label: opt.name, value: opt.id }))}
-                            error={errors.DeliveryMode}
                         />
                     </div>
 
                     <div>
                         <SinglePageSelection
                             label="Delivery Status"
-                            required
                             placeholder='Select Delivery Status'
                             value={formData.DeliveryStatus || ''}
                             onChange={(e) => handleFieldChange('DeliveryStatus', String(e))}
                             options={DELIVERY_STATUS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                            error={errors.DeliveryStatus}
                         />
                     </div>
 
@@ -820,9 +792,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <Input
                             label="Received By"
                             value={formData.ReceivedBy ?? ''}
-                            required
                             onChange={e => handleFieldChange("ReceivedBy", e.target.value)}
-                            error={errors.ReceivedBy}
                             maxLength={50}
                             placeholder="Enter Received By"
                         />
@@ -831,7 +801,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <MultiFilePicker
                             label="Receiver’s Signature"
-                            required
                             placeholder="select file"
                             value={receiversSignatureFiles}
                             onChange={setReceiversSignatureFiles}
@@ -842,14 +811,12 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             onRemoveExisting={(url) => {
                                 setRemovedReceiversSignatureURLs((prev) => [...prev, url]);
                             }}
-                            error={errors.ReceiversSignature}
                         />
                     </div>
 
                     <div>
                         <MultiFilePicker
                             label="Upload Document"
-                            required
                             placeholder="select file"
                             value={acknowledgementURLFiles}
                             onChange={setAcknowledgementURLFiles}
@@ -860,7 +827,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             onRemoveExisting={(url) => {
                                 setRemovedAcknowledgementURLs((prev) => [...prev, url]);
                             }}
-                            error={errors.AcknowledgementURL}
                         />
                     </div>
                 </div>
@@ -871,9 +837,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <Input
                             label="Handover To"
                             value={formData.HandOverTo ?? ''}
-                            required
                             onChange={e => handleFieldChange("HandOverTo", e.target.value)}
-                            error={errors.HandOverTo}
                             maxLength={50}
                             placeholder="Enter Name"
                         />
@@ -884,8 +848,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             label="Handover Date"
                             value={formatDate_dd_mm_yyyy(formData.HandOverDate ?? '')}
                             onChange={(val) => handleFieldChange('HandOverDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                            required
-                            error={errors.HandOverDate}
                         />
                     </div>
                 </div>
@@ -895,9 +857,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <TextArea
                             label="Remark"
                             value={formData.AcknowledgementRemark ?? ''}
-                            required
                             onChange={e => handleFieldChange("AcknowledgementRemark", e.target.value)}
-                            error={errors.AcknowledgementRemark}
                             maxLength={50}
                             placeholder="Enter Remark"
                         />

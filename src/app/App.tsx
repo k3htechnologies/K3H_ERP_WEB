@@ -387,7 +387,7 @@ function App() {
 
             <Route path="performance" element={<PerformanceReport />} />
 
-            <Route path="inwardOutword" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
+            <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
 

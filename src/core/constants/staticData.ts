@@ -280,7 +280,7 @@ export const MASTER_DATA = {
 
   monthsShots: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
 
-  deliveryStatus: ['Assigned', 'Acknowledged', 'Delivered'],
+  deliveryStatus: ['Acknowledged', 'Delivered'],
 
   deliveryMode: ['Courier', 'Hand-To-Hand'],
 

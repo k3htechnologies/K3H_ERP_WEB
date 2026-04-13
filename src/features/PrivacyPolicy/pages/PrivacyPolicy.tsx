@@ -316,7 +316,7 @@ const PrivacyPolicy: React.FC = () => {
                             "Internet access (for syncing data)",
                             "Storage access (for documents/uploads)",
                             "Camera (for document capture, if applicable)",
-                            "Location access (to provide location-based services)"
+                            "Location access (for attendance tracking, punch-in/punch-out, and location-based services)"
                         ].map((item) => (
                             <li key={item} className="flex items-start gap-2 text-stone-500 text-sm">
                                 <span className="text-blue-800 font-bold mt-0.5 shrink-0">.</span>

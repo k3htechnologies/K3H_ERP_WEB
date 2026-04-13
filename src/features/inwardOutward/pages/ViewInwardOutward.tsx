@@ -42,7 +42,7 @@ const ViewInwardOutward: React.FC = () => {
     const [activeTab, setActiveTab] = useState<string>(InwardTabList[0].id);
 
     //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/inwardOutword');
+    const { canAction } = useMenuPermissions('/inwardoutward');
 
     // EDIT INWARD OUTWARD DATA FROM STATE
     const { InwardOutwardId } = useParams<{ InwardOutwardId?: string }>();
@@ -109,7 +109,7 @@ const ViewInwardOutward: React.FC = () => {
 
     //#region BACK INWARD OUTWARD PAGE
     const handleBackToInwardList = () => {
-        navigate("/inwardoutword");
+        navigate("/inwardoutward");
     };
     //#endregion
 
@@ -366,7 +366,7 @@ const ViewInwardOutward: React.FC = () => {
                                 Revert
                             </h1>
 
-                            <div className="mt-1 overflow-y-auto h-[200px] thin-scroll pr-2">
+                            <div className="mt-1 overflow-y-auto h-[380px] thin-scroll pr-2">
                                 {inwardOutwardRevertData.length > 0 ? (
                                     inwardOutwardRevertData.map((item) => {
                                         return (

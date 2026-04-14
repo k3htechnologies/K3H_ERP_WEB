@@ -165,7 +165,6 @@ import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoic
 import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
 import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
-import Terms from '@/features/terms/pages/TermsAndCondition';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
@@ -463,7 +462,6 @@ function App() {
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 
-          <Route path='Terms' element={<Terms />} />
           <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
 

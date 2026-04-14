@@ -15,6 +15,7 @@ export interface PaymentLedgerData {
     ReceivedAmount: number;
     UploadedPaymentLedgerCount: number;
     ApprovalPendingPaymentLedgerCount: number;
+    OrderBy: number;
 }
 
 export interface PaymentLedgerSummaryModelData {

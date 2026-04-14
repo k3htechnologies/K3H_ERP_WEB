@@ -879,6 +879,7 @@ const ProjectDocument: React.FC = () => {
         const response = await projectDocumentService.apiCallAddUpdateProjectDocument(payload);
 
         if (E.isRight(response)) {
+          
           ismaster === 1 ? setIsAddUpdateDocumentModalOpen(false) : setIsAddUpdateDocumentDetailsModalOpen(false);
 
           const isAdd = formData.ProjectDocumentId === 0;

@@ -44,7 +44,7 @@ const PayTrack: React.FC = () => {
 
     const [isShowCustomizePayTrackColumnsModal, setIsShowCustomizePayTrackColumnsModal] = useState(false);
 
-    const { canExport } = useMenuPermissions();
+    const { canExport } = useMenuPermissions("/bookingPayTrack");
 
     const { projectId } = useProject();
 
@@ -52,7 +52,7 @@ const PayTrack: React.FC = () => {
 
     const { page, filters, sortInfo, searchTerm } = listState;
 
-   
+
     //#endregion
 
     //#region DATA LOADING |  LOAD | SEARCH 
@@ -245,6 +245,13 @@ const PayTrack: React.FC = () => {
             bookingType: row.BookingType ?? '',
             flat: row.Flat ?? '',
             bookingOtherChargesData: row.BookingOtherChargesData ?? [],
+            totalUnitCost:
+                (row.AgreementValue || 0) +
+                (row.AgreementValueGSTAmount || 0) +
+                (row.StampDutyAmount || 0) +
+                (row.RegistrationFees || 0) +
+                (row.OtherChargesAmount || 0) +
+                (row.OtherChargesGSTAmount || 0),
         });
         navigate('/payTrack/view');
     }, [navigate, updateListState]);
@@ -252,13 +259,13 @@ const PayTrack: React.FC = () => {
 
     //#region TABLE COLUMN
 
-    
+
     const payTrackColumns = useMemo<TableColumn[]>(
         () => [
             {
                 key: 'SystemGeneratedCode',
                 label: 'Enquiry Code',
-                width: '20',
+                width: '40',
                 sortable: false,
                 fixed: 'left',
                 align: 'left',
@@ -345,11 +352,54 @@ const PayTrack: React.FC = () => {
             },
             {
                 key: 'RegistrationDate',
-                label: 'Registration Date ',
+                label: 'Expected Registration Date ',
                 width: '14',
                 align: 'left',
                 render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
             },
+            {
+                key: 'FinalRegistrationDate',
+                label: 'Final Registration Date ',
+                width: '14',
+                align: 'left',
+                render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
+            },
+            {
+                key: "ApprovalGroup",
+                label: "Approval Details",
+                align: "center",
+                children: [
+                    {
+                        key: 'PendingLedgerApprovalCount',
+                        label: 'Pending Ledger',
+                        width: '14',
+                        align: 'left',
+                        render: (v) => v || '0'
+                    },
+                    {
+                        key: 'FlatAlterationRequestIsApproval',
+                        label: 'Flat Alteration',
+                        width: '14',
+                        align: 'left',
+                        render: (v) => v ? 'Yes' : 'No'
+                    },
+                    {
+                        key: 'ParkingModificationRequestIsApproval',
+                        label: 'Parking Modification',
+                        width: '14',
+                        align: 'left',
+                        render: (v) => v ? 'Yes' : 'No'
+                    },
+                    {
+                        key: 'BookingApplicantModificationRequestIsApproval',
+                        label: 'Applicant Modification',
+                        width: '14',
+                        align: 'left',
+                        render: (v) => v ? 'Yes' : 'No'
+                    }
+                ]
+            }
+
 
         ], [handleViewpayTrackBDetails]
     );
@@ -360,27 +410,48 @@ const PayTrack: React.FC = () => {
             key: 'type',
             label: 'Type',
             align: 'left',
-            render: (value) => value
+            width: "200px",
+            render: (value, row) => (
+                <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
+                    {value}
+                </span>
+            )
         },
         {
             key: 'total',
             label: 'Total Amount',
-            align: 'left',
-            render: (value) => `₹ ${value.toLocaleString()}`
+            align: 'right',
+            width: "300px",
+            render: (value, row) => (
+                <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
+                    ₹ {value.toLocaleString()}
+                </span>
+            )
         },
         {
             key: 'paid',
             label: 'Paid Amount',
-            align: 'left',
-            render: (value) => `₹ ${value.toLocaleString()}`
+            align: 'right',
+            width: "300px",
+            render: (value, row) => (
+                <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
+                    ₹ {value.toLocaleString()}
+                </span>
+            )
         },
         {
             key: 'pending',
             label: 'Pending Amount',
-            align: 'left',
+            align: 'right',
+            width: "300px",
             render: (_, row) => {
                 const pending = (row.total || 0) - (row.paid || 0);
-                return `₹ ${pending.toLocaleString()}`;
+
+                return (
+                    <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
+                        ₹ {pending.toLocaleString()}
+                    </span>
+                );
             }
         }
 
@@ -423,7 +494,7 @@ const PayTrack: React.FC = () => {
         setTempFilters(prev => updateFilter(prev, key, value));
     };
 
-  
+
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -449,7 +520,7 @@ const PayTrack: React.FC = () => {
                 // IMPORT
                 isShowImportButton={false}
                 // EXPORT
-                isShowExportButton={canExport && payTrackBookingsForTable.length === 0 ? false : true}
+                isShowExportButton={canExport && payTrackBookingsForTable.length > 0}
                 onExportExcel={handleExportPayTrackExcelFile}
                 onExportPdf={handleExportPayTrackPdfFile}
                 exportLoading={isLoading}
@@ -498,7 +569,7 @@ const PayTrack: React.FC = () => {
                                 paid: row.ReceivedAgreementValueTDS || 0,
                             },
 
-                             {
+                            {
                                 type: 'Other Charges Value',
                                 total: row.OtherChargesAmount || 0,
                                 paid: row.ReceivedOtherChargesAmount || 0,
@@ -508,8 +579,8 @@ const PayTrack: React.FC = () => {
                                 total: row.OtherChargesGSTAmount || 0,
                                 paid: row.ReceivedOtherChargesGSTAmount || 0,
                             },
-                            
-                            
+
+
                         ];
                     },
 
@@ -536,7 +607,6 @@ const PayTrack: React.FC = () => {
                                 data={dataWithTotal}
                                 columns={payTrackPaymentColumns}
                                 emptyMessage="No Data Found"
-                                fixedHeight={true}
                                 recordsPerPage={20}
                                 className="flex-1"
                                 sortInfo={sortInfo}
@@ -648,7 +718,7 @@ const PayTrack: React.FC = () => {
                 </div>
             </Modal>
 
-          
+
         </div>
     )
 }

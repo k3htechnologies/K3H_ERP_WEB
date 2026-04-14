@@ -22,6 +22,8 @@ export interface BookingLoanDetailsData {
     LoanAccountNumber: string;
     BankBranchName: string;
     Address: string;
+    NoOfBankDocument: number | 0
+    BankStatusClosedActive: string | ''
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -44,6 +46,13 @@ export interface AddUpdateBookingLoanDetailsRequest {
     Address?: string;
 }
 
+export interface UpdateBookingLoanDetailsStatusRequest {
+    BookingLoanDetailsId: number;
+    Uniquekey: string,
+    ProjectId: number;
+    BookingId: number;
+}
+
 export interface DeleteBookingLoanDetailsRequest {
     BookingLoanDetailsId: number;
     Uniquekey: string,
@@ -53,4 +62,5 @@ export interface DeleteBookingLoanDetailsRequest {
 
 export type BookingLoanDetailsListResponse = ApiResponse<BookingLoanDetailsData[]>;
 export type BookingLoanDetailsSaveReponse = ApiResponse<BookingLoanDetailsData[]>;
+export type BookingLoanDetailsStatusUpdateReponse = ApiResponse<BookingLoanDetailsData[]>;
 export type BookingLoanDetailsDeleteResponse = ApiResponse<number>;

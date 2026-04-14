@@ -39,9 +39,10 @@ const initialFormState = (): AddUpdateBankDocumentsPayTrackBookingFilesRequest =
 
 interface BankDocumentsProps {
     fileType: string;
+    pageName?: string;
 }
 
-export const BankDocuments: React.FC<BankDocumentsProps> = ({ fileType }) => {
+export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType, pageName }) => {
 
     const [bankDocumentList, setBankDocumentList] = useState<BankDocumentsPayTrackBookingFilesData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -68,7 +69,7 @@ export const BankDocuments: React.FC<BankDocumentsProps> = ({ fileType }) => {
 
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-    const { canAction } = useMenuPermissions("/payTrack");
+    const { canAction } = useMenuPermissions(fileType==="FLAT HANDOVER" ? "/flatHandover" : "/files");
 
     const { listState } = usePayTrackBookingListState();
     const { bookingId } = listState;
@@ -151,7 +152,7 @@ export const BankDocuments: React.FC<BankDocumentsProps> = ({ fileType }) => {
             (error: any) =>
                 addToast({ type: 'error', title: error.message }),
             undefined,
-            'Loading Bank Documents'
+            `Loading ${pageName}`
         );
 
     };
@@ -259,6 +260,7 @@ export const BankDocuments: React.FC<BankDocumentsProps> = ({ fileType }) => {
                 render: (_value, row) => {
 
                     const showEdit = canAction;
+                    const showDelete = canAction && pageName!="Flat Handover" ? true :false;
 
                     return (
                         <div className="flex items-center justify-end ml-2 gap-1">
@@ -295,17 +297,17 @@ export const BankDocuments: React.FC<BankDocumentsProps> = ({ fileType }) => {
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
-                                        if (!showEdit) return;
+                                        if (!showDelete) return;
                                         handleConfirmationDialogBoxOpen(row);
                                     }}
                                     color="transparent"
                                     isborderRadius
-                                    disabled={!showEdit}
+                                    disabled={!showDelete}
                                     size="sm"
                                     style={{
-                                        color: showEdit ? 'red' : '#9CA3AF',
-                                        cursor: showEdit ? 'pointer' : 'not-allowed',
-                                        opacity: showEdit ? 1 : 0.5
+                                        color: showDelete ? 'red' : '#9CA3AF',
+                                        cursor: showDelete ? 'pointer' : 'not-allowed',
+                                        opacity: showDelete ? 1 : 0.5
                                     }}
                                     title="Delete"
                                 >
@@ -440,7 +442,7 @@ export const BankDocuments: React.FC<BankDocumentsProps> = ({ fileType }) => {
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
-            'Add Bank Document File'
+            `Add ${pageName}`
         )
     };
     // #endregion
@@ -513,7 +515,7 @@ export const BankDocuments: React.FC<BankDocumentsProps> = ({ fileType }) => {
             undefined,
             (error: any) => addToast({ type: "error", title: error.message }),
             undefined,
-            "Deleting Bank Document"
+            `Deleting ${pageName}`
         );
     };
     //#endregion
@@ -536,14 +538,14 @@ export const BankDocuments: React.FC<BankDocumentsProps> = ({ fileType }) => {
                 isShowFilterButton={false}
                 isShowCustomizeButton={false}
                 // Add
-                isShowAddButton={canAction}
+                isShowAddButton={canAction && pageName!="Flat Handover" ? true :false}
                 addTitle="Add"
                 onAdd={handleBankDocumentsModal}
             />
 
             <DataTable
                 columns={bankDocumentColumns}
-                emptyMessage="No Bank Documents Found"
+                emptyMessage={`No ${pageName} Found`}
                 fixedHeight
                 className="flex-1"
                 data={bankDocumentListForTable}
@@ -553,7 +555,7 @@ export const BankDocuments: React.FC<BankDocumentsProps> = ({ fileType }) => {
 
             />
             <Modal
-                title={editingBankDocumentPayTrackBookingFilesData ? 'Update  Bank Document' : 'Add Bank Document'}
+                title={editingBankDocumentPayTrackBookingFilesData ? `Update ${pageName}` : `Add ${pageName}`}
                 isOpen={isAddUpdateModalOpen}
                 onClose={() => {
                     setIsAddUpdateModalOpen(false);
@@ -583,7 +585,7 @@ export const BankDocuments: React.FC<BankDocumentsProps> = ({ fileType }) => {
                         <div>
                             <Input
                                 label="File Name"
-                                placeholder="File Name"
+                                placeholder="Enter File Name"
                                 type="text"
                                 value={formData.FileName ?? ''}
                                 onChange={(e) => handleFieldChange('FileName', e.target.value)}
@@ -622,10 +624,10 @@ export const BankDocuments: React.FC<BankDocumentsProps> = ({ fileType }) => {
                 onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteBankDocumentPayTrackDetails}
                 loading={isLoading}
-                pageName='Bank Document'
+                pageName={pageName}
             />
         </div>
     )
 }
 
-export default BankDocuments
+export default BookingFlatHandoverFile

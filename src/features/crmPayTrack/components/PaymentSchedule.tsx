@@ -12,6 +12,9 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { usePayTrackBookingListState } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { CustomTable } from '@/ui/components/DataTable/CustomTable';
+import { formatCurrency } from '@/core/utils/comman';
+import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
+import { handleExportFile } from '@/core/utils/exportFile';
 
 
 export const PaymentSchedule: React.FC = () => {
@@ -20,7 +23,6 @@ export const PaymentSchedule: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isAddDemandLetterModalOpen, setIsAddDemandLetterModalOpen] = useState(false);
     const [demandLetterDocumentName, setDemandLetterDocumentName] = useState('');
-
 
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -66,6 +68,38 @@ export const PaymentSchedule: React.FC = () => {
         )
     }
 
+    const handleExportPayTrackPaymentScheduleExcel = async (exportType: 'Excel' | 'PDF') => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationPaymentSchedule = {
+                    ProjectId: Number(projectId),
+                    BookingId: bookingId,
+                    ExportType: exportType
+                };
+
+
+
+                const response = await paymentScheduleService.apiCallPullPaymentSchedule(params);
+
+                handleExportFile(response, exportType, 'Payment Schedule', addToast)
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message || 'Export failed' })
+            },
+            undefined,
+            'Preparing Export'
+        )
+    }
+
+    const handleExportPayTrackPaymentScheduleExcelFile = () => handleExportPayTrackPaymentScheduleExcel('Excel');
+    const handleExportPayTrackPaymentSchedulePdfFile = () => handleExportPayTrackPaymentScheduleExcel('PDF');
+
+
     // ✅ GRAND TOTAL CALCULATION
     const totals = useMemo(() => {
         return paymentScheduleCrmList.reduce((acc, row) => {
@@ -78,7 +112,7 @@ export const PaymentSchedule: React.FC = () => {
 
             const tdsAmount = row.PaymentScheduleTDSAmount || 0;
             const tdsReceived = row.PaymentScheduleReceivedTDSAmount || 0;
-            
+
             acc.PaymentScheduleAmount += amount;
             acc.PaymentScheduleReceivedAmount += received;
             acc.PaymentSchedulePendingAmount += (amount - received);
@@ -138,81 +172,179 @@ export const PaymentSchedule: React.FC = () => {
         ];
     }, [filteredData, totals]);
 
-    const paymentScheduleTableColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: "Name",
-            label: 'Name',
-            width: '14',
-            align: 'left',
-            render: (_value, row) => {
+    const paymentScheduleTableColumns = useMemo<TableColumn[]>(() => {
 
-                if (row.isTotal) return "Total";
+        const boldIfTotal = (row: any) => row.isTotal ? 'font-bold text-gray-500' : '';
 
-                if (row.Type === "Date" && row.Date) {
-                    return formatDate_dd_MonthName_yy(row.Date);
-                }
+        return [
+            {
+                key: "Name",
+                label: 'Name',
+                width: '14',
+                align: 'left',
+                render: (_value, row) => {
 
-                return row.Name || "-";
+                    let displayValue = row.Name || "-";
+
+                    if (row.isTotal) displayValue = "Total";
+
+                    if (row.Type === "Date" && row.Date) {
+                        displayValue = formatDate_dd_MonthName_yy(row.Date);
+                    }
+
+                    return (
+                        <span className={boldIfTotal(row)}>
+                            {displayValue}
+                        </span>
+                    );
+                },
             },
-        },
-        {
-            key: "PaymentSchedulePercentage",
-            label: 'Percentage (%)',
-            width: '14',
-            align: 'right',
-        },
+            {
+                key: "PaymentSchedulePercentage",
+                label: 'Percentage (%)',
+                width: '14',
+                align: 'center',
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {value || "-"}
+                    </span>
+                )
+            },
 
+            {
+                key: "AgreementGroup",
+                label: "Agreement Amount",
+                align: "center",
+                children: [
+                    {
+                        key: "PaymentScheduleAmount",
+                        label: "Total (₹)",
+                        align: "right",
+                        render: (v: number, row: any) => (
+                            <span className={boldIfTotal(row)}>
+                                {formatCurrency(v) || 0}
+                            </span>
+                        )
+                    },
+                    {
+                        key: "PaymentScheduleReceivedAmount",
+                        label: "Received (₹)",
+                        align: "right",
+                        render: (v: number, row: any) => (
+                            <span className={boldIfTotal(row)}>
+                                {formatCurrency(v) || 0}
+                            </span>
+                        )
+                    },
+                    {
+                        key: "PaymentSchedulePendingAmount",
+                        label: "Pending (₹)",
+                        align: "right",
+                        render: (_: number, row: any) => {
+                            const value =
+                                (row.PaymentScheduleAmount || 0) -
+                                (row.PaymentScheduleReceivedAmount || 0);
 
-        {
-            key: "AgreementGroup",
-            label: "Agreement",
-            align: "center",
-            children: [
-                { key: "PaymentScheduleAmount", label: "Amount (₹)", align: "center", render: (v: number) => v || 0 },
-                { key: "PaymentScheduleReceivedAmount", label: "Received (₹)", align: "center", render: (v: number) => v || 0 },
-                {
-                    key: "PaymentSchedulePendingAmount",
-                    label: "Pending (₹)",
-                    align: "center",
-                    render: (_: number, row: any) =>
-                        (row.PaymentScheduleAmount || 0) - (row.PaymentScheduleReceivedAmount || 0)
-                }
-            ]
-        },
-        {
-            key: "GSTGroup",
-            label: "GST",
-            align: "center",
-            children: [
-                { key: "PaymentScheduleGSTAmount", label: "Amount (₹)", align: "center", render: (v: number) => v || 0 },
-                { key: "PaymentScheduleReceivedGSTAmount", label: "Received (₹)", align: "center", render: (v: number) => v || 0 },
-                {
-                    key: "PaymentSchedulePendingGSTAmount",
-                    label: "Pending (₹)",
-                    align: "center",
-                    render: (_: number, row: any) =>
-                        (row.PaymentScheduleGSTAmount || 0) - (row.PaymentScheduleReceivedGSTAmount || 0)
-                }
-            ]
-        },
-        {
-            key: "TDSGroup",
-            label: "TDS",
-            align: "center",
-            children: [
-                { key: "PaymentScheduleTDSAmount", label: "Amount (₹)", align: "center", render: (v: number) => v || 0 },
-                { key: "PaymentScheduleReceivedTDSAmount", label: "Received (₹)", align: "center", render: (v: number) => v || 0 },
-                {
-                    key: "PaymentSchedulePendingTDSAmount",
-                    label: "Pending (₹)",
-                    align: "center",
-                    render: (_: number, row: any) =>
-                        (row.PaymentScheduleTDSAmount || 0) - (row.PaymentScheduleReceivedTDSAmount || 0)
-                }
-            ]
-        },
+                            return (
+                                <span className={boldIfTotal(row)}>
+                                    {formatCurrency(value) || 0}
+                                </span>
+                            );
+                        }
+                    }
+                ]
+            },
 
-    ], []);
+            {
+                key: "GSTGroup",
+                label: "GST Amount",
+                align: "center",
+                children: [
+                    {
+                        key: "PaymentScheduleGSTAmount",
+                        label: "Total (₹)",
+                        align: "right",
+                        render: (v: number, row: any) => (
+                            <span className={boldIfTotal(row)}>
+                                {formatCurrency(v) || 0}
+                            </span>
+                        )
+                    },
+                    {
+                        key: "PaymentScheduleReceivedGSTAmount",
+                        label: "Received (₹)",
+                        align: "right",
+                        render: (v: number, row: any) => (
+                            <span className={boldIfTotal(row)}>
+                                {formatCurrency(v) || 0}
+                            </span>
+                        )
+                    },
+                    {
+                        key: "PaymentSchedulePendingGSTAmount",
+                        label: "Pending (₹)",
+                        align: "right",
+                        render: (_: number, row: any) => {
+                            const value =
+                                (row.PaymentScheduleGSTAmount || 0) -
+                                (row.PaymentScheduleReceivedGSTAmount || 0);
+
+                            return (
+                                <span className={boldIfTotal(row)}>
+                                    {formatCurrency(value) || 0}
+                                </span>
+                            );
+                        }
+                    }
+                ]
+            },
+
+            {
+                key: "TDSGroup",
+                label: "TDS Amount",
+                align: "center",
+                children: [
+                    {
+                        key: "PaymentScheduleTDSAmount",
+                        label: "Total (₹)",
+                        align: "right",
+                        render: (v: number, row: any) => (
+                            <span className={boldIfTotal(row)}>
+                                {formatCurrency(v) || 0}
+                            </span>
+                        )
+                    },
+                    {
+                        key: "PaymentScheduleReceivedTDSAmount",
+                        label: "Received (₹)",
+                        align: "right",
+                        render: (v: number, row: any) => (
+                            <span className={boldIfTotal(row)}>
+                                {formatCurrency(v) || 0}
+                            </span>
+                        )
+                    },
+                    {
+                        key: "PaymentSchedulePendingTDSAmount",
+                        label: "Pending (₹)",
+                        align: "right",
+                        render: (_: number, row: any) => {
+                            const value =
+                                (row.PaymentScheduleTDSAmount || 0) -
+                                (row.PaymentScheduleReceivedTDSAmount || 0);
+
+                            return (
+                                <span className={boldIfTotal(row)}>
+                                    {formatCurrency(value) || 0}
+                                </span>
+                            );
+                        }
+                    }
+                ]
+            }
+        ];
+
+    }, []);
 
 
     return (
@@ -220,6 +352,16 @@ export const PaymentSchedule: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
+
+            <TableActionToolbar
+                isShowSearchBar={false}
+                // EXPORT
+                isShowExportButton={dataWithTotal.length > 0}
+                onExportExcel={handleExportPayTrackPaymentScheduleExcelFile}
+                onExportPdf={handleExportPayTrackPaymentSchedulePdfFile}
+                exportLoading={isLoading}
+
+            />
 
             <CustomTable
                 data={dataWithTotal}

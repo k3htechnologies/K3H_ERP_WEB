@@ -14,6 +14,7 @@ export interface TableColumn {
   align?: 'left' | 'center' | 'right'
   truncate?: boolean
   maxWidth?: string
+    children?: TableColumn[]
 }
 
 export interface PaginationInfo {
@@ -271,7 +272,7 @@ export const DataTable: React.FC<DataTableProps> = ({
                           <div
                             className={`${column.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`}
                             style={{
-                              maxWidth: column.maxWidth || column.width || '200px',
+                              maxWidth: column.maxWidth || column.width,
                               lineHeight: '1.5'
                             }}
                           >

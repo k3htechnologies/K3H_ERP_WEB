@@ -48,6 +48,7 @@ export interface PayTrackBookingData {
     FlatConfiguration: string | null;
     
     RegistrationDate: string | null;
+    FinalRegistrationDate: string | null;
 
     AgreementValue: number | null;
     ReceivedAgreementValue: number | null;
@@ -76,6 +77,7 @@ export interface PayTrackBookingData {
     TotalAmountRefundedAgainstBooking: number | null;
     RefundedAmountOnTillDate: number | null;
 
+    PendingLedgerApprovalCount: number | null;
     FlatAlterationRequestIsApproval: boolean;
     FlatAlterationRequestApprovalStatus: string | null;
     ParkingModificationRequestIsApproval: boolean;

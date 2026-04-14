@@ -170,6 +170,10 @@ import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
 import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
+import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
+import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
+import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
+import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -346,6 +350,9 @@ function App() {
 
             {/* COMMAN */}
             <Route path="event" element={<Event />} />
+            <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
+            <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
+            <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
 
 
             {/* SALES */}
@@ -449,7 +456,7 @@ function App() {
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 
           <Route path='Terms' element={<Terms />} />
-          <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
+          <Route path='Privacy-Policy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
 
         </Routes>

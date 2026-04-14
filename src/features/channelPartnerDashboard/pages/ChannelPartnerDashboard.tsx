@@ -14,6 +14,7 @@ import { Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import PartnerTypeDistribution from "@/features/channelPartnerDashboard/components/PartnerTypeDistribution";
 import type { Table0, Table1, Table2, Table3, Table4, Table5 } from "@/features/channelPartnerDashboard/models/ChannelPartnerDashboardModel";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 
 const ChannelPartnerDashboard: React.FC = () => {
@@ -34,6 +35,8 @@ const ChannelPartnerDashboard: React.FC = () => {
 
     // USE NAVIGATE
     const navigate = useNavigate();
+
+    const { canAction } = useMenuPermissions("/channelPartner");
 
     //#region NAVIGATE TO ADD CHANNEL PARTNER
     const handleAddChannelPartnerModal = useCallback(() => {
@@ -75,26 +78,28 @@ const ChannelPartnerDashboard: React.FC = () => {
 
     //#region
     return (
-        <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
 
             <div className="cursor-pointer">
-                <div className="flex justify-end pb-1">
-                    <Button
-                        onClick={() => {
-                            handleAddChannelPartnerModal();
-                        }}
-                        color="blue"
-                        size="sm"
-                        variant="solid"
-                        colorMode="gradient_dark"
-                        defineWidth
-                        style={{ width: '190px' }}
-                        leftIcon={<Plus className="h-4 w-4" />}
-                    >
-                        Add Channel Partner
-                    </Button>
-                </div>
+                {canAction && (
+                    <div className="flex justify-end pb-1">
+                        <Button
+                            onClick={() => {
+                                handleAddChannelPartnerModal();
+                            }}
+                            color="blue"
+                            size="sm"
+                            variant="solid"
+                            colorMode="gradient_dark"
+                            defineWidth
+                            style={{ width: '190px' }}
+                            leftIcon={<Plus className="h-4 w-4" />}
+                        >
+                            Add Channel Partner
+                        </Button>
+                    </div>
+                )}
 
                 <div className="pb-1">
                     <OverviewCards overViewData={overViewCardData} />
@@ -115,7 +120,7 @@ const ChannelPartnerDashboard: React.FC = () => {
                 <div className="col-span-12 lg:col-span-8">
                     <NewAddedChannelPartner NewAddedChannelPartnerData={newAddedChannelPartnerData} />
                 </div>
-                
+
                 <div className="col-span-12 lg:col-span-4">
                     <MissingDetails MissingDetailsData={teamMemberOverviewData} />
                 </div>

@@ -46,8 +46,9 @@ export class EmployeeExperienceDetailsDatasourceImpl implements EmployeeExperien
 
             console.error('Error: Pull EMPLOYEE EXPERIENCE DETAILS :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEmployeeExperienceDetails(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullEmployeeExperienceDetails(params);
             }
 
             throw error
@@ -67,9 +68,9 @@ export class EmployeeExperienceDetailsDatasourceImpl implements EmployeeExperien
         } catch (error) {
             console.error('Error: Add Update EMPLOYEE EXPERIENCE DETAILS:', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.addUpdateEmployeeExperienceDetails(params);
+                return   await this.addUpdateEmployeeExperienceDetails(params);
             }
             throw error
         }
@@ -92,8 +93,9 @@ export class EmployeeExperienceDetailsDatasourceImpl implements EmployeeExperien
 
             console.error('ERRPR : DELETE EMPLOYEE EXPERIENCE DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteEmployeeExperienceDetails(params);
+            if (error instanceof TokenExpiredException) {
+
+                return    await this.deleteEmployeeExperienceDetails(params);
             }
 
             throw error

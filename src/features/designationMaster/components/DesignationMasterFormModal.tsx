@@ -54,7 +54,7 @@ export const DesignationMasterFormModal: React.FC<DesignationMasterFormModalProp
 
           <div>
             <Input
-              label='Notice Period'
+              label='Notice Period (In Days)'
               required
               error={errors.NoticePeriod}
               type="text"
@@ -69,7 +69,7 @@ export const DesignationMasterFormModal: React.FC<DesignationMasterFormModalProp
           </div>
            <div>
             <Input
-              label='Probation Period'
+              label='Probation Period (In Days)'
               required
               error={errors.ProbationPeriod}
               type="text"

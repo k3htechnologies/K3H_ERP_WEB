@@ -54,8 +54,9 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
         } catch (error: any) {
             console.error('ERROR: PULL CHANNEL PARTNER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullChannelPartner(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullChannelPartner(params);
             }
             throw error
         }
@@ -70,8 +71,9 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
 
             console.error('ERROR: ADD UPDATE CHANNEL PARTNER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateChannelPartner(formData);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.addUpdateChannelPartner(formData);
             }
             throw error
         }
@@ -91,9 +93,9 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
 
             console.error('ERROR: DELETE CHANNEL PARTNER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteChannelPartnerRequest(params);
+                return   await this.deleteChannelPartnerRequest(params);
 
             }
 
@@ -113,10 +115,12 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
             return await this.k3hHttpClient.getRequestWithAuthentication(`${ChannelPartnerApi.PULL_CHANNELPARTNER_COMPANY}?${queryParams.toString()}`, { signal });
 
         } catch (error: any) {
+            
             console.error('ERROR: PULL CHANNEL PARTNER COMPANY:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullChannelPartner(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.pullChannelPartner(params);
             }
             throw error
         }

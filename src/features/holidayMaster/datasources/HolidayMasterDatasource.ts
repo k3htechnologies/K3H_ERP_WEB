@@ -42,8 +42,9 @@ export class HolidayMasterDatasourceImpl implements HolidayMasterDatasource {
 
             console.error('ERROR: PULL HOLIDAY MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullHolidayMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullHolidayMaster(params);
             }
 
             throw error
@@ -64,8 +65,9 @@ export class HolidayMasterDatasourceImpl implements HolidayMasterDatasource {
 
             console.error('ERROR: ADD UPDATE HOLIDAY MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateHolidayMaster(formData);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateHolidayMaster(formData);
             }
             throw error
         }
@@ -88,9 +90,9 @@ export class HolidayMasterDatasourceImpl implements HolidayMasterDatasource {
 
             console.error('ERROR: DELETE HOLIDAY MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteHolidayMaster(params);
+                return await this.deleteHolidayMaster(params);
 
             }
 

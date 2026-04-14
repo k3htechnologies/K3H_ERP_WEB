@@ -46,8 +46,9 @@ export class EmployeeEducationDetailsDatasourceImpl implements EmployeeEducation
 
             console.error('Error: Pull EMPLOYEE EDUCATION DETAILS :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEmployeeEducationDetails(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.pullEmployeeEducationDetails(params);
             }
 
             throw error
@@ -67,9 +68,9 @@ export class EmployeeEducationDetailsDatasourceImpl implements EmployeeEducation
         } catch (error) {
             console.error('Error: Add Update EMPLOYEE EDUCATION DETAILS:', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.addUpdateEmployeeEducationDetails(params);
+                return   await this.addUpdateEmployeeEducationDetails(params);
             }
             throw error
         }
@@ -92,8 +93,9 @@ export class EmployeeEducationDetailsDatasourceImpl implements EmployeeEducation
 
             console.error('ERRPR : DELETE EMPLOYEE EDUCATION DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteEmployeeEducationDetails(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.deleteEmployeeEducationDetails(params);
             }
 
             throw error

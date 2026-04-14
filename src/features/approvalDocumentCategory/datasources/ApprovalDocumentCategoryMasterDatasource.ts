@@ -37,8 +37,9 @@ export class ApprovalDocumentCategoryMasterDatasourceImpl implements ApprovalDoc
 
             console.error('ERROR: PULL APPROVAL DOCUMENT CATEGORY MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullApprovalDocumentCategoryMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullApprovalDocumentCategoryMaster(params);
             }
 
             throw error
@@ -57,8 +58,9 @@ export class ApprovalDocumentCategoryMasterDatasourceImpl implements ApprovalDoc
 
             console.error('ERROR: ADD UPDATE APPROVAL DOCUMENT CATEGORY MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateApprovalDocumentCategoryMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateApprovalDocumentCategoryMaster(params);
             }
             throw error
         }
@@ -82,9 +84,9 @@ export class ApprovalDocumentCategoryMasterDatasourceImpl implements ApprovalDoc
 
             console.error('ERROR: DELETE APPROVAL DOCUMENT CATEGORY MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteApprovalDocumentCategoryMaster(params);
+                return await this.deleteApprovalDocumentCategoryMaster(params);
 
             }
 

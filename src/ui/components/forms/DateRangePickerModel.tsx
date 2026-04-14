@@ -165,7 +165,7 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   const [tempEndDate, setTempEndDate] = useState<Date | null>(endDateObj)
   const initialDate = startDateObj ?? endDateObj ?? new Date()
   const [currentMonth, setCurrentMonth] = useState<Date>(initialDate)
-  const [editingField, setEditingField] = useState<'start' | 'end' | null>(null) 
+  const [editingField, setEditingField] = useState<'start' | 'end' | null>(null)
   const [localStartTime, setLocalStartTime] = useState(startTime)
   const [localEndTime, setLocalEndTime] = useState(endTime)
   const [localAIEnabled, setLocalAIEnabled] = useState(aiEnabled)
@@ -285,17 +285,15 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   const isDateAllowed = (date: Date): boolean => {
 if (!allowedDates || allowedDates.length === 0) return false
 
-    // If a CompOff date is selected, invert the logic:
-    // - Disable dates from allowedDates (CompOff dates)
-    // - Enable all other dates
-    if (isSelectedDateFromAllowedDates()) {
-      const dateStr = formatYyyyMmDd(date)
-      return !allowedDates.includes(dateStr) // Invert: allow dates NOT in allowedDates
+    const dateStr = formatYyyyMmDd(date)
+
+    // If no Working Date selected: allow only allowedDates
+    if (!tempStartDate) {
+      return allowedDates.includes(dateStr)
     }
 
-    // Default behavior: only allow dates from allowedDates
-    const dateStr = formatYyyyMmDd(date)
-    return allowedDates.includes(dateStr)
+    // If Working Date is selected: allow any date for CompOff Date
+    return true
   }
 
   const handleDayClick = (date: Date | null) => {
@@ -314,14 +312,8 @@ if (!allowedDates || allowedDates.length === 0) return false
     }
 
     if (editingField === 'end') {
-      if (tempStartDate && date < tempStartDate) {
-        setTempStartDate(date)
-        setTempEndDate(null)
-        setEditingField('end')
-      } else {
-        setTempEndDate(date)
-        setEditingField(null)
-      }
+      setTempEndDate(date)
+      setEditingField(null)
       return
     }
 
@@ -332,30 +324,15 @@ if (!allowedDates || allowedDates.length === 0) return false
     }
 
     if (!tempEndDate) {
-      if (date < tempStartDate) {
-        setTempEndDate(tempStartDate)
-        setTempStartDate(date)
-        setEditingField(null)
-      } else {
-        setTempEndDate(date)
-        setEditingField(null)
-      }
+      setTempEndDate(date)
+      setEditingField(null)
       return
     }
 
-    if (date < tempStartDate) {
-      setTempStartDate(date)
-      setTempEndDate(null)
-      setEditingField('end')
-    } else if (date < tempEndDate) {
-      setTempStartDate(date)
-      setTempEndDate(null)
-      setEditingField('end')
-    } else {
-      setTempStartDate(tempStartDate)
-      setTempEndDate(date)
-      setEditingField(null)
-    }
+    // If both dates are set, replace working date
+    setTempStartDate(date)
+    setTempEndDate(null)
+    setEditingField('end')
   }
 
   const handleConfirm = (e: React.FormEvent) => {
@@ -591,7 +568,8 @@ if (!allowedDates || allowedDates.length === 0) return false
                     const isSelected = isStart || isEnd
                     const dateAllowed = isDateAllowed(date)
                     const dateStr = formatYyyyMmDd(date)
-                    const isFromAllowedDates = allowedDates && allowedDates.length > 0 && allowedDates.includes(dateStr)
+                    const hasAllowedDates = allowedDates && allowedDates.length > 0
+                    const isFromAllowedDates = hasAllowedDates && allowedDates.includes(dateStr)
                     const hasCompOffDateSelected = isSelectedDateFromAllowedDates()
                     const isHighlighted = hasCompOffDateSelected
                       ? (!isFromAllowedDates && !isSelected && !isInRange && isCurrentMonth && dateAllowed)

@@ -14,7 +14,7 @@ import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
 
-export const ViewCompantMaster: React.FC = () => {
+export const ViewCompanyMaster: React.FC = () => {
     //#region STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -32,7 +32,7 @@ export const ViewCompantMaster: React.FC = () => {
 
     //#region INIT - Load Company Data
     useEffect(() => {
-        
+
         if (listState.companyId) {
             loadCompany();
         }
@@ -92,7 +92,7 @@ export const ViewCompantMaster: React.FC = () => {
     };
     //#endregion
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
 
@@ -121,12 +121,12 @@ export const ViewCompantMaster: React.FC = () => {
                         <h4 className="text-lg font-semibold text-gray-900 mb-4">
                             Basic Information
                         </h4>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <FieldItem label="Company Name" value={editCompanyData?.CompanyName ?? '-'} />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
                             <FieldItem label="Firms Type" value={editCompanyData?.FirmsType ?? '-'} />
                             <FieldItem label="Contact Person" value={editCompanyData?.ContactPerson ?? '-'} />
                             <FieldItem label="Mobile Number" value={editCompanyData?.MobileNumber ?? '-'} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
                             <FieldItem label="Email" value={editCompanyData?.EmailId ?? '-'} />
                             <FieldItem label="Landline" value={editCompanyData?.LandLineNumber ?? '-'} />
                         </div>
@@ -138,11 +138,14 @@ export const ViewCompantMaster: React.FC = () => {
                             Registration & Compliance
                         </h4>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
                             <FieldItem label="PAN Number" value={editCompanyData?.PANNumber ?? '-'} urls={editCompanyData?.PanCardURL} isIcon />
                             <FieldItem label="GST Number" value={editCompanyData?.GSTNumber ?? '-'} urls={editCompanyData?.GSTCertificateURL} isIcon />
                             <FieldItem label="CIN Number" value={editCompanyData?.CINNumber ?? '-'} urls={editCompanyData?.CINURL} isIcon />
-                            <FieldItem label="TAN Number" value={editCompanyData?.TANNumber ?? '-'}  urls={editCompanyData?.TANURL} isIcon/>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
+                            <FieldItem label="TAN Number" value={editCompanyData?.TANNumber ?? '-'} urls={editCompanyData?.TANURL} isIcon />
 
                             <FieldItem
                                 label="Company Letter Head"
@@ -170,9 +173,11 @@ export const ViewCompantMaster: React.FC = () => {
                             Address Details
                         </h4>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
                             <FieldItem label="Country" value={editCompanyData?.CountryName ?? '-'} />
                             <FieldItem label="State" value={editCompanyData?.StateName ?? '-'} />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-5">
                             <FieldItem label="District" value={editCompanyData?.DistrictName ?? '-'} />
                             <FieldItem label="City" value={editCompanyData?.CityName ?? '-'} />
                         </div>
@@ -184,12 +189,14 @@ export const ViewCompantMaster: React.FC = () => {
                             Action Details
                         </h4>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
                             <FieldItem label="Created By" value={editCompanyData?.CreatedBy ?? '-'} />
                             <FieldItem
                                 label="Created Date"
                                 value={formatDate_dd_MonthName_yy_hh_mm(editCompanyData?.CreatedDate ?? '-')}
                             />
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-5">
                             <FieldItem label="Modified By" value={editCompanyData?.ModifiedBy ?? '-'} />
                             <FieldItem
                                 label="Modified Date"
@@ -205,12 +212,12 @@ export const ViewCompantMaster: React.FC = () => {
             <div className="lg:col-span-1 space-y-6 pt-5">
                 {/* ================= PARTNERS ================= */}
                 <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                    <h4 className="text-lg font-semibold text-gray-900">
                         Partners ({editCompanyData?.CompanyPartnerData?.length ?? 0})
                     </h4>
 
                     {editCompanyData?.CompanyPartnerData?.length ? (
-                        <div className="space-y-3">
+                        <div className="space-y-3 pt-5">
                             {editCompanyData.CompanyPartnerData.map((partner, idx) => (
                                 <CollapseCard
                                     key={partner.CompanyPartnerId ?? idx}
@@ -223,8 +230,8 @@ export const ViewCompantMaster: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(partner.DateOfBirth ?? '-')} />
                                         <FieldItem label="Email" value={partner.EmailId ?? '-'} />
-                                        <FieldItem label="PAN Number" value={partner.PanNumber ?? '-'}  urls={partner.PanCardURL}  isIcon={true}/>
-                                        <FieldItem label="Aadhaar Card" value={partner.AadharCardNumber ?? '-'} urls={partner.AadharCardURL}  isIcon={true} />
+                                        <FieldItem label="PAN Number" value={partner.PanNumber ?? '-'} urls={partner.PanCardURL} isIcon={true} />
+                                        <FieldItem label="Aadhaar Card" value={partner.AadharCardNumber ?? '-'} urls={partner.AadharCardURL} isIcon={true} />
                                     </div>
                                 </CollapseCard>
                             ))}
@@ -241,4 +248,4 @@ export const ViewCompantMaster: React.FC = () => {
     );
 };
 
-export default ViewCompantMaster;
+export default ViewCompanyMaster;

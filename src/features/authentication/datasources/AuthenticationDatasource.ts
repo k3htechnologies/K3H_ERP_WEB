@@ -70,9 +70,8 @@ export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
 
     async getEmployeeWithMenu(): Promise<AuthenticationResponse> {
         try {
-           
 
-            return await this.k3hHttpClient.getRequestWithoutAuthentication(`${AuthenticationApi.EMPLOYEE_WITH_MENU}`);
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${AuthenticationApi.EMPLOYEE_WITH_MENU}`);
 
         } catch (error) {
 

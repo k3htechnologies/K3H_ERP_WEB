@@ -52,14 +52,12 @@ export const BranchMasterViewModal: React.FC<BranchMasterViewModalProps> = ({
       size='xl'
     >
       <div className="space-y-6">
-        <div className="space-y-4">
           <FieldItem label="Branch Name" value={data.BranchName} isRow withBorder={true} className='font-medium text-blue-900 ' />
           <FieldItem label="Branch Code" value={data.BranchCode} isRow withBorder={true} />
           <FieldItem label="Head Office" value={data.IsHeadOffice ? "Yes" : "No"} isRow withBorder={true} />
           <FieldItem label="Location" value={data.Location} isRow withBorder={true} />
-        </div>
-        <div className="space-y-4">
-          <h4 className="text-lg font-semibold pb-2">
+       
+          <h4 className="text-lg font-semibold">
             Action Details
           </h4>
           <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
@@ -67,8 +65,8 @@ export const BranchMasterViewModal: React.FC<BranchMasterViewModalProps> = ({
             <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
             :
             ''}
-        </div>
-        <div className="flex justify-between items-center pt-4">
+       
+        <div className="flex justify-between items-center">
           {canAction && (
             <>
               {(data.NumberOfEmployee || 0) === 0 ? (

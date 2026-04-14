@@ -52,13 +52,11 @@ export const DesignationMasterViewModal: React.FC<DesignationMasterViewModalProp
       size='xl'
     >
       <div className="space-y-6">
-        <div className="space-y-4">
           <FieldItem label="Designation Name" value={data.DesignationName} isRow withBorder={true} />
-          <FieldItem label="Probation Period" value={data.ProbationPeriod} isRow withBorder={true} />
-          <FieldItem label="Notice Period" value={data.NoticePeriod} isRow withBorder={true} />
+          <FieldItem label="Probation Period" value={data?.ProbationPeriod ? `${data.ProbationPeriod} Days` : "-"}  isRow withBorder={true} />
+          <FieldItem label="Notice Period" value={data?.NoticePeriod ? `${data.NoticePeriod} Days` : "-"} isRow withBorder={true} />
           <FieldItem label="Number of Employees" value={data.NumberOfEmployee} isRow withBorder={true} />
-        </div>
-        <div className="space-y-4">
+       
           <h4 className="text-lg font-semibold pb-2">
             Action Details
           </h4>
@@ -67,8 +65,8 @@ export const DesignationMasterViewModal: React.FC<DesignationMasterViewModalProp
             <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
             :
             ''}
-        </div>
-        <div className="flex justify-between items-center pt-4">
+        
+        <div className="flex justify-between items-center">
           {canAction && (
             <>
               {(data.NumberOfEmployee || 0) === 0 ? (

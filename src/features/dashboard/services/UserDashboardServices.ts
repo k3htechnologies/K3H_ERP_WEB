@@ -9,9 +9,11 @@ const userDashboardDatasource = new UserDashboardDatasourceImpl();
 export const userDashboardServices = {
     apiCallPullUserDashboard: async (signal?: AbortSignal): Promise<E.Either<Failure, UserDashboardDatasetResponse>> => {
         try {
-            const response = await userDashboardDatasource.pullUserDashboard(signal);
-            return E.right(response);
+
+            return E.right(await userDashboardDatasource.pullUserDashboard(signal));
+
         } catch (error) {
+            
             return E.left(error as Failure);
         }
     },

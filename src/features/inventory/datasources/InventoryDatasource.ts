@@ -79,7 +79,8 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: IS PROJECT INVENTORY EXISTS:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
+
                 return await this.isProjectInventoryExists(params);
             }
             throw error;
@@ -99,7 +100,8 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: PULL INVENTORY:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
+
                 return await this.pullInventory(params, signal);
             }
             throw error;
@@ -131,7 +133,8 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: PULL PAGINATED FLATS:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
+
                 return await this.pullPaginatedFlats(params, signal);
             }
             throw error;
@@ -147,7 +150,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: ADD INVENTORY:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.addInventory(params);
             }
             throw error;
@@ -167,7 +170,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: DELETE INVENTORY:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.deleteInventory(params);
             }
             throw error;
@@ -183,8 +186,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: UPDATE INVENTORY WING:', error);
 
-            if (error === TokenExpiredException) {
-
+            if (error instanceof TokenExpiredException) {
                 return await this.updateInventoryWing(params);
 
             }
@@ -201,7 +203,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: UPDATE INVENTORY FLOOR:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
                 return await this.updateInventoryFloor(params);
             }
@@ -218,7 +220,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: UPDATE INVENTORY FLAT:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
                 return await this.updateInventoryFlat(params);
 
@@ -241,7 +243,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: DELETE INVENTORY BUILDING:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.deleteInventoryBuilding(params);
             }
             throw error;
@@ -263,7 +265,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: DELETE INVENTORY WING:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.deleteInventoryWing(params);
             }
             throw error;
@@ -285,7 +287,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: DELETE INVENTORY FLOOR:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.deleteInventoryFloor(params);
             }
             throw error;
@@ -309,7 +311,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: DELETE INVENTORY FLAT:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.deleteInventoryFlat(params);
             }
             throw error;
@@ -325,7 +327,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: ADD INVENTORY BUILDING:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.addInventoryBuilding(params);
             }
             throw error;
@@ -341,7 +343,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: ADD INVENTORY WING:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.addInventoryWing(params);
             }
             throw error;
@@ -357,7 +359,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: ADD INVENTORY FLOOR:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.addInventoryFloor(params);
             }
             throw error;
@@ -373,7 +375,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: ADD INVENTORY FLAT:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.addInventoryFlat(params);
             }
             throw error;
@@ -389,7 +391,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: ADD UPDATE INVENTORY FLOOR PARKING COUNT:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.addUpdateInventoryFloorParkingCount(params);
             }
             throw error;
@@ -411,7 +413,7 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
 
             console.error('ERROR: PULL INVENTORY FLOOR FOR PAYMENT SCHEDULE:', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
                 return await this.pullInventoryFloorForPaymentSchedule(params, signal);
             }
@@ -420,31 +422,30 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
     }
 
     async pullProjectInventoryStructure(params: FilterWithPaginationProjectInventoryStructureRequest, signal?: AbortSignal): Promise<ProjectInventoryStructureListResponse> {
-            try {
-                const queryParams = new URLSearchParams({
-                    ProjectId: String(params.ProjectId ?? 10),
-                });
-    
-                if (params.InventoryBuildingId) queryParams.append("InventoryBuildingId", params.InventoryBuildingId.toString());
-                if (params.Wing) queryParams.append('Wing', params.Wing.toString());
-                if (params.FlatConfiguration) queryParams.append('FlatConfiguration', params.FlatConfiguration.toString());
-                if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
-                if (params.ExportType) queryParams.append("ExportType", params.ExportType);
-    
-                const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                    `${InventoryApis.PULL_INVENTORY_STRUCTURE}?${queryParams.toString()}`, { signal }
-                )
-                return response
-    
-            } catch (error: any) {
-    
-                console.error("ERROR: PULL PROJECT INVENTORY STRUCTURE :", error);
-    
-                if (error === TokenExpiredException) {
-    
-                    await this.pullProjectInventoryStructure(params);
-                }
-                throw error;
+        try {
+            const queryParams = new URLSearchParams({
+                ProjectId: String(params.ProjectId ?? 10),
+            });
+
+            if (params.InventoryBuildingId) queryParams.append("InventoryBuildingId", params.InventoryBuildingId.toString());
+            if (params.Wing) queryParams.append('Wing', params.Wing.toString());
+            if (params.FlatConfiguration) queryParams.append('FlatConfiguration', params.FlatConfiguration.toString());
+            if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
+            if (params.ExportType) queryParams.append("ExportType", params.ExportType);
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${InventoryApis.PULL_INVENTORY_STRUCTURE}?${queryParams.toString()}`, { signal }
+            )
+            return response
+
+        } catch (error: any) {
+
+            console.error("ERROR: PULL PROJECT INVENTORY STRUCTURE :", error);
+
+            if (error instanceof TokenExpiredException) {
+                return await this.pullProjectInventoryStructure(params);
             }
+            throw error;
         }
+    }
 }

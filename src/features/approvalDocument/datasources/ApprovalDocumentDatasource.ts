@@ -40,8 +40,9 @@ export class ApprovalDocumentDatasourceImpl implements ApprovalDocumentDatasourc
 
             console.error('ERROR: PULL APPROVAL DOCUMENT :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullApprovalDocument(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullApprovalDocument(params);
             }
 
             throw error
@@ -60,8 +61,9 @@ export class ApprovalDocumentDatasourceImpl implements ApprovalDocumentDatasourc
 
             console.error('ERROR: ADD UPDATE APPROVAL DOCUMENT :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateApprovalDocument(formData);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateApprovalDocument(formData);
             }
             throw error
         }
@@ -87,9 +89,9 @@ export class ApprovalDocumentDatasourceImpl implements ApprovalDocumentDatasourc
 
             console.error('ERROR: DELETE APPROVAL DOCUMENT :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteApprovalDocument(params);
+                return await this.deleteApprovalDocument(params);
 
             }
 

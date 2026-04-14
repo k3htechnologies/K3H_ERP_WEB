@@ -48,9 +48,9 @@ export class PerformanceReportDatasourceImpl implements PerformanceReportDatasou
 
             console.error("ERROR: PULL PERFORMANCE REPORT :", error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullPerformanceReportClosing(params);
+                return await this.pullPerformanceReportClosing(params);
             }
             throw error;
         }
@@ -82,9 +82,9 @@ export class PerformanceReportDatasourceImpl implements PerformanceReportDatasou
 
             console.error("ERROR: PULL PERFORMANCE REPORT :", error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullPerformanceReportSourcing(params);
+                return await this.pullPerformanceReportSourcing(params);
             }
             throw error;
         }

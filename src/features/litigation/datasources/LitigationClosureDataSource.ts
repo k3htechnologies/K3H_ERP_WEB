@@ -41,8 +41,9 @@ export class LitigationClosureDatasourceImpl implements LitigationClosureDatasou
 
             console.error('ERROR: PULL LITIGATION CLOSURE:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullLitigationClosure(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullLitigationClosure(params);
             }
             
             throw error
@@ -62,8 +63,9 @@ export class LitigationClosureDatasourceImpl implements LitigationClosureDatasou
 
             console.error('ERROR:ADD UPDATE LITIGATION CLOSURE:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpadateLitigationClosure(formData);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpadateLitigationClosure(formData);
             }
             throw error
         }

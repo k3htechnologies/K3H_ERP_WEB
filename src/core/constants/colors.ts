@@ -383,6 +383,12 @@ export const COLOR_MAP = {
       border: '1px solid #f6f3f4',
       hover: { backgroundColor: '#f6f3f4' },
     },
+    transparent_border_background: {
+      backgroundColor: '#f6f3f4',
+      color: 'inherit',
+      border: '1px solid #f6f3f4',
+      hover: { backgroundColor: '#f6f3f4' },
+    },
   },
 
   cancel: {

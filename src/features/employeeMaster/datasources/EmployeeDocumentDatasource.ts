@@ -45,8 +45,9 @@ export class EmployeeDocumentDatasourceImpl implements EmployeeDocumentDatasourc
 
             console.error('Error: Pull EMPLOYEE DOCUMENT :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEmployeeDocument(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.pullEmployeeDocument(params);
             }
 
             throw error
@@ -66,9 +67,9 @@ export class EmployeeDocumentDatasourceImpl implements EmployeeDocumentDatasourc
         } catch (error) {
             console.error('Error: Add Update EMPLOYEE DOCUMENT:', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.addUpdateEmployeeDocument(params);
+                return   await this.addUpdateEmployeeDocument(params);
             }
             throw error
         }
@@ -91,8 +92,9 @@ export class EmployeeDocumentDatasourceImpl implements EmployeeDocumentDatasourc
 
             console.error('ERRPR : DELETE EMPLOYEE DOCUMENT:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteEmployeeDocument(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.deleteEmployeeDocument(params);
             }
 
             throw error

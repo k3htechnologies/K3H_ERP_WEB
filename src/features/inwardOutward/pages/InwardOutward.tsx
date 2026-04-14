@@ -248,7 +248,7 @@ export const InwardOutward: React.FC = () => {
                     const newRecord = response.right.Data[0] as AddRevertInwardOutwardData;
 
                     setRevertedInwardOutwardDataList(prev => [newRecord, ...prev]);
-
+                    setRevertDocumentURLFiles([])
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
                 } else {

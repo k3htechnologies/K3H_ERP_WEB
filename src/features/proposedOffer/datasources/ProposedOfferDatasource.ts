@@ -143,8 +143,8 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: PULL EXTRA CARPET AREA:', error)
 
-            if (error === TokenExpiredException) {
-                await this.pullExtraCarpetArea(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.pullExtraCarpetArea(params);
             }
 
             throw error
@@ -164,8 +164,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('Error: Add Update EXTRA CARPET AREA :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateExtraCarpetArea(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateExtraCarpetArea(params);
             }
             throw error
         }
@@ -187,8 +188,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: PULL CORPUS DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.pullCorpusDetails(params);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullCorpusDetails(params);
             }
             throw error
         }
@@ -208,9 +210,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('Error: Add Update EXTRA CARPET AREA :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.addUpdateCorpusDetails(params);
+                return  await this.addUpdateCorpusDetails(params);
             }
             throw error
         }
@@ -230,8 +232,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             console.error('ERROR: DELETE CORPUS DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteCorpusDetails(params)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteCorpusDetails(params)
             }
 
             throw error
@@ -254,8 +257,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             console.error('ERROR: PULL RENT DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.pullRentDetails(params, signal)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullRentDetails(params, signal)
             }
 
             throw error
@@ -272,8 +276,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             console.error('ERROR: ADD UPDATE RENT DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateRentDetails(params)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateRentDetails(params)
             }
 
             throw error
@@ -296,8 +301,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             console.error('ERROR: DELETE RENT DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteRentDetails(params)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteRentDetails(params)
             }
 
             throw error
@@ -322,8 +328,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             console.error('ERROR: PULL SHIFTING DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.pullShiftingDetails(params, signal)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullShiftingDetails(params, signal)
             }
 
             throw error
@@ -339,8 +346,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: ADD UPDATE SHIFTING DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateShiftingDetails(params)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateShiftingDetails(params)
             }
 
             throw error
@@ -361,8 +369,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             console.error('ERROR: DELETE SHIFTING DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteShiftingDetails(params)
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.deleteShiftingDetails(params)
             }
 
             throw error
@@ -384,8 +393,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: PULL SECURITY DEPOSIT DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.pullSecurityDepositDetails(params, signal)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullSecurityDepositDetails(params, signal)
             }
 
             throw error
@@ -401,8 +411,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: ADD UPDATE SECURITY DEPOSIT DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateSecurityDepositDetails(params)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateSecurityDepositDetails(params)
             }
 
             throw error
@@ -423,8 +434,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             console.error('ERROR: DELETE SECURITY DEPOSIT DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.deleteSecurityDepositDetails(params)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteSecurityDepositDetails(params)
             }
 
             throw error
@@ -445,8 +457,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: PULL LIEN TO SOCIETY DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.pullLienToSocietyDetails(params, signal)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullLienToSocietyDetails(params, signal)
             }
 
             throw error
@@ -462,8 +475,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: ADD UPDATE LIEN TO SOCIETY DETAILS:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateLienToSocietyDetails(params)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateLienToSocietyDetails(params)
             }
 
             throw error
@@ -485,8 +499,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: PULL PARKING ALLOTMENT:', error)
 
-            if (error === TokenExpiredException) {
-                await this.pullParkingAllotment(params, signal)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullParkingAllotment(params, signal)
             }
 
             throw error
@@ -502,8 +517,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: ADD UPDATE PARKING ALLOTMENT:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateParkingAllotment(params)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateParkingAllotment(params)
             }
 
             throw error
@@ -525,8 +541,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: PULL GST ON EXISTING PLUS FREE AREA:', error)
 
-            if (error === TokenExpiredException) {
-                await this.pullGSTonExistingPlusFreeArea(params, signal)
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullGSTonExistingPlusFreeArea(params, signal)
             }
 
             throw error
@@ -542,8 +559,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: ADD UPDATE GST ON EXISTING PLUS FREE AREA:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateGSTonExistingPlusFreeArea(params)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateGSTonExistingPlusFreeArea(params)
             }
 
             throw error
@@ -565,8 +583,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: PULL PROJECT COMPLETION:', error)
 
-            if (error === TokenExpiredException) {
-                await this.pullProjectCompletion(params, signal)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullProjectCompletion(params, signal)
             }
 
             throw error
@@ -582,8 +601,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: ADD UPDATE PROJECT COMPLETION:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateProjectCompletion(params)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateProjectCompletion(params)
             }
 
             throw error
@@ -604,8 +624,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: PULL PROPOSED PLAN:', error)
 
-            if (error === TokenExpiredException) {
-                await this.pullProposedPlan(params, signal)
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullProposedPlan(params, signal)
             }
 
             throw error
@@ -621,8 +642,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('ERROR: ADD UPDATE PROPOSED PLAN:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateProposedPlan(formData)
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateProposedPlan(formData)
             }
 
             throw error
@@ -646,9 +668,9 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         } catch (error) {
             console.error('Error: GENERATE PROPOSED OFFER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.addUpdateGenerateProposedOffer(params);
+                return  await this.addUpdateGenerateProposedOffer(params);
             }
             throw error
         }

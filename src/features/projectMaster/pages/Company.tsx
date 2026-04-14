@@ -24,7 +24,7 @@ const Company: React.FC = () => {
   //#region STATE MANAGEMENT
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-  const [compantMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
+  const [companyMasterList, setCompanyMasterList] = useState<CompanyMasterData[]>([]);
 
   // TOAST
   const { addToast } = useToast()
@@ -35,7 +35,7 @@ const Company: React.FC = () => {
   const { listState } = useProjectMasterListState();
   const projectId = listState.projectId;
   const projectName = listState.projectName;
-  const uniquekey= listState.uniquekey;
+  const uniquekey = listState.uniquekey;
 
 
   //FILTER STATES
@@ -150,16 +150,16 @@ const Company: React.FC = () => {
         label: 'Company Name',
         width: '33',
         sortable: false,
-        align: 'center',
+        align: 'left',
         fixed: 'left',
         render: (value) => value || ''
       },
       {
-        key: 'CompanyType',
-        label: 'Company Type',
+        key: 'FirmsType',
+        label: 'Firms Type',
         width: '33',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || ''
       },
       {
@@ -167,7 +167,7 @@ const Company: React.FC = () => {
         label: 'Contact Person',
         width: '33',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || ''
       },
       {
@@ -175,15 +175,15 @@ const Company: React.FC = () => {
         label: 'Mobile Number',
         width: '33',
         sortable: false,
-        align: 'center',
-        render: (value) => value || ''
+        align: 'left',
+        render: value => value ? `+91 ${value}` : '-'
       },
       {
         key: 'CityName',
         label: 'City',
         width: '33',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || ''
       },
 
@@ -280,7 +280,7 @@ const Company: React.FC = () => {
     });
 
 
-    const assignedIds = (compantMasterList || [])
+    const assignedIds = (companyMasterList || [])
       .map(e => e.CompanyId)
       .filter(Boolean) as number[];
     setSelectedCompanyIds(assignedIds);
@@ -382,7 +382,7 @@ const Company: React.FC = () => {
 
   //#region  BACK TO PROJECT MASTER PAGE
   const handleBackToListProjectMaster = () => {
-     navigate("/projectMaster");
+    navigate("/projectMaster");
   };
   //#endregion
   return (
@@ -406,7 +406,7 @@ const Company: React.FC = () => {
       />
       <div className='pt-5'>
         <DataTable
-          data={compantMasterList}
+          data={companyMasterList}
           columns={projectMasterWithCompanyColumns}
           emptyMessage="No Company Data Found"
           fixedHeight={true}
@@ -428,7 +428,7 @@ const Company: React.FC = () => {
       >
         <div className="space-y-4">
 
-          <div className="px-2 py-2 border-b">
+          <div className="px-2 py-2">
             <div className="flex items-center gap-3 w-full">
 
               {/* Select ALL */}
@@ -453,10 +453,10 @@ const Company: React.FC = () => {
                 />
               </div>
 
-
-              <span className="text-sm text-gray-600 whitespace-nowrap right">
+              <span className="text-sm text-gray-600 whitespace-nowrap ml-auto">
                 {selectedCompanyIds.length} selected
               </span>
+
 
             </div>
           </div>

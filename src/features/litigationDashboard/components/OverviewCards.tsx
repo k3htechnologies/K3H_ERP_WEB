@@ -29,7 +29,7 @@ const cards = [
         {cards.map((c, i) => (
           <div
             key={i}
-            className="bg-white rounded-lg p-4 shadow-sm space-y-4"
+            className="bg-white rounded-lg p-4 shadow-sm space-y-4 border border-gray-100"
             style={{
               backgroundColor: c.title === "Total Cases" ? "#0c3ca3" : "#ffffff",
               color: c.title === "Total Cases" ? "#ffffff" : "inherit",

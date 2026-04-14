@@ -1,71 +1,124 @@
-import { Calendar1Icon, Clock1, LaptopIcon, ListTodo, DollarSignIcon, FileDown } from "lucide-react"
+import { useState } from "react";
+import { Calendar1Icon, Clock1, LaptopIcon, ListTodo, IndianRupeeIcon, FileDown, AlertTriangle } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Modal } from "@/ui/components/Modal/Modal";
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
 
 export default function QuickActions() {
 
-    // Enter 6 data and display on the cards
+    const navigate = useNavigate();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+
     const cardDarta = [
         {
             icon: <Calendar1Icon size={24} />,
             title: "Apply Leave",
             bg: "bg-blue-100",
-            text: "text-blue-600"
-
+            text: "text-blue-600",
+            onClick: () => navigate("/leave/add")
         },
         {
             icon: <Clock1 size={24} />,
             title: "Regularize",
             bg: "bg-green-100",
-            text: "text-green-600"
+            text: "text-green-600",
+            onClick: () => navigate("/attendance")
 
         },
         {
             icon: <ListTodo size={24} />,
             title: "Raise Task",
             bg: "bg-purple-100",
-            text: "text-purple-600"
+            text: "text-purple-600",
+            onClick: () => setIsModalOpen(true)
 
         },
         {
             icon: <LaptopIcon size={24} />,
             title: "Request Asset",
             bg: "bg-orange-100",
-            text: "text-orange-600"
+            text: "text-orange-600",
+            onClick: () => setIsModalOpen(true)
 
         },
         {
-            icon: <DollarSignIcon size={24} />,
+            icon: <IndianRupeeIcon size={24} />,
             title: "Apply Advance",
             bg: "bg-yellow-100",
-            text: "text-yellow-600"
+            text: "text-yellow-600",
+            onClick: () => setIsModalOpen(true)
 
         },
         {
             icon: <FileDown size={24} />,
             title: "Payslip",
             bg: "bg-pink-100",
-            text: "text-pink-600"
+            text: "text-pink-600",
+            onClick: () => setIsModalOpen(true)
 
         }
     ]
 
     return (
-        <div className="space-y-3 pt-5">
-            <div className="bg-white rounded-xl shadow p-4 h-full mt-9">
-                <p className="text-sm font-semibold text-gray-500">Quick Actions</p>
-                <div className="grid grid-cols-2 ">
-                    {cardDarta.map((card, index) => (
-                        <div key={index} className=" w-40 h-40 border border-gray-200 rounded-lg p-3 mt-3 cursor-pointer flex flex-col items-center justify-center hover:shadow-lg transition-shadow">
-                            <div className={`p-2 rounded-md ${card.bg} ${card.text}`}>
-                                {card.icon}
+        <div className="space-y-3 pt-5 sm:pt-7">
+
+            <div className="bg-white rounded-xl p-4 sm:p-5 mt-10 flex flex-col h-[531px] border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+                {/* Title */}
+                <p className="text-md font-semibold text-gray-500 pb-2">
+                    Quick Actions
+                </p>
+
+                {/* Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-3 sm:gap-4 mt-2 sm:mt-4 overflow-y-auto thin-scroll ">
+
+                    {cardDarta?.length > 0 ? (
+                        cardDarta.map((card, index) => (
+                            <div
+                                key={index}
+                                onClick={card.onClick}
+                                className="w-full aspect-square max-h-28 sm:max-h-32 
+                       border border-gray-200 rounded-lg p-3 
+                       cursor-pointer flex flex-col items-center justify-center 
+                       hover:shadow-lg transition-all duration-200"
+                            >
+                                <div className={`p-2 sm:p-3 rounded-md ${card.bg} ${card.text}`}>
+                                    {card.icon}
+                                </div>
+
+                                <p className="text-center mt-2 sm:mt-3 text-xs sm:text-sm font-medium text-gray-700">
+                                    {card.title ?? "-"}
+                                </p>
                             </div>
-
-
-                            <p className="text-center mt-2">{card.title}</p>
+                        ))
+                    ) : (
+                        <div className="col-span-full flex items-center justify-center py-10 text-center">
+                            <NoDataView message="No data available" />
                         </div>
-                    ))}
+                    )}
 
                 </div>
             </div>
+
+            {/* Modal */}
+            <Modal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                title={
+                    <div className="flex items-center gap-2 ">
+                        <div className="w-9 h-9 flex items-center justify-center rounded-lg bg-yellow-100">
+                            <AlertTriangle className="w-5 h-5 text-yellow-600" />
+                        </div>
+                        <span>Coming Soon</span>
+                    </div>
+                }
+                size="md"
+            >
+                <div className="flex flex-col items-center">
+                    <p className="text-black-400 text-sm sm:text-lg">
+                        This feature is currently under development and will be available soon.
+                    </p>
+                </div>
+            </Modal>
         </div>
     )
 }

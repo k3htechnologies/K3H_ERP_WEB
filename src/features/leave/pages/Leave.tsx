@@ -182,7 +182,7 @@ export const Leave: React.FC = () => {
   //#region DATA LOAD LEAVE
 
   const loadLeaves = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
-    
+
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -200,7 +200,7 @@ export const Leave: React.FC = () => {
           IsReport: false,
           IsCheckPermission: true
         };
-        
+
         const response = await LeaveService.apiCallPullLeave(params);
 
         if (E.isRight(response)) {
@@ -437,7 +437,7 @@ export const Leave: React.FC = () => {
 
   //#region CUSTOMIZE COLUMNS
 
-  const requiredLeaveColumnKeys: string[] = ['LeaveType'];
+  const requiredLeaveColumnKeys: string[] = ['LeaveType', 'actions'];
 
   const [selectedLeaveColumnKeys, setSelectedLeaveColumnKeys] = useState<string[]>([]);
 
@@ -505,10 +505,9 @@ export const Leave: React.FC = () => {
 
   return (
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
-      
+
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}

@@ -22,7 +22,6 @@ export class PayrollDashboardDatasourceImpl implements PayrollDashboardDatasourc
 
             if (params.StartDate) queryParams.append("StartDate", params.StartDate);
             if (params.EndDate) queryParams.append("EndDate", params.EndDate);
-            if (params.EmployeeName) queryParams.append("EmployeeName", params.EmployeeName);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(`${PayrollDashboardApi.PULL}?${queryParams.toString()}`, { signal })
             return response;
@@ -31,8 +30,9 @@ export class PayrollDashboardDatasourceImpl implements PayrollDashboardDatasourc
 
             console.error('ERROR: PULL PAYROLL DASHBOARD :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullPayrollDashboard(params);
+             if (error instanceof TokenExpiredException) {
+
+                return await this.pullPayrollDashboard(params);
             }
             throw error
         }

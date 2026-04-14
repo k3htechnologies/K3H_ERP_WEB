@@ -40,9 +40,9 @@ export class EnquiryReportDatasourceImpl implements EnquiryReportDatasource {
 
             console.error('ERROR: PULL ENQUIRY REPORT :', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullEnquiryReport(params);
+                return  await this.pullEnquiryReport(params);
             }
 
             throw error

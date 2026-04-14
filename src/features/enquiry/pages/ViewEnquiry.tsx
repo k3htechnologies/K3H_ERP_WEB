@@ -475,9 +475,9 @@ const ViewEnquiry: React.FC = () => {
 
                                 {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Reference' && (
                                     <>
-                                        <FieldItem label="Referral Project Name" value={safe(enquiryData?.ReferelProjectName ?? "")} />
-                                        <FieldItem label="Referral Unit Number" value={safe(enquiryData?.ReferelUnitNumber ?? "")} />
-                                        <FieldItem label="Unit Owner" value={safe(enquiryData?.ReferelUnitOwnerName ?? "")} />
+                                        <FieldItem label="Referral Project Name" value={safe(enquiryData?.ReferralProjectName ?? "")} />
+                                        <FieldItem label="Referral Unit Number" value={safe(enquiryData?.ReferralUnitNumber ?? "")} />
+                                        <FieldItem label="Unit Owner" value={safe(enquiryData?.ReferralUnitOwnerName ?? "")} />
 
                                     </>
                                 )}

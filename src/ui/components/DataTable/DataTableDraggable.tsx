@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react";
 import { useViewportHeight } from "@/core/utils/useViewportHeight";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import type { PaginationInfo, SortInfo, TableColumn } from "./DataTable";
+import { useHorizontalScroll } from "./useHorizontalScroll";
 
 interface DataTableDraggableProps {
     data: any[];
@@ -35,7 +36,8 @@ export const DataTableDraggable: React.FC<DataTableDraggableProps> = ({
     enableRowReorder = false,
     onRowReorder
 }) => {
-
+    const scrollRef = useHorizontalScroll();
+    
     const [selectedRowIndex, setSelectedRowIndex] = React.useState<number | null>(null);
     const [dragIndex, setDragIndex] = React.useState<number | null>(null);
 
@@ -137,7 +139,7 @@ export const DataTableDraggable: React.FC<DataTableDraggableProps> = ({
     return (
         <div className={`bg-white rounded border-b border-gray-200 ${className}`}>
 
-            <div
+            <div ref={scrollRef}
                 className={`overflow-auto thin-scroll`}
                 style={{ maxHeight: fixedHeight ? maxHeight : undefined }}
             >

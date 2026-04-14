@@ -22,6 +22,19 @@ const parseDdMmYyyy = (value?: string | null): Date | null => {
     : null
 }
 
+const normalizeDate = (date: Date): Date => {
+  const normalized = new Date(date)
+  normalized.setHours(0, 0, 0, 0)
+  return normalized
+}
+
+const parseDateValue = (value?: string | Date | null): Date | null => {
+  if (!value) return null
+  if (typeof value === 'string') return parseDdMmYyyy(value)
+  if (value instanceof Date) return normalizeDate(value)
+  return null
+}
+
 const formatDdMmYyyy = (date: Date | null): string => {
   if (!date) return ''
   return `${String(date.getDate()).padStart(2, '0')}-${String(
@@ -40,6 +53,7 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
   minYear = 1950,
   maxYear = new Date().getFullYear() + 20,
   disabled = false,
+  minDate,
   isDisplayCurrentDate = false,
   helperText,
 }) => {
@@ -56,7 +70,18 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
   const today = new Date()
   today.setHours(0, 0, 0, 0);
 
+  const minSelectableDate = parseDateValue(minDate)
+
+  const isSameDay = (a: Date | null, b: Date | null) =>
+    !!a &&
+    !!b &&
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+
   const isToday = (d: Date) => isSameDay(d, today)
+
+  const isDateBefore = (a: Date, b: Date) => normalizeDate(a).getTime() < normalizeDate(b).getTime()
 
 
   /* ================= Portal Position (ONLY LOGIC CHANGE) ================= */
@@ -171,13 +196,6 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
     while (row.length < 7) row.push(null)
     weeks.push(row)
   }
-
-  const isSameDay = (a: Date | null, b: Date | null) =>
-    !!a &&
-    !!b &&
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
 
   const handleDayClick = (date: Date) => {
     setSelectedDate(date)
@@ -325,31 +343,36 @@ export const DatePickerInput: React.FC<DatePickerProps> = ({
             >
               {weeks.flat().map((date, i) =>
                 date ? (
-                  <button
-                    key={i}
-                    type="button"
-                    onClick={() => handleDayClick(date)}
-                    style={{
-                      height: 32,
-                      borderRadius: 999,
-                      border: 'none',
-                      cursor: 'pointer',
-                      fontSize: theme.fontSize.sm,
-                      backgroundColor:
-                        isSameDay(date, selectedDate) ||
-                          (!selectedDate && isToday(date))
-                          ? theme.colors.primary1
-                          : 'transparent',
-                      color:
-                        isSameDay(date, selectedDate) ||
-                          (!selectedDate && isToday(date))
-                          ? '#fff'
-                          : theme.colors.text,
+                  (() => {
+                    const isDisabled = minSelectableDate ? isDateBefore(date, minSelectableDate) : false
+                    const isSelected = isSameDay(date, selectedDate) || (!selectedDate && isToday(date))
 
-                    }}
-                  >
-                    {date.getDate()}
-                  </button>
+                    return (
+                      <button
+                        key={i}
+                        type="button"
+                        disabled={isDisabled}
+                        onClick={() => !isDisabled && handleDayClick(date)}
+                        style={{
+                          height: 32,
+                          borderRadius: 999,
+                          border: 'none',
+                          cursor: isDisabled ? 'not-allowed' : 'pointer',
+                          fontSize: theme.fontSize.sm,
+                          backgroundColor: isSelected
+                            ? theme.colors.primary1
+                            : 'transparent',
+                          color: isSelected
+                            ? '#fff'
+                            : isDisabled
+                              ? theme.colors.textSecondary
+                              : theme.colors.text,
+                        }}
+                      >
+                        {date.getDate()}
+                      </button>
+                    )
+                  })()
                 ) : (
                   <div key={i} style={{ height: 32 }} />
                 ),

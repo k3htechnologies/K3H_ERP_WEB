@@ -269,7 +269,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
         }
         if (!formData.InVoiceDate) {
             newErrors.InVoiceDate = "Invoice Date required";
-        } 
+        }
         if (!formData.InVoiceNumber) {
             newErrors.InVoiceNumber = "Invoice Number is required";
         }
@@ -455,9 +455,10 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             <RadioButton
                                 label="Others"
                                 checked={formData.DeliveryType === "Others"}
-                                onChange={() =>
-                                    handleFieldChange("DeliveryType", "Others")
-                                }
+                                onChange={() => {
+                                    handleFieldChange("DeliveryType", "Others");
+                                    handleFieldChange("ChequeNo", "");
+                                }}
                             />
 
                             <RadioButton

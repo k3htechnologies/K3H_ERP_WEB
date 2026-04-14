@@ -18,7 +18,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import Tabs from "@/ui/components/Tab/Tab";
 import { getMonthDateRange, getWeekToDateRange, getYearToDateRange } from "@/core/utils/comman";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
-import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 
 export const PerformanceReport: React.FC = () => {
 
@@ -63,7 +63,7 @@ export const PerformanceReport: React.FC = () => {
         loadPerformanceReport(1, filters, sortInfo, searchTerm);
     }, [targetActiveTab]);
 
-    const loadPerformanceReport = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string,periodType?: string) => {
+    const loadPerformanceReport = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string, periodType?: string) => {
 
         await runApiWithLoader(
             setIsLoading,
@@ -76,7 +76,7 @@ export const PerformanceReport: React.FC = () => {
                     EmployeeName: searchText?.trim() ?? undefined,
                     FromDate: filterParams.FromDate || undefined,
                     ToDate: filterParams.ToDate || undefined,
-                    PeriodType:periodType || "WTD",
+                    PeriodType: periodType || "WTD",
                     ReportType: targetActiveTab,
                     SortBy: getSortByParam(sort ?? null, targetActiveTab === "Closing" ? PerformanceReportClosingColumns : PerformanceReportSourcingColumns),
                 };
@@ -295,6 +295,7 @@ export const PerformanceReport: React.FC = () => {
             key: 'EmployeeName',
             label: 'Employee Name',
             sortable: true,
+            width: '15',
             fixed: 'left',
             align: 'left',
             render: (value) => (
@@ -308,6 +309,7 @@ export const PerformanceReport: React.FC = () => {
             key: 'DesignationName',
             label: 'Designation Name',
             sortable: false,
+            width: '25',
             align: 'center',
             render: value => value || '-'
         },
@@ -460,6 +462,16 @@ export const PerformanceReport: React.FC = () => {
         setTempFilters(prev => updateFilter(prev, key, value));
     }
 
+    const formatDate = (date?: Date) => {
+        if (!date) return '';
+
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+
+        return `${year}-${month}-${day}`;
+    };
+    
     const handleTabChange = (tabId: string) => {
 
         setActiveTab(tabId);
@@ -487,11 +499,11 @@ export const PerformanceReport: React.FC = () => {
             toDate = range.toDate;
         }
 
-       
+
         const updatedFilters: FilterInfo = {
             ...filters,
-            FromDate: convert_date_yy_mm_dd_To_dd_mm_yyyy(fromDate),
-            ToDate: convert_date_yy_mm_dd_To_dd_mm_yyyy(toDate),
+            FromDate: formatDate(fromDate),
+            ToDate: formatDate(toDate),
         };
 
         setFilters(updatedFilters);
@@ -499,7 +511,7 @@ export const PerformanceReport: React.FC = () => {
 
         setPagination({ currentPage: 1 });
 
-        loadPerformanceReport(1, updatedFilters, sortInfo, searchTerm,tabId);
+        loadPerformanceReport(1, updatedFilters, sortInfo, searchTerm, tabId);
     };
 
     const PerformanceReportPaginationInfo: PaginationInfo = useMemo(
@@ -520,11 +532,11 @@ export const PerformanceReport: React.FC = () => {
     }, [targetActiveTab, PerformanceReportClosingList, PerformanceReportSourcingList]);
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
 
-            <div className="pt-3 pb-3">
+            <div>
 
                 <Tabs
                     tabs={PerformanceReportTabList}
@@ -534,28 +546,30 @@ export const PerformanceReport: React.FC = () => {
                 />
             </div>
 
-            <TableActionToolbar
-                isShowSearchBar
-                searchTerm={searchTerm}
-                searchPlaceholder="Search By Name"
-                onSearchChange={handleSearchChange}
-                onClearSearch={handleClearSearch}
+            <div className="pt-5">
+                <TableActionToolbar
+                    isShowSearchBar
+                    searchTerm={searchTerm}
+                    searchPlaceholder="Search By Name"
+                    onSearchChange={handleSearchChange}
+                    onClearSearch={handleClearSearch}
 
-                isShowFilterButton
-                filters={filters}
-                onOpenFilter={() => {
-                    setTempFilters(filters);
-                    setShowFilterPopup(true);
-                }}
+                    isShowFilterButton
+                    filters={filters}
+                    onOpenFilter={() => {
+                        setTempFilters(filters);
+                        setShowFilterPopup(true);
+                    }}
 
-                // EXPORT
-                isShowExportButton={canExport && PerformanceReportForTable.length > 0}
-                onExportExcel={handleExportPerformanceReportExcel}
-                onExportPdf={handleExportPerformanceReportPdf}
-                exportLoading={isLoading}
-            />
+                    // EXPORT
+                    isShowExportButton={canExport && PerformanceReportForTable.length > 0}
+                    onExportExcel={handleExportPerformanceReportExcel}
+                    onExportPdf={handleExportPerformanceReportPdf}
+                    exportLoading={isLoading}
+                />
+            </div>
 
-            <div className="pt-3 flex items-center justify-between">
+            <div className="flex items-center justify-between">
                 <Tabs
                     tabs={TargetTabList}
                     defaultActive={targetActiveTab}
@@ -573,19 +587,19 @@ export const PerformanceReport: React.FC = () => {
             </div>
 
             {/* DATA TABLE */}
-
-            <CustomTable
-                data={PerformanceReportForTable}
-                columns={targetActiveTab === "Closing" ? PerformanceReportClosingColumns : PerformanceReportSourcingColumns}
-                pagination={PerformanceReportPaginationInfo}
-                emptyMessage="No Performance Report Data Found"
-                fixedHeight={true}
-                recordsPerPage={20}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-            />
-
+            <div className="pt-5">
+                <CustomTable
+                    data={PerformanceReportForTable}
+                    columns={targetActiveTab === "Closing" ? PerformanceReportClosingColumns : PerformanceReportSourcingColumns}
+                    pagination={PerformanceReportPaginationInfo}
+                    emptyMessage="No Performance Report Data Found"
+                    fixedHeight={true}
+                    recordsPerPage={20}
+                    className="flex-1"
+                    sortInfo={sortInfo}
+                    onSort={handleSortColumn}
+                />
+            </div>
             {/* FILTER MODAL FOR PERFORMANCE REPORT */}
 
             <Modal

@@ -66,11 +66,11 @@ export interface EnquiryData {
 
     // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
     
-    ReferelProjectName: string | null;
-    ReferelUnitNumber: string | null;
-    ReferelProjectId: number | null;
-    ReferelInventoryFlatId: number | null;
-    ReferelUnitOwnerName: number | null;
+    ReferralProjectName: string | null;
+    ReferralUnitNumber: string | null;
+    ReferralProjectId: number | null;
+    ReferralInventoryFlatId: number | null;
+    ReferralUnitOwnerName: number | null;
 
     // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
     LoyaltyProjectId: number | null;
@@ -170,8 +170,8 @@ export interface AddUpdateEnquiryRequest {
     SubSubSource?: string | null;
 
     // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-    ReferelProjectId: number | null;
-    ReferelInventoryFlatId: number | null;
+    ReferralProjectId: number | null;
+    ReferralInventoryFlatId: number | null;
 
     // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
     LoyaltyProjectId: number | null;

@@ -385,7 +385,7 @@ export const CallingData: React.FC = () => {
                     setIsShowCustomizeCallingDataColumnsModal(true);
                 }}
 
-                isShowImportButton={canAction}
+                isShowImportButton={canAction && Number(projectId) > 0 ? true : false}
                 onDownloadSampleExcel={handleDownloadExcelSampleCallingData}
                 onUploadExcel={() => setShowImportModal(true)}
 

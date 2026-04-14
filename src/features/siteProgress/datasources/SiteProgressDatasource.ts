@@ -84,7 +84,8 @@ export class SiteProgressDatasourceImpl implements SiteProgressDatasource {
         } catch (error: any) {
             console.error('ERROR: PULL SITE PROGRESS CONSTRUCTION :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
+
                 return await this.pullSiteProgressConstruction(params, signal)
             }
 
@@ -117,7 +118,7 @@ export class SiteProgressDatasourceImpl implements SiteProgressDatasource {
         } catch (error: any) {
             console.error('ERROR: PULL SITE PROGRESS SUB CONSTRUCTION :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.pullSiteProgressSubConstruction(params, signal)
             }
 
@@ -151,7 +152,7 @@ export class SiteProgressDatasourceImpl implements SiteProgressDatasource {
         } catch (error: any) {
             console.error('ERROR: PULL SITE PROGRESS WING CONSTRUCTION :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.pullSiteProgressWingConstruction(params, signal)
             }
 
@@ -186,7 +187,7 @@ export class SiteProgressDatasourceImpl implements SiteProgressDatasource {
         } catch (error: any) {
             console.error('ERROR: PULL SITE PROGRESS FLOOR CONSTRUCTION :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.pullSiteProgressFloorConstruction(params, signal)
             }
 
@@ -222,7 +223,7 @@ export class SiteProgressDatasourceImpl implements SiteProgressDatasource {
         } catch (error: any) {
             console.error('ERROR: PULL SITE PROGRESS FLAT CONSTRUCTION :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.pullSiteProgressFlatConstruction(params, signal)
             }
 
@@ -259,7 +260,7 @@ export class SiteProgressDatasourceImpl implements SiteProgressDatasource {
         } catch (error: any) {
             console.error('ERROR: PULL SITE PROGRESS CONSTRUCTION ACTIVITY :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.pullSiteProgressConstructionActivity(params, signal)
             }
 
@@ -291,7 +292,7 @@ export class SiteProgressDatasourceImpl implements SiteProgressDatasource {
         } catch (error: any) {
             console.error('ERROR: PULL SITE PROGRESS CONSTRUCTION SUB ACTIVITY :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
                 return await this.pullSiteProgressConstructionSubActivity(params, signal)
             }
 

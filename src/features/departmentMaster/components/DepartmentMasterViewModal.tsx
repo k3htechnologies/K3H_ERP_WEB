@@ -53,7 +53,6 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
       size='xl'
     >
       <div className="space-y-6">
-        <div className="space-y-4">
 
           <FieldItem label="Department Code" value={data.DepartmentCode} isRow withBorder={true} />
 
@@ -61,9 +60,6 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
 
           <FieldItem label="Number of Employees" value={data.NumberOfEmployee} isRow withBorder={true} />
 
-        </div>
-
-        <div className="space-y-4">
           <h4 className="text-lg font-semibold pb-2">
             Action Details
           </h4>
@@ -74,8 +70,7 @@ export const DepartmentMasterViewModal: React.FC<DepartmentMasterViewModalProps>
             <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
             :
             ''}
-        </div>
-        <div className="flex justify-between items-center pt-4">
+        <div className="flex justify-between items-center">
           {canAction && (
             <>
               {(data.NumberOfEmployee || 0) === 0 ? (

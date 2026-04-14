@@ -16,6 +16,7 @@ export interface EmployeeData {
   EmailId: string
   OfficeEmailId: string
   IsUpdateEmployee: boolean
+  ProfilePhotoURL: string | ''
   ClientRegistrationId: number
   LastLogin: string
   Token: string

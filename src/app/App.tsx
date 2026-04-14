@@ -53,7 +53,7 @@ import ApprovalDocumentCategoryMaster from '@/features/approvalDocumentCategory/
 import ApprovalDocument from '@/features/approvalDocument/pages/ApprovalDocument';
 import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCategory/pages/ProjectRERADocumentCategoryMaster';
 import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRERADocument';
-import ViewCompantMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
+import ViewCompanyMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
 import Inventory from '@/features/inventory/pages/Inventory';
 import InventorySpecification from '@/features/inventory/pages/InventorySpecification';
 import { OutDoor } from '@/features/outdoor/pages/OutDoor';
@@ -170,6 +170,7 @@ import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward'
 import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
 import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
 import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
+import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -243,7 +244,7 @@ function App() {
             <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
 
             <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
-            <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompantMaster /></CompanyListStateProvider>} />
+            <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />
@@ -441,6 +442,7 @@ function App() {
             <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
             {/* CRM */}
+            {/* CRM */}
 
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
@@ -449,6 +451,11 @@ function App() {
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
+
+          <Route path='Terms' element={<Terms />} />
+          <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
+          <Route path='companyPolicy' element={<CompanyPolicy />} />
+          
         </Routes>
       </Suspense>
     </CountryStateCityDistrictVillage>

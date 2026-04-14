@@ -173,8 +173,9 @@ export const Modal: React.FC<ModalProps> = ({
                     <Button
                         onClick={onClose}
                         color="transparent"
+                        variant='transparent_border_background'
                         isborderRadius
-                        size="sm"
+                        size="xss"
                         disabled={loading}
                     >
                         <X className="h-5 w-5" />

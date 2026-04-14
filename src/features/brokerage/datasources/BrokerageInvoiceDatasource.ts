@@ -54,9 +54,9 @@ export class BrokerageInvoiceDatasourceImpl implements BrokerageInvoiceDatasourc
 
             console.error("ERROR: PULL BROKERAGE BOOKING DATA :", error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullBrokerageBooking(params);
+                return await this.pullBrokerageBooking(params);
             }
             throw error;
         }
@@ -84,9 +84,9 @@ export class BrokerageInvoiceDatasourceImpl implements BrokerageInvoiceDatasourc
 
             console.error("ERROR: PULL BROKERAGE INVOICE :", error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullBrokerageInvoice(params);
+                return await this.pullBrokerageInvoice(params);
             }
             throw error;
         }
@@ -105,8 +105,9 @@ export class BrokerageInvoiceDatasourceImpl implements BrokerageInvoiceDatasourc
 
             console.error('ERROR: ADD UPDATE BROKERAGE INVOICE:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateBrokerageInvoice(formData);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateBrokerageInvoice(formData);
             }
             throw error
         }
@@ -128,11 +129,12 @@ export class BrokerageInvoiceDatasourceImpl implements BrokerageInvoiceDatasourc
             return response
 
         } catch (error) {
-            if (error === TokenExpiredException) {
 
-                console.error('ERROR: DELETE BROKERAGE INVOICE:', error);
+            console.error('ERROR: DELETE BROKERAGE INVOICE:', error);
+            
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteBrokerageInvoice(params);
+                return await this.deleteBrokerageInvoice(params);
             }
             throw error
         }

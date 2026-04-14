@@ -40,28 +40,28 @@ export const getEarningMasterColumns = (): TableColumn[] => [
     label: 'Applicable',
     width: '15',
     sortable: false,
-    align: 'center'
+    align: 'left'
   },
   {
     key: 'Value',
     label: 'Value',
     width: '15',
     sortable: false,
-    align: 'center'
+    align: 'right'
   },
   {
     key: 'MinSalary',
     label: 'Min Salary (₹)',
     width: '12',
     sortable: false,
-    align: 'left'
+    align: 'right'
   },
   {
     key: 'MaxSalary',
     label: 'Max Salary (₹)',
     width: '12',
     sortable: false,
-    align: 'left'
+    align: 'right'
   },
   {
     key: 'BranchName',

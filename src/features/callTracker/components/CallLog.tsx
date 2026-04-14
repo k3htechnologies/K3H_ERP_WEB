@@ -13,7 +13,7 @@ import { Edit, Trash2 } from "lucide-react";
 import { Button, Input } from "@/ui/components/forms";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { getCallTrackerStatuscolor } from "@/features/callTracker/utils/Status";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -91,6 +91,8 @@ export const CallLog: React.FC = () => {
                     ProjectId: Number(projectId),
                     Name: searchText?.trim() || undefined,
                     MobileNumber: filterParams.MobileNumber ? Number(filterParams.MobileNumber) : undefined,
+                    RescheduleDateFromDate: filterParams.RescheduleDateFromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.RescheduleDateFromDate) || undefined : undefined,
+                    RescheduleDateToDate: filterParams.RescheduleDateToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.RescheduleDateToDate) || undefined : undefined,
                     SortBy: getSortByParam(sort ?? null, CallLogColumns),
                 };
 
@@ -183,6 +185,8 @@ export const CallLog: React.FC = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     Name: filters.Name?.trim() || undefined,
+                    RescheduleDateFromDate: filters.RescheduleDateFromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.RescheduleDateFromDate) || undefined : undefined,
+                    RescheduleDateToDate: filters.RescheduleDateToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.RescheduleDateToDate) || undefined : undefined,
                     ProjectId: Number(projectId),
                     SortBy: getSortByParam(sortInfo ?? null, CallLogColumns),
                     ExportType: exportType
@@ -242,15 +246,15 @@ export const CallLog: React.FC = () => {
             newErrors.Remark = "Remark is required";
         }
 
-        if (!formData.RescheduleDate) {
-            newErrors.RescheduleDate = "Reschedule Date is required";
-        }
+        const callingDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(editingCallLogData?.CallDate ? new Date(editingCallLogData.CallDate) : undefined);
+        const rescheduleDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.RescheduleDate ? new Date(formData.RescheduleDate) : undefined);
 
-        if (editingCallLogData?.CallDate && formData.RescheduleDate && !isToDateGreaterOrEqualFromDate(editingCallLogData.CallDate,
-            formData.RescheduleDate)
+        if (
+            editingCallLogData?.CallDate &&
+            formData.RescheduleDate &&
+            !isToDateGreaterOrEqualFromDate(callingDate, rescheduleDate)
         ) {
-            newErrors.RescheduleDate =
-                "Reschedule Date must be After Call Date";
+            newErrors.RescheduleDate = "Reschedule Date must be After Call Date";
         }
 
         return {
@@ -265,7 +269,7 @@ export const CallLog: React.FC = () => {
             CallLogId: formData.CallLogId,
             Uniquekey: formData.Uniquekey,
             Remark: formData.Remark,
-            RescheduleDate: formData.RescheduleDate,
+            RescheduleDate: formData.RescheduleDate === "" ? null : formData.RescheduleDate,
             ProjectId: Number(projectId),
         };
     };
@@ -436,43 +440,54 @@ export const CallLog: React.FC = () => {
             width: '12',
             fixed: 'right',
             align: 'center',
-            render: (_value, row) => (
-                <div className="flex items-center justify-center">
-                    {canAction && (
-                        <>
-                            <Button
-                                color="transparent"
-                                size="sm"
-                                style={{
-                                    color: 'blue',
-                                    padding: '0px 8px'
-                                }}
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    handleEditCallLog(row)
-                                }}
-                                leftIcon={<Edit className="h-4 w-4" />}
-                            />
+            render: (_value, row) => {
 
-                            <Button
-                                color="transparent"
-                                size="sm"
-                                style={{
-                                    color: 'red',
-                                    padding: '0px 8px'
-                                }}
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    handleConfirmationDialogBoxOpen(row)
-                                }}
-                                leftIcon={<Trash2 className="h-4 w-4" />}
-                            />
-                        </>
-                    )}
-                </div>
-            )
+                const isLocked = !canAction || !!row.RescheduleDate || !!row.Remark;
+
+                return (
+                    <div className="flex items-center justify-center">
+
+                        <Button
+                            color="transparent"
+                            size="sm"
+                            disabled={isLocked}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                if (isLocked) return;
+                                handleEditCallLog(row)
+                            }}
+                            style={{
+                                color: isLocked ? '#9CA3AF' : '',
+                                padding: '4px 8px',
+                                cursor: isLocked ? 'not-allowed' : 'pointer',
+                                opacity: isLocked ? 0.5 : 1
+                            }}
+                            leftIcon={<Edit className="h-4 w-4" />}
+                        />
+
+                        <Button
+                            color="transparent"
+                            size="sm"
+                            disabled={isLocked}
+                            style={{
+                                color: isLocked ? '#9CA3AF' : 'red',
+                                padding: '4px 8px',
+                                cursor: isLocked ? 'not-allowed' : 'pointer',
+                                opacity: isLocked ? 0.5 : 1
+                            }}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                if (isLocked) return;
+                                handleConfirmationDialogBoxOpen(row)
+                            }}
+                            leftIcon={<Trash2 className="h-4 w-4" />}
+                        />
+
+                    </div>
+                )
+            }
         },
 
     ], [canAction, handleEditCallLog, handleConfirmationDialogBoxOpen])
@@ -716,6 +731,21 @@ export const CallLog: React.FC = () => {
                             placeholder="Enter Mobile Number"
                         />
                     </div>
+                    <div>
+                        <DatePickerInput
+                            label='Reschedule From Date'
+                            value={tempFilters.RescheduleDateFromDate || ''}
+                            onChange={(value) => handleFilterChange('RescheduleDateFromDate', value || '')}
+                        />
+                    </div>
+
+                    <div>
+                        <DatePickerInput
+                            label='Reschedule To Date'
+                            value={tempFilters.RescheduleDateToDate || ''}
+                            onChange={(value) => handleFilterChange('RescheduleDateToDate', value || '')}
+                        />
+                    </div>
 
                 </div>
             </Modal>
@@ -761,7 +791,6 @@ export const CallLog: React.FC = () => {
                                 label="Reschedule Date"
                                 value={formatDate_dd_mm_yyyy(formData.RescheduleDate)}
                                 onChange={(val) => handleFieldChange('RescheduleDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                required
                                 error={errors.RescheduleDate}
                             />
                         </div>

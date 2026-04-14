@@ -32,34 +32,47 @@ export const HolidayMappingMasterTable: React.FC<HolidayMappingMasterTableProps>
 }) => {
   const tableColumns = useMemo<TableColumn[]>(() => {
     return columns.map(col => {
+
       if (col.key === 'Actions') {
         return {
           ...col,
-          render: (_value, row: HolidayMappingMasterData) => (
-            canAction && !(row as any).NumberOfEmployee ? (
+          render: (_value, row: HolidayMappingMasterData) => {
+
+            const isDisabled = !canAction;
+
+            return canAction ? (
               <div className="flex items-center justify-center gap-2">
                 <Button
                   onClick={(e) => {
-                    e.preventDefault()
-                    e.stopPropagation()
-                    onDelete(row)
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (isDisabled) return;
+                    onDelete(row);
                   }}
-                  color='transparent'
+                  color="transparent"
                   isborderRadius
-                  size='sm'
+                  disabled={isDisabled}
+                  size="sm"
                   style={{
-                    color: 'red',
-                    padding: '4px 8px'
+                    color: isDisabled ? '#9CA3AF' : 'red',
+                    padding: '4px 8px',
+                    cursor: isDisabled ? 'not-allowed' : 'pointer',
+                    opacity: isDisabled ? 0.5 : 1
                   }}
-                  title="Delete Holiday Mapping"
+                  title={
+                    (row as any).DocumentCount > 0
+                      ? "Cannot delete: Holiday Mapping exist"
+                      : "Delete Holiday Mapping"
+                  }
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
-            ) : null
-          )
+            ) : null;
+          }
         };
       }
+
       if (col.key === 'HolidayName') {
         return {
           ...col,

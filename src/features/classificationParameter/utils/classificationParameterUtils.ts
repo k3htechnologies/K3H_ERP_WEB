@@ -11,7 +11,8 @@ export const createFormResetHandler = (
     setEditingClassificationParameterData: (value: any) => void,
     setFormData: (value: AddUpdateClassificationParameterRequest) => void,
     setErrors: (value: { [k: string]: string }) => void,
-    setVillageValue: (value: any) => void
+    setVillageValue: (value: any) => void,
+    setDropdownResetKey: (value: number | ((prev: number) => number)) => void 
 ) => {
     return () => {
 
@@ -22,6 +23,9 @@ export const createFormResetHandler = (
         setFormData(resetFormData());
 
         setErrors({});
-        setVillageValue("");
+
+       setVillageValue(null);
+       
+        setDropdownResetKey(prev => prev + 1);
     };
 };

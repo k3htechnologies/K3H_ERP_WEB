@@ -9,6 +9,7 @@ import { salesDashboardService } from '@/features/salesDashboard/services/SalesD
 import useToast from '@/core/hooks/useToast';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import * as E from "fp-ts/Either";
+import TooltipText from '@/ui/components/Tooltip/TooltipText';
 
 interface Props {
     enquiryData: Table0[];
@@ -35,6 +36,7 @@ export default function Enquiries({ enquiryData }: Props) {
 
     //#region DATA LOADING | FETCH |  LOAD 
     const loadSalesDashboardData = useCallback(async () => {
+        
         await runApiWithLoader(setIsLoading,
             setLoadingMessage,
             async () => {
@@ -91,32 +93,70 @@ export default function Enquiries({ enquiryData }: Props) {
 
     const columns: TableColumn[] = [
         {
+            key: 'ProjectName',
+            label: 'Project Name',
+            fixed: 'left',
+            render: (value) => value || "-",
+        },
+        {
+            key: 'SystemGeneratedCode',
+            label: 'Enquiry Code',
+            align: 'left',
+            render: value => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="150px"
+                    tooltipThreshold={20}
+                    tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                />
+            )
+        },
+        {
             key: 'Name',
             label: 'Client Name',
-            align: 'left',
+            fixed: 'left',
             render: (value) => value || "-",
-
+        },
+        {
+            key: 'MobileNumber',
+            label: 'Mobile Number',
+            fixed: 'left',
+            render: (value) => (value ? `+91 ${value}` : "-"),
         },
         {
             key: 'EnquiryDate',
             label: 'Date',
             sortable: false,
-            align: 'left',
+            align: 'center',
             render: value => value ? formatDate_dd_MonthName_yy(value) : '-'
         },
         {
             key: 'EnquiryTimeIn',
             label: 'Customer Time-in',
-            align: 'left',
+            align: 'center',
             render: (value) => value || "-",
 
         },
         {
+            key: 'SalesAdvisor',
+            label: 'Sales Advisor',
+            fixed: 'left',
+            render: (value) => value || "-",
+        },
+        {
+            key: 'SourcingManager',
+            label: 'Sourcing Manager',
+            fixed: 'left',
+            render: (value) => value || "-",
+        },
+        {
             key: 'Action',
             label: 'Action',
-            align: 'left',
+            align: 'center',
+            fixed: 'right',
             render: (_value, row) => {
-                if (!projectId) return null;
+                
+                if (!projectId || row.CanTimeOut === 0) return null;
                 return (
                     <Button
                         onClick={() => {
@@ -138,19 +178,20 @@ export default function Enquiries({ enquiryData }: Props) {
     //#region
     return (
         <div className="space-y-3 pt-4">
-            
+
             <h2 className="text-lg font-semibold text-gray-800">
                 Enquiries (Todays)
             </h2>
 
-            <div className="flex-1 bg-white rounded-xl p-5 h-[310px] shadow-sm border border-gray-100 min-w-0 overflow-hidden flex flex-col">
-                    <DataTableWithOutBorder
-                        columns={columns}
-                        data={enquiryList}
-                        emptyMessage="No records Found"
-                        fixedHeight={true}
-                    />
-                </div>
+            <div className="flex-1 bg-white rounded-xl p-5 h-[310px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
+                <DataTableWithOutBorder
+                    columns={columns}
+                    data={enquiryList}
+                    emptyMessage="No records Found"
+                    fixedHeight={true}
+                    
+                />
+            </div>
 
             <ConfirmationDialogBox
                 title='Mark Time Out'

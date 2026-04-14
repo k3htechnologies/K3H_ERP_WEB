@@ -26,9 +26,9 @@ export class SalesDashboardDatasourceImpl implements SalesDashboardDatasource {
 
             console.error('ERROR: PULL SALES DASHBOARD :', error);
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.pullSalesDashboard(ProjectId, signal);
+                return await this.pullSalesDashboard(ProjectId, signal);
             }
 
             throw error
@@ -49,8 +49,9 @@ export class SalesDashboardDatasourceImpl implements SalesDashboardDatasource {
 
             console.error('ERROR: MARK TIME OUT :', error)
 
-            if (error === TokenExpiredException) {
-                await this.UpadateEnquiryOutTime(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.UpadateEnquiryOutTime(params);
             }
             throw error
         }

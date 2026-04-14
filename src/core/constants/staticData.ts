@@ -13,14 +13,10 @@ export interface Option {
 // ============================================================================
 
 export const MASTER_DATA = {
-  emergencyRelations: [
-    'Father', 'Mother', 'Spouse', 'Child',
-    'Son', 'Daughter', 'Grandfather', 'Grandmother', 'Uncle', 'Aunt',
-    'Cousin', 'Friend', 'Other'
-  ],
+  emergencyRelations: ['Aunt','Brother', 'Child', 'Cousin', 'Daughter', 'Father', 'Friend', 'Grandfather', 'Grandmother', 'Mother', 'Other','Sister', 'Son', 'Spouse', 'Uncle'],
 
   employeeTypes: [
-    'Permanent', 'Contract', 'Intern', 'Part Time', 'Temporary'
+    'Permanent', 'Contract','Full - Time', 'Intern', 'Part Time', 'Temporary'
   ],
 
   genders: ['Male', 'Female', 'Other'],
@@ -65,7 +61,7 @@ export const MASTER_DATA = {
 
   tenure: ['Tenure 1', 'Tenure 2', 'Tenure 3', 'Tenure 4', 'Tenure 5', 'Tenure 6', 'Tenure 7', 'Tenure 8', 'Tenure 9', 'Tenure 10', 'Tenure 11', 'Tenure 12', 'Tenure 13', 'Tenure 14'],
 
-  unit_sqft_lumsum: ['Per Sq Ft', 'Lump Sum'],
+  unit_sqft_lumsum: ['Per Sq Ft', 'Lumpsum'],
 
   business_category: ['Commercial', 'Mixed Use', 'Residential'],
 
@@ -286,6 +282,8 @@ export const MASTER_DATA = {
 
   documentType: ['Inward', 'Outward'],
 
+  activeInactive: ['Active', 'Inactive'],
+
 } as const
 
 // ============================================================================
@@ -399,6 +397,8 @@ export const YEAR_OPTIONS = toOptions(MASTER_DATA.year);
 export const DELIVERY_STATUS = toOptions(MASTER_DATA.deliveryStatus);
 export const DELIVERY_MODE = toOptions(MASTER_DATA.deliveryMode);
 export const DOCUMENT_TYPE = toOptions(MASTER_DATA.documentType);
+export const ACTIVE_INACTIVE_OPTIONS = toOptions(MASTER_DATA.activeInactive);
+
 
 
 // ============================================================================

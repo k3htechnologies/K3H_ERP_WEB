@@ -296,7 +296,6 @@ export const useEarningMaster = () => {
     setTempFilters({})
     setFilters({})
     loadEarnings(1, {})
-    setShowFilterPopup(false)
   }
   //#endregion
 
@@ -368,7 +367,7 @@ export const useEarningMaster = () => {
       EarningMasterId: formData.EarningMasterId,
       Uniquekey: formData.Uniquekey,
       Name: formData.Name,
-      Applicable: formData.Applicable,
+      Applicable: formData.Applicable==="" ?'Percenatge' :formData.Applicable,
       Type: formData.Type,
       Value: formData.Value,
       MinSalary: formData.MinSalary,

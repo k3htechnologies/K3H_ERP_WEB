@@ -180,33 +180,33 @@ export const AddUpdateChannelPartner: React.FC = () => {
   const stateOptions =
     selectedCountryId != null
       ? (statesByCountryId[selectedCountryId] || []).map((s) => ({
-          label: s.name,
-          value: s.id,
-        }))
+        label: s.name,
+        value: s.id,
+      }))
       : [];
 
   const districtOptions =
     selectedStateId != null
       ? (districtsByStateId[selectedStateId] || []).map((d) => ({
-          label: d.name,
-          value: d.id,
-        }))
+        label: d.name,
+        value: d.id,
+      }))
       : [];
 
   const cityOptions =
     selectedDistrictId != null
       ? (citiesByDistrictId[selectedDistrictId] || []).map((c) => ({
-          label: c.name,
-          value: c.id,
-        }))
+        label: c.name,
+        value: c.id,
+      }))
       : [];
 
   const villageOptions =
     selectedCityId != null
       ? (villagesByCityId[selectedCityId] || []).map((c) => ({
-          label: c.name,
-          value: c.id,
-        }))
+        label: c.name,
+        value: c.id,
+      }))
       : [];
 
   //#endregion
@@ -371,66 +371,53 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     if (formData.IsRERANumber === 1 && !formData.RERANumber) {
       newErrors.RERANumber = " RERA Number is required";
-    } else if (
-      formData.IsRERANumber === 1 &&
-      !isValidRERA(formData.RERANumber.trim())
-    ) {
+    } else if ( formData.IsRERANumber === 1 && !isValidRERA(formData.RERANumber.trim())) {
       newErrors.RERANumber = "Enter a valid RERA Number";
     }
 
-    if (
-      formData.AadharCardNumber !== "" &&
-      !formData.AadharCardNumber?.trim()
-    ) {
-      newErrors.AadharCardNumber =
-        "Please enter a valid 12-digit Aadhaar number";
-    } else if (
-      formData.AadharCardNumber !== "" &&
-      !isValidAadhaar(formData.AadharCardNumber.trim())
-    ) {
-      newErrors.AadharCardNumber = "Enter a valid Aadhar Card Number.";
-    }
-    if (
-      formData.AadharCardNumber !== "" &&
-      !hasAnyDocumentFile(
-        aadharCardURLFiles,
-        aadharCardURL,
-        removeAadharCardUrls,
-      )
-    ) {
+    const hasAadharNumber = !!formData.AadharCardNumber?.trim();
+    const hasAadharFile = hasAnyDocumentFile(aadharCardURLFiles, aadharCardURL, removeAadharCardUrls);
+
+    if (hasAadharNumber && !hasAadharFile) {
       newErrors.AadharCardURL = "Aadhaar card file is required.";
     }
 
-    if (formData.PanNumber !== "" && !formData.PanNumber?.trim()) {
-      newErrors.PanNumber = "PAN Number is required.";
-    } else if (
-      formData.PanNumber !== "" &&
-      !isValidPAN(formData.PanNumber?.trim())
-    ) {
-      newErrors.PanNumber = "Enter a valid PAN Number.";
+    if (!hasAadharNumber && hasAadharFile) {
+      newErrors.AadharCardNumber = "Aadhaar number is required if document is uploaded.";
     }
-    if (
-      formData.PanNumber !== "" &&
-      !hasAnyDocumentFile(panCardURLFiles, panCardURL, removePanCardUrls)
-    ) {
+
+    if (hasAadharNumber && !isValidAadhaar(formData.AadharCardNumber.trim())) {
+      newErrors.AadharCardNumber = "Enter a valid 12-digit Aadhaar number.";
+    }
+
+    const hasPanNumber = !!formData.PanNumber?.trim();
+    const hasPanFile = hasAnyDocumentFile( panCardURLFiles,panCardURL,removePanCardUrls);
+
+    if (hasPanNumber && !hasPanFile) {
       newErrors.PanCardURL = "PAN card file is required.";
     }
 
-    if (formData.GSTNumber !== "" && !formData.GSTNumber?.trim()) {
-      newErrors.GSTNumber = "GST Number is required";
-    } else if (formData.GSTNumber !== "" && !isValidGST(formData.GSTNumber)) {
-      newErrors.GSTNumber = "Valid GST Number is required";
+    if (!hasPanNumber && hasPanFile) {
+      newErrors.PanNumber = "PAN number is required.";
     }
 
-    if (
-      formData.GSTNumber !== "" &&
-      !hasAnyDocumentFile(
-        gSTCertificateURLFiles,
-        gSTCertificateURL,
-        removeGSTCertificateUrls,
-      )
-    ) {
+    if (hasPanNumber && !isValidPAN(formData.PanNumber.trim())) {
+      newErrors.PanNumber = "Enter a valid PAN Number.";
+    }
+
+    const hasGSTNumber = !!formData.GSTNumber?.trim();
+    const hasGSTFile = hasAnyDocumentFile(gSTCertificateURLFiles,gSTCertificateURL,removeGSTCertificateUrls);
+
+    if (hasGSTNumber && !hasGSTFile) {
       newErrors.GSTCertificateURL = "GST Certificate file is required.";
+    }
+
+    if (!hasGSTNumber && hasGSTFile) {
+      newErrors.GSTNumber = "GST Number is required.";
+    }
+
+    if (hasGSTNumber && !isValidGST(formData.GSTNumber.trim())) {
+      newErrors.GSTNumber = "Enter a valid GST Number.";
     }
 
     if (!formData.CountryMasterId) {
@@ -583,7 +570,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
   //#endregion
 
   const applyExistingCompanyData = (channelPartner: any) => {
-    
+
     if (!channelPartner) return;
 
     setFormData((prev) => ({
@@ -637,7 +624,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       {/* Loader */}
 
       <Loader loading={isLoading} title={loadingMessage}>
@@ -649,7 +636,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
         <form onSubmit={handleAddUpdateChannelPartner}>
           {/* Basic ChannelPartner Details */}
 
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
               Basic Details
             </h3>
@@ -798,7 +785,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                       handleFieldChange("CompanyName", null);
                       resetExistingCompanyData();
                       return;
-                      
+
                     }
 
                     const companyId = Number(item.value);
@@ -868,7 +855,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="space-y-4 pb-3 pt-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
               <Checkbox
                 label="Do you have RERA Number?"
@@ -906,7 +893,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
               Speciality
             </h3>
@@ -930,7 +917,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
           </div>
           {/* ============================================================= [DOCUMENT DETAILS] ============================================================================================= */}
 
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
               Document Details
             </h3>
@@ -1040,7 +1027,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
               Address Details
             </h3>

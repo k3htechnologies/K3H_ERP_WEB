@@ -13,19 +13,31 @@ const InventoryHeader: React.FC = () => {
     <div className="bg-white rounded-xl p-3 flex items-center justify-end" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
       {/* RIGHT SIDE */}
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {canInventoryAction && (
-          <Button variant="solid" color="blue" onClick={() => navigate("/inventory")} leftIcon={<Plus size={14} />}>
+       
+          <Button
+            variant="solid"
+            color="blue"
+            className={!canInventoryAction ? "invisible" : ""}
+            onClick={() => navigate("/inventory")}
+            leftIcon={<Plus size={14} />}>
             Add Inventory
           </Button>
-        )}
 
-        {canParkingAction && (
-          <Button color="blue" variant="solid" colorMode="extraLight" onClick={() => navigate("/parking")} leftIcon={<Plus size={14} />}>
+          <Button
+            color="blue"
+            variant="solid"
+            className={!canParkingAction ? "invisible" : ""}
+            colorMode="extraLight"
+            onClick={() => navigate("/parking")}
+            leftIcon={<Plus size={14} />}>
             Add Parking
           </Button>
-        )}
 
-        <Button color="blue" variant="solid" colorMode="extraLight" leftIcon={<FileText size={14} />}>
+        <Button
+          color="blue"
+          variant="solid"
+          colorMode="extraLight"
+          leftIcon={<FileText size={14} />}>
           Generate Report
         </Button>
       </div>

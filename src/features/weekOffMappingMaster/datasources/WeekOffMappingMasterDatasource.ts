@@ -49,8 +49,8 @@ export class WeekOffMappingMasterDatasourceImpl implements WeekOffMappingMasterD
 
             console.error('ERROR: PULL WEEK OF MAPPING MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullWeekOffMappingMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return  await this.pullWeekOffMappingMaster(params);
             }
 
             throw error
@@ -71,8 +71,8 @@ export class WeekOffMappingMasterDatasourceImpl implements WeekOffMappingMasterD
 
             console.error('ERROR: ADD UPDATE WEEK OF MAPPING MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateWeekOffMappingMaster(params);
+           if (error instanceof TokenExpiredException) {
+                return   await this.addUpdateWeekOffMappingMaster(params);
             }
             throw error
         }
@@ -95,9 +95,8 @@ export class WeekOffMappingMasterDatasourceImpl implements WeekOffMappingMasterD
 
             console.error('ERROR: DELETE WEEK OF MAPPING MASTER :', error)
 
-            if (error === TokenExpiredException) {
-
-                await this.deleteWeekOffMappingMaster(params);
+            if (error instanceof TokenExpiredException) {
+                return  await this.deleteWeekOffMappingMaster(params);
 
             }
 

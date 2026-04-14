@@ -13,7 +13,7 @@ import { BLOOD_GROUP_OPTIONS, EMERGENCY_RELATION_OPTIONS, EMPLOYEE_TYPE_OPTIONS,
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { filterEmail, filterIFSC, filterLetters, filterMobile, filterNumbers, isValidEmail, isValidIFSC, isValidMobile } from "@/core/utils/fileValidation";
 import { fetchDepartmentMasterDropdown } from "@/features/departmentMaster/departmentMasterDropdown";
 import { fetchDesignationMasterDropdown } from "@/features/designationMaster/designationMasterDropDown";
@@ -64,6 +64,7 @@ const initialFormState = (): AddUpdateEmployeeMasterRequest => ({
   StateMasterId: null,
   DistrictMasterId: null,
   CityMasterId: null,
+  VillageMasterId: null,
 });
 
 const AddUpdateEmployeePage: React.FC = () => {
@@ -107,37 +108,45 @@ const AddUpdateEmployeePage: React.FC = () => {
   //#endregion
 
   //#region COUNTRY STATE CITY DISTRICT
-  const { isLoading: isLocationLoading, countries, statesByCountryId, districtsByStateId, citiesByDistrictId } = useCountryStateCityDistrictVillageData();
+  const { isLoading: isLocationLoading, countries, statesByCountryId, districtsByStateId, citiesByDistrictId, villagesByCityId } = useCountryStateCityDistrictVillageData();
 
   const [selectedCountryId, setSelectedCountryId] = React.useState<number | null>(1);
   const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null);
   const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null);
   const [selectedCityId, setSelectedCityId] = React.useState<number | null>(null);
-
+  const [selectedVillageId, setSelectedVillageId] = React.useState<number | null>(null);
   const countryOptions = countries.map((c) => ({ label: c.name, value: c.id }));
 
   const stateOptions =
     selectedCountryId != null
       ? (statesByCountryId[selectedCountryId] || []).map((s) => ({
-          label: s.name,
-          value: s.id,
-        }))
+        label: s.name,
+        value: s.id,
+      }))
       : [];
 
   const districtOptions =
     selectedStateId != null
       ? (districtsByStateId[selectedStateId] || []).map((d) => ({
-          label: d.name,
-          value: d.id,
-        }))
+        label: d.name,
+        value: d.id,
+      }))
       : [];
 
   const cityOptions =
     selectedDistrictId != null
       ? (citiesByDistrictId[selectedDistrictId] || []).map((c) => ({
-          label: c.name,
-          value: c.id,
-        }))
+        label: c.name,
+        value: c.id,
+      }))
+      : [];
+
+  const villageOptions =
+    selectedCityId != null
+      ? (villagesByCityId[selectedCityId] || []).map((c) => ({
+        label: c.name,
+        value: c.id,
+      }))
       : [];
 
   //#endregion
@@ -220,12 +229,14 @@ const AddUpdateEmployeePage: React.FC = () => {
               StateMasterId: e.StateMasterId ?? prev.StateMasterId,
               DistrictMasterId: e.DistrictMasterId ?? prev.DistrictMasterId,
               CityMasterId: e.CityMasterId ?? prev.CityMasterId,
+              VillageMasterId: e.VillageMasterId ?? prev.VillageMasterId,
             }));
 
             setSelectedCountryId(e.CountryMasterId ?? null);
             setSelectedStateId(e.StateMasterId ?? null);
             setSelectedDistrictId(e.DistrictMasterId ?? null);
             setSelectedCityId(e.CityMasterId ?? null);
+            setSelectedVillageId(e.VillageMasterId ?? null);
 
             setDropdownLabels({
               companyName: e.CompanyName || "",
@@ -387,6 +398,9 @@ const AddUpdateEmployeePage: React.FC = () => {
     if (!formData.CityMasterId) {
       newErrors.CityMasterId = "City is required";
     }
+    if (!formData.VillageMasterId) {
+      newErrors.VillageMasterId = "Village is required";
+    }
 
     if (!formData.BankListMasterId) {
       newErrors.BankListMasterId = "Bank Name is required";
@@ -412,7 +426,11 @@ const AddUpdateEmployeePage: React.FC = () => {
       newErrors.IFSCCode = "Enter a valid IFSC Code";
     }
 
-    if (formData.IdCardIssuedDate && !isToDateGreaterOrEqualFromDate(formData.JoiningDate!, formData.IdCardIssuedDate!)) {
+
+    const joiningDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.JoiningDate ? new Date(formData.JoiningDate) : undefined);
+    const idCardIssuedDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.IdCardIssuedDate ? new Date(formData.IdCardIssuedDate) : undefined);
+
+    if (formData?.JoiningDate && formData.IdCardIssuedDate && !isToDateGreaterOrEqualFromDate(joiningDate, idCardIssuedDate)) {
       newErrors.IdCardIssuedDate = "Id card issued Date must be greater than or equal to Joining Date";
     }
 
@@ -458,6 +476,7 @@ const AddUpdateEmployeePage: React.FC = () => {
       StateMasterId: formData.StateMasterId ?? 0,
       DistrictMasterId: formData.DistrictMasterId ?? 0,
       CityMasterId: formData.CityMasterId ?? 0,
+      VillageMasterId: formData.VillageMasterId ?? 0,
     };
   };
 
@@ -467,7 +486,10 @@ const AddUpdateEmployeePage: React.FC = () => {
     const validation = validateAddEmployeeMasterForm();
 
     if (!validation.isValid) {
+
       setErrors(validation.errors);
+
+      addToast({ type: "error", title: "Please fill the required filed" });
 
       return;
     }
@@ -502,7 +524,7 @@ const AddUpdateEmployeePage: React.FC = () => {
 
   //#endregion
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         {" "}
         <div></div>{" "}
@@ -715,11 +737,13 @@ const AddUpdateEmployeePage: React.FC = () => {
                       setSelectedStateId(null);
                       setSelectedDistrictId(null);
                       setSelectedCityId(null);
+                      setSelectedVillageId(null);
 
                       handleFieldChange("CountryMasterId", 0);
                       handleFieldChange("StateMasterId", 0);
                       handleFieldChange("DistrictMasterId", 0);
                       handleFieldChange("CityMasterId", 0);
+                      handleFieldChange("VillageMasterId", 0);
 
                       return;
                     }
@@ -730,11 +754,13 @@ const AddUpdateEmployeePage: React.FC = () => {
                     setSelectedStateId(null);
                     setSelectedDistrictId(null);
                     setSelectedCityId(null);
+                    setSelectedVillageId(null);
 
                     handleFieldChange("CountryMasterId", id);
                     handleFieldChange("StateMasterId", 0);
                     handleFieldChange("DistrictMasterId", 0);
                     handleFieldChange("CityMasterId", 0);
+                    handleFieldChange("VillageMasterId", 0);
                   }}
                   disabled={isLocationLoading}
                   options={countryOptions}
@@ -753,10 +779,12 @@ const AddUpdateEmployeePage: React.FC = () => {
                       setSelectedStateId(null);
                       setSelectedDistrictId(null);
                       setSelectedCityId(null);
+                      setSelectedVillageId(null);
 
                       handleFieldChange("StateMasterId", 0);
                       handleFieldChange("DistrictMasterId", 0);
                       handleFieldChange("CityMasterId", 0);
+                      handleFieldChange("VillageMasterId", 0);
 
                       return;
                     }
@@ -766,10 +794,12 @@ const AddUpdateEmployeePage: React.FC = () => {
                     setSelectedStateId(id);
                     setSelectedDistrictId(null);
                     setSelectedCityId(null);
+                    setSelectedVillageId(null);
 
                     handleFieldChange("StateMasterId", id);
                     handleFieldChange("DistrictMasterId", 0);
                     handleFieldChange("CityMasterId", 0);
+                    handleFieldChange("VillageMasterId", 0);
                   }}
                   disabled={!selectedCountryId || stateOptions.length === 0}
                   options={stateOptions}
@@ -787,9 +817,11 @@ const AddUpdateEmployeePage: React.FC = () => {
                     if (!item) {
                       setSelectedDistrictId(null);
                       setSelectedCityId(null);
+                      setSelectedVillageId(null);
 
                       handleFieldChange("DistrictMasterId", 0);
                       handleFieldChange("CityMasterId", 0);
+                      handleFieldChange("VillageMasterId", 0);
                       return;
                     }
 
@@ -797,9 +829,11 @@ const AddUpdateEmployeePage: React.FC = () => {
 
                     setSelectedDistrictId(id);
                     setSelectedCityId(null);
+                    setSelectedVillageId(null);
 
                     handleFieldChange("DistrictMasterId", id);
                     handleFieldChange("CityMasterId", 0);
+                    handleFieldChange("VillageMasterId", 0);
                   }}
                   disabled={!selectedStateId || districtOptions.length === 0}
                   options={districtOptions}
@@ -816,17 +850,45 @@ const AddUpdateEmployeePage: React.FC = () => {
                   onChange={(item) => {
                     if (!item) {
                       setSelectedCityId(null);
+                      setSelectedVillageId(null);
+
                       handleFieldChange("CityMasterId", 0);
+                      handleFieldChange("VillageMasterId", 0);
                       return;
                     }
 
                     const id = Number(item);
 
                     setSelectedCityId(id);
+                    setSelectedVillageId(null);
                     handleFieldChange("CityMasterId", id);
+                    handleFieldChange("VillageMasterId", 0);
                   }}
                   disabled={!selectedDistrictId || cityOptions.length === 0}
                   options={cityOptions}
+                />
+              </div>
+              <div>
+                <SinglePageSelection
+                  label="Village"
+                  placeholder="Select Village"
+                  value={selectedVillageId ?? ""}
+                  required
+                  error={errors.VillageMasterId}
+                  onChange={(item) => {
+                    if (!item) {
+                      setSelectedVillageId(null);
+                      handleFieldChange("VillageMasterId", 0);
+                      return;
+                    }
+
+                    const id = Number(item);
+
+                    setSelectedVillageId(id);
+                    handleFieldChange("VillageMasterId", id);
+                  }}
+                  disabled={!selectedCityId || villageOptions.length === 0}
+                  options={villageOptions}
                 />
               </div>
             </div>

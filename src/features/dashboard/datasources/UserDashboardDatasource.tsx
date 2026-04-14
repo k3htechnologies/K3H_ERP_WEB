@@ -21,8 +21,10 @@ export class UserDashboardDatasourceImpl implements UserDashboardDatasource {
         } catch (error: any) {
 
             console.error('ERROR: PULL USER DASHBOARD :', error);
-            if (error === TokenExpiredException) {
-                await this.pullUserDashboard(signal);
+            
+             if (error instanceof TokenExpiredException) {
+
+                return await this.pullUserDashboard(signal);
             }
             throw error
         }

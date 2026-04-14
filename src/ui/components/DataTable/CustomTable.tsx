@@ -2,6 +2,7 @@ import React from "react"
 import { ChevronLeft, ChevronRight, ArrowUpDown } from "lucide-react"
 import { useViewportHeight } from "@/core/utils/useViewportHeight"
 import NoDataView from "@/ui/components/NoDataView/NoDataView"
+import { useHorizontalScroll } from "./useHorizontalScroll"
 
 export interface TableColumn {
   key: string
@@ -56,7 +57,8 @@ export const CustomTable: React.FC<Props> = ({
   sortInfo,
   onSort
 }) => {
-
+  const scrollRef = useHorizontalScroll();
+  
   const handleSort = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey)
     if (!onSort || !column?.sortable) return
@@ -168,11 +170,9 @@ export const CustomTable: React.FC<Props> = ({
 
   return (
 
-    <div
-      className={`bg-white rounded-lg shadow-sm  flex flex-col ${className}`}
-    >
+    <div className={`bg-white rounded-lg shadow-sm  flex flex-col ${className}`} >
 
-      <div
+      <div ref={scrollRef}
         className={`overflow-x-auto thin-scroll ${
           fixedHeight ? "flex-1 overflow-y-auto" : ""
         }`}
@@ -189,7 +189,7 @@ export const CustomTable: React.FC<Props> = ({
 
           <thead
             className={`${fixedHeight ? "sticky top-0 z-40" : ""}`}
-            style={{ backgroundColor: "#E4F0FF" }}
+            style={{ backgroundColor: "#E4F0FF", zIndex: 30, }}
           >
 
             {buildHeaderRows().map((row, rIndex) => (

@@ -14,6 +14,7 @@ import ToastContainer from '@/ui/components/Toast/ToastContainer';
 import { useToast } from '@/core/hooks/useToast';
 import { runApiWithLoader } from '@/core/utils';
 import { Loader } from '@/core/utils/loader';
+import { useNavigate } from 'react-router-dom'
 
 export const Layout: React.FC = () => {
 
@@ -27,6 +28,7 @@ export const Layout: React.FC = () => {
     const { toasts, removeToast } = useToast()
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
+    const navigate = useNavigate();
 
     useNetworkStatus();
 
@@ -141,11 +143,12 @@ export const Layout: React.FC = () => {
         setSelectedSubModule(null)
     }
 
-    const handleLogout = () => {
-
+    const handleLogout = async () => {
+        setIsLoading(true)
+        setLoadingMessage("Please wait")
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         LocalStorageHelper.clearLocalStorageData();
-
-        window.location.href = '/sign-in'
+        navigate('/sign-in', { replace: true });
     }
 
     return (

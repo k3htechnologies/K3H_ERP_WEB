@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useToast } from '@/core/hooks/useToast';
 import { ToastContainer } from '@/ui/components/Toast';
 import { Input } from '@/ui/components/forms/Input';
@@ -11,6 +11,7 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Loader } from '@/core/utils/loader';
 import { useNavigate } from 'react-router-dom';
 import baseClient from '@/core/config/baseClient';
+import { KeyIcon, Mail, Phone } from 'lucide-react';
 
 export function SignIn() {
 
@@ -21,7 +22,18 @@ export function SignIn() {
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isVerified, setIsVerified] = useState(false)
     const { toasts, removeToast, showSuccess, showError, addToast } = useToast()
+    const [resendTimer, setResendTimer] = useState(0);
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (resendTimer <= 0) return;
+
+        const interval = setInterval(() => {
+            setResendTimer((prev) => prev - 1);
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [resendTimer]);
 
     //#region  SEND OTP
     const handleSendOTP = async () => {
@@ -46,13 +58,15 @@ export function SignIn() {
 
                             setStep("otp");
 
+                            setResendTimer(60);
+
                             showSuccess('OTP Sent', response.right.SuccessMessage?.[0]);
                         }
 
                         else if (msg.toLowerCase().includes("mpin")) {
 
                             setStep("mpin");
-                            
+
                             showSuccess('MPIN', response.right.SuccessMessage?.[0]);
                         }
                         else {
@@ -92,7 +106,7 @@ export function SignIn() {
                     return
                 }
 
-                const response = await authenticationService.apicallIsValidOTP(mobileNumber, otp,step)
+                const response = await authenticationService.apicallIsValidOTP(mobileNumber, otp, step)
 
                 if (E.isRight(response)) {
 
@@ -108,9 +122,10 @@ export function SignIn() {
 
                     showSuccess('Login Successful', `Welcome, ${employeeData[0].FullName}`);
 
-                    setIsVerified(true)
+                    setIsVerified(true);
 
                     navigate('/dashboard');
+
                 } else {
                     showError('Invalid OTP', response.left.message)
                 }
@@ -123,7 +138,7 @@ export function SignIn() {
             },
             undefined,
             'Verify OTP'
-        ) // ✅ Properly closed
+        )
     }
     //#endregion
 
@@ -141,6 +156,9 @@ export function SignIn() {
                 const response = await authenticationService.apicallIsValidMobileNumber(mobileNumber);
 
                 if (E.isRight(response)) {
+
+                    setResendTimer(60);
+
 
                     showSuccess('OTP Resent', response.right.SuccessMessage?.[0]);
 
@@ -202,7 +220,8 @@ export function SignIn() {
                                         alt="App Logo"
                                         style={{ height: '80px', objectFit: 'contain', marginBottom: '16px' }}
                                     />
-                                    <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#1a1a1a' }}>Sign In</h1>
+                                    <h1 style={{ fontSize: '28px', fontWeight: 700, color: '#1a1a1a' }}>Welcome !</h1>
+                                    <p className='text-gray-500 text-sm'>Enter details to get started</p>
                                 </div>
 
                                 <Input
@@ -213,8 +232,6 @@ export function SignIn() {
                                     value={mobileNumber}
                                     onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, '').slice(0, 10))}
                                     maxLength={10}
-                                    required
-                                    size="lg"
                                     variant="filled"
                                     fullWidth
                                     leftIcon={
@@ -259,8 +276,10 @@ export function SignIn() {
                                 </div>
 
                                 <Input
+                                    autoFocus
                                     type="text"
                                     placeholder="Enter OTP"
+                                    leftIcon={<KeyIcon />}
                                     value={otp}
                                     inputMode="numeric"
                                     autoComplete="one-time-code"
@@ -294,15 +313,21 @@ export function SignIn() {
                                     <p style={{ color: '#6b7280', fontSize: '14px', marginBottom: '8px' }}>
                                         Didn’t receive the code?
                                     </p>
-                                    <Button
-                                        onClick={handleResendOTP}
-                                        disabled={isLoading}
-                                        variant="link"
-                                        color="primary"
-                                        size="sm"
-                                    >
-                                        Resend OTP
-                                    </Button>
+                                    {resendTimer > 0 ? (
+                                        <p style={{ color: '#9ca3af', fontSize: '14px' }}>
+                                            Resend OTP in {resendTimer}s
+                                        </p>
+                                    ) : (
+                                        <Button
+                                            onClick={handleResendOTP}
+                                            disabled={isLoading}
+                                            variant="link"
+                                            color="primary"
+                                            size="sm"
+                                        >
+                                            Resend OTP
+                                        </Button>
+                                    )}
                                 </div>
                             </form>
                         )}
@@ -319,9 +344,12 @@ export function SignIn() {
                                 </div>
 
                                 <Input
-                                autoFocus
+                                    autoFocus
+                                    variant="filled"
+                                    fullWidth
                                     type="text"
                                     placeholder="Enter MPIN"
+                                    leftIcon={<KeyIcon />}
                                     value={otp}
                                     inputMode="numeric"
                                     autoComplete="one-time-code"
@@ -366,8 +394,15 @@ export function SignIn() {
                                 Need help? Contact our support
                             </p>
                             <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', color: '#6b7280' }}>
-                                <span>📧 support@k3tech.com</span>
-                                <span>📞 +91 9975535595</span>
+                                <span className="flex items-center gap-1">
+                                    <Mail className="w-4 h-4" />
+                                    it@hrishabraj.com
+                                </span>
+
+                                <span className="flex items-center gap-1">
+                                    <Phone className="w-4 h-4" />
+                                    +91 9975535595
+                                </span>
                             </div>
                         </div>
                     </div>

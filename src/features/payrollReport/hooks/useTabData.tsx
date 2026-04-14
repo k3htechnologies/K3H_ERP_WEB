@@ -84,13 +84,13 @@ export function useTabData(
   );
 
   const empName = useCallback(
-    (f: FilterInfo) => searchTerm?.trim() || f.EmployeeName?.trim() || undefined,
-    [searchTerm],
+    (f: FilterInfo, search?: string) => search?.trim() || f.EmployeeName?.trim() || undefined,
+    [],
   );
   //#endregion
 
   //#region LOADERS
-  const loadResignations = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true) => {
+  const loadResignations = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true, searchValue?: string) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
@@ -98,7 +98,7 @@ export function useTabData(
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsCheckPermission: true,
-          EmployeeName: empName(filterParams),
+          EmployeeName: empName(filterParams, searchValue),
           ResignationDateFrom: convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ResignationDateFrom),
           ResignationDateTo: convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ResignationDateTo),
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS.Resignation),
@@ -125,7 +125,7 @@ export function useTabData(
     );
   };
 
-  const loadAttendance = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo) => {
+  const loadAttendance = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, searchValue?: string) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
@@ -133,7 +133,7 @@ export function useTabData(
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsReport: true,
-          EmployeeName: empName(filterParams),
+          EmployeeName: empName(filterParams, searchValue),
           ...dateParams(filterParams),
           IsCheckPermission: true,
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS.Attendance),
@@ -175,7 +175,7 @@ export function useTabData(
     );
   };
 
-  const loadAttendanceRegularization = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true) => {
+  const loadAttendanceRegularization = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true, searchValue?: string) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
@@ -183,7 +183,7 @@ export function useTabData(
           PageNumber: page,
           PageSize: pagination.pageSize,
           IsReport: true,
-          EmployeeName: empName(filterParams),
+          EmployeeName: empName(filterParams, searchValue),
           ...dateParams(filterParams),
           CanApprove: canApprove,
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS["Attendance Regularization"]),
@@ -208,7 +208,7 @@ export function useTabData(
     );
   };
 
-  const loadCompOff = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true) => {
+  const loadCompOff = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true, searchValue?: string) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
@@ -216,8 +216,9 @@ export function useTabData(
           PageNumber: page,
           PageSize: pagination.pageSize,
           CompOffId: filterParams.CompOffId ? Number(filterParams.CompOffId) : 0,
-          StartDate: filterParams.StartDate || undefined,
-          EndDate: filterParams.EndDate || undefined,
+          EmployeeName: empName(filterParams, searchValue),
+          StartDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.StartDate) || undefined,
+          EndDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.EndDate) || undefined,
           Reason: filterParams.Reason?.trim() || undefined,
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS["Comp-Off"]),
           IsReport: true,
@@ -244,14 +245,14 @@ export function useTabData(
     );
   };
 
-  const loadLeave = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true) => {
+  const loadLeave = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true, searchValue?: string) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
         const params: FilterWithPaginationLeaveRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          EmployeeName: empName(filterParams),
+          EmployeeName: empName(filterParams, searchValue),
           ...dateParams(filterParams),
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS.Leave),
           CanApprove: canApprove,
@@ -278,14 +279,14 @@ export function useTabData(
     );
   };
 
-  const loadOutdoor = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true) => {
+  const loadOutdoor = async (page: number, filterParams: FilterInfo, sortParams?: SortInfo, canApprove: boolean = true, searchValue?: string) => {
     await runApiWithLoader(
       setIsLoading, setLoadingMessage,
       async () => {
         const params: FilterWithPaginationOutDoor = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          EmployeeName: empName(filterParams),
+          EmployeeName: empName(filterParams, searchValue),
           ...dateParams(filterParams),
           SortBy: getSortByParam(sortParams ?? null, SORT_COLUMNS.Outdoor),
           IsReport: true,
@@ -314,16 +315,16 @@ export function useTabData(
 
   //#region DISPATCHER
   const dispatchLoad = useCallback(
-    (page: number, f: FilterInfo = filters, tab: TabId = activeTab, sort?: SortInfo) => {
-      const LOADER_MAP: Record<TabId, (p: number, f: FilterInfo, s?: SortInfo) => Promise<void>> = {
-        Attendance: loadAttendance,
-        "Attendance Regularization": loadAttendanceRegularization,
-        "Comp-Off": loadCompOff,
-        Leave: (p, f, s) => loadLeave(p, f, s, subActiveTab === "Approval"),
-        Outdoor: loadOutdoor,
-        Resignation: loadResignations,
+    (page: number, f: FilterInfo = filters, tab: TabId = activeTab, sort?: SortInfo, searchValue?: string) => {
+      const LOADER_MAP: Record<TabId, (p: number, f: FilterInfo, s?: SortInfo, search?: string) => Promise<void>> = {
+        Attendance: (p, f, s, search) => loadAttendance(p, f, s, search),
+        "Attendance Regularization": (p, f, s, search) => loadAttendanceRegularization(p, f, s, subActiveTab === "Approval", search),
+        "Comp-Off": (p, f, s, search) => loadCompOff(p, f, s, subActiveTab === "Approval", search),
+        Leave: (p, f, s, search) => loadLeave(p, f, s, subActiveTab === "Approval", search),
+        Outdoor: (p, f, s, search) => loadOutdoor(p, f, s, subActiveTab === "Approval", search),
+        Resignation: (p, f, s, search) => loadResignations(p, f, s, subActiveTab === "Approval", search),
       };
-      return LOADER_MAP[tab](page, f, sort);
+      return LOADER_MAP[tab](page, f, sort, searchValue);
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [activeTab, filters, subActiveTab],
@@ -366,7 +367,7 @@ export function useTabData(
       Outdoor: outDoorList,
       Resignation: employeeResignationList,
     };
-    return (DATA_MAP[activeTab] ?? [])
+    return (DATA_MAP[activeTab] ?? []).filter((item) =>item.canApprove);
   }, [activeTab, attendanceList, attendanceRegularizationList, compOffList, leaveList, outDoorList, employeeResignationList]);
   //#endregion
 

@@ -5,6 +5,7 @@ import { getStatusColor } from "../utils/Status";
 interface ApprovalActionsProps {
     showApproval?: boolean;
     isIcons?: boolean;
+    displayText?: string;
     approvalStatus?: string;
     onHistory?: () => void;
     onApprove?: () => void;
@@ -14,6 +15,7 @@ interface ApprovalActionsProps {
 const ApprovalActions = ({
     showApproval = false,
     isIcons = false,
+    displayText="",
     approvalStatus = "Pending",
     onHistory,
     onApprove,
@@ -23,12 +25,14 @@ const ApprovalActions = ({
         <div className="flex items-center border border-gray-300 rounded-md overflow-hidden w-fit">
 
             {/* HISTORY - Always visible */}
+            {!displayText && (
             <span className={`px-2 py-1 text-xs font-semibold  ${getStatusColor(
                     approvalStatus
                 )}`}
             >
                 {approvalStatus}
             </span>
+            )}
 
             <button
                 onClick={(e) => {
@@ -40,6 +44,7 @@ const ApprovalActions = ({
                     }`}
             >
                 {isIcons ? <History size={16} /> : "History"}
+                
             </button>
 
             {/* APPROVE + REJECT only if approval required */}

@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, ArrowUpDown, ChevronDown } from 'lucide-reac
 import { useViewportHeight } from '@/core/utils/useViewportHeight'
 import type { PaginationInfo, SortInfo, TableColumn } from './DataTable'
 import NoDataView from '@/ui/components/NoDataView/NoDataView'
+import { useHorizontalScroll } from './useHorizontalScroll'
 
 
 interface ExpandableConfig {
@@ -51,6 +52,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
   alwaysFetchOnOpen
 }, ref) => {
 
+  const scrollRef = useHorizontalScroll()
   const [expandedMap, setExpandedMap] = useState<Record<string, { open: boolean; loading: boolean; data?: any; error?: string }>>({})
 
   // compute a stable key name
@@ -237,7 +239,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
 
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col ${fixedHeight ? 'h-full' : ''} ${className}`}>
-      <div className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
+      <div ref={scrollRef}  className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
         maxHeight: recordsPerPage === 10 ? 'calc(10 * 2.5rem + 2.5rem)' : maxHeight
       } : {}}>
         <table className="min-w-full border-collapse border border-gray-300">

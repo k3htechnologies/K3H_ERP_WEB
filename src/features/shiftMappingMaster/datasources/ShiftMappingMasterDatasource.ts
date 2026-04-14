@@ -48,8 +48,9 @@ export class ShiftMappingMasterDatasourceImpl implements ShiftMappingMasterDatas
 
             console.error('ERROR: PULL SHIFT MAPPING MASTER :', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullShiftMappingMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullShiftMappingMaster(params);
             }
 
             throw error
@@ -70,8 +71,9 @@ export class ShiftMappingMasterDatasourceImpl implements ShiftMappingMasterDatas
 
             console.error('ERROR: ADD UPDATE SHIFT MAPPING MASTER :', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateShiftMappingMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateShiftMappingMaster(params);
             }
             throw error
         }
@@ -94,9 +96,9 @@ export class ShiftMappingMasterDatasourceImpl implements ShiftMappingMasterDatas
 
             console.error('ERROR: DELETE SHIFT MAPPING MASTER :', error)
 
-            if (error === TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteShiftMappingMaster(params);
+                return  await this.deleteShiftMappingMaster(params);
 
             }
 

@@ -63,8 +63,8 @@ const initialFormState = (): AddUpdateBookingRequest => ({
   CommunicationAddress: "",
   BrokeragePercentage: 0,
   BrokerageAmount: 0,
-  ReferelPercentage: 0,
-  ReferelAmount: 0,
+  ReferralPercentage: 0,
+  ReferralAmount: 0,
 
   LoyaltyPercentage: 0,
   LoyaltyAmount: 0,
@@ -128,6 +128,27 @@ const initialFormStateApplicantDetails = (): AddUpdateBookingApplicantRequest =>
   GSTNumber: "",
   GSTNumberURL: null,
   RemoveGSTNumberURL: "",
+
+  CancelledChequeURL: null,
+  RemoveCancelledChequeURL: "",
+
+  POAURL: null,
+  RemovePOAURL: "",
+
+  IncomeForm16ITRURL: null,
+  RemoveIncomeForm16ITRURL: "",
+
+  NreNroBankDetailsURL: null,
+  RemoveNreNroBankDetailsURL: "",
+
+  NomineeFormURL: null,
+  RemoveNomineeFormURL: "",
+
+  StatementOfSourceOfFundsURL: null,
+  RemoveStatementOfSourceOfFundsURL: "",
+
+  PaymentProofURL: null,
+  RemovePaymentProofURL: "",
 });
 
 type BookingApplicantWithFiles = BookingApplicantData & {
@@ -138,6 +159,15 @@ type BookingApplicantWithFiles = BookingApplicantData & {
   _drivingFiles?: (File | string)[];
   _votingFiles?: (File | string)[];
   _gstFiles?: (File | string)[];
+
+  _cancelledChequeFiles?: (File | string)[];
+  _pOAFiles?: (File | string)[];
+  _incomeForm16ITRFiles?: (File | string)[];
+  _nreNroBankDetailsFiles?: (File | string)[];
+  _nomineeFormFiles?: (File | string)[];
+  _statementOfSourceOfFundsFiles?: (File | string)[];
+  _paymentProofFiles?: (File | string)[];
+
   RemovePhotoURL?: string;
   RemoveAadharCardURL?: string;
   RemovePanCardURL?: string;
@@ -145,6 +175,15 @@ type BookingApplicantWithFiles = BookingApplicantData & {
   RemoveDrivingLicenseURL?: string;
   RemoveVotingIdURL?: string;
   RemoveGSTNumberURL?: string;
+  RemoveCancelledChequeURL?: string;
+
+  RemovePOAURL?: string;
+  RemoveIncomeForm16ITRURL?: string;
+  RemoveNreNroBankDetailsURL?: string;
+  RemoveNomineeFormURL?: string;
+  RemoveStatementOfSourceOfFundsURL?: string;
+  RemovePaymentProofURL?: string;
+
 };
 
 export const AddUpdateBooking: React.FC = () => {
@@ -212,6 +251,34 @@ export const AddUpdateBooking: React.FC = () => {
   // ================= GST =================
   const [gstFiles, setGstFiles] = useState<(File | string)[]>([]);
   const [removedGstURLs, setRemovedGstURLs] = useState<string[]>([]);
+
+  // ================= Cancelled Cheque =================
+  const [cancelledChequeFiles, setCancelledChequeFiles] = useState<(File | string)[]>([]);
+  const [removedCancelledChequeURLs, setRemovedCancelledChequeURLs] = useState<string[]>([]);
+
+  // ================= POA =================
+  const [pOAFiles, setPOAFiles] = useState<(File | string)[]>([]);
+  const [removedPOAURLs, setRemovedPOAURLs] = useState<string[]>([]);
+
+  // ================= Income Form16 / ITR =================
+  const [incomeFiles, setIncomeFiles] = useState<(File | string)[]>([]);
+  const [removedIncomeURLs, setRemovedIncomeURLs] = useState<string[]>([]);
+
+  // ================= NRE / NRO Bank =================
+  const [nreNroFiles, setNreNroFiles] = useState<(File | string)[]>([]);
+  const [removedNreNroURLs, setRemovedNreNroURLs] = useState<string[]>([]);
+
+  // ================= Nominee Form =================
+  const [nomineeFiles, setNomineeFiles] = useState<(File | string)[]>([]);
+  const [removedNomineeURLs, setRemovedNomineeURLs] = useState<string[]>([]);
+
+  // ================= Source of Funds =================
+  const [sourceOfFundsFiles, setSourceOfFundsFiles] = useState<(File | string)[]>([]);
+  const [removedSourceOfFundsURLs, setRemovedSourceOfFundsURLs] = useState<string[]>([]);
+
+  // ================= Payment Proof =================
+  const [paymentProofFiles, setPaymentProofFiles] = useState<(File | string)[]>([]);
+  const [removedPaymentProofURLs, setRemovedPaymentProofURLs] = useState<string[]>([]);
 
   //ERROR SET UP
   const [errorsBookingApplicant, setErrorsBookingApplicant] = useState<{ [k: string]: string }>({});
@@ -448,8 +515,8 @@ export const AddUpdateBooking: React.FC = () => {
               CommunicationAddress: booking.CommunicationAddress ?? "",
               BrokeragePercentage: booking.BrokeragePercentage ?? 0,
               BrokerageAmount: booking.BrokerageAmount ?? 0,
-              ReferelPercentage: booking.ReferelPercentage ?? 0,
-              ReferelAmount: booking.ReferelAmount ?? 0,
+              ReferralPercentage: booking.ReferralPercentage ?? 0,
+              ReferralAmount: booking.ReferralAmount ?? 0,
 
               LoyaltyPercentage: booking.LoyaltyPercentage ?? 0,
               LoyaltyAmount: booking.LoyaltyAmount ?? 0,
@@ -543,6 +610,13 @@ export const AddUpdateBooking: React.FC = () => {
               _drivingFiles: parseDocumentUrls(a.DrivingLicenseURL ?? ""),
               _votingFiles: parseDocumentUrls(a.VotingIdURL ?? ""),
               _gstFiles: parseDocumentUrls(a.GSTNumberURL ?? ""),
+              _cancelledChequeFiles: parseDocumentUrls(a.CancelledChequeURL ?? ""),
+              _pOAFiles: parseDocumentUrls(a.POAURL ?? ""),
+              _incomeForm16ITRFiles: parseDocumentUrls(a.IncomeForm16ITRURL ?? ""),
+              _nreNroBankDetailsFiles: parseDocumentUrls(a.NreNroBankDetailsURL ?? ""),
+              _nomineeFormFiles: parseDocumentUrls(a.NomineeFormURL ?? ""),
+              _statementOfSourceOfFundsFiles: parseDocumentUrls(a.StatementOfSourceOfFundsURL ?? ""),
+              _paymentProofFiles: parseDocumentUrls(a.PaymentProofURL ?? ""),
             }));
 
             setApplicantList(applicantsWithFiles);
@@ -629,6 +703,14 @@ export const AddUpdateBooking: React.FC = () => {
       DrivingLicenseURL: null,
       VotingIdURL: null,
       GSTNumberURL: null,
+
+      RemoveCancelledChequeURL: "",
+      RemovePOAURL: "",
+      RemoveIncomeForm16ITRURL: "",
+      RemoveNreNroBankDetailsURL: "",
+      RemoveNomineeFormURL: "",
+      RemoveStatementOfSourceOfFundsURL: "",
+      RemovePaymentProofURL: "",
     };
 
     setEditingApplicantData({ row, index });
@@ -648,6 +730,20 @@ export const AddUpdateBooking: React.FC = () => {
     setRemovedVotingIdURLs([]);
     setGstFiles(row._gstFiles ?? []);
     setRemovedGstURLs([]);
+    setCancelledChequeFiles(row._cancelledChequeFiles ?? []);
+    setRemovedCancelledChequeURLs([]);
+    setPOAFiles(row._pOAFiles ?? []);
+    setRemovedPOAURLs([]);
+    setIncomeFiles(row._incomeForm16ITRFiles ?? []);
+    setRemovedIncomeURLs([]);
+    setNreNroFiles(row._nreNroBankDetailsFiles ?? []);
+    setRemovedNreNroURLs([]);
+    setNomineeFiles(row._nomineeFormFiles ?? []);
+    setRemovedNomineeURLs([]);
+    setSourceOfFundsFiles(row._statementOfSourceOfFundsFiles ?? []);
+    setRemovedSourceOfFundsURLs([]);
+    setPaymentProofFiles(row._paymentProofFiles ?? []);
+    setRemovedPaymentProofURLs([]);
 
     setIsAddUpdateApplicantModalOpen(true);
   }, []);
@@ -756,6 +852,118 @@ export const AddUpdateBooking: React.FC = () => {
         align: "center",
         render: (value: string, row: any) => {
           return <MultiImageViewer images={parseDocumentUrls(row.GSTNumberURL)} title="GST Document" triggerLabel={value || "-"} isWrap={false} />;
+        },
+      },
+      {
+        key: "CancelledCheque",
+        label: "Cancelled Cheque",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.CancelledChequeURL)}
+              title="Cancelled Cheque"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "POA",
+        label: "POA",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.POAURL)}
+              title="POA Document"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "Income",
+        label: "Income / ITR",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.IncomeForm16ITRURL)}
+              title="Income Document"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "NRE_NRO_Bank_Details",
+        label: "NRE / NRO Bank Details",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.NreNroBankDetailsURL)}
+              title="NRE / NRO Bank Details"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "NomineeForm",
+        label: "Nominee Form",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.NomineeFormURL)}
+              title="Nominee Form"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "SourceOfFund",
+        label: "Statement of Source of Funds",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.StatementOfSourceOfFundsURL)}
+              title="Statement of Source of Funds"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
+        },
+      },
+      {
+        key: "PaymentProof",
+        label: "Payment Proof",
+        width: "15",
+        align: "center",
+        render: (_value: string, row: any) => {
+          return (
+            <MultiImageViewer
+              images={parseDocumentUrls(row.PaymentProofURL)}
+              title="Payment Proof"
+              triggerLabel="-"
+              isWrap={false}
+            />
+          );
         },
       },
       {
@@ -876,7 +1084,7 @@ export const AddUpdateBooking: React.FC = () => {
           return `₹${Number(value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         },
       },
-      ...(formData.PaymentScheduleSchemeMasterId !== 0 ? [] : [
+      ...(Number(formData.PaymentScheduleSchemeMasterId) !== 0 ? [] : [
         {
           key: "actions",
           label: "Actions",
@@ -1099,11 +1307,12 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (!hasAadharCardNumber) {
       newErrorsBookingApplicant.AadharCardNumber = "Enter a valid Aadhaar Card Number";
-    } else if (!isValidAadhaar(AadharCardNumber)) {
+    }
+    else if (!isValidAadhaar(AadharCardNumber)) {
       newErrorsBookingApplicant.AadharCardNumber = "Enter a valid Aadhaar Card Number";
     }
 
-    if (hasAadharCardNumber && !hasAadharCardNumberFile) {
+    if (!hasAadharCardNumberFile) {
       newErrorsBookingApplicant.AadharCardURL = "Aadhaar document is required";
     }
 
@@ -1114,7 +1323,8 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (!hasPanNumber) {
       newErrorsBookingApplicant.PanNumber = "Enter a valid PAN Card Number";
-    } else if (!isValidPAN(PanNumber)) {
+    }
+    else if (!isValidPAN(PanNumber)) {
       newErrorsBookingApplicant.PanNumber = "Enter a valid PAN Card Number";
     }
     if (!hasPanFile) {
@@ -1208,6 +1418,34 @@ export const AddUpdateBooking: React.FC = () => {
     const finalRemovedVotingURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._votingFiles, votingIdFiles, removedVotingIdURLs) : removedVotingIdURLs;
     const finalRemovedGstURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._gstFiles, gstFiles, removedGstURLs) : removedGstURLs;
 
+    const finalRemovedCancelledChequeURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._cancelledChequeFiles, cancelledChequeFiles, removedCancelledChequeURLs)
+      : removedCancelledChequeURLs;
+
+    const finalRemovedPOAURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._pOAFiles, pOAFiles, removedPOAURLs)
+      : removedPOAURLs;
+
+    const finalRemovedIncomeURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._incomeForm16ITRFiles, incomeFiles, removedIncomeURLs)
+      : removedIncomeURLs;
+
+    const finalRemovedNreNroURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._nreNroBankDetailsFiles, nreNroFiles, removedNreNroURLs)
+      : removedNreNroURLs;
+
+    const finalRemovedNomineeURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._nomineeFormFiles, nomineeFiles, removedNomineeURLs)
+      : removedNomineeURLs;
+
+    const finalRemovedSourceOfFundsURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._statementOfSourceOfFundsFiles, sourceOfFundsFiles, removedSourceOfFundsURLs)
+      : removedSourceOfFundsURLs;
+
+    const finalRemovedPaymentProofURLs = editingApplicantData
+      ? calculateRemovedFiles(editingApplicantData.row._paymentProofFiles, paymentProofFiles, removedPaymentProofURLs)
+      : removedPaymentProofURLs;
+
     const mergedPhotoFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, finalRemovedPhotoURLs) : applicantPhotoFiles.slice();
     const mergedAadharFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._aadharFiles, aadharCardFiles, finalRemovedAadharURLs) : aadharCardFiles.slice();
     const mergedPanFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._panFiles, panCardFiles, finalRemovedPanURLs) : panCardFiles.slice();
@@ -1215,6 +1453,34 @@ export const AddUpdateBooking: React.FC = () => {
     const mergedDrivingFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._drivingFiles, drivingLicenseFiles, finalRemovedDrivingURLs) : drivingLicenseFiles.slice();
     const mergedVotingFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._votingFiles, votingIdFiles, finalRemovedVotingURLs) : votingIdFiles.slice();
     const mergedGstFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._gstFiles, gstFiles, finalRemovedGstURLs) : gstFiles.slice();
+
+    const mergedCancelledChequeFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._cancelledChequeFiles, cancelledChequeFiles, finalRemovedCancelledChequeURLs)
+      : cancelledChequeFiles.slice();
+
+    const mergedPOAFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._pOAFiles, pOAFiles, finalRemovedPOAURLs)
+      : pOAFiles.slice();
+
+    const mergedIncomeFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._incomeForm16ITRFiles, incomeFiles, finalRemovedIncomeURLs)
+      : incomeFiles.slice();
+
+    const mergedNreNroFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._nreNroBankDetailsFiles, nreNroFiles, finalRemovedNreNroURLs)
+      : nreNroFiles.slice();
+
+    const mergedNomineeFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._nomineeFormFiles, nomineeFiles, finalRemovedNomineeURLs)
+      : nomineeFiles.slice();
+
+    const mergedSourceOfFundsFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._statementOfSourceOfFundsFiles, sourceOfFundsFiles, finalRemovedSourceOfFundsURLs)
+      : sourceOfFundsFiles.slice();
+
+    const mergedPaymentProofFiles = editingApplicantData
+      ? mergeFiles(editingApplicantData.row._paymentProofFiles, paymentProofFiles, finalRemovedPaymentProofURLs)
+      : paymentProofFiles.slice();
 
     const applicantToSave: BookingApplicantWithFiles = {
       BookingApplicantId: editingApplicantData?.row.BookingApplicantId ?? 0,
@@ -1235,6 +1501,16 @@ export const AddUpdateBooking: React.FC = () => {
       VotingIdURL: createFileUrlString(mergedVotingFiles),
       GSTNumber: formDataForApplicant.GSTNumber || "",
       GSTNumberURL: createFileUrlString(mergedGstFiles),
+
+
+      CancelledChequeURL: createFileUrlString(mergedCancelledChequeFiles),
+      POAURL: createFileUrlString(mergedPOAFiles),
+      IncomeForm16ITRURL: createFileUrlString(mergedIncomeFiles),
+      NreNroBankDetailsURL: createFileUrlString(mergedNreNroFiles),
+      NomineeFormURL: createFileUrlString(mergedNomineeFiles),
+      StatementOfSourceOfFundsURL: createFileUrlString(mergedSourceOfFundsFiles),
+      PaymentProofURL: createFileUrlString(mergedPaymentProofFiles),
+
       CreatedById: 0,
       CreatedBy: "",
       CreatedDate: null,
@@ -1248,6 +1524,14 @@ export const AddUpdateBooking: React.FC = () => {
       _drivingFiles: mergedDrivingFiles,
       _votingFiles: mergedVotingFiles,
       _gstFiles: mergedGstFiles,
+      _cancelledChequeFiles: mergedCancelledChequeFiles,
+      _pOAFiles: mergedPOAFiles,
+      _incomeForm16ITRFiles: mergedIncomeFiles,
+      _nreNroBankDetailsFiles: mergedNreNroFiles,
+      _nomineeFormFiles: mergedNomineeFiles,
+      _statementOfSourceOfFundsFiles: mergedSourceOfFundsFiles,
+      _paymentProofFiles: mergedPaymentProofFiles,
+
       RemovePhotoURL: finalRemovedPhotoURLs.join(","),
       RemoveAadharCardURL: finalRemovedAadharURLs.join(","),
       RemovePanCardURL: finalRemovedPanURLs.join(","),
@@ -1255,6 +1539,13 @@ export const AddUpdateBooking: React.FC = () => {
       RemoveDrivingLicenseURL: finalRemovedDrivingURLs.join(","),
       RemoveVotingIdURL: finalRemovedVotingURLs.join(","),
       RemoveGSTNumberURL: finalRemovedGstURLs.join(","),
+      RemoveCancelledChequeURL: finalRemovedCancelledChequeURLs.join(","),
+      RemovePOAURL: finalRemovedPOAURLs.join(","),
+      RemoveIncomeForm16ITRURL: finalRemovedIncomeURLs.join(","),
+      RemoveNreNroBankDetailsURL: finalRemovedNreNroURLs.join(","),
+      RemoveNomineeFormURL: finalRemovedNomineeURLs.join(","),
+      RemoveStatementOfSourceOfFundsURL: finalRemovedSourceOfFundsURLs.join(","),
+      RemovePaymentProofURL: finalRemovedPaymentProofURLs.join(","),
     };
 
     setApplicantList((prev) => {
@@ -1276,6 +1567,13 @@ export const AddUpdateBooking: React.FC = () => {
     setDrivingLicenseFiles([]);
     setVotingIdFiles([]);
     setGstFiles([]);
+    setCancelledChequeFiles([]);
+    setPOAFiles([]);
+    setIncomeFiles([]);
+    setNreNroFiles([]);
+    setNomineeFiles([]);
+    setSourceOfFundsFiles([]);
+    setPaymentProofFiles([]);
   };
   //#endregion
 
@@ -1302,7 +1600,24 @@ export const AddUpdateBooking: React.FC = () => {
 
   //#region SUBMIT FORM
   const handleSubmit = async () => {
+
     setErrors({});
+
+    const countPrimaryApplicants = () =>
+      applicantList.filter(a =>
+        String(a.ApplicantType ?? '').toUpperCase() === 'APPLICANT'
+      ).length;
+
+    if (applicantList.length === 0) {
+      addToast({ type: 'error', title: "Atleast one applicant is required" });
+      return
+    }
+    else if (countPrimaryApplicants() === 0) {
+
+      addToast({ type: 'error', title: "In Applicant List - One Applicant is required" });
+      return
+
+    }
 
     if (paymentSchedules.length > 0 && totalPercentage !== 100) {
       addToast({ type: "error", title: `Payment schedule total must be exactly 100%. Current total is ${totalPercentage.toFixed(2)}%` });
@@ -1336,7 +1651,9 @@ export const AddUpdateBooking: React.FC = () => {
     }
 
     if (formData.BookingId === 0 && !isOtpVerified) {
+
       if (!isOtpSent) {
+
         const sent = await sendOTP({
           mobileNumber: applicantList.find((x) => x.ApplicantType === "Applicant")?.ApplicantMobileNumber || "",
           module: "BOOKING",
@@ -1370,8 +1687,8 @@ export const AddUpdateBooking: React.FC = () => {
         formDataToSend.append("BrokeragePercentage", String(formData.BrokeragePercentage ?? 0));
         formDataToSend.append("BrokerageAmount", String(formData.BrokerageAmount ?? 0));
 
-        formDataToSend.append("ReferelPercentage", String(formData.ReferelPercentage ?? 0));
-        formDataToSend.append("ReferelAmount", String(formData.ReferelAmount ?? 0));
+        formDataToSend.append("ReferralPercentage", String(formData.ReferralPercentage ?? 0));
+        formDataToSend.append("ReferralAmount", String(formData.ReferralAmount ?? 0));
 
         formDataToSend.append("LoyaltyPercentage", String(formData.LoyaltyPercentage ?? 0));
         formDataToSend.append("LoyaltyAmount", String(formData.LoyaltyAmount ?? 0));
@@ -1458,6 +1775,13 @@ export const AddUpdateBooking: React.FC = () => {
           formDataToSend.append(`${prefix}.RemoveDrivingLicenseURL`, app.RemoveDrivingLicenseURL ?? "");
           formDataToSend.append(`${prefix}.RemoveVotingIdURL`, app.RemoveVotingIdURL ?? "");
           formDataToSend.append(`${prefix}.RemoveGSTNumberURL`, app.RemoveGSTNumberURL ?? "");
+          formDataToSend.append(`${prefix}.RemoveCancelledChequeURL`, app.RemoveCancelledChequeURL ?? "");
+          formDataToSend.append(`${prefix}.RemovePOAURL`, app.RemovePOAURL ?? "");
+          formDataToSend.append(`${prefix}.RemoveIncomeForm16ITRURL`, app.RemoveIncomeForm16ITRURL ?? "");
+          formDataToSend.append(`${prefix}.RemoveNreNroBankDetailsURL`, app.RemoveNreNroBankDetailsURL ?? "");
+          formDataToSend.append(`${prefix}.RemoveNomineeFormURL`, app.RemoveNomineeFormURL ?? "");
+          formDataToSend.append(`${prefix}.RemoveStatementOfSourceOfFundsURL`, app.RemoveStatementOfSourceOfFundsURL ?? "");
+          formDataToSend.append(`${prefix}.RemovePaymentProofURL`, app.RemovePaymentProofURL ?? "");
 
           const realApp: any = app;
           addFilesWithExisting(formDataToSend, prefix, realApp._photoFiles, "PhotoURL");
@@ -1467,6 +1791,13 @@ export const AddUpdateBooking: React.FC = () => {
           addFilesWithExisting(formDataToSend, prefix, realApp._drivingFiles, "DrivingLicenseURL");
           addFilesWithExisting(formDataToSend, prefix, realApp._votingFiles, "VotingIdURL");
           addFilesWithExisting(formDataToSend, prefix, realApp._gstFiles, "GSTNumberURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._cancelledChequeFiles, "CancelledChequeURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._pOAFiles, "POAURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._incomeForm16ITRFiles, "IncomeForm16ITRURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._nreNroBankDetailsFiles, "NreNroBankDetailsURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._nomineeFormFiles, "NomineeFormURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._statementOfSourceOfFundsFiles, "StatementOfSourceOfFundsURL");
+          addFilesWithExisting(formDataToSend, prefix, realApp._paymentProofFiles, "PaymentProofURL");
         });
 
         const response = await bookingService.apiCallAddUpdateBooking(formDataToSend);
@@ -1649,12 +1980,12 @@ export const AddUpdateBooking: React.FC = () => {
   };
   //#endregion
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>
 
-      <div className="flex-1 space-y-2 px-6 py-3">
+      <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <form onSubmit={handleSubmit}>
           <div>
             <Input
@@ -1678,85 +2009,88 @@ export const AddUpdateBooking: React.FC = () => {
           {enquiryUniqueCode && enquiryUniqueCode.trim() !== "" && (
             Number(enquiryId) > 0 &&
               (Number(bookingId) !== 0 || enquiryList?.FinalStage !== "Booking Done") ? (
-              <div className="space-y-4 pt-5 pt-5">
-                {/* ===================== ENQUIRY DETAILS ===================== */}
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Enquiry Details</h3>
+              <div className="pt-5">
+                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                  {/* ===================== ENQUIRY DETAILS ===================== */}
+                  <h4 className="text-lg font-semibold text-gray-900 mb-4">Enquiry Details</h4>
 
-                <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
-                    <FieldItem label="Enquiry Code" value={enquiryUniqueCode || "-"} />
-                    <FieldItem label="Name" value={enquiryList?.Name || "-"} />
-                    <FieldItem label="Mobile No" value={enquiryList?.MobileNumber ? `+91 ${enquiryList?.MobileNumber}` : "-"} />
-                    <FieldItem label="Source" value={enquiryList?.Source || "-"} />
-                    <FieldItem label="Sub Source" value={enquiryList?.SubSource || "-"} />
-                    {enquiryList?.Source?.toUpperCase() !== "CHANNEL PARTNER" && !!enquiryList?.SubSubSource?.trim() && <FieldItem label="Sub Sub Source" value={enquiryList?.SubSubSource || "-"} />}
-                  </div>
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
+                      <FieldItem label="Enquiry Code" value={enquiryUniqueCode || "-"} />
+                      <FieldItem label="Name" value={enquiryList?.Name || "-"} />
+                      <FieldItem label="Mobile No" value={enquiryList?.MobileNumber ? `+91 ${enquiryList?.MobileNumber}` : "-"} />
+                      <FieldItem label="Source" value={enquiryList?.Source || "-"} />
+                      <FieldItem label="Sub Source" value={enquiryList?.SubSource || "-"} />
+                      {enquiryList?.Source?.toUpperCase() !== "CHANNEL PARTNER" && !!enquiryList?.SubSubSource?.trim() && <FieldItem label="Sub Sub Source" value={enquiryList?.SubSubSource || "-"} />}
+                    </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3 pt-5">
-                    <FieldItem label="Sales Advisor" value={enquiryList?.SalesAdvisor ?? "-"} />
-                    <FieldItem label="Sourcing Manager" value={enquiryList?.SourcingManager ?? "-"} />
-                    <FieldItem label="Stage" value={enquiryList?.FinalStage ?? "-"} />
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-3 pt-5">
-                    <FieldItem label="Current Location" value={enquiryList?.CurrentLocation || "-"} />
-                  </div>
-                </div>
-
-                {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-                {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                      <FieldItem label="Referral Name" value={enquiryList?.ReferelUnitOwnerName || "-"} />
-                      <FieldItem label="Referral Project" value={enquiryList?.ReferelProjectName || "-"} />
-                      <FieldItem label="Referral Unit No" value={enquiryList?.ReferelUnitNumber || "-"} />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3 pt-5">
+                      <FieldItem label="Sales Advisor" value={enquiryList?.SalesAdvisor ?? "-"} />
+                      <FieldItem label="Sourcing Manager" value={enquiryList?.SourcingManager ?? "-"} />
+                      <FieldItem label="Stage" value={enquiryList?.FinalStage ?? "-"} />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-3 pt-5">
+                      <FieldItem label="Current Location" value={enquiryList?.CurrentLocation || "-"} />
                     </div>
                   </div>
-                )}
 
-                {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-                {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Loyalty" && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      <FieldItem label="Existing Project" value={enquiryList?.LoyaltyExistingProjectName || "-"} />
-                      <FieldItem label="Existing Unit No" value={enquiryList?.LoyaltyExistingUnitNumber || "-"} />
+                  {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
+                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                        <FieldItem label="Referral Name" value={enquiryList?.ReferralUnitOwnerName || "-"} />
+                        <FieldItem label="Referral Project" value={enquiryList?.ReferralProjectName || "-"} />
+                        <FieldItem label="Referral Unit No" value={enquiryList?.ReferralUnitNumber || "-"} />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-                {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Employee Reference" && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      <FieldItem label="Employee Name" value={enquiryList?.EmployeeReferenceName || "-"} />
-                      <FieldItem label="Employee Mobile" value={enquiryList?.EmployeeReferenceMobileNumber ? `+91 ${enquiryList?.EmployeeReferenceMobileNumber}` : "-"} />
+                  {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
+                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Loyalty" && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <FieldItem label="Existing Project" value={enquiryList?.LoyaltyExistingProjectName || "-"} />
+                        <FieldItem label="Existing Unit No" value={enquiryList?.LoyaltyExistingUnitNumber || "-"} />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* ===================== CHANNEL PARTNER DETAILS ===================== */}
-                {enquiryList?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
-                  <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                      <FieldItem label="Channel Partner" value={enquiryList?.ChannelPartnerName || "-"} />
-                      <FieldItem label="CP Mobile" value={enquiryList?.ChannelPartnerMobileNumber ? `+91 ${enquiryList?.ChannelPartnerMobileNumber}` : "-"} />
-                      <FieldItem label="CP Team Member" value={enquiryList?.ChannelPartnerTeamMemberName || "-"} />
-                      <FieldItem label="CP Team Mobile" value={enquiryList?.ChannelPartnerTeamMemberMobileNumber || "-"} />
+                  {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
+                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Employee Reference" && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                        <FieldItem label="Employee Name" value={enquiryList?.EmployeeReferenceName || "-"} />
+                        <FieldItem label="Employee Mobile" value={enquiryList?.EmployeeReferenceMobileNumber ? `+91 ${enquiryList?.EmployeeReferenceMobileNumber}` : "-"} />
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {/* ===================== CHANNEL PARTNER DETAILS ===================== */}
+                  {enquiryList?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
+                    <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                        <FieldItem label="Channel Partner" value={enquiryList?.ChannelPartnerName || "-"} />
+                        <FieldItem label="CP Mobile" value={enquiryList?.ChannelPartnerMobileNumber ? `+91 ${enquiryList?.ChannelPartnerMobileNumber}` : "-"} />
+                        <FieldItem label="CP Team Member" value={enquiryList?.ChannelPartnerTeamMemberName || "-"} />
+                        <FieldItem label="CP Team Mobile" value={enquiryList?.ChannelPartnerTeamMemberMobileNumber || "-"} />
+                      </div>
+                    </div>
+                  )}
+                </section>
               </div>
             )
               :
               (
-                <div className="mt-4 p-4 bg-red-50 rounded-lg border border-red-200 text-sm text-red-700 ">
+                <div className="pt-5 mt-5 p-4 bg-red-50 rounded-lg border border-red-200 text-sm text-red-700">
                   {enquiryList?.FinalStage === "Booking Done" ? "Booking already done for this enquiry" : "No Enquiry details found for this Unique Code"}
                 </div>
-              ))}
+              )
+          )}
 
           {/* ============================================================= [APPLICANT DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pt-3 pb-3">
+          <div className="space-y-4 pt-5">
             <div className="flex items-center justify-between">
-              <div className="flex-1 border-b border-gray-500 pt-5">
+              <div className="flex-1 border-b border-gray-500">
                 <HeaderActionBar titleText="Applicant Detail " isLoading={isLoading} />
               </div>
               <div className="ml-4">
@@ -1774,6 +2108,13 @@ export const AddUpdateBooking: React.FC = () => {
                     setDrivingLicenseFiles([]);
                     setVotingIdFiles([]);
                     setGstFiles([]);
+                    setCancelledChequeFiles([]);
+                    setPOAFiles([]);
+                    setIncomeFiles([]);
+                    setNreNroFiles([]);
+                    setNomineeFiles([]);
+                    setSourceOfFundsFiles([]);
+                    setPaymentProofFiles([]);
                     setRemovedApplicantPhotoURLs([]);
                     setRemovedAadharCardURLs([]);
                     setRemovedPanCardURLs([]);
@@ -1781,6 +2122,13 @@ export const AddUpdateBooking: React.FC = () => {
                     setRemovedDrivingLicenseURLs([]);
                     setRemovedVotingIdURLs([]);
                     setRemovedGstURLs([]);
+                    setRemovedCancelledChequeURLs([]);
+                    setRemovedPOAURLs([]);
+                    setRemovedIncomeURLs([]);
+                    setRemovedNreNroURLs([]);
+                    setRemovedNomineeURLs([]);
+                    setRemovedSourceOfFundsURLs([]);
+                    setRemovedPaymentProofURLs([]);
                     setIsAddUpdateApplicantModalOpen(true);
                   }}
                   color="blue"
@@ -1811,11 +2159,11 @@ export const AddUpdateBooking: React.FC = () => {
           </div>
 
           {/* ============================================================= [PROJECT DETAILS] ============================================================================================= */}
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Details</h3>
 
             {formData.BookingType === "FLAT" && selectedFlatData && (
-              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="pt-5 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
                   <FieldItem label="Building" value={selectedFlatData?.BuildingNumber || "-"} />
 
@@ -1825,11 +2173,11 @@ export const AddUpdateBooking: React.FC = () => {
 
                   <FieldItem label="Unit No" value={selectedFlatData?.Flat || "-"} />
 
-                  <FieldItem label="Category" value={selectedFlatData?.FlatType || "-"} />
+                  <FieldItem label="Type" value={selectedFlatData?.FlatType || "-"} />
 
                   <FieldItem label="Configuration" value={selectedFlatData?.FlatConfiguration || "-"} />
 
-                  <FieldItem label="RERA Carpet Area (SqFt)" value={selectedFlatData?.RERACarpetAreaSqFt ? `${selectedFlatData.RERACarpetAreaSqFt} SqFt` : "-"} />
+                  <FieldItem label="RERA Carpet Area" value={selectedFlatData?.RERACarpetAreaSqFt ? `${selectedFlatData.RERACarpetAreaSqFt} SqFt` : "-"} />
                 </div>
               </div>
             )}
@@ -1859,23 +2207,40 @@ export const AddUpdateBooking: React.FC = () => {
             )}
 
             {parkingData && parkingData.length > 0 && (
-              <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Parking Details</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {parkingData.map((parking, index) => (
-                    <React.Fragment key={parking.ParkingId || index}>
-                      <FieldItem label="Parking Number" value={parking.ParkingNumber} />
-                      <FieldItem label="Building" value={parking.BuildingNumber} />
-                      <FieldItem label="Wing" value={parking.Wing} />
-                      <FieldItem label="Floor" value={parking.Floor} />
-                      <FieldItem label="Category" value={parking.ParkingCategory} />
-                      <FieldItem label="Type" value={parking.ParkingType} />
-                      <FieldItem label="Size" value={parking.ParkingSubType} />
-                      <FieldItem label="Dimensions" value={parking.ParkingDimensions} />
-                      <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? "Yes" : "No"} />
-                    </React.Fragment>
-                  ))}
-                </div>
+
+
+              <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f]">
+                <h4 className="text-lg font-semibold text-gray-900">
+                  Parking Details
+                </h4>
+
+                {parkingData.map((parking, index) => {
+
+                  const isLast = index === (parkingData?.length ?? 0) - 1;
+
+                  return (
+                    <div key={parking.ParkingId || index} className="pt-4">
+                      <h3 className="text-sm font-semibold text-gray-500">
+                        Parking {index + 1}
+                      </h3>
+                      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
+                        <FieldItem label="Parking Number" value={parking.ParkingNumber} />
+                        <FieldItem label="Building" value={parking.BuildingNumber} />
+                        <FieldItem label="Wing" value={parking.Wing} />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
+                        <FieldItem label="Floor" value={parking.Floor} />
+                        <FieldItem label="Category" value={parking.ParkingCategory} />
+                        <FieldItem label="Type" value={parking.ParkingType} />
+                      </div>
+                      <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
+                        <FieldItem label="Size" value={parking.ParkingSubType} />
+                        <FieldItem label="Dimensions" value={parking.ParkingDimensions} />
+                        <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
+                      </div>
+                    </div>
+                  );
+                })}
               </section>
             )}
           </div>
@@ -1900,7 +2265,7 @@ export const AddUpdateBooking: React.FC = () => {
                   handleFieldChange("AgreementValueTDS", tdsAmount.toFixed(2));
 
                   /* ================= REGISTRATION FEES ================= */
-                  const registrationFees = agreementValue > 4999999.99 ? 30000 : (agreementValue * 1) / 100;
+                  const registrationFees = agreementValue > 2999999.99 ? 30000 : (agreementValue * 1) / 100;
 
                   handleFieldChange("RegistrationFees", registrationFees.toFixed(2));
 
@@ -1920,9 +2285,9 @@ export const AddUpdateBooking: React.FC = () => {
                   handleFieldChange("BrokerageAmount", brokerageAMount.toFixed(2));
 
                   /* ================= REFEREL % ================= */
-                  const referelAMount = (agreementValue * Number(formData.ReferelPercentage)) / 100;
+                  const referelAMount = (agreementValue * Number(formData.ReferralPercentage)) / 100;
 
-                  handleFieldChange("ReferelAmount", referelAMount.toFixed(2));
+                  handleFieldChange("ReferralAmount", referelAMount.toFixed(2));
 
                   /* ================= LOYALTY % ================= */
                   const loyaltyAMount = (agreementValue * Number(formData.LoyaltyPercentage)) / 100;
@@ -2074,31 +2439,31 @@ export const AddUpdateBooking: React.FC = () => {
           {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
           {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
             <div className="space-y-4 pt-5">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Referel Details</h3>
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Referral Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Input
-                  label="Referel (%)"
-                  value={formData.ReferelPercentage?.toString() ?? ""}
+                  label="Referral (%)"
+                  value={formData.ReferralPercentage?.toString() ?? ""}
                   disabled={Number(formData.AgreementValue) > 0 ? false : true}
                   required
                   onChange={(e) => {
                     const val = allowPercentage(e.target.value);
                     if (val !== null) {
                       const percentage = filterNumbersWithDecimal(e.target.value);
-                      handleFieldChange("ReferelPercentage", percentage);
+                      handleFieldChange("ReferralPercentage", percentage);
 
                       const agreementValue = formData.AgreementValue || 0;
 
                       const cstAmount = (agreementValue * Number(percentage)) / 100;
 
-                      handleFieldChange("ReferelAmount", cstAmount.toFixed(2));
+                      handleFieldChange("ReferralAmount", cstAmount.toFixed(2));
                     }
                   }}
-                  placeholder="Referel (%)"
+                  placeholder="Referral (%)"
                   rightIcon="%"
-                  error={errors.ReferelPercentage}
+                  error={errors.ReferralPercentage}
                 />
-                <Input label="Referel Amount (₹)" value={formData.ReferelAmount?.toString() ?? ""} disabled rightIcon="₹" />
+                <Input label="Referral Amount (₹)" value={formData.ReferralAmount?.toString() ?? ""} disabled rightIcon="₹" />
               </div>
             </div>
           )}
@@ -2201,7 +2566,7 @@ export const AddUpdateBooking: React.FC = () => {
             </div>
           </div>
 
-          <div>
+          <div className="space-y-4 pt-5">
             <SingleSelectDropdownWithPagination
               label="Payment Schedule Scheme"
               title="Select Payment Schedule Scheme"
@@ -2332,16 +2697,16 @@ export const AddUpdateBooking: React.FC = () => {
 
           {/* ============================================================= [ADITIONAL DETAILS] ============================================================================================= */}
           <div className="space-y-4 pt-5">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Additional Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300">Additional Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-5">
               <div>
-                <TextArea className='thin-scroll' label="Unit / Modulation / Customization Remark" required value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
+                <TextArea className='thin-scroll' label="Unit / Modulation / Customization Remark" value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
               </div>
               <div>
-                <TextArea  className='thin-scroll' label="Payment Related Remark" value={formData.PaymentRemark ?? ""} onChange={(e) => handleFieldChange("PaymentRemark", e.target.value)} placeholder="Enter Payment Related Remark" error={errors.PaymentRemark} />
+                <TextArea className='thin-scroll' label="Payment Related Remark" value={formData.PaymentRemark ?? ""} onChange={(e) => handleFieldChange("PaymentRemark", e.target.value)} placeholder="Enter Payment Related Remark" error={errors.PaymentRemark} />
               </div>
               <div>
-                <TextArea  className='thin-scroll' label="Other Remark" value={formData.OtherRemark ?? ""} onChange={(e) => handleFieldChange("OtherRemark", e.target.value)} placeholder="Enter Other Remark" error={errors.OtherRemark} />
+                <TextArea className='thin-scroll' label="Other Remark" value={formData.OtherRemark ?? ""} onChange={(e) => handleFieldChange("OtherRemark", e.target.value)} placeholder="Enter Other Remark" error={errors.OtherRemark} />
               </div>
               <div>
                 <SingleSelectDropdownWithPagination label="Term & Condition" title="Term & Condition" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)} />
@@ -2388,6 +2753,13 @@ export const AddUpdateBooking: React.FC = () => {
           setDrivingLicenseFiles([]);
           setVotingIdFiles([]);
           setGstFiles([]);
+          setCancelledChequeFiles([]);
+          setPOAFiles([]);
+          setIncomeFiles([]);
+          setNreNroFiles([]);
+          setNomineeFiles([]);
+          setSourceOfFundsFiles([]);
+          setPaymentProofFiles([]);
           setRemovedApplicantPhotoURLs([]);
           setRemovedAadharCardURLs([]);
           setRemovedPanCardURLs([]);
@@ -2395,6 +2767,13 @@ export const AddUpdateBooking: React.FC = () => {
           setRemovedDrivingLicenseURLs([]);
           setRemovedVotingIdURLs([]);
           setRemovedGstURLs([]);
+          setRemovedCancelledChequeURLs([]);
+          setRemovedPOAURLs([]);
+          setRemovedIncomeURLs([]);
+          setRemovedNreNroURLs([]);
+          setRemovedNomineeURLs([]);
+          setRemovedSourceOfFundsURLs([]);
+          setRemovedPaymentProofURLs([]);
         }}
         onCancel={() => {
           setIsAddUpdateApplicantModalOpen(false);
@@ -2408,6 +2787,13 @@ export const AddUpdateBooking: React.FC = () => {
           setDrivingLicenseFiles([]);
           setVotingIdFiles([]);
           setGstFiles([]);
+          setCancelledChequeFiles([]);
+          setPOAFiles([]);
+          setIncomeFiles([]);
+          setNreNroFiles([]);
+          setNomineeFiles([]);
+          setSourceOfFundsFiles([]);
+          setPaymentProofFiles([]);
           setRemovedApplicantPhotoURLs([]);
           setRemovedAadharCardURLs([]);
           setRemovedPanCardURLs([]);
@@ -2415,6 +2801,13 @@ export const AddUpdateBooking: React.FC = () => {
           setRemovedDrivingLicenseURLs([]);
           setRemovedVotingIdURLs([]);
           setRemovedGstURLs([]);
+          setRemovedCancelledChequeURLs([]);
+          setRemovedPOAURLs([]);
+          setRemovedIncomeURLs([]);
+          setRemovedNreNroURLs([]);
+          setRemovedNomineeURLs([]);
+          setRemovedSourceOfFundsURLs([]);
+          setRemovedPaymentProofURLs([]);
         }}
         title={editingApplicantData ? "Update Booking Applicant" : "Add Booking Applicant"}
         onSubmit={handleAddUpdateBookingApplicant}
@@ -2476,7 +2869,120 @@ export const AddUpdateBooking: React.FC = () => {
               <Input label="GST Number" error={errorsBookingApplicant.GSTNumber} type="text" value={formDataForApplicant.GSTNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicant("GSTNumber", filterGST(e.target.value.toUpperCase()))} placeholder="Enter GST Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="GST Documents" placeholder="Select GST Documents" error={errorsBookingApplicant.GSTNumberURL} value={gstFiles} onChange={setGstFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={5} maxSizeMB={10} onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])} />
+              <MultiFilePicker
+                label="GST Documents"
+                placeholder="Select GST Documents"
+                error={errorsBookingApplicant.GSTNumberURL}
+                value={gstFiles}
+                onChange={setGstFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={5}
+                onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])} />
+            </div>
+
+            <div>
+              <MultiFilePicker
+                label="Cancelled Cheque"
+                placeholder="Select Cancelled Cheque"
+                error={errorsBookingApplicant.CancelledChequeURL}
+                value={cancelledChequeFiles}
+                onChange={setCancelledChequeFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                onRemoveExisting={(url) =>
+                  setRemovedCancelledChequeURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="POA (if NRI Execution)"
+                placeholder="Select POA Document"
+                error={errorsBookingApplicant.POAURL}
+                value={pOAFiles}
+                onChange={setPOAFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedPOAURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Income Docs (Form 16 / ITR)"
+                placeholder="Select Income Document"
+                error={errorsBookingApplicant.IncomeForm16ITRURL}
+                value={incomeFiles}
+                onChange={setIncomeFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedIncomeURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="NRE / NRO Bank Details"
+                placeholder="Select NRE / NRO Bank Document"
+                error={errorsBookingApplicant.NreNroBankDetailsURL}
+                value={nreNroFiles}
+                onChange={setNreNroFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedNreNroURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Nominee Form"
+                placeholder="Select Nominee Form"
+                error={errorsBookingApplicant.NomineeFormURL}
+                value={nomineeFiles}
+                onChange={setNomineeFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedNomineeURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Statement of Source of Funds"
+                placeholder="Select Source Document"
+                error={errorsBookingApplicant.StatementOfSourceOfFundsURL}
+                value={sourceOfFundsFiles}
+                onChange={setSourceOfFundsFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedSourceOfFundsURLs((prev) => [...prev, url])
+                }
+              />
+            </div>
+            <div>
+              <MultiFilePicker
+                label="Payment Proof"
+                placeholder="Select Payment Proof"
+                error={errorsBookingApplicant.PaymentProofURL}
+                value={paymentProofFiles}
+                onChange={setPaymentProofFiles}
+                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                maxFiles={1}
+                maxSizeMB={5}
+                onRemoveExisting={(url) =>
+                  setRemovedPaymentProofURLs((prev) => [...prev, url])
+                }
+              />
             </div>
           </div>
         </div>

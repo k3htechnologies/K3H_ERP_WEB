@@ -52,14 +52,12 @@ export const HolidayMappingMasterViewModal: React.FC<HolidayMappingMasterViewMod
       size='xl'
     >
       <div className="space-y-6">
-        <div className="space-y-4">
           <FieldItem label="Holiday Name" value={data.HolidayName} isRow withBorder={true} className='font-medium text-blue-900 ' />
-          <FieldItem label="Holiday Date" value={data.HolidayDate ? formatDate_dd_MonthName_yy(data.HolidayDate) : ""} isRow />
+          <FieldItem label="Holiday Date" value={data.HolidayDate ? formatDate_dd_MonthName_yy(data.HolidayDate) : ""} isRow withBorder={true} />
           <FieldItem label="Branch Name" value={data.BranchName} isRow withBorder={true} />
           <FieldItem label="Department Name" value={data.DepartmentName} isRow withBorder={true} />
           
-          <div className="space-y-4">
-            <h4 className="text-lg font-semibold pb-2">
+            <h4 className="text-lg font-semibold">
               Action Details
             </h4>
             <FieldItem label="Created By / Date" isRow={true} value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')} withBorder={data.ModifiedBy !== '' ? true : false} />
@@ -67,8 +65,8 @@ export const HolidayMappingMasterViewModal: React.FC<HolidayMappingMasterViewMod
               <FieldItem label="Modified By / Date" isRow={true} value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')} withBorder={false} />
               :
               ''}
-          </div>
-          <div className="flex justify-between items-center pt-4">
+         
+          <div className="flex justify-between items-center">
             {canAction && (
               <>
                 <Button
@@ -91,7 +89,6 @@ export const HolidayMappingMasterViewModal: React.FC<HolidayMappingMasterViewMod
             )}
           </div>
         </div>
-      </div>
     </Modal>
   );
 };

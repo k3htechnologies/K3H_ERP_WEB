@@ -81,9 +81,9 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction ,appr
       <FieldItem label="Dimensions" value={parking.ParkingDimensions} isRow={true} isUsedForInventoryFlat={true} />
       <FieldItem label="Size" value={parking.ParkingSubType} isRow={true} isUsedForInventoryFlat={true} />
 
-      <div className="flex items-center justify-evenly gap-2">
+      <div className="flex items-center  gap-2">
         <div className={`
-                        flex h-[30px] w-[207px]
+                        flex h-[30px] w-[250px]
                         ${colorsForParkingComponent[parking.ParkingStatus ?? "Available"].Button}
                         ${colorsForParkingComponent[parking.ParkingStatus ?? "Available"].buttonText}
                         rounded-[6px]
@@ -118,20 +118,18 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction ,appr
 
       {parking.OwnerName && (parking.ParkingStatus === "Booked" || parking.ParkingStatus === "Member") ? (
         <p
-          className="text-center text-[#135BEC] font-semibold cursor-pointer hover:underline"
+          className="text-center text-[#135BEC] font-medium text-sm cursor-pointer hover:underline"
           onClick={handleOwnerNameClick}
           title="Click to view booking details"
         >
           Owner : {parking.OwnerName}
         </p>
       ) : parking.ParkingStatus === "Blocked" || parking.ParkingStatus === "Hold" ? (
-        <p className={`text-center ${colorsForParkingComponent[parking.ParkingStatus].buttonText}`}>
-          {parking.ParkingStatus} by {parking.CreatedBy} on {formatDate_dd_MonthName_yy_hh_mm(parking.CreatedDate ?? "-")}
+        <p className={`text-center font-medium text-sm ${colorsForParkingComponent[parking.ParkingStatus].buttonText}`}>
+          {parking.ParkingStatus} by {parking.ModifiedBy} on {formatDate_dd_MonthName_yy_hh_mm(parking.ModifiedDate ?? "-")}
         </p>
       ) : (
-        <p className="text-center text-[#135BEC] font-semibold">
-
-        </p>
+        null
       )}
 
     </div>

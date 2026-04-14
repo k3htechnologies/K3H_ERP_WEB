@@ -24,7 +24,8 @@ export const BuildingTabs = ({
     };
 
     return (
-        <div className="flex gap-5">
+        <div className="flex gap-5 overflow-x-auto thin-scroll whitespace-nowrap scrollbar-hide">
+
             {inventory.map((building, index) => (
                 <span
                     key={index}

@@ -43,8 +43,9 @@ export class IncentiveReportDatasourceImpl implements IncentiveReportDatasource 
         } catch (error) {
             console.error('Error: Pull INCENTIVE REPORT:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullIncentiveReport(params, signal);
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullIncentiveReport(params, signal);
             }
 
             throw error

@@ -65,6 +65,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
             if (params.ToJoiningDate) queryParams.append('ToJoiningDate', params.ToJoiningDate);
 
 
+            if (params.ActiveInactive?.trim()) queryParams.append('ActiveInactive', params.ActiveInactive.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
@@ -77,8 +78,9 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('Error: Pull Employee Master:', error);
 
-            if (error === TokenExpiredException) {
-                await this.pullEmployeeMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.pullEmployeeMaster(params);
             }
             throw error
         }
@@ -123,6 +125,7 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
                 StateMasterId: params.StateMasterId ?? 0,
                 DistrictMasterId: params.DistrictMasterId ?? 0,
                 CityMasterId: params.CityMasterId ?? 0,
+                VillageMasterId: params.VillageMasterId ?? 0,
             }
 
 
@@ -136,8 +139,9 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('Error: Add Update Employee Master:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdateEmployeeMaster(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.addUpdateEmployeeMaster(params);
             }
 
 
@@ -157,8 +161,9 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('ERROR: UPDATE Employee Master:', error)
 
-            if (error === TokenExpiredException) {
-                await this.updateEmployeeMaster(params);
+           if (error instanceof TokenExpiredException) {
+
+                return   await this.updateEmployeeMaster(params);
             }
             throw error
         }
@@ -178,8 +183,9 @@ export class EmployeeMasterDatasourceImpl implements EmployeeMasterDatasource {
 
             console.error('Error: SET MPIN:', error)
 
-            if (error === TokenExpiredException) {
-                await this.setEmployeeMPIN(params);
+            if (error instanceof TokenExpiredException) {
+
+                return   await this.setEmployeeMPIN(params);
             }
 
 

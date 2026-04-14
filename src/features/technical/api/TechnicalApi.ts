@@ -8,6 +8,7 @@ export const TechnicalApi = {
     PULL_MATERIAL_SUBMATERIALUOM:'/Static/PullMaterialMasterSubMaterialMasterUOMMaster',
     PULL_MAGIC_LINK_WITH_VALIDATE:'/MagicLink/PullMagicLinkWithValidate',
     PULL_VILLAGE: '/Static/PullVillage',
+    GET_DOWNLOAD_URL: '/Static/GetDownloadURL',
     
 } as const
 

@@ -143,14 +143,14 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
       newErrors.WeekOffPolicyName = 'Week Off Policy Name is required';
 
     } else if (formData.WeekOffPolicyName.trim().length > 50) {
-      newErrors.WeekOffPolicyName = 'Week Off Name must be at most 50 characters';
+      newErrors.WeekOffPolicyName = 'Week Off Policy Name must be at most 50 characters';
     }
 
     if (!formData.WeekOffPolicyCode?.trim()) {
-      newErrors.WeekOffPolicyCode = 'Week Off Code is required';
+      newErrors.WeekOffPolicyCode = 'Week Off Policy Code is required';
 
     } else if (formData.WeekOffPolicyCode.trim().length > 5) {
-      newErrors.WeekOffPolicyCode = 'Week Off Code must be at most 4 characters';
+      newErrors.WeekOffPolicyCode = 'Week Off Policy Code must be at most 4 characters';
     }
 
     if (!formData.WeekDays) {
@@ -261,7 +261,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
 
   return (
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
       {/* Loader */}
 
@@ -273,14 +273,14 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
 
           {/* Basic WEEK OFF Details */}
 
-          <div className="space-y-4 pb-3">
+          <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Week Off Policy Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
                 <Input
                   type="text"
                   required
-                  label='Week Off Name'
+                  label='Week Off Policy Name'
                   value={formData.WeekOffPolicyName ?? ""}
                   onChange={(e) => handleFieldChange("WeekOffPolicyName", e.target.value)}
                   placeholder="Enter Week Off Name"
@@ -293,7 +293,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
                 <Input
                   type="text"
                   required
-                  label='Week Off Code'
+                  label='Week Off  Policy Code'
                   value={formData.WeekOffPolicyCode.toUpperCase() ?? ""}
                   onChange={(e) => handleFieldChange("WeekOffPolicyCode", e.target.value)}
                   placeholder="Enter Week Off Code"
@@ -327,8 +327,8 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Week Off Details</h3>
+          <div className="space-y-4 pt-5">
+            <h3 className="text-lg font-medium  text-gray-900 border-b border-gray-300 pb-2">Week Off Details</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
               <div>
@@ -355,6 +355,7 @@ export const AddUpdateWeekOffMaster: React.FC = () => {
                 <div>
                   <SinglePageSelection
                     label="Weekly Off 2 Type"
+                    required
                     placeholder="Select Type"
                     value={formData.WeeklyOff2Type}
                     onChange={(value) => handleFieldChange("WeeklyOff2Type", value)}

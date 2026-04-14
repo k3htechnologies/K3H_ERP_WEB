@@ -46,8 +46,9 @@ export class MarketingContentDatasourceImpl implements MarketingContentDatasourc
 
             console.error("ERROR: PULL MARKETING CONTENT :", error);
 
-            if (error === TokenExpiredException) {
-                await this.pullMarketingContent(params);
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullMarketingContent(params);
             }
             throw error;
         }
@@ -64,7 +65,8 @@ export class MarketingContentDatasourceImpl implements MarketingContentDatasourc
             console.error("ERROR: ADD UPDATE MARKETING CONTENT :", error);
 
             if (error instanceof TokenExpiredException) {
-                await this.addUpdateMarketingContent(formData);
+
+                return await this.addUpdateMarketingContent(formData);
             }
             throw error;
         }
@@ -87,11 +89,11 @@ export class MarketingContentDatasourceImpl implements MarketingContentDatasourc
 
         } catch (error) {
 
-            if (error === TokenExpiredException) {
+            console.error("ERROR: DELETE MARKETING CONTENT :", error);
 
-                console.error("ERROR: DELETE MARKETING CONTENT :", error);
+            if (error instanceof TokenExpiredException) {
 
-                await this.deleteMarketingContent(params);
+                return await this.deleteMarketingContent(params);
             }
             throw error;
         }

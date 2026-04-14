@@ -217,6 +217,16 @@ export const EmployeeResignation: React.FC = () => {
       newErrors.ReasonOfLeaving = "Reason Of Leaving is required"
     }
 
+    if (formData.ExpectedRelievingDate) {
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const selectedDate = new Date(formData.ExpectedRelievingDate)
+      selectedDate.setHours(0, 0, 0, 0)
+      if (selectedDate < today) {
+        newErrors.ExpectedRelievingDate = "Expected Relieving Date cannot be before today"
+      }
+    }
+
     if (formData.IsAnyOfferInHand) {
       if (!formData.OfferAmount || formData.OfferAmount <= 0) {
         newErrors.OfferAmount = "Offer Amount is required when offer is in hand"
@@ -398,7 +408,7 @@ export const EmployeeResignation: React.FC = () => {
 
   return (
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       {/* ============================================================================
           COMMON LOADER FOR PAGEl̥
            ============================================================================ */}
@@ -533,7 +543,7 @@ export const EmployeeResignation: React.FC = () => {
                 error={errors.ExpectedRelievingDate}
                 value={formatDate_dd_mm_yyyy(formData.ExpectedRelievingDate)}
                 onChange={(val) => handleFieldChange('ExpectedRelievingDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-
+                minDate={new Date()}
                 placeholder="Select Expected Relieving Date"
               />
             </div>

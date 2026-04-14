@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { ChannelPartnerData } from "../models/ChannelPartnerModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useChannelPartnerListState } from "../context/ChannelPartnerListStateContext";
@@ -262,11 +262,11 @@ const ViewChannelPartner: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Created By" value={editChannelPartnerData?.CreatedBy} />
-                                <FieldItem label="Created Date" value={editChannelPartnerData?.CreatedDate ? formatDate_dd_MonthName_yy(editChannelPartnerData?.CreatedDate) : ""} />
+                                <FieldItem label="Created Date" value={editChannelPartnerData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.CreatedDate) : ""} />
                                 {editChannelPartnerData?.ModifiedBy && (
                                     <>
                                         <FieldItem label="Modified By" value={editChannelPartnerData?.ModifiedBy} />
-                                        <FieldItem label="Modified Date" value={editChannelPartnerData?.ModifiedDate ? formatDate_dd_MonthName_yy(editChannelPartnerData?.ModifiedDate) : ""} />
+                                        <FieldItem label="Modified Date" value={editChannelPartnerData?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.ModifiedDate) : ""} />
                                     </>
                                 )}
                             </div>
@@ -281,13 +281,13 @@ const ViewChannelPartner: React.FC = () => {
 
                         {/* Header */}
                         <div className="pb-3 border-b border-gray-300">
-                            <h4 className="text-gray-700 font-semibold text-sm">
-                                Team Members ({filteredTeamMembers.length})
+                            <h4 className="text-lg font-semibold text-gray-900">
+                                Team Members <span className="text-gray-400 text-sm">({filteredTeamMembers.length})</span>
                             </h4>
                         </div>
 
                         {/* Team Member List */}
-                        <div className="mt-4 space-y-4 overflow-y-auto h-[940px] thin-scroll">
+                        <div className="mt-4 space-y-4 overflow-y-auto h-[1220px] thin-scroll">
 
                             {filteredTeamMembers.length === 0 && (
                                 <p className="text-sm text-gray-400 text-center">

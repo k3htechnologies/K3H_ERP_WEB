@@ -14,7 +14,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { Edit, IdCard, Mail, Phone, Trash2 } from 'lucide-react';
-import { calculateMergedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterTAN, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidTAN, mergeFiles } from '@/core/utils/fileValidation';
+import { calculateMergedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterTAN, hasAnyDocumentFile, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidTAN, mergeFiles } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
 import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
@@ -119,7 +119,6 @@ const AddCompany: React.FC = () => {
   const [companyLetterHeadHeaderFiles, setCompanyLetterHeadHeaderFiles] = useState<(File | string)[]>([]);
   const [removedCompanyLetterHeadHeaderUrls, setRemovedCompanyLetterHeadHeaderUrls] = useState<string[]>([]);
   const [companyLetterHeadHeaderURL, setCompanyLetterHeadHeaderURL] = useState<string>();
-
 
   const [companyLetterHeadFooterFiles, setCompanyLetterHeadFooterFiles] = useState<(File | string)[]>([]);
   const [removedCompanyLetterHeadFooterUrls, setRemovedCompanyLetterHeadFooterUrls] = useState<string[]>([]);
@@ -408,6 +407,8 @@ const AddCompany: React.FC = () => {
     // Rule 2 — number entered but NO document
     if (hasGSTNumber && !hasGSTFile) {
       newErrors.GSTCertificateURL = "GST Document is required";
+    } else if (formData.GSTNumber !== "" && !hasAnyDocumentFile(gstGSTCertificateFiles, gSTCertificateURL, removedGSTCertificateUrls)) {
+      newErrors.GSTCertificateURL = "GST Document is required.";
     }
 
     // Rule 3 — document uploaded but NO number
@@ -429,6 +430,8 @@ const AddCompany: React.FC = () => {
 
     if (hasPANNumber && !hasPANFile) {
       newErrors.PanCardURL = "PAN Card Document is required";
+    } else if (formData.PanNumber !== "" && !hasAnyDocumentFile(panURLFiles, panURL, removedPanUrls)) {
+      newErrors.PanCardURL = "PAN Card Document is required.";
     }
 
     if (hasPANFile && !hasPANNumber) {
@@ -450,6 +453,8 @@ const AddCompany: React.FC = () => {
 
     if (hasCINNumber && !hasCINFile) {
       newErrors.CINURL = "CIN Document is required";
+    } else if (formData.CINNumber !== "" && !hasAnyDocumentFile(cinURLFiles, cinURL, removedCinUrls)) {
+      newErrors.CINURL = "CIN Document is required.";
     }
 
     if (hasCINFile && !hasCINNumber) {
@@ -472,12 +477,13 @@ const AddCompany: React.FC = () => {
 
     if (hasTANNumber && !hasTANFile) {
       newErrors.TANURL = "TAN Document is required";
+    } else if (formData.TANNumber !== "" && !hasAnyDocumentFile(tanURLFiles, tanURL, removedTanUrls)) {
+      newErrors.TANURL = "TAN Document is required.";
     }
 
     if (hasTANFile && !hasTANNumber) {
       newErrors.TANNumber = "TAN Number is required";
     }
-
 
     // Location
     if (!formData.CountryMasterId) {
@@ -500,6 +506,8 @@ const AddCompany: React.FC = () => {
 
     if (!hasCompanyLetterHeadHeaderFile) {
       newErrors.CompanyLetterheadHeaderURL = "Company Letterhead Header Document is required";
+    } else if (!hasAnyDocumentFile(companyLetterHeadHeaderFiles, companyLetterHeadHeaderURL, removedCompanyLetterHeadHeaderUrls)) {
+      newErrors.CompanyLetterheadHeaderURL = "Company Letterhead Header Document is required";
     }
 
     // ===== COMANY LETTER FOOTER FOOTER URL =====
@@ -507,6 +515,8 @@ const AddCompany: React.FC = () => {
     const hasCompanyLetterHeadFooterFile = hasAnyFile(companyLetterHeadFooterFiles, companyLetterHeadFooterURL);
 
     if (!hasCompanyLetterHeadFooterFile) {
+      newErrors.CompanyLetterheadFooterURL = "Company Letterhead Footer Document is required";
+    } else if (!hasAnyDocumentFile(companyLetterHeadFooterFiles, companyLetterHeadFooterURL, removedCompanyLetterHeadFooterUrls)) {
       newErrors.CompanyLetterheadFooterURL = "Company Letterhead Footer Document is required";
     }
 
@@ -530,7 +540,10 @@ const AddCompany: React.FC = () => {
     const validation = validateCompanyMasterForm()
 
     if (!validation.isValid) {
+
       setErrors(validation.errors)
+
+      addToast({ type: "error", title: "Please fill the required filed" });
       return
     }
 
@@ -702,7 +715,7 @@ const AddCompany: React.FC = () => {
         label: 'Gender',
         width: '10',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-',
       },
       {
@@ -710,7 +723,7 @@ const AddCompany: React.FC = () => {
         label: 'Mobile Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-',
       },
       {
@@ -718,7 +731,7 @@ const AddCompany: React.FC = () => {
         label: 'Email ID',
         width: '20',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value) => value || '-',
       },
       {
@@ -734,7 +747,7 @@ const AddCompany: React.FC = () => {
         label: 'PAN Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
           return (
             <MultiImageViewer
@@ -752,7 +765,7 @@ const AddCompany: React.FC = () => {
         label: 'Aadhaar Number',
         width: '15',
         sortable: false,
-        align: 'center',
+        align: 'left',
         render: (value: string, row: any) => {
 
           return (
@@ -1196,7 +1209,7 @@ const AddCompany: React.FC = () => {
 
   return (
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
       <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
       {/* ✅ Fixed HEADER */}
@@ -1313,7 +1326,7 @@ const AddCompany: React.FC = () => {
           </div>
         </div>
         {/* ============================================================= [GOVERNMENT IDENTIFIERS] ============================================================================================= */}
-        <div className="space-y-4">
+        <div className="space-y-4 pt-5">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Government Identifiers</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1481,7 +1494,7 @@ const AddCompany: React.FC = () => {
         </div>
 
         {/* ============================================================= [ADDRESS] ============================================================================================= */}
-        <div className="space-y-4">
+        <div className="space-y-4 pt-5">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -1630,7 +1643,7 @@ const AddCompany: React.FC = () => {
         </div>
 
         {/* ============================================================= [COMPANY VERIFICATION] ============================================================================================= */}
-        <div className="space-y-4">
+        <div className="space-y-4 pt-5">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Company Verification</h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -1684,14 +1697,15 @@ const AddCompany: React.FC = () => {
                 }}
               />
 
+
             </div>
           </div>
         </div>
 
 
         {/* ============================================================= [COMPANY PARTNER ] ============================================================================================= */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between border-b border-gray-500 pb-2 pt-5">
+        <div className="space-y-4 pt-5 pb-5">
+          <div className="flex items-center justify-between border-b border-gray-500 pb-2">
             <h3 className="text-lg font-semibold text-gray-900  pb-2">
               Company Partner
             </h3>
@@ -1720,16 +1734,17 @@ const AddCompany: React.FC = () => {
             </Button>
           </div>
 
-
-          <DataTable
-            data={companyListForTable ?? []}
-            columns={companyPartnerColumns}
-            emptyMessage="No company Partner found"
-            fixedHeight={true}
-            maxHeight="calc(100vh - 200px)"
-            recordsPerPage={20}
-            className="flex-1"
-          />
+          <div className='pt-1'>
+            <DataTable
+              data={companyListForTable ?? []}
+              columns={companyPartnerColumns}
+              emptyMessage="No company Partner found"
+              fixedHeight={true}
+              maxHeight="calc(100vh - 200px)"
+              recordsPerPage={20}
+              className="flex-1"
+            />
+          </div>
         </div>
 
         {/* ✅ Fixed Bottom  */}

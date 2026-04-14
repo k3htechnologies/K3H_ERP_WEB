@@ -42,9 +42,8 @@ export class SourcingTargetDatasourceImpl implements SourcingTargetDatasource {
 
             console.error("ERROR: PULL SOURCING TARGET :", error);
 
-            if (error === TokenExpiredException) {
-
-                await this.pullSourcingTarget(params);
+            if (error instanceof TokenExpiredException) {
+                return  await this.pullSourcingTarget(params);
             }
             throw error;
         }

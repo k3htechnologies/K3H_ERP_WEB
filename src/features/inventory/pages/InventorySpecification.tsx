@@ -373,7 +373,7 @@ const InventorySpecification: React.FC = () => {
             InventoryBuildingId: flatContext.InventoryBuildingId,
             InventoryFlatFloorBasementPodiumWingId: flatContext.InventoryFlatFloorBasementPodiumWingId,
             InventoryFlatId: formDataInventoryFlat.InventoryFlatId,
-            Flat: formDataInventoryFlat.Flat.replace(/^[A-Za-z\s]+-\s*/, ""),
+            Flat: formDataInventoryFlat.Flat.match(/\d+$/)?.[0],
             FlatType: formDataInventoryFlat.FlatType,
             RERACarpetAreaSqFt: totalUnitArea ?? 0,
             FlatConfiguration: formDataInventoryFlat.FlatConfiguration,
@@ -526,7 +526,7 @@ const InventorySpecification: React.FC = () => {
         <div></div>
       </Loader>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
         <div className="space-y-6">
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2"> Inventory Specification Form </h3>
@@ -547,7 +547,7 @@ const InventorySpecification: React.FC = () => {
                 placeholder="Enter Unit"
                 required
                 maxLength={10}
-                value={formDataInventoryFlat.Flat.replace(/^[A-Za-z\s]+-\s*/, "")}
+                value={formDataInventoryFlat.Flat.match(/\d+$/)?.[0] || ""}
                 onChange={(e) => handleFieldChangeInventoryFlat("Flat", e.target.value)}
                 disabled={disabled}
                 error={errorsInventoryFlat.Flat}

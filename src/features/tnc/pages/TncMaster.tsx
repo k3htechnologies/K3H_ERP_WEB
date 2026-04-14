@@ -30,6 +30,7 @@ import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { cleanHtml } from '@/core/utils/comman';
 
 const initialFormState = (): AddUpdateTncMasterRequest => ({
   TermsAndConditionsMasterId: 0,
@@ -533,10 +534,10 @@ export const TncMaster: React.FC = () => {
 
   const handleFieldChange = (field: keyof AddUpdateTncMasterRequest, value: any) => {
 
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }))
 
     if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
+      setErrors((prev) => ({ ...prev, [field]: "" }))
     }
   };
 
@@ -578,7 +579,7 @@ export const TncMaster: React.FC = () => {
       Uniquekey: formData.Uniquekey,
       Title: formData.Title,
       ModuleName: activeTab?.trim() || "",
-      Description: formData.Description
+      Description: cleanHtml(formData.Description)
     };
 
   };
@@ -736,7 +737,7 @@ export const TncMaster: React.FC = () => {
 
   return (
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>

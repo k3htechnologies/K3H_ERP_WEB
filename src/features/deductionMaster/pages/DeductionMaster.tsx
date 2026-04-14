@@ -265,7 +265,7 @@ export const DeductionMaster: React.FC = () => {
       label: 'Deduction Type',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || ''
     },
     {
@@ -273,7 +273,7 @@ export const DeductionMaster: React.FC = () => {
       label: 'Applicable',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || ''
     },
     {
@@ -281,7 +281,7 @@ export const DeductionMaster: React.FC = () => {
       label: 'Deduction Value',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'right',
       render: (value) => value || '0'
     },
     {
@@ -289,7 +289,7 @@ export const DeductionMaster: React.FC = () => {
       label: 'Min Salary (₹)',
       width: '12',
       sortable: false,
-      align: 'left',
+      align: 'right',
       render: (value) => value ? `₹ ${value}` : '0'
     },
 
@@ -298,7 +298,7 @@ export const DeductionMaster: React.FC = () => {
       label: 'Max Salary (₹)',
       width: '12',
       sortable: false,
-      align: 'left',
+      align: 'right',
       render: (value) => value ? `₹ ${value}` : '0'
     },
 
@@ -307,7 +307,7 @@ export const DeductionMaster: React.FC = () => {
       label: 'Gender',
       width: '10',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || ''
     },
     {
@@ -327,7 +327,7 @@ export const DeductionMaster: React.FC = () => {
       render: (value) => value || ''
     },
     {
-      key: 'actions',
+      key: 'Actions',
       label: 'Actions',
       width: '12',
       fixed: 'right',
@@ -361,7 +361,7 @@ export const DeductionMaster: React.FC = () => {
   //#endregion
 
   //#region COLUMN CUSTOMIZATION
-  const requiredDeductionColumnKeys: string[] = ['Name'];
+  const requiredDeductionColumnKeys: string[] = ['Name','Actions'];
 
   const allDeductionColumnKeys: string[] = DeductionMasterColumns.map(c => c.key);
 
@@ -412,9 +412,6 @@ export const DeductionMaster: React.FC = () => {
 
     // load empty filters
     loadDeductions(1, {});
-
-    setShowFilterPopup(false);
-    // clear router state (very important)
 
     navigate(location.pathname, { replace: true, state: {} });
 
@@ -497,7 +494,7 @@ export const DeductionMaster: React.FC = () => {
   return (
 
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
       <Loader loading={isLoading} title={loadingMessage} > <div></div> </Loader>
 
@@ -514,7 +511,7 @@ export const DeductionMaster: React.FC = () => {
           debouncedSearch(v);
         }}
         onClearSearch={clearSearchDeductions}
-        isShowFilterButton
+        isShowFilterButton={false}
         filters={filters}
         onOpenFilter={() => {
           setTempFilters(filters);

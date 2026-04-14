@@ -28,7 +28,7 @@ export default function ParkingDistribution({ parkingData}: Props) {
 
               <ResponsiveContainer>
 
-                <BarChart data={parkingData} barGap={-30} style={{ outline: "none" }}>
+                <BarChart data={parkingData} barGap={-20} style={{ outline: "none" }}>
 
                   <XAxis dataKey="FloorName" tick={{ fontSize: 11 }} />
 
@@ -39,7 +39,7 @@ export default function ParkingDistribution({ parkingData}: Props) {
                     dataKey="TotalParking"
                     radius={[8, 8, 0, 0]}
                     fill="#c8d0dc"
-                    barSize={40} 
+                    barSize={20} 
                   >
                     <LabelList dataKey="TotalParking" position="top" fill="#9ca3af" />
                   </Bar>
@@ -49,7 +49,7 @@ export default function ParkingDistribution({ parkingData}: Props) {
                     dataKey="AvailableParking"
                     radius={[8, 8, 0, 0]}
                     fill="#16a34a"
-                    barSize={40}
+                    barSize={20}
                   >
                     <LabelList dataKey="AvailableParking" position="center" fill="#fff" />
                   </Bar>

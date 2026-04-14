@@ -277,7 +277,7 @@ export const AssetMaster: React.FC = () => {
       label: 'Asset Code',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || ''
     },
     {
@@ -285,7 +285,7 @@ export const AssetMaster: React.FC = () => {
       label: 'Asset Type',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || ''
     },
     {
@@ -309,7 +309,7 @@ export const AssetMaster: React.FC = () => {
       label: 'Serial Number',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || ''
     },
     {
@@ -333,7 +333,7 @@ export const AssetMaster: React.FC = () => {
       label: 'Employee Name',
       width: '15',
       sortable: false,
-      align: 'center',
+      align: 'left',
       render: (value) => value || ''
     },
     {
@@ -501,7 +501,7 @@ export const AssetMaster: React.FC = () => {
 
   return (
 
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
       {/* // LOADER */}
 

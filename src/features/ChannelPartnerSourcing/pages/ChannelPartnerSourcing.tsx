@@ -221,7 +221,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
       },
       {
         key: 'Name',
-        label: 'Name',
+        label: 'Full Name',
         width: '20',
         sortable: true,
         align: 'left',
@@ -394,7 +394,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
 
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         <div></div>
       </Loader>

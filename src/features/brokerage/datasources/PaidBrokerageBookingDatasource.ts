@@ -45,9 +45,8 @@ export class PaidBrokerageBookingDatasourceImpl implements PaidBrokerageBookingD
 
             console.error("ERROR: PULL PAID BROKERAGE BOOKING :", error);
 
-            if (error === TokenExpiredException) {
-
-                await this.pullPaidBrokerageBooking(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.pullPaidBrokerageBooking(params);
             }
             throw error;
         }
@@ -66,8 +65,8 @@ export class PaidBrokerageBookingDatasourceImpl implements PaidBrokerageBookingD
 
             console.error('ERROR: ADD UPDATE PAID BROKERAGE BOOKING:', error)
 
-            if (error === TokenExpiredException) {
-                await this.addUpdatePaidBrokerageBooking(formData);
+            if (error instanceof TokenExpiredException) {
+                return await this.addUpdatePaidBrokerageBooking(formData);
             }
             throw error
         }
@@ -90,11 +89,11 @@ export class PaidBrokerageBookingDatasourceImpl implements PaidBrokerageBookingD
             return response
 
         } catch (error) {
-            if (error === TokenExpiredException) {
 
-                console.error('ERROR: DELETE PAID BROKERAGE BOOKING:', error);
+            console.error('ERROR: DELETE PAID BROKERAGE BOOKING:', error);
 
-                await this.deletePaidBrokerageBooking(params);
+            if (error instanceof TokenExpiredException) {
+                return await this.deletePaidBrokerageBooking(params);
             }
             throw error
         }

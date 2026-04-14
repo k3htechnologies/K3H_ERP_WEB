@@ -14,7 +14,7 @@ export default function MissingDetails({ MissingDetailsData }: Props) {
                 Missing Details
             </h2>
 
-            <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm h-[300px] thin-scroll flex flex-col">
+            <div className="bg-white rounded-lg p-4 space-y-4 border border-gray-100  h-[300px] thin-scroll flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                 {MissingDetailsData.length === 0 ? (
                     <div className="flex flex-col justify-center items-center h-full">
                         <NoDataView />
@@ -27,8 +27,8 @@ export default function MissingDetails({ MissingDetailsData }: Props) {
                                 <div className="w-2 bg-red-500 flex-shrink-0"></div>
                                 <div className="flex justify-between items-center w-full p-4">
                                     <div>
-                                        <p className="text-sm font-semibold text-gray-900">{item.Name ?? ''}</p>
-                                        <p className="text-xs text-gray-600 mt-1">{item.SystemGeneratedCode ?? ''}</p>
+                                        <p className="text-sm font-semibold text-gray-900">{item.SystemGeneratedCode ?? ''} - {item.Name ?? ''}</p>
+                                        <p className="text-xs text-gray-600 mt-1">{item.MissingFields ?? ''}</p>
                                     </div>
                                 </div>
                             </div>

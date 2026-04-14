@@ -44,7 +44,23 @@ export interface Table2 {
 export interface Table3 {
   BuildingName: string | null
   Issue: string | null
-  UnitNumber: string | null
+}
+
+export interface Table4 {
+  Building: string | null
+  Wing: string | null
+  Floors: number | 0
+  Units: number | 0
+  AllotedFlats: number | 0
+  AvailableFlats: number | 0
+  BookedFlats: number | 0
+  HoldFlats: number | 0
+  BlockedFlats: number | 0
+  TotalParking: number | 0
+  AvailableParking: number | 0
+  BookedParking: number | 0
+  HoldParking: number | 0
+  BlockedParking: number | 0
 }
 
 export interface Table4 {

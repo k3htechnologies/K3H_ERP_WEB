@@ -115,8 +115,8 @@ export const useHolidayMappingMaster = () => {
           DepartmentMasterId: editingHolidayMappingMasterData.DepartmentMasterId || '',
           HolidayDate: editingHolidayMappingMasterData.HolidayDate || '',
         });
-        setBranchValue(editingHolidayMappingMasterData.BranchMasterId || null);
-        setDepartmentValue(editingHolidayMappingMasterData.DepartmentMasterId || null);
+        setBranchValue(editingHolidayMappingMasterData.BranchMasterId || "");
+        setDepartmentValue(editingHolidayMappingMasterData.DepartmentMasterId || "");
         setDropdownLabels({
           branchName: editingHolidayMappingMasterData.BranchName || "",
           holidayName: editingHolidayMappingMasterData.HolidayName || "",
@@ -348,18 +348,18 @@ export const useHolidayMappingMaster = () => {
     }
   };
 
-  const handleAddHolidayMappingModal = () => {
-    setEditingHolidayMappingMasterData(null);
-    setFormData(getInitialFormState());
+ const handleAddHolidayMappingModal = () => {
+  setEditingHolidayMappingMasterData(null);
 
-    setBranchValue("");
-    setDepartmentValue("");
+  setFormData(getInitialFormState());
+  setBranchValue(null);
+  setDepartmentValue(null);
+  setDropdownLabels({});
+  setDropdownResetKey(prev => prev + 1);
 
-    setDropdownResetKey(prev => prev + 1);
-
-    setErrors({});
-    setIsAddUpdateModalOpen(true);
-  }
+  setErrors({});
+  setIsAddUpdateModalOpen(true);
+};
 
   const validateAddHolidayMappingMasterForm = (): {
     isValid: boolean

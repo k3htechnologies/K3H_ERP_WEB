@@ -15,13 +15,13 @@ export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
                 Case Analysis
             </h2>
 
-            <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm">
+            <div className="bg-white rounded-lg p-4 space-y-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                 {CaseAnalysisData.length === 0 ? (
                     <div className="flex flex-col justify-center items-center h-[350px]">
                         <NoDataView />
                     </div>
                 ) : (
-                    <div className="flex justify-center relative [&_.recharts-wrapper_svg]:outline-none">
+                    <div className="flex justify-center relative [&_.recharts-wrapper_svg]:outline-none" >
                         <ResponsiveContainer width="100%" height={350}>
                             <LineChart
                                 data={CaseAnalysisData}

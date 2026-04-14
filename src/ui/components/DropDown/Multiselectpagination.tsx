@@ -57,7 +57,6 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
     lg: { fontSize: 16, paddingY: 10, paddingX: 20, height: 54, dropdownHeight: 250 },
   };
 
-
   const currentSize = SIZE_MAP[size as keyof typeof SIZE_MAP] || SIZE_MAP.md;
 
   const hasSelections = selectedValues.length > 0;

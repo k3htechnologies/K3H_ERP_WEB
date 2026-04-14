@@ -20,7 +20,7 @@ export abstract class ModulesWorkflowApprovalDatasource {
     params: FilterModulesWorkflowApprovalRequest,
     signal?: AbortSignal,
   ): Promise<ModulesWorkflowApprovalListResponse>;
-  
+
   abstract addUpdateModulesWorkflowApproval(data: AddUpdateModulesWorkflowApprovalRequest): Promise<ModulesWorkflowApprovalListResponse>;
 
   abstract deleteModulesWorkflowApproval(params: DeleteModulesWorkflowApprovalRequest): Promise<ModulesWorkflowApprovalDeleteResponse>;
@@ -31,7 +31,7 @@ export abstract class ModulesWorkflowApprovalDatasource {
     params: ModulesApprovalStatusRequest,
     signal?: AbortSignal,
   ): Promise<ModulesApprovalStatusListResponse>;
-  
+
   abstract pullModulesWorkflowApprovalSummary(
     params: ModulesWorkflowApprovalSummaryRequest,
     signal?: AbortSignal,
@@ -43,10 +43,8 @@ export class ModulesWorkflowApprovalDatasourceImpl implements ModulesWorkflowApp
     return baseClient;
   }
 
-  async pullModulesWorkflowApproval(
-    params: FilterModulesWorkflowApprovalRequest,
-    signal?: AbortSignal,
-  ): Promise<ModulesWorkflowApprovalListResponse> {
+  async pullModulesWorkflowApproval(params: FilterModulesWorkflowApprovalRequest, signal?: AbortSignal,): Promise<ModulesWorkflowApprovalListResponse> {
+
     try {
       const queryParams = new URLSearchParams({
         EmployeeId: String(params.EmployeeId ?? 0),
@@ -61,11 +59,14 @@ export class ModulesWorkflowApprovalDatasourceImpl implements ModulesWorkflowApp
         { signal },
       );
       return response;
+
     } catch (error: any) {
+
       console.error("ERROR: PULL MODULES WORKFLOW APPROVAL :", error);
 
-      if (error === TokenExpiredException) {
-        await this.pullModulesWorkflowApproval(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.pullModulesWorkflowApproval(params);
       }
       throw error;
     }
@@ -79,8 +80,9 @@ export class ModulesWorkflowApprovalDatasourceImpl implements ModulesWorkflowApp
     } catch (error) {
       console.error("ERROR: ADD MODULES WORKFLOW APPROVAL:", error);
 
-      if (error === TokenExpiredException) {
-        await this.addUpdateModulesWorkflowApproval(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.addUpdateModulesWorkflowApproval(params);
       }
       throw error;
     }
@@ -102,10 +104,11 @@ export class ModulesWorkflowApprovalDatasourceImpl implements ModulesWorkflowApp
 
       return response;
     } catch (error) {
-      if (error === TokenExpiredException) {
-        console.error("ERROR: DELETE MODULES WORKFLOW APPROVAL:", error);
+      console.error("ERROR: DELETE MODULES WORKFLOW APPROVAL:", error);
 
-        await this.deleteModulesWorkflowApproval(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.deleteModulesWorkflowApproval(params);
       }
       throw error;
     }
@@ -117,19 +120,18 @@ export class ModulesWorkflowApprovalDatasourceImpl implements ModulesWorkflowApp
 
       return response;
     } catch (error) {
-      if (error === TokenExpiredException) {
-        console.error("ERROR: UPDATE MODULES WORKFLOW APPROVAL:", error);
 
-        await this.updateModulesWorkflowApproval(params);
+      console.error("ERROR: UPDATE MODULES WORKFLOW APPROVAL:", error);
+
+      if (error instanceof TokenExpiredException) {
+
+        return await this.updateModulesWorkflowApproval(params);
       }
       throw error;
     }
   }
 
-  async pullModuleApprovalStatus(
-    params: ModulesApprovalStatusRequest,
-    signal?: AbortSignal,
-  ): Promise<ModulesApprovalStatusListResponse> {
+  async pullModuleApprovalStatus(params: ModulesApprovalStatusRequest, signal?: AbortSignal): Promise<ModulesApprovalStatusListResponse> {
 
     try {
       const queryParams = new URLSearchParams({
@@ -146,12 +148,16 @@ export class ModulesWorkflowApprovalDatasourceImpl implements ModulesWorkflowApp
         `${ModulesWorkflowApprovalApi.PULL_MODULE_APPROVAL_STATUS}?${queryParams.toString()}`,
         { signal },
       );
+
       return response;
+
     } catch (error: any) {
+
       console.error("ERROR: PULL MODULES APPROVAL STATUS :", error);
 
-      if (error === TokenExpiredException) {
-        await this.pullModuleApprovalStatus(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.pullModuleApprovalStatus(params);
       }
       throw error;
     }
@@ -159,22 +165,23 @@ export class ModulesWorkflowApprovalDatasourceImpl implements ModulesWorkflowApp
 
   async pullModulesWorkflowApprovalSummary(params: ModulesWorkflowApprovalSummaryRequest, signal?: AbortSignal): Promise<ModulesWorkflowApprovalSummaryListResponse> {
     try {
+
       const queryParams = new URLSearchParams({
-         Id: String(params.Id ?? 0),
+        Id: String(params.Id ?? 0),
       });
 
       if (params.ModuleName?.trim()) queryParams.append("ModuleName", params.ModuleName.trim());
 
-      const response = await this.k3hHttpClient.getRequestWithAuthentication(
-        `${ModulesWorkflowApprovalApi.PULL_SUMMARY}?${queryParams.toString()}`,
-        { signal },
-      );
+      const response = await this.k3hHttpClient.getRequestWithAuthentication(`${ModulesWorkflowApprovalApi.PULL_SUMMARY}?${queryParams.toString()}`, { signal },);
       return response;
+
     } catch (error: any) {
+
       console.error("ERROR: PULL MODULES WORKFLOW APPROVAL :", error);
 
-      if (error === TokenExpiredException) {
-        await this.pullModulesWorkflowApprovalSummary(params);
+      if (error instanceof TokenExpiredException) {
+
+        return await this.pullModulesWorkflowApprovalSummary(params);
       }
       throw error;
     }

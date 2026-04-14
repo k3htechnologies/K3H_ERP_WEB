@@ -162,7 +162,7 @@ export class BaseClient {
         payload: FormData
     ): Promise<any> {
         try {
-           
+
             const response = await fetch(getApiUrl(url), {
                 method: 'POST',
                 headers: {
@@ -268,6 +268,9 @@ export class BaseClient {
                 throw new UserDeletedException('Your session has expired due to inactivity. Please log in again to continue.')
             case 403:
                 await this.refreshToken()
+                this.token = LocalStorageHelper.getStoredTokenData();
+                throw new TokenExpiredException("Token refreshed, retry request");
+
                 break
             case 404:
                 throw new BadRequestException('Invalid request')
@@ -310,12 +313,16 @@ export class BaseClient {
                 const token = response.right.Data;
 
                 LocalStorageHelper.storeToken(token);
+
+                this.token = token;
             }
 
         } catch (error) {
 
-            console.error('ERROR: DELETE DEPARTMENT MASTER :', error);
-            if (error === TokenExpiredException) {
+            console.error('ERROR: REFRESH TOKEN :', error);
+
+            if (error instanceof TokenExpiredException) {
+                
                 await this.refreshToken();
             }
 

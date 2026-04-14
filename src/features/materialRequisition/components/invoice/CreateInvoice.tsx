@@ -72,7 +72,7 @@ const AddUpdateInovice: React.FC = () => {
         if (!projectId) return;
         loadInvoiceData();
         fetchMaterialRequisitionDetailData();
-    }, [projectId])
+    }, [projectId, currentMaterialRequisitionId])
 
     const loadInvoiceData = async () => {
         await runApiWithLoader(
@@ -89,6 +89,7 @@ const AddUpdateInovice: React.FC = () => {
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
                 if (E.isRight(response)) {
+
                     const data = response.right.Data;
 
                     setInvoiceData(Array.isArray(data) ? (data[0] ?? null) : data);
@@ -275,7 +276,6 @@ const AddUpdateInovice: React.FC = () => {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-
                     navigate("/materialRequisition/view");
 
                 } else {
@@ -309,7 +309,7 @@ const AddUpdateInovice: React.FC = () => {
                 />
             </div>
 
-            <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+            <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <FieldItem label="Date" value={invoiceData?.CreatedDate} />

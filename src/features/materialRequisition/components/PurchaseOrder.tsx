@@ -1,7 +1,7 @@
 import useToast from "@/core/hooks/useToast";
 import { runApiWithLoader } from "@/core/utils";
-import { useEffect, useState } from "react";
-import type { DeleteMaterialRequisitionPurchaseOrder, FilterWithPaginationMaterialRequisitionPurchaseOrder, GenerateMaterialRequisitionPurchaseOrderPdfData, MaterialRequisitionPurchaseOrderData } from "../models/MaterialRequisitionPurchaseOrderModel";
+import { useEffect, useRef, useState } from "react";
+import type { AddUpdateMaterialRequisitionPurchaseOrder, DeleteMaterialRequisitionPurchaseOrder, FilterWithPaginationMaterialRequisitionPurchaseOrder, GenerateMaterialRequisitionPurchaseOrderPdfData, MaterialRequisitionPurchaseOrderData } from "../models/MaterialRequisitionPurchaseOrderModel";
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import { useParams } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
@@ -22,6 +22,16 @@ const initialFormState = (): GenerateMaterialRequisitionPurchaseOrderPdfData => 
     Remarks: '',
     TermsCondition: ''
 })
+
+const InitialFormState = (): AddUpdateMaterialRequisitionPurchaseOrder => ({
+    MaterialRequisitionPurchaseOrderId: 0,
+    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    ProjectId: 0,
+    MaterialRequisitionId: 0,
+    PurchaseOrderURL: '',
+    RemovePurchaseOrderURL: ''
+})
+
 export const PurchaseOrder: React.FC = () => {
 
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -29,8 +39,8 @@ export const PurchaseOrder: React.FC = () => {
     const { addToast } = useToast();
     const [materialRequisitionPurchaseOrder, setMaterialRequisitionPurchaseOrder] = useState<MaterialRequisitionPurchaseOrderData[]>([])
     const [formData, setFormData] = useState<GenerateMaterialRequisitionPurchaseOrderPdfData>(() => initialFormState());
+    const [uploadData, setUploadData] = useState<AddUpdateMaterialRequisitionPurchaseOrder>(() => InitialFormState());
     const { projectId } = useProject();
-
     const { canAction } = useMenuPermissions();
 
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -42,11 +52,12 @@ export const PurchaseOrder: React.FC = () => {
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (!projectId) return
         loadPurchaseOrder();
-    }, [projectId])
+    }, [projectId, currentMaterialRequisitionId])
 
     const loadPurchaseOrder = async () => {
         await runApiWithLoader(
@@ -62,6 +73,7 @@ export const PurchaseOrder: React.FC = () => {
                 const response = await materialRequisitionPurchaseOrderService.apiCallPullMaterialRequisitionPurchaseOrder(params);
 
                 if (E.isRight(response)) {
+
                     setMaterialRequisitionPurchaseOrder(response.right.Data);
                 } else {
                     addToast({ type: "error", title: response.left.message });
@@ -97,7 +109,6 @@ export const PurchaseOrder: React.FC = () => {
 
         isValid: boolean
         errors: { [key: string]: string }
-
     } => {
 
         const newErrors: { [key: string]: string } = {}
@@ -163,6 +174,7 @@ export const PurchaseOrder: React.FC = () => {
                             totalRecords: pagination.totalRecords + 1,
                             totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
                         });
+
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                     } else {
 
@@ -191,6 +203,85 @@ export const PurchaseOrder: React.FC = () => {
         )
     };
 
+    // //PUSH FORM DATA
+    // const PushUploadPurchaseOrderFormData = (e: any): FormData => {
+    //     const file = e.target.files?.[0];
+    //     const fd = new FormData();
+    //     fd.append("MaterialRequisitionPurchaseOrderId", uploadData.MaterialRequisitionPurchaseOrderId.toString());
+    //     fd.append("Uniquekey", uploadData.Uniquekey ?? "");
+    //     fd.append("ProjectId", projectId!.toString());
+    //     fd.append("MaterialRequisitionId", (currentMaterialRequisitionId ?? 0).toString());
+    //     fd.append("PurchaseOrderURL", file);
+
+    //     return fd;
+    // };
+
+    // // UPLOAD PURCHASE ORDER
+    // const handleUploadPurchaseOrder = async () => {
+    //     await runApiWithLoader(
+    //         setIsLoading,
+    //         setLoadingMessage,
+    //         async () => {
+
+    //             const payload = PushUploadPurchaseOrderFormData();
+
+    //             const response = await materialRequisitionPurchaseOrderService.apiCallAddUpdateMaterialRequisitionPurchaseOrder(payload);
+
+    //             if (E.isRight(response)) {
+
+    //                 addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+    //                 loadPurchaseOrder();
+
+    //             } else {
+    //                 addToast({ type: "error", title: response.left.message });
+    //             }
+    //             return response;
+    //         },
+    //         undefined,
+    //         (error: any) => {
+    //             addToast({ type: "error", title: error.message });
+    //         },
+    //         undefined,
+    //         "Loading Purchase Order ",
+    //     );
+    // };
+
+    const handleUploadPurchaseOrder = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        const fd = new FormData();
+        fd.append("MaterialRequisitionPurchaseOrderId", uploadData.MaterialRequisitionPurchaseOrderId.toString());
+        fd.append("Uniquekey", uploadData.Uniquekey ?? "");
+        fd.append("ProjectId", projectId!.toString());
+        fd.append("MaterialRequisitionId", (currentMaterialRequisitionId ?? 0).toString());
+        fd.append("PurchaseOrderURL", file);
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const response = await materialRequisitionPurchaseOrderService.apiCallAddUpdateMaterialRequisitionPurchaseOrder(fd);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    loadPurchaseOrder();
+
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Uploading Purchase Order"
+        );
+    };
+
     //#region DELETE PURCHASE ORDER
     const handleDeleteGeneratePurchaseOrder = async () => {
 
@@ -203,6 +294,7 @@ export const PurchaseOrder: React.FC = () => {
             async () => {
 
                 const params: DeleteMaterialRequisitionPurchaseOrder = {
+                    
                     MaterialRequisitionId: deleteGeneratePurchaseOrderData.MaterialRequisitionId || 0,
                     MaterialRequisitionPurchaseOrderId: deleteGeneratePurchaseOrderData.MaterialRequisitionPurchaseOrderId || 0,
                     Uniquekey: deleteGeneratePurchaseOrderData.Uniquekey || "",
@@ -213,30 +305,13 @@ export const PurchaseOrder: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    const newTotalRecords = pagination.totalRecords - 1;
-
-                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
-
-                    let pageToShow = pagination.currentPage;
-
-                    if (pagination.currentPage > newTotalPages) {
-                        pageToShow = newTotalPages;
-                    }
-
-                    else if (materialRequisitionPurchaseOrder.length === 1 && pagination.currentPage > 1) {
-                        pageToShow = pagination.currentPage - 1;
-                    }
-                    setPagination({
-                        currentPage: pageToShow,
-                        totalRecords: newTotalRecords,
-                        totalPages: newTotalPages
-                    });
-                    await loadPurchaseOrder();
+                    loadPurchaseOrder();
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] })
 
                     setIsConfirmationDialogBoxOpen(false);
                     setDeleteGeneratePurchaseOrderData(null);
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     setIsConfirmationDialogBoxOpen(false);
@@ -251,6 +326,12 @@ export const PurchaseOrder: React.FC = () => {
     };
     //#endregion
 
+    //#region CONFIRMATION DIALOG BOX
+    const handleConfirmationDialogBoxOpen = (record: MaterialRequisitionPurchaseOrderData) => {
+        setDeleteGeneratePurchaseOrderData(record);
+        setIsConfirmationDialogBoxOpen(true);
+    }
+    //#endregion
     return (
         <div className="bg-white p-6 h-[500px]">
             <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
@@ -268,10 +349,16 @@ export const PurchaseOrder: React.FC = () => {
 
                 </Button>
 
-                <Button
-                    onClick={() => {
+                <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    className="hidden"
+                    onChange={handleUploadPurchaseOrder}
+                />
 
-                    }}
+                <Button
+                    onClick={() => fileInputRef.current?.click()}
                     color="blue"
                     size="mxs"
                     variant="solid"
@@ -282,7 +369,19 @@ export const PurchaseOrder: React.FC = () => {
                     Upload PO
                 </Button>
 
+                <Button
+                    color="red"
+                    variant="solid"
+                    colorMode="extraLight"
+                    onClick={() => {
+                        handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder[0]);
+
+                    }}
+                >
+                    Delete
+                </Button>
             </div>
+
             {/* GENERATE PURCHASE ORDER MODAL */}
 
             <Modal
@@ -337,6 +436,7 @@ export const PurchaseOrder: React.FC = () => {
             </Modal>
 
             {/* DELETE CONFIRMATION MODAL */}
+
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
                 onClose={() => {

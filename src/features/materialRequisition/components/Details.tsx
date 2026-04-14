@@ -40,7 +40,7 @@ export const Details: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
         fetchDetailsdata();
-    }, [projectId])
+    }, [projectId,currentMaterialRequisitionId])
 
     const navigate = useNavigate();
 

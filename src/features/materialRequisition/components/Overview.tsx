@@ -45,6 +45,7 @@ export const Overview: React.FC = () => {
                 const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
 
                 if (E.isRight(response)) {
+
                     const data = response.right.Data;
 
                     setMaterialRequisitionData(Array.isArray(data) ? (data[0] ?? null) : data);
@@ -71,10 +72,7 @@ export const Overview: React.FC = () => {
         <div className="bg-white p-1">
             {/* Loader */}
 
-            <Loader loading={isLoading} title={loadingMessage}>
-                {" "}
-                <div></div>{" "}
-            </Loader>
+            <Loader loading={isLoading} title={loadingMessage}> {" "} <div></div>{" "} </Loader>
 
             <div className="grid grid-cols-12 gap-5 pt-1">
 

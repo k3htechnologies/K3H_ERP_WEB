@@ -15,7 +15,6 @@ import { useMaterialRequisitionListState } from "../../context/MaterialRequisiti
 import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
 
-
 export const Invoice: React.FC = () => {
     const [invoiceList, setInvoiceList] = useState<MaterialRequisitionGRNData[]>([]);
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -26,6 +25,7 @@ export const Invoice: React.FC = () => {
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
+    const currentUniquekey = listState.Uniquekey
 
     const { canAction } = useMenuPermissions();
     const [sortInfo, setSortInfo] = useState<SortInfo>();
@@ -34,7 +34,7 @@ export const Invoice: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
         loadInvoiceData(1, {});
-    }, [projectId,currentMaterialRequisitionId])
+    }, [projectId, currentMaterialRequisitionId])
 
     const loadInvoiceData = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo,) => {
         await runApiWithLoader(
@@ -46,6 +46,7 @@ export const Invoice: React.FC = () => {
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
+                    Uniquekey: currentUniquekey,
                     MaterialRequisitionGRNId: filterParams?.MaterialRequisitionGRNId ? Number(filterParams.MaterialRequisitionGRNId) : undefined,
                     SortBy: getSortByParam(sortInfo ?? null, InvoiceColumns),
                 };
@@ -90,7 +91,7 @@ export const Invoice: React.FC = () => {
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
-        loadInvoiceData(1, {});
+        loadInvoiceData(1, {},sort);
     }, []);
 
     //#region TABLE PAGINATION INFO

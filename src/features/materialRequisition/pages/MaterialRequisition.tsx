@@ -206,7 +206,8 @@ export const MaterialRequisition: React.FC = () => {
         updateListState({
             MaterialRequisitionId: row.MaterialRequisitionId,
             MaterialRequisitionStage: row.MaterialRequisitionStage,
-            SystemGeneratedCode: row.SystemGeneratedCode
+            SystemGeneratedCode: row.SystemGeneratedCode,
+            Uniquekey:row.Uniquekey
         });
         navigate('/MaterialRequisition/view');
     }, [navigate, updateListState]);

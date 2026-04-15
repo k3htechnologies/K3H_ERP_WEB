@@ -53,6 +53,7 @@ const AddUpdateInovice: React.FC = () => {
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
+    const currentUniquekey = listState.Uniquekey
     const navigate = useNavigate();
 
     const [performaInvoiceURLFiles, setPerformaInvoiceURLFiles] = useState<(File | string)[]>([]);
@@ -84,6 +85,7 @@ const AddUpdateInovice: React.FC = () => {
                     PageSize: 1,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
+                    Uniquekey:currentUniquekey
                 };
 
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);

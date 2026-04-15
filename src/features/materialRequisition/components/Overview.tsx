@@ -12,6 +12,7 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { Loader } from "@/core/utils/loader";
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 export const Overview: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -78,7 +79,7 @@ export const Overview: React.FC = () => {
 
                 <div className="col-span-7">
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mb-4">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
                         <section className="bg-white px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Basic Details</h4>
 
@@ -99,7 +100,7 @@ export const Overview: React.FC = () => {
                         </section>
                     </div>
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mb-4">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
                         <section className="bg-white px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Vendor And Amount Details</h4>
 
@@ -114,7 +115,7 @@ export const Overview: React.FC = () => {
                         </section>
                     </div>
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mb-4">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
                         <section className="bg-white px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Purchase Order</h4>
                             <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
@@ -129,14 +130,14 @@ export const Overview: React.FC = () => {
                         </section>
                     </div>
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mb-4">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
                         <section className="bg-white px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Remarks</h4>
                             <span>{matrialRequisitionData?.Remarks}</span>
                         </section>
                     </div>
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1">
                         <section className="bg-white px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Action Details</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
@@ -152,26 +153,26 @@ export const Overview: React.FC = () => {
 
                 <div className="col-span-5">
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mb-4 overflow-y-auto thin-scroll h-[483px]">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 overflow-y-auto thin-scroll h-[436px]">
                         <section className="bg-white px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Material Details</h4>
                             {matrialRequisitionDetailData.map((item, index) => (
                                 <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 mb-4 border-b border-gray-300 last:border-b-0 last:pb-2 pb-4">
                                     <FieldItem label="Name" value={item.MaterialName} />
-                                    <FieldItem label="Sub Material" value={item.SubMaterialName} />
+                                    <FieldItem label="Sub Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                     <FieldItem label="Quantity" value={item.MaterialQuantity} />
                                 </div>
                             ))}
                         </section>
                     </div>
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 overflow-y-auto thin-scroll h-[500px]">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 overflow-y-auto thin-scroll h-[426px]">
                         <section className="bg-white px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Invoice Details</h4>
                             {matrialRequisitionDetailData.map((item, index) => (
                                 <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 rounded-lg p-4 mt-2 ">
                                     <FieldItem label="Invoice No." value={item.MaterialName} />
-                                    <FieldItem label="Invoice Amount" value={item.SubMaterialName} />
+                                    <FieldItem label="Sub Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                     <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
                                 </div>
                             ))}

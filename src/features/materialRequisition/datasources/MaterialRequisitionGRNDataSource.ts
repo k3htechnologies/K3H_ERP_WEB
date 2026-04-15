@@ -26,7 +26,7 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
 
             if (params.MaterialRequisitionGRNId) queryParams.append('MaterialRequisitionGRNId', params.MaterialRequisitionGRNId.toString());
             if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());
-            if (params.Uniquekey?.trim()) queryParams.append('MaterialRequisitionGRNStatus', params.Uniquekey.trim());
+            if (params.Uniquekey?.trim()) queryParams.append('Uniquekey', params.Uniquekey.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

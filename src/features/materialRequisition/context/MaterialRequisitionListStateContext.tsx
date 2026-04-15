@@ -11,6 +11,7 @@ export type MaterialRequisitionListState = {
     projectId: number | null;
     MaterialRequisitionId?: number;
     SystemGeneratedCode?: string;
+    Uniquekey?: string;
     FromDate?: string;
     ToDate?: string;
     MaterialRequisitionStage?: string;
@@ -30,6 +31,7 @@ const getInitialState = (currentProjectId: number | null): MaterialRequisitionLi
             projectId: currentProjectId,
             MaterialRequisitionId: undefined,
             SystemGeneratedCode: undefined,
+            Uniquekey: undefined,
             FromDate: undefined,
             ToDate: undefined,
             MaterialRequisitionStage: undefined,
@@ -61,6 +63,7 @@ const getInitialState = (currentProjectId: number | null): MaterialRequisitionLi
         projectId: currentProjectId,
         MaterialRequisitionId: undefined,
         SystemGeneratedCode: "",
+        Uniquekey: "",
         FromDate: undefined,
         ToDate: undefined,
         MaterialRequisitionStage: undefined,
@@ -117,6 +120,7 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
             sortInfo: undefined,
             MaterialRequisitionId: undefined,
             SystemGeneratedCode: undefined,
+            Uniquekey: undefined,
             FromDate: undefined,
             ToDate: undefined,
             MaterialRequisitionStage: undefined,

@@ -42,16 +42,17 @@ export const PurchaseOrder: React.FC = () => {
     const [uploadData, setUploadData] = useState<AddUpdateMaterialRequisitionPurchaseOrder>(() => InitialFormState());
     const { projectId } = useProject();
     const { canAction } = useMenuPermissions();
-
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const { pagination, setPagination } = usePagination(20);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteGeneratePurchaseOrderData, setDeleteGeneratePurchaseOrderData] = useState<MaterialRequisitionPurchaseOrderData | null>(null)
     const [generatePurchaseOrderPdfList, setGeneratePurchaseOrderPdfList] = useState<GenerateMaterialRequisitionPurchaseOrderPdfData[]>([])
+
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
+    const currentUniquekey = listState.Uniquekey
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -69,6 +70,7 @@ export const PurchaseOrder: React.FC = () => {
                     PageSize: 10,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
+                    Uniquekey: currentUniquekey
                 }
                 const response = await materialRequisitionPurchaseOrderService.apiCallPullMaterialRequisitionPurchaseOrder(params);
 
@@ -294,7 +296,7 @@ export const PurchaseOrder: React.FC = () => {
             async () => {
 
                 const params: DeleteMaterialRequisitionPurchaseOrder = {
-                    
+
                     MaterialRequisitionId: deleteGeneratePurchaseOrderData.MaterialRequisitionId || 0,
                     MaterialRequisitionPurchaseOrderId: deleteGeneratePurchaseOrderData.MaterialRequisitionPurchaseOrderId || 0,
                     Uniquekey: deleteGeneratePurchaseOrderData.Uniquekey || "",
@@ -369,17 +371,6 @@ export const PurchaseOrder: React.FC = () => {
                     Upload PO
                 </Button>
 
-                <Button
-                    color="red"
-                    variant="solid"
-                    colorMode="extraLight"
-                    onClick={() => {
-                        handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder[0]);
-
-                    }}
-                >
-                    Delete
-                </Button>
             </div>
 
             {/* GENERATE PURCHASE ORDER MODAL */}
@@ -434,6 +425,37 @@ export const PurchaseOrder: React.FC = () => {
                     </div>
                 </div>
             </Modal>
+
+            {/* <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
+                <div className="flex justify-between">
+                    <section className="bg-white pt-1 pb-4 overflow-y-auto thin-scroll h-[436px]">
+
+                        <h1 className="">Purchase order</h1>
+                        <span className="text-gray-500 bold-500">
+                            there are two types of pdf.
+                        </span>
+
+                        <span className="text-gray-500 bold-500">
+                            there are two types of pdf.
+                        </span>
+                    </section>
+
+                    <div>
+                        <Button
+                            color="red"
+                            variant="solid"
+                            colorMode="extraLight"
+                            onClick={() => {
+                                handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder[0]);
+
+                            }}
+                        >
+                            Delete
+                        </Button>
+                    </div>
+
+                </div>
+            </div> */}
 
             {/* DELETE CONFIRMATION MODAL */}
 

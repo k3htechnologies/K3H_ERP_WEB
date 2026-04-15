@@ -1,4 +1,5 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
+import type { BookingOtherChargesData } from "@/features/booking/models/BookingModel";
 
 export interface FilterWithPaginationPayTrackBooking {
     PageNumber: number;
@@ -47,6 +48,7 @@ export interface PayTrackBookingData {
     FlatConfiguration: string | null;
     
     RegistrationDate: string | null;
+    FinalRegistrationDate: string | null;
 
     AgreementValue: number | null;
     ReceivedAgreementValue: number | null;
@@ -75,6 +77,7 @@ export interface PayTrackBookingData {
     TotalAmountRefundedAgainstBooking: number | null;
     RefundedAmountOnTillDate: number | null;
 
+    PendingLedgerApprovalCount: number | null;
     FlatAlterationRequestIsApproval: boolean;
     FlatAlterationRequestApprovalStatus: string | null;
     ParkingModificationRequestIsApproval: boolean;
@@ -83,6 +86,8 @@ export interface PayTrackBookingData {
     BookingApplicantModificationRequestApprovalStatus: string | null;
 
     TenantId: number | null;
+
+    BookingOtherChargesData?: BookingOtherChargesData[] | null;
 }
 
 export interface PayTrackBookingApplicantData {

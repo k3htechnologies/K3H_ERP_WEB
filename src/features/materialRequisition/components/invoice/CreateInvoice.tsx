@@ -248,7 +248,6 @@ const AddUpdateInovice: React.FC = () => {
         });
 
         fd.append("RemovePerformaInvoiceURL", removePerformaInvoiceUrls.join(","));
-
         return fd;
     };
     //#endregion

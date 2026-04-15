@@ -22,8 +22,6 @@ import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
 import { Modal } from "@/ui/components/Modal/Modal";
-import { MATERIAL_REQUISITION_STAGES_OPTIONS, MATERIAL_REQUISITION_STATUS_OPTIONS } from "@/core/constants/staticData";
-import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 
@@ -424,22 +422,6 @@ export const MaterialRequisition: React.FC = () => {
                 size="small-half"
             >
                 <div className="space-y-4">
-                    <div>
-                        <SinglePageSelection
-                            label="Material Requisition Stage"
-                            placeholder="Select Stage"
-                            options={MATERIAL_REQUISITION_STAGES_OPTIONS?.map(stage => ({ label: stage.name, value: stage.id })) || []}
-                            onChange={(value) => handleFilterChange('MaterialRequisitionStage', String(value))}
-                        />
-                    </div>
-                    <div>
-                        <SinglePageSelection
-                            label="Material Requisition Status"
-                            placeholder="Select Status"
-                            options={MATERIAL_REQUISITION_STATUS_OPTIONS?.map(status => ({ label: status.name, value: status.id })) || []}
-                            onChange={(value) => handleFilterChange('MaterialRequisitionStatus', String(value))}
-                        />
-                    </div>
                     <div>
                         <DatePickerInput
                             label='From Date'

@@ -90,7 +90,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
     const { addToast } = useToast();
 
     //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions("/inwardoutword");
+    const { canAction } = useMenuPermissions("/inwardoutward");
     //#endregion
 
     // ERROR SET UP
@@ -269,7 +269,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
         }
         if (!formData.InVoiceDate) {
             newErrors.InVoiceDate = "Invoice Date required";
-        } 
+        }
         if (!formData.InVoiceNumber) {
             newErrors.InVoiceNumber = "Invoice Number is required";
         }
@@ -376,7 +376,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-                    navigate("/inwardoutword");
+                    navigate("/inwardoutward");
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -455,9 +455,10 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             <RadioButton
                                 label="Others"
                                 checked={formData.DeliveryType === "Others"}
-                                onChange={() =>
-                                    handleFieldChange("DeliveryType", "Others")
-                                }
+                                onChange={() => {
+                                    handleFieldChange("DeliveryType", "Others");
+                                    handleFieldChange("ChequeNo", "");
+                                }}
                             />
 
                             <RadioButton

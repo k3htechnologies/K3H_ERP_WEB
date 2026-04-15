@@ -332,13 +332,12 @@ export const getPageInfo = (path: string) => {
                 title: 'Event',
                 description: 'Profile',
             }
-
-        case 'inwardOutward':
+        case 'inwardoutward':
             return {
-                title: 'Inward Outward',
-                description: 'Inward Outward',
+                title: 'Inward/Outward',
+                description: 'Profile',
             }
-            
+
             {/* INVENTORY */ }
 
         case 'inventoryDashboard':

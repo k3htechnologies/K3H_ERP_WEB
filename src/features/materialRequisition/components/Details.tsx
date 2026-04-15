@@ -290,7 +290,7 @@ export const Details: React.FC = () => {
                                 images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL)}
                                 title="Attachment"
                                 isIcon={false}
-                                triggerLabel="Attachment"
+                                triggerLabel="-"
                             />
                         </div>
                     </div>

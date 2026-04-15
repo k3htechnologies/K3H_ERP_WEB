@@ -12,7 +12,7 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Input } from "@/ui/components/forms";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -24,6 +24,7 @@ import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionDetail
 import { materialRequisitionService } from "../../services/MaterialRequisitionService";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     MaterialRequisitionId: 0,
@@ -85,7 +86,7 @@ const AddUpdateInovice: React.FC = () => {
                     PageSize: 1,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
-                    Uniquekey:currentUniquekey
+                    Uniquekey: currentUniquekey
                 };
 
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
@@ -159,7 +160,13 @@ const AddUpdateInovice: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: (value) => value || '-'
+            render: (value?: string) => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="180px"
+                    tooltipThreshold={18}
+                />
+            )
         },
         {
             key: 'MaterialQuantity',
@@ -313,7 +320,7 @@ const AddUpdateInovice: React.FC = () => {
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <FieldItem label="Date" value={invoiceData?.CreatedDate} />
+                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(invoiceData?.CreatedDate ?? '')} />
                         <FieldItem label="Challan No." value={invoiceData?.ChallanNumber} />
                         <FieldItem label="Vehicle No." value={invoiceData?.VehicleNumber} />
                         <FieldItem label="Total Requisition Amount" value={invoiceData?.Remarks} />

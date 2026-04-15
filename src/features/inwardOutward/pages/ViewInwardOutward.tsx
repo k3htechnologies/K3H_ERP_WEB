@@ -42,7 +42,7 @@ const ViewInwardOutward: React.FC = () => {
     const [activeTab, setActiveTab] = useState<string>(InwardTabList[0].id);
 
     //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/inwardOutward');
+    const { canAction } = useMenuPermissions('/inwardoutward');
 
     // EDIT INWARD OUTWARD DATA FROM STATE
     const { InwardOutwardId } = useParams<{ InwardOutwardId?: string }>();
@@ -109,7 +109,7 @@ const ViewInwardOutward: React.FC = () => {
 
     //#region BACK INWARD OUTWARD PAGE
     const handleBackToInwardList = () => {
-        navigate("/inwardoutword");
+        navigate("/inwardoutward");
     };
     //#endregion
 
@@ -217,9 +217,8 @@ const ViewInwardOutward: React.FC = () => {
                                 <div className="lg:col-span-3 pb-1">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                         <FieldItem label="Cheque No." value={inwardOutwardData?.ChequeNo} />
-                                        <FieldItem label="Amount" value={inwardOutwardData?.Amount} />
+                                        <FieldItem label="Amount" value={`₹${inwardOutwardData?.Amount.toFixed(2)}`} />
                                         <FieldItem label="Document Description" value={inwardOutwardData?.DocumentDescription ?? ''} />
-
                                     </div>
                                 </div>
                             </section>
@@ -316,7 +315,7 @@ const ViewInwardOutward: React.FC = () => {
                                 Assigned Employees
                             </h1>
 
-                            <div className="mt-1 overflow-y-auto h-[350px] thin-scroll pr-2">
+                            <div className="mt-1 overflow-y-auto h-[280px] thin-scroll pr-2">
                                 {(() => {
                                     const employeeNames = inwardOutwardData?.EmployeeNames?.split(',').map(name => name.trim()).filter(name => name) || [];
                                     const departmentNames = inwardOutwardData?.DepartmentName?.split(',').map(dept => dept.trim()).filter(dept => dept) || [];
@@ -366,7 +365,7 @@ const ViewInwardOutward: React.FC = () => {
                                 Revert
                             </h1>
 
-                            <div className="mt-1 overflow-y-auto h-[380px] thin-scroll pr-2">
+                            <div className="mt-1 overflow-y-auto h-[420px] thin-scroll pr-2">
                                 {inwardOutwardRevertData.length > 0 ? (
                                     inwardOutwardRevertData.map((item) => {
                                         return (

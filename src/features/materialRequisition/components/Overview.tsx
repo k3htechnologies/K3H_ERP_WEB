@@ -93,7 +93,7 @@ export const Overview: React.FC = () => {
                                         images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL)}
                                         title="Attachment"
                                         isIcon={false}
-                                        triggerLabel="Attachment"
+                                        triggerLabel="-"
                                     />
                                 </div>
                             </div>
@@ -124,7 +124,7 @@ export const Overview: React.FC = () => {
                                     images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL)}
                                     title="Purchase Order"
                                     isIcon={false}
-                                    triggerLabel="Document"
+                                    triggerLabel="-"
                                 />
                             </div>
                         </section>

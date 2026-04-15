@@ -26,7 +26,6 @@ export const Invoice: React.FC = () => {
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
-
     const { canAction } = useMenuPermissions();
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const navigate = useNavigate();
@@ -91,7 +90,7 @@ export const Invoice: React.FC = () => {
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
-        loadInvoiceData(1, {},sort);
+        loadInvoiceData(1, {}, sort);
     }, []);
 
     //#region TABLE PAGINATION INFO

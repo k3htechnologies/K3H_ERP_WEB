@@ -8,12 +8,15 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { materialRequisitionPurchaseOrderService } from "../services/MaterialRequisitionPurchaseOrderService";
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import usePagination from "@/core/hooks/usePagination";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
 import { FileText } from "lucide-react";
+import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
+import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 
 const initialFormState = (): GenerateMaterialRequisitionPurchaseOrderPdfData => ({
     MaterialRequisitionId: 0,
@@ -41,7 +44,6 @@ export const PurchaseOrder: React.FC = () => {
     const [formData, setFormData] = useState<GenerateMaterialRequisitionPurchaseOrderPdfData>(() => initialFormState());
     const [uploadData, setUploadData] = useState<AddUpdateMaterialRequisitionPurchaseOrder>(() => InitialFormState());
     const { projectId } = useProject();
-    const { canAction } = useMenuPermissions();
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const { pagination, setPagination } = usePagination(20);
@@ -300,7 +302,7 @@ export const PurchaseOrder: React.FC = () => {
                     MaterialRequisitionId: deleteGeneratePurchaseOrderData.MaterialRequisitionId || 0,
                     MaterialRequisitionPurchaseOrderId: deleteGeneratePurchaseOrderData.MaterialRequisitionPurchaseOrderId || 0,
                     Uniquekey: deleteGeneratePurchaseOrderData.Uniquekey || "",
-                    ProjectId: deleteGeneratePurchaseOrderData.ProjectId || 0
+                    ProjectId: Number(projectId)
                 };
 
                 const response = await materialRequisitionPurchaseOrderService.apiCallDeleteMaterialRequisitionPurchaseOrder(params);
@@ -334,45 +336,83 @@ export const PurchaseOrder: React.FC = () => {
         setIsConfirmationDialogBoxOpen(true);
     }
     //#endregion
+
+    const hasPurchaseOrder = materialRequisitionPurchaseOrder.length > 0 &&
+        !!materialRequisitionPurchaseOrder[0];
+
     return (
         <div className="bg-white p-6 h-[500px]">
             <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
 
             <div className="flex justify-end gap-2">
-                <Button
-                    color="blue"
-                    variant="solid"
-                    colorMode="extraLight"
-                    onClick={() => {
-                        handleGeneratepurchaseorder()
-                    }}
-                    leftIcon={<FileText size={14} />}>
-                    Generate PO
+                {!hasPurchaseOrder && (
+                    <>
+                        <Button
+                            color="blue"
+                            variant="solid"
+                            colorMode="extraLight"
+                            onClick={handleGeneratepurchaseorder}
+                            leftIcon={<FileText size={14} />}>
+                            Generate PO
+                        </Button>
 
-                </Button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            className="hidden"
+                            onChange={handleUploadPurchaseOrder}
+                        />
 
-                <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    className="hidden"
-                    onChange={handleUploadPurchaseOrder}
-                />
-
-                <Button
-                    onClick={() => fileInputRef.current?.click()}
-                    color="blue"
-                    size="mxs"
-                    variant="solid"
-                    colorMode="gradient_dark"
-                    defineWidth
-                    style={{ width: '100px' }}
-                >
-                    Upload PO
-                </Button>
-
+                        <Button
+                            onClick={() => fileInputRef.current?.click()}
+                            color="blue"
+                            size="mxs"
+                            variant="solid"
+                            colorMode="gradient_dark"
+                            defineWidth
+                            style={{ width: '100px' }}
+                        >
+                            Upload PO
+                        </Button>
+                    </>
+                )}
             </div>
 
+            {hasPurchaseOrder && (
+                <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
+                    <div className="flex justify-between">
+                        <section className="bg-white pt-1 pb-4">
+                            <h1>Purchase order</h1>
+
+                            <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
+                                <MultiImageViewer
+                                    images={parseDocumentUrls(materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? '')}
+                                    title="Purchase order"
+                                    isIcon={false}
+                                    triggerLabel="Document"
+                                />
+                            </div>
+
+                            <FieldItem
+                                label="Created Date"
+                                value={formatDate_dd_MonthName_yy(materialRequisitionPurchaseOrder[0]?.CreatedDate ?? '')}
+                            />
+                        </section>
+
+                        <div>
+                            <Button
+                                color="red"
+                                variant="solid"
+                                colorMode="extraLight"
+                                onClick={() => handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder[0])}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {/* GENERATE PURCHASE ORDER MODAL */}
 
             <Modal
@@ -425,37 +465,6 @@ export const PurchaseOrder: React.FC = () => {
                     </div>
                 </div>
             </Modal>
-
-            {/* <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
-                <div className="flex justify-between">
-                    <section className="bg-white pt-1 pb-4 overflow-y-auto thin-scroll h-[436px]">
-
-                        <h1 className="">Purchase order</h1>
-                        <span className="text-gray-500 bold-500">
-                            there are two types of pdf.
-                        </span>
-
-                        <span className="text-gray-500 bold-500">
-                            there are two types of pdf.
-                        </span>
-                    </section>
-
-                    <div>
-                        <Button
-                            color="red"
-                            variant="solid"
-                            colorMode="extraLight"
-                            onClick={() => {
-                                handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder[0]);
-
-                            }}
-                        >
-                            Delete
-                        </Button>
-                    </div>
-
-                </div>
-            </div> */}
 
             {/* DELETE CONFIRMATION MODAL */}
 

@@ -383,7 +383,7 @@ export const PurchaseOrder: React.FC = () => {
                 <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
                     <div className="flex justify-between">
                         <section className="bg-white pt-1 pb-4">
-                            <h1>Purchase order</h1>
+                            <h1>Purchase order File</h1>
 
                             <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
                                 <MultiImageViewer
@@ -413,6 +413,7 @@ export const PurchaseOrder: React.FC = () => {
                     </div>
                 </div>
             )}
+            
             {/* GENERATE PURCHASE ORDER MODAL */}
 
             <Modal

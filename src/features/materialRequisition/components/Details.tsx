@@ -265,6 +265,12 @@ export const Details: React.FC = () => {
             <div className="flex justify-end pb-2">
                 <Button
                     size="sm"
+                    color="transparent"
+                    style={{
+                        color: 'red',
+                        padding: '4px 8px',
+                        backgroundColor: '#FFF2F2'
+                    }}
                     onClick={() => {
                         setSelectedMaterialRequisitionItem(matrialRequisitionData);
                         setIsCloseRequisitionDialogOpen(true);

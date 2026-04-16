@@ -298,11 +298,7 @@ export const MASTER_DATA = {
   
   callPurpose: ['Complaint','Welcome Call','Payment Follow - UP','Registration Follow - UP','Reminder', 'Query Resolution', 'Feedback', 'Complaint', 'Other'],
 
-  deliveryStatus: ['Acknowledged', 'Delivered'],
 
-  deliveryMode: ['Courier', 'Hand-To-Hand'],
-
-  documentType: ['Inward', 'Outward'],
 
 } as const
 
@@ -423,7 +419,8 @@ export const PAYMENT_RECEIVED_FROM_OPTIONS = toOptions(MASTER_DATA.paymentReceiv
 export const CRM_PAY_TRACK_FILE_NAME_OPTIONS = toOptions(MASTER_DATA.crmPayTrackFileName);
 export const CALL_STATUS_OPTIONS = toOptions(MASTER_DATA.callStatus);
 export const CALL_PURPOSE_OPTIONS = toOptions(MASTER_DATA.callPurpose);
-
+export const MATERIAL_REQUISITION_STAGES_OPTIONS =toOptions(MASTER_DATA.materialRequisitionStages)
+export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus)
 
 
 // ============================================================================

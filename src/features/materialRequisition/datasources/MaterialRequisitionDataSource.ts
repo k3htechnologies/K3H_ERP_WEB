@@ -76,6 +76,7 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
             const queryParams = new URLSearchParams({
                 MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
                 Uniquekey: params.Uniquekey ?? '',
+                ProjectId: (params.ProjectId ?? 0).toString(),
             })
 
             const response = await this.k3hHttpClient.deleteRequestWithAuthentication(

@@ -43,7 +43,7 @@ export const useDepartmentMaster = () => {
   // EDIT DEPARTMENT MASTER
   const [editingDepartmentMasterData, setEditingDepartmentMasterData] = useState<DepartmentMasterData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-  const [lastUpdatedRow, setLastUpdatedRow] = React.useState<string | number | null>(null);
+  const [lastUpdatedRow, setLastUpdatedRow] = useState<string | number | null>(null);
   //ADD UPDATE DEPARTMENT MASTER
   const [formData, setFormData] = useState<AddUpdateDepartmentMasterRequest>(() => getInitialFormState());
 

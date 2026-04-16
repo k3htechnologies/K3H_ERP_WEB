@@ -23,12 +23,12 @@ import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
 import { Modal } from "@/ui/components/Modal/Modal";
+import { MATERIAL_REQUISITION_STAGES_OPTIONS, MATERIAL_REQUISITION_STATUS_OPTIONS } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { DateInput } from "@/ui/components/forms/DateInput";
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import { getMaterialRequisitionStatusColor } from "../utils/materialRequisitionUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
-import { MATERIAL_REQUISITION_STAGES_OPTIONS, MATERIAL_REQUISITION_STATUS_OPTIONS } from "@/core/constants";
 
 
 export const MaterialRequisition: React.FC = () => {
@@ -45,6 +45,7 @@ export const MaterialRequisition: React.FC = () => {
     const [isShowCustomizeMaterialRequisitionColumnsModal, setIsShowCustomizeMaterialRequisitionColumnsModal] = useState(false);
     const navigate = useNavigate();
     const { canAction, canExport } = useMenuPermissions();
+    const [selectedRow, setSelectedRow] = useState<MaterialRequisitionData | null>(null);
     const { projectId } = useProject();
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
@@ -87,7 +88,7 @@ export const MaterialRequisition: React.FC = () => {
     }, []);
 
 
-    const handleNavigateToView = (row: MaterialRequisitionData) => {
+  const handleNavigateToView = (row: MaterialRequisitionData) => {
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage, SystemGeneratedCode: row.SystemGeneratedCode ,Uniquekey:row.Uniquekey});
         navigate('/MaterialRequisition/view');
     };
@@ -252,42 +253,55 @@ export const MaterialRequisition: React.FC = () => {
             width: '20',
             fixed: 'right',
             align: 'center',
-            render: (_value, row) => (
-                <div className="flex items-center justify-center gap-1">
-                    {canAction && (
-                        <>
+            render: (_value, row) => {
+                const canActionStage = row.MaterialRequisitionStage === 'Get Quotation';
 
-                            <Button
-                                type="button"
-                                color="transparent"
-                                size="sm"
-                                disabled={row.MaterialRequisitionStage !== 'Get Quotation'}
-                                style={{ color: '#2563eb', padding: '4px' }}
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleMaterialRequisitionEdit(row);
-                                }}
-                                leftIcon={<Edit className="h-4 w-4" />}
-                            />
+                return (
+                    <div className="flex items-center justify-center gap-1">
+                        {canAction && (
+                            <>
+                                <Button
+                                    type="button"
+                                    color="transparent"
+                                    size="sm"
+                                    disabled={!canActionStage}
+                                    style={{
+                                        color: canActionStage ? '#2563eb' : '#9CA3AF',
+                                        padding: '4px 8px',
+                                        cursor: canActionStage ? 'pointer' : 'not-allowed',
+                                        opacity: canActionStage ? 1 : 0.5
+                                    }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleMaterialRequisitionEdit(row);
+                                    }}
+                                    leftIcon={<Edit className="h-4 w-4" />}
+                                />
 
-                            <Button
-                                type="button"
-                                color="transparent"
-                                size="sm"
-                                disabled={row.MaterialRequisitionStage !== 'Get Quotation'}
-                                style={{ color: '#dc2626', padding: '4px' }}
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleConfirmationDialogBoxOpen(row)
-                                }}
-                                leftIcon={<Trash2 className="h-4 w-4" />}
-                            />
-                        </>
-                    )}
-                </div>
-            )
+                                <Button
+                                    type="button"
+                                    color="transparent"
+                                    size="sm"
+                                    disabled={!canActionStage}
+                                    style={{
+                                        color: canActionStage ? '#dc2626' : '#9CA3AF',
+                                        padding: '4px 8px',
+                                        cursor: canActionStage ? 'pointer' : 'not-allowed',
+                                        opacity: canActionStage ? 1 : 0.5
+                                    }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleConfirmationDialogBoxOpen(row);
+                                    }}
+                                    leftIcon={<Trash2 className="h-4 w-4" />}
+                                />
+                            </>
+                        )}
+                    </div>
+                );
+            }
         }
     ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction]);
 
@@ -347,7 +361,7 @@ export const MaterialRequisition: React.FC = () => {
                     SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionColumns)
 
                 };
-               
+                debugger
 
                 const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
 
@@ -373,6 +387,7 @@ export const MaterialRequisition: React.FC = () => {
             "Loading Material Requisition",
         );
     };
+
 
 
     const clearSearchMaterialRequisition = () => {
@@ -459,12 +474,11 @@ export const MaterialRequisition: React.FC = () => {
                 onExportPdf={handleExportMaterialRequisitionPdf}
                 exportLoading={isLoading}
             />
-            
             <DataTable
                 data={materialRequisitionData}
                 columns={MaterialRequisitionColumns}
                 pagination={MaterialRequisitionPaginationInfo}
-                emptyMessage="No Material Requisition Found"
+                emptyMessage="No Material Requisition Off Found"
                 fixedHeight
                 recordsPerPage={20}
                 className="flex-1"

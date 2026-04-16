@@ -459,11 +459,12 @@ export const MaterialRequisition: React.FC = () => {
                 onExportPdf={handleExportMaterialRequisitionPdf}
                 exportLoading={isLoading}
             />
+            
             <DataTable
                 data={materialRequisitionData}
                 columns={MaterialRequisitionColumns}
                 pagination={MaterialRequisitionPaginationInfo}
-                emptyMessage="No Material Requisition Off Found"
+                emptyMessage="No Material Requisition Found"
                 fixedHeight
                 recordsPerPage={20}
                 className="flex-1"

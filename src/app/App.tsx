@@ -176,7 +176,7 @@ import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pag
 import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/MaterialRequisitionListStateContext';
 import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
 
-// Loading component for Suspense fallback
+// Loading component for Suspense fallback 
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
     <div className="text-center">
@@ -445,11 +445,6 @@ function App() {
 
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
-            <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
-            <Route path="materialRequisition/add/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider>
-              <AddUpdateMaterialRequisition />
-            </MaterialRequisitionListStateProvider>} />
-            <Route path="materialRequisition/view" element={<ViewMaterialRequisition />} />
 
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />

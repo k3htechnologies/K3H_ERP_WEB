@@ -1,27 +1,32 @@
-import type { DropdownItem } from "@/core/types/DropdownItem";
 import { Loader } from "@/core/utils/loader"
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { Button } from "@/ui/components/forms/Button";
 import { DateInput } from "@/ui/components/forms/DateInput";
 import { Modal } from "@/ui/components/Modal/Modal";
-import { Plus } from "lucide-react";
-import { useState, useCallback, useEffect, useMemo } from "react";
+import { Edit, Plus, Trash2 } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useToast } from "@/core/hooks/useToast";
-import type { AddUpdateMaterialMasterRequest, FilterWithPaginationMaterialMaster } from "@/features/materialMaster/models/MaterialMasterModel";
-import { fetchMaterialMasterDropdown } from "@/features/materialMaster/materialMasterDropdown";
-import { fetchUOMMasterDropdown } from "@/features/uomMaster/uomMasterDropdown";
 import { technicalService } from "@/features/technical/services/TechnicalService";
 import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMaterialUOM } from "@/features/technical/models/TechnicalModel";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import * as E from "fp-ts/Either";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import type { AddUpdateMaterialRequisitionDetailRequest, AddUpdateMaterialRequisitionRequest, MaterialRequisitionDetailData } from "../models/MaterialRequisitionModel";
+import type { AddUpdateMaterialRequisitionDetailRequest, AddUpdateMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "../models/MaterialRequisitionModel";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import { Input } from "@/ui/components/forms/Input";
+import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { materialRequisitionService } from "../services/MaterialRequisitionService";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import DatePicker from "react-datepicker";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { cons } from "fp-ts/lib/ReadonlyNonEmptyArray";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import React from "react";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionRequest => ({
     MaterialRequisitionId: 0,
@@ -36,19 +41,19 @@ const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionRequ
 })
 
 const initialFormState = (): AddUpdateMaterialRequisitionDetailRequest => ({
-    MaterialRequisitionDetailId: 0,
-    Uniquekey: "",
+    // MaterialRequisitionDetailId: 0,
+    // Uniquekey: "",
     MaterialMasterId: 0,
-    MaterialCode: "",
+    // MaterialCode: "",
     MaterialName: "",
-    SubMaterialName: "",
+    // SubMaterialName: "",
     SubMaterialMasterId: 0,
     MaterialQuantity: 0,
     UomMasterId: 0,
+    SubMaterialName: "",
     UomCode: "",
-    Uom: "",
-    RequiredDate: new Date(),
-
+    // Uom: "",
+    RequiredDate: ""
 })
 export const AddUpdateMaterialRequisition = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -59,25 +64,31 @@ export const AddUpdateMaterialRequisition = () => {
     const [materialData, setMaterialData] = useState<AddUpdateMaterialRequisitionDetailRequest>(() => initialFormState());
     const [materialsubmaterialList, setMaterialSubMaterialList] = useState<MaterialSubMaterialUOM[]>([]);
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionRequest>(() => initialFormStateMaterialRequisition())
-    const [documentFiles, setdocumentFilesFiles] = useState<(File | string)[]>([]);
+    const [documentFiles, setdocumentFiles] = useState<(File | string)[]>([]);
     const [removeddocumentFilesURLs, setRemoveddocumentFilesURLs] = useState<string[]>([]);
+    const [documentURL, setDocumentURL] = useState<string>("");
     const { canAction } = useMenuPermissions("/materialRequisition");
     const [uomMaster, setUomMaster] = useState<any[]>([]);
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [dropdownLabels, setDropdownLabels] = useState({ materialName: "", uom: "" });
     const [dropdownMaterialResetKey, setDropdownMaterialResetKey] = useState(0);
-    const [dropdownSubMaterialResetKey, setDropdownSubMaterialResetKey] = useState(0);
+    const [dropdownSubMaterialResetKey, setDropdownSubMaterialResetKey] = useState(-1);
     const [materialOptions, setMaterialOptions] = useState<any[]>([]);
     const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(null);
     const [selectedUom, setSelectedUom] = useState<string>("");
+    const [editIndex, setEditIndex] = useState<number | null>(null);
     const [selectedSubMaterialId, setSelectedSubMaterialId] = useState<number | null>(null);
     const navigate = useNavigate();
+    const { projectId } = useProject();
 
+    const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     useEffect(() => {
-        if (!addMaterialPopUp) return;
-
-        loadMaterialsSubMaterialMasterUOM();
-
+        loadDetailsdata();
+    }, []);
+    useEffect(() => {
+        if (addMaterialPopUp) {
+            loadMaterialsSubMaterialMasterUOM();
+        }
     }, [addMaterialPopUp]);
     useEffect(() => {
         const uniqueMaterials = [
@@ -97,14 +108,201 @@ export const AddUpdateMaterialRequisition = () => {
         );
 
     }, [materialsubmaterialList]);
+
+    const loadDetailsdata = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationMaterialRequisition = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    ProjectId: Number(projectId),
+                    MaterialRequisitionId: Number(MaterialRequisitionId)
+                };
+                debugger
+                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
+
+                if (E.isRight(response)) {
+
+                    const e = response.right.Data?.[0];
+
+                    if (e) {
+                        setFormData(prev => ({
+                            ...prev,
+                            MaterialRequisitionId: e.MaterialRequisitionId ?? prev.MaterialRequisitionId,
+                            Uniquekey: e.Uniquekey ?? prev.Uniquekey,
+                            ProjectId: e.ProjectId ?? prev.ProjectId,
+                            Remarks: e.Remarks ?? prev.Remarks
+                        }));
+                        if (e.MaterialRequisitionDetailData) {
+                            setMaterialList(
+                                e.MaterialRequisitionDetailData.map((x: any) => ({
+                                    MaterialMasterId: x.MaterialMasterId,
+                                    SubMaterialMasterId: x.SubMaterialMasterId,
+                                    SubMaterialName: x.SubMaterialName,
+                                    UomCode: x.UomCode,
+                                    UomMasterId: x.UomMasterId,
+                                    MaterialQuantity: x.MaterialQuantity,
+                                    RequiredDate: x.RequiredDate,
+                                    MaterialName: x.MaterialName
+                                }))
+                            );
+                        }
+                        if (e.AttachmentsURL) {
+                            setdocumentFiles([]);
+                            setDocumentURL(e.AttachmentsURL || "");
+                            setRemoveddocumentFilesURLs([]);
+                        }
+                    }
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            "Loading Material Requisition",
+        );
+    };
     const handleAddMaterial = async () => {
 
         setErrors({});
         setAddMaterialPopUp(true);
+        setEditIndex(null);
+        setMaterialData(initialFormState());
 
     }
+    const handleEditMaterial = useCallback((row: AddUpdateMaterialRequisitionDetailRequest, index: number) => {
+        setErrors({});
+        setEditIndex(index);
+        setMaterialData({
+            MaterialMasterId: row.MaterialMasterId,
+            SubMaterialMasterId: row.SubMaterialMasterId,
+            UomCode: row.UomCode,
+            UomMasterId: row.UomMasterId,
+            MaterialQuantity: row.MaterialQuantity,
+            RequiredDate: convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd(row.RequiredDate)
+                || convert_dd_mm_yyyy_To_Yyyy_mm_dd(row.RequiredDate)
+                || "",
+            SubMaterialName: row.SubMaterialName,
+            MaterialName: row.MaterialName
+        });
+        setDropdownLabels({
+            materialName: materialOptions.find(
+                x => Number(x.value) === row.MaterialMasterId
+            )?.label || "",
+            uom: row.UomCode || "",
+        });
+        setAddMaterialPopUp(true);
+    }, [materialOptions]);
 
+    const MaterialRequisitionColumns = useMemo<TableColumn[]>(() => [
+        {
+            key: "MaterialName",
+            label: "Material",
+            align: "left",
+            width: "30",
+            render: (value, row) => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="250px"
+                    tooltipThreshold={25}
+                />
+            )
+        },
+        {
+            key: "SubMaterialName",
+            label: "Sub Material",
+            align: "left",
+            width: "30",
+            render: (value, row) => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="250px"
+                    tooltipThreshold={25}
+                />
+            )
+        },
+        {
 
+            key: "MaterialQuantity",
+            label: "Quantity",
+            align: "left"
+
+        },
+        {
+
+            key: "UomCode",
+            label: "UOM",
+            align: "left"
+        },
+
+        {
+            key: "RequiredDate",
+            label: "Required Date",
+            align: "left",
+            render: (value) =>
+                value ? new Date(value).toLocaleDateString() : "-"
+        },
+        {
+            key: "action",
+            label: "Action",
+            align: "right",
+            render: (_value, row) => {
+                const index = materialList.findIndex(
+                    x =>
+                        x.MaterialMasterId === row.MaterialMasterId &&
+                        x.SubMaterialMasterId === row.SubMaterialMasterId
+                );
+
+                return canAction ? (
+                    <div className="flex items-center justify-center gap-2">
+                        <Button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleEditMaterial(row, index);
+                            }}
+                            color="transparent"
+                            isborderRadius
+                            size="sm"
+                            style={{ color: "#2563eb", padding: "4px" }}
+                            leftIcon={<Edit className="h-4 w-4" />}
+                            title="Edit Material Requisition"
+                        />
+
+                        <Button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                setMaterialList(prev =>
+                                    prev.filter((_, i) => i !== index)
+                                );
+                            }}
+                            color="transparent"
+                            isborderRadius
+                            size="sm"
+                            style={{
+                                color: "red",
+                                padding: "4px 8px",
+                            }}
+                            title="Delete Material Requisition"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </Button>
+                    </div>
+                ) : null;
+            }
+        }
+
+    ]
+        , [canAction, materialList, materialOptions, handleEditMaterial]);
     // const onFieldChange = useCallback((field: keyof MaterialDetail, value: any) => {
     //     setFormData(prev => ({
     //         ...prev,
@@ -127,13 +325,73 @@ export const AddUpdateMaterialRequisition = () => {
                 value: String(x.SubMaterialMasterId)
             }));
     }, [materialData.MaterialMasterId, materialsubmaterialList]);
+
     const createDropdownInitialValue = (id: number | null, label: string) => {
         if (!id || !label) return null;
         return { label, value: String(id) };
     };
+
+    const PushMaterialRequisitionFormData = (): FormData => {
+        debugger
+        const form = new FormData();
+        form.append('MaterialRequisitionId', String(formData.MaterialRequisitionId ?? 0));
+        form.append('UniqueKey', formData.Uniquekey ?? '3fa85f64-5717-4562-b3fc-2c963f66afa6');
+        form.append('Remarks', formData.Remarks ?? '');
+        form.append('MaterialRequisitionDetailJSON', JSON.stringify(materialList) ?? '');
+        form.append("ProjectId", projectId!.toString());
+
+        documentFiles.forEach((file) => {
+            if (file instanceof File) {
+                form.append('AttachmentsURL', file);
+            }
+        });
+
+        form.append(
+            'RemoveAttachmentsURL',
+            removeddocumentFilesURLs.join(',')
+        );
+        return form;
+    };
     const handleSave = async () => {
+        debugger
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                debugger
+                const payload = PushMaterialRequisitionFormData();
 
+                const response =
+                    await materialRequisitionService.apiCallToAddMaterialRequisition(payload);
 
+                if (E.isRight(response)) {
+                    addToast({
+                        type: "success",
+                        title: response.right.SuccessMessage[0]
+                    });
+
+                    navigate("/materialrequisition");
+                } else {
+                    addToast({
+                        type: "error",
+                        title: response.left?.message
+                    });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: unknown) => {
+                const errorMessage =
+                    error instanceof Error
+                        ? error.message
+                        : "Failed to save material requisition";
+
+                addToast({ type: "error", title: errorMessage });
+            },
+            undefined,
+            "Saving Data"
+        );
     };
 
     const loadMaterialsSubMaterialMasterUOM = async () => {
@@ -173,39 +431,30 @@ export const AddUpdateMaterialRequisition = () => {
     };
 
     const saveMaterial = async () => {
-        // const newErrors: FormErrors = {};
+        debugger
+        const newItem: AddUpdateMaterialRequisitionDetailRequest = {
+            ...materialData
+        };
 
-        // if (!formData.MaterialMasterId) {
-        //     newErrors.MaterialMasterId = "Material is required";
-        // }
-        // if (!formData.UomMasterId) {
-        //     newErrors.UomMasterId = "Unit is required";
-        // }
-        // if (!formData.MaterialQuantity || formData.MaterialQuantity <= 0) {
-        //     newErrors.MaterialQuantity = "Valid quantity is required";
-        // }
-        // if (!formData.RequiredDate) {
-        //     newErrors.RequiredDate = "Required date is required";
-        // }
-
-        // if (Object.keys(newErrors).length > 0) {
-        //     setErrors(newErrors);
-        //     return;
-        // }
-
-        // Add material to list
         setAddMaterialPopUp(false);
-        addToast({ type: 'success', title: 'Material added successfully' });
-        // Reset form
-        // setFormData({
-        //     MaterialMasterId: null,
-        //     MaterialName: "",
-        //     UomMasterId: null,
-        //     UomCode: "",
-        //     MaterialQuantity: 0,
-        //     RequiredDate: "",
-        // });
-    }
+
+        setMaterialList(prev => {
+            const updated = [...prev];
+
+            if (editIndex !== null && editIndex >= 0) {
+                updated[editIndex] = newItem;
+            } else {
+                updated.push(newItem);
+            }
+
+            return updated;
+        });
+
+        setEditIndex(null);
+        setMaterialData(initialFormState());
+
+
+    };
     return (
         <>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -224,6 +473,8 @@ export const AddUpdateMaterialRequisition = () => {
                                     <h3 className="text-md font-medium text-gray-500">
                                         Material Details
                                     </h3>
+
+
                                     <Button
                                         type="button"
                                         color="blue"
@@ -233,7 +484,23 @@ export const AddUpdateMaterialRequisition = () => {
                                     >
                                         Add Material
                                     </Button>
+
                                 </div>
+
+                                {materialList.length > 0 && (
+                                    <div className="p-4">
+                                        <DataTable
+                                            data={materialList}
+                                            columns={MaterialRequisitionColumns}
+                                            emptyMessage="No Material Found"
+                                            fixedHeight
+                                            recordsPerPage={5}
+                                            className="flex-1"
+                                        />
+                                    </div>
+
+                                )}
+
 
 
 
@@ -246,8 +513,19 @@ export const AddUpdateMaterialRequisition = () => {
                                     Document Details
                                 </h3>
                                 <div className="flex items-center justify-between pt-4">
-                                    <MultiFilePicker label="Upload Document" placeholder="Upload Document" required error={errors.attachmentsURL} value={documentFiles} onChange={setdocumentFilesFiles} allowedTypes={["image/jpeg", "image/png"]} maxFiles={1} maxSizeMB={5} onRemoveExisting={(url) => setRemoveddocumentFilesURLs((prev) => [...prev, url])} />
-
+                                    <MultiFilePicker
+                                        label="Upload Document"
+                                        placeholder="Upload Document"
+                                        value={documentFiles}
+                                        onChange={setdocumentFiles}
+                                        availableFilesURL={documentURL}
+                                        allowedTypes={["image/jpeg", "image/png"]}
+                                        maxFiles={1}
+                                        maxSizeMB={5}
+                                        onRemoveExisting={(url) =>
+                                            setRemoveddocumentFilesURLs((prev) => [...prev, url])
+                                        }
+                                    />
                                 </div>
                             </div>
                             <div
@@ -258,7 +536,13 @@ export const AddUpdateMaterialRequisition = () => {
                                     Remark
                                 </h3>
                                 <div className="flex items-center justify-between pt-4">
-                                    <TextArea label="Remark" className="thin-scroll" placeholder="Enter Remark" error={errors.Remarks} />
+                                    <TextArea label="Remark" className="thin-scroll" value={formData.Remarks}
+                                        onChange={(e) =>
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                Remarks: e.target.value
+                                            }))
+                                        } placeholder="Enter Remark" error={errors.Remarks} />
 
                                 </div>
                             </div>
@@ -300,8 +584,13 @@ export const AddUpdateMaterialRequisition = () => {
                     <SingleSelectDropdownWithPagination
                         required
                         label="Material"
-                        // key={dropdownMaterialResetKey}
-                        value={materialData.MaterialMasterId}
+                        key={dropdownMaterialResetKey}
+                        initialValue={createDropdownInitialValue(
+                            materialData.MaterialMasterId,
+                            // materialData.MaterialMasterId ? String(materialData.MaterialMasterId) : null,
+                            materialData.MaterialName,
+                        )}
+                        // value={materialData.MaterialMasterId}
                         title="Select Material"
                         size="lg"
                         dataFetchCallBack={async () => ({
@@ -318,6 +607,7 @@ export const AddUpdateMaterialRequisition = () => {
                                 SubMaterialName: "",
                                 UomCode: "",
                                 UomMasterId: 0
+
                             }));
 
                             setDropdownSubMaterialResetKey(p => p + 1);
@@ -328,8 +618,10 @@ export const AddUpdateMaterialRequisition = () => {
                         required
                         label="Sub Material"
                         key={dropdownSubMaterialResetKey}
-                        value={materialData.SubMaterialMasterId}
-                        title="Select SubMaterial"
+                        initialValue={createDropdownInitialValue(
+                            materialData.SubMaterialMasterId,
+                            materialData.SubMaterialName
+                        )} title="Select SubMaterial"
                         size="lg"
                         dataFetchCallBack={async () => ({
                             itemList: subMaterialOptions,
@@ -356,19 +648,33 @@ export const AddUpdateMaterialRequisition = () => {
                     <Input type="text" disabled label="UOM" value={materialData.UomCode}
                         placeholder="UOM" maxLength={250} error={errors.UomMasterId} />
 
-                    <Input type="number" label="Quantity" value={materialData.MaterialQuantity} onChange={(e) =>
-                        setMaterialData(prev => ({
-                            ...prev,
-                            MaterialQuantity: Number(e.target.value)
-                        }))
-                    }
-                        placeholder="Quantity" maxLength={250} error={errors.MaterialQuantity} />
+                    <Input
+                        type="number"
+                        label="Quantity"
+                        value={materialData.MaterialQuantity}
+                        onChange={(e) => {
+                            const value = e.target.value;
+
+                            setMaterialData(prev => ({
+                                ...prev,
+                                MaterialQuantity: value === "" ? 0 : Number(value)
+                            }));
+                        }}
+                        placeholder="Quantity"
+                        min={0}
+                        error={errors.MaterialQuantity}
+                    />
                     <div>
-                        <DateInput
+                        <DatePickerInput
                             label="Required Date"
                             required
-                            // value={formData.RequiredDate}
-                            // onChange={(value) => onFieldChange("RequiredDate", value)}
+                            value={formatDate_dd_mm_yyyy(materialData.RequiredDate)}
+                            onChange={(value) =>
+                                setMaterialData(prev => ({
+                                    ...prev,
+                                    RequiredDate: convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? ""
+                                }))
+                            }
                             placeholder="DD/MM/YYYY"
                         />
                         {errors.RequiredDate && <p className="text-red-500 text-sm mt-1">{errors.RequiredDate}</p>}
@@ -378,4 +684,6 @@ export const AddUpdateMaterialRequisition = () => {
         </>
 
     )
-}   
+}
+
+

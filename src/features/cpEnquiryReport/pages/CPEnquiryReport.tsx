@@ -252,7 +252,7 @@ const CPEnquiryReport: React.FC = () => {
         if (reportType.toUpperCase() === "DATE") {
             return !!fromDate && !!toDate;
         }
-
+                        
         return false;
 
     }, [projectId, reportType, year, fromDate, toDate]);
@@ -303,7 +303,7 @@ const CPEnquiryReport: React.FC = () => {
                             onChange={(val) => setFromDate(convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
 
                         />
-                        <DatePickerInput
+<DatePickerInput
                             label="To Date"
                             value={formatDate_dd_mm_yyyy(toDate)}
                             onChange={(val) => setToDate(convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}

@@ -1,6 +1,6 @@
 import { Loader } from "@/core/utils/loader";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionData } from "../models/MaterialRequisitionModel";
+import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData } from "../models/MaterialRequisitionModel";
 import { useToast } from "@/core/hooks/useToast";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo } from "@/ui/components/DataTable/DataTableWithoutBorder";
@@ -9,7 +9,6 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 import { materialRequisitionService } from "../services/MaterialRequisitionService";
 import * as E from "fp-ts/Either";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
-import { useMaterialRequisitionListState } from "../context/materialRequisitionListStateContext";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import usePagination from "@/core/hooks/usePagination";
 import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
@@ -19,7 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { handleExportFile } from "@/core/utils/exportFile";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Button } from "@/ui/components/forms/Button";
-import { Trash2 } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
@@ -27,11 +26,16 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { MATERIAL_REQUISITION_STAGES_OPTIONS, MATERIAL_REQUISITION_STATUS_OPTIONS } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { DateInput } from "@/ui/components/forms/DateInput";
+import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
+import { getMaterialRequisitionStatusColor } from "../utils/materialRequisitionUtils";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+
 
 export const MaterialRequisition: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
+    const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const { pagination, setPagination } = usePagination(20);
     const [materialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData[]>([]);
     const { listState, updateListState } = useMaterialRequisitionListState();
@@ -41,7 +45,9 @@ export const MaterialRequisition: React.FC = () => {
     const [isShowCustomizeMaterialRequisitionColumnsModal, setIsShowCustomizeMaterialRequisitionColumnsModal] = useState(false);
     const navigate = useNavigate();
     const { canAction, canExport } = useMenuPermissions();
+    const [selectedRow, setSelectedRow] = useState<MaterialRequisitionData | null>(null);
     const { projectId } = useProject();
+    const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
     //#endregion
 
@@ -76,13 +82,89 @@ export const MaterialRequisition: React.FC = () => {
         updateListState({ filters, page: 1, searchTerm: searchValue });
         await loadDetailsdata(1, filters, sortInfo, searchValue);
     };
+    const handleConfirmationDialogBoxOpen = useCallback((row: MaterialRequisitionData) => {
+        setDeleteData(row);
+        setIsConfirmationDialogBoxOpen(true);
+    }, []);
+
+
     const handleNavigateToView = (row: MaterialRequisitionData) => {
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage });
         navigate('/MaterialRequisition/view');
     };
+    const handleDeleteRequest = async () => {
+        setIsConfirmationDialogBoxOpen(false);
+
+        if (!deleteData) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const payload: DeleteMaterialRequisitionRequest = {
+                    MaterialRequisitionId: deleteData.MaterialRequisitionId,
+                    Uniquekey: deleteData.Uniquekey,
+                    ProjectId: Number(projectId)
+                };
+
+                const response = await materialRequisitionService.apiCallDeleteMaterialRequisition(payload);
+
+                if (E.isRight(response)) {
+
+                    const newTotalRecords = pagination.totalRecords - 1;
+
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    else if (materialRequisitionData.length === 1 && pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
+
+                    setPagination({
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
+                    });
+
+                    await loadDetailsdata(pageToShow, filters, sortInfo);
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+
+                    setIsConfirmationDialogBoxOpen(false);
+
+                    setDeleteData(null);
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Deleting Requisition'
+        );
+    };
     const handlePageChange = useCallback((page: number) => {
         fetchLoadDetailsList(page);
     }, []);
+
+    const handleMaterialRequisitionEdit = useCallback((row: MaterialRequisitionData) => {
+        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId });
+        navigate(`/materialRequisition/add/${row.MaterialRequisitionId}`);
+    }, [navigate, updateListState]);
+
     const MaterialRequisitionPaginationInfo: PaginationInfo = useMemo(
         () => ({
             currentPage: pagination.currentPage,
@@ -123,7 +205,7 @@ export const MaterialRequisition: React.FC = () => {
             key: 'FinalVendor',
             label: 'Vendor Name',
             width: '15',
-            sortable: false,
+            sortable: true,
             align: 'left',
             render: (value) => value || '-'
         },
@@ -133,7 +215,21 @@ export const MaterialRequisition: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: (value) => value || '-'
+            render: (value) => {
+                const { bg, text } = getMaterialRequisitionStatusColor(value);
+
+                return (
+                    <span
+                        className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                        style={{
+                            backgroundColor: bg,
+                            color: text,
+                        }}
+                    >
+                        {value || "-"}
+                    </span>
+                );
+            },
         },
         {
             key: 'TotalPoAmount',
@@ -154,34 +250,48 @@ export const MaterialRequisition: React.FC = () => {
         {
             key: 'Actions',
             label: 'Actions',
-            width: '12',
+            width: '20',
             fixed: 'right',
             align: 'center',
             render: (_value, row) => (
-                canAction ? (
-                    <div className="flex items-center justify-center gap-2">
+                <div className="flex items-center justify-center gap-1">
+                    {canAction && (
+                        <>
 
-                        <Button
-                            onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                            }}
-                            color='transparent'
-                            isborderRadius
-                            size='sm'
-                            style={{
-                                color: 'red',
-                                padding: '4px 8px'
-                            }}
-                            title="Delete Material Requisition"
-                        >
-                            <Trash2 className="h-4 w-4" />
-                        </Button>
-                    </div>
-                ) : null
+
+                            <Button
+                                type="button"
+                                color="transparent"
+                                size="sm"
+                                disabled={row.MaterialRequisitionStage !== 'Get Quotation'}
+                                style={{ color: '#2563eb', padding: '4px' }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleMaterialRequisitionEdit(row);
+                                }}
+                                leftIcon={<Edit className="h-4 w-4" />}
+                            />
+
+                            <Button
+                                type="button"
+                                color="transparent"
+                                size="sm"
+                                disabled={row.MaterialRequisitionStage !== 'Get Quotation'}
+                                style={{ color: '#dc2626', padding: '4px' }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleConfirmationDialogBoxOpen(row)
+                                }}
+                                leftIcon={<Trash2 className="h-4 w-4" />}
+                            />
+                        </>
+                    )}
+                </div>
             )
         }
-    ], [handleNavigateToView]);
+    ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction]);
 
     const allMaterialRequisitioKeys: string[] = MaterialRequisitionColumns.map(c => c.key);
 
@@ -203,14 +313,16 @@ export const MaterialRequisition: React.FC = () => {
         } catch { }
         return allMaterialRequisitioKeys;
     });
+
     const handleSortColumn = useCallback((sort: SortInfo) => {
         updateListState({ sortInfo: sort, page: 1 });
         loadDetailsdata(1, filters, sort, searchTerm || undefined);
     }, [filters, updateListState, searchTerm]);
+
     useEffect(() => {
         setPagination({ currentPage: listState.page });
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
-            loadDetailsdata(listState.page, { WeekOffPolicyName: String(listState.searchTerm).trim() }, listState.sortInfo);
+            loadDetailsdata(listState.page, { SystemGeneratedCode: String(listState.searchTerm).trim() }, listState.sortInfo);
         } else {
             loadDetailsdata(listState.page, listState.filters, listState.sortInfo);
         }
@@ -264,6 +376,8 @@ export const MaterialRequisition: React.FC = () => {
         );
     };
 
+
+
     const clearSearchMaterialRequisition = () => {
         debouncedSearch.cancel?.();
         updateListState({ searchTerm: '', filters: {}, page: 1 });
@@ -299,7 +413,7 @@ export const MaterialRequisition: React.FC = () => {
 
                 const response = await getMaterialRequisition(params);
 
-                handleExportFile(response, exportType, 'WeekOff Master', addToast);
+                handleExportFile(response, exportType, 'Material Requisition', addToast);
 
                 return response;
             },
@@ -370,7 +484,7 @@ export const MaterialRequisition: React.FC = () => {
                     setSelectedMaterialRequisitionColumnKeys(withRequired);
 
                     try {
-                        LocalStorageHelper.storeWeekOffMasterTableColumns?.(
+                        LocalStorageHelper.storeMaterialRequisitionTableColumns?.(
 
                             JSON.stringify(withRequired)
                         );
@@ -380,6 +494,16 @@ export const MaterialRequisition: React.FC = () => {
                 selectedKeys={selectedMaterialRequisitionColumnKeys}
                 requiredKeys={requiredMaterialRequisitionColumnKeys}
                 title="Customize Table Columns"
+            />
+            <DeleteDialog
+                isOpen={isConfirmationDialogBoxOpen}
+                onClose={() => {
+                    setIsConfirmationDialogBoxOpen(false)
+                    setDeleteData(null)
+                }}
+                onConfirm={handleDeleteRequest}
+                loading={isLoading}
+                pageName='Material Requisition'
             />
 
             <Modal

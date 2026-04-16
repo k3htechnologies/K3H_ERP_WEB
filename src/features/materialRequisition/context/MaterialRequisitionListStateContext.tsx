@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
+import type { FilterInfo, SortInfo, TableColumn } from "@/ui/components/DataTable/DataTable";
+import { getMaterialRequisitionTableColumns } from "../constants/MaterialRequisitionColumns";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 
 export type MaterialRequisitionListState = {
     page: number;
@@ -18,8 +20,9 @@ export type MaterialRequisitionListState = {
 };
 
 const STORAGE_KEY = 'MaterialRequisition.listState';
+const REQUIRED_COLUMN_KEYS = ['SystemGeneratedCode', 'Actions'];
 
-const getInitialState = (currentProjectId: number | null): MaterialRequisitionListState => {
+function getInitialState(currentProjectId: number | null): MaterialRequisitionListState {
     if (!currentProjectId) {
         return {
             page: 1,
@@ -40,7 +43,7 @@ const getInitialState = (currentProjectId: number | null): MaterialRequisitionLi
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) {
-            const parsed = JSON.parse(stored) as { projectId: number; state: MaterialRequisitionListState };
+            const parsed = JSON.parse(stored) as { projectId: number; state: MaterialRequisitionListState; };
             if (parsed.projectId === currentProjectId) {
                 return {
                     ...parsed.state,
@@ -66,13 +69,15 @@ const getInitialState = (currentProjectId: number | null): MaterialRequisitionLi
         MaterialRequisitionStage: undefined,
         MaterialRequisitionStatus: undefined,
     };
-};
+}
 
 type Ctx = {
     listState: MaterialRequisitionListState;
     updateListState: (newState: Partial<MaterialRequisitionListState>) => void;
     resetFilters: () => void;
     clearMaterialRequisitionContext: () => void;
+    selectedColumnKeys: string[];
+    setSelectedColumnKeys: (keys: string[]) => void;
 };
 
 const MaterialRequisitionListStateContext = createContext<Ctx | null>(null);
@@ -80,6 +85,31 @@ const MaterialRequisitionListStateContext = createContext<Ctx | null>(null);
 export const MaterialRequisitionListStateProvider = ({ children }: { children: ReactNode }) => {
     const { projectId: currentProjectId } = useProject();
     const [listState, setListState] = useState<MaterialRequisitionListState>(() => getInitialState(currentProjectId));
+
+    // const allColumns = getMaterialRequisitionTableColumns();
+    const allColumns = useMemo<TableColumn[]>(
+        () => getMaterialRequisitionTableColumns(),
+        []
+    );
+    const [selectedColumnKeys, setSelectedColumnKeys] = useState<string[]>(() => {
+        try {
+            const stored = LocalStorageHelper.getMaterialRequisitionTableColumns();
+            if (stored) {
+                const parsed = JSON.parse(stored) as string[];
+                const withRequired = Array.from(new Set([...parsed, ...REQUIRED_COLUMN_KEYS]));
+                return withRequired.filter(k => allColumns.some(col => col.key === k));
+            }
+        } catch (error) {
+            console.error('Error loading selected columns:', error);
+        }
+
+        return Array.from(
+            new Set([
+                ...allColumns.map(col => col.key),
+                ...REQUIRED_COLUMN_KEYS
+            ])
+        );
+    });
 
     useEffect(() => {
         setListState(getInitialState(currentProjectId));
@@ -109,6 +139,18 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
         });
     }, [currentProjectId]);
 
+    const handleSetSelectedColumnKeys = useCallback((keys: string[]) => {
+        // Ensure required columns are always present
+        const withRequired = Array.from(new Set([...keys, ...REQUIRED_COLUMN_KEYS]));
+        setSelectedColumnKeys(withRequired);
+
+        try {
+            LocalStorageHelper.storeMaterialRequisitionTableColumns?.(JSON.stringify(withRequired));
+        } catch (error) {
+            console.error('Error saving selected columns:', error);
+        }
+    }, []);
+
     const resetFilters = useCallback(() => {
         updateListState({
             page: 1,
@@ -132,8 +174,10 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
         listState,
         updateListState,
         resetFilters,
-        clearMaterialRequisitionContext
-    }), [listState, updateListState, resetFilters, clearMaterialRequisitionContext]);
+        clearMaterialRequisitionContext,
+        selectedColumnKeys,
+        setSelectedColumnKeys: handleSetSelectedColumnKeys,
+    }), [listState, updateListState, resetFilters, clearMaterialRequisitionContext, selectedColumnKeys, handleSetSelectedColumnKeys]);
 
     return (
         <MaterialRequisitionListStateContext.Provider value={contextValue}>
@@ -147,6 +191,8 @@ export const useMaterialRequisitionListState = () => {
     if (!ctx) throw new Error("use Material Requisition ListState must be used inside Material Requisition ListState Provider");
     return ctx;
 };
+
+export const getMaterialRequisitionRequiredColumnKeys = (): string[] => REQUIRED_COLUMN_KEYS;
 
 
 

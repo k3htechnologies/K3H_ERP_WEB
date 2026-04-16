@@ -9,7 +9,7 @@ export const getPageInfo = (path: string) => {
                 description: 'Quick insights, smarter decisions',
             }
             {/* PURCHASE -MATERIALREQUISITION*/ }
-        case 'materialRequisition':
+        case 'materialrequisition':
             return {
                 title: 'Material Requisition',
                 description: 'Streamlined material requests for efficient project execution',       

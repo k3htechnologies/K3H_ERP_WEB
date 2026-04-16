@@ -171,8 +171,10 @@ import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
 import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRequisition';
-import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/materialRequisitionListStateContext';
+// import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/materialRequisitionListStateContext';
 import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
+import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/MaterialRequisitionListStateContext';
+import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -444,7 +446,10 @@ function App() {
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
-            <Route path="materialRequisition/add" element={<AddUpdateMaterialRequisition />} />
+            <Route path="materialRequisition/add/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider>
+              <AddUpdateMaterialRequisition />
+            </MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/view" element={<ViewMaterialRequisition />} />
 
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />

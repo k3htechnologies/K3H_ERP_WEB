@@ -47,18 +47,18 @@ export interface MaterialRequisitionData {
     MaterialRequisitionDetailData:MaterialRequisitionDetailData[];
 }
 export interface AddUpdateMaterialRequisitionDetailRequest {
-    MaterialRequisitionDetailId:number;
-    Uniquekey:string;
+    // MaterialRequisitionDetailId:number;
+    // Uniquekey:string;
     MaterialMasterId:number;
-    MaterialCode:string;
+    // MaterialCode:string;
     MaterialName:string;
     SubMaterialName:string;
     SubMaterialMasterId:number;
     MaterialQuantity:number;
     UomMasterId:number;
     UomCode:string;
-    Uom: string;
-    RequiredDate:Date;
+    // Uom: string;
+    RequiredDate:string | null;
 }
 export interface MaterialRequisitionDetailData{
     MaterialRequisitionDetailId:number;
@@ -86,7 +86,7 @@ export interface AddUpdateMaterialRequisitionRequest{
     Uniquekey: string;
     IsCopy:boolean;
     ProjectId:number;
-    Remarks: string | null;
+    Remarks: string ;
     IsSplit: boolean;
     AttachmentsURL: string | null;
     RemoveAttachmentsURL: string | null;

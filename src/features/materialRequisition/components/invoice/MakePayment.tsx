@@ -23,7 +23,7 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { Button } from "@/ui/components/forms";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-
+//
 const MakePayment: React.FC = () => {
     const [gRNData, setRGNData] = useState<MaterialRequisitionGRNData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
@@ -243,7 +243,7 @@ const MakePayment: React.FC = () => {
                         <FieldItem label="DuDate" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDueDate ?? '')} />
                         <div>
                             <p className="text-gray-500">Invoice Document</p>
-                             <MultiImageViewer
+                            <MultiImageViewer
                                 images={parseDocumentUrls(invoiceData?.UploadInvoiceURL)}
                                 title="Attachment"
                                 isIcon={false}

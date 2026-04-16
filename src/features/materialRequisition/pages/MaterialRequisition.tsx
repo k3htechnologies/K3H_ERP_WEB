@@ -88,8 +88,8 @@ export const MaterialRequisition: React.FC = () => {
     }, []);
 
 
-    const handleNavigateToView = (row: MaterialRequisitionData) => {
-        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage });
+  const handleNavigateToView = (row: MaterialRequisitionData) => {
+        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage, SystemGeneratedCode: row.SystemGeneratedCode ,Uniquekey:row.Uniquekey});
         navigate('/MaterialRequisition/view');
     };
     const handleDeleteRequest = async () => {

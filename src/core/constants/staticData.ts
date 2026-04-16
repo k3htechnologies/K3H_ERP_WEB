@@ -288,6 +288,16 @@ export const MASTER_DATA = {
 
   crmPayTrackFileName: ['Possession Letter', 'OC/CC Letter', 'Tax Receipt', 'Society Deed', 'Electricity & Water', 'Maintenance Docs', 'Registered Agreement', 'Parking Allotment'],
 
+  callStatus: ['Connected', 'Not Connected', 'Wrong Number', 'Switched Off', 'Busy', 'No Answer', 'Disconnected', 'Rescheduled'],
+  
+  callPurpose: ['Complaint','Welcome Call','Payment Follow - UP','Registration Follow - UP','Reminder', 'Query Resolution', 'Feedback', 'Complaint', 'Other'],
+
+  deliveryStatus: ['Acknowledged', 'Delivered'],
+
+  deliveryMode: ['Courier', 'Hand-To-Hand'],
+
+  documentType: ['Inward', 'Outward'],
+
 } as const
 
 // ============================================================================
@@ -402,8 +412,9 @@ export const ACTIVE_INACTIVE_OPTIONS = toOptions(MASTER_DATA.activeInactive);
 export const PAYMENT_FOR_OPTIONS = toOptions(MASTER_DATA.paymentFor);
 export const PAYMENT_RECEIVED_FROM_OPTIONS = toOptions(MASTER_DATA.paymentReceivedFrom);
 export const CRM_PAY_TRACK_FILE_NAME_OPTIONS = toOptions(MASTER_DATA.crmPayTrackFileName);
-export const MATERIAL_REQUISITION_STAGES_OPTIONS =toOptions(MASTER_DATA.materialRequisitionStages)
-export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus)
+export const CALL_STATUS_OPTIONS = toOptions(MASTER_DATA.callStatus);
+export const CALL_PURPOSE_OPTIONS = toOptions(MASTER_DATA.callPurpose);
+
 
 
 // ============================================================================

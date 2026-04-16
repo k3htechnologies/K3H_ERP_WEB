@@ -69,6 +69,181 @@ export const Details: React.FC = () => {
             {/* Loader */}
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
             <h1>Material Requisition Details</h1>
+
+            <div className="flex justify-end pb-2">
+                <Button
+                    size="sm"
+                    color="transparent"
+                    style={{
+                        color: 'red',
+                        padding: '4px 8px',
+                        backgroundColor: '#FFF2F2'
+                    }}
+                    onClick={() => {
+                        setSelectedMaterialRequisitionItem(matrialRequisitionData);
+                        setIsCloseRequisitionDialogOpen(true);
+                    }}
+                >
+                    <X className="h-4 w-4" color="red" />
+                    Close Requisition
+                </Button>
+            </div>
+
+            <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+                <h1 className="text-lg font-semibold text-gray-900 pb-2">Basic Details</h1>
+
+                <div className="lg:col-span-5 pb-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <FieldItem label="Unique ID" value={matrialRequisitionData?.SystemGeneratedCode} />
+                        <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
+                        <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
+                        <div>
+                            <p className="text-gray-500">Attachment</p>
+                            <MultiImageViewer
+                                images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL)}
+                                title="Attachment"
+                                isIcon={false}
+                                triggerLabel="-"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className=" gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+
+                <div className="flex justify-between">
+                    <h1 className="text-lg font-semibold text-gray-900 pb-2">Material Details</h1>
+
+                    <button
+                        className="bg-blue-600 text-white font-bold py-1 p-4 rounded-md"
+                        onClick={() => setActive(true)}
+                    >
+                        Split
+                    </button>
+
+                </div>
+
+                <div className="lg:col-span-5 pb-3 overflow-y-auto thin-scroll h-[250px]">
+                    {matrialRequisitionDetailData.map((item, index) => (
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 bg-gray-200 rounded-lg p-4 mt-2 ">
+                            {active && (
+                                <Checkbox
+                                    checked={selectedIds.includes(item.MaterialRequisitionDetailId)}
+                                    onChange={() => {
+                                        setSelectedIds(prev =>
+                                            prev.includes(item.MaterialRequisitionDetailId)
+                                                ? prev.filter(id => id !== item.MaterialRequisitionDetailId)
+                                                : [...prev, item.MaterialRequisitionDetailId]
+                                        );
+                                    }}
+                                />
+                            )}
+                            <FieldItem label="Name" value={item.MaterialName} />
+                            <FieldItem label="Sub Material Name" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
+                            <FieldItem label="Uom" value={item.Uom} />
+                            <FieldItem label="Quantity" value={item.MaterialQuantity} />
+                            <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
+                        </div>
+                    ))}
+                </div>
+
+                {active && (
+                    <button
+                        className="bg-blue-600 text-white font-bold py-1 px-4 rounded-md"
+                        onClick={() => {
+                            setIsAddUpdateModalOpen(true);
+                        }}
+                    >
+                        Split All
+                    </button>
+                )}
+            </div>
+
+            <div className=" gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+                <h1 className="text-lg font-semibold text-gray-900 pb-2">Remarks</h1>
+                <span>{matrialRequisitionData?.Remarks}</span>
+            </div>
+
+            <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-1">
+                <h1 className="text-lg font-semibold text-gray-900 pb-2">Action Details</h1>
+
+                <div className="lg:col-span-5 pb-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                        <FieldItem label="Created By" value={matrialRequisitionData?.CreatedBy} />
+                        <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.CreatedDate ?? '')} />
+                        <FieldItem label="Modified By" value={matrialRequisitionData?.ModifiedBy} />
+                        <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(matrialRequisitionData?.ModifiedDate ?? '')} />
+                    </div>
+                </div>
+            </div>
+
+            <div className="pt-2 flex justify-end gap-2">
+                <button
+                    className="bg-gray-400 text-white font-bold py-1 px-4 rounded-md"
+                >
+                    Close
+                </button>
+
+                <button
+                    className="bg-green-600 text-white font-bold py-1 px-4 rounded-md"
+                    onClick={(e) => {
+                        handleCopyMaterialRequisition(e);
+                    }}
+                >
+                    Copy
+                </button>
+            </div>
+
+            <Modal
+                isOpen={isAddUpdateModalOpen}
+                onClose={() => {
+                    setIsAddUpdateModalOpen(false);
+                }}
+                onCancel={() => {
+                    setIsAddUpdateModalOpen(false);
+                }}
+                title={'Split Material Entry'}
+                onSubmit={handleSplitMaterialRequisition}
+                saveText={'Move To New Entry '}
+                loading={isLoading}
+                cancelText="cancel"
+                size="xl"
+            >
+                <div className="max-h-[400px] overflow-y-auto">
+                    {selectedMaterials.map((item) => (
+                        <div key={item.MaterialRequisitionDetailId} className="flex items-center gap-x-4">
+                            <Checkbox
+                                checked={selectedIds.includes(item.MaterialRequisitionDetailId)}
+                                onChange={() => {
+                                    setSelectedIds(prev =>
+                                        prev.includes(item.MaterialRequisitionDetailId)
+                                            ? prev.filter(id => id !== item.MaterialRequisitionDetailId)
+                                            : [...prev, item.MaterialRequisitionDetailId]
+                                    );
+                                }}
+                            />
+                            <p className="font-semibold">{item.SubMaterialName}</p>
+                        </div>
+                    ))}
+                </div>
+            </Modal>
+
+            {/*Close Requisition Confirmation Dialog Box*/}
+
+            <ConfirmationDialogBox
+                isOpen={isCloseRequisitionDialogOpen}
+                onClose={() => {
+                    setIsCloseRequisitionDialogOpen(false);
+                    setSelectedMaterialRequisitionItem(null);
+                }}
+                onConfirm={handleCloseRequisition}
+                title="Close Requisition"
+                message={`Are you sure you want to close this requisition?`}
+                confirmText="Close"
+                cancelText="Cancel"
+                loading={isLoading}
+            />
         </div>
     )
 }

@@ -101,7 +101,6 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
-import Event from '@/features/event/pages/Event';
 import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
@@ -165,18 +164,19 @@ import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoic
 import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
 import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
-import Terms from '@/features/terms/pages/TermsAndCondition';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
 import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
-import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRequisition';
 // import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/materialRequisitionListStateContext';
-import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
 import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/MaterialRequisitionListStateContext';
+import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
 import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
+import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRequisition';
+import AddUpdateInovice from '@/features/materialRequisition/components/invoice/CreateInvoice';
+import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 
-// Loading component for Suspense fallback
+// Loading component for Suspense fallback 
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
     <div className="text-center">
@@ -350,9 +350,6 @@ function App() {
             {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
 
-            {/* COMMAN */}
-            <Route path="event" element={<Event />} />
-
 
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />
@@ -389,7 +386,6 @@ function App() {
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
 
             <Route path="performance" element={<PerformanceReport />} />
-
 
             {/* REDEVELOPMENT */}
 
@@ -432,7 +428,6 @@ function App() {
             <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
             <Route path="legalDashboard" element={<LitigationDashboard />} />
 
-
             {/* PROJECT */}
             <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />
             <Route path='approvedBank/approvedBankFile/:ApprovedBankFolderId?' element={<ApprovedBankListStateProvider><ApprovedBankFile /></ApprovedBankListStateProvider>} />
@@ -442,26 +437,27 @@ function App() {
             <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
             {/* CRM */}
+            {/* CRM */}
 
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
-            <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
-            <Route path="materialRequisition/add/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider>
-              <AddUpdateMaterialRequisition />
-            </MaterialRequisitionListStateProvider>} />
-            <Route path="materialRequisition/view" element={<ViewMaterialRequisition />} />
 
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
             <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
             <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
-          </Route>
 
+            <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/add" element={<AddUpdateMaterialRequisition />} />
+            <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="addInvoice/add" element={<MaterialRequisitionListStateProvider><AddUpdateInovice /></MaterialRequisitionListStateProvider>} />
+            <Route path="invoicePayment" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
+
+          </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 
-          <Route path='Terms' element={<Terms />} />
-          <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
+          <Route path='Privacy-Policy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
 
         </Routes>

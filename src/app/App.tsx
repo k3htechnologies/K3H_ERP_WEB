@@ -164,7 +164,6 @@ import Brokerage from '@/features/brokerage/pages/Brokerage';
 import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoice';
 import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
-import Terms from '@/features/Terms/pages/TermsAndCondition';
 import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
 import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
 import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
@@ -225,9 +224,6 @@ function App() {
           {/* Public Routes */}
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-          <Route path='Terms' element={<Terms />} />
-          <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
-
 
           <Route
             path="/"

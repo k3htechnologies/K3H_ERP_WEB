@@ -28,7 +28,7 @@ export const Details: React.FC = () => {
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [materialRequisitionList, setMaterialRequisitionList] = useState<MaterialRequisitionData[]>([]);
-    const [showCheckbox, setShowCheckbox] = useState(false);
+    const [active, setActive] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
     const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
@@ -89,11 +89,11 @@ export const Details: React.FC = () => {
     const PushMaterialRequisitionFormData = (): FormData => {
         const fd = new FormData();
         fd.append("ProjectId", Number(projectId).toString());
-        fd.append("MaterialRequisitionId", String(matrialRequisitionData?.MaterialRequisitionId ?? 0));
+        fd.append("MaterialRequisitionId", "0");
         fd.append("Uniquekey", matrialRequisitionData?.Uniquekey ?? '');
         fd.append("Remarks", matrialRequisitionData?.Remarks ?? '');
-        fd.append("IsSplit", (matrialRequisitionData?.IsSplit ?? false).toString());
-        fd.append("IsCopy", (matrialRequisitionData?.IsCopy ?? false).toString());
+        fd.append("IsSplit", "true");
+        fd.append("IsCopy", "false");
         fd.append("MaterialRequisitionDetailJSON", JSON.stringify(matrialRequisitionDetailData
             .filter(item => selectedIds.includes(item.MaterialRequisitionDetailId))
             .map(item => ({
@@ -111,14 +111,14 @@ export const Details: React.FC = () => {
     const CopyMaterialRequisitionFormData = (): FormData => {
         const fd = new FormData();
         fd.append("ProjectId", Number(projectId).toString());
-        fd.append("MaterialRequisitionId", String(matrialRequisitionData?.MaterialRequisitionId ?? 0));
+        fd.append("MaterialRequisitionId", "0");
         fd.append("Uniquekey", matrialRequisitionData?.Uniquekey ?? '');
         fd.append("Remarks", matrialRequisitionData?.Remarks ?? '');
-        fd.append("IsSplit", (matrialRequisitionData?.IsSplit ?? false).toString());
-        fd.append("IsCopy", (matrialRequisitionData?.IsCopy ?? false).toString());
-        fd.append("MaterialRequisitionDetailJSON", JSON.stringify(matrialRequisitionDetailData
-            .map(item => ({
-                MaterialRequisitionDetailId: item.MaterialRequisitionDetailId,
+        fd.append("IsSplit", "false");
+        fd.append("IsCopy", "true");
+        fd.append("MaterialRequisitionDetailJSON", JSON.stringify(
+            matrialRequisitionDetailData.map(item => ({
+                MaterialRequisitionDetailId: 0,
                 MaterialMasterId: item.MaterialMasterId,
                 MaterialQuantity: item.MaterialQuantity,
                 UomMasterId: item.UomMasterId,
@@ -126,7 +126,6 @@ export const Details: React.FC = () => {
                 SubMaterialMasterId: item.SubMaterialMasterId,
             }))
         ));
-
         return fd;
     };
 
@@ -153,7 +152,7 @@ export const Details: React.FC = () => {
 
                     const newRecord = response.right.Data as MaterialRequisitionData;
                     setSelectedIds([]);
-                    setShowCheckbox(false);
+                    setActive(false);
                     fetchDetailsdata();
 
                     setMaterialRequisitionList(prev => [newRecord, ...prev]);
@@ -304,7 +303,7 @@ export const Details: React.FC = () => {
 
                     <button
                         className="bg-blue-600 text-white font-bold py-1 p-4 rounded-md"
-                        onClick={() => setShowCheckbox(true)}
+                        onClick={() => setActive(true)}
                     >
                         Split
                     </button>
@@ -314,7 +313,7 @@ export const Details: React.FC = () => {
                 <div className="lg:col-span-5 pb-3 overflow-y-auto thin-scroll h-[250px]">
                     {matrialRequisitionDetailData.map((item, index) => (
                         <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 bg-gray-200 rounded-lg p-4 mt-2 ">
-                            {showCheckbox && (
+                            {active && (
                                 <Checkbox
                                     checked={selectedIds.includes(item.MaterialRequisitionDetailId)}
                                     onChange={() => {
@@ -327,7 +326,7 @@ export const Details: React.FC = () => {
                                 />
                             )}
                             <FieldItem label="Name" value={item.MaterialName} />
-                            <FieldItem label="Sub Material Name" value={<TooltipText text={item.SubMaterialName ?? ''} />}/>
+                            <FieldItem label="Sub Material Name" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                             <FieldItem label="Uom" value={item.Uom} />
                             <FieldItem label="Quantity" value={item.MaterialQuantity} />
                             <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
@@ -335,14 +334,16 @@ export const Details: React.FC = () => {
                     ))}
                 </div>
 
-                <button
-                    className="bg-blue-600 text-white font-bold py-1 px-4 rounded-md"
-                    onClick={() => {
-                        setIsAddUpdateModalOpen(true);
-                    }}
-                >
-                    Split All
-                </button>
+                {active && (
+                    <button
+                        className="bg-blue-600 text-white font-bold py-1 px-4 rounded-md"
+                        onClick={() => {
+                            setIsAddUpdateModalOpen(true);
+                        }}
+                    >
+                        Split All
+                    </button>
+                )}
             </div>
 
             <div className=" gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">

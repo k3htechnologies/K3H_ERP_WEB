@@ -356,29 +356,40 @@ export const InwardOutward: React.FC = () => {
             sortable: false,
             align: 'center',
             render: (_value, row) => {
-                const employees = row.EmployeeNames?.split(",") || [];
+                const employees = row.EmployeeNames
+                    ?.split(",")
+                    .map((e: string) => e.trim())
+                    .filter(Boolean) || [];
+
+                const maxVisible = 3;
+                const visible = employees.slice(0, maxVisible);
+                const remaining = employees.length > maxVisible
+                    ? employees.length - maxVisible
+                    : 0;
+
+                const getInitials = (name: string) =>
+                    name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
 
                 return (
-                    <div className="flex -space-x-2">
-                        {employees.map((emp: string, index: number) => {
-                            const initials = emp
-                                .trim()
-                                .split(" ")
-                                .map((w: string) => w[0])
-                                .join("")
-                                .toUpperCase()
-                                .slice(0, 2);
+                    <div className="flex items-center -space-x-2">
+                        {visible.map((emp: string, index: number) => (
+                            <div
+                                key={index}
+                                className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white text-xs border-2 border-white"
+                                title={emp}
+                            >
+                                {getInitials(emp)}
+                            </div>
+                        ))}
 
-                            return (
-                                <div
-                                    key={index}
-                                    className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white text-xs border-2 border-white"
-                                    title={emp.trim()}
-                                >
-                                    {initials}
-                                </div>
-                            );
-                        })}
+                        {remaining > 0 && (
+                            <span
+                                className="ml-2 text-md text-gray-700 font-medium"
+                                title={employees.slice(maxVisible).join(", ")}
+                            >
+                                +{remaining}
+                            </span>
+                        )}
                     </div>
                 );
             }

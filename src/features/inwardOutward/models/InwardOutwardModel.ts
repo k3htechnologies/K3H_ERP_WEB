@@ -19,17 +19,17 @@ export interface InwardAndOutWardData {
     InwardOutwardDate: string | null,
     DocumentType: string | null,
     EmployeeId: string | null,
-    DocumentURL: string | null,
+    DocumentURL: string,
     Amount: number | 0,
     DeliveryType: string | null,
-    ReceiversSignature: string | null,
+    ReceiversSignature: string,
     ReceivedBy: string | null,
     ChequeNo: string | null,
     Priority: string | null,
     DocumentDescription: string | null,
     DeliveryMode: string | null,
     DeliveryStatus: string | null,
-    AcknowledgementURL: string | null,
+    AcknowledgementURL: string,
     AcknowledgementRemark: string | null,
     EmployeeNames: string | null
     InvoiceDate: string | null,
@@ -68,11 +68,11 @@ export interface AddUpdateInwardAndOutWardRequest {
     InwardOutwardDate: string | null,
     DocumentType: string | null,
     EmployeeId: string | null,
-    DocumentURL: string | null,
+    DocumentURL: File[] | null,
     RemoveDocumentURL: string | ''
     Amount: number | 0,
     DeliveryType: string | null,
-    ReceiversSignature: string | null,
+    ReceiversSignature: File[] | null,
     RemoveReceiversSignature: string | ''
     ReceivedBy: string | null,
     ChequeNo: string | null,
@@ -80,7 +80,7 @@ export interface AddUpdateInwardAndOutWardRequest {
     DocumentDescription: string | null,
     DeliveryMode: string | null,
     DeliveryStatus: string | null,
-    AcknowledgementURL: string | null,
+    AcknowledgementURL: File[] | null,
     RemoveAcknowledgementURL: string | ''
     AcknowledgementRemark: string | null,
     EmployeeNames: string | null

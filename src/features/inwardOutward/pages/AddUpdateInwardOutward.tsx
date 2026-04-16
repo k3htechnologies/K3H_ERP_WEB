@@ -165,9 +165,12 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             DeliveryMode: e.DeliveryMode ?? prev.DeliveryMode,
                             DocumentType: e.DocumentType ?? prev.DocumentType,
                             InwardOutwardDate: e.InwardOutwardDate ?? prev.InwardOutwardDate,
-                            DocumentURL: e.DocumentURL ?? prev.DocumentURL,
-                            AcknowledgementURL: e.AcknowledgementURL ?? prev.AcknowledgementURL,
-                            ReceiversSignature: e.ReceiversSignature ?? prev.ReceiversSignature,
+                            DocumentURL: null,
+                            RemoveDocumentURL: '',
+                            AcknowledgementURL: null,
+                            RemoveAcknowledgementURL: '',
+                            ReceiversSignature: null,
+                            RemoveReceiversSignature: '',
                             InVoiceDate: e.InvoiceDate ?? prev.InVoiceDate,
                             InVoiceNumber: e.InvoiceNumber ?? prev.InVoiceNumber,
                             HandOverDate: e.HandOverDate ?? prev.HandOverDate,
@@ -176,17 +179,17 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         }));
 
                         setSelectedEmployeeValues(e.EmployeeId || null);
-                        setDocumentURL(e.DocumentURL || '');
+                        setDocumentURL(e.DocumentURL);
                         setRemovedDocumentURLs([]);
                         setDocumentURLFiles([]);
 
-                        setAcknowledgementURL(e.AcknowledgementURL || '');
+                        setAcknowledgementURL(e.AcknowledgementURL);
                         setRemovedAcknowledgementURLs([]);
                         setAcknowledgementURLFiles([]);
 
-                        setReceiversSignatureURL(e.ReceiversSignature || '');
+                        setReceiversSignatureURL(e.ReceiversSignature);
                         setRemovedReceiversSignatureURLs([]);
-                        setAcknowledgementURLFiles([]);
+                        setReceiversSignatureFiles([]);
                     }
 
                 } else {

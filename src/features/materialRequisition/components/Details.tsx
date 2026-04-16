@@ -32,6 +32,7 @@ export const Details: React.FC = () => {
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
     const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
+    const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
 
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
@@ -255,6 +256,41 @@ export const Details: React.FC = () => {
         );
     };
 
+    const handleDeleteRequest = async () => {
+        if (!deleteData) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const payload: DeleteMaterialRequisitionRequest = {
+                    MaterialRequisitionId: deleteData.MaterialRequisitionId,
+                    Uniquekey: deleteData.Uniquekey,
+                    ProjectId: Number(projectId)
+                };
+
+                const response = await materialRequisitionService.apiCallDeleteMaterialRequisition(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+
+                } else {
+
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                setDeleteData(null)
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Deleting Requisition'
+        );
+    };
     //#region
     return (
         <div className="justify-center">
@@ -307,12 +343,12 @@ export const Details: React.FC = () => {
                 <div className="flex justify-between">
                     <h1 className="text-lg font-semibold text-gray-900 pb-2">Material Details</h1>
 
-                    <button
+                    <Button
                         className="bg-blue-600 text-white font-bold py-1 p-4 rounded-md"
                         onClick={() => setActive(true)}
                     >
                         Split
-                    </button>
+                    </Button>
 
                 </div>
 
@@ -341,14 +377,14 @@ export const Details: React.FC = () => {
                 </div>
 
                 {active && (
-                    <button
+                    <Button
                         className="bg-blue-600 text-white font-bold py-1 px-4 rounded-md"
                         onClick={() => {
                             setIsAddUpdateModalOpen(true);
                         }}
                     >
                         Split All
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -373,18 +409,22 @@ export const Details: React.FC = () => {
             <div className="pt-2 flex justify-end gap-2">
                 <button
                     className="bg-gray-400 text-white font-bold py-1 px-4 rounded-md"
+                    onClick={() => {
+                        setDeleteData(matrialRequisitionData);
+                        handleDeleteRequest()
+                    }}
                 >
                     Close
                 </button>
 
-                <button
+                <Button
                     className="bg-green-600 text-white font-bold py-1 px-4 rounded-md"
                     onClick={(e) => {
                         handleCopyMaterialRequisition(e);
                     }}
                 >
                     Copy
-                </button>
+                </Button>
             </div>
 
             <Modal

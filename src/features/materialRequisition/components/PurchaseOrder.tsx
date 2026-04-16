@@ -386,6 +386,7 @@ export const PurchaseOrder: React.FC = () => {
                             <h1>Purchase order File</h1>
 
                             <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
+                                <p>Document</p>
                                 <MultiImageViewer
                                     images={parseDocumentUrls(materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? '')}
                                     title="Purchase order"
@@ -413,7 +414,7 @@ export const PurchaseOrder: React.FC = () => {
                     </div>
                 </div>
             )}
-            
+
             {/* GENERATE PURCHASE ORDER MODAL */}
 
             <Modal

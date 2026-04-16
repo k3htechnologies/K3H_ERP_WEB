@@ -257,7 +257,6 @@ export const MaterialRequisition: React.FC = () => {
                     {canAction && (
                         <>
 
-
                             <Button
                                 type="button"
                                 color="transparent"
@@ -374,7 +373,6 @@ export const MaterialRequisition: React.FC = () => {
             "Loading Material Requisition",
         );
     };
-
 
 
     const clearSearchMaterialRequisition = () => {

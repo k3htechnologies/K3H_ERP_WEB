@@ -25,7 +25,6 @@ export class MaterialRequisitionPurchaseOrderDatasourceImpl implements MaterialR
             })
 
             if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());
-            if (params.Uniquekey) queryParams.append('Uniquekey', params.Uniquekey);
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

@@ -34,7 +34,6 @@ export class PayTrackBookingFilesDatasourceImpl implements PayTrackBookingFilesD
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
             if (params.FileType?.trim()) queryParams.append("FileType", params.FileType.trim());
             if (params.FileName?.trim()) queryParams.append("FileName", params.FileName.trim());
-            if (params.BookingLoanDetailsId) queryParams.append("BookingLoanDetailsId", params.BookingLoanDetailsId.toString());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 

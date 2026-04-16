@@ -6,9 +6,7 @@ import type {
     BookingLoanDetailsDeleteResponse,
     BookingLoanDetailsListResponse,
     AddUpdateBookingLoanDetailsRequest,
-    BookingLoanDetailsSaveReponse,
-    UpdateBookingLoanDetailsStatusRequest,
-    BookingLoanDetailsStatusUpdateReponse
+    BookingLoanDetailsSaveReponse
 } from '@/features/crmPayTrack/models/BookingLoanDetailsModel';
 
 import * as E from 'fp-ts/Either';
@@ -33,18 +31,6 @@ export const bookingLoanDetailsService = {
         try {
 
             return E.right(await bookingLoanDetailsDatasource.addUpdateBookingLoanDetails(params));
-
-        } catch (error: any) {
-
-            return E.left({ message: error.message, code: error.code });
-
-        }
-    },
-
-    apiCallUpdateBookingLoanDetailsStatus: async (params: UpdateBookingLoanDetailsStatusRequest): Promise<E.Either<Failure, BookingLoanDetailsStatusUpdateReponse>> => {
-        try {
-
-            return E.right(await bookingLoanDetailsDatasource.updateBookingLoanDetailsStatus(params));
 
         } catch (error: any) {
 

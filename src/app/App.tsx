@@ -164,11 +164,8 @@ import Brokerage from '@/features/brokerage/pages/Brokerage';
 import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoice';
 import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
-import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
-import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
-import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
-import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
 import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
+import Terms from '@/features/terms/pages/TermsAndCondition';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
@@ -178,8 +175,6 @@ import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRe
 import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
 import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/MaterialRequisitionListStateContext';
 import ViewMaterialRequisition from '@/features/materialRequisition/pages/ViewMaterialRequisition';
-import AddUpdateInovice from '@/features/materialRequisition/components/invoice/CreateInvoice';
-import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -357,9 +352,6 @@ function App() {
 
             {/* COMMAN */}
             <Route path="event" element={<Event />} />
-            <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
-            <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
-            <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
 
 
             {/* SALES */}
@@ -397,6 +389,7 @@ function App() {
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
 
             <Route path="performance" element={<PerformanceReport />} />
+
 
             {/* REDEVELOPMENT */}
 
@@ -439,6 +432,7 @@ function App() {
             <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
             <Route path="legalDashboard" element={<LitigationDashboard />} />
 
+
             {/* PROJECT */}
             <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />
             <Route path='approvedBank/approvedBankFile/:ApprovedBankFolderId?' element={<ApprovedBankListStateProvider><ApprovedBankFile /></ApprovedBankListStateProvider>} />
@@ -447,7 +441,6 @@ function App() {
             <Route path='content' element={<MarketingContentListStateProvider><MarketingContentFolder /></MarketingContentListStateProvider>} />
             <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
-            {/* CRM */}
             {/* CRM */}
 
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
@@ -462,19 +455,13 @@ function App() {
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
             <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
             <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
-
-            <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
-            <Route path="materialRequisition/add" element={<AddUpdateMaterialRequisition />} />
-            <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
-            <Route path="addInvoice/add" element={<MaterialRequisitionListStateProvider><AddUpdateInovice /></MaterialRequisitionListStateProvider>} />
-            <Route path="invoicePayment" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
-
           </Route>
 
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 
-          <Route path='Privacy-Policy' element={<PrivacyPolicy />} />
+          <Route path='Terms' element={<Terms />} />
+          <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
 
         </Routes>

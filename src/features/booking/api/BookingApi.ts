@@ -4,7 +4,6 @@ export const BookingApi = {
     CANCEL: '/Booking/CancelBooking',
     PULL_CHANNEL_PARTNER_BOOKING: '/Booking/PullChannelPartnerBooking',
     PULL_PAYMENT_SCHEDULE_STAGES: '/Booking/PullPaymentScheduleStages',
-    UPDATE_BOOKING_REGISTRATIONDATE_PARKING: '/Booking/UpdatePayTrackBookingRegistrationDateParking',
 } as const
 
 export type BookingApiKeys = keyof typeof BookingApi

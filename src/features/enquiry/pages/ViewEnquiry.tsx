@@ -765,6 +765,8 @@ const ViewEnquiry: React.FC = () => {
                 title={"Follow Up"}
                 onSubmit={handleEnquiryFollowUpFormSubmit}
                 saveText="Save"
+                cancelText="Cancel"
+                onCancel={handleCloseEnquiryFollowUpModal}
                 loading={isLoading}
                 size="xl"
             >

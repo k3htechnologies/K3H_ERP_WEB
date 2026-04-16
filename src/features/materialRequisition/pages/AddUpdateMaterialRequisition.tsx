@@ -25,7 +25,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import DatePicker from "react-datepicker";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { cons } from "fp-ts/lib/ReadonlyNonEmptyArray";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import React from "react";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionRequest => ({
@@ -108,7 +108,29 @@ export const AddUpdateMaterialRequisition = () => {
         );
 
     }, [materialsubmaterialList]);
+    const validateMaterialForm = (): {
+        isValid: boolean;
+        errors: { [key: string]: string };
+    } => {
+        const newErrors: { [key: string]: string } = {};
 
+        if (!materialData.MaterialMasterId || materialData.MaterialMasterId === 0)
+            newErrors.MaterialMasterId = "Material is required";
+
+        if (!materialData.SubMaterialMasterId || materialData.SubMaterialMasterId === 0)
+            newErrors.SubMaterialMasterId = "Sub Material is required";
+
+        if (!materialData.MaterialQuantity || materialData.MaterialQuantity <= 0)
+            newErrors.MaterialQuantity = "Quantity must be greater than 0";
+
+        if (!materialData.RequiredDate || materialData.RequiredDate === "")
+            newErrors.RequiredDate = "Required Date is required";
+
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors,
+        };
+    };
     const loadDetailsdata = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -193,11 +215,10 @@ export const AddUpdateMaterialRequisition = () => {
             MaterialName: row.MaterialName
         });
         setDropdownLabels({
-            materialName: materialOptions.find(
-                x => Number(x.value) === row.MaterialMasterId
-            )?.label || "",
+            materialName: row.MaterialName || "",
             uom: row.UomCode || "",
         });
+
         setAddMaterialPopUp(true);
     }, [materialOptions]);
 
@@ -246,8 +267,7 @@ export const AddUpdateMaterialRequisition = () => {
             key: "RequiredDate",
             label: "Required Date",
             align: "left",
-            render: (value) =>
-                value ? new Date(value).toLocaleDateString() : "-"
+            render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
         },
         {
             key: "action",
@@ -432,6 +452,18 @@ export const AddUpdateMaterialRequisition = () => {
 
     const saveMaterial = async () => {
         debugger
+        setErrors({});
+
+        const validation = validateMaterialForm();
+
+        if (!validation.isValid) {
+
+            setErrors(validation.errors);
+
+            addToast({ type: "error", title: "Please fill the required filed" });
+
+            return;
+        }
         const newItem: AddUpdateMaterialRequisitionDetailRequest = {
             ...materialData
         };
@@ -465,87 +497,69 @@ export const AddUpdateMaterialRequisition = () => {
                     <form onSubmit={(e) => { e.preventDefault(); void handleSave(); }}>
                         <div className="space-y-6">
                             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Material Requisition Details </h3>
-                            <div
-                                className="rounded-lg shadow-sm border border-gray-200"
-                                style={{ backgroundColor: "#FFFFFF", padding: "14px" }}
-                            >
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-md font-medium text-gray-500">
-                                        Material Details
-                                    </h3>
+                            <div className="flex items-center justify-between">                                <h3 className="text-md font-medium text-gray-500">
+                                Material Details
+                            </h3>
 
 
-                                    <Button
-                                        type="button"
-                                        color="blue"
-                                        size="sm"
-                                        onClick={handleAddMaterial}
-                                        leftIcon={<Plus className="h-4 w-4" />}
-                                    >
-                                        Add Material
-                                    </Button>
-
-                                </div>
-
-                                {materialList.length > 0 && (
-                                    <div className="p-4">
-                                        <DataTable
-                                            data={materialList}
-                                            columns={MaterialRequisitionColumns}
-                                            emptyMessage="No Material Found"
-                                            fixedHeight
-                                            recordsPerPage={5}
-                                            className="flex-1"
-                                        />
-                                    </div>
-
-                                )}
-
-
-
+                                <Button
+                                    type="button"
+                                    color="blue"
+                                    size="sm"
+                                    onClick={handleAddMaterial}
+                                    leftIcon={<Plus className="h-4 w-4" />}
+                                >
+                                    Add Material
+                                </Button>
 
                             </div>
-                            <div
-                                className="rounded-lg shadow-sm border border-gray-200"
-                                style={{ backgroundColor: "#FFFFFF", padding: "14px" }}
-                            >
-                                <h3 className="text-md font-medium text-gray-500">
-                                    Document Details
-                                </h3>
-                                <div className="flex items-center justify-between pt-4">
-                                    <MultiFilePicker
-                                        label="Upload Document"
-                                        placeholder="Upload Document"
-                                        value={documentFiles}
-                                        onChange={setdocumentFiles}
-                                        availableFilesURL={documentURL}
-                                        allowedTypes={["image/jpeg", "image/png"]}
-                                        maxFiles={1}
-                                        maxSizeMB={5}
-                                        onRemoveExisting={(url) =>
-                                            setRemoveddocumentFilesURLs((prev) => [...prev, url])
-                                        }
+
+                            {materialList.length > 0 && (
+                                <div className="pb-2">
+                                    <DataTable
+                                        data={materialList}
+                                        columns={MaterialRequisitionColumns}
+                                        emptyMessage="No Material Found"
+                                        fixedHeight
+                                        recordsPerPage={5}
+                                        className="flex-1"
                                     />
                                 </div>
-                            </div>
-                            <div
-                                className="rounded-lg shadow-sm border border-gray-200"
-                                style={{ backgroundColor: "#FFFFFF", padding: "14px" }}
-                            >
-                                <h3 className="text-md font-medium text-gray-500">
-                                    Remark
-                                </h3>
-                                <div className="flex items-center justify-between pt-4">
-                                    <TextArea label="Remark" className="thin-scroll" value={formData.Remarks}
-                                        onChange={(e) =>
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                Remarks: e.target.value
-                                            }))
-                                        } placeholder="Enter Remark" error={errors.Remarks} />
 
-                                </div>
+                            )}
+
+
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
+
+                            <div className="flex items-center justify-between pb-3">
+                                <MultiFilePicker
+                                    label="Upload Document"
+                                    placeholder="Upload Document"
+                                    value={documentFiles}
+                                    onChange={setdocumentFiles}
+                                    availableFilesURL={documentURL}
+                                    allowedTypes={["image/jpeg", "image/png"]}
+                                    maxFiles={1}
+                                    maxSizeMB={5}
+                                    onRemoveExisting={(url) =>
+                                        setRemoveddocumentFilesURLs((prev) => [...prev, url])
+                                    }
+                                />
                             </div>
+
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Remark</h3>
+
+                            <div className="flex items-center justify-between pb-3">
+                                <TextArea label="Remark" className="thin-scroll" value={formData.Remarks}
+                                    onChange={(e) =>
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            Remarks: e.target.value
+                                        }))
+                                    } placeholder="Enter Remark" error={errors.Remarks} />
+
+                            </div>
+
                         </div>
                     </form>
                 </div>
@@ -604,6 +618,7 @@ export const AddUpdateMaterialRequisition = () => {
                                 ...prev,
                                 MaterialMasterId: id,
                                 SubMaterialMasterId: 0,
+                                MaterialName: item?.label ?? "",
                                 SubMaterialName: "",
                                 UomCode: "",
                                 UomMasterId: 0
@@ -651,6 +666,7 @@ export const AddUpdateMaterialRequisition = () => {
                     <Input
                         type="number"
                         label="Quantity"
+                        required
                         value={materialData.MaterialQuantity}
                         onChange={(e) => {
                             const value = e.target.value;

@@ -253,43 +253,55 @@ export const MaterialRequisition: React.FC = () => {
             width: '20',
             fixed: 'right',
             align: 'center',
-            render: (_value, row) => (
-                <div className="flex items-center justify-center gap-1">
-                    {canAction && (
-                        <>
+            render: (_value, row) => {
+                const canActionStage = row.MaterialRequisitionStage === 'Get Quotation';
 
+                return (
+                    <div className="flex items-center justify-center gap-1">
+                        {canAction && (
+                            <>
+                                <Button
+                                    type="button"
+                                    color="transparent"
+                                    size="sm"
+                                    disabled={!canActionStage}
+                                    style={{
+                                        color: canActionStage ? '#2563eb' : '#9CA3AF',
+                                        padding: '4px 8px',
+                                        cursor: canActionStage ? 'pointer' : 'not-allowed',
+                                        opacity: canActionStage ? 1 : 0.5
+                                    }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleMaterialRequisitionEdit(row);
+                                    }}
+                                    leftIcon={<Edit className="h-4 w-4" />}
+                                />
 
-                            <Button
-                                type="button"
-                                color="transparent"
-                                size="sm"
-                                disabled={row.MaterialRequisitionStage !== 'Get Quotation'}
-                                style={{ color: '#2563eb', padding: '4px' }}
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleMaterialRequisitionEdit(row);
-                                }}
-                                leftIcon={<Edit className="h-4 w-4" />}
-                            />
-
-                            <Button
-                                type="button"
-                                color="transparent"
-                                size="sm"
-                                disabled={row.MaterialRequisitionStage !== 'Get Quotation'}
-                                style={{ color: '#dc2626', padding: '4px' }}
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleConfirmationDialogBoxOpen(row)
-                                }}
-                                leftIcon={<Trash2 className="h-4 w-4" />}
-                            />
-                        </>
-                    )}
-                </div>
-            )
+                                <Button
+                                    type="button"
+                                    color="transparent"
+                                    size="sm"
+                                    disabled={!canActionStage}
+                                    style={{
+                                        color: canActionStage ? '#dc2626' : '#9CA3AF',
+                                        padding: '4px 8px',
+                                        cursor: canActionStage ? 'pointer' : 'not-allowed',
+                                        opacity: canActionStage ? 1 : 0.5
+                                    }}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleConfirmationDialogBoxOpen(row);
+                                    }}
+                                    leftIcon={<Trash2 className="h-4 w-4" />}
+                                />
+                            </>
+                        )}
+                    </div>
+                );
+            }
         }
     ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction]);
 

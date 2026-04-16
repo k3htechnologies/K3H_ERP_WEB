@@ -17,7 +17,7 @@ import { MaterialRequisitionPurchaseOrderDatasourceImpl } from "../datasources/M
 
 export const MaterialRequisitionPurchaseOrderDataSource = new MaterialRequisitionPurchaseOrderDatasourceImpl();
 
-export const materialRequisitionPaymentService = {
+export const materialRequisitionPurchaseOrderService = {
 
     apiCallPullMaterialRequisitionPurchaseOrder: async (params: FilterWithPaginationMaterialRequisitionPurchaseOrder, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, MaterialRequisitionPurchaseOrderListResponse>> => {
 

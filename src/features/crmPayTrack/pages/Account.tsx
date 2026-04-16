@@ -1,7 +1,7 @@
 import { useState } from "react";
 import Tabs from "@/ui/components/Tab/Tab";
-import PaymentScheduleCrm from "@/features/crmPayTrack/components/PaymentScheduleCrm";
-import PaymentLedgerCrm from "@/features/crmPayTrack/components/PaymentLedgerCrm";
+import PaymentSchedule from "@/features/crmPayTrack/components/PaymentSchedule";
+import PaymentLedger from "@/features/crmPayTrack/components/PaymentLedger";
 
 export const Account: React.FC = () => {
 
@@ -25,8 +25,8 @@ export const Account: React.FC = () => {
             </div>
 
             <div className="pt-5">
-                {activeTab === "PaymentSchedule" && <PaymentScheduleCrm />}
-                {activeTab === "PaymentLedger" && <PaymentLedgerCrm />}
+                {activeTab === "PaymentSchedule" && <PaymentSchedule />}
+                {activeTab === "PaymentLedger" && <PaymentLedger />}
             </div>
 
         </div>

@@ -105,7 +105,7 @@ const ChannelPartnerDashboard: React.FC = () => {
                     <OverviewCards overViewData={overViewCardData} />
                 </div>
 
-                <h2 className="text-lg font-semibold text-gray-800 pt-2">
+                <h2 className="text-lg font-semibold text-gray-800 pt-3">
                     Channel Partner Distribution
                 </h2>
 

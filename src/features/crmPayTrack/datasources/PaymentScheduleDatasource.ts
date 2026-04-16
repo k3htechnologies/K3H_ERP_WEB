@@ -1,20 +1,20 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { FilterWithPaginationPaymentScheduleCrm, PaymentScheduleCrmListResponse } from "@/features/crmPayTrack/models/PaymentScheduleCrmModel";
+import type { FilterWithPaginationPaymentSchedule, PaymentScheduleListResponse } from "@/features/crmPayTrack/models/PaymentScheduleModel";
 
-import { PaymentScheduleCrmApi } from "@/features/crmPayTrack/api/PaymentScheduleCrmApi";
+import { PaymentScheduleApi } from "@/features/crmPayTrack/api/PaymentScheduleApi";
 
-export abstract class PaymentScheduleCrmDatasource {
-    abstract pullPaymentScheduleCrm(params: FilterWithPaginationPaymentScheduleCrm, signal?: AbortSignal): Promise<PaymentScheduleCrmListResponse>;
+export abstract class PaymentScheduleDatasource {
+    abstract pullPaymentSchedule(params: FilterWithPaginationPaymentSchedule, signal?: AbortSignal): Promise<PaymentScheduleListResponse>;
 }
 
-export class PaymentScheduleCrmDatasourceImpl implements PaymentScheduleCrmDatasource {
+export class PaymentScheduleDatasourceImpl implements PaymentScheduleDatasource {
 
     private get k3hHttpClient() {
         return baseClient;
     }
 
-    async pullPaymentScheduleCrm(params: FilterWithPaginationPaymentScheduleCrm, signal?: AbortSignal): Promise<PaymentScheduleCrmListResponse> {
+    async pullPaymentSchedule(params: FilterWithPaginationPaymentSchedule, signal?: AbortSignal): Promise<PaymentScheduleListResponse> {
         try {
             const queryParams = new URLSearchParams({
                 IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
@@ -25,17 +25,17 @@ export class PaymentScheduleCrmDatasourceImpl implements PaymentScheduleCrmDatas
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${PaymentScheduleCrmApi.PULL}?${queryParams.toString()}`,
+                `${PaymentScheduleApi.PULL}?${queryParams.toString()}`,
                 { signal }
             )
 
             return response;
         } catch (error: any) {
 
-            console.error("ERROR: PULL PAYMENT SCHEDULE CRM :", error);
+            console.error("ERROR: PULL PAYMENT SCHEDULE :", error);
 
             if (error instanceof TokenExpiredException) {
-              return  await this.pullPaymentScheduleCrm(params);
+              return  await this.pullPaymentSchedule(params);
             }
             throw error;
         }

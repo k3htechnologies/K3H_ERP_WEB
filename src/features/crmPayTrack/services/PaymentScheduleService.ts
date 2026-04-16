@@ -1,0 +1,23 @@
+import type { Failure } from '@/core/api/FailureResponse';
+import type {  FilterWithPaginationPaymentSchedule, PaymentScheduleListResponse } from '@/features/crmPayTrack/models/PaymentScheduleModel';
+import * as E from 'fp-ts/Either';
+import { PaymentScheduleDatasourceImpl } from '@/features/crmPayTrack/datasources/PaymentScheduleDatasource';
+
+const paymentScheduleDatasource = new PaymentScheduleDatasourceImpl();
+
+export const paymentScheduleService = {
+
+    apiCallPullPaymentSchedule: async (params: FilterWithPaginationPaymentSchedule, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, PaymentScheduleListResponse>> => {
+
+        try {
+
+            return E.right(await paymentScheduleDatasource.pullPaymentSchedule(params, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    }
+}
+

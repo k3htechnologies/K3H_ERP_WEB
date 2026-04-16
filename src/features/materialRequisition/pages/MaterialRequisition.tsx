@@ -3,7 +3,6 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData } from "../models/MaterialRequisitionModel";
 import { useToast } from "@/core/hooks/useToast";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import type { FilterInfo } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
 import { materialRequisitionService } from "../services/MaterialRequisitionService";
@@ -32,18 +31,23 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 
 export const MaterialRequisition: React.FC = () => {
+
+    //#region STATE MANAGEMENT
+    const [materialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData[]>([]);
+    const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const { pagination, setPagination } = usePagination(20);
-    const [materialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData[]>([]);
-    const { listState, updateListState } = useMaterialRequisitionListState();
-    const { searchTerm, filters, sortInfo } = listState;
+
+    const { addToast } = useToast();
+
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
     const [isShowCustomizeMaterialRequisitionColumnsModal, setIsShowCustomizeMaterialRequisitionColumnsModal] = useState(false);
-    const navigate = useNavigate();
+
     const { canAction, canExport } = useMenuPermissions();
     const [selectedRow, setSelectedRow] = useState<MaterialRequisitionData | null>(null);
     const { projectId } = useProject();
@@ -51,36 +55,90 @@ export const MaterialRequisition: React.FC = () => {
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
     //#endregion
 
-    const applyFilters = () => {
-        updateListState({ filters: tempFilters, page: 1 });
-        loadDetailsdata(1, tempFilters);
-        setShowFilterPopup(false);
-    };
+    //#region INIT
+    useEffect(() => {
+        if (!projectId) return;
 
-    const clearFilters = () => {
-        setTempFilters({});
-        updateListState({ filters: {}, page: 1 });
-        loadDetailsdata(1, {});
-    };
+        if (searchTerm && searchTerm.trim()) {
+            loadDetailsdata(page, { SystemGeneratedCode: searchTerm.trim() }, sortInfo);
+        } else {
+            loadDetailsdata(page, filters, sortInfo);
+        }
+    }, [projectId, page, filters, sortInfo, searchTerm]);
 
-    const handleFilterChange = (key: string, value: string) => {
-        setTempFilters(prev => updateFilter(prev, key, value));
-    }
+    useEffect(() => {
+        setPagination({ currentPage: page });
+    }, [page]);
+
+    useEffect(() => {
+        setTempFilters(filters);
+    }, [filters]);
+    //#endregion
+
+    //#region SEARCH
     const debouncedSearch = useDebouncedCallback((value: string) => {
-        searchMaterialRequisition(value)
+        if (value.trim() === "") {
+            updateListState({ searchTerm: "", filters: {}, page: 1 });
+            return;
+        }
+        updateListState({ searchTerm: value, filters: { SystemGeneratedCode: value.trim() }, page: 1 });
     }, 350);
 
-    //#region SEARCH & CLEAR
-    const searchMaterialRequisition = async (searchValue: string) => {
+    const searchMaterialRequisition = (searchValue: string) => {
         updateListState({ searchTerm: searchValue });
+        debouncedSearch(searchValue);
+    };
+    //#endregion
 
-        if (searchValue.trim() === '') {
-            fetchLoadDetailsList();
-            return
-        }
+    //#region CLEAR
+    const clearSearchMaterialRequisition = () => {
+        debouncedSearch.cancel?.();
+        resetFilters();
+        setTempFilters({});
+    };
+    //#endregion
 
-        updateListState({ filters, page: 1, searchTerm: searchValue });
-        await loadDetailsdata(1, filters, sortInfo, searchValue);
+    //#region DATA LOADING
+    const loadDetailsdata = async (
+        page: number,
+        filterParams: FilterInfo,
+        sortInfo?: SortInfo,
+    ) => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationMaterialRequisition = {
+                    PageNumber: page,
+                    PageSize: pagination.pageSize,
+                    ProjectId: Number(projectId),
+                    MaterialRequisitionStatus: filterParams?.MaterialRequisitionStatus ?? undefined,
+                    MaterialRequisitionStage: filterParams?.MaterialRequisitionStage ?? undefined,
+                    SystemGeneratedCode: filterParams?.SystemGeneratedCode ?? undefined,
+                    FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
+                    ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
+                    SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionColumns)
+                };
+
+                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
+
+                if (E.isRight(response)) {
+                    setMaterialRequisitionData(response.right.Data);
+                    setPagination({
+                        currentPage: page,
+                        totalRecords: response.right.TotalNumberOfRecord,
+                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+                    });
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                    return response;
+                }
+            },
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Loading Material Requisition",
+        );
     };
     const handleConfirmationDialogBoxOpen = useCallback((row: MaterialRequisitionData) => {
         setDeleteData(row);
@@ -171,11 +229,31 @@ export const MaterialRequisition: React.FC = () => {
             totalPages: pagination.totalPages,
             totalRecords: pagination.totalRecords,
             pageSize: pagination.pageSize,
-            onPageChange: handlePageChange
+            onPageChange: handlePageChange,
         }),
-        [pagination, handlePageChange]
+        [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize, handlePageChange]
     );
 
+    const MaterialRequisitionForTable = useMemo(() => materialRequisitionData, [materialRequisitionData]);
+    //#endregion
+
+    //#region NAVIGATE
+    const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
+        updateListState({
+            MaterialRequisitionId: row.MaterialRequisitionId,
+            MaterialRequisitionStage: row.MaterialRequisitionStage,
+            SystemGeneratedCode: row.SystemGeneratedCode,
+            Uniquekey: row.Uniquekey
+        });
+        navigate('/MaterialRequisition/view');
+    }, [navigate, updateListState]);
+
+    const handleAddMaterialRequisitionModal = useCallback(() => {
+        navigate('/materialRequisition/add');
+    }, [navigate]);
+    //#endregion
+
+    //#region TABLE COLUMNS  ← defined AFTER loadDetailsdata, same as Litigation pattern
     const MaterialRequisitionColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'SystemGeneratedCode',
@@ -302,276 +380,246 @@ export const MaterialRequisition: React.FC = () => {
                     </div>
                 );
             }
+                );
+}
         }
     ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction]);
 
-    const allMaterialRequisitioKeys: string[] = MaterialRequisitionColumns.map(c => c.key);
+//#region COLUMN CUSTOMIZATION
+const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
+const allMaterialRequisitionKeys: string[] = MaterialRequisitionColumns.map(c => c.key);
 
-    const [selectedMaterialRequisitionColumnKeys, setSelectedMaterialRequisitionColumnKeys] = useState<string[]>(() => {
-        try {
-
-            const saved = LocalStorageHelper.getMaterialRequisitionTableColumns();
-
-            if (saved) {
-
-                const parsed = JSON.parse(saved) as string[]
-                // Ensure required columns are always present
-
-                const withRequired = Array.from(new Set([...parsed, ...requiredMaterialRequisitionColumnKeys]));
-
-                // Filter out any keys that no longer exist
-                return withRequired.filter(k => allMaterialRequisitioKeys.includes(k));
-            }
-        } catch { }
-        return allMaterialRequisitioKeys;
-    });
-
-    const handleSortColumn = useCallback((sort: SortInfo) => {
-        updateListState({ sortInfo: sort, page: 1 });
-        loadDetailsdata(1, filters, sort, searchTerm || undefined);
-    }, [filters, updateListState, searchTerm]);
-
-    useEffect(() => {
-        setPagination({ currentPage: listState.page });
-        if (listState.searchTerm && String(listState.searchTerm).trim()) {
-            loadDetailsdata(listState.page, { SystemGeneratedCode: String(listState.searchTerm).trim() }, listState.sortInfo);
-        } else {
-            loadDetailsdata(listState.page, listState.filters, listState.sortInfo);
+const [selectedMaterialRequisitionColumnKeys, setSelectedMaterialRequisitionColumnKeys] = useState<string[]>(() => {
+    try {
+        const saved = LocalStorageHelper.getMaterialRequisitionTableColumns();
+        if (saved) {
+            const parsed = JSON.parse(saved) as string[];
+            const withRequired = Array.from(new Set([...parsed, ...requiredMaterialRequisitionColumnKeys]));
+            return withRequired.filter(k => allMaterialRequisitionKeys.includes(k));
         }
-    }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
+    } catch { }
+    return allMaterialRequisitionKeys;
+});
 
-    const fetchLoadDetailsList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-        return await loadDetailsdata(page, filters, sort ?? sortInfo);
+const handleSortColumn = useCallback((sort: SortInfo) => {
+    updateListState({ sortInfo: sort, page: 1 });
+    loadDetailsdata(1, filters, sort, searchTerm || undefined);
+}, [filters, updateListState, searchTerm]);
+
+useEffect(() => {
+    setPagination({ currentPage: listState.page });
+    if (listState.searchTerm && String(listState.searchTerm).trim()) {
+        loadDetailsdata(listState.page, { SystemGeneratedCode: String(listState.searchTerm).trim() }, listState.sortInfo);
+    } else {
+        loadDetailsdata(listState.page, listState.filters, listState.sortInfo);
     }
+}, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
-    const loadDetailsdata = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationMaterialRequisition = {
-                    PageNumber: page,
-                    PageSize: pagination.pageSize,
-                    ProjectId: Number(projectId),
-                    MaterialRequisitionStatus: filterParams?.MaterialRequisitionStatus ?? undefined,
-                    MaterialRequisitionStage: filterParams?.MaterialRequisitionStage ?? undefined,
-                    SystemGeneratedCode: searchtext ?? filterParams?.SystemGeneratedCode ?? undefined,
-                    FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
-                    ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
-                    SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionColumns)
-
-                };
-                debugger
-
-                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
-
-                if (E.isRight(response)) {
-
-                    setMaterialRequisitionData(response.right.Data);
-                    setPagination({
-                        currentPage: page,
-                        totalRecords: response.right.TotalNumberOfRecord,
-                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
-                    });
-
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            "Loading Material Requisition",
-        );
-    };
-
-
-
-    const clearSearchMaterialRequisition = () => {
-        debouncedSearch.cancel?.();
-        updateListState({ searchTerm: '', filters: {}, page: 1 });
-        setTempFilters({});
-        loadDetailsdata(1, { SystemGeneratedCode: '' }, sortInfo, undefined);
-    };
-    const handleAddMaterialRequisitionModal = useCallback(() => {
-        navigate('/materialRequisition/add');
-    }, [navigate]);
-
-    const getMaterialRequisition = async (filterParams: FilterWithPaginationMaterialRequisition) => {
-
-        return await materialRequisitionService.apiCallPullMaterialRequisition(filterParams);
-    }
-    const handleExportMaterialRequisition = async (exportType: 'Excel' | 'PDF') => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const params: FilterWithPaginationMaterialRequisition = {
-                    PageNumber: 1,
-                    PageSize: pagination.totalRecords,
-                    ProjectId: Number(projectId),
-                    MaterialRequisitionStatus: filters?.MaterialRequisitionStatus ?? undefined,
-                    MaterialRequisitionStage: filters?.MaterialRequisitionStage ?? undefined,
-                    SystemGeneratedCode: searchTerm ?? filters?.SystemGeneratedCode ?? undefined,
-                    FromDate: filters?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) || undefined : undefined,
-                    ToDate: filters?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ToDate) || undefined : undefined,
-
-                    ExportType: exportType
-                };
-
-                const response = await getMaterialRequisition(params);
-
-                handleExportFile(response, exportType, 'Material Requisition', addToast);
-
-                return response;
-            },
-            undefined,
-            (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
-            undefined,
-            'Preparing Export'
-        );
-    };
-
-    const handleExportMaterialRequisitionsExcel = () => handleExportMaterialRequisition('Excel')
-    const handleExportMaterialRequisitionPdf = () => handleExportMaterialRequisition('PDF')
-    return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
-            {/* Loader */}
-            <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
-            <TableActionToolbar
-                isShowSearchBar
-                searchTerm={searchTerm}
-                searchPlaceholder="Search By Unique Id"
-                onSearchChange={(v) => {
-                    updateListState({ searchTerm: v });
-                    debouncedSearch(v);
-                }}
-                onClearSearch={clearSearchMaterialRequisition}
-                isShowFilterButton
-                filters={filters}
-                onOpenFilter={() => {
-                    setTempFilters(filters)
-                    setShowFilterPopup(true)
-                }}
-                isShowCustomizeButton
-                onCustomize={() => setIsShowCustomizeMaterialRequisitionColumnsModal(true)}
-
-                // ADD
-                isShowAddButton={canAction}
-                addTitle="Add"
-                onAdd={handleAddMaterialRequisitionModal}
-
-                // IMPORT 
-                isShowImportButton={canAction}
-
-                // EXPORT
-                isShowExportButton={canExport && materialRequisitionData.length > 0}
-                onExportExcel={handleExportMaterialRequisitionsExcel}
-                onExportPdf={handleExportMaterialRequisitionPdf}
-                exportLoading={isLoading}
-            />
-            <DataTable
-                data={materialRequisitionData}
-                columns={MaterialRequisitionColumns}
-                pagination={MaterialRequisitionPaginationInfo}
-                emptyMessage="No Material Requisition Off Found"
-                fixedHeight
-                recordsPerPage={20}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-            />
-            <CustomizeColumnsModal
-                isOpen={isShowCustomizeMaterialRequisitionColumnsModal}
-                onClose={() => setIsShowCustomizeMaterialRequisitionColumnsModal(false)}
-                onApply={keys => {
-                    const withRequired = Array.from(
-
-                        new Set([...keys, ...requiredMaterialRequisitionColumnKeys])
-                    );
-                    setSelectedMaterialRequisitionColumnKeys(withRequired);
-
-                    try {
-                        LocalStorageHelper.storeMaterialRequisitionTableColumns?.(
-
-                            JSON.stringify(withRequired)
-                        );
-                    } catch { }
-                }}
-                columns={MaterialRequisitionColumns}
-                selectedKeys={selectedMaterialRequisitionColumnKeys}
-                requiredKeys={requiredMaterialRequisitionColumnKeys}
-                title="Customize Table Columns"
-            />
-            <DeleteDialog
-                isOpen={isConfirmationDialogBoxOpen}
-                onClose={() => {
-                    setIsConfirmationDialogBoxOpen(false)
-                    setDeleteData(null)
-                }}
-                onConfirm={handleDeleteRequest}
-                loading={isLoading}
-                pageName='Material Requisition'
-            />
-
-            <Modal
-                isOpen={showFilterPopup}
-                onClose={() => setShowFilterPopup(false)}
-                title="Filter - Material Requisition"
-                onSubmit={e => {
-                    e.preventDefault();
-                    applyFilters();
-                }}
-                saveText="Apply"
-                cancelText="Clear"
-                onCancel={() => clearFilters()}
-                size="small-half"
-            >
-                <div className="space-y-4">
-
-                    <div>
-                        <SinglePageSelection
-                            label="Material Requisition Stage"
-                            placeholder="Select Stage"
-                            options={MATERIAL_REQUISITION_STAGES_OPTIONS?.map(stage => ({ label: stage.name, value: stage.id })) || []}
-                            onChange={(value) => handleFilterChange('MaterialRequisitionStage', String(value))}
-                        />
-                    </div>
-
-                    {/* Material Requisition Status */}
-                    <div>
-                        <SinglePageSelection
-                            label="Material Requisition Status"
-                            placeholder="Select Status"
-                            options={MATERIAL_REQUISITION_STATUS_OPTIONS?.map(status => ({ label: status.name, value: status.id })) || []}
-                            onChange={(value) => handleFilterChange('MaterialRequisitionStatus', String(value))}
-                        />
-                    </div>
-
-                    <div>
-                        <DateInput
-                            label="From Date"
-                            value={tempFilters?.FromDate || ""}
-                            onChange={(value: any) => handleFilterChange('FromDate', value)}
-                            placeholder="DD/MM/YYYY"
-                        />
-                    </div>
-
-                    <div>
-                        <DateInput
-                            label="To Date"
-                            value={tempFilters?.ToDate || ""}
-                            onChange={(value: any) => handleFilterChange('ToDate', value)}
-                            placeholder="DD/MM/YYYY"
-                        />
-                    </div>
-                </div>
-            </Modal>
-        </div>
-    )
+const fetchLoadDetailsList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
+    return await loadDetailsdata(page, filters, sort ?? sortInfo);
 }
+
+const loadDetailsdata = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
+    await runApiWithLoader(
+        setIsLoading,
+        setLoadingMessage,
+        async () => {
+            const params: FilterWithPaginationMaterialRequisition = {
+                PageNumber: page,
+                PageSize: pagination.pageSize,
+                ProjectId: Number(projectId),
+                MaterialRequisitionStatus: filterParams?.MaterialRequisitionStatus ?? undefined,
+                MaterialRequisitionStage: filterParams?.MaterialRequisitionStage ?? undefined,
+                SystemGeneratedCode: searchtext ?? filterParams?.SystemGeneratedCode ?? undefined,
+                FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
+                ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
+                SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionColumns)
+
+            };
+            debugger
+
+            const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
+
+            if (E.isRight(response)) {
+
+                setMaterialRequisitionData(response.right.Data);
+                setPagination({
+                    currentPage: page,
+                    totalRecords: response.right.TotalNumberOfRecord,
+                    totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+                });
+
+            } else {
+                addToast({ type: "error", title: response.left.message });
+            }
+            return response;
+        },
+        undefined,
+        (error: any) => {
+            addToast({ type: "error", title: error.message });
+        },
+        undefined,
+        "Loading Material Requisition",
+    );
+};
+
+
+
+const clearSearchMaterialRequisition = () => {
+    debouncedSearch.cancel?.();
+    updateListState({ searchTerm: '', filters: {}, page: 1 });
+    setTempFilters({});
+    loadDetailsdata(1, { SystemGeneratedCode: '' }, sortInfo, undefined);
+};
+const handleAddMaterialRequisitionModal = useCallback(() => {
+    navigate('/materialRequisition/add');
+}, [navigate]);
+
+const getMaterialRequisition = async (filterParams: FilterWithPaginationMaterialRequisition) => {
+
+    return await materialRequisitionService.apiCallPullMaterialRequisition(filterParams);
+}
+const handleExportMaterialRequisition = async (exportType: 'Excel' | 'PDF') => {
+    await runApiWithLoader(
+        setIsLoading,
+        setLoadingMessage,
+        async () => {
+
+            const params: FilterWithPaginationMaterialRequisition = {
+                PageNumber: 1,
+                PageSize: pagination.totalRecords,
+                ProjectId: Number(projectId),
+                MaterialRequisitionStatus: filters?.MaterialRequisitionStatus ?? undefined,
+                MaterialRequisitionStage: filters?.MaterialRequisitionStage ?? undefined,
+                SystemGeneratedCode: searchTerm ?? filters?.SystemGeneratedCode ?? undefined,
+                FromDate: filters?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.FromDate) || undefined : undefined,
+                ToDate: filters?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filters.ToDate) || undefined : undefined,
+
+                ExportType: exportType
+            };
+
+            const response = await getMaterialRequisition(params);
+
+            handleExportFile(response, exportType, 'Material Requisition', addToast);
+
+            return response;
+        },
+        undefined,
+        (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
+        undefined,
+        'Preparing Export'
+    );
+};
+
+const handleExportMaterialRequisitionsExcel = () => handleExportMaterialRequisition('Excel')
+const handleExportMaterialRequisitionPdf = () => handleExportMaterialRequisition('PDF')
+return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+        <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
+
+        <TableActionToolbar
+            isShowSearchBar
+            searchTerm={searchTerm}
+            searchPlaceholder="Search By Unique Id"
+            onSearchChange={searchMaterialRequisition}
+            onClearSearch={clearSearchMaterialRequisition}
+            isShowFilterButton
+            filters={filters}
+            onOpenFilter={() => {
+                setTempFilters(filters);
+                setShowFilterPopup(true);
+            }}
+            isShowCustomizeButton
+            onCustomize={() => setIsShowCustomizeMaterialRequisitionColumnsModal(true)}
+
+            isShowAddButton={canAction}
+            addTitle="Add"
+            onAdd={handleAddMaterialRequisitionModal}
+
+            isShowImportButton={canAction}
+            isShowExportButton={canExport && MaterialRequisitionForTable.length > 0}
+
+            onExportExcel={handleExportMaterialRequisitionsExcel}
+            onExportPdf={handleExportMaterialRequisitionPdf}
+            exportLoading={isLoading}
+        />
+
+        <DataTable
+            data={MaterialRequisitionForTable}
+            columns={visibleMaterialRequisitionColumns}
+            pagination={MaterialRequisitionPaginationInfo}
+            emptyMessage="No Material Requisition Found"
+            fixedHeight
+            recordsPerPage={20}
+            className="flex-1"
+            sortInfo={sortInfo}
+            onSort={handleSortColumn}
+        />
+
+        <CustomizeColumnsModal
+            isOpen={isShowCustomizeMaterialRequisitionColumnsModal}
+            onClose={() => setIsShowCustomizeMaterialRequisitionColumnsModal(false)}
+            onApply={keys => {
+                const withRequired = Array.from(new Set([...keys, ...requiredMaterialRequisitionColumnKeys]));
+                setSelectedMaterialRequisitionColumnKeys(withRequired);
+                try {
+                    LocalStorageHelper.storeMaterialRequisitionTableColumns?.(
+
+                        JSON.stringify(withRequired)
+                    );
+                } catch { }
+            }}
+            columns={MaterialRequisitionColumns}
+            selectedKeys={selectedMaterialRequisitionColumnKeys}
+            requiredKeys={requiredMaterialRequisitionColumnKeys}
+            title="Customize Table Columns"
+        />
+        <DeleteDialog
+            isOpen={isConfirmationDialogBoxOpen}
+            onClose={() => {
+                setIsConfirmationDialogBoxOpen(false)
+                setDeleteData(null)
+            }}
+            onConfirm={handleDeleteRequest}
+            loading={isLoading}
+            pageName='Material Requisition'
+        />
+
+        <Modal
+            isOpen={showFilterPopup}
+            onClose={() => setShowFilterPopup(false)}
+            title="Filter - Material Requisition"
+            onSubmit={e => {
+                e.preventDefault();
+                applyFilters();
+            }}
+            saveText="Apply"
+            cancelText="Clear"
+            onCancel={() => clearFilters()}
+            size="small-half"
+        >
+            <div className="space-y-4">
+                <div>
+                    <DatePickerInput
+                        label='From Date'
+                        value={tempFilters.FromDate || ''}
+                        onChange={value => handleFilterChange('FromDate', value || '')}
+                        placeholder="Select From Date"
+                    />
+                </div>
+
+                <div>
+                    <DatePickerInput
+                        label='To Date'
+                        value={tempFilters.ToDate || ''}
+                        onChange={value => handleFilterChange('ToDate', value || '')}
+                        placeholder="Select To Date"
+                    />
+                </div>
+            </div>
+        </Modal>
+    </div>
+);
+};
+
 export default MaterialRequisition;

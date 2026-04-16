@@ -5,7 +5,6 @@ export const MaterialRequisitionPurchaseOrderApi = {
     DELETE: '/MaterialRequisitionPurchaseOrder/DeleteMaterialRequisitionPurchaseOrder',
 
     GENERATE_MATERIAL_REQUISITION: '/MaterialRequisitionPurchaseOrder/GenerateMaterialRequisitionPurchaseOrderPdf',
-
 } as const
 
 export type MaterialRequisitionPurchaseOrderApiKeys = keyof typeof MaterialRequisitionPurchaseOrderApi

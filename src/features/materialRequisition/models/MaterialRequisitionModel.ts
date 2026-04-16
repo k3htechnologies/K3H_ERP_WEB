@@ -35,10 +35,10 @@ export interface MaterialRequisitionData {
     InvoiceApprovalStatus:string;
     CreatedById:number;
     CreatedBy:string;
-    CreatedDate:Date;
+    CreatedDate:string;
     ModifiedById:number;
     ModifiedBy:string;
-    ModifiedDate:null;
+    ModifiedDate:string;
     PaidAmount:number;
     TotalPoAmount:number;
     TotalInvoiceAmount:number;
@@ -72,7 +72,7 @@ export interface MaterialRequisitionDetailData{
     UomMasterId:number;
     UomCode:string;
     Uom: string;
-    RequiredDate:Date;
+    RequiredDate:string;
     MaterialReceivedQuantityTillDate: number;
     CreatedById:number;
     CreatedBy:string;

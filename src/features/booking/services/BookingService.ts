@@ -8,7 +8,9 @@ import type {
     BookingDeleteResponse,
     FilterWithPaginationChannelPartnerBookingRequest,
     FilterPaymentScheduleStagesRequest,
-    PaymentScheduleStagesResponse
+    PaymentScheduleStagesResponse,
+    UpdatePayTrackBookingRegistrationDateParking,
+    BookingUpdateegistrationDateParkingResponse
 } from '@/features/booking/models/BookingModel'
 
 import * as E from 'fp-ts/Either';
@@ -51,6 +53,13 @@ export const bookingService = {
     apiCallPullPaymentScheduleStages: async (params: FilterPaymentScheduleStagesRequest): Promise<E.Either<Failure, PaymentScheduleStagesResponse>> => {
         try {
             return E.right(await bookingDatasource.pullPaymentScheduleStages(params));
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code });
+        }
+    },
+    apiCallUpdatePayTrackBookingRegistrationDateParking: async (params: UpdatePayTrackBookingRegistrationDateParking): Promise<E.Either<Failure, BookingUpdateegistrationDateParkingResponse>> => {
+        try {
+            return E.right(await bookingDatasource.updatePayTrackBookingRegistrationDateParking(params));
         } catch (error: any) {
             return E.left({ message: error.message, code: error.code });
         }

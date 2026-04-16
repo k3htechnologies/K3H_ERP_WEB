@@ -23,11 +23,13 @@
 
     /* Path Aliases */
     "baseUrl": "./src",
+    "ignoreDeprecations":"6.0",
     "paths": {
       "@/*": [
         "*"
       ]
     },
+    
     
     /* Linting */
     "strict": true,

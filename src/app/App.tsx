@@ -181,7 +181,7 @@ import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRe
 import AddUpdateInovice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 
-// Loading component for Suspense fallback
+// Loading component for Suspense fallback 
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
     <div className="text-center">
@@ -452,7 +452,7 @@ function App() {
 
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
-            
+
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
             <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />

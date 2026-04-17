@@ -187,7 +187,6 @@ export const Details: React.FC = () => {
 
     const handleCopyMaterialRequisition = async (e: React.FormEvent) => {
         e.preventDefault();
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,

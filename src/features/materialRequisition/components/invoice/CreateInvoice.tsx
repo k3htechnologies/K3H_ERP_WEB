@@ -271,7 +271,6 @@ const AddUpdateInovice: React.FC = () => {
             return;
         }
         await runApiWithLoader(
-
             setIsLoading,
             setLoadingMessage,
 
@@ -288,7 +287,6 @@ const AddUpdateInovice: React.FC = () => {
                     
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');
-
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }

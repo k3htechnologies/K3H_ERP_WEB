@@ -174,7 +174,7 @@ export const Overview: React.FC = () => {
                             <section className="bg-white px-4 pt-1 pb-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Invoice Details</h4>
                                 {matrialRequisitionDetailData.map((item, index) => (
-                                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 rounded-lg p-4 mt-2 ">
+                                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 rounded-lg p-2 mt-2 ">
                                         <FieldItem label="Invoice No." value={item.MaterialName} />
                                         <FieldItem label="Sub Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                         <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />

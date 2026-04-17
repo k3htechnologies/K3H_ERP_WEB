@@ -350,7 +350,7 @@ export const Details: React.FC = () => {
 
                 <div className="lg:col-span-5 pb-3 overflow-y-auto thin-scroll h-[250px]">
                     {matrialRequisitionDetailData.map((item, index) => (
-                        <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 bg-gray-200 rounded-lg p-4 mt-2 ">
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 bg-gray-200 rounded-lg p-2 mt-2 ">
                             {active && (
                                 <Checkbox
                                     checked={selectedIds.includes(item.MaterialRequisitionDetailId)}

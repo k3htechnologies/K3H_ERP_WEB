@@ -15,7 +15,6 @@ import { Button, Input } from "@/ui/components/forms";
 import { FileText } from "lucide-react";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
-import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 
 const initialFormState = (): GenerateMaterialRequisitionPurchaseOrderPdfData => ({
@@ -379,38 +378,57 @@ export const PurchaseOrder: React.FC = () => {
                 )}
             </div>
 
-            {hasPurchaseOrder && (
-                <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
-                    <div className="flex justify-between">
-                        <section className="bg-white pt-1 pb-4">
-                            <h1>Purchase order File</h1>
+             {hasPurchaseOrder && (
+                <div className="bg-gray-100 p-1 rounded-lg shadow-md relative">
 
-                            <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
-                                <p>Document</p>
-                                <MultiImageViewer
-                                    images={parseDocumentUrls(materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? '')}
-                                    title="Purchase order"
-                                    isIcon={false}
-                                    triggerLabel="Document"
-                                />
-                            </div>
+                    {/* HEADER */}
+                    <h2 className="text-lg font-semibold mb-4">Purchase Order File</h2>
 
-                            <FieldItem
-                                label="Created Date"
-                                value={formatDate_dd_MonthName_yy(materialRequisitionPurchaseOrder[0]?.CreatedDate ?? '')}
-                            />
-                        </section>
-
-                        <div>
-                            <Button
-                                color="red"
-                                variant="solid"
-                                colorMode="extraLight"
-                                onClick={() => handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder[0])}
-                            >
-                                Delete
-                            </Button>
+                        <div className="bg-gray-200 font-semibold text-base px-4 py-2 mb-3">
+                            Links in PDF
                         </div>
+
+                        <div className="border border-blue-400 text-sm p-3 mb-4">
+                            There are two types of links in PDF: internal and external links.
+                            You can preview your uploaded document below.
+                        </div>
+
+                        <div className="text-blue-600 underline cursor-pointer text-sm mb-4">
+                            <MultiImageViewer
+                                images={parseDocumentUrls(
+                                    materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? ''
+                                )}
+                                title="Purchase Order"
+                                isIcon={false}
+                                triggerLabel="Open Document"
+                            />
+                        </div>
+
+                        {/* CREATED DATE */}
+                        <div className="text-sm text-gray-600 mt-6">
+                            <span className="font-medium">Created By/Date</span>
+                            <div>
+                                {formatDate_dd_MonthName_yy(
+                                    materialRequisitionPurchaseOrder[0]?.CreatedDate ?? ""
+                                )}
+                            </div>
+                        </div>
+
+                    {/* DELETE BUTTON */}
+                    
+                    <div className="absolute bottom-4 right-4">
+                        <Button
+                            color="red"
+                            variant="solid"
+                            onClick={() =>
+                                handleConfirmationDialogBoxOpen(
+                                    materialRequisitionPurchaseOrder[0]
+                                )
+                            }
+                            className="px-4 py-2 rounded-md"
+                        >
+                            Delete
+                        </Button>
                     </div>
                 </div>
             )}

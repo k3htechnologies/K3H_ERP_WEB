@@ -27,7 +27,7 @@ export const Details: React.FC = () => {
     const [matrialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-    const [materialRequisitionList, setMaterialRequisitionList] = useState<MaterialRequisitionData[]>([]);
+    const [, setMaterialRequisitionList] = useState<MaterialRequisitionData[]>([]);
     const [active, setActive] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
@@ -153,7 +153,9 @@ export const Details: React.FC = () => {
 
                     const newRecord = response.right.Data as MaterialRequisitionData;
                     setSelectedIds([]);
+
                     setActive(false);
+
                     fetchDetailsdata();
 
                     setMaterialRequisitionList(prev => [newRecord, ...prev]);
@@ -178,7 +180,6 @@ export const Details: React.FC = () => {
             'Split Material Requisition'
         );
     };
-
 
     const selectedMaterials = matrialRequisitionDetailData.filter(item =>
         selectedIds.includes(item.MaterialRequisitionDetailId)
@@ -269,15 +270,11 @@ export const Details: React.FC = () => {
                     Uniquekey: deleteData.Uniquekey,
                     ProjectId: Number(projectId)
                 };
-
                 const response = await materialRequisitionService.apiCallDeleteMaterialRequisition(payload);
 
                 if (E.isRight(response)) {
-
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
-
                 } else {
-
                     addToast({ type: 'error', title: response.left.message });
                 }
                 setDeleteData(null)
@@ -291,6 +288,7 @@ export const Details: React.FC = () => {
             'Deleting Requisition'
         );
     };
+
     //#region
     return (
         <div className="justify-center">
@@ -319,12 +317,12 @@ export const Details: React.FC = () => {
 
             <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <h1 className="text-lg font-semibold text-gray-900 pb-2">Basic Details</h1>
-
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <FieldItem label="Unique ID" value={matrialRequisitionData?.SystemGeneratedCode} />
                         <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
                         <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
+
                         <div>
                             <p className="text-gray-500">Attachment</p>
                             <MultiImageViewer
@@ -334,22 +332,20 @@ export const Details: React.FC = () => {
                                 triggerLabel="-"
                             />
                         </div>
+
                     </div>
                 </div>
             </div>
 
             <div className=" gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
-
                 <div className="flex justify-between">
                     <h1 className="text-lg font-semibold text-gray-900 pb-2">Material Details</h1>
-
                     <Button
                         className="bg-blue-600 text-white font-bold py-1 p-4 rounded-md"
                         onClick={() => setActive(true)}
                     >
                         Split
                     </Button>
-
                 </div>
 
                 <div className="lg:col-span-5 pb-3 overflow-y-auto thin-scroll h-[250px]">

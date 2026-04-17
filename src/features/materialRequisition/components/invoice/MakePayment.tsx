@@ -8,8 +8,6 @@ import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-
 import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
 import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
@@ -28,7 +26,6 @@ const MakePayment: React.FC = () => {
     const [gRNData, setRGNData] = useState<MaterialRequisitionGRNData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [invoiceData, setInvoiceData] = useState<MaterialRequisitionInvoiceData | null>(null);
-
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { projectId } = useProject();
@@ -38,11 +35,6 @@ const MakePayment: React.FC = () => {
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const navigate = useNavigate();
-
-
-    //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/materialRequisition/view');
-    //#endregion
 
     useEffect(() => {
         if (!projectId) return;

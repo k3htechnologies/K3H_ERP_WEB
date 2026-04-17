@@ -285,6 +285,9 @@ const AddUpdateInovice: React.FC = () => {
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
                     navigate("/materialRequisition/view");
+                    
+                    setPerformaInvoiceURLL('');
+                    setUploadInvoiceURL('');
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -296,7 +299,7 @@ const AddUpdateInovice: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Add'
+            'Create Invoice'
         );
     };
     //#endregion

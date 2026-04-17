@@ -16,6 +16,7 @@ import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListM
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { PAYMENT_MODE, PAYMENT_TYPE } from "@/core/constants";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 const initialFormState = (): AddUpdatePaidBrokerageBookingRequest => ({
     PaidBrokerageBookingId: 0,
@@ -183,6 +184,16 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         }
         if ((Number(formData.TDSAmount) || 0) >= (Number(formData.AmountPaid) || 0)) {
             newErrors.TDSAmount = 'TDS amount cannot be greater than Paid Amount.';
+        }
+
+        if (!formData.BankListMasterId) {
+            newErrors.BankListMasterId = 'Bank Name is required.';
+        }
+        if (!formData.AmountPaid) {
+            newErrors.AmountPaid = 'Amount is required.';
+        }
+         if (!hasAnyDocumentFile(transactionReceiptURLFiles, transactionReceiptURL, removeTransactionReceiptURLUrls)) {
+            newErrors.TransactionReceiptURL = "File is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -375,6 +386,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                     maxFiles={1}
                                     maxSizeMB={10}
+                                    error={errors.TransactionReceiptURL}
                                     onRemoveExisting={(url) => {
                                         SetRemoveTransactionReceiptURLUrls((prev) => [...prev, url])
                                     }}

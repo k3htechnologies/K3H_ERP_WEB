@@ -153,9 +153,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
         setIsConfirmationDialogBoxOpen(false);
 
         if (!deleteBrokerageInvoiceData) return;
-
         await runApiWithLoader(
-
             setIsLoading,
             setLoadingMessage,
             async () => {
@@ -217,23 +215,25 @@ export const ViewBrokerageInvoice: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6 ">
             <Loader loading={isLoading} title={loadingMessage}><div></div></Loader>
 
-            <HeaderActionBar
-                titleText='Invoices'
-                onCancel={() => handleBackToListBrokerage()}
-                isLoading={false}
-            />
+            <div className="flex justify-between">
+                <HeaderActionBar
+                    titleText='Invoices'
+                    onCancel={() => handleBackToListBrokerage()}
+                    isLoading={false}
+                />
 
-            {activeTab === 'Invoice' && (
-                <div className="flex justify-end ">
-                    <Button
-                        color="blue"
-                        size="sm"
-                        onClick={() => handleAddBrokerageInvoice(currentBookingId, 0)}
-                    >
-                        ADD
-                    </Button>
-                </div>
-            )}
+                {activeTab === 'Invoice' && (
+                    <div className="flex justify-end ">
+                        <Button
+                            color="blue"
+                            size="sm"
+                            onClick={() => handleAddBrokerageInvoice(currentBookingId, 0)}
+                        >
+                            ADD
+                        </Button>
+                    </div>
+                )}
+            </div>
 
             <div className="pt-2">
                 <Tabs

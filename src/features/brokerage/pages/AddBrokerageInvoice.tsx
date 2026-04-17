@@ -17,8 +17,7 @@ import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { filterIFSC, filterNumbers, isValidAccount, isValidIFSC } from "@/core/utils/fileValidation";
-import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
+import { filterIFSC, filterNumbers, hasAnyDocumentFile, isValidAccount, isValidIFSC } from "@/core/utils/fileValidation";
 
 const initialFormState = (): AddUpdateBrokerageInvoiceRequest => ({
     BrokerageInvoiceId: 0,
@@ -100,17 +99,15 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         if (!isAddMode) {
             fetchBrokerageInvoiceDetails();
         }
-    }, [currentBookingId, projectId,brokerageInvoiceId]);
+    }, [currentBookingId, projectId, brokerageInvoiceId]);
     //#endregion
 
     //#region FETCH BROKERAGE INVOICE DETAILS
     const fetchBrokerageInvoiceDetails = async () => {
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: FilterWithPaginationBrokerageInvoiceRequest = {
                     PageNumber: 1,
                     PageSize: 20,
@@ -182,9 +179,8 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
             newErrors.AccountName = 'Account Name is required.';
         }
         if (!formData.Remark) {
-            newErrors.Remark = 'Case Remarks is required.';
+            newErrors.Remark = 'Remarks is required.';
         }
-
         if (!formData.IFSCCode?.trim()) {
             newErrors.IFSCCode = 'IFSC Code is required.'
         }
@@ -200,17 +196,24 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         } else if (!isValidAccount(formData.AccountNumber.toString())) {
             newErrors.AccountNumber = "Enter a valid Account Number (6–18 digits)";
         }
-
+        if (!formData.InvoiceNumber) {
+            newErrors.InvoiceNumber = 'Invoice Number is required.';
+        }
+        if (!formData.BankListMasterId) {
+            newErrors.BankListMasterId = 'Bank Name is required.';
+        }
+        if (!formData.InvoiceAmount) {
+            newErrors.InvoiceAmount = 'Invoice Amount is required.';
+        }
         if (!formData.InvoiceDate) {
             newErrors.InvoiceDate = 'Invoice Date is required.';
         }
         if (!formData.DueDate) {
             newErrors.DueDate = 'Due Date is required.';
-
-        } else if (formData.InvoiceDate != null && formData.InvoiceDate !== "" && !isToDateGreaterOrEqualFromDate(formData.InvoiceDate, formData.DueDate)) {
-            newErrors.DueDate = "Due Date must be greater to Invoice Date";
         }
-
+        if (!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceURLUrls)) {
+            newErrors.UploadInvoiceURL = "File is required.";
+        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -339,6 +342,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                     maxFiles={3}
                                     maxSizeMB={10}
+                                    error={errors.UploadInvoiceURL}
                                     onRemoveExisting={(url) => {
                                         SetRemoveUploadInvoiceURLUrls((prev) => [...prev, url])
                                     }}

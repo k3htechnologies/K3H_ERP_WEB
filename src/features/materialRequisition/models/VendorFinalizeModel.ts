@@ -10,8 +10,6 @@ export interface FilterWithPaginationVendorForEnquiryRequest {
 export interface FilterWithPaginationVendorForSelectedEnquiryRequest {
     MaterialRequisitionId: number | 0
     Uniquekey:string | null
-    ProjectId: number | 0
-    ClientRegistrationId?: number | 0
     ExportType? : "PDF" | "Excel"
 
 }

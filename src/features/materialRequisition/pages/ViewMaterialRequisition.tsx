@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Invoice } from "../components/invoice/Invoice";
 import Overview from "../components/Overview";
 import PurchaseOrder from "../components/PurchaseOrder";
+import { FinalizedVendor } from "../components/FinalizedVendor";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
@@ -25,6 +26,7 @@ export const ViewMaterialRequisition: React.FC = () => {
     const navigate = useNavigate();
     const { listState } = useMaterialRequisitionListState();
     const systemGeneratedCode = listState.SystemGeneratedCode;
+    const materialRequisitionStatus = listState.MaterialRequisitionStatus;
 
     //#region BACK MATERIAL REQUISITION PAGE
     const handleBackToListMaterialRequisition = () => {
@@ -36,7 +38,8 @@ export const ViewMaterialRequisition: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             <HeaderActionBar
-                titleText={systemGeneratedCode ?? "-"}
+                subTitleText={systemGeneratedCode ?? "-"}
+                subSubTitleText={materialRequisitionStatus ?? "-"}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListMaterialRequisition()}
@@ -55,7 +58,8 @@ export const ViewMaterialRequisition: React.FC = () => {
             {activeTab === 'Overview' && <Overview />}
             {activeTab === 'Invoice' && <Invoice />}
             {activeTab === 'Purchase Order' && <PurchaseOrder />}
-            
+            {activeTab === 'Finalize Vendor' && <FinalizedVendor />}
+
         </div>
     );
 };

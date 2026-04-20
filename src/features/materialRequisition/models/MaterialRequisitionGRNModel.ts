@@ -48,12 +48,29 @@ export interface DeleteMaterialRequisitionGRN {
     ProjectId: number
 }
 
-export interface MaterialRequisitionGRNSummary {
-    MaterialRequisitionId: number | 0
-    Uniquekey: string | null
+export interface FilterWithPaginationMaterialRequisitionGRNSummary {
+    PageSize: number
+    PageNumber: number
+    MaterialRequisitionId?: number
+    Uniquekey?: string
 }
+
+export interface MaterialRequisitionGRNSummaryData {
+    MaterialRequisitionDetailId: number | 0
+    Uniquekey: string | null
+    MaterialMasterId: number | null
+    MaterialName: string | null
+    SubMaterialName: string | null
+    MaterialQuantity: number | 0
+    ChallanNumber: string | 0
+    VehicleNumber: string | null
+    UploadChallanURL: string | null
+    CreatedDate: string;
+
+}
+
 
 export type MaterialRequisitionGRNListResponse = ApiResponse<MaterialRequisitionGRNData[]>;
 export type MaterialRequisitionGRNSaveResponse = ApiResponse<MaterialRequisitionGRNData[]>;
 export type MaterialRequisitionGRNDeleteResponse = ApiResponse<number>;
-export type MaterialRequisitionGRNSummaryListResponse = ApiResponse<MaterialRequisitionGRNSummary[]>
+export type MaterialRequisitionGRNSummaryListResponse = ApiResponse<MaterialRequisitionGRNSummaryData[]>

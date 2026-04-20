@@ -20,7 +20,6 @@ export const Overview: React.FC = () => {
     const { addToast } = useToast();
     const [matrialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
-
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
@@ -69,11 +68,8 @@ export const Overview: React.FC = () => {
         );
     };
 
-    //#region
     return (
         <div className="bg-white p-1">
-            {/* Loader */}
-
             <Loader loading={isLoading} title={loadingMessage}> {" "} <div></div>{" "} </Loader>
 
             <div className="grid grid-cols-12 gap-5 pt-1">
@@ -91,7 +87,7 @@ export const Overview: React.FC = () => {
                                 <div>
                                     <p className="text-gray-500">Attachment</p>
                                     <MultiImageViewer
-                                        images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL)}
+                                        images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL)}
                                         title="Attachment"
                                         isIcon={false}
                                         triggerLabel="-"
@@ -175,7 +171,7 @@ export const Overview: React.FC = () => {
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Invoice Details</h4>
                                 {matrialRequisitionDetailData.map((item, index) => (
                                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 rounded-lg p-2 mt-2 ">
-                                        <FieldItem label="Invoice No." value={item.MaterialName} />
+                                        <FieldItem label="Invoice Number" value={item.MaterialName} />
                                         <FieldItem label="Sub Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                         <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
                                     </div>

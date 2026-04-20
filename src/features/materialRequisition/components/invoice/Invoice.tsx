@@ -74,26 +74,21 @@ export const Invoice: React.FC = () => {
         );
     };
 
-    //#region NAVIGATE CREATE INVOICE
     const handleCreateInvoice = useCallback(() => {
         navigate(`/addInvoice/add`);
     }, [navigate]);
-    //#endregion
 
-    //#region HANDLE PAGE CHNAGE
     const handlePageChange = (page: number) => {
         setPagination({ currentPage: 1 });
         loadInvoiceData(page, {})
     }
 
-    //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
         loadInvoiceData(1, {}, sort);
     }, []);
 
-    //#region TABLE PAGINATION INFO
     const InvoicePaginationInfo: PaginationInfo = useMemo(
         () => ({
             currentPage: pagination.currentPage,
@@ -160,7 +155,6 @@ export const Invoice: React.FC = () => {
 
     return (
         <div>
-            {/* Loader */}
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <DataTable

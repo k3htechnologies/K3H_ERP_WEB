@@ -13,7 +13,6 @@ import { materialRequisitionGRNService } from "../../services/MaterialRequisitio
 import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
 import { materialRequisitionService } from "../../services/MaterialRequisitionService";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
-import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { materialRequisitionInvoiceService } from "../../services/MaterialRequisitionInvoiceService";
 import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceData } from "../../models/MaterialRequisitionInvoiceModel";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
@@ -21,6 +20,7 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { Button } from "@/ui/components/forms";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
 
 const MakePayment: React.FC = () => {
     const [gRNData, setRGNData] = useState<MaterialRequisitionGRNData | null>(null);
@@ -181,8 +181,6 @@ const MakePayment: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
-
-            {/* Loader */}
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <div className="pb-2">
@@ -206,15 +204,15 @@ const MakePayment: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-lg p-4 space-y-4 h-[110px] shadow-sm border border-gray-300 ">
-                    <DataTableWithOutBorder
+                {/* <div className="bg-white rounded-lg p-4 space-y-4 h-[110px] shadow-sm border border-gray-300 "> */}
+                    <DataTableWithHeadColor
                         columns={MaterialRequisitionDetailColumns}
                         data={matrialRequisitionDetailData}
                         emptyMessage="No Material Requisition Found"
                         fixedHeight={true}
                         className="flex-1"
                     />
-                </div>
+                {/* </div> */}
             </div>
 
             <div className="gap-x-4 rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
@@ -235,7 +233,7 @@ const MakePayment: React.FC = () => {
                         <FieldItem label="DuDate" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDueDate ?? '')} />
                         <div>
                             <p className="text-gray-500">Invoice Document</p>
-                             <MultiImageViewer
+                            <MultiImageViewer
                                 images={parseDocumentUrls(invoiceData?.UploadInvoiceURL)}
                                 title="Attachment"
                                 isIcon={false}

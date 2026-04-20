@@ -452,14 +452,14 @@ function App() {
 
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
-            
+
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
             <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
             <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
 
             <Route path="materialRequisition" element={<MaterialRequisitionListStateProvider><MaterialRequisition /></MaterialRequisitionListStateProvider>} />
-            <Route path="materialRequisition/add" element={<AddUpdateMaterialRequisition />} />
+            <Route path="materialRequisition/add:/MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider><AddUpdateMaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="addInvoice/add" element={<MaterialRequisitionListStateProvider><AddUpdateInovice /></MaterialRequisitionListStateProvider>} />
             <Route path="invoicePayment" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />

@@ -88,10 +88,12 @@ export const MaterialRequisition: React.FC = () => {
     }, []);
 
 
-    const handleNavigateToView = (row: MaterialRequisitionData) => {
+    const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage, MaterialRequisitionStatus: row.MaterialRequisitionStatus, SystemGeneratedCode: row.SystemGeneratedCode, Uniquekey: row.Uniquekey });
-        navigate('/MaterialRequisition/view');
-    };
+        navigate('/materialRequisition/view');
+    }, [navigate, updateListState],
+    );
+
     const handleDeleteRequest = async () => {
         setIsConfirmationDialogBoxOpen(false);
 
@@ -139,9 +141,7 @@ export const MaterialRequisition: React.FC = () => {
                     setDeleteData(null);
 
                 } else {
-
                     addToast({ type: 'error', title: response.left.message });
-
                 }
 
                 return response;

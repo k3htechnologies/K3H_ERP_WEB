@@ -7,8 +7,18 @@ import { useMaterialRequisitionListState } from "../context/MaterialRequisitionL
 import { useNavigate } from "react-router-dom";
 import { Invoice } from "../components/invoice/Invoice";
 import PurchaseOrder from "../components/PurchaseOrder";
+import { Button } from "@/ui/components/forms";
+import useToast from "@/core/hooks/useToast";
+import { copyToClipboard } from "@/core/utils/comman";
+import { Copy } from "lucide-react";
+import GRN from "../components/GRN/GRN";
 
 export const ViewMaterialRequisition: React.FC = () => {
+
+    const { addToast } = useToast();
+    const navigate = useNavigate();
+    const { listState } = useMaterialRequisitionListState();
+    const systemGeneratedCode = listState.SystemGeneratedCode;
 
     const MaterialRequisitionTabList = [
         { id: 'Overview', label: 'Overview' },
@@ -21,28 +31,42 @@ export const ViewMaterialRequisition: React.FC = () => {
 
     const [activeTab, setActiveTab] = useState(MaterialRequisitionTabList[0].id);
 
-    // NAVIGATION
-    const navigate = useNavigate();
-    const { listState } = useMaterialRequisitionListState();
-    const systemGeneratedCode = listState.SystemGeneratedCode;
-    const materialRequisitionStatus = listState.MaterialRequisitionStatus
-
-    //#region BACK MATERIAL REQUISITION PAGE
     const handleBackToListMaterialRequisition = () => {
         navigate('/materialRequisition');
     };
-    //#endregion
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
-            <HeaderActionBar
-                subTitleText={systemGeneratedCode ?? "-"}
-                subSubTitleText={materialRequisitionStatus ?? '-'}
-                cancelText="Cancel"
-                EditText="Edit"
-                onCancel={() => handleBackToListMaterialRequisition()}
-            />
+            <div className="flex">
+                <HeaderActionBar
+                    titleText={systemGeneratedCode ?? "-"}
+                    cancelText="Cancel"
+                    EditText="Edit"
+                    onCancel={() => handleBackToListMaterialRequisition()}
+                />
+
+                <Button
+                    onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const success = await copyToClipboard(systemGeneratedCode);
+                        if (success) {
+                            addToast({ type: 'success', title: `${systemGeneratedCode} Copied!` });
+                        }
+                    }}
+                    color="transparent"
+                    size="sm"
+                    style={{
+                        padding: '2px 6px',
+                        color: '#6B7280',
+                        cursor: 'pointer'
+                    }}
+                    title="Copy"
+                >
+                    <Copy className="h-4 w-4" />
+                </Button>
+            </div>
 
             <div className="pt-3 pb-5">
                 <Tabs
@@ -57,6 +81,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             {activeTab === 'Overview' && <Overview />}
             {activeTab === 'Invoice' && <Invoice />}
             {activeTab === 'Purchase Order' && <PurchaseOrder />}
+            {activeTab === 'GRN' && <GRN />}
 
         </div>
     );

@@ -49,7 +49,6 @@ export const PurchaseOrder: React.FC = () => {
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteGeneratePurchaseOrderData, setDeleteGeneratePurchaseOrderData] = useState<MaterialRequisitionPurchaseOrderData | null>(null)
     const [generatePurchaseOrderPdfList, setGeneratePurchaseOrderPdfList] = useState<GenerateMaterialRequisitionPurchaseOrderPdfData[]>([])
-
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
@@ -98,7 +97,6 @@ export const PurchaseOrder: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-    //#endregion
 
     const handleGeneratepurchaseorder = () => {
         setDeleteGeneratePurchaseOrderData(null);
@@ -107,7 +105,6 @@ export const PurchaseOrder: React.FC = () => {
         setIsAddUpdateModalOpen(true);
     }
 
-    // ============================================================= [VALIDATION FUNCTION] =============================================================================================
     const validateGeneratePurchaseOrderForm = (): {
 
         isValid: boolean
@@ -129,18 +126,16 @@ export const PurchaseOrder: React.FC = () => {
         }
     }
 
-    //PUSH FORM DATA
     const PushGeneratePurchaseOrderFormData = (): GenerateMaterialRequisitionPurchaseOrderPdfData => {
         return {
             MaterialRequisitionId: Number(currentMaterialRequisitionId),
-            Uniquekey: formData.Uniquekey,
+            Uniquekey: currentUniquekey ?? '',
             Remarks: formData.Remarks,
             TermsCondition: formData.TermsCondition,
             ProjectId: Number(projectId),
         };
     };
 
-    // GENERATE PURCHASE ORDER
     const handleGeneratePurchaseOrder = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -285,7 +280,6 @@ export const PurchaseOrder: React.FC = () => {
         );
     };
 
-    //#region DELETE PURCHASE ORDER
     const handleDeleteGeneratePurchaseOrder = async () => {
 
         setIsConfirmationDialogBoxOpen(false);
@@ -327,14 +321,11 @@ export const PurchaseOrder: React.FC = () => {
             "Deleting Purchase Order"
         );
     };
-    //#endregion
 
-    //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = (record: MaterialRequisitionPurchaseOrderData) => {
         setDeleteGeneratePurchaseOrderData(record);
         setIsConfirmationDialogBoxOpen(true);
     }
-    //#endregion
 
     const hasPurchaseOrder = materialRequisitionPurchaseOrder.length > 0 &&
         !!materialRequisitionPurchaseOrder[0];
@@ -378,44 +369,32 @@ export const PurchaseOrder: React.FC = () => {
                 )}
             </div>
 
-             {hasPurchaseOrder && (
-                <div className="bg-gray-100 p-1 rounded-lg shadow-md relative">
+            {hasPurchaseOrder && (
+                <div className="bg-white-100 p-1 rounded-lg shadow-md relative">
 
                     {/* HEADER */}
                     <h2 className="text-lg font-semibold mb-4">Purchase Order File</h2>
+                    <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
+                        <p>Document</p>
+                        <MultiImageViewer
+                            images={parseDocumentUrls(
+                                materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? ''
+                            )}
+                            title="Purchase Order"
+                            isIcon={false}
+                            triggerLabel="Document"
+                        />
+                    </div>
 
-                        <div className="bg-gray-200 font-semibold text-base px-4 py-2 mb-3">
-                            Links in PDF
-                        </div>
+                    <div className="text-sm text-gray-600 mt-2">
+                        <span className="font-medium">
+                            Created By {materialRequisitionPurchaseOrder[0].CreatedBy || "-"} on{" "}
+                            {materialRequisitionPurchaseOrder[0].CreatedDate
+                                ? formatDate_dd_MonthName_yy(materialRequisitionPurchaseOrder[0].CreatedDate)
+                                : "-"}
+                        </span>
+                    </div>
 
-                        <div className="border border-blue-400 text-sm p-3 mb-4">
-                            There are two types of links in PDF: internal and external links.
-                            You can preview your uploaded document below.
-                        </div>
-
-                        <div className="text-blue-600 underline cursor-pointer text-sm mb-4">
-                            <MultiImageViewer
-                                images={parseDocumentUrls(
-                                    materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? ''
-                                )}
-                                title="Purchase Order"
-                                isIcon={false}
-                                triggerLabel="Open Document"
-                            />
-                        </div>
-
-                        {/* CREATED DATE */}
-                        <div className="text-sm text-gray-600 mt-6">
-                            <span className="font-medium">Created By/Date</span>
-                            <div>
-                                {formatDate_dd_MonthName_yy(
-                                    materialRequisitionPurchaseOrder[0]?.CreatedDate ?? ""
-                                )}
-                            </div>
-                        </div>
-
-                    {/* DELETE BUTTON */}
-                    
                     <div className="absolute bottom-4 right-4">
                         <Button
                             color="red"
@@ -433,7 +412,6 @@ export const PurchaseOrder: React.FC = () => {
                 </div>
             )}
 
-            {/* GENERATE PURCHASE ORDER MODAL */}
 
             <Modal
                 isOpen={isAddUpdateModalOpen}
@@ -485,8 +463,6 @@ export const PurchaseOrder: React.FC = () => {
                     </div>
                 </div>
             </Modal>
-
-            {/* DELETE CONFIRMATION MODAL */}
 
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}

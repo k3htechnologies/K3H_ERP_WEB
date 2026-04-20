@@ -475,6 +475,12 @@ export const getPageInfo = (path: string) => {
                 description: "Secure your unit by completing the booking process",
             }
 
+            case 'brokerage':
+            return {
+                title: "Brokerage",
+                description: "Brokerage",
+            }
+
         default:
             return {
                 title: 'Dashboard',

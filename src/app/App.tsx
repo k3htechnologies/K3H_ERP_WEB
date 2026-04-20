@@ -174,6 +174,7 @@ import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context
 import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
 import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
 import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
+import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/BookingBrokerageListStateContext';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -197,6 +198,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/sign-in" replace />
   }
 
+
   return <>{children}</>
 }
 
@@ -215,18 +217,14 @@ function App() {
   return (
     <CountryStateCityDistrictVillage>
       <Suspense fallback={<LoadingSpinner />}>
+      
         <Routes>
           {/* Public Routes */}
+
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
+          <Route path="/" element={<ProtectedRoute> <Layout /></ProtectedRoute>}>
+
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
 
@@ -447,10 +445,11 @@ function App() {
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
 
-            <Route path="brokerage" element={<Brokerage />} />
-            <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
-            <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
-            <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
+            <Route path="brokerage" element={<BookingBrokerageListStateProvider><Brokerage /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/brokerageInvoice/view" element={<BookingBrokerageListStateProvider><ViewBrokerageInvoice /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/brokerageInvoice/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdateBrokerageInvoice /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/PaidBrokerageBooking/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdatePaidBrokerageBooking /></BookingBrokerageListStateProvider>} />
+
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

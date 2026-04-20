@@ -11,6 +11,7 @@ interface ExpandableConfig {
   renderRow: (data: any, row: any) => React.ReactNode
   expandButton?: { openText?: string; closeText?: string }
   alwaysFetchOnOpen?: boolean
+  rowExpandable?: (row: any) => boolean
 }
 
 interface DataTableProps {
@@ -27,6 +28,7 @@ interface DataTableProps {
   onSort?: (sortInfo: SortInfo) => void
   expandable?: ExpandableConfig
   alwaysFetchOnOpen?: boolean
+  rowExpandable?: true
 
 }
 
@@ -317,7 +319,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
                `}
                     style={{
                       ...(column.width ? { width: column.width } : {}),
-                      ...(column.fixed === 'left' ? { left: cIndex === 0 ? '0px' : '40px' } : {}),
+                      ...(column.fixed === 'left' ? { left: cIndex === 0 ? '0px' : '30px' } : {}),
                       fontSize: '14px',
                       fontWeight: '500',
                       lineHeight: '1.4',
@@ -366,11 +368,24 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
                     <tr className="hover:bg-gray-50 h-10 border-b border-gray-200">
                       {flattenColumns(effectiveColumns).map((column, colIndex) => {
                         // special-case the injected expand column
+
                         if (expandable && column.key === '__expand') {
+                          const canExpand = typeof expandable.rowExpandable === "function" ? expandable.rowExpandable(row) : true;
+
+                          if (!canExpand) {
+                            return (
+                              <td
+                                key={column.key}
+                                className="px-4 py-2 text-center sticky left-0 bg-white z-30"
+                                style={{ minWidth: '30px', verticalAlign: 'middle' }}
+                              />
+                            );
+                          }
+
                           const state = expandedMap[rowKey]
                           const isOpen = !!state?.open
                           return (
-                            <td key={column.key} className="px-4 py-2 text-center sticky left-0 bg-white z-30" style={{ minWidth: '40px', verticalAlign: 'middle' }}>
+                            <td key={column.key} className="px-4 py-2 text-center sticky left-0 bg-white z-30" style={{ minWidth: '30px', verticalAlign: 'middle' }}>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()

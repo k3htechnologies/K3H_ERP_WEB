@@ -590,6 +590,10 @@ export const Header: React.FC<HeaderProps> = ({
                                     <FieldItem label="CTS Number" value={projectMasterList[0]?.CTSNumber ?? '-'} />
                                 </div>
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5 pb-4 border-b border-[#135bec2e]">
+                                    <FieldItem label="Category" value={projectMasterList[0]?.Category ?? '-'} />
+                                </div>
+
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
                                     Location Details
                                 </h4>

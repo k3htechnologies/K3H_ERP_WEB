@@ -59,7 +59,7 @@ export const getClassificationParameterColumns = (): TableColumn[] => [
     },
     {
         key: 'TimeLine',
-        label: 'Time Line',
+        label: 'Timeline Of Purchase',
         width: '30',
         fixed: 'left',
         align: 'left'

@@ -27,6 +27,8 @@ import { getCallStatuscolor } from "../utils/Status";
 interface BookingProps {
     modalOpen: boolean;
     setModalOpen: (val: boolean) => void;
+    welcome: string;
+    setWelcome: (val: string) => void;
 }
 
 type FormDataType = {
@@ -34,7 +36,7 @@ type FormDataType = {
     ParkingId: string;
 };
 
-export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen }) => {
+export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, welcome, setWelcome }) => {
 
     const [bookingData, setBookingData] = useState<BookingData | null>(null);
     const [editEnquiryData, setEditEnquiryData] = useState<EnquiryData | null>(null);
@@ -45,9 +47,9 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen })
     const [selectedParkingValues, setSelectedParkingValues] = useState<string | number | null>(null);
 
     const [formData, setFormData] = useState<FormDataType>({
-    FinalRegistrationDate: null,
-    ParkingId: ''
-});
+        FinalRegistrationDate: null,
+        ParkingId: ''
+    });
 
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -68,6 +70,13 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen })
         loadBookingFromServer();
 
     }, [projectId, bookingId]);
+
+    useEffect(() => {
+        if (!welcome) return;
+
+        handleExportBookings();
+
+    }, [welcome]);
 
     useEffect(() => {
         if (!bookingId) return;
@@ -142,7 +151,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen })
                     PageSize: 1,
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
-                    IsCheckPermission: false
+                    IsCheckPermission: false,
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);
@@ -174,6 +183,39 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen })
             },
             undefined,
             'Loading Booking Data'
+        );
+    };
+
+    const handleExportBookings = async () => {
+        if (!bookingId) return;
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationBookingRequest = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    BookingId: bookingId,
+                    ProjectId: Number(projectId),
+                    IsCheckPermission: false,
+                    ExportType: welcome==="E-Mail" ?'WELCOME MESSAGE ON MAIL' :'WELCOME MESSAGE'
+                };
+
+                const response = await bookingService.apiCallPullBooking(params);
+
+                addToast({ type: 'success', title: `${welcome} sent successfully`})
+
+                setWelcome("");
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Sending'
         );
     };
 

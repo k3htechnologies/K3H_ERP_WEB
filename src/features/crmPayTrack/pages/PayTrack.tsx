@@ -52,10 +52,6 @@ const PayTrack: React.FC = () => {
 
     const { page, filters, sortInfo, searchTerm } = listState;
 
-
-    //#endregion
-
-    //#region DATA LOADING |  LOAD | SEARCH 
     const loadPayTrackList = async (pageNum: number, filterParams: FilterInfo, sortInfoParam?: SortInfo) => {
         await runApiWithLoader(
             setIsLoading,
@@ -265,7 +261,7 @@ const PayTrack: React.FC = () => {
             {
                 key: 'SystemGeneratedCode',
                 label: 'Enquiry Code',
-                width: '40',
+                width: '30',
                 sortable: false,
                 fixed: 'left',
                 align: 'left',
@@ -282,7 +278,6 @@ const PayTrack: React.FC = () => {
                 key: 'ApplicantName',
                 label: 'Applicant Name',
                 width: '14',
-                // Tooltip
                 render: (value, row) => (
                     <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">

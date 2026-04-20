@@ -33,6 +33,7 @@ export class PaidBrokerageBookingDatasourceImpl implements PaidBrokerageBookingD
             if (params.BookingId) queryParams.append('BookingId', params.BookingId.toString());
             if (params.BrokerageInvoiceId) queryParams.append('BrokerageInvoiceId', params.BrokerageInvoiceId.toString());
             if (params.PaidBrokerageBookingId) queryParams.append('PaidBrokerageBookingId', params.PaidBrokerageBookingId.toString());
+            if (params.InvoiceNumber?.trim()) queryParams.append("InvoiceNumber", params.InvoiceNumber.trim());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 

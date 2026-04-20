@@ -1271,6 +1271,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PAY_TRACK_BOOKING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.INWARD_OUTWARD);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING_Brokerage);
+      
 
     } catch (error) {
       console.error("ERROR : CLEARING LOCAL STORAGE:", error);

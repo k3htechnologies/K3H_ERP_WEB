@@ -1,5 +1,5 @@
 import type { Failure } from '@/core/api/FailureResponse';
-import type {  FilterWithPaginationPaymentSchedule, PaymentScheduleListResponse } from '@/features/crmPayTrack/models/PaymentScheduleModel';
+import type {  FilterWithPaginationPaymentSchedule, FilterWithPaginationPaymentScheduleDemandSummary, PaymentScheduleDemandSummaryListResponse, PaymentScheduleListResponse } from '@/features/crmPayTrack/models/PaymentScheduleModel';
 import * as E from 'fp-ts/Either';
 import { PaymentScheduleDatasourceImpl } from '@/features/crmPayTrack/datasources/PaymentScheduleDatasource';
 
@@ -12,6 +12,19 @@ export const paymentScheduleService = {
         try {
 
             return E.right(await paymentScheduleDatasource.pullPaymentSchedule(params, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallPullPaymentScheduleDemandSummary: async (params: FilterWithPaginationPaymentScheduleDemandSummary, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, PaymentScheduleDemandSummaryListResponse>> => {
+
+        try {
+
+            return E.right(await paymentScheduleDatasource.pullPaymentScheduleDemandSummary(params, options?.signal));
 
         } catch (error: any) {
 

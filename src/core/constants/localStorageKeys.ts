@@ -109,6 +109,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     INCENTIVE_REPORT: 'incentive_report.listState',
     BOOKING: 'booking.listState',
     PAY_TRACK_BOOKING: 'payTrackBooking.listState',
-    INWARD_OUTWARD: 'inwardOutward.listState'
+    INWARD_OUTWARD: 'inwardOutward.listState',
+    BOOKING_Brokerage: 'bookingBrokerage.listState',
 
 } as const

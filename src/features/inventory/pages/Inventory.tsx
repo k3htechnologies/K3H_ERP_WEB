@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from "react"
+import { useEffect, useState, useMemo, useCallback, useLayoutEffect } from "react"
 import { type FilterInventoryRequest, type InventoryData, type InventoryFlatFloorBasementPodiumWingData, type InventoryFlatData, type DeleteInventoryFlatRequest, type AddInventoryRequest, type AddInventoryWingRequest, type AddInventoryFloorRequest, type DeleteInventoryWingRequest, type DeleteInventoryBuildingRequest, type DeleteInventoryFloorRequest, type InventoryFloorData } from "../models/InventoryMasterModel"
 
 import * as E from 'fp-ts/Either'
@@ -407,7 +407,7 @@ const Inventory = () => {
     const memberFlatsCount = useMemo(
         () =>
             building
-                ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Member")
+                ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Alloted")
                 : 0,
         [inventory, building]
     );
@@ -434,7 +434,7 @@ const Inventory = () => {
     //#region COUNT WING WISE FLAT STATUS
     const selectedWingAvailableCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Available"), [selectedWing]);
     const selectedWingBookedCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Booked"), [selectedWing]);
-    const selectedWingMemberCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Member"), [selectedWing]);
+    const selectedWingMemberCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Alloted"), [selectedWing]);
     const selectedWingBlockedCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Blocked"), [selectedWing]);
     const selectedWingHoldCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Hold"), [selectedWing]);
     //#endregion
@@ -1004,7 +1004,7 @@ const Inventory = () => {
                     setSelectedBuildingIndex(null);
 
                     setSelectedBuilding(undefined);
-                    
+
                     setSelectedWing(undefined);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
@@ -1378,6 +1378,36 @@ const Inventory = () => {
         );
     };
     //#endregion
+
+    useLayoutEffect(() => {
+
+        const flatId = sessionStorage.getItem("scrollFlatId");
+
+        if (!flatId) return;
+
+        let retry = 0;
+
+        const scrollToElement = () => {
+            const element = document.getElementById(`flat-${flatId}`);
+
+            if (element) {
+
+                element.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                });
+
+                sessionStorage.removeItem("scrollFlatId");
+
+            } else if (retry < 15) {
+                retry++;
+                setTimeout(scrollToElement, 200);
+            }
+        };
+
+        scrollToElement();
+    }, []);
+    
     return (
         <>
             <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>

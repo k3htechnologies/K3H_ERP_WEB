@@ -15,7 +15,6 @@ export const CallLogViewModal: React.FC<CallLogViewModalProps> = ({
   isOpen,
   onClose,
   data,
-  canAction,
 }) => {
   if (!data) return null;
 

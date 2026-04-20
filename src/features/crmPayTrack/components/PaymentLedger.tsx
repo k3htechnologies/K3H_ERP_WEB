@@ -73,6 +73,7 @@ export const PaymentLedger: React.FC = () => {
   const [paymentLedgerList, setPaymentLedgerList] = useState<PaymentLedgerData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const dtRef = useRef<DataTableExpandableRef | null>(null);
 
   const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
@@ -174,7 +175,7 @@ export const PaymentLedger: React.FC = () => {
     }
   }, [isAddUpdateModalOpen, editingPaymentLedgerData, projectId]);
 
-  const loadPaymentLedger = async () => {
+  const loadPaymentLedger = async (searchText?: string) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -182,6 +183,7 @@ export const PaymentLedger: React.FC = () => {
         const params: FilterWithPaginationPaymentLedger = {
           ProjectId: Number(projectId),
           BookingId: bookingId,
+          PaymentFor: searchText?.trim() || undefined,
         };
 
         const response = await paymentLedgerService.apiCallPullPaymentLedger(params);
@@ -203,6 +205,16 @@ export const PaymentLedger: React.FC = () => {
       "Loading Payment Ledger Details",
     );
   };
+
+   const handleSearchChange = (value: string) => {
+        setSearchTerm(value);
+        loadPaymentLedger(value)
+    };
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        loadPaymentLedger('')
+    }
 
   const handleEditPaymentLedger = useCallback((row: PaymentLedgerSummaryModelData) => {
     setEditingPaymentLedgerData({
@@ -386,7 +398,7 @@ export const PaymentLedger: React.FC = () => {
         const params: FilterWithPaginationPaymentLedger = {
           ProjectId: Number(projectId),
           BookingId: bookingId,
-          ExportType:exportType
+          ExportType: exportType
         };
 
         const response = await paymentLedgerService.apiCallPullPaymentLedgerSummary(params);
@@ -765,7 +777,11 @@ export const PaymentLedger: React.FC = () => {
       </Loader>
 
       <TableActionToolbar
-        isShowSearchBar={false}
+        isShowSearchBar
+        searchTerm={searchTerm}
+        searchPlaceholder="Search By Stage"
+        onSearchChange={handleSearchChange}
+        onClearSearch={handleClearSearch}
 
         // EXPORT
         isShowExportButton={dataWithTotal.length > 0}

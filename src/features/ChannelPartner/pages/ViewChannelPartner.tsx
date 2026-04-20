@@ -14,6 +14,7 @@ import type { FilterWithPaginationChannelPartnerRequest } from "../models/Channe
 import { ChannelPartnerService } from "../services/ChannelPartnerService";
 import { Mail, Phone } from "lucide-react";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { formatCurrency } from "@/core/utils/comman";
 
 const ViewChannelPartner: React.FC = () => {
 
@@ -250,8 +251,8 @@ const ViewChannelPartner: React.FC = () => {
                                 <FieldItem label="No Of Enquiry" value={editChannelPartnerData?.NoOfEnquiry}  />
                                 <FieldItem label="No Of Booking" value={editChannelPartnerData?.NoOfBooking}/>
                                 <FieldItem label="Brokerage Percentage (%)" value={editChannelPartnerData?.BrokeragePercentage} />
-                                <FieldItem label="Brokerage Amount (₹)" value={editChannelPartnerData?.BrokerageAmount} />
-                                <FieldItem label="Paid Brokerage Amount (₹)" value={editChannelPartnerData?.PaidBrokerageAmount} />
+                                <FieldItem label="Brokerage Amount (₹)" value={formatCurrency(editChannelPartnerData?.BrokerageAmount)} />
+                                <FieldItem label="Paid Brokerage Amount (₹)" value={formatCurrency(editChannelPartnerData?.PaidBrokerageAmount)} />
                             </div>
                         </section>
                         <hr className="border-t border-gray-200" />

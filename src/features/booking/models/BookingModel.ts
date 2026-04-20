@@ -23,7 +23,7 @@ export interface FilterWithPaginationBookingRequest {
     AgreementValue?: number;
     BookingType?: string;
     SortBy?: string;
-    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF' | 'BOOKING FORM PDF ON MAIL';
+    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF' | 'BOOKING FORM PDF ON MAIL' | "" | "WELCOME MESSAGE ON MAIL" | "WELCOME MESSAGE";
 }
 
 export interface FilterWithPaginationChannelPartnerBookingRequest {

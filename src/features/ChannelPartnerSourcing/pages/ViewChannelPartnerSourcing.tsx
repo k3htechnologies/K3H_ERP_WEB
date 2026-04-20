@@ -258,6 +258,8 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
     if (!formData.SourcingRemark?.trim()) {
       errors.SourcingRemark = "Remark is required";
+    } else if (formData.SourcingRemark.trim().length < 25) {
+      errors.SourcingRemark = "Remark must be at least 25 characters";
     }
 
     if (!formData.IBM_OBM?.trim()) {
@@ -687,28 +689,28 @@ const ViewChannelPartnerSourcing: React.FC = () => {
             />
 
           </div>
-          
-            <TextArea
-              label="Remark"
-              placeholder="Enter Remark"
-              required
-              className='thin-scroll'
-              value={formData.SourcingRemark}
-              onChange={(e) => handleFieldChange("SourcingRemark", e.target.value)}
-              error={errors.SourcingRemark} />
-         
-          
 
-            <SinglePageSelection
-              label='Support'
-              placeholder="Select Support"
-              error={errors.Support}
-              value={formData.Support}
-              onChange={(e) => {
-                handleFieldChange('Support', String(e))
-              }}
+          <TextArea
+            label="Remark"
+            placeholder="Enter Remark"
+            required
+            className='thin-scroll'
+            value={formData.SourcingRemark}
+            onChange={(e) => handleFieldChange("SourcingRemark", e.target.value)}
+            error={errors.SourcingRemark} />
 
-              options={SUPPORT_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
+
+
+          <SinglePageSelection
+            label='Support'
+            placeholder="Select Support"
+            error={errors.Support}
+            value={formData.Support}
+            onChange={(e) => {
+              handleFieldChange('Support', String(e))
+            }}
+
+            options={SUPPORT_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
 
         </div>
       </Modal>

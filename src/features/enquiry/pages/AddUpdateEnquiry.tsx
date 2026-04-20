@@ -8,7 +8,7 @@ import { useCallback, useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateEnquiryRequest, FilterWithPaginationEnquiryRequest } from "@/features/enquiry//models/EnquiryModel";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
-import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -42,7 +42,6 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { fetchEmployeeMasterById, fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import RadioPill from "@/ui/components/forms/RadioPill";
-import { RangeSelector } from "@/ui/components/forms/RangeSelector";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { calculateAge, isDateWithinPastDays, isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
@@ -1218,11 +1217,28 @@ export const AddUpdateEnquiry: React.FC = () => {
                         {!formData.ChannelPartnerTeamMemberId && (
                           <>
                             <div>
-                              <Input type="text" label="Team Member Name" value={formData.ChannelPartnerTeamMemberName ?? ""} onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberName", e.target.value)} placeholder="Enter Team Member Name" maxLength={100} error={errors.ChannelPartnerTeamMemberName} />
+                              <Input
+                                type="text"
+                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) ? true :false}
+                                label="Team Member Name"
+                                value={formData.ChannelPartnerTeamMemberName ?? ""}
+                                onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberName", e.target.value)}
+                                placeholder="Enter Team Member Name"
+                                maxLength={100}
+                                error={errors.ChannelPartnerTeamMemberName} />
                             </div>
 
                             <div>
-                              <Input label="Team Member Mobile Number" type="text" maxLength={10} value={formData.ChannelPartnerTeamMemberMobileNumber ?? ""} leftIcon="+91" rightIcon={<Phone className="h-4 w-4 text-gray-400" />} onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberMobileNumber", filterMobile(e.target.value))} placeholder="Enter Team Member Mobile Number" error={errors.ChannelPartnerTeamMemberMobileNumber} />
+                              <Input
+                                label="Team Member Mobile Number"
+                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) ? true :false}
+                                type="text"
+                                maxLength={10}
+                                value={formData.ChannelPartnerTeamMemberMobileNumber ?? ""}
+                                leftIcon="+91" rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberMobileNumber", filterMobile(e.target.value))}
+                                placeholder="Enter Team Member Mobile Number"
+                                error={errors.ChannelPartnerTeamMemberMobileNumber} />
                             </div>
                           </>
                         )}
@@ -1289,7 +1305,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     <FieldItem label="Status" value={referelInventoryFlatData?.FlatStatus || "-"} />
                     <FieldItem label="Owner Name" value={referelInventoryFlatData?.OwnerName || "-"} />
                     <FieldItem label="Booked By" value={referelInventoryFlatData?.BookingCreatedBy || "-"} />
-                    <FieldItem label="Booking Date" value={referelInventoryFlatData?.BookingCreatedDate ? new Date(referelInventoryFlatData?.BookingCreatedDate).toLocaleDateString() : "-"} />
+                    <FieldItem label="Booking Date" value={formatDate_dd_MonthName_yy(referelInventoryFlatData?.BookingCreatedDate ?? '')} />
                   </div>
                 </div>
               )}
@@ -1308,7 +1324,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     <FieldItem label="Status" value={loyaltyInventoryFlatData?.FlatStatus || "-"} />
                     <FieldItem label="Owner Name" value={loyaltyInventoryFlatData?.OwnerName || "-"} />
                     <FieldItem label="Booked By" value={loyaltyInventoryFlatData?.BookingCreatedBy || "-"} />
-                    <FieldItem label="Booking Date" value={loyaltyInventoryFlatData?.BookingCreatedDate ? new Date(loyaltyInventoryFlatData?.BookingCreatedDate).toLocaleDateString() : "-"} />
+                    <FieldItem label="Booking Date" value={formatDate_dd_MonthName_yy(loyaltyInventoryFlatData?.BookingCreatedDate ?? '')} />
                   </div>
                 </div>
               )}
@@ -1329,7 +1345,19 @@ export const AddUpdateEnquiry: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Property Preferences</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
                     <div>
-                      <RangeSelector label="Budget (In Cr)" value={formData.Budget ?? ""} onChange={(v) => handleFieldChange("Budget", v)} options={BUDGET_TYPE_OPTIONS} error={errors.Budget} />
+
+                      <SinglePageSelection
+                        label="Budget (In Cr)"
+                        placeholder="Select Budget"
+                        value={formData.Budget ?? ""}
+                        onChange={(value) => handleFieldChange("Budget", value)}
+                        options={BUDGET_TYPE_OPTIONS.map((opt) => ({
+                          label: opt.name,
+                          value: opt.id,
+                        }))}
+                        error={errors.Budget}
+                      />
+
                     </div>
                     <div>
                       <SinglePageSelection
@@ -1416,8 +1444,8 @@ export const AddUpdateEnquiry: React.FC = () => {
                     </div>
                     <div>
                       <SinglePageSelection
-                        label="Timeline"
-                        placeholder="Select Timeline"
+                        label="Timeline Of Purchase"
+                        placeholder="Select Timeline Of Purchase"
                         value={formData.Timeline ?? ""}
                         onChange={(value) => handleFieldChange("Timeline", value)}
                         options={ENQUIRY_TIMELINE.map((opt) => ({

@@ -1,21 +1,22 @@
 import { type TableColumn } from '@/ui/components/DataTable/DataTable';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { runApiWithLoader } from '@/core/utils';
-import type { FilterWithPaginationPaymentSchedule, PaymentScheduleModelData } from '@/features/crmPayTrack/models/PaymentScheduleModel';
+import type { FilterWithPaginationPaymentSchedule, FilterWithPaginationPaymentScheduleDemandSummary, PaymentScheduleModelData } from '@/features/crmPayTrack/models/PaymentScheduleModel';
 import { paymentScheduleService } from '@/features/crmPayTrack/services/PaymentScheduleService';
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
 import { Loader } from '@/core/utils/loader';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { usePayTrackBookingListState } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
-import { CustomTable } from '@/ui/components/DataTable/CustomTable';
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { formatCurrency } from '@/core/utils/comman';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import { handleExportFile } from '@/core/utils/exportFile';
-
+import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
 
 export const PaymentSchedule: React.FC = () => {
     const [paymentScheduleCrmList, setPaymentScheduleCrmList] = useState<PaymentScheduleModelData[]>([]);
@@ -23,6 +24,13 @@ export const PaymentSchedule: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isAddDemandLetterModalOpen, setIsAddDemandLetterModalOpen] = useState(false);
     const [demandLetterDocumentName, setDemandLetterDocumentName] = useState('');
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const dtRef = useRef<DataTableExpandableRef | null>(null);
+
+    const [, setExpandedParentRow] = useState<any>(null);
+
+    const [, setExpandedParentId] = useState<number>(0);
 
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -38,7 +46,7 @@ export const PaymentSchedule: React.FC = () => {
     }, [projectId, bookingId])
 
 
-    const loadPaymentScheduleCrmDetails = async () => {
+    const loadPaymentScheduleCrmDetails = async (searchText?: string) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -46,6 +54,7 @@ export const PaymentSchedule: React.FC = () => {
                 const params: FilterWithPaginationPaymentSchedule = {
                     ProjectId: Number(projectId),
                     BookingId: bookingId,
+                    Name: searchText?.trim() || undefined,
                 };
 
                 const response = await paymentScheduleService.apiCallPullPaymentSchedule(params);
@@ -64,9 +73,20 @@ export const PaymentSchedule: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            "Loading Payment Schedule Crm Details"
+            "Loading Payment Schedule"
         )
     }
+
+    const handleSearchChange = (value: string) => {
+        setSearchTerm(value);
+        loadPaymentScheduleCrmDetails(value)
+    };
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        loadPaymentScheduleCrmDetails('')
+    }
+
 
     const handleExportPayTrackPaymentScheduleExcel = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
@@ -79,8 +99,6 @@ export const PaymentSchedule: React.FC = () => {
                     BookingId: bookingId,
                     ExportType: exportType
                 };
-
-
 
                 const response = await paymentScheduleService.apiCallPullPaymentSchedule(params);
 
@@ -210,7 +228,6 @@ export const PaymentSchedule: React.FC = () => {
                     </span>
                 )
             },
-
             {
                 key: "AgreementGroup",
                 label: "Agreement Amount",
@@ -254,7 +271,6 @@ export const PaymentSchedule: React.FC = () => {
                     }
                 ]
             },
-
             {
                 key: "GSTGroup",
                 label: "GST Amount",
@@ -298,7 +314,6 @@ export const PaymentSchedule: React.FC = () => {
                     }
                 ]
             },
-
             {
                 key: "TDSGroup",
                 label: "TDS Amount",
@@ -341,7 +356,36 @@ export const PaymentSchedule: React.FC = () => {
                         }
                     }
                 ]
-            }
+            },
+            {
+                key: 'Actions',
+                label: 'Actions',
+                width: '12',
+                fixed: 'right',
+                align: 'center',
+                render: (_value, row) => {
+
+                    const isLocked = !row?.BookingPaymentScheduleId;
+
+                    if (isLocked) return null;
+
+                    return (
+                        <div className="flex items-center justify-center">
+
+                            <Button
+                                size="sm"
+                                disabled={isLocked}
+                                color="blue"
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    if (isLocked) return;
+                                }}>{row.DemandType}</Button>
+
+                        </div>
+                    )
+                }
+            },
         ];
 
     }, []);
@@ -354,7 +398,11 @@ export const PaymentSchedule: React.FC = () => {
             </Loader>
 
             <TableActionToolbar
-                isShowSearchBar={false}
+                isShowSearchBar
+                searchTerm={searchTerm}
+                searchPlaceholder="Search By Name"
+                onSearchChange={handleSearchChange}
+                onClearSearch={handleClearSearch}
                 // EXPORT
                 isShowExportButton={dataWithTotal.length > 0}
                 onExportExcel={handleExportPayTrackPaymentScheduleExcelFile}
@@ -363,12 +411,115 @@ export const PaymentSchedule: React.FC = () => {
 
             />
 
-            <CustomTable
+            <DataTableExpandable
+                ref={dtRef}
                 data={dataWithTotal}
                 columns={paymentScheduleTableColumns}
-                emptyMessage="No Schedule Data Found"
-                fixedHeight={true}
-                className="flex-1"
+                emptyMessage="No Payment Schedule Found"
+                loading={isLoading}
+                fixedHeight
+                recordsPerPage={20}
+                expandable={{
+                    keyField: "BookingPaymentScheduleId",
+                    alwaysFetchOnOpen: true,
+                    rowExpandable: (row) => row?.BookingPaymentScheduleId > 0 && !row.isTotal,
+                    fetchRow: async (row) => {
+                        setExpandedParentRow(row);
+                        setExpandedParentId(row.BookingPaymentScheduleId);
+
+                        if (!row || row.isTotal || row.BookingPaymentScheduleId === 0) {
+                            return [];
+                        }
+
+                        setIsLoading(true);
+
+                        setLoadingMessage("Loading Payment Ledger");
+
+                        const params: FilterWithPaginationPaymentScheduleDemandSummary = {
+                            ProjectId: Number(projectId),
+                            BookingPaymentScheduleId: row.BookingPaymentScheduleId,
+                            BookingId: bookingId,
+                            IsCheckPermission: true,
+
+                        };
+
+                        const response = await paymentScheduleService.apiCallPullPaymentScheduleDemandSummary(params);
+
+                        setIsLoading(false);
+
+                        if (E.isRight(response)) {
+                            return response.right.Data ?? [];
+                        }
+                        return [];
+                    },
+
+                    renderRow: (fetchedData) => {
+                        const details = Array.isArray(fetchedData) ? fetchedData : fetchedData ? [fetchedData] : [];
+
+                        if (!details.length) {
+                            return (
+                                <div className="p-1 text-xs text-gray-600 text-center">
+                                    <NoDataView />
+                                </div>
+                            );
+                        }
+
+                        return (
+                            <div className="space-y-4">
+                                {details.map((row, index) => {
+                                    return (
+                                        <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                            <div className="flex justify-between items-center">
+                                                <div className="text-sm text-gray-700">
+                                                    <FieldItem
+                                                        label="Demand Type"
+                                                        value={row.PaymentScheduleDemandType}
+                                                        urls={row.PaymentScheduleDemandSummaryURL}
+                                                        isRow
+                                                        isIcon={true}
+                                                    />
+                                                </div>
+
+                                                <div className="flex items-center gap-2">
+
+                                                    <Button
+                                                        type="button"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+
+                                                        }}
+                                                        color="transparent"
+                                                        isborderRadius
+
+                                                        title="Edit"
+                                                    >
+
+                                                    </Button>
+
+                                                </div>
+                                            </div>
+
+                                            <h3 className="font-semibold pt-5 mb-2">Action Details</h3>
+
+                                            <div className="grid grid-cols-3 gap-6 text-sm  space-y-3">
+
+
+                                                <FieldItem label="Created By" value={row?.CreatedBy ?? "-"} />
+
+                                                <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.CreatedDate ?? "-")} />
+                                                <FieldItem label="Modified By" value={row?.ModifiedBy ?? "-"} />
+                                                <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.ModifiedDate ?? "-")} />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        );
+                    },
+
+                    expandButton: { openText: "Hide", closeText: "Show" },
+                }}
             />
 
             <Modal

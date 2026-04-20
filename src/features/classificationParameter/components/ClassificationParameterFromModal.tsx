@@ -1,7 +1,6 @@
 import React from 'react';
 import { Modal } from '@/ui/components/Modal/Modal';
 import type { AddUpdateClassificationParameterRequest } from '@/features/classificationParameter/models/ClassificationParameterModel';
-import { RangeSelector } from '@/ui/components/forms/RangeSelector';
 import { BUDGET_TYPE_OPTIONS, COMMERCIAL_FLAT_CONFIGURATION, ENQUIRY_TIMELINE, POSSESSION_TYPE_OPTIONS, REQUIREMENT_TYPE_OPTIONS, RESIDENTIAL_FLAT_CONFIGURATION } from "@/core/constants";
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import MultiSelectPagination from '@/ui/components/DropDown/Multiselectpagination';
@@ -22,7 +21,7 @@ interface ClassificationParameterFormModalProps {
         initialOptions: any[];
         handleChange: (values: any) => { idsString: string | null };
     }
-    dropdownResetKey?:number;
+    dropdownResetKey?: number;
 }
 
 export const ClassificationParameterFormModal: React.FC<ClassificationParameterFormModalProps> = ({
@@ -36,7 +35,7 @@ export const ClassificationParameterFormModal: React.FC<ClassificationParameterF
     editingData,
     loading,
     villageDropdown,
-    dropdownResetKey   
+    dropdownResetKey
 }) => {
 
     return (
@@ -54,7 +53,18 @@ export const ClassificationParameterFormModal: React.FC<ClassificationParameterF
             <div className="space-y-10 p-6 bg-blue-100">
                 <div className="space-y-4" >
                     <div>
-                        <RangeSelector label="Budget (In Cr)" value={String(formData.MinBudget ?? "")} onChange={(v) => onFieldChange("MinBudget", v)} options={BUDGET_TYPE_OPTIONS} error={errors.MinBudget} />
+                        <SinglePageSelection
+                            label="Budget (In Cr)"
+                            placeholder="Select Budget"
+                            value={formData.MinBudget ?? ""}
+                            onChange={(value) => onFieldChange("MinBudget", value)}
+                            options={BUDGET_TYPE_OPTIONS.map((opt) => ({
+                                label: opt.name,
+                                value: opt.id,
+                            }))}
+                            required
+                            error={errors.MinBudget}
+                        />
                     </div>
 
                     <div>
@@ -142,8 +152,8 @@ export const ClassificationParameterFormModal: React.FC<ClassificationParameterF
 
                     <div>
                         <SinglePageSelection
-                            label="Timeline"
-                            placeholder="Select Timeline"
+                            label="Timeline Of Purchase"
+                            placeholder="Select Timeline Of Purchase"
                             required
                             value={formData.TimeLine ?? ""}
                             onChange={(value) => onFieldChange("TimeLine", value)}

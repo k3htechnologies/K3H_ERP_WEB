@@ -53,7 +53,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       )}
 
       {isExpandableOpen && (
-        <div className="p-4 text-sm text-gray-600 min-h-[180px] overflow-y-auto scroll-smooth" style={{ maxHeight: expandedheight }}>
+        <div className="p-4 text-sm text-gray-600 min-h-[180px] overflow-y-auto thin-scroll scroll-smooth" style={{ maxHeight: expandedheight }}>
           {child}
         </div>
       )}

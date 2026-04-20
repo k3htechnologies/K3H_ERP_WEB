@@ -29,9 +29,7 @@ export const FieldItem: React.FC<{
     // Check if value is a ReactNode (React element)
     const isReactNode = React.isValidElement(value);
 
-    const displayValue = value !== undefined && value !== null && value !== ''
-      ? (isReactNode ? value : String(value))
-      : '-';
+    const displayValue = value !== undefined && value !== null && value !== ''? (isReactNode ? value : String(value)) : '-';
       
     const borderClass = withBorder ? 'border-b border-[#135bec2e]' : '';
 
@@ -48,6 +46,7 @@ export const FieldItem: React.FC<{
       width: '100%',
     };
 
+    
 
     // ROW layout: label : value
     if (isRow) {
@@ -56,7 +55,7 @@ export const FieldItem: React.FC<{
           <div style={rowGridStyle}>
 
             {/* Label */}
-            <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+            <div className="text-sm font-medium text-[#1D1D1D80]">
               {label}
             </div>
 

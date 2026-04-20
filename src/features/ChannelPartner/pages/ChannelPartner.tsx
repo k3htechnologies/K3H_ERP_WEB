@@ -316,8 +316,7 @@ export const ChannelPartner: React.FC = () => {
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
-    fetchChannelPartnerList(page);
-  }, [updateListState]);
+  }, [sortInfo, updateListState]);
 
   //#region TABLE SORT COLUMN
 

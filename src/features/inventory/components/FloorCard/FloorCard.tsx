@@ -72,6 +72,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
         });
     };
 
+
     const handleParkingClick = (e: React.MouseEvent) => {
         e.stopPropagation();
         if (canAction && !approvalStatus?.toUpperCase().includes("APPROVED")) {
@@ -184,18 +185,20 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                 child={
                     <div className="flex flex-1 gap-5 thin-scroll">
                         {floor.InventoryFlatData?.map((flat, flatIndex) => (
-                            <FlatCard
-                                key={flatIndex}
-                                flat={flat}
-                                projectId={projectId}
-                                onDelete={onDelete}
-                                wing={wing.Wing}
-                                floor={floor.Floor}
-                                buildingNumber={building?.BuildingNumber ?? ""}
-                                canAction={canAction}
-                                canBookingAction={canBookingAction}
-                                approvalStatus={approvalStatus}
-                            />
+                            <div id={`flat-${flat.InventoryFlatId}`}>
+                                <FlatCard
+                                    key={flatIndex}
+                                    flat={flat}
+                                    projectId={projectId}
+                                    onDelete={onDelete}
+                                    wing={wing.Wing}
+                                    floor={floor.Floor}
+                                    buildingNumber={building?.BuildingNumber ?? ""}
+                                    canAction={canAction}
+                                    canBookingAction={canBookingAction}
+                                    approvalStatus={approvalStatus}
+                                />
+                            </div>
                         ))}
                     </div>
                 }

@@ -60,8 +60,19 @@ export const PerformanceReport: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
 
-        loadPerformanceReport(1, filters, sortInfo, searchTerm);
-    }, [targetActiveTab]);
+        const range = getWeekToDateRange();
+
+        const defaultFilters = {
+            FromDate: formatDate(range.fromDate),
+            ToDate: formatDate(range.toDate),
+        };
+
+        setFilters(defaultFilters);
+        setTempFilters(defaultFilters);
+
+        loadPerformanceReport(1, defaultFilters, sortInfo, searchTerm,"WTD");
+    }, [projectId]);
+    
 
     const loadPerformanceReport = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string, periodType?: string) => {
 
@@ -471,7 +482,7 @@ export const PerformanceReport: React.FC = () => {
 
         return `${year}-${month}-${day}`;
     };
-    
+
     const handleTabChange = (tabId: string) => {
 
         setActiveTab(tabId);

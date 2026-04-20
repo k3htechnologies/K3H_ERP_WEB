@@ -42,6 +42,7 @@ export interface ProjectMasterData {
     ArchitectMobileNumber: string | '';
 
     // ADVANCE DETAILS
+    Category: string | '';
     BussinessCategory: string | '';
     ProjectShortName: string | '';
 
@@ -138,6 +139,7 @@ export interface AddUpdateProjectMasterRequest {
     ArchitectMobileNumber: string | '';
 
     // ADVANCE DETAILS
+    Category: string | '';
     BussinessCategory: string | '';
     ProjectShortName: string | '';
     CountryMasterId: number | 0;

@@ -82,9 +82,15 @@ export const AddUpdateMaterialRequisition = () => {
     const { projectId } = useProject();
 
     const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
+
     useEffect(() => {
-        loadDetailsdata();
-    }, []);
+        if (!MaterialRequisitionId) return;
+        (async () => {
+            await loadDetailsdata();
+
+        })
+            ();
+    }, [MaterialRequisitionId]);
     useEffect(() => {
         if (addMaterialPopUp) {
             loadMaterialsSubMaterialMasterUOM();
@@ -355,7 +361,7 @@ export const AddUpdateMaterialRequisition = () => {
         debugger
         const form = new FormData();
         form.append('MaterialRequisitionId', String(formData.MaterialRequisitionId ?? 0));
-        form.append('UniqueKey', formData.Uniquekey ?? '3fa85f64-5717-4562-b3fc-2c963f66afa6');
+        form.append('Uniquekey', formData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6');
         form.append('Remarks', formData.Remarks ?? '');
         form.append('MaterialRequisitionDetailJSON', JSON.stringify(materialList) ?? '');
         form.append("ProjectId", projectId!.toString());

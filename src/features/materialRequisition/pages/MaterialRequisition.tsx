@@ -161,6 +161,7 @@ export const MaterialRequisition: React.FC = () => {
     }, []);
 
     const handleMaterialRequisitionEdit = useCallback((row: MaterialRequisitionData) => {
+        debugger
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId });
         navigate(`/materialRequisition/add/${row.MaterialRequisitionId}`);
     }, [navigate, updateListState]);

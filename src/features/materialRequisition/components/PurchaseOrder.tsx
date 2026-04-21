@@ -331,7 +331,7 @@ export const PurchaseOrder: React.FC = () => {
         !!materialRequisitionPurchaseOrder[0];
 
     return (
-        <div className="bg-white p-6 h-[500px]">
+        <div className="bg-white p-1 h-[500px]">
             <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
 
             <div className="flex justify-end gap-2">

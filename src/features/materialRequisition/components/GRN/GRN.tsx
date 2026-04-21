@@ -108,7 +108,7 @@ export const GRN: React.FC = () => {
 
             <div className="flex justify-end">
                 <Button
-                    className="bg-blue-600 text-white font-bold py-1 px-4 rounded-md"
+                    className="bg-[#135BEC] text-white font-bold py-1 px-4 rounded-md"
                     onClick={() => {
                         setIsViewGRNSummaryModalOpen(true);
                     }}

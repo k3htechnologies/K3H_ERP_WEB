@@ -10,91 +10,106 @@ export interface FilterWithPaginationMaterialRequisition {
     ToDate?: string | null
     MaterialRequisitionStage?: string | null
     MaterialRequisitionStatus?: string | null
-    SortBy? : string
-    ExportType? : "PDF" | "Excel"
+    SortBy?: string
+    ExportType?: "PDF" | "Excel"
 }
 
 export interface MaterialRequisitionData {
-    MaterialRequisitionId:number;
-    Uniquekey:string;
-    SystemGeneratedCode:string;
-    ProjectId:number;
-    ProjectName:string;
-    AttachmentsURL:string;
+    MaterialRequisitionId: number;
+    Uniquekey: string;
+    SystemGeneratedCode: string;
+    ProjectId: number;
+    ProjectName: string;
+    AttachmentsURL: string;
     Remarks: string;
-    ClientRegistrationId:number;
-    MaterialRequisitionStage:string;
-    MaterialRequisitionStatus:string;
-    FinalVendor:string;
-    IsSplit:boolean;
-    IsCopy:boolean;
-    IsRequisitionAction:boolean;
-    IsApprovalVendorFinalization:boolean;
-    IsApprovalInvoice:boolean;
+    ClientRegistrationId: number;
+    MaterialRequisitionStage: string;
+    MaterialRequisitionStatus: string;
+    FinalVendor: string;
+    IsSplit: boolean;
+    IsCopy: boolean;
+    IsRequisitionAction: boolean;
+    IsApprovalVendorFinalization: boolean;
+    IsApprovalInvoice: boolean;
     VendorFinalizationApprovalStatus: string;
-    InvoiceApprovalStatus:string;
-    CreatedById:number;
-    CreatedBy:string;
-    CreatedDate:string;
-    ModifiedById:number;
-    ModifiedBy:string;
-    ModifiedDate:string;
-    PaidAmount:number;
-    TotalPoAmount:number;
-    TotalInvoiceAmount:number;
-    TotalInvoice:number;
-    PurchaseOrderURL:string;
-    MaterialRequisitionDetailData:MaterialRequisitionDetailData[];
+    InvoiceApprovalStatus: string;
+    InvoiceNumber: string | null;
+    InvoiceAmount: number | 0;
+    InvoiceDueDate: string | null;
+    CreatedById: number;
+    CreatedBy: string;
+    CreatedDate: string;
+    ModifiedById: number;
+    ModifiedBy: string;
+    ModifiedDate: string;
+    PaidAmount: number;
+    TotalPoAmount: number;
+    TotalInvoiceAmount: number;
+    TotalInvoice: number;
+    PurchaseOrderURL: string;
+    MaterialRequisitionDetailData: MaterialRequisitionDetailData[];
+    MaterialRequisitionVendorData: MaterialRequisitionVendorData[];
+    MaterialRequisitionInvoiceData: MaterialRequisitionInvoiceData[];
+
 }
 export interface AddUpdateMaterialRequisitionDetailRequest {
     // MaterialRequisitionDetailId:number;
     // Uniquekey:string;
-    MaterialMasterId:number;
+    MaterialMasterId: number;
     // MaterialCode:string;
-    MaterialName:string;
-    SubMaterialName:string;
-    SubMaterialMasterId:number;
-    MaterialQuantity:number;
-    UomMasterId:number;
-    UomCode:string;
+    MaterialName: string;
+    SubMaterialName: string;
+    SubMaterialMasterId: number;
+    MaterialQuantity: number;
+    UomMasterId: number;
+    UomCode: string;
     // Uom: string;
-    RequiredDate:string | null;
+    RequiredDate: string | null;
 }
-export interface MaterialRequisitionDetailData{
-    MaterialRequisitionDetailId:number;
-    Uniquekey:string;
-    MaterialMasterId:number;
-    MaterialCode:string;
-    MaterialName:string;
-    SubMaterialName:string;
-    SubMaterialMasterId:number;
-    MaterialQuantity:number;
-    UomMasterId:number;
-    UomCode:string;
-    Uom: string;
-    RequiredDate:string;
-    MaterialReceivedQuantityTillDate: number;
-    CreatedById:number;
-    CreatedBy:string;
-    CreatedDate:Date;
-    ModifiedById:number;
-    ModifiedBy:string;
-    ModifiedDate:null;
-}
-export interface AddUpdateMaterialRequisitionRequest{
-    MaterialRequisitionId:number;
+export interface MaterialRequisitionDetailData {
+    MaterialRequisitionDetailId: number;
     Uniquekey: string;
-    IsCopy:boolean;
-    ProjectId:number;
-    Remarks: string ;
+    MaterialMasterId: number;
+    MaterialCode: string;
+    MaterialName: string;
+    SubMaterialName: string;
+    SubMaterialMasterId: number;
+    MaterialQuantity: number;
+    UomMasterId: number;
+    UomCode: string;
+    Uom: string;
+    RequiredDate: string;
+    MaterialReceivedQuantityTillDate: number;
+    CreatedById: number;
+    CreatedBy: string;
+    CreatedDate: Date;
+    ModifiedById: number;
+    ModifiedBy: string;
+    ModifiedDate: null;
+}
+export interface MaterialRequisitionVendorData {
+VendorName:string | null
+CompanyName:string | null
+
+}
+
+export interface MaterialRequisitionInvoiceData {
+
+}
+export interface AddUpdateMaterialRequisitionRequest {
+    MaterialRequisitionId: number;
+    Uniquekey: string;
+    IsCopy: boolean;
+    ProjectId: number;
+    Remarks: string;
     IsSplit: boolean;
     AttachmentsURL: string | null;
     RemoveAttachmentsURL: string | null;
     MaterialRequisitionDetailJSON: string;
 }
- //used in delete and close both as the payload is same
+//used in delete and close both as the payload is same
 export interface DeleteMaterialRequisitionRequest {
-    MaterialRequisitionId : number,
+    MaterialRequisitionId: number,
     Uniquekey: string | null,
     ProjectId: number | 0,
 }

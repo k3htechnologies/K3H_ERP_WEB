@@ -74,7 +74,7 @@ export const Overview: React.FC = () => {
 
             <div className="grid grid-cols-12 gap-5 pt-1">
 
-                <div className="col-span-7">
+                <div className="col-span-6">
 
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
                         <section className="bg-white px-4 pt-1 pb-4">
@@ -87,7 +87,7 @@ export const Overview: React.FC = () => {
                                 <div>
                                     <p className="text-gray-500">Attachment</p>
                                     <MultiImageViewer
-                                        images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL)}
+                                        images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL ?? '')}
                                         title="Attachment"
                                         isIcon={false}
                                         triggerLabel="-"
@@ -118,7 +118,7 @@ export const Overview: React.FC = () => {
                             <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
                                 <p>Document</p>
                                 <MultiImageViewer
-                                    images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL)}
+                                    images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL ?? '')}
                                     title="Purchase Order"
                                     isIcon={false}
                                     triggerLabel="-"
@@ -148,17 +148,18 @@ export const Overview: React.FC = () => {
 
                 </div>
 
-                <div className="col-span-5">
-
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 overflow-y-auto thin-scroll h-[436px]">
+                <div className="col-span-6">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 overflow-y-auto thin-scroll h-[442px]">
                         <div className="overflow-y-auto thin-scroll h-[420px]">
                             <section className="bg-white px-4 pt-1 pb-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Material Details</h4>
                                 {matrialRequisitionDetailData.map((item, index) => (
-                                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 mb-4 border-b border-gray-300 last:border-b-0 last:pb-2 pb-4">
+                                    <div key={index} className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-8 mb-4 border-b border-gray-300 last:border-b-0 last:pb-2 pb-4">
                                         <FieldItem label="Name" value={item.MaterialName} />
                                         <FieldItem label="Sub Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                         <FieldItem label="Quantity" value={item.MaterialQuantity} />
+                                        <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item?.RequiredDate ?? '')} />
+
                                     </div>
                                 ))}
                             </section>
@@ -172,7 +173,7 @@ export const Overview: React.FC = () => {
                                 {matrialRequisitionDetailData.map((item, index) => (
                                     <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 rounded-lg p-2 mt-2 ">
                                         <FieldItem label="Invoice Number" value={item.MaterialName} />
-                                        <FieldItem label="Sub Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
+                                        <FieldItem label="Invoice Amount" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                         <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
                                     </div>
                                 ))}

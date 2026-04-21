@@ -107,26 +107,6 @@ export const Details: React.FC = () => {
         return fd;
     };
 
-    const CopyMaterialRequisitionFormData = (): FormData => {
-        const fd = new FormData();
-        fd.append("ProjectId", Number(projectId).toString());
-        fd.append("MaterialRequisitionId", "0");
-        fd.append("Uniquekey", matrialRequisitionData?.Uniquekey ?? '');
-        fd.append("Remarks", matrialRequisitionData?.Remarks ?? '');
-        fd.append("IsSplit", "false");
-        fd.append("IsCopy", "true");
-        fd.append("MaterialRequisitionDetailJSON", JSON.stringify(
-            matrialRequisitionDetailData.map(item => ({
-                MaterialRequisitionDetailId: 0,
-                MaterialMasterId: item.MaterialMasterId,
-                MaterialQuantity: item.MaterialQuantity,
-                UomMasterId: item.UomMasterId,
-                RequiredDate: item.RequiredDate,
-                SubMaterialMasterId: item.SubMaterialMasterId,
-            }))
-        ));
-        return fd;
-    };
 
     const handleSplitMaterialRequisition = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -181,41 +161,6 @@ export const Details: React.FC = () => {
     const selectedMaterials = matrialRequisitionDetailData.filter(item =>
         selectedIds.includes(item.MaterialRequisitionDetailId)
     );
-
-    const handleCopyMaterialRequisition = async (e: React.FormEvent) => {
-        e.preventDefault();
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const payload = CopyMaterialRequisitionFormData();
-
-                const response = await materialRequisitionService.apiCallToAddMaterialRequisition(payload);
-
-                if (E.isRight(response)) {
-
-                    const newRecord = response.right.Data as MaterialRequisitionData;
-
-                    setMaterialRequisitionList(prev => [newRecord, ...prev]);
-
-                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-
-                    navigate("/materialRequisition");
-
-                } else {
-                    addToast({ type: "error", title: response.left?.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message });
-            },
-            undefined,
-            'Copy Material Requisition'
-        );
-    };
 
     const handleCloseRequisition = async () => {
         if (!selectedMaterialRequisitionItem) return;
@@ -294,7 +239,7 @@ export const Details: React.FC = () => {
                         size="sm"
                         color="transparent"
                         style={{
-                            color: 'red',
+                            color: '#E92C2C',
                             padding: '4px 8px',
                             backgroundColor: '#FFF2F2'
                         }}
@@ -319,7 +264,7 @@ export const Details: React.FC = () => {
                         <div>
                             <p className="text-gray-500">Attachment</p>
                             <MultiImageViewer
-                                images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL)}
+                                images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL ?? '')}
                                 title="Attachment"
                                 isIcon={false}
                                 triggerLabel="-"
@@ -336,7 +281,7 @@ export const Details: React.FC = () => {
 
                     {matrialRequisitionData?.IsSplit && (
                         <Button
-                            className="bg-blue-600 text-white font-bold py-1 p-4 rounded-md"
+                            className="bg-[#135BEC] text-white font-bold py-1 p-4 rounded-md"
                             onClick={() => setActive(true)}
                         >
                             Split
@@ -374,7 +319,7 @@ export const Details: React.FC = () => {
 
                 {active && (
                     <Button
-                        className="bg-blue-600 text-white font-bold py-1 px-4 rounded-md"
+                        className="bg-[#135BEC] text-white font-bold py-1 px-4 rounded-md"
                         onClick={() => {
                             setIsAddUpdateModalOpen(true);
                         }}
@@ -403,25 +348,14 @@ export const Details: React.FC = () => {
 
             <div className="pt-2 flex justify-end gap-2">
                 <button
-                    className="bg-gray-400 text-white font-bold py-1 px-4 rounded-md"
+                    className="bg-[#D0D7DE] text-[#1D1D1D] font-500 py-1 px-4 rounded-md"
                     onClick={() => {
                         setDeleteData(matrialRequisitionData);
                         handleDeleteRequest()
                     }}
                 >
-                    Close
+                    Cancel
                 </button>
-
-                {matrialRequisitionData?.IsCopy && (
-                    <Button
-                        className="bg-green-600 text-white font-bold py-1 px-4 rounded-md"
-                        onClick={(e) => {
-                            handleCopyMaterialRequisition(e);
-                        }}
-                    >
-                        Copy
-                    </Button>
-                )}
             </div>
 
             <Modal

@@ -1,12 +1,14 @@
 import baseClient from "@/core/config/baseClient";
-import type { DeleteBookingLoanDetailsRequest, FilterWithPaginationBookingLoanDetails, BookingLoanDetailsDeleteResponse, BookingLoanDetailsListResponse, BookingLoanDetailsSaveReponse, AddUpdateBookingLoanDetailsRequest } from "@/features/crmPayTrack/models/BookingLoanDetailsModel";
+import type { DeleteBookingLoanDetailsRequest, FilterWithPaginationBookingLoanDetails, BookingLoanDetailsDeleteResponse, BookingLoanDetailsListResponse, BookingLoanDetailsSaveReponse, AddUpdateBookingLoanDetailsRequest, UpdateBookingLoanDetailsStatusRequest, BookingLoanDetailsStatusUpdateReponse } from "@/features/crmPayTrack/models/BookingLoanDetailsModel";
 import { BookingLoanDetailsApi } from "@/features/crmPayTrack/api/BookingLoanDetailsApi";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 
 export abstract class BookingLoanDetailsDatasource {
     abstract pullBookingLoanDetails(params: FilterWithPaginationBookingLoanDetails, signal?: AbortSignal): Promise<BookingLoanDetailsListResponse>;
     abstract addUpdateBookingLoanDetails(data: AddUpdateBookingLoanDetailsRequest): Promise<BookingLoanDetailsSaveReponse>;
+    abstract updateBookingLoanDetailsStatus(params: UpdateBookingLoanDetailsStatusRequest): Promise<BookingLoanDetailsStatusUpdateReponse>;
     abstract deleteBookingLoanDetails(params: DeleteBookingLoanDetailsRequest): Promise<BookingLoanDetailsDeleteResponse>;
+
 }
 
 
@@ -36,7 +38,7 @@ export class BookingLoanDetailsDatasourceImpl implements BookingLoanDetailsDatas
             return response;
         } catch (error: any) {
 
-            console.error('ERROR: PULL APPROVAL DOCUMENT :', error);
+            console.error('ERROR: PULL BOOKING LOAN DETAILS :', error);
 
             if (error instanceof TokenExpiredException) {
                 return await this.pullBookingLoanDetails(params);
@@ -56,7 +58,7 @@ export class BookingLoanDetailsDatasourceImpl implements BookingLoanDetailsDatas
             return response
         } catch (error) {
 
-            console.error('ERROR: ADD UPDATE APPROVAL DOCUMENT :', error)
+            console.error('ERROR: ADD UPDATE BOOKING LOAN DETAILS :', error)
 
             if (error instanceof TokenExpiredException) {
                 return await this.addUpdateBookingLoanDetails(params);
@@ -65,9 +67,30 @@ export class BookingLoanDetailsDatasourceImpl implements BookingLoanDetailsDatas
         }
     }
 
+    async updateBookingLoanDetailsStatus(params: UpdateBookingLoanDetailsStatusRequest): Promise<BookingLoanDetailsStatusUpdateReponse> {
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                BookingLoanDetailsApi.UPDATE_STATUS,
+                params
+            )
+
+            return response
+        } catch (error) {
+
+            console.error('ERROR: UPDATE BOOKING LOAN DETAILS STATUS :', error)
+
+            if (error instanceof TokenExpiredException) {
+                return await this.updateBookingLoanDetailsStatus(params);
+            }
+            throw error
+        }
+    }
+
     async deleteBookingLoanDetails(params: DeleteBookingLoanDetailsRequest): Promise<BookingLoanDetailsDeleteResponse> {
         try {
             const queryParams = new URLSearchParams({
+                
                 BookingLoanDetailsId: (params.BookingLoanDetailsId ?? 0).toString(),
                 Uniquekey: params.Uniquekey ?? '',
                 projectId: (params.ProjectId ?? 0).toString(),
@@ -83,7 +106,7 @@ export class BookingLoanDetailsDatasourceImpl implements BookingLoanDetailsDatas
 
         } catch (error) {
 
-            console.error('ERROR: DELETE APPROVAL DOCUMENT :', error)
+            console.error('ERROR: DELETE BOOKING LOAN DETAILS :', error)
 
             if (error instanceof TokenExpiredException) {
 

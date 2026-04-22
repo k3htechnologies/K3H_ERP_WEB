@@ -7,6 +7,7 @@ export interface FilterWithPaginationBankDocumentsPayTrackBookingFiles {
     BookingId: number;
     FileType: string;
     FileName?: string;
+    BookingLoanDetailsId?: number;
     SortBy?: string
     ExportType?: "PDF" | "Excel"
 }
@@ -18,6 +19,8 @@ export interface BankDocumentsPayTrackBookingFilesData {
     ProjectId: number;
     FileName: string;
     FileType: string;
+    BookingLoanDetailsId: number;
+    BankStatusClosedActive: string | '';
     PayTrackBookingFilesURL: string;
     CreatedById: number;
     CreatedBy: string;

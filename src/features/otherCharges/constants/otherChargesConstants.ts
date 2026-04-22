@@ -31,7 +31,7 @@ export const getOtherChargesColumns = (): TableColumn[] => [
     label: 'Value (₹)',
     width: '16',
     sortable: false,
-    align: 'center'
+    align: 'right'
   },
   {
     key: 'CalculatedOn',
@@ -45,21 +45,21 @@ export const getOtherChargesColumns = (): TableColumn[] => [
     label: 'GST Percentage (%)',
     width: '16',
     sortable: false,
-    align: 'center'
+    align: 'right'
   },
   {
     key: 'GSTValue',
     label: 'GST Value (₹)',
     width: '16',
     sortable: false,
-    align: 'center'
+    align: 'right'
   },
   {
     key: 'Total',
     label: 'Value  + GST Value (₹)',
     width: '16',
     sortable: false,
-    align: 'center'
+    align: 'right'
   },
   {
     key: 'Actions',

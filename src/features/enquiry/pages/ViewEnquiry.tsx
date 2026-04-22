@@ -532,7 +532,7 @@ const ViewEnquiry: React.FC = () => {
                                     value={safe(enquiryData?.RequirementType)}
                                 />
                                 <FieldItem label="Location" value={safe(enquiryData?.VillageName)} />
-                                <FieldItem label="Timeline" value={safe(enquiryData?.Timeline)} />
+                                <FieldItem label="Timeline Of Purchase" value={safe(enquiryData?.Timeline)} />
                                 <FieldItem label="Area Preferred (SqFt)" value={safe(enquiryData?.AreaPreferred)} />
                                 <FieldItem label="Desired Floor Band" value={safe(enquiryData?.DesiredFloorBand)} />
 
@@ -765,8 +765,6 @@ const ViewEnquiry: React.FC = () => {
                 title={"Follow Up"}
                 onSubmit={handleEnquiryFollowUpFormSubmit}
                 saveText="Save"
-                cancelText="Cancel"
-                onCancel={handleCloseEnquiryFollowUpModal}
                 loading={isLoading}
                 size="xl"
             >

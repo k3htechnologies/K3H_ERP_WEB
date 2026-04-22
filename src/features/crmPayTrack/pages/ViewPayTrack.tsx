@@ -7,12 +7,16 @@ import ModifiedRequest from "@/features/crmPayTrack/pages/ModifiedRequest";
 import { usePayTrackBookingListState } from "@/features/crmPayTrack/context/PayTrackBookingListStateContext";
 import { useNavigate } from 'react-router-dom';
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
-import BankDocuments from "../components/BankDocuments";
+import BookingFlatHandoverFile from "@/features/crmPayTrack/components/BookingFlatHandoverFile";
+import CallLog from "@/features/crmPayTrack/components/CallLog";
+import { Mail } from "lucide-react";
 export const ViewPayTrack: React.FC = () => {
 
   const navigate = useNavigate();
   const { listState } = usePayTrackBookingListState();
   const { bookingName, bookingType, flat } = listState;
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [welcome, setWelcome] = useState<string>("");
 
   const bookingTabList = [
     { id: 'BookingForm', label: 'Overview' },
@@ -21,6 +25,7 @@ export const ViewPayTrack: React.FC = () => {
     { id: 'ModifiedRequest', label: 'Modified Request' },
     { id: 'FlatHandover', label: 'Flat Handover' },
     { id: 'Files', label: 'Files' },
+    { id: 'Call Log', label: 'Call Logs' },
   ];
 
   const [activeTab, setActiveTab] = useState<string>(bookingTabList[0].id);
@@ -34,9 +39,23 @@ export const ViewPayTrack: React.FC = () => {
         subSubTitleText={flat ?? ""}
         cancelText="Back"
         EditText="Edit"
+        canAction={activeTab === "BookingForm" ? true : false}
+        onEdit={() => {
+          setIsModalOpen(true);
+        }}
         onCancel={() => {
           navigate('/payTrack');
         }}
+
+        ExtraButtontitleText="Welcome"
+        ExtraButtontitleTextIcon={Mail}
+        ExtraButtonText="Message"
+        onExtraButton={() => setWelcome('Message')}
+        canActionExtraButtonText={activeTab === "BookingForm" ? true : false}
+
+        ExtraExtraButtonText="Send E-Mail"
+        onExtraExtraButton={() => setWelcome('E-Mail')}
+        canActionExtraExtraButton={activeTab === "BookingForm" ? true : false}
 
       />
 
@@ -52,14 +71,15 @@ export const ViewPayTrack: React.FC = () => {
         />
       </div>
 
-      {/* Tabs Content */}
-
-      {activeTab === "BookingForm" && <BookingForm />}
+      {activeTab === "BookingForm" && <BookingForm modalOpen={isModalOpen} setModalOpen={setIsModalOpen} welcome={welcome} setWelcome={setWelcome} />}
       {activeTab === "BankLoans" && <BankLoans />}
       {activeTab === "Account" && <Account />}
       {activeTab === "ModifiedRequest" && <ModifiedRequest />}
-      {activeTab === "FlatHandover" && <BankDocuments fileType="FLAT HANDOVER" />}
-      {activeTab === "Files" && <BankDocuments fileType="FILES" />}
+      {activeTab === "FlatHandover" && <BookingFlatHandoverFile fileType="FLAT HANDOVER" pageName="Flat Handover" />}
+      {activeTab === "Files" && <BookingFlatHandoverFile fileType="FILES" pageName="Files" />}
+      {activeTab === "Call Log" && <CallLog />}
+
+
 
     </div>
   )

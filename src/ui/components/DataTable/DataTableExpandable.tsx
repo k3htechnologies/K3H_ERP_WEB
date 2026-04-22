@@ -5,13 +5,13 @@ import type { PaginationInfo, SortInfo, TableColumn } from './DataTable'
 import NoDataView from '@/ui/components/NoDataView/NoDataView'
 import { useHorizontalScroll } from './useHorizontalScroll'
 
-
 interface ExpandableConfig {
   keyField?: string
   fetchRow?: (row: any) => Promise<any>
   renderRow: (data: any, row: any) => React.ReactNode
   expandButton?: { openText?: string; closeText?: string }
   alwaysFetchOnOpen?: boolean
+  rowExpandable?: (row: any) => boolean
 }
 
 interface DataTableProps {
@@ -28,6 +28,8 @@ interface DataTableProps {
   onSort?: (sortInfo: SortInfo) => void
   expandable?: ExpandableConfig
   alwaysFetchOnOpen?: boolean
+  rowExpandable?: true
+
 }
 
 export interface DataTableExpandableRef {
@@ -49,7 +51,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
   sortInfo,
   onSort,
   expandable,
-  alwaysFetchOnOpen
+  alwaysFetchOnOpen,
 }, ref) => {
 
   const scrollRef = useHorizontalScroll()
@@ -65,6 +67,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
       key: '__expand',
       label: '',
       width: '6',
+      fixed: 'left',
       align: 'center',
       render: (_v, row) => {
         const rowId = String(row[keyField] ?? JSON.stringify(row))
@@ -180,7 +183,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
     if (!pagination) return null
 
     const { currentPage, totalPages, totalRecords, pageSize, onPageChange } = pagination
-    const startRecord = totalRecords===0 ? 0 :(currentPage - 1) * pageSize + 1
+    const startRecord = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
     const endRecord = Math.min(currentPage * pageSize, totalRecords)
 
     return (
@@ -191,7 +194,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
         <div className="flex items-center space-x-2">
           <button
             onClick={() => onPageChange(currentPage - 1)}
-           disabled={totalRecords===0 ? true : currentPage === 1}
+            disabled={totalRecords === 0 ? true : currentPage === 1}
             className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <ChevronLeft className="h-4 w-4 bg-gray-10000" />
@@ -227,7 +230,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
 
           <button
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={totalRecords===0 ? true :currentPage === totalPages}
+            disabled={totalRecords === 0 ? true : currentPage === totalPages}
             className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
             <ChevronRight className="h-4 w-4" />
@@ -237,64 +240,121 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
     )
   }
 
+  const flattenColumns = (cols: TableColumn[]): TableColumn[] => {
+    let result: TableColumn[] = []
+
+    cols.forEach(col => {
+      if (col.children) {
+        result = result.concat(flattenColumns(col.children))
+      } else {
+        result.push(col)
+      }
+    })
+
+    return result
+  }
+
+  const buildHeaderRows = () => {
+    const rows: any[] = []
+
+    const traverse = (cols: TableColumn[], level = 0) => {
+      rows[level] = rows[level] || []
+
+      cols.forEach(col => {
+        const hasChildren = col.children && col.children.length > 0
+
+        rows[level].push({
+          ...col,
+          colSpan: hasChildren ? flattenColumns(col.children!).length : 1,
+          rowSpan: hasChildren ? 1 : 2
+        })
+
+        if (hasChildren) {
+          traverse(col.children!, level + 1)
+        }
+      })
+    }
+
+    // ✅ IMPORTANT FIX
+    traverse(effectiveColumns)
+
+    return rows
+  }
+
   return (
     <div className={`bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col ${fixedHeight ? 'h-full' : ''} ${className}`}>
-      <div ref={scrollRef}  className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
+      <div ref={scrollRef} className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
         maxHeight: recordsPerPage === 10 ? 'calc(10 * 2.5rem + 2.5rem)' : maxHeight
       } : {}}>
         <table className="min-w-full border-collapse border border-gray-300">
-          <thead className={`${fixedHeight ? 'sticky top-0 z-40' : ''} shadow-sm`} style={{
-            // backgroundColor: '#E5E5E5',
-            position: fixedHeight ? 'sticky' : 'static',
-            top: 0,
-            zIndex: 38,
-          }}>
-            <tr className="h-10" style={{
-              fontSize: '14px',
-              fontWeight: '500',
-              lineHeight: '1.4',
-              letterSpacing: '0%',
-              paddingTop: '6px',
-              paddingBottom: '6px',
-            }}>
-              {effectiveColumns.map((column) => (
-                <th
-                  key={column.key}
-                  className={`px-4 py-2 text-gray-800 tracking-wider whitespace-nowrap
-                    ${column.align === 'center' ? 'text-center' :
-                      column.align === 'right' ? 'text-right' : 'text-left'}
+          <thead
+            className={`${fixedHeight ? 'sticky top-0 z-40' : ''} shadow-sm`}
+            style={{
+              position: fixedHeight ? 'sticky' : 'static',
+              top: 0,
+              zIndex: 38,
+            }}
+          >
+            {buildHeaderRows().map((row, rIndex) => (
+              <tr key={rIndex} className="h-10" style={{
+                fontSize: '14px',
+                fontWeight: '500',
+                lineHeight: '1.4',
+                letterSpacing: '0%',
+                paddingTop: '6px',
+                paddingBottom: '6px',
+              }}>
+
+                {row.map((column: any, cIndex: number) => (
+
+                  <th
+                    key={cIndex}
+                    colSpan={column.colSpan}
+                    rowSpan={column.rowSpan}
+                    className={`px-4 py-2 text-gray-800 tracking-wider whitespace-nowrap
+                    ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'}
                     ${column.width ? `w-${column.width}` : ''}
                     ${column.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
-                    ${column.fixed === 'left' ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]' :
-                      column.fixed === 'right' ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]' : ''}
-                  `}
-                  style={{
-                    ...(column.width ? { width: column.width } : {}),
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    lineHeight: '1.4',
-                    letterSpacing: '0%',
-                    backgroundColor: '#E4F0FF',
-                    borderBottom: '1px solid #D1D5DB',
-                    borderRight: '1px solid #D1D5DB',
-                  }}
-                  onClick={() => column.sortable && handleSort(column.key)}
-                >
+                    ${column.fixed === 'left' ? 'sticky z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]' : column.fixed === 'right' ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]' : ''}
+               `}
+                    style={{
+                      ...(column.width ? { width: column.width } : {}),
+                      ...(column.fixed === 'left' ? { left: cIndex === 0 ? '0px' : '30px' } : {}),
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      lineHeight: '1.4',
+                      backgroundColor: '#E4F0FF',
+                      borderBottom: '1px solid #D1D5DB',
+                      borderRight: '1px solid #D1D5DB',
+                    }}
+                    onClick={() => column.sortable && handleSort(column.key)}
+                  >
 
-                  <div className={`flex items-center space-x-1 ${column.align === 'center' ? 'justify-center' : column.align === 'right' ? 'justify-end' : 'justify-start'}`}>
-                    <span className="truncate">{column.label}</span>
-                    {column.sortable && <ArrowUpDown className="h-3 w-3 flex-shrink-0" />}
-                    {sortInfo?.column === column.key && <span className="text-blue-500 flex-shrink-0">{sortInfo.direction === 'asc' ? '↑' : '↓'}</span>}
-                  </div>
-                </th>
-              ))}
-            </tr>
+                    <div className={`flex items-center space-x-1  ${column.align === 'center' ? 'justify-center' : column.align === 'right' ? 'justify-end' : 'justify-start'}`}>
+
+                      <span className="truncate">{column.label}</span>
+
+                      {column.sortable && <ArrowUpDown className="h-3 w-3 flex-shrink-0" />}
+
+                      {sortInfo?.column === column.key && <span className="text-blue-500 flex-shrink-0">{sortInfo?.direction === 'asc' ? '↑' : '↓'}</span>}
+
+                    </div>
+
+                  </th>
+
+                ))}
+
+              </tr>
+            ))}
           </thead>
+
+
+
 
           <tbody className="bg-white">
             {!loading && data.length === 0 ? (
               <tr>
-                <td colSpan={effectiveColumns.length} className="py-10">
+                <td colSpan={flattenColumns(effectiveColumns).length} className="py-10">
                   <NoDataView
                     message={emptyMessage}
                   />
@@ -306,13 +366,26 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
                 return (
                   <React.Fragment key={rowKey}>
                     <tr className="hover:bg-gray-50 h-10 border-b border-gray-200">
-                      {effectiveColumns.map((column) => {
+                      {flattenColumns(effectiveColumns).map((column, colIndex) => {
                         // special-case the injected expand column
+
                         if (expandable && column.key === '__expand') {
+                          const canExpand = typeof expandable.rowExpandable === "function" ? expandable.rowExpandable(row) : true;
+
+                          if (!canExpand) {
+                            return (
+                              <td
+                                key={column.key}
+                                className="px-4 py-2 text-center sticky left-0 bg-white z-30"
+                                style={{ minWidth: '30px', verticalAlign: 'middle' }}
+                              />
+                            );
+                          }
+
                           const state = expandedMap[rowKey]
                           const isOpen = !!state?.open
                           return (
-                            <td key={column.key} className="px-4 py-2 text-center" style={{ minWidth: '40px', verticalAlign: 'middle' }}>
+                            <td key={column.key} className="px-4 py-2 text-center sticky left-0 bg-white z-30" style={{ minWidth: '30px', verticalAlign: 'middle' }}>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()
@@ -329,9 +402,20 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
                         const value = column.render ? column.render(row[column.key], row, index) : row[column.key]
                         return (
                           <td key={column.key}
-                            className={`px-4 py-2 text-gray-900 border-r border-gray-200 ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'} ${column.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100' : column.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100' : ''}`}
-                            style={{ ...(column.width ? { width: column.width } : {}), fontSize: '14px', fontWeight: '400', lineHeight: '1.5', letterSpacing: '0%', minHeight: '40px', verticalAlign: 'middle' }}>
-                            <div className={`${column.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`} style={{ maxWidth: column.maxWidth || column.width || '200px', lineHeight: '1.5' }}>
+                            className={`px-4 py-2 text-gray-900 border-r border-gray-200 ${column.align === 'center' ? 'text-center' : column.align === 'right' ? 'text-right' : 'text-left'} ${column.fixed === 'left' ? 'sticky bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100' : column.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100' : ''}`}
+                            style={{
+                              ...(column.width ? { width: column.width } : {}),
+                              ...(column.fixed === 'left'
+                                ? { left: colIndex === 0 ? '0px' : '40px' }
+                                : {}),
+                              fontSize: '14px',
+                              fontWeight: '400',
+                              lineHeight: '1.5',
+                              letterSpacing: '0%',
+                              minHeight: '40px',
+                              verticalAlign: 'middle'
+                            }}>
+                            <div className={`${column.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`} style={{ maxWidth: column.maxWidth || column.width, lineHeight: '1.5' }}>
                               {value}
                             </div>
                           </td>
@@ -342,7 +426,7 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
                     {/* Expanded row (single row spanning columns) */}
                     {expandable && expandedMap[rowKey]?.open && (
                       <tr className="bg-white-50">
-                        <td colSpan={effectiveColumns.length} className="px-4 py-3 border-b border-gray-200">
+                        <td colSpan={flattenColumns(effectiveColumns).length} className="px-4 py-3 border-b border-gray-200">
                           {
                             expandedMap[rowKey].loading ? (
                               <div className="py-6 text-center">Loading...</div>

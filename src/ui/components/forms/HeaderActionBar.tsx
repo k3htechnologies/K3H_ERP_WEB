@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "./Button";
-import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface HeaderActionBarProps {
     titleText?: string;
@@ -14,6 +14,9 @@ interface HeaderActionBarProps {
     onEdit?: () => void;
     canAction?: boolean;
 
+
+    ExtraButtontitleText?: string;
+    ExtraButtontitleTextIcon?: React.ElementType;
     ExtraButtonText?: string;
     onExtraButton?: () => void;
     canActionExtraButtonText?: boolean;
@@ -31,6 +34,9 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
     subSubTitleText,
     EditText = "Edit",
 
+
+    ExtraButtontitleText,
+    ExtraButtontitleTextIcon,
     ExtraButtonText = "",
     onCancel,
     onEdit,
@@ -47,6 +53,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
     const [isGenerateOpen, setIsGenerateOpen] = useState(false);
     const generateRef = useRef<HTMLDivElement | null>(null);
+    const Icon = ExtraButtontitleTextIcon;
 
     useEffect(() => {
         function handleClickOutside(e: MouseEvent) {
@@ -120,14 +127,14 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                             }}
                             color="blue"
                             colorMode="gradient_light"
-                            size="mxs"
+                            size="sm"
                             defineWidth
-                            title="PDF"
+                            title={ExtraButtontitleText}
                             aria-haspopup="menu"
                             style={{ width: '95px' }}
-                            leftIcon={<FileText className="h-4 w-4" />}
+                            leftIcon={Icon ? <Icon className="h-4 w-4" /> : undefined}
                         >
-                            PDF
+                            {ExtraButtontitleText}
                         </Button>
 
                         {isGenerateOpen && (
@@ -147,7 +154,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                                         fullWidth
                                         isborderRadius
                                         size="sm"
-                                        title="Generate PDF"
+                                        title={ExtraButtonText}
                                         style={{ justifyContent: "left" }}
                                     >
                                         {ExtraButtonText}
@@ -170,7 +177,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                                         fullWidth
                                         isborderRadius
                                         size="sm"
-                                        title="Send E-Mail"
+                                        title={ExtraExtraButtonText}
                                         style={{ justifyContent: "left" }}
                                     >
 

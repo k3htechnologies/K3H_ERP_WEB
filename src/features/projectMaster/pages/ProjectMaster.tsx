@@ -346,6 +346,14 @@ export const ProjectMaster: React.FC = () => {
         render: (value) => value || '-'
       },
       {
+        key: 'Category',
+        label: 'Category',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
         key: 'BussinessCategory',
         label: 'Business Category',
         width: '15',

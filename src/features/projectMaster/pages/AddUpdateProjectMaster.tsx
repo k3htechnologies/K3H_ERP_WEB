@@ -6,7 +6,7 @@ import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { Loader } from "@/core/utils/loader";
-import { BUSINESS_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME_BMC, PROJECT_SUB_SCHEME_MHADA, PROJECT_SUB_SCHEME_SRA } from "@/core/constants/staticData";
+import { BUSINESS_CATEGORY, PROJECT_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME_BMC, PROJECT_SUB_SCHEME_MHADA, PROJECT_SUB_SCHEME_SRA } from "@/core/constants/staticData";
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
@@ -32,6 +32,7 @@ const initialFormState = (): AddUpdateProjectMasterRequest => ({
     FileNumber: '',
     ArchitectName: '',
     ArchitectMobileNumber: '',
+    Category: '',
     BussinessCategory: '',
     ProjectShortName: '',
     CountryMasterId: 0,
@@ -202,6 +203,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             FileNumber: row.FileNumber ?? prev.FileNumber ?? '',
                             ArchitectName: row.ArchitectName ?? prev.ArchitectName ?? '',
                             ArchitectMobileNumber: row.ArchitectMobileNumber ?? prev.ArchitectMobileNumber ?? '',
+                            Category: row.Category ?? prev.Category ?? '',
                             BussinessCategory: row.BussinessCategory ?? prev.BussinessCategory ?? '',
                             ProjectShortName: row.ProjectShortName ?? prev.ProjectShortName ?? '',
                             CountryMasterId: row.CountryMasterId ?? prev.CountryMasterId ?? 1,
@@ -272,6 +274,10 @@ const AddUpdateProjectMaster: React.FC = () => {
             newErrors.ProjectName = "Project Name is required.";
         }
 
+        if (!formData.Category?.trim()) {
+            newErrors.Category = "Category is required.";
+        }
+
         if (formData.IsRedevelopment === 0 && !formData.CTSNumber?.trim()) {
             newErrors.CTSNumber = "CTS Number is required.";
         }
@@ -336,6 +342,7 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('FileNumber', formData.FileNumber ?? '');
         fd.append('ArchitectName', formData.ArchitectName ?? '');
         fd.append('ArchitectMobileNumber', formData.ArchitectMobileNumber ?? '');
+        fd.append('Category', formData.Category ?? '');
         fd.append('BussinessCategory', formData.BussinessCategory ?? '');
         fd.append('ProjectShortName', formData.ProjectShortName ?? '');
         fd.append('CountryMasterId', String(formData.CountryMasterId ?? 0));
@@ -487,6 +494,20 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         setRemovedProjectPhotoUrls((prev) => [...prev, url])
                                     }}
                                 />
+                            </div>
+
+                            <div>
+
+                                <SinglePageSelection
+                                    required
+                                    label="Category"
+                                    placeholder="Select Category"
+                                    value={formData.Category}
+                                    error={errors.Category}
+                                    onChange={(val) => handleFieldChange('Category', String(val))}
+                                    options={PROJECT_CATEGORY.map(opt => ({ label: opt.name, value: opt.id }))}
+                                />
+                                
                             </div>
 
                             <div>

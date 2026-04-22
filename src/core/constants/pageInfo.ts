@@ -326,6 +326,13 @@ export const getPageInfo = (path: string) => {
                 title: 'Event',
                 description: 'Profile',
             }
+
+        case 'inwardOutward':
+            return {
+                title: 'Inward Outward',
+                description: 'Inward Outward',
+            }
+            
             {/* INVENTORY */ }
 
         case 'inventoryDashboard':
@@ -466,6 +473,12 @@ export const getPageInfo = (path: string) => {
             return {
                 title: "Pay Track",
                 description: "Secure your unit by completing the booking process",
+            }
+
+            case 'brokerage':
+            return {
+                title: "Brokerage",
+                description: "Brokerage",
             }
 
         default:

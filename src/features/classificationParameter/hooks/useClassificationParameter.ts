@@ -303,6 +303,10 @@ export const useClassificationParameter = () => {
     } => {
         const newErrors: { [key: string]: string } = {}
 
+        if (formData.MinBudget?.trim() === "") {
+            newErrors.MinBudget = "Budget is required";
+        }
+
         if (formData.PossessionType?.trim() === "") {
             newErrors.PossessionType = "Possession Type is required";
         }

@@ -84,8 +84,16 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/classificationparameter':'/classificationParameter',
         '/performance': '/performance',
         '/channelpartnerdashboard':'/channelPartnerDashboard',
+
+        // CRM
+        '/paytrack':'/payTrack',
+        '/brokerage':'/brokerage',
+
+        //MORE
+        '/inwardoutward':'/inwardOutward',
+
+        //SETTING EXTRA
         '/companypolicy':'/companyPolicy',
-        '/paytrack':'/payTrack'
     }
 
 

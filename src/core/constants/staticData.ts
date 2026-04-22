@@ -47,7 +47,7 @@ export const MASTER_DATA = {
 
   flat_unit_Type: ['BMC', 'Commercial', 'eDeck', 'Fitness Center', 'Gym', 'MHADA', 'Multi Purpose Room', 'Land Lord', 'Lien', 'Part Terrace', 'Refuge', 'Religious Structure', 'Residential', 'Society Office', 'SRA', 'Upashray', 'Void'],
 
-  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK', '8 BHK', '1 + 1 JODI', '2 + 1 JODI', '2 + 2 JODI', '2 + 3 JODI', 'PENTHOUSE'],
+  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK', '8 BHK', '9 BHK', '10 BHK', '1 + 1 JODI', '2 + 1 JODI', '2 + 2 JODI', '2 + 3 JODI', 'DUPLEX', 'PENTHOUSE'],
 
   commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
@@ -62,6 +62,8 @@ export const MASTER_DATA = {
   tenure: ['Tenure 1', 'Tenure 2', 'Tenure 3', 'Tenure 4', 'Tenure 5', 'Tenure 6', 'Tenure 7', 'Tenure 8', 'Tenure 9', 'Tenure 10', 'Tenure 11', 'Tenure 12', 'Tenure 13', 'Tenure 14'],
 
   unit_sqft_lumsum: ['Per Sq Ft', 'Lumpsum'],
+
+  project_category: ['Direct', 'Tender'],
 
   business_category: ['Commercial', 'Mixed Use', 'Residential'],
 
@@ -83,7 +85,7 @@ export const MASTER_DATA = {
 
   occupationType: ['Business', 'Homemaker', 'Professional', 'Salaried', 'Retired',],
 
-  budget: ['<1', '2', '3', '4', '5', '6', '8', '10', '12', '15', '20', '25+'],
+  budget: ['<1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5', '5.5', '6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '15', '15.5', '20', '20.5', '25+'],
 
   accomodation: ["Rented", "Self-Owned"],
 
@@ -280,11 +282,21 @@ export const MASTER_DATA = {
 
   activeInactive: ['Active', 'Inactive'],
 
-  paymentFor: ['Agreement Value', 'GST', 'Other Charges', 'Registration', 'Stamp Duty', 'TDS'],
+  paymentFor: ['Agreement Value', 'Agreement Value GST', 'Agreement Value TDS', 'Other Charges Value', 'Other Charges GST', 'Registration Fees', 'Stamp Duty',],
 
   paymentReceivedFrom: ['Bank', 'Owner'],
 
   crmPayTrackFileName: ['Possession Letter', 'OC/CC Letter', 'Tax Receipt', 'Society Deed', 'Electricity & Water', 'Maintenance Docs', 'Registered Agreement', 'Parking Allotment'],
+
+  callStatus: ['Connected', 'Not Connected', 'Wrong Number', 'Switched Off', 'Busy', 'No Answer', 'Disconnected', 'Rescheduled'],
+
+  callPurpose: ['Complaint', 'Welcome Call', 'Payment Follow - UP', 'Registration Follow - UP', 'Reminder', 'Query Resolution', 'Feedback', 'Complaint', 'Other'],
+
+  deliveryStatus: ['Acknowledged', 'Delivered'],
+
+  deliveryMode: ['Courier', 'Hand-To-Hand'],
+
+  documentType: ['Inward', 'Outward'],
 
 } as const
 
@@ -354,6 +366,7 @@ export const CARPET_AREA_TYPE = toOptions(MASTER_DATA.carpet_area_type)
 export const TENURE = toOptions(MASTER_DATA.tenure)
 export const UNIT_SQFT_LUMPSUM = toOptions(MASTER_DATA.unit_sqft_lumsum)
 export const SPECIALITY_TYPE = toOptions(MASTER_DATA.speciality_type)
+export const PROJECT_CATEGORY = toOptions(MASTER_DATA.project_category)
 export const BUSINESS_CATEGORY = toOptions(MASTER_DATA.business_category)
 export const PROJECT_SCHEME = toOptions(MASTER_DATA.project_scheme)
 export const PROJECT_SUB_SCHEME_BMC = toOptions(MASTER_DATA.project_sub_scheme_BMC)
@@ -400,7 +413,15 @@ export const ACTIVE_INACTIVE_OPTIONS = toOptions(MASTER_DATA.activeInactive);
 export const PAYMENT_FOR_OPTIONS = toOptions(MASTER_DATA.paymentFor);
 export const PAYMENT_RECEIVED_FROM_OPTIONS = toOptions(MASTER_DATA.paymentReceivedFrom);
 export const CRM_PAY_TRACK_FILE_NAME_OPTIONS = toOptions(MASTER_DATA.crmPayTrackFileName);
+<<<<<<< HEAD
 export const REFUNDED_DETAILS_AMOUNT_TYPE_OPTIONS = toOptions(MASTER_DATA.refundedDetaisAmountType);
+=======
+export const CALL_STATUS_OPTIONS = toOptions(MASTER_DATA.callStatus);
+export const CALL_PURPOSE_OPTIONS = toOptions(MASTER_DATA.callPurpose);
+export const DELIVERY_STATUS = toOptions(MASTER_DATA.deliveryStatus);
+export const DELIVERY_MODE = toOptions(MASTER_DATA.deliveryMode);
+export const DOCUMENT_TYPE = toOptions(MASTER_DATA.documentType);
+>>>>>>> a67963c97957118e8bce93d0b9459bcb42dd16eb
 
 
 // ============================================================================

@@ -41,12 +41,14 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
     };
 
     const handleEdit = () => {
+        
+        sessionStorage.setItem("scrollFlatId", flat.InventoryFlatId.toString());
+
         navigate('/inventory/inventorySpecification', {
             state: {
                 "flat": flat,
                 "projectId": projectId,
-                "approvalStatus": approvalStatus
-
+                "approvalStatus": approvalStatus,
             },
         });
     };
@@ -108,8 +110,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
     };
 
     return (
-        <div
-            className={`flex flex-col justify-evenly ${flat.FlatStatus === "Available" ? "min-h-[250px]" : "h-[250px]"} w-[250px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`}
+        <div className={`flex flex-col justify-evenly ${flat.FlatStatus === "Available" ? "min-h-[250px]" : "h-[250px]"} w-[250px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`}
             style={gradientStyle}
         >
             <FieldItem label="Unit No " value={flat.Flat} isRow={true} isUsedForInventoryFlat={true} />
@@ -149,7 +150,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                                 <Edit className="cursor-pointer" onClick={handleEdit} size={16} />
                             )}
                         </>
-                    ) : null
+                    ) : <div className="w-[20px]"/>
                 }
 
             </div>
@@ -170,7 +171,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
 
             {flat.OwnerName && (flat.FlatStatus === "Booked" || flat.FlatStatus === "Alloted") ? (
                 <p
-                    className="text-center text-[#135BEC] font-medium text-sm cursor-pointer hover:underline"
+                    className="text-center text-[#135BEC] font-medium text-sm cursor-pointer hover:underline break-words whitespace-normal"
                     onClick={handleOwnerNameClick}
                     title="Click to view booking details"
                 >

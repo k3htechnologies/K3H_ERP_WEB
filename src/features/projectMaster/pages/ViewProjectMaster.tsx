@@ -25,11 +25,10 @@ import { Mail, Phone } from 'lucide-react';
 
 export const ViewProjectMaster: React.FC = () => {
 
-    //#region STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [employeeMasterList, setEmployeeMasterList] = useState<EmployeeMasterData[]>([]);
-    // SINGLE SEARCH TEXT BOX
+
     const [searchTermForEmployee, setSearchTermForEmployeeName] = useState('')
     const debouncedSearchForEmployeeName = useDebouncedCallback((value: string) => {
         searchEmployeeName(value)
@@ -46,22 +45,15 @@ export const ViewProjectMaster: React.FC = () => {
 
     const [activeTabForModulesWorkflowApproval, setActiveTabForModulesWorkflowApproval] = useState<TabItem[]>([]);
 
-    // TOAST
     const { addToast } = useToast()
 
-    //LOCATION
     const navigate = useNavigate();
     const { listState } = useProjectMasterListState();
 
-    //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/projectMaster');
-    //#endregion
 
-    //#region Get PROJECT MASTER DATA - Will be loaded from API if needed
     const [editProjectData, setEditProjectData] = useState<ProjectMasterData | null>(null);
-    //#endregion
 
-    //#region TAB ACTIVITY
     const TabList = [
         { id: "Project Overview", label: 'Project Overview' },
         { id: "Employee", label: 'Employee' },
@@ -404,7 +396,6 @@ export const ViewProjectMaster: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
                                         <FieldItem label="Redevelopment" value={editProjectData?.IsRedevelopment === true ? 'YES' : 'NO'} />
                                         <FieldItem label="Project Name" value={editProjectData?.ProjectName ?? '-'} />
-
                                         <FieldItem label="Business Category" value={editProjectData?.BussinessCategory ?? '-'} />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
@@ -416,9 +407,14 @@ export const ViewProjectMaster: React.FC = () => {
                                         />
 
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
 
                                         <FieldItem label="CTS Number" value={editProjectData?.CTSNumber ?? '-'} />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
+
+                                        <FieldItem label="Category" value={editProjectData?.Category ?? '-'} />
                                     </div>
 
                                 </section>
@@ -582,9 +578,15 @@ export const ViewProjectMaster: React.FC = () => {
 
                                 {/* ================= PROJECT IMAGE ================= */}
                                 <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 border-b border-[#135bec2e] pb-2 mb-4">
-                                        Project Images
-                                    </h4>
+                                    <div className="flex items-center justify-between border-b border-[#135bec2e] pb-2 mb-4">
+
+
+                                        <h4 className="text-lg font-semibold text-gray-900">
+                                            Project Images
+                                        </h4>
+                                        <FieldItem label="" urls={editProjectData?.ProjectPhotoURL} isIcon isSetValue={false} />
+
+                                    </div>
 
                                     <div className="flex justify-center">
                                         <div className="w-full max-w-[300px] rounded-md overflow-hidden">

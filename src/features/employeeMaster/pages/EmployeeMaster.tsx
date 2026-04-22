@@ -272,11 +272,9 @@ export const EmployeeMaster: React.FC = () => {
   //#endregion
 
   //#region TABLE CONFIG
-  const handlePageChange = useCallback(
-    (page: number) => {
+  const handlePageChange = useCallback((page: number) => {
       updateListState({ page });
-    },
-    [sortInfo, updateListState],
+    },[sortInfo, updateListState],
   );
 
   const handleSortColumn = useCallback(

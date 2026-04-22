@@ -171,6 +171,11 @@ import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
 import AddRefundDetails from '@/features/crmPayTrack/pages/AddRefundDetails';
 import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
+import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
+import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
+import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
+import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
+import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/BookingBrokerageListStateContext';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -194,6 +199,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/sign-in" replace />
   }
 
+
   return <>{children}</>
 }
 
@@ -212,18 +218,14 @@ function App() {
   return (
     <CountryStateCityDistrictVillage>
       <Suspense fallback={<LoadingSpinner />}>
+      
         <Routes>
           {/* Public Routes */}
+
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
+          <Route path="/" element={<ProtectedRoute> <Layout /></ProtectedRoute>}>
+
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
 
@@ -347,6 +349,9 @@ function App() {
 
             {/* COMMAN */}
             <Route path="event" element={<Event />} />
+            <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
+            <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
+            <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
 
 
             {/* SALES */}
@@ -444,16 +449,17 @@ function App() {
             <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
 
 
-            <Route path="brokerage" element={<Brokerage />} />
-            <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
-            <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
-            <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
+            <Route path="brokerage" element={<BookingBrokerageListStateProvider><Brokerage /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/brokerageInvoice/view" element={<BookingBrokerageListStateProvider><ViewBrokerageInvoice /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/brokerageInvoice/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdateBrokerageInvoice /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/PaidBrokerageBooking/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdatePaidBrokerageBooking /></BookingBrokerageListStateProvider>} />
+
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 
           <Route path='Terms' element={<Terms />} />
-          <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
+          <Route path='Privacy-Policy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
 
         </Routes>

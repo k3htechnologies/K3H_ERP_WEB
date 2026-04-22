@@ -1157,6 +1157,55 @@ export const LocalStorageHelper = {
   },
   //#endregion
 
+  //#region STORE PAY TRACK CALL LOG COLUMNS
+  storePayTrackCallLogTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Pay Track Call Log Columns Details:", error);
+    }
+  },
+  //#endregion
+  //#region GET PAY TRACK CALL LOG COLUMNS
+  getPayTrackCallLogTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading  Pay Track Call Log Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+  //#endregion
+
+  //#region STORE INWARD OUTWARD COLUMNS
+  storeInwardOutwardTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Inward Outward Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET INWARD OUTWARD COLUMNS
+  getInwardOutwardTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Inward Outward Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+  //#endregion
+
+
   //#region CLEAR LOCAL STORAGE
   clearLocalStorageData: (): void => {
     try {
@@ -1199,6 +1248,9 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS);
+
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
@@ -1218,6 +1270,10 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.LEAVECREDITCONFIGURATION);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PAY_TRACK_BOOKING);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.INWARD_OUTWARD);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING_Brokerage);
+      
+
     } catch (error) {
       console.error("ERROR : CLEARING LOCAL STORAGE:", error);
     }

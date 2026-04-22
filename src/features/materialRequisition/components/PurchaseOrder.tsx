@@ -14,7 +14,6 @@ import { Button, Input } from "@/ui/components/forms";
 import { FileText } from "lucide-react";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
-import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { materialRequisitionPurchaseOrderService } from "../services/MaterialRequisitionPurchaseOrderService";
 
@@ -50,7 +49,6 @@ export const PurchaseOrder: React.FC = () => {
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteGeneratePurchaseOrderData, setDeleteGeneratePurchaseOrderData] = useState<MaterialRequisitionPurchaseOrderData | null>(null)
     const [generatePurchaseOrderPdfList, setGeneratePurchaseOrderPdfList] = useState<GenerateMaterialRequisitionPurchaseOrderPdfData[]>([])
-
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
@@ -99,7 +97,6 @@ export const PurchaseOrder: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-    //#endregion
 
     const handleGeneratepurchaseorder = () => {
         setDeleteGeneratePurchaseOrderData(null);
@@ -108,7 +105,6 @@ export const PurchaseOrder: React.FC = () => {
         setIsAddUpdateModalOpen(true);
     }
 
-    // ============================================================= [VALIDATION FUNCTION] =============================================================================================
     const validateGeneratePurchaseOrderForm = (): {
 
         isValid: boolean
@@ -130,18 +126,16 @@ export const PurchaseOrder: React.FC = () => {
         }
     }
 
-    //PUSH FORM DATA
     const PushGeneratePurchaseOrderFormData = (): GenerateMaterialRequisitionPurchaseOrderPdfData => {
         return {
             MaterialRequisitionId: Number(currentMaterialRequisitionId),
-            Uniquekey: formData.Uniquekey,
+            Uniquekey: currentUniquekey ?? '',
             Remarks: formData.Remarks,
             TermsCondition: formData.TermsCondition,
             ProjectId: Number(projectId),
         };
     };
 
-    // GENERATE PURCHASE ORDER
     const handleGeneratePurchaseOrder = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -286,7 +280,6 @@ export const PurchaseOrder: React.FC = () => {
         );
     };
 
-    //#region DELETE PURCHASE ORDER
     const handleDeleteGeneratePurchaseOrder = async () => {
 
         setIsConfirmationDialogBoxOpen(false);
@@ -328,20 +321,17 @@ export const PurchaseOrder: React.FC = () => {
             "Deleting Purchase Order"
         );
     };
-    //#endregion
 
-    //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = (record: MaterialRequisitionPurchaseOrderData) => {
         setDeleteGeneratePurchaseOrderData(record);
         setIsConfirmationDialogBoxOpen(true);
     }
-    //#endregion
 
     const hasPurchaseOrder = materialRequisitionPurchaseOrder.length > 0 &&
         !!materialRequisitionPurchaseOrder[0];
 
     return (
-        <div className="bg-white p-6 h-[500px]">
+        <div className="bg-white p-1 h-[500px]">
             <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
 
             <div className="flex justify-end gap-2">
@@ -380,41 +370,48 @@ export const PurchaseOrder: React.FC = () => {
             </div>
 
             {hasPurchaseOrder && (
-                <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
-                    <div className="flex justify-between">
-                        <section className="bg-white pt-1 pb-4">
-                            <h1>Purchase order File</h1>
+                <div className="bg-white-100 p-1 rounded-lg shadow-md relative">
 
-                            <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
-                                <MultiImageViewer
-                                    images={parseDocumentUrls(materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? '')}
-                                    title="Purchase order"
-                                    isIcon={false}
-                                    triggerLabel="Document"
-                                />
-                            </div>
+                    {/* HEADER */}
+                    <h2 className="text-lg font-semibold mb-4">Purchase Order File</h2>
+                    <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
+                        <p>Document</p>
+                        <MultiImageViewer
+                            images={parseDocumentUrls(
+                                materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? ''
+                            )}
+                            title="Purchase Order"
+                            isIcon={false}
+                            triggerLabel="Document"
+                        />
+                    </div>
 
-                            <FieldItem
-                                label="Created Date"
-                                value={formatDate_dd_MonthName_yy(materialRequisitionPurchaseOrder[0]?.CreatedDate ?? '')}
-                            />
-                        </section>
+                    <div className="text-sm text-gray-600 mt-2">
+                        <span className="font-medium">
+                            Created By {materialRequisitionPurchaseOrder[0].CreatedBy || "-"} on{" "}
+                            {materialRequisitionPurchaseOrder[0].CreatedDate
+                                ? formatDate_dd_MonthName_yy(materialRequisitionPurchaseOrder[0].CreatedDate)
+                                : "-"}
+                        </span>
+                    </div>
 
-                        <div>
-                            <Button
-                                color="red"
-                                variant="solid"
-                                colorMode="extraLight"
-                                onClick={() => handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder[0])}
-                            >
-                                Delete
-                            </Button>
-                        </div>
+                    <div className="absolute bottom-4 right-4">
+                        <Button
+                            color="red"
+                            variant="solid"
+                            onClick={() =>
+                                handleConfirmationDialogBoxOpen(
+                                    materialRequisitionPurchaseOrder[0]
+                                )
+                            }
+                            className="px-4 py-2 rounded-md"
+                        >
+                            Delete
+                        </Button>
                     </div>
                 </div>
             )}
-            
-            {/* GENERATE PURCHASE ORDER MODAL */}
+
 
             <Modal
                 isOpen={isAddUpdateModalOpen}
@@ -466,8 +463,6 @@ export const PurchaseOrder: React.FC = () => {
                     </div>
                 </div>
             </Modal>
-
-            {/* DELETE CONFIRMATION MODAL */}
 
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}

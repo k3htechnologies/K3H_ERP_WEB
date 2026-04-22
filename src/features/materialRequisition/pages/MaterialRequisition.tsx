@@ -45,7 +45,6 @@ export const MaterialRequisition: React.FC = () => {
     const [isShowCustomizeMaterialRequisitionColumnsModal, setIsShowCustomizeMaterialRequisitionColumnsModal] = useState(false);
     const navigate = useNavigate();
     const { canAction, canExport } = useMenuPermissions();
-    const [selectedRow, setSelectedRow] = useState<MaterialRequisitionData | null>(null);
     const { projectId } = useProject();
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
@@ -88,15 +87,16 @@ export const MaterialRequisition: React.FC = () => {
     }, []);
 
 
-    const handleNavigateToView = (row: MaterialRequisitionData) => {
-        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage, MaterialRequisitionStatus: row.MaterialRequisitionStatus, Uniquekey: row.Uniquekey, SystemGeneratedCode: row.SystemGeneratedCode });
-        navigate('/MaterialRequisition/view');
-    };
+    const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
+        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage, MaterialRequisitionStatus: row.MaterialRequisitionStatus, SystemGeneratedCode: row.SystemGeneratedCode, Uniquekey: row.Uniquekey });
+        navigate('/materialRequisition/view');
+    }, [navigate, updateListState],
+    );
+
     const handleDeleteRequest = async () => {
         setIsConfirmationDialogBoxOpen(false);
 
         if (!deleteData) return;
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -125,7 +125,6 @@ export const MaterialRequisition: React.FC = () => {
                     else if (materialRequisitionData.length === 1 && pagination.currentPage > 1) {
                         pageToShow = pagination.currentPage - 1;
                     }
-
                     setPagination({
                         currentPage: pageToShow,
                         totalRecords: newTotalRecords,
@@ -141,9 +140,7 @@ export const MaterialRequisition: React.FC = () => {
                     setDeleteData(null);
 
                 } else {
-
                     addToast({ type: 'error', title: response.left.message });
-
                 }
 
                 return response;
@@ -362,7 +359,6 @@ export const MaterialRequisition: React.FC = () => {
                     SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionColumns)
 
                 };
-                debugger
 
                 const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
 
@@ -388,8 +384,6 @@ export const MaterialRequisition: React.FC = () => {
             "Loading Material Requisition",
         );
     };
-
-
 
     const clearSearchMaterialRequisition = () => {
         debouncedSearch.cancel?.();

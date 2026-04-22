@@ -21,11 +21,11 @@ import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
 import { materialRequisitionService } from "../../services/MaterialRequisitionService";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
-import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
+import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
 import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
-//
+import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
+
 const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     MaterialRequisitionId: 0,
     Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -46,7 +46,6 @@ const AddUpdateInovice: React.FC = () => {
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionInvoice>(() => initialFormState());
     const [invoiceData, setInvoiceData] = useState<MaterialRequisitionGRNData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
-
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { projectId } = useProject();
@@ -56,18 +55,13 @@ const AddUpdateInovice: React.FC = () => {
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const navigate = useNavigate();
-
     const [performaInvoiceURLFiles, setPerformaInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removePerformaInvoiceUrls, SetRemovePerformaInvoiceUrls] = useState<string[]>([]);
     const [performaInvoiceURL, setPerformaInvoiceURLL] = useState<string>();
     const [uploadInvoiceURLFiles, setUploadInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removeUploadInvoiceUrls, SetRemoveUploadInvoiceUrls] = useState<string[]>([]);
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
-
-    //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions('/materialRequisition/view');
-    //#endregion
-
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     useEffect(() => {
@@ -178,7 +172,6 @@ const AddUpdateInovice: React.FC = () => {
         },
     ], []);
 
-    //#region HANDLE FIELD CHANGE EVENT
     const handleFieldChange = (field: keyof AddUpdateMaterialRequisitionInvoice, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -186,9 +179,7 @@ const AddUpdateInovice: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-    //#endregion
 
-    // ============================================================= [VALIDATION FUNCTION] =============================================================================================
     const validateAddInvoiceForm = (): {
 
         isValid: boolean
@@ -225,9 +216,7 @@ const AddUpdateInovice: React.FC = () => {
             errors: newErrors
         };
     };
-    //#endregion
 
-    //#region PUSH DATA
     const PushAddUpdateInvoiceData = (): FormData => {
         const fd = new FormData();
         fd.append("MaterialRequisitionInvoiceId", formData.MaterialRequisitionInvoiceId.toString());
@@ -257,9 +246,7 @@ const AddUpdateInovice: React.FC = () => {
         fd.append("RemovePerformaInvoiceURL", removePerformaInvoiceUrls.join(","));
         return fd;
     };
-    //#endregion
 
-    //#region HANDLE ADD UPDATE
     const handleAddUpdateInvoice = async () => {
         setErrors({});
 
@@ -271,7 +258,6 @@ const AddUpdateInovice: React.FC = () => {
             return;
         }
         await runApiWithLoader(
-
             setIsLoading,
             setLoadingMessage,
 
@@ -286,6 +272,8 @@ const AddUpdateInovice: React.FC = () => {
 
                     navigate("/materialRequisition/view");
 
+                    setPerformaInvoiceURLL('');
+                    setUploadInvoiceURL('');
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -296,15 +284,12 @@ const AddUpdateInovice: React.FC = () => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            'Add'
+            'Create Invoice'
         );
     };
-    //#endregion
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
-
-            {/* Loader */}
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <div className="pb-2">
@@ -329,15 +314,13 @@ const AddUpdateInovice: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-lg p-4 space-y-4 h-[110px] shadow-sm border border-gray-300 ">
-                    <DataTableWithOutBorder
-                        columns={MaterialRequisitionDetailColumns}
-                        data={matrialRequisitionDetailData}
-                        emptyMessage="No Material Requisition Found"
-                        fixedHeight={true}
-                        className="flex-1"
-                    />
-                </div>
+                <DataTableWithHeadColor
+                    columns={MaterialRequisitionDetailColumns}
+                    data={matrialRequisitionDetailData}
+                    emptyMessage="No Material Requisition Found"
+                    maxHeight={'255'}
+                    className="flex-1"
+                />
             </div>
 
             <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">

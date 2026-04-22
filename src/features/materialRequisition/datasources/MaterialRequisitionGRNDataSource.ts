@@ -1,13 +1,13 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { DeleteMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNDeleteResponse, MaterialRequisitionGRNListResponse, MaterialRequisitionGRNSaveResponse, MaterialRequisitionGRNSummary, MaterialRequisitionGRNSummaryListResponse } from "../models/MaterialRequisitionGRNModel";
+import type { DeleteMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRNSummary, MaterialRequisitionGRNDeleteResponse, MaterialRequisitionGRNListResponse, MaterialRequisitionGRNSaveResponse, MaterialRequisitionGRNSummaryListResponse } from "../models/MaterialRequisitionGRNModel";
 import { MaterialRequisitionGRNApi } from "../api/MaterialRequisitionGRN";
 
 export abstract class MaterialRequisitionGRNGRNDatasource {
     abstract pullMaterialRequisitionGRN(params: FilterWithPaginationMaterialRequisitionGRN, signal?: AbortSignal): Promise<MaterialRequisitionGRNListResponse>;
     abstract addUpdateMaterialRequisitionGRN(data: FormData): Promise<MaterialRequisitionGRNSaveResponse>;
     abstract deleteMaterialRequisitionGRN(params: DeleteMaterialRequisitionGRN): Promise<MaterialRequisitionGRNDeleteResponse>;
-    abstract pullMaterialRequisitionGRNSummary(params: MaterialRequisitionGRNSummary, signal?: AbortSignal): Promise<MaterialRequisitionGRNSummaryListResponse>;
+    abstract pullMaterialRequisitionGRNSummary(params: FilterWithPaginationMaterialRequisitionGRNSummary, signal?: AbortSignal): Promise<MaterialRequisitionGRNSummaryListResponse>;
 }
 
 export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisitionGRNGRNDatasource {
@@ -95,13 +95,13 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
         }
     }
 
-    async pullMaterialRequisitionGRNSummary(params: MaterialRequisitionGRNSummary, signal?: AbortSignal): Promise<MaterialRequisitionGRNSummaryListResponse> {
+    async pullMaterialRequisitionGRNSummary(params: FilterWithPaginationMaterialRequisitionGRNSummary, signal?: AbortSignal): Promise<MaterialRequisitionGRNSummaryListResponse> {
         try {
             const queryParams = new URLSearchParams({
             })
 
             if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());
-            if (params.Uniquekey?.trim()) queryParams.append('MaterialRequisitionGRNStatus', params.Uniquekey.trim());
+            if (params.Uniquekey?.trim()) queryParams.append('Uniquekey', params.Uniquekey.trim());
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${MaterialRequisitionGRNApi.PULL_SUMMARY}?${queryParams.toString()}`, { signal }

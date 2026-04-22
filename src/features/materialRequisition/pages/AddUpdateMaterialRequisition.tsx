@@ -148,7 +148,7 @@ export const AddUpdateMaterialRequisition = () => {
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: Number(MaterialRequisitionId)
                 };
-                debugger
+                
                 const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
 
                 if (E.isRight(response)) {
@@ -247,7 +247,7 @@ export const AddUpdateMaterialRequisition = () => {
             label: "Sub Material",
             align: "left",
             width: "30",
-            render: (value, row) => (
+            render: (value) => (
                 <TooltipText
                     text={value || '-'}
                     maxWidth="250px"
@@ -358,7 +358,7 @@ export const AddUpdateMaterialRequisition = () => {
     };
 
     const PushMaterialRequisitionFormData = (): FormData => {
-        debugger
+        
         const form = new FormData();
         form.append('MaterialRequisitionId', String(formData.MaterialRequisitionId ?? 0));
         form.append('Uniquekey', formData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6');
@@ -379,12 +379,12 @@ export const AddUpdateMaterialRequisition = () => {
         return form;
     };
     const handleSave = async () => {
-        debugger
+        
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-                debugger
+                
                 const payload = PushMaterialRequisitionFormData();
 
                 const response =
@@ -457,7 +457,7 @@ export const AddUpdateMaterialRequisition = () => {
     };
 
     const saveMaterial = async () => {
-        debugger
+        
         setErrors({});
 
         const validation = validateMaterialForm();

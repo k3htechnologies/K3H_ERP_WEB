@@ -27,12 +27,12 @@ export const Details: React.FC = () => {
     const [matrialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-    const [materialRequisitionList, setMaterialRequisitionList] = useState<MaterialRequisitionData[]>([]);
+    const [, setMaterialRequisitionList] = useState<MaterialRequisitionData[]>([]);
     const [active, setActive] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
     const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
-
+    const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
@@ -85,7 +85,6 @@ export const Details: React.FC = () => {
         );
     };
 
-    //PUSH FORM DATA
     const PushMaterialRequisitionFormData = (): FormData => {
         const fd = new FormData();
         fd.append("ProjectId", Number(projectId).toString());
@@ -108,28 +107,7 @@ export const Details: React.FC = () => {
         return fd;
     };
 
-    const CopyMaterialRequisitionFormData = (): FormData => {
-        const fd = new FormData();
-        fd.append("ProjectId", Number(projectId).toString());
-        fd.append("MaterialRequisitionId", "0");
-        fd.append("Uniquekey", matrialRequisitionData?.Uniquekey ?? '');
-        fd.append("Remarks", matrialRequisitionData?.Remarks ?? '');
-        fd.append("IsSplit", "false");
-        fd.append("IsCopy", "true");
-        fd.append("MaterialRequisitionDetailJSON", JSON.stringify(
-            matrialRequisitionDetailData.map(item => ({
-                MaterialRequisitionDetailId: 0,
-                MaterialMasterId: item.MaterialMasterId,
-                MaterialQuantity: item.MaterialQuantity,
-                UomMasterId: item.UomMasterId,
-                RequiredDate: item.RequiredDate,
-                SubMaterialMasterId: item.SubMaterialMasterId,
-            }))
-        ));
-        return fd;
-    };
 
-    // SPLIT MATERIAL REQUISITION 
     const handleSplitMaterialRequisition = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -152,7 +130,9 @@ export const Details: React.FC = () => {
 
                     const newRecord = response.right.Data as MaterialRequisitionData;
                     setSelectedIds([]);
+
                     setActive(false);
+
                     fetchDetailsdata();
 
                     setMaterialRequisitionList(prev => [newRecord, ...prev]);
@@ -178,51 +158,12 @@ export const Details: React.FC = () => {
         );
     };
 
-
     const selectedMaterials = matrialRequisitionDetailData.filter(item =>
         selectedIds.includes(item.MaterialRequisitionDetailId)
     );
 
-    const handleCopyMaterialRequisition = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const payload = CopyMaterialRequisitionFormData();
-
-                const response = await materialRequisitionService.apiCallToAddMaterialRequisition(payload);
-
-                if (E.isRight(response)) {
-
-                    const newRecord = response.right.Data as MaterialRequisitionData;
-
-                    setMaterialRequisitionList(prev => [newRecord, ...prev]);
-
-                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-
-                    navigate("/materialRequisition");
-
-                } else {
-                    addToast({ type: "error", title: response.left?.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message });
-            },
-            undefined,
-            'Copy Material Requisition'
-        );
-    };
-
-    //#region CLOSE MATERIAL REQUISITION
     const handleCloseRequisition = async () => {
         if (!selectedMaterialRequisitionItem) return;
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -239,12 +180,13 @@ export const Details: React.FC = () => {
                 if (E.isRight(response)) {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0], });
-                    setIsCloseRequisitionDialogOpen(false);
 
+                    setIsCloseRequisitionDialogOpen(false);
                     fetchDetailsdata();
 
                 } else {
                     addToast({ type: "error", title: response.left.message });
+                    setIsCloseRequisitionDialogOpen(false)
                 }
                 return response;
             },
@@ -255,35 +197,65 @@ export const Details: React.FC = () => {
         );
     };
 
-    //#region
+    const handleDeleteRequest = async () => {
+        if (!deleteData) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const payload: DeleteMaterialRequisitionRequest = {
+                    MaterialRequisitionId: deleteData.MaterialRequisitionId,
+                    Uniquekey: deleteData.Uniquekey,
+                    ProjectId: Number(projectId)
+                };
+                const response = await materialRequisitionService.apiCallDeleteMaterialRequisition(payload);
+
+                if (E.isRight(response)) {
+                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                setDeleteData(null)
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Deleting Requisition'
+        );
+    };
+
     return (
         <div className="justify-center">
-
-            {/* Loader */}
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
-            <div className="flex justify-end pb-2">
-                <Button
-                    size="sm"
-                    color="transparent"
-                    style={{
-                        color: 'red',
-                        padding: '4px 8px',
-                        backgroundColor: '#FFF2F2'
-                    }}
-                    onClick={() => {
-                        setSelectedMaterialRequisitionItem(matrialRequisitionData);
-                        setIsCloseRequisitionDialogOpen(true);
-                    }}
-                >
-                    <X className="h-4 w-4" color="red" />
-                    Close Requisition
-                </Button>
-            </div>
+            {matrialRequisitionData?.MaterialRequisitionStatus !== 'Completed' && (
+                <div className="flex justify-end pb-2">
+                    <Button
+                        size="sm"
+                        color="transparent"
+                        style={{
+                            color: '#E92C2C',
+                            padding: '4px 8px',
+                            backgroundColor: '#FFF2F2'
+                        }}
+                        onClick={() => {
+                            setSelectedMaterialRequisitionItem(matrialRequisitionData);
+                            setIsCloseRequisitionDialogOpen(true);
+                        }}
+                    >
+                        <X className="h-4 w-4" color="red" />
+                        Close Requisition
+                    </Button>
+                </div>
+            )}
 
             <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <h1 className="text-lg font-semibold text-gray-900 pb-2">Basic Details</h1>
-
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <FieldItem label="Unique ID" value={matrialRequisitionData?.SystemGeneratedCode} />
@@ -292,35 +264,37 @@ export const Details: React.FC = () => {
                         <div>
                             <p className="text-gray-500">Attachment</p>
                             <MultiImageViewer
-                                images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL)}
+                                images={parseDocumentUrls(matrialRequisitionData?.AttachmentsURL ?? '')}
                                 title="Attachment"
                                 isIcon={false}
                                 triggerLabel="-"
                             />
                         </div>
+
                     </div>
                 </div>
             </div>
 
             <div className=" gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
-
                 <div className="flex justify-between">
                     <h1 className="text-lg font-semibold text-gray-900 pb-2">Material Details</h1>
 
-                    <button
-                        className="bg-blue-600 text-white font-bold py-1 p-4 rounded-md"
-                        onClick={() => setActive(true)}
-                    >
-                        Split
-                    </button>
-
+                    {matrialRequisitionData?.IsSplit && (
+                        <Button
+                            className="bg-[#135BEC] text-white font-bold py-1 p-4 rounded-md"
+                            onClick={() => setActive(true)}
+                        >
+                            Split
+                        </Button>
+                    )}
                 </div>
 
                 <div className="lg:col-span-5 pb-3 overflow-y-auto thin-scroll h-[250px]">
                     {matrialRequisitionDetailData.map((item, index) => (
-                        <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 bg-gray-200 rounded-lg p-4 mt-2 ">
+                        <div key={index} className="flex items-center gap-4 bg-gray-200 rounded-lg p-2 mt-2"
+                        >
                             {active && (
-                                <Checkbox
+                                <Checkbox size="sm"
                                     checked={selectedIds.includes(item.MaterialRequisitionDetailId)}
                                     onChange={() => {
                                         setSelectedIds(prev =>
@@ -331,24 +305,27 @@ export const Details: React.FC = () => {
                                     }}
                                 />
                             )}
-                            <FieldItem label="Name" value={item.MaterialName} />
-                            <FieldItem label="Sub Material Name" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
-                            <FieldItem label="Uom" value={item.Uom} />
-                            <FieldItem label="Quantity" value={item.MaterialQuantity} />
-                            <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 flex-1">
+                                <FieldItem label="Name" value={item.MaterialName} />
+                                <FieldItem label="Sub Material Name" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
+                                <FieldItem label="Uom" value={item.Uom} />
+                                <FieldItem label="Quantity" value={item.MaterialQuantity} />
+                                <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
+                            </div>
                         </div>
                     ))}
                 </div>
 
                 {active && (
-                    <button
-                        className="bg-blue-600 text-white font-bold py-1 px-4 rounded-md"
+                    <Button
+                        className="bg-[#135BEC] text-white font-bold py-1 px-4 rounded-md"
                         onClick={() => {
                             setIsAddUpdateModalOpen(true);
                         }}
                     >
                         Split All
-                    </button>
+                    </Button>
                 )}
             </div>
 
@@ -359,7 +336,6 @@ export const Details: React.FC = () => {
 
             <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-1">
                 <h1 className="text-lg font-semibold text-gray-900 pb-2">Action Details</h1>
-
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                         <FieldItem label="Created By" value={matrialRequisitionData?.CreatedBy} />
@@ -372,18 +348,13 @@ export const Details: React.FC = () => {
 
             <div className="pt-2 flex justify-end gap-2">
                 <button
-                    className="bg-gray-400 text-white font-bold py-1 px-4 rounded-md"
-                >
-                    Close
-                </button>
-
-                <button
-                    className="bg-green-600 text-white font-bold py-1 px-4 rounded-md"
-                    onClick={(e) => {
-                        handleCopyMaterialRequisition(e);
+                    className="bg-[#D0D7DE] text-[#1D1D1D] font-500 py-1 px-4 rounded-md"
+                    onClick={() => {
+                        setDeleteData(matrialRequisitionData);
+                        handleDeleteRequest()
                     }}
                 >
-                    Copy
+                    Cancel
                 </button>
             </div>
 
@@ -420,8 +391,6 @@ export const Details: React.FC = () => {
                     ))}
                 </div>
             </Modal>
-
-            {/*Close Requisition Confirmation Dialog Box*/}
 
             <ConfirmationDialogBox
                 isOpen={isCloseRequisitionDialogOpen}

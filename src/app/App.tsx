@@ -101,7 +101,6 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
-import Event from '@/features/event/pages/Event';
 import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';

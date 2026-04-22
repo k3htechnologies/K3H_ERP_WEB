@@ -8,11 +8,11 @@ import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-
+import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
+import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
+import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
 import { materialRequisitionService } from "../../services/MaterialRequisitionService";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
-import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { materialRequisitionInvoiceService } from "../../services/MaterialRequisitionInvoiceService";
 import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceData } from "../../models/MaterialRequisitionInvoiceModel";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
@@ -20,15 +20,12 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { Button } from "@/ui/components/forms";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
-import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
-import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
-//
+import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
+
 const MakePayment: React.FC = () => {
     const [gRNData, setRGNData] = useState<MaterialRequisitionGRNData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [invoiceData, setInvoiceData] = useState<MaterialRequisitionInvoiceData | null>(null);
-
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { projectId } = useProject();
@@ -38,11 +35,6 @@ const MakePayment: React.FC = () => {
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const navigate = useNavigate();
-
-
-    //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/materialRequisition/view');
-    //#endregion
 
     useEffect(() => {
         if (!projectId) return;
@@ -189,8 +181,6 @@ const MakePayment: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
-
-            {/* Loader */}
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <div className="pb-2">
@@ -214,15 +204,15 @@ const MakePayment: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="bg-white rounded-lg p-4 space-y-4 h-[110px] shadow-sm border border-gray-300 ">
-                    <DataTableWithOutBorder
+                {/* <div className="bg-white rounded-lg p-4 space-y-4 h-[110px] shadow-sm border border-gray-300 "> */}
+                    <DataTableWithHeadColor
                         columns={MaterialRequisitionDetailColumns}
                         data={matrialRequisitionDetailData}
                         emptyMessage="No Material Requisition Found"
                         fixedHeight={true}
                         className="flex-1"
                     />
-                </div>
+                {/* </div> */}
             </div>
 
             <div className="gap-x-4 rounded-lg shadow-sm border border-gray-300 p-4 mb-4">

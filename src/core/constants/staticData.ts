@@ -260,6 +260,8 @@ export const MASTER_DATA = {
 
   amountType: ['Monthly', 'One Time', 'Quarterly', 'Yearly'],
 
+  refundedDetaisAmountType: ['Agreement Amount'],
+
   channelPartnerDesignation: ['Business Head', 'Cluster Head', 'Owner', 'Partner', 'Team Member'],
 
   channelPartnerType: ['International Channel Partner (IPC)', 'Institutional Channel Partner (ICP)', 'Retail Channel Partner (RCP)'],
@@ -278,7 +280,7 @@ export const MASTER_DATA = {
 
   activeInactive: ['Active', 'Inactive'],
 
-  paymentFor: ['Agreement Value','GST','Other Charges','Registration', 'Stamp Duty','TDS'],
+  paymentFor: ['Agreement Value', 'GST', 'Other Charges', 'Registration', 'Stamp Duty', 'TDS'],
 
   paymentReceivedFrom: ['Bank', 'Owner'],
 
@@ -398,6 +400,7 @@ export const ACTIVE_INACTIVE_OPTIONS = toOptions(MASTER_DATA.activeInactive);
 export const PAYMENT_FOR_OPTIONS = toOptions(MASTER_DATA.paymentFor);
 export const PAYMENT_RECEIVED_FROM_OPTIONS = toOptions(MASTER_DATA.paymentReceivedFrom);
 export const CRM_PAY_TRACK_FILE_NAME_OPTIONS = toOptions(MASTER_DATA.crmPayTrackFileName);
+export const REFUNDED_DETAILS_AMOUNT_TYPE_OPTIONS = toOptions(MASTER_DATA.refundedDetaisAmountType);
 
 
 // ============================================================================

@@ -21,7 +21,7 @@ export interface ParkingData {
     ProjectId?: number | null;
 
     ParkingNumber?: string | null;
-    ParkingCategory?: string | null;
+    ParkingCategory?: string;
     ParkingType?: string | null;
     ParkingSubType?: string | null;
     ParkingDimensions?: string | null;
@@ -95,7 +95,7 @@ export interface FilterWithPaginationParkingRequest {
     ParkingType?: string
     ParkingSubType?: string
     Dimensions?: string
-    DisplayParkingId?:string
+    DisplayParkingId?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

@@ -1752,7 +1752,7 @@ export const AddUpdateBooking: React.FC = () => {
           });
         };
 
-        // Add applicants
+        // Add applicants 
         applicantList.forEach((app, index) => {
           const prefix = `AddUpdateBookingApplicant[${index}]`;
 

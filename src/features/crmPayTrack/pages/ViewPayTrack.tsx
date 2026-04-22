@@ -3,7 +3,7 @@ import Tabs from '@/ui/components/Tab/Tab';
 import BookingForm from "@/features/crmPayTrack/components/BookingForm";
 import BankLoans from "@/features/crmPayTrack/pages/BankLoans";
 import Account from "@/features/crmPayTrack/pages/Account";
-import ModifiedRequest from "@/features/crmPayTrack/components/ModifiedRequest";
+import ModifiedRequest from "@/features/crmPayTrack/pages/ModifiedRequest";
 import { usePayTrackBookingListState } from "@/features/crmPayTrack/context/PayTrackBookingListStateContext";
 import { useNavigate } from 'react-router-dom';
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
@@ -12,7 +12,7 @@ export const ViewPayTrack: React.FC = () => {
 
   const navigate = useNavigate();
   const { listState } = usePayTrackBookingListState();
-  const { bookingName,bookingType,flat } = listState;
+  const { bookingName, bookingType, flat } = listState;
 
   const bookingTabList = [
     { id: 'BookingForm', label: 'Overview' },
@@ -53,13 +53,13 @@ export const ViewPayTrack: React.FC = () => {
       </div>
 
       {/* Tabs Content */}
-      
-        {activeTab === "BookingForm" && <BookingForm />}
-        {activeTab === "BankLoans" && <BankLoans />}
-        {activeTab === "Account" && <Account />}
-        {activeTab === "ModifiedRequest" && <ModifiedRequest />}
-        {activeTab === "FlatHandover" && <BankDocuments  fileType="FLAT HANDOVER" />}
-        {activeTab === "Files" && <BankDocuments fileType="FILES"/>}
+
+      {activeTab === "BookingForm" && <BookingForm />}
+      {activeTab === "BankLoans" && <BankLoans />}
+      {activeTab === "Account" && <Account />}
+      {activeTab === "ModifiedRequest" && <ModifiedRequest />}
+      {activeTab === "FlatHandover" && <BankDocuments fileType="FLAT HANDOVER" />}
+      {activeTab === "Files" && <BankDocuments fileType="FILES" />}
 
     </div>
   )

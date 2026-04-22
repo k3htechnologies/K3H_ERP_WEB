@@ -59,7 +59,7 @@ export class BookingDatasourceImpl implements BookingDatasource {
         } catch (error) {
             console.error('Error: Pull BOOKING:', error);
 
-           if (error instanceof TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
                 return await this.pullBooking(params, signal);
             }
@@ -79,9 +79,9 @@ export class BookingDatasourceImpl implements BookingDatasource {
         } catch (error) {
             console.error('Error: Add Update BOOKING:', error)
 
-           if (error instanceof TokenExpiredException) {
+            if (error instanceof TokenExpiredException) {
 
-                return  await this.addUpdateBooking(data);
+                return await this.addUpdateBooking(data);
             }
 
             throw error
@@ -141,7 +141,7 @@ export class BookingDatasourceImpl implements BookingDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.pullChannelPartnerBooking(params, signal);
+                return await this.pullChannelPartnerBooking(params, signal);
             }
 
             throw error
@@ -164,7 +164,7 @@ export class BookingDatasourceImpl implements BookingDatasource {
 
             return response
         } catch (error) {
-            
+
             console.error('Error: Pull PAYMENT SCHEDULE STAGES:', error);
 
             if (error instanceof TokenExpiredException) {

@@ -34,9 +34,9 @@ export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextArea
   required?: boolean
 }
 export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'size' | 'color'> {
-  variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'dark' | 'transparent_border' | 'light' |'transparent_border_background'
+  variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'dark' | 'transparent_border' | 'light' | 'transparent_border_background'
   colorMode?: string
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'mxs' |'xss'
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'mxs' | 'xss'
   color?: | 'primary'
   | 'secondary'
   | 'success'
@@ -50,6 +50,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   | 'indigo'
   | 'orange'
   | 'red'
+  | 'red_light'
   | 'pink'
   | 'teal'
   | 'lime'
@@ -104,7 +105,7 @@ export interface DatePickerProps
   minYear?: number;
   maxYear?: number;
   disabled?: boolean;
-  minDate?:string | Date;
+  minDate?: string | Date;
   helperText?: string;
-  isDisplayCurrentDate?:boolean;
+  isDisplayCurrentDate?: boolean;
 }

@@ -169,6 +169,7 @@ import Terms from '@/features/terms/pages/TermsAndCondition';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
+import AddRefundDetails from '@/features/crmPayTrack/pages/AddRefundDetails';
 import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 
 // Loading component for Suspense fallback
@@ -377,6 +378,7 @@ function App() {
             <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
             <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />
             <Route path="booking/add" element={<BookingListStateProvider><AddUpdateBooking /></BookingListStateProvider>} />
+            <Route path="booking/add/:BookingId?/:EnquiryId?/:InventoryFlatId?" element={<BookingListStateProvider><AddUpdateBooking /></BookingListStateProvider>} />
 
             <Route path="enquiryReport" element={<EnquiryReport />} />
             <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
@@ -439,6 +441,8 @@ function App() {
 
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
+            <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
+
 
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />

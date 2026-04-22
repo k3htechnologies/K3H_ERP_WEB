@@ -119,15 +119,18 @@ export const Overview: React.FC = () => {
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
                         <section className="bg-white px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Purchase Order</h4>
-                            <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
-                                <p>Document</p>
-                                <MultiImageViewer
-                                    images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL ?? '')}
-                                    title="Purchase Order"
-                                    isIcon={false}
-                                    triggerLabel="-"
-                                />
-                            </div>
+                            {matrialRequisitionData?.PurchaseOrderURL.length == 0 ? (
+                                <p className="text-gray-500">No Document</p>
+                            ) : (
+                                <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
+                                    <p>Document</p>
+                                    <MultiImageViewer
+                                        images={parseDocumentUrls(matrialRequisitionData?.PurchaseOrderURL ?? '')}
+                                        title="Purchase Order"
+                                        isIcon={false}
+                                        triggerLabel="-"
+                                    />
+                                </div>)}
                         </section>
                     </div>
 
@@ -193,8 +196,8 @@ export const Overview: React.FC = () => {
                     </div>
 
                 </div>
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }
 export default Overview;

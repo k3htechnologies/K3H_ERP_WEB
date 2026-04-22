@@ -15,7 +15,7 @@ export interface FilterWithPaginationProjectMasterRequest {
     IsRedevelopment?: string | ''
     ProjectStatus?: string | ''
     VillageName?: string | ''
-    ArchitectName?: string | ''
+    LiasoningArchitectName?: string | ''
     RERANumber?: string | ''
     ProjectScheme?: string | ''
     ProjectSubScheme?: string | ''
@@ -38,11 +38,31 @@ export interface ProjectMasterData {
     IsRedevelopment: boolean | false;
 
     FileNumber: string | '';
-    ArchitectName: string | '';
-    ArchitectMobileNumber: string | '';
+    LiasoningArchitectName: string | '';
+    LiasoningArchitectMobileNumber: string | '';
+    DesigningArchitectName: string | '';
+    DesigningArchitectMobileNumber: string | '';
+    RCCConsultantName: string | '';
+    RCCConsultantMobileNumber: string | '';
 
     // ADVANCE DETAILS
     Category: string | '';
+
+    // TENDER DETAILS
+    TenderAmount: number | 0;
+    TenderEMDAmount: number | 0;
+
+    TenderPurchaseStartDate: string | '';
+    TenderPurchaseEndDate: string | '';
+
+    TenderChequeNumber: string | '';
+    TenderChequeNumberURL: string | '';
+
+    TenderSubmissionDate: string | '';
+    TenderIssueDate: string | '';
+
+    TenderPayorderRemark: string | '';
+
     BussinessCategory: string | '';
     ProjectShortName: string | '';
 
@@ -66,6 +86,7 @@ export interface ProjectMasterData {
     ProjectScope: string | '';
     ProjectEstimateCost: number | 0;
     ProjectAreaInSqft: string | '';
+    ProjectAreaInSqmt: string | '';
     OnGoingBudgetCost: string | '';
 
     SurveyDate: string | null;
@@ -76,6 +97,7 @@ export interface ProjectMasterData {
     SiteContactName: string | '';
     ProjectStatus: string | '';
     RERANumber: string | '';
+    APFNumber: string | '';
 
     RERACertificateDate: string | null;
     RERAComplitionDate: string | null;
@@ -115,6 +137,7 @@ export interface ProjectWithBankDetails {
     Branch: string | '';
     IFSCCode: string | '';
     AcType: string | '';
+    NatureOfAccount: string | '';
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -135,11 +158,32 @@ export interface AddUpdateProjectMasterRequest {
     CTSNumber: string | '';
     IsRedevelopment: number | 0;
     FileNumber: string | '';
-    ArchitectName: string | '';
-    ArchitectMobileNumber: string | '';
+    LiasoningArchitectName: string | '';
+    LiasoningArchitectMobileNumber: string | '';
+    DesigningArchitectName: string | '';
+    DesigningArchitectMobileNumber: string | '';
+    RCCConsultantName: string | '';
+    RCCConsultantMobileNumber: string | '';
 
     // ADVANCE DETAILS
     Category: string | '';
+
+    // TENDER DETAILS
+    TenderAmount: number | 0;
+    TenderEMDAmount: number | 0;
+
+    TenderPurchaseStartDate: string | null;
+    TenderPurchaseEndDate: string | null;
+
+    TenderChequeNumber: string | '';
+    TenderChequeNumberURL: (File | string)[] | null;
+    RemoveTenderChequeNumberURL: string | '';
+
+    TenderSubmissionDate: string | null;
+    TenderIssueDate: string | null;
+
+    TenderPayorderRemark: string | '';
+
     BussinessCategory: string | '';
     ProjectShortName: string | '';
     CountryMasterId: number | 0;
@@ -152,6 +196,7 @@ export interface AddUpdateProjectMasterRequest {
     ProjectScope: string | '';
     ProjectEstimateCost: number | 0;
     ProjectAreaInSqft: number | 0;
+    ProjectAreaInSqmt: number | 0;
     OnGoingBudgetCost: number | 0;
 
     SurveyDate: string | null;
@@ -162,6 +207,7 @@ export interface AddUpdateProjectMasterRequest {
     SiteContactName: string | '';
     ProjectStatus: string | '';
     RERANumber: string | '';
+    APFNumber: string | '';
     RERACertificateDate: string | null;
     RERAComplitionDate: string | null;
 
@@ -204,6 +250,7 @@ export interface AddUpdateProjectMasterWithBankDetailsRequest {
     Branch: string | '';
     IFSCCode: string | '';
     AcType: string | '';
+    NatureOfAccount: string | '';
 
 }
 

@@ -41,13 +41,28 @@ export const MASTER_DATA = {
 
   documentStatus: ['Applied', 'Doc Missing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable', 'Paid', 'Payment Due', 'Rejected'],
 
-  bankAccountType: ['Current', 'DEMAT', 'Fixed', 'Salary', 'Saving'],
+  bankAccountType: ['Current', 'Overdraft', 'RERA Escrow Current Account', 'Salary', 'Saving'],
+
+  natureOfAccount : [
+    "100% Collection Account",
+    "100% RERA Account",
+    "30% RERA Account",
+    "70% RERA Account",
+    "Collection Escrow Account",
+    "Escrow",
+    "Loan",
+    "Master Escrow Account",
+    "Non - Current Account",
+    "Overdraft",
+    "Regular Account",
+    "RERA Escrow Account"
+  ],
 
   landOwnershipType: ['Government', 'Landlord', 'Society'],
 
   flat_unit_Type: ['BMC', 'Commercial', 'eDeck', 'Fitness Center', 'Gym', 'MHADA', 'Multi Purpose Room', 'Land Lord', 'Lien', 'Part Terrace', 'Refuge', 'Religious Structure', 'Residential', 'Society Office', 'SRA', 'Upashray', 'Void'],
 
-  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK', '8 BHK','9 BHK','10 BHK', '1 + 1 JODI', '2 + 1 JODI', '2 + 2 JODI', '2 + 3 JODI','DUPLEX', 'PENTHOUSE'],
+  residential_flat_configuration_Type: ['1 RK', '1 BHK', '2 BHK', '3 BHK', '4 BHK', '5 BHK', '6 BHK', '7 BHK', '8 BHK', '9 BHK', '10 BHK', '1 + 1 JODI', '2 + 1 JODI', '2 + 2 JODI', '2 + 3 JODI', 'DUPLEX', 'PENTHOUSE'],
 
   commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
@@ -85,7 +100,7 @@ export const MASTER_DATA = {
 
   occupationType: ['Business', 'Homemaker', 'Professional', 'Salaried', 'Retired',],
 
-  budget: ['<1','1.5','2','2.5', '3','3.5', '4','4.5', '5','5.5', '6','6.5','7','7.5','8','8.5','9','9.5', '10','10.5','11','11.5', '12','12.5', '15','15.5', '20','20.5', '25+'],
+  budget: ['<1', '1.5', '2', '2.5', '3', '3.5', '4', '4.5', '5', '5.5', '6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10', '10.5', '11', '11.5', '12', '12.5', '15', '15.5', '20', '20.5', '25+'],
 
   accomodation: ["Rented", "Self-Owned"],
 
@@ -280,15 +295,15 @@ export const MASTER_DATA = {
 
   activeInactive: ['Active', 'Inactive'],
 
-  paymentFor: ['Agreement Value','Agreement Value GST','Agreement Value TDS','Other Charges Value','Other Charges GST','Registration Fees', 'Stamp Duty',],
+  paymentFor: ['Agreement Value', 'Agreement Value GST', 'Agreement Value TDS', 'Other Charges Value', 'Other Charges GST', 'Registration Fees', 'Stamp Duty',],
 
   paymentReceivedFrom: ['Bank', 'Owner'],
 
   crmPayTrackFileName: ['Possession Letter', 'OC/CC Letter', 'Tax Receipt', 'Society Deed', 'Electricity & Water', 'Maintenance Docs', 'Registered Agreement', 'Parking Allotment'],
 
   callStatus: ['Connected', 'Not Connected', 'Wrong Number', 'Switched Off', 'Busy', 'No Answer', 'Disconnected', 'Rescheduled'],
-  
-  callPurpose: ['Complaint','Welcome Call','Payment Follow - UP','Registration Follow - UP','Reminder', 'Query Resolution', 'Feedback', 'Complaint', 'Other'],
+
+  callPurpose: ['Complaint', 'Welcome Call', 'Payment Follow - UP', 'Registration Follow - UP', 'Reminder', 'Query Resolution', 'Feedback', 'Complaint', 'Other'],
 
   deliveryStatus: ['Acknowledged', 'Delivered'],
 
@@ -354,6 +369,7 @@ export const ETHNICITY_TYPE_OPTION = toOptions(MASTER_DATA.ethnicity)
 export const POSSESSION_TYPE_OPTIONS = toOptions(MASTER_DATA.possessionType)
 export const NATIONALITY_TYPE_OPTION = toOptions(MASTER_DATA.nationality)
 export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)
+export const NATURE_OF_ACCOUNT=toOptions(MASTER_DATA.natureOfAccount)
 export const LAND_OWNERSHIP_TYPE = toOptions(MASTER_DATA.landOwnershipType)
 export const FLAT_UNIT_TYPE = toOptions(MASTER_DATA.flat_unit_Type)
 export const RESIDENTIAL_FLAT_CONFIGURATION = toOptions(MASTER_DATA.residential_flat_configuration_Type)
@@ -364,7 +380,7 @@ export const CARPET_AREA_TYPE = toOptions(MASTER_DATA.carpet_area_type)
 export const TENURE = toOptions(MASTER_DATA.tenure)
 export const UNIT_SQFT_LUMPSUM = toOptions(MASTER_DATA.unit_sqft_lumsum)
 export const SPECIALITY_TYPE = toOptions(MASTER_DATA.speciality_type)
-export const PROJECT_CATEGORY= toOptions(MASTER_DATA.project_category)
+export const PROJECT_CATEGORY = toOptions(MASTER_DATA.project_category)
 export const BUSINESS_CATEGORY = toOptions(MASTER_DATA.business_category)
 export const PROJECT_SCHEME = toOptions(MASTER_DATA.project_scheme)
 export const PROJECT_SUB_SCHEME_BMC = toOptions(MASTER_DATA.project_sub_scheme_BMC)

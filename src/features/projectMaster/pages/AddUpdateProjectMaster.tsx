@@ -10,8 +10,8 @@ import { BUSINESS_CATEGORY, PROJECT_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPT
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
-import { filterGoogleMapsUrl, filterMobile, filterNumbers, filterNumbersWithDecimal, filterRERA, hasAnyDocumentFile, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { filterAPF, filterGoogleMapsUrl, filterMobile, filterNumbers, filterNumbersWithDecimal, filterRERA, hasAnyDocumentFile, isValidGoogleMapsUrl, isValidMobile, isValidRERA } from "@/core/utils/fileValidation";
 import type { AddUpdateProjectMasterRequest, FilterWithPaginationProjectMasterRequest } from "@/features/projectMaster/models/ProjectMasterModel";
 import { projectMasterService } from "@/features/projectMaster/services/ProjectMasterService";
 import Checkbox from "@/ui/components/forms/Checkbox";
@@ -19,6 +19,8 @@ import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { IndianRupee, MapPin, Phone } from "lucide-react";
+import { TextArea } from "@/ui/components/forms/Textarea";
+import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectId: 0,
@@ -30,9 +32,29 @@ const initialFormState = (): AddUpdateProjectMasterRequest => ({
     CTSNumber: '',
     IsRedevelopment: 0,
     FileNumber: '',
-    ArchitectName: '',
-    ArchitectMobileNumber: '',
+    LiasoningArchitectName: '',
+    LiasoningArchitectMobileNumber: '',
+    DesigningArchitectName: '',
+    DesigningArchitectMobileNumber: '',
+    RCCConsultantName: '',
+    RCCConsultantMobileNumber: '',
     Category: '',
+
+    TenderAmount: 0,
+    TenderEMDAmount: 0,
+
+    TenderPurchaseStartDate: null,
+    TenderPurchaseEndDate: null,
+
+    TenderChequeNumber: '',
+    TenderChequeNumberURL: null,
+    RemoveTenderChequeNumberURL: '',
+
+    TenderSubmissionDate: null,
+    TenderIssueDate: null,
+
+    TenderPayorderRemark: '',
+
     BussinessCategory: '',
     ProjectShortName: '',
     CountryMasterId: 0,
@@ -44,6 +66,7 @@ const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectScope: '',
     ProjectEstimateCost: 0,
     ProjectAreaInSqft: 0,
+    ProjectAreaInSqmt: 0,
     OnGoingBudgetCost: 0,
     SurveyDate: null,
     ExpectedStartDate: null,
@@ -52,6 +75,7 @@ const initialFormState = (): AddUpdateProjectMasterRequest => ({
     SiteContactName: '',
     ProjectStatus: '',
     RERANumber: '',
+    APFNumber: '',
     RERACertificateDate: null,
     RERAComplitionDate: null,
     ProjectScheme: '',
@@ -69,6 +93,11 @@ const AddUpdateProjectMaster: React.FC = () => {
     const [projectPhotoFiles, setProjectPhotoFiles] = useState<(File | string)[]>([]);
     const [removedProjectPhotoUrls, setRemovedProjectPhotoUrls] = useState<string[]>([]);
     const [projectPhotoURL, setProjectPhotoURL] = useState<string>();
+
+    const [tenderChequeNumberFiles, setTenderChequeNumberFiles] = useState<(File | string)[]>([]);
+    const [removedTenderChequeNumberUrls, setRemovedTenderChequeNumberUrls] = useState<string[]>([]);
+    const [tenderChequeNumberURL, setTenderChequeNumberURL] = useState<string>();
+
     // NAVIGATE
     const navigate = useNavigate();
 
@@ -201,9 +230,31 @@ const AddUpdateProjectMaster: React.FC = () => {
                             CTSNumber: row.CTSNumber ?? prev.CTSNumber,
                             IsRedevelopment: row.IsRedevelopment ? 1 : 0,
                             FileNumber: row.FileNumber ?? prev.FileNumber ?? '',
-                            ArchitectName: row.ArchitectName ?? prev.ArchitectName ?? '',
-                            ArchitectMobileNumber: row.ArchitectMobileNumber ?? prev.ArchitectMobileNumber ?? '',
+
+                            LiasoningArchitectName: row.LiasoningArchitectName ?? prev.LiasoningArchitectName ?? '',
+                            LiasoningArchitectMobileNumber: row.LiasoningArchitectMobileNumber ?? prev.LiasoningArchitectMobileNumber ?? '',
+                            DesigningArchitectName: row.DesigningArchitectName ?? prev.DesigningArchitectName ?? '',
+                            DesigningArchitectMobileNumber: row.DesigningArchitectMobileNumber ?? prev.DesigningArchitectMobileNumber ?? '',
+                            RCCConsultantName: row.RCCConsultantName ?? prev.RCCConsultantName ?? '',
+                            RCCConsultantMobileNumber: row.RCCConsultantMobileNumber ?? prev.RCCConsultantMobileNumber ?? '',
+
                             Category: row.Category ?? prev.Category ?? '',
+
+                            TenderAmount: row.TenderAmount ?? prev.TenderAmount ?? 0,
+                            TenderEMDAmount: row.TenderEMDAmount ?? prev.TenderEMDAmount ?? 0,
+
+                            TenderPurchaseStartDate: row.TenderPurchaseStartDate ?? prev.TenderPurchaseStartDate,
+                            TenderPurchaseEndDate: row.TenderPurchaseEndDate ?? prev.TenderPurchaseEndDate,
+
+                            TenderChequeNumber: row.TenderChequeNumber ?? prev.TenderChequeNumber ?? '',
+                            TenderChequeNumberURL: null,
+                            RemoveTenderChequeNumberURL: '',
+
+                            TenderSubmissionDate: row.TenderSubmissionDate ?? prev.TenderSubmissionDate,
+                            TenderIssueDate: row.TenderIssueDate ?? prev.TenderIssueDate,
+
+                            TenderPayorderRemark: row.TenderPayorderRemark ?? prev.TenderPayorderRemark ?? '',
+
                             BussinessCategory: row.BussinessCategory ?? prev.BussinessCategory ?? '',
                             ProjectShortName: row.ProjectShortName ?? prev.ProjectShortName ?? '',
                             CountryMasterId: row.CountryMasterId ?? prev.CountryMasterId ?? 1,
@@ -215,6 +266,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             ProjectScope: row.ProjectScope ?? prev.ProjectScope ?? '',
                             ProjectEstimateCost: row.ProjectEstimateCost ?? prev.ProjectEstimateCost ?? 0,
                             ProjectAreaInSqft: Number(row.ProjectAreaInSqft ?? prev.ProjectAreaInSqft ?? 0),
+                            ProjectAreaInSqmt: Number(row.ProjectAreaInSqmt ?? prev.ProjectAreaInSqmt ?? 0),
                             OnGoingBudgetCost: Number(row.OnGoingBudgetCost ?? prev.OnGoingBudgetCost ?? 0),
                             SurveyDate: row.SurveyDate ?? prev.SurveyDate,
                             ExpectedStartDate: row.ExpectedStartDate ?? prev.ExpectedStartDate,
@@ -223,6 +275,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             SiteContactName: row.SiteContactName ?? prev.SiteContactName ?? '',
                             ProjectStatus: row.ProjectStatus ?? prev.ProjectStatus ?? '',
                             RERANumber: row.RERANumber ?? prev.RERANumber ?? '',
+                            APFNumber: row.APFNumber ?? prev.APFNumber ?? '',
                             RERACertificateDate: row.RERACertificateDate ?? prev.RERACertificateDate,
                             RERAComplitionDate: row.RERAComplitionDate ?? prev.RERAComplitionDate,
                             ProjectScheme: row.ProjectScheme ?? prev.ProjectScheme ?? '',
@@ -232,6 +285,12 @@ const AddUpdateProjectMaster: React.FC = () => {
                         setProjectPhotoFiles([]);
                         setProjectPhotoURL(row.ProjectPhotoURL)
                         setRemovedProjectPhotoUrls([]);
+
+                        setTenderChequeNumberFiles([]);
+                        setTenderChequeNumberURL(row.TenderChequeNumberURL)
+                        setRemovedTenderChequeNumberUrls([]);
+
+
                         setSelectedCountryId(row.CountryMasterId ?? null);
                         setSelectedStateId(row.StateMasterId ?? null);
                         setSelectedDistrictId(row.DistrictMasterId ?? null);
@@ -278,6 +337,14 @@ const AddUpdateProjectMaster: React.FC = () => {
             newErrors.Category = "Category is required.";
         }
 
+        const purchaseStartDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.TenderPurchaseStartDate ? new Date(formData.TenderPurchaseStartDate) : undefined);
+        const purchaseEndDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.TenderPurchaseEndDate ? new Date(formData.TenderPurchaseEndDate) : undefined);
+
+        if (formData?.TenderPurchaseStartDate && formData.TenderPurchaseEndDate && !isToDateGreaterOrEqualFromDate(purchaseStartDate, purchaseEndDate)) {
+            newErrors.TenderPurchaseEndDate = "Purchase Start Date must be greater than or equal to Purchase End Date";
+        }
+
+
         if (formData.IsRedevelopment === 0 && !formData.CTSNumber?.trim()) {
             newErrors.CTSNumber = "CTS Number is required.";
         }
@@ -319,8 +386,16 @@ const AddUpdateProjectMaster: React.FC = () => {
             newErrors.ProjectPhotoURL = "Project Photo is required.";
         }
 
-        if (formData.ArchitectMobileNumber != "" && !isValidMobile(formData.ArchitectMobileNumber.trim())) {
-            newErrors.ArchitectMobileNumber = "Enter a valid 10-digit Architect Mobile Number";
+        if (formData.LiasoningArchitectMobileNumber != "" && !isValidMobile(formData.LiasoningArchitectMobileNumber.trim())) {
+            newErrors.LiasoningArchitectMobileNumber = "Enter a valid 10-digit Liasoning Architect Mobile Number";
+        }
+
+        if (formData.DesigningArchitectMobileNumber != "" && !isValidMobile(formData.DesigningArchitectMobileNumber.trim())) {
+            newErrors.DesigningArchitectMobileNumber = "Enter a valid 10-digit Designing Architect Mobile Number";
+        }
+
+        if (formData.RCCConsultantMobileNumber != "" && !isValidMobile(formData.RCCConsultantMobileNumber.trim())) {
+            newErrors.RCCConsultantMobileNumber = "Enter a valid 10-digit RCC Consultant Mobile Number";
         }
 
         return {
@@ -332,6 +407,9 @@ const AddUpdateProjectMaster: React.FC = () => {
 
     //#region ADD UPDATE PROJECT
     const PushProjectMasterFormData = (): FormData => {
+
+        const isTender = formData.Category.toUpperCase() === "TENDER";
+
         const fd = new FormData();
         fd.append('ProjectId', String(formData.ProjectId ?? 0));
         fd.append('Uniquekey', formData.Uniquekey ?? '');
@@ -340,9 +418,28 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('CTSNumber', formData.IsRedevelopment === 1 ? "System Generated CTS Number" : formData.CTSNumber ?? '');
         fd.append('IsRedevelopment', String(formData.IsRedevelopment ?? 0));
         fd.append('FileNumber', formData.FileNumber ?? '');
-        fd.append('ArchitectName', formData.ArchitectName ?? '');
-        fd.append('ArchitectMobileNumber', formData.ArchitectMobileNumber ?? '');
+        fd.append('LiasoningArchitectName', formData.LiasoningArchitectName ?? '');
+        fd.append('LiasoningArchitectMobileNumber', formData.LiasoningArchitectMobileNumber ?? '');
+        fd.append('DesigningArchitectName', formData.DesigningArchitectName ?? '');
+        fd.append('DesigningArchitectMobileNumber', formData.DesigningArchitectMobileNumber ?? '');
+        fd.append('RCCConsultantName', formData.RCCConsultantName ?? '');
+        fd.append('RCCConsultantMobileNumber', formData.RCCConsultantMobileNumber ?? '');
         fd.append('Category', formData.Category ?? '');
+
+        fd.append('TenderAmount', isTender ? String(formData.TenderAmount ?? 0) : "0");
+        fd.append('TenderEMDAmount', isTender ? String(formData.TenderEMDAmount ?? 0) : "0");
+
+        fd.append('TenderPurchaseStartDate', isTender ? (formData.TenderPurchaseStartDate ?? '') : "");
+        fd.append('TenderPurchaseEndDate', isTender ? (formData.TenderPurchaseEndDate ?? '') : "");
+
+        fd.append('TenderChequeNumber', isTender ? (formData.TenderChequeNumber ?? '') : "");
+
+        fd.append('TenderSubmissionDate', isTender ? (formData.TenderSubmissionDate ?? '') : "");
+        fd.append('TenderIssueDate', isTender ? (formData.TenderIssueDate ?? '') : "");
+
+        fd.append('TenderPayorderRemark', isTender ? (formData.TenderPayorderRemark ?? '') : "");
+
+
         fd.append('BussinessCategory', formData.BussinessCategory ?? '');
         fd.append('ProjectShortName', formData.ProjectShortName ?? '');
         fd.append('CountryMasterId', String(formData.CountryMasterId ?? 0));
@@ -354,6 +451,7 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('ProjectScope', formData.ProjectScope ?? '');
         fd.append('ProjectEstimateCost', String(formData.ProjectEstimateCost ?? 0));
         fd.append('ProjectAreaInSqft', String(formData.ProjectAreaInSqft ?? 0));
+        fd.append('ProjectAreaInSqmt', String(formData.ProjectAreaInSqmt ?? 0));
         fd.append('OnGoingBudgetCost', String(formData.OnGoingBudgetCost ?? 0));
         fd.append('SurveyDate', formData.SurveyDate ?? '');
         fd.append('ExpectedStartDate', formData.ExpectedStartDate ?? '');
@@ -362,6 +460,7 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('SiteContactName', formData.SiteContactName ?? '');
         fd.append('ProjectStatus', formData.ProjectStatus ?? '');
         fd.append('RERANumber', formData.RERANumber ?? '');
+        fd.append('APFNumber', formData.APFNumber ?? '');
         fd.append('RERACertificateDate', formData.RERACertificateDate ?? '');
         fd.append('RERAComplitionDate', formData.RERAComplitionDate ?? '');
         fd.append('ProjectScheme', formData.ProjectScheme ?? '');
@@ -373,7 +472,18 @@ const AddUpdateProjectMaster: React.FC = () => {
                 fd.append('ProjectPhotoURL', file);
             }
         });
+
         fd.append('RemoveProjectPhotoURL', removedProjectPhotoUrls.join(','));
+
+        if (isTender) {
+
+            tenderChequeNumberFiles.forEach(file => {
+                if (file instanceof File) {
+                    fd.append('TenderChequeNumberURL', file);
+                }
+            });
+        }
+        fd.append('RemoveTenderChequeNumberURL', isTender ? removedTenderChequeNumberUrls.join(',') : "");
 
         return fd;
     }
@@ -499,20 +609,6 @@ const AddUpdateProjectMaster: React.FC = () => {
                             <div>
 
                                 <SinglePageSelection
-                                    required
-                                    label="Category"
-                                    placeholder="Select Category"
-                                    value={formData.Category}
-                                    error={errors.Category}
-                                    onChange={(val) => handleFieldChange('Category', String(val))}
-                                    options={PROJECT_CATEGORY.map(opt => ({ label: opt.name, value: opt.id }))}
-                                />
-                                
-                            </div>
-
-                            <div>
-
-                                <SinglePageSelection
                                     label="Business Category"
                                     placeholder="Select Business Category"
                                     value={formData.BussinessCategory}
@@ -531,27 +627,240 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     placeholder="Enter File Number"
                                 />
                             </div>
+
+
+                        </div>
+                    </div>
+
+                    {/* Scheme & Scope Details */}
+                    <div className="space-y-4 pt-5">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Category</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div>
+
+                                <SinglePageSelection
+                                    required
+                                    label="Category"
+                                    placeholder="Select Category"
+                                    value={formData.Category}
+                                    error={errors.Category}
+
+                                    onChange={(item) => {
+
+                                        if (!item) {
+
+                                            handleFieldChange('Category', '');
+                                            handleFieldChange('TenderAmount', 0);
+                                            handleFieldChange('TenderEMDAmount', 0);
+                                            handleFieldChange('TenderPurchaseStartDate', null);
+                                            handleFieldChange('TenderPurchaseEndDate', null);
+                                            handleFieldChange('TenderChequeNumber', "");
+
+                                            setTenderChequeNumberFiles([]);
+                                            setTenderChequeNumberURL("")
+                                            setRemovedTenderChequeNumberUrls([]);
+
+                                            handleFieldChange('TenderSubmissionDate', null);
+                                            handleFieldChange('TenderIssueDate', null);
+                                            handleFieldChange('TenderPayorderRemark', "");
+
+                                            return;
+                                        }
+
+                                        handleFieldChange('Category', String(item));
+                                        handleFieldChange('TenderAmount', 0);
+                                        handleFieldChange('TenderEMDAmount', 0);
+                                        handleFieldChange('TenderPurchaseStartDate', null);
+                                        handleFieldChange('TenderPurchaseEndDate', null);
+                                        handleFieldChange('TenderChequeNumber', "");
+                                        setTenderChequeNumberFiles([]);
+                                        setTenderChequeNumberURL("")
+                                        setRemovedTenderChequeNumberUrls([]);
+                                        handleFieldChange('TenderSubmissionDate', null);
+                                        handleFieldChange('TenderIssueDate', null);
+                                        handleFieldChange('TenderPayorderRemark', "");
+
+                                    }}
+
+                                    options={PROJECT_CATEGORY.map(opt => ({ label: opt.name, value: opt.id }))}
+                                />
+
+                            </div>
+                            {formData.Category?.toUpperCase() === "TENDER" && (
+                                <>
+                                    <div>
+                                        <Input
+                                            label="Tender Amount (₹)"
+                                            type="text"
+                                            value={formData.TenderAmount || ''}
+                                            onChange={(e) => handleFieldChange('TenderAmount', filterNumbersWithDecimal(e.target.value) || 0)}
+                                            placeholder="Enter Tender Amount (₹)"
+                                        />
+                                    </div>
+                                    <div>
+                                        <Input
+                                            label="Tender EMD Amount (₹)"
+                                            type="text"
+                                            value={formData.TenderEMDAmount || ''}
+                                            onChange={(e) => handleFieldChange('TenderEMDAmount', filterNumbersWithDecimal(e.target.value) || 0)}
+                                            placeholder="Enter Tender EMD Amount (₹)"
+                                        />
+                                    </div>
+                                    <div>
+                                        <DatePickerInput
+                                            label="Purchase Start Date"
+                                            value={formatDate_dd_mm_yyyy(formData.TenderPurchaseStartDate)}
+                                            onChange={(val) => handleFieldChange('TenderPurchaseStartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <DatePickerInput
+                                            label="Purchase End Date"
+                                            value={formatDate_dd_mm_yyyy(formData.TenderPurchaseEndDate)}
+                                            error={errors.TenderPurchaseEndDate}
+                                            onChange={(val) => handleFieldChange('TenderPurchaseEndDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Input
+                                            type="text"
+                                            label='Cheque Number'
+                                            value={formData.TenderChequeNumber ?? ""}
+                                            onChange={(e) => handleFieldChange("TenderChequeNumber", e.target.value)}
+                                            placeholder="Enter Cheque Number"
+                                            maxLength={15}
+                                            error={errors.TendorChequeNumber}
+                                        />
+                                    </div>
+                                    <div>
+                                        <MultiFilePicker
+                                            label="Cheque Photo"
+                                            placeholder="Select Cheque Photo"
+                                            error={errors.TenderChequeNumberURL}
+                                            value={tenderChequeNumberFiles}
+                                            onChange={setTenderChequeNumberFiles}
+                                            availableFilesURL={tenderChequeNumberURL ?? ""}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            maxFiles={5}
+                                            maxSizeMB={10}
+                                            onRemoveExisting={(url) => {
+                                                setRemovedTenderChequeNumberUrls((prev) => [...prev, url])
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <DatePickerInput
+                                            label="Submission Date"
+                                            value={formatDate_dd_mm_yyyy(formData.TenderSubmissionDate)}
+                                            onChange={(val) => handleFieldChange('TenderSubmissionDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <DatePickerInput
+                                            label="Issue Date"
+                                            value={formatDate_dd_mm_yyyy(formData.TenderIssueDate)}
+                                            onChange={(val) => handleFieldChange('TenderIssueDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+
+
+                        </div>
+                        {formData.Category?.toUpperCase() === "TENDER" && (
+                            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                                <div>
+                                    <TextArea
+                                        label="Payorder Remark"
+                                        placeholder="Enter Payorder Remark"
+                                        className="thin-scroll"
+                                        value={formData.TenderPayorderRemark}
+                                        onChange={(e) => handleFieldChange("TenderPayorderRemark", e.target.value)}
+                                        error={errors.TenderPayorderRemark} />
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Scheme & Scope Details */}
+                    <div className="space-y-4 pt-5">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Liasoning Architect</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <Input
-                                    label="Architect Name"
-                                    error={errors.ArchitectName}
+                                    label="Name"
+                                    error={errors.LiasoningArchitectName}
                                     type="text"
                                     maxLength={250}
-                                    value={formData.ArchitectName}
-                                    onChange={(e) => handleFieldChange('ArchitectName', e.target.value)}
-                                    placeholder="Enter Architect Name"
+                                    value={formData.LiasoningArchitectName}
+                                    onChange={(e) => handleFieldChange('LiasoningArchitectName', e.target.value)}
+                                    placeholder="Enter Name"
                                 />
                             </div>
                             <div>
                                 <Input leftIcon="+91"
-                                    label="Architect Mobile Number"
-                                    placeholder="Enter Personal Mobile Number"
-                                    value={formData.ArchitectMobileNumber}
+                                    label="Mobile Number"
+                                    placeholder="Enter Mobile Number"
+                                    value={formData.LiasoningArchitectMobileNumber}
                                     rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                                    onChange={(e) => handleFieldChange("ArchitectMobileNumber", filterMobile(e.target.value))}
-                                    error={errors.ArchitectMobileNumber} />
+                                    onChange={(e) => handleFieldChange("LiasoningArchitectMobileNumber", filterMobile(e.target.value))}
+                                    error={errors.LiasoningArchitectMobileNumber} />
                             </div>
 
+                        </div>
+                    </div>
+                    <div className="space-y-4 pt-5">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Designing Architect</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                            <div>
+                                <Input
+                                    label="Name"
+                                    error={errors.DesigningArchitectName}
+                                    type="text"
+                                    maxLength={250}
+                                    value={formData.DesigningArchitectName}
+                                    onChange={(e) => handleFieldChange('DesigningArchitectName', e.target.value)}
+                                    placeholder="Enter Name"
+                                />
+                            </div>
+                            <div>
+                                <Input leftIcon="+91"
+                                    label="Mobile Number"
+                                    placeholder="Enter Mobile Number"
+                                    value={formData.DesigningArchitectMobileNumber}
+                                    rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                    onChange={(e) => handleFieldChange("DesigningArchitectMobileNumber", filterMobile(e.target.value))}
+                                    error={errors.DesigningArchitectMobileNumber} />
+                            </div>
+                        </div>
+                    </div>
+                    <div className="space-y-4 pt-5">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">RCC Consultant</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+                            <div>
+                                <Input
+                                    label="Name"
+                                    error={errors.RCCConsultantName}
+                                    type="text"
+                                    maxLength={250}
+                                    value={formData.RCCConsultantName}
+                                    onChange={(e) => handleFieldChange('RCCConsultantName', e.target.value)}
+                                    placeholder="Enter Name"
+                                />
+                            </div>
+                            <div>
+                                <Input leftIcon="+91"
+                                    label="Mobile Number"
+                                    placeholder="Enter Mobile Number"
+                                    value={formData.RCCConsultantMobileNumber}
+                                    rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                    onChange={(e) => handleFieldChange("RCCConsultantMobileNumber", filterMobile(e.target.value))}
+                                    error={errors.RCCConsultantMobileNumber} />
+                            </div>
                         </div>
                     </div>
 
@@ -829,6 +1138,16 @@ const AddUpdateProjectMaster: React.FC = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <Input
+                                    label="APF Number"
+                                    error={errors.APFNumber}
+                                    type="text"
+                                    value={formData.APFNumber}
+                                    onChange={(e) => handleFieldChange('APFNumber', filterAPF(e.target.value))}
+                                    placeholder="Enter APF Number"
+                                />
+                            </div>
+                            <div>
+                                <Input
                                     label="RERA Number"
                                     error={errors.RERANumber}
                                     type="text"
@@ -887,6 +1206,15 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     value={formData.ProjectAreaInSqft || ''}
                                     onChange={(e) => handleFieldChange('ProjectAreaInSqft', filterNumbersWithDecimal(e.target.value) || 0)}
                                     placeholder="Enter Area in (SqFt)"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Project Area in (SqMt)"
+                                    type="text"
+                                    value={formData.ProjectAreaInSqmt || ''}
+                                    onChange={(e) => handleFieldChange('ProjectAreaInSqmt', filterNumbersWithDecimal(e.target.value) || 0)}
+                                    placeholder="Enter Area in (SqMt)"
                                 />
                             </div>
                         </div>

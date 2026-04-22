@@ -3,6 +3,8 @@ import type { ChannelPartnerData } from "@/features/ChannelPartner/models/Channe
 export const isChannelPartnerComplete = (channelPartner: ChannelPartnerData): boolean => {
   const requiredFields: (keyof ChannelPartnerData)[] = [
     "Name",
+    "DateOfBirth",
+    "WebsiteURL",
     "CompanyName",
     "FirmsType",
     "Designation",

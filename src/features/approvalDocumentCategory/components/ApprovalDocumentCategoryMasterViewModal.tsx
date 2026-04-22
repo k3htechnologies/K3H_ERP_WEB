@@ -85,18 +85,22 @@ export const ApprovalDocumentCategoryMasterViewModal: React.FC<ApprovalDocumentC
             ''
           )}
         </div>
+
+
         <div className="flex justify-between items-center">
           {canAction && (
             <>
-              <Button
-                color="red"
-                variant="solid"
-                colorMode="light"
-                size="md"
-                onClick={handleDelete}
-              >
-                Delete
-              </Button>
+              {data.DocumentCount === 0 ? (
+                <Button
+                  color="red"
+                  variant="solid"
+                  colorMode="light"
+                  size="md"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </Button>
+              ) : <div style={{ width: "120px", height: "44px" }}></div>}
 
               <Button
                 color="blue"

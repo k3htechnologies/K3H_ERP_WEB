@@ -1381,14 +1381,15 @@ const Inventory = () => {
 
     useLayoutEffect(() => {
 
-        const flatId = sessionStorage.getItem("scrollFlatId");
+        const floorId = sessionStorage.getItem("scrollFloorId");
 
-        if (!flatId) return;
+        if (!floorId) return;
 
         let retry = 0;
 
         const scrollToElement = () => {
-            const element = document.getElementById(`flat-${flatId}`);
+
+            const element = document.getElementById(`floor-${floorId}`);
 
             if (element) {
 
@@ -1397,7 +1398,7 @@ const Inventory = () => {
                     block: "center",
                 });
 
-                sessionStorage.removeItem("scrollFlatId");
+                sessionStorage.removeItem("scrollFloorId");
 
             } else if (retry < 15) {
                 retry++;
@@ -1406,8 +1407,8 @@ const Inventory = () => {
         };
 
         scrollToElement();
-    }, []);
-    
+    }, [inventory]);
+
     return (
         <>
             <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>

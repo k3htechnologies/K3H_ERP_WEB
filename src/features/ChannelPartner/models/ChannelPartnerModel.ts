@@ -29,6 +29,8 @@ export interface ChannelPartnerData {
     Uniquekey: string
     SystemGeneratedCode: string
     Name: string
+    DateOfBirth: string | null
+    WebsiteURL:string 
     CompanyName: string
 
     FirmsType: string
@@ -88,6 +90,8 @@ export interface ChannelPartnerTeamData {
     ChannelPartnerId: number
     Uniquekey: string
     Name: string
+    DateOfBirth: string | null
+    WebsiteURL:string 
     CompanyName: string
     FirmsType: string
     Designation: string
@@ -141,6 +145,8 @@ export interface AddUpdateChannelPartnerRequest {
     ChannelPartnerId?: number | 0
     Uniquekey: string | null
     Name: string
+    DateOfBirth: string | null
+    WebsiteURL:string
     CompanyName: string
     FirmsType: string
     Designation: string

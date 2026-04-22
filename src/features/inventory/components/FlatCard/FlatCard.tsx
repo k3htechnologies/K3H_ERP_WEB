@@ -42,7 +42,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
 
     const handleEdit = () => {
         
-        sessionStorage.setItem("scrollFlatId", flat.InventoryFlatId.toString());
+        sessionStorage.setItem("scrollFloorId", flat.InventoryFloorId.toString());
 
         navigate('/inventory/inventorySpecification', {
             state: {
@@ -54,6 +54,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
     };
 
     const handleDelete = () => {
+        sessionStorage.setItem("scrollFloorId", flat.InventoryFloorId.toString());
         onDelete(flat);
     };
 

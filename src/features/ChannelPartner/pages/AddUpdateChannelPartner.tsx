@@ -12,7 +12,7 @@ import type {
 } from "@/features/ChannelPartner/models/ChannelPartnerModel";
 import { ChannelPartnerService } from "@/features/ChannelPartner/services/ChannelPartnerService";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import { IdCard, Mail, Phone } from "lucide-react";
+import { Globe, IdCard, Mail, Phone } from "lucide-react";
 import {
   filterAadhaar,
   filterEmail,
@@ -20,12 +20,14 @@ import {
   filterMobile,
   filterPAN,
   filterRERA,
+  filterWebsiteUrl,
   hasAnyDocumentFile,
   isValidAadhaar,
   isValidGST,
   isValidMobile,
   isValidPAN,
   isValidRERA,
+  isValidWebsiteUrl,
 } from "@/core/utils/fileValidation";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import {
@@ -49,11 +51,15 @@ import CompleteVerificationSection from "@/ui/components/TwoWayVerification/Comp
 import { Modal } from "@/ui/components/Modal/Modal";
 import { sendOTP } from "@/features/technical/services/OTPService";
 import { getChannelPartnerVerificationSteps } from "@/features/ChannelPartner/utils/channelPartnerVerificationSteps";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 
 const initialFormState = (): AddUpdateChannelPartnerRequest => ({
   ChannelPartnerId: 0,
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   Name: "",
+  DateOfBirth: null,
+  WebsiteURL: "",
   CompanyName: "",
 
   FirmsType: "",
@@ -261,14 +267,15 @@ export const AddUpdateChannelPartner: React.FC = () => {
               ChannelPartnerId: e.ChannelPartnerId ?? prev.ChannelPartnerId,
               Uniquekey: e.Uniquekey ?? prev.Uniquekey,
               Name: e.Name ?? prev.Name,
+              DateOfBirth: e.DateOfBirth ?? prev.DateOfBirth,
+              WebsiteURL: e.WebsiteURL ?? prev.WebsiteURL,
               CompanyName: e.CompanyName ?? prev.CompanyName,
               FirmsType: e.FirmsType ?? prev.FirmsType ?? "",
               Type: e.Type ?? prev.Type ?? "",
               Designation: e.Designation ?? prev.Designation ?? "",
               EmailId: e.EmailId ?? prev.EmailId,
               MobileNumber: e.MobileNumber ?? prev.MobileNumber,
-              AlternativeMobileNumber:
-                e.AlternativeMobileNumber ?? prev.AlternativeMobileNumber,
+              AlternativeMobileNumber: e.AlternativeMobileNumber ?? prev.AlternativeMobileNumber,
               AadharCardNumber: e.AadharCardNumber ?? prev.AadharCardNumber,
               PanNumber: e.PanNumber ?? prev.PanNumber,
               AadharCardURL: null,
@@ -334,6 +341,18 @@ export const AddUpdateChannelPartner: React.FC = () => {
       newErrors.Name = "Full Name is required";
     }
 
+    if (formData.DateOfBirth !== "") {
+      const dob = new Date(formData.DateOfBirth as unknown as string);
+      const today = new Date();
+      if (dob > today) {
+        newErrors.DateOfBirth = "Date of Birth cannot be in the future";
+      }
+    }
+
+    if (formData.WebsiteURL?.trim() !== "" && !isValidWebsiteUrl(formData.WebsiteURL.trim())) {
+      newErrors.WebsiteURL = 'Enter a valid Website URL'
+    }
+
     if (!formData.MobileNumber?.trim()) {
       newErrors.MobileNumber = "Mobile Number is required";
     } else if (!isValidMobile(formData.MobileNumber.trim())) {
@@ -371,7 +390,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     if (formData.IsRERANumber === 1 && !formData.RERANumber) {
       newErrors.RERANumber = " RERA Number is required";
-    } else if ( formData.IsRERANumber === 1 && !isValidRERA(formData.RERANumber.trim())) {
+    } else if (formData.IsRERANumber === 1 && !isValidRERA(formData.RERANumber.trim())) {
       newErrors.RERANumber = "Enter a valid RERA Number";
     }
 
@@ -391,7 +410,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
     }
 
     const hasPanNumber = !!formData.PanNumber?.trim();
-    const hasPanFile = hasAnyDocumentFile( panCardURLFiles,panCardURL,removePanCardUrls);
+    const hasPanFile = hasAnyDocumentFile(panCardURLFiles, panCardURL, removePanCardUrls);
 
     if (hasPanNumber && !hasPanFile) {
       newErrors.PanCardURL = "PAN card file is required.";
@@ -406,7 +425,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
     }
 
     const hasGSTNumber = !!formData.GSTNumber?.trim();
-    const hasGSTFile = hasAnyDocumentFile(gSTCertificateURLFiles,gSTCertificateURL,removeGSTCertificateUrls);
+    const hasGSTFile = hasAnyDocumentFile(gSTCertificateURLFiles, gSTCertificateURL, removeGSTCertificateUrls);
 
     if (hasGSTNumber && !hasGSTFile) {
       newErrors.GSTCertificateURL = "GST Certificate file is required.";
@@ -450,6 +469,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
     fd.append("ChannelPartnerId", String(formData.ChannelPartnerId ?? 0));
     fd.append("Uniquekey", formData.Uniquekey ?? "");
     fd.append("Name", formData.Name ?? "");
+    fd.append("DateOfBirth", formData.DateOfBirth ?? "");
+    fd.append("WebsiteURL", formData.WebsiteURL ?? "");
     fd.append("CompanyName", formData.CompanyName ?? "");
     fd.append("FirmsType", formData.FirmsType ?? "");
     fd.append("Type", formData.Type ?? "");
@@ -634,7 +655,6 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <form onSubmit={handleAddUpdateChannelPartner}>
-          {/* Basic ChannelPartner Details */}
 
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
@@ -653,6 +673,13 @@ export const AddUpdateChannelPartner: React.FC = () => {
                   maxLength={250}
                   error={errors.Name}
                 />
+              </div>
+              <div>
+                <DatePickerInput
+                  label="DOB"
+                  value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
+                  onChange={(val) => handleFieldChange("DateOfBirth", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  error={errors.DateOfBirth} />
               </div>
 
               <div>
@@ -851,6 +878,17 @@ export const AddUpdateChannelPartner: React.FC = () => {
                     label: opt.name,
                     value: opt.id,
                   }))}
+                />
+              </div>
+              <div>
+                <Input
+                  label="Website URL"
+                  type="text"
+                  value={formData.WebsiteURL}
+                  onChange={e => handleFieldChange('WebsiteURL', filterWebsiteUrl(e.target.value))}
+                  rightIcon={<Globe  className="w-4 h-4" />}
+                  error={errors.WebsiteURL}
+                  placeholder="Enter Website URL"
                 />
               </div>
             </div>

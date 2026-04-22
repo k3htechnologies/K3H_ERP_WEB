@@ -19,6 +19,7 @@ import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { isChannelPartnerComplete } from '@/features/ChannelPartner/utils/channelPartnerUtils';
 import { AlertTriangle } from 'lucide-react';
+import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 
 export const ChannelPartnerSourcing: React.FC = () => {
 
@@ -233,6 +234,14 @@ export const ChannelPartnerSourcing: React.FC = () => {
             onClick={() => handleNavigateToView(row)}
           />
         )
+      }, 
+      {
+        key: "DateOfBirth",
+        label: "DOB",
+        width: "14",
+        sortable: false,
+        align: "center",
+        render: (value) => (value ? formatDate_dd_MonthName_yy(value) : "-"),
       },
 
       {

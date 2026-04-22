@@ -13,7 +13,7 @@ import { Button, Input } from '@/ui/components/forms';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { Edit, Trash2 } from 'lucide-react';
 import { filterIFSC, filterNumbers, isValidIFSC } from '@/core/utils/fileValidation';
-import { BANK_ACCOUNT_TYPE } from '@/core/constants';
+import { BANK_ACCOUNT_TYPE, NATURE_OF_ACCOUNT } from '@/core/constants';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import { fetchBankListMasterDropdown } from '@/features/bankListMaster/bankListMasterDropDown';
@@ -32,7 +32,8 @@ const initialFormState = (): AddUpdateProjectMasterWithBankDetailsRequest => ({
   AccountNumber: '',
   Branch: '',
   IFSCCode: '',
-  AcType: ''
+  AcType: '',
+  NatureOfAccount: ''
 });
 
 const Bank: React.FC = () => {
@@ -98,7 +99,8 @@ const Bank: React.FC = () => {
           AccountNumber: editingProjectMasterWithBankDetailsData.AccountNumber || "",
           Branch: editingProjectMasterWithBankDetailsData.Branch || "",
           IFSCCode: editingProjectMasterWithBankDetailsData.IFSCCode || "",
-          AcType: editingProjectMasterWithBankDetailsData.AcType || ""
+          AcType: editingProjectMasterWithBankDetailsData.AcType || "",
+          NatureOfAccount: editingProjectMasterWithBankDetailsData.NatureOfAccount || ""
         });
 
         setDropdownLabels({
@@ -154,6 +156,7 @@ const Bank: React.FC = () => {
       ...row,
       BeneficiaryAccountHolderName: row.BeneficiaryAccountHolderName || '',
       AcType: row.AcType || '',
+      NatureOfAccount: row.NatureOfAccount || '',
       Branch: row.Branch || '',
       BankListMasterId: row.BankListMasterId || 0,
       AccountNumber: row.AccountNumber || '',
@@ -175,7 +178,7 @@ const Bank: React.FC = () => {
     () => [
       {
         key: 'BeneficiaryAccountHolderName',
-        label: 'Ac Holder',
+        label: 'Account Holder',
         width: '33',
         sortable: true,
         fixed: 'left',
@@ -235,9 +238,9 @@ const Bank: React.FC = () => {
           </div>
         )
       },
-      {
-        key: 'AccountNumber',
-        label: 'Ac Number',
+       {
+        key: 'NatureOfAccount',
+        label: 'Nature Of Account',
         width: '33',
         sortable: false,
         align: 'left',
@@ -252,16 +255,17 @@ const Bank: React.FC = () => {
         render: (value) => value || ''
       },
       {
-        key: 'Branch',
-        label: 'Branch',
+        key: 'AcType',
+        label: 'Account Type',
         width: '33',
         sortable: false,
         align: 'left',
         render: (value) => value || ''
       },
+     
       {
-        key: 'AcType',
-        label: 'Ac Type',
+        key: 'AccountNumber',
+        label: 'Account Number',
         width: '33',
         sortable: false,
         align: 'left',
@@ -276,6 +280,15 @@ const Bank: React.FC = () => {
         render: (value) => value || ''
       },
 
+      {
+        key: 'Branch',
+        label: 'Branch',
+        width: '33',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || ''
+      },
+      
     ],
     [handleEditProjectMasterBankDetails, handleConfirmationDialogBoxOpenForProjectMasterBankDetails]
   )
@@ -318,6 +331,10 @@ const Bank: React.FC = () => {
 
     if (formDataForBankDetails.AcType.trim() === "") {
       newErrors.AcType = "Account type is required";
+    }
+
+    if (formDataForBankDetails.NatureOfAccount.trim() === "") {
+      newErrors.NatureOfAccount = "Nature Of Account is required";
     }
 
 
@@ -364,6 +381,7 @@ const Bank: React.FC = () => {
       Branch: formDataForBankDetails.Branch,
       IFSCCode: formDataForBankDetails.IFSCCode,
       AcType: formDataForBankDetails.AcType,
+      NatureOfAccount: formDataForBankDetails.NatureOfAccount,
     };
 
   };
@@ -547,7 +565,7 @@ const Bank: React.FC = () => {
         }}
         title={editingProjectMasterWithBankDetailsData ? 'Update Bank Details' : 'Add Bank Details'}
         onSubmit={handleAddUpdateProjectMasterWithBankDetails}
-        saveText={editingProjectMasterWithBankDetailsData ? 'Update Bank Details' : 'Save Bank Details'}
+        saveText={editingProjectMasterWithBankDetailsData ? 'Update' : 'Add'}
 
         loading={isLoading}
         size='half-screen'
@@ -598,6 +616,18 @@ const Bank: React.FC = () => {
                 onChange={(e) => handleFieldChange('AcType', String(e))}
                 options={BANK_ACCOUNT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
                 error={errorsForBankDetails.AcType}
+              />
+
+            </div>
+            <div>
+              <SinglePageSelection
+                label="Nature Of Account"
+                placeholder='Select Nature Of Account'
+                required
+                value={formDataForBankDetails.NatureOfAccount}
+                onChange={(e) => handleFieldChange('NatureOfAccount', String(e))}
+                options={NATURE_OF_ACCOUNT.map((opt) => ({ label: opt.name, value: opt.id }))}
+                error={errorsForBankDetails.NatureOfAccount}
               />
 
             </div>

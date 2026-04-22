@@ -33,9 +33,6 @@ export interface MaterialRequisitionData {
     IsApprovalInvoice: boolean;
     VendorFinalizationApprovalStatus: string;
     InvoiceApprovalStatus: string;
-    InvoiceNumber: string | null;
-    InvoiceAmount: number | 0;
-    InvoiceDueDate: string | null;
     CreatedById: number;
     CreatedBy: string;
     CreatedDate: string;
@@ -48,7 +45,9 @@ export interface MaterialRequisitionData {
     TotalInvoice: number;
     PurchaseOrderURL: string;
     MaterialRequisitionDetailData: MaterialRequisitionDetailData[];
-    MaterialRequisitionVendorData: MaterialRequisitionVendorData[];
+    VendorName: string | null
+    CompanyName: string | null
+    ExpectedDeliveryInDays: number | 0
     MaterialRequisitionInvoiceData: MaterialRequisitionInvoiceData[];
 
 }
@@ -87,15 +86,13 @@ export interface MaterialRequisitionDetailData {
     ModifiedBy: string;
     ModifiedDate: null;
 }
-export interface MaterialRequisitionVendorData {
-VendorName:string | null
-CompanyName:string | null
-
-}
 
 export interface MaterialRequisitionInvoiceData {
-
+    InvoiceNumber: string | null;
+    InvoiceAmount: number | 0;
+    InvoiceDueDate: string 
 }
+
 export interface AddUpdateMaterialRequisitionRequest {
     MaterialRequisitionId: number;
     Uniquekey: string;

@@ -45,11 +45,9 @@ export const MaterialRequisition: React.FC = () => {
     const [isShowCustomizeMaterialRequisitionColumnsModal, setIsShowCustomizeMaterialRequisitionColumnsModal] = useState(false);
     const navigate = useNavigate();
     const { canAction, canExport } = useMenuPermissions();
-    const [selectedRow, setSelectedRow] = useState<MaterialRequisitionData | null>(null);
     const { projectId } = useProject();
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
-    //#endregion
 
     const applyFilters = () => {
         updateListState({ filters: tempFilters, page: 1 });
@@ -330,13 +328,15 @@ export const MaterialRequisition: React.FC = () => {
     }, [filters, updateListState, searchTerm]);
 
     useEffect(() => {
+        if (!projectId) return;
+
         setPagination({ currentPage: listState.page });
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
             loadDetailsdata(listState.page, { SystemGeneratedCode: String(listState.searchTerm).trim() }, listState.sortInfo);
         } else {
             loadDetailsdata(listState.page, listState.filters, listState.sortInfo);
         }
-    }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
+    }, [projectId, listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
     const fetchLoadDetailsList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadDetailsdata(page, filters, sort ?? sortInfo);

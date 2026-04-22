@@ -48,6 +48,11 @@ export const ViewMaterialRequisition: React.FC = () => {
         navigate('/materialRequisition');
     };
 
+    useEffect(() => {
+        if (!projectId || !currentMaterialRequisitionId || currentMaterialRequisitionId === 0) return;
+        loadMaterialRequisition()
+    }, [projectId, currentMaterialRequisitionId, addToast]);
+
     const CopyMaterialRequisitionFormData = (): FormData => {
         const fd = new FormData();
         fd.append("ProjectId", Number(projectId).toString());
@@ -69,8 +74,7 @@ export const ViewMaterialRequisition: React.FC = () => {
         return fd;
     };
 
-    useEffect(() => {
-        if (!projectId || !currentMaterialRequisitionId) return;
+    const loadMaterialRequisition = async () => {
         runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -98,7 +102,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                 }
                 return response;
             });
-    }, [projectId, currentMaterialRequisitionId]);
+    }
 
     const handleCopyMaterialRequisition = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -134,6 +138,7 @@ export const ViewMaterialRequisition: React.FC = () => {
     const handleEditRequisitionModal = () => {
         setEditIsModalOpen(false)
     }
+
     const handleOpenRequisitionModal = () => {
         setEditIsModalOpen(true)
     }
@@ -168,7 +173,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                 )}
             </div>
 
-            <div className="pt-2">
+            <div className="pt-3 pb-3">
                 <Tabs
                     tabs={MaterialRequisitionTabList}
                     defaultActive={activeTab}
@@ -185,7 +190,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
             <Modal
                 isOpen={isEditModalOpen}
-                title={"Requisition"}
+                title={" Material Requisition Details"}
                 onClose={handleEditRequisitionModal}
                 onSubmit={handleCopyMaterialRequisition}
                 saveText={"save"}

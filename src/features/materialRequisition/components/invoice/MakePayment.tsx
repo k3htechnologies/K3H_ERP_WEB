@@ -8,10 +8,8 @@ import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
-import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
+import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
-import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
-import { materialRequisitionService } from "../../services/MaterialRequisitionService";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
 import { materialRequisitionInvoiceService } from "../../services/MaterialRequisitionInvoiceService";
 import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceData } from "../../models/MaterialRequisitionInvoiceModel";
@@ -23,8 +21,8 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
 
 const MakePayment: React.FC = () => {
-    const [gRNData, setRGNData] = useState<MaterialRequisitionGRNData | null>(null);
-    const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
+    const [materialRequisitionGRNData, setMaterialRequisitionGRNData] = useState<MaterialRequisitionGRNData | null>(null);
+    const [matrialRequisitionDetailGRNData, setMaterialRequisitionDetailGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const [invoiceData, setInvoiceData] = useState<MaterialRequisitionInvoiceData | null>(null);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -38,19 +36,16 @@ const MakePayment: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-        loadGRNData();
-        fetchMaterialRequisitionDetailData();
+        loadmaterialRequisitionGRNData();
         loadInvoiceData();
     }, [projectId, currentMaterialRequisitionId])
 
-    const loadGRNData = async () => {
+    const loadmaterialRequisitionGRNData = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationMaterialRequisitionGRN = {
-                    PageNumber: 1,
-                    PageSize: 1,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
                     Uniquekey: currentUniquekey
@@ -62,42 +57,11 @@ const MakePayment: React.FC = () => {
 
                     const data = response.right.Data;
 
-                    setRGNData(Array.isArray(data) ? (data[0] ?? null) : data);
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            "Loading GRN",
-        );
-    };
-
-    const fetchMaterialRequisitionDetailData = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationMaterialRequisition = {
-                    PageNumber: 1,
-                    PageSize: 1,
-                    ProjectId: Number(projectId),
-                    MaterialRequisitionId: currentMaterialRequisitionId,
-                };
-
-                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
-
-                if (E.isRight(response)) {
-
-                    const data = response.right.Data;
+                    setMaterialRequisitionGRNData(Array.isArray(data) ? (data[0] ?? null) : data);
 
                     const Item = Array.isArray(data) ? data[0] : data;
 
-                    setMaterialRequisitionDetailData(Item?.MaterialRequisitionDetailData ?? []);
+                    setMaterialRequisitionDetailGRNData(Item?.MaterialRequisitionDetailGRNData ?? []);
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -108,7 +72,7 @@ const MakePayment: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            "Loading Material Requisition",
+            "Loading Invoice",
         );
     };
 
@@ -195,23 +159,23 @@ const MakePayment: React.FC = () => {
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(gRNData?.CreatedDate ?? '')} />
-                        <FieldItem label="Challan No." value={gRNData?.ChallanNumber} />
-                        <FieldItem label="Vehicle No." value={gRNData?.VehicleNumber} />
-                        <FieldItem label="Total Requisition Amount" value={gRNData?.Remarks} />
-                        <FieldItem label="Paid  Requisition Amount" value={gRNData?.VehicleNumber} />
-                        <FieldItem label="Remaining Requisition Amount " value={gRNData?.VehicleNumber} />
+                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
+                        <FieldItem label="Challan No." value={materialRequisitionGRNData?.ChallanNumber} />
+                        <FieldItem label="Vehicle No." value={materialRequisitionGRNData?.VehicleNumber} />
+                        <FieldItem label="Total Requisition Amount" value={materialRequisitionGRNData?.Remarks} />
+                        <FieldItem label="Paid  Requisition Amount" value={materialRequisitionGRNData?.VehicleNumber} />
+                        <FieldItem label="Remaining Requisition Amount " value={materialRequisitionGRNData?.VehicleNumber} />
                     </div>
                 </div>
 
                 {/* <div className="bg-white rounded-lg p-4 space-y-4 h-[110px] shadow-sm border border-gray-300 "> */}
-                    <DataTableWithHeadColor
-                        columns={MaterialRequisitionDetailColumns}
-                        data={matrialRequisitionDetailData}
-                        emptyMessage="No Material Requisition Found"
-                        fixedHeight={true}
-                        className="flex-1"
-                    />
+                <DataTableWithHeadColor
+                    columns={MaterialRequisitionDetailColumns}
+                    data={matrialRequisitionDetailGRNData}
+                    emptyMessage="No Material Requisition Found"
+                    fixedHeight={true}
+                    className="flex-1"
+                />
                 {/* </div> */}
             </div>
 

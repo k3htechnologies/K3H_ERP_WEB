@@ -107,14 +107,9 @@ export const Details: React.FC = () => {
         return fd;
     };
 
-
     const handleSplitMaterialRequisition = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (selectedIds.length === 0) {
-            addToast({ type: "error", title: "Please select at least one material" });
-            return;
-        }
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -317,16 +312,22 @@ export const Details: React.FC = () => {
                     ))}
                 </div>
 
-                {active && (
-                    <Button
-                        className="bg-[#135BEC] text-white font-bold py-1 px-4 rounded-md"
-                        onClick={() => {
-                            setIsAddUpdateModalOpen(true);
-                        }}
-                    >
-                        Split All
-                    </Button>
-                )}
+                <div className="flex justify-end">
+                    {active && (
+                        <Button
+                            className="bg-[#135BEC] text-white font-bold py-1 px-4 rounded-md"
+                            onClick={() => {
+                                if (selectedIds.length === 0) {
+                                    addToast({ type: "error", title: "Please select at least one material" });
+                                    return;
+                                }
+                                setIsAddUpdateModalOpen(true);
+                            }}
+                        >
+                            Split All
+                        </Button>
+                    )}
+                </div>
             </div>
 
             <div className=" gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
@@ -378,13 +379,6 @@ export const Details: React.FC = () => {
                         <div key={item.MaterialRequisitionDetailId} className="flex items-center gap-x-4">
                             <Checkbox
                                 checked={selectedIds.includes(item.MaterialRequisitionDetailId)}
-                                onChange={() => {
-                                    setSelectedIds(prev =>
-                                        prev.includes(item.MaterialRequisitionDetailId)
-                                            ? prev.filter(id => id !== item.MaterialRequisitionDetailId)
-                                            : [...prev, item.MaterialRequisitionDetailId]
-                                    );
-                                }}
                             />
                             <p className="font-semibold">{item.SubMaterialName}</p>
                         </div>

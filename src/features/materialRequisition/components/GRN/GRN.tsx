@@ -32,7 +32,6 @@ export const GRN: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-        loadGRNSummaryData();
     }, [projectId, currentMaterialRequisitionId])
 
     const loadGRNSummaryData = async () => {
@@ -50,15 +49,12 @@ export const GRN: React.FC = () => {
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRNSummary(params);
 
                 if (E.isRight(response)) {
-
-                    setIsViewGRNSummaryModalOpen(false);
-
+                    
                     setGRNSummaryDetailData(response.right.Data);
                 } else {
                     addToast({ type: "error", title: response.left.message });
-
-                    setIsViewGRNSummaryModalOpen(false);
                 }
+
                 return response;
             },
             undefined,
@@ -107,10 +103,12 @@ export const GRN: React.FC = () => {
         <div>
 
             <div className="flex justify-end">
+
                 <Button
                     className="bg-[#135BEC] text-white font-bold py-1 px-4 rounded-md"
                     onClick={() => {
                         setIsViewGRNSummaryModalOpen(true);
+                        loadGRNSummaryData()
                     }}
                 >
                     View Summary

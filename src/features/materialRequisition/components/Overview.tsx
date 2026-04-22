@@ -1,6 +1,6 @@
 import { runApiWithLoader } from "@/core/utils";
 import { useEffect, useState } from "react";
-import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "../models/MaterialRequisitionModel";
+import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData, MaterialRequisitionInvoiceData } from "../models/MaterialRequisitionModel";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
@@ -13,6 +13,7 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { Loader } from "@/core/utils/loader";
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 export const Overview: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -20,6 +21,7 @@ export const Overview: React.FC = () => {
     const { addToast } = useToast();
     const [matrialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
+    const [MaterialRequisitionInvoiceData, setMaterialRequisitionInvoiceData] = useState<MaterialRequisitionInvoiceData[]>([])
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
@@ -53,6 +55,8 @@ export const Overview: React.FC = () => {
                     const Item = Array.isArray(data) ? data[0] : data;
 
                     setMaterialRequisitionDetailData(Item?.MaterialRequisitionDetailData ?? []);
+
+                    setMaterialRequisitionInvoiceData(Item?.MaterialRequisitionInvoiceData ?? []);
 
                 } else {
                     addToast({ type: "error", title: response.left.message });
@@ -102,12 +106,12 @@ export const Overview: React.FC = () => {
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Vendor And Amount Details</h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Vendor Name" value={matrialRequisitionData?.FinalVendor} />
-                                <FieldItem label="Vendor Company" value={matrialRequisitionData?.MaterialRequisitionStage} />
-                                <FieldItem label="Base Amount" value={matrialRequisitionData?.MaterialRequisitionStatus} />
-                                <FieldItem label="Total Tax" value={matrialRequisitionData?.MaterialRequisitionStage} />
-                                <FieldItem label="Grand Total" value={matrialRequisitionData?.MaterialRequisitionStage} />
-                                <FieldItem label="Est. Delivery" value={matrialRequisitionData?.MaterialRequisitionStage} />
+                                <FieldItem label="Vendor Name" value={matrialRequisitionData?.VendorName} />
+                                <FieldItem label="Vendor Company" value={matrialRequisitionData?.CompanyName} />
+                                <FieldItem label="Base Amount" value={matrialRequisitionData?.VendorName} />
+                                <FieldItem label="Total Tax" value={matrialRequisitionData?.VendorName} />
+                                <FieldItem label="Grand Total" value={matrialRequisitionData?.VendorName} />
+                                <FieldItem label="Est. Delivery" value={matrialRequisitionData?.ExpectedDeliveryInDays} />
                             </div>
                         </section>
                     </div>
@@ -149,7 +153,7 @@ export const Overview: React.FC = () => {
                 </div>
 
                 <div className="col-span-6">
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 overflow-y-auto thin-scroll h-[442px]">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 overflow-y-auto thin-scroll h-[434px]">
                         <div className="overflow-y-auto thin-scroll h-[420px]">
                             <section className="bg-white px-4 pt-1 pb-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Material Details</h4>
@@ -170,13 +174,20 @@ export const Overview: React.FC = () => {
                         <div className="overflow-y-auto thin-scroll h-[400px]">
                             <section className="bg-white px-4 pt-1 pb-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Invoice Details</h4>
-                                {matrialRequisitionDetailData.map((item, index) => (
-                                    <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 rounded-lg p-2 mt-2 ">
-                                        <FieldItem label="Invoice Number" value={item.MaterialName} />
-                                        <FieldItem label="Invoice Amount" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
-                                        <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
+                                {MaterialRequisitionInvoiceData.length === 0 ? (
+                                    <div className="flex flex-col justify-center items-center h-full">
+                                        <NoDataView />
+                                    </div>) : (
+                                    <div>
+                                        {MaterialRequisitionInvoiceData.map((item, index) => (
+                                            <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 rounded-lg p-2 mt-2 ">
+                                                <FieldItem label="Invoice Number" value={item.InvoiceNumber} />
+                                                <FieldItem label="Invoice Amount" value={<TooltipText text={item.InvoiceAmount ?? ''} />} />
+                                                <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(item.InvoiceDueDate)} />
+                                            </div>
+                                        ))}
                                     </div>
-                                ))}
+                                )}
                             </section>
                         </div>
                     </div>

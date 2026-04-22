@@ -18,10 +18,8 @@ import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
-import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
+import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
-import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
-import { materialRequisitionService } from "../../services/MaterialRequisitionService";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
@@ -42,10 +40,10 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     Remarks: ''
 })
 
-const AddUpdateInovice: React.FC = () => {
+const CreateInovice: React.FC = () => {
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionInvoice>(() => initialFormState());
-    const [invoiceData, setInvoiceData] = useState<MaterialRequisitionGRNData | null>(null);
-    const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
+    const [materialRequisitionGRNData, setMaterialRequisitionGRNData] = useState<MaterialRequisitionGRNData | null>(null);
+    const [matrialRequisitionDetailGRNData, setMaterialRequisitionDetailGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { projectId } = useProject();
@@ -66,18 +64,15 @@ const AddUpdateInovice: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-        loadInvoiceData();
-        fetchMaterialRequisitionDetailData();
+        loadmaterialRequisitionGRNData();
     }, [projectId, currentMaterialRequisitionId])
 
-    const loadInvoiceData = async () => {
+    const loadmaterialRequisitionGRNData = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationMaterialRequisitionGRN = {
-                    PageNumber: 1,
-                    PageSize: 1,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
                     Uniquekey: currentUniquekey
@@ -89,7 +84,11 @@ const AddUpdateInovice: React.FC = () => {
 
                     const data = response.right.Data;
 
-                    setInvoiceData(Array.isArray(data) ? (data[0] ?? null) : data);
+                    setMaterialRequisitionGRNData(Array.isArray(data) ? (data[0] ?? null) : data);
+
+                    const Item = Array.isArray(data) ? data[0] : data;
+
+                    setMaterialRequisitionDetailGRNData(Item?.MaterialRequisitionDetailGRNData ?? []);
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -101,41 +100,6 @@ const AddUpdateInovice: React.FC = () => {
             },
             undefined,
             "Loading Invoice",
-        );
-    };
-
-    const fetchMaterialRequisitionDetailData = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationMaterialRequisition = {
-                    PageNumber: 1,
-                    PageSize: 1,
-                    ProjectId: Number(projectId),
-                    MaterialRequisitionId: currentMaterialRequisitionId,
-                };
-
-                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
-
-                if (E.isRight(response)) {
-
-                    const data = response.right.Data;
-
-                    const Item = Array.isArray(data) ? data[0] : data;
-
-                    setMaterialRequisitionDetailData(Item?.MaterialRequisitionDetailData ?? []);
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            "Loading Material Requisition",
         );
     };
 
@@ -305,18 +269,18 @@ const AddUpdateInovice: React.FC = () => {
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(invoiceData?.CreatedDate ?? '')} />
-                        <FieldItem label="Challan No." value={invoiceData?.ChallanNumber} />
-                        <FieldItem label="Vehicle No." value={invoiceData?.VehicleNumber} />
-                        <FieldItem label="Total Requisition Amount" value={invoiceData?.Remarks} />
-                        <FieldItem label="Paid  Requisition Amount" value={invoiceData?.VehicleNumber} />
-                        <FieldItem label="Remaining Requisition Amount " value={invoiceData?.VehicleNumber} />
+                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
+                        <FieldItem label="Challan No." value={materialRequisitionGRNData?.ChallanNumber} />
+                        <FieldItem label="Vehicle No." value={materialRequisitionGRNData?.VehicleNumber} />
+                        <FieldItem label="Total Requisition Amount" value={materialRequisitionGRNData?.Remarks} />
+                        <FieldItem label="Paid  Requisition Amount" value={materialRequisitionGRNData?.VehicleNumber} />
+                        <FieldItem label="Remaining Requisition Amount " value={materialRequisitionGRNData?.VehicleNumber} />
                     </div>
                 </div>
 
                 <DataTableWithHeadColor
                     columns={MaterialRequisitionDetailColumns}
-                    data={matrialRequisitionDetailData}
+                    data={matrialRequisitionDetailGRNData}
                     emptyMessage="No Material Requisition Found"
                     maxHeight={'255'}
                     className="flex-1"
@@ -440,4 +404,4 @@ const AddUpdateInovice: React.FC = () => {
 
     )
 }
-export default AddUpdateInovice;
+export default CreateInovice;

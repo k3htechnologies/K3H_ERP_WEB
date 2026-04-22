@@ -150,7 +150,7 @@ export const GRN: React.FC = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm border border-gray-300">
+                            <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm border border-gray-300 h-[220px]">
                                 <DataTableWithOutBorder
                                     columns={MaterialRequisitionDetailColumns}
                                     data={GRNSummaryDetailData}

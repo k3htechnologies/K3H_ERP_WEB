@@ -16,6 +16,9 @@ import { FileText } from "lucide-react";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { fetchTncMasterDropdown } from "@/features/tnc/tncDropDown";
+import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
+import RichTextEditor from "@/ui/components/forms/RichTextEditor";
 
 const initialFormState = (): GenerateMaterialRequisitionPurchaseOrderPdfData => ({
     MaterialRequisitionId: 0,
@@ -90,6 +93,14 @@ export const PurchaseOrder: React.FC = () => {
             "Loading Purchase Order ",
         );
     };
+
+    //#region FETCH TNC DROPDOWN WITH MODULE NAME
+    const fetchTncByModuleName = (moduleName: string) => (page: number, params?: { value?: string }) =>
+        fetchTncMasterDropdown(page, {
+            value: params?.value || "",
+            moduleName: moduleName,
+        });
+    //#endregion
 
     const handleFieldChange = (field: keyof GenerateMaterialRequisitionPurchaseOrderPdfData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -448,7 +459,7 @@ export const PurchaseOrder: React.FC = () => {
                             />
                         </div>
 
-                        <div>
+                        {/* <div>
                             <Input
                                 label='Terms Condition'
                                 required
@@ -459,7 +470,27 @@ export const PurchaseOrder: React.FC = () => {
                                 maxLength={250}
                                 placeholder="Enter Terms Condition"
                             />
+                        </div> */}
+
+                        <div>
+                            <SingleSelectDropdownWithPagination
+                                label="Term & Condition"
+                                title="Term & Condition"
+                                size="lg"
+                                dataFetchCallBack={fetchTncByModuleName("Material Requisition")}
+                                onSelected={(item) => handleFieldChange("TermsCondition", item?.value)}
+                            />
                         </div>
+
+                        {formData?.TermsCondition && (
+                            <div>
+                                <RichTextEditor
+                                    value={formData.TermsCondition}
+                                    onChange={(e) => handleFieldChange("TermsCondition", e)}
+                                    readOnly
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </Modal>

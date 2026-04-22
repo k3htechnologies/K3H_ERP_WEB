@@ -2,17 +2,17 @@ import type { ApiResponse } from "@/core/api/ApiResponse"
 import type { MaterialRequisitionQuotationDetailsTermsData } from "./MaterialRequisitionQuotationApi"
 
 export interface FilterWithPaginationVendorForEnquiryRequest {
-    MaterialRequisitionId: number | 0
-    Uniquekey:string | null
+    MaterialRequisitionId?: number | 0
+    Uniquekey?: string
     ProjectId: number | 0
 }
 
 export interface FilterWithPaginationVendorForSelectedEnquiryRequest {
-    MaterialRequisitionId: number | 0
-    Uniquekey:string | null
-    ProjectId: number | 0
+    MaterialRequisitionId?: number
+    Uniquekey?: string
+    ProjectId?: number | 0
     ClientRegistrationId?: number | 0
-    ExportType? : "PDF" | "Excel"
+    ExportType?: "PDF" | "Excel"
 
 }
 
@@ -56,13 +56,13 @@ export interface SelectedVendorData {
     MagicLinkURL: string;
     SystemGeneratedCode: string;
     ProjectName: string;
-} 
+}
 //used for material quotation
-export interface AddVendorForEnquiryRequest { 
-    MaterialRequisitionId:number;
-    Uniquekey:string;
+export interface AddVendorForEnquiryRequest {
+    MaterialRequisitionId: number;
+    Uniquekey: string;
     VendorId: number | 0;
-    ProjectId:number | 0;
+    ProjectId: number | 0;
 
 }
 export type SelectedVendorListResponse = ApiResponse<SelectedVendorData[]>;

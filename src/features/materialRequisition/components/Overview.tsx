@@ -1,6 +1,6 @@
 import { runApiWithLoader } from "@/core/utils";
 import { useEffect, useState } from "react";
-import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData, MaterialRequisitionInvoiceData } from "../models/MaterialRequisitionModel";
+import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "../models/MaterialRequisitionModel";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
@@ -14,6 +14,10 @@ import { Loader } from "@/core/utils/loader";
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceData } from "../models/MaterialRequisitionInvoiceModel";
+import { materialRequisitionInvoiceService } from "../services/MaterialRequisitionInvoiceService";
+import type { FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorData } from "../models/VendorFinalizeModel";
+import { vendorFinalizationService } from "../services/VendorFinalizationService";
 
 export const Overview: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -22,17 +26,21 @@ export const Overview: React.FC = () => {
     const [matrialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [MaterialRequisitionInvoiceData, setMaterialRequisitionInvoiceData] = useState<MaterialRequisitionInvoiceData[]>([])
+    const [materialRequisitionVendorData, setMaterialRequisitionVendorData] = useState<SelectedVendorData | null>(null)
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
+    const currentUniquekey = listState.Uniquekey
 
     useEffect(() => {
         if (!projectId) return;
-        fetchDetailsdata();
+        fetchMaterialRequisitiondata();
+        fetchVendordata();
+        fetchInvoicedata()
     }, [projectId, currentMaterialRequisitionId]);
 
-    const fetchDetailsdata = async () => {
+    const fetchMaterialRequisitiondata = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -56,8 +64,6 @@ export const Overview: React.FC = () => {
 
                     setMaterialRequisitionDetailData(Item?.MaterialRequisitionDetailData ?? []);
 
-                    setMaterialRequisitionInvoiceData(Item?.MaterialRequisitionInvoiceData ?? []);
-
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -69,6 +75,70 @@ export const Overview: React.FC = () => {
             },
             undefined,
             "Loading Material Requisition",
+        );
+    };
+
+    const fetchVendordata = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
+                    ProjectId: Number(projectId),
+                    MaterialRequisitionId: currentMaterialRequisitionId,
+                    Uniquekey: currentUniquekey,
+                };
+
+                const response = await vendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params);
+
+                if (E.isRight(response)) {
+
+                    const data = response.right.Data;
+
+                    setMaterialRequisitionVendorData(Array.isArray(data) ? (data[0] ?? null) : data);
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            "Loading Vendor",
+        );
+    };
+
+    const fetchInvoicedata = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationMaterialRequisitionInvoice = {
+                    PageNumber: 1,
+                    PageSize: 1,
+                    ProjectId: Number(projectId),
+                    MaterialRequisitionId: currentMaterialRequisitionId,
+                };
+
+                const response = await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoice(params);
+
+                if (E.isRight(response)) {
+
+                    setMaterialRequisitionInvoiceData(response.right.Data);
+
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            "Loading Invoice",
         );
     };
 
@@ -106,21 +176,24 @@ export const Overview: React.FC = () => {
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Vendor And Amount Details</h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Vendor Name" value={matrialRequisitionData?.VendorName} />
-                                <FieldItem label="Vendor Company" value={matrialRequisitionData?.CompanyName} />
-                                <FieldItem label="Base Amount" value={matrialRequisitionData?.VendorName} />
-                                <FieldItem label="Total Tax" value={matrialRequisitionData?.VendorName} />
-                                <FieldItem label="Grand Total" value={matrialRequisitionData?.VendorName} />
-                                <FieldItem label="Est. Delivery" value={matrialRequisitionData?.ExpectedDeliveryInDays} />
+                                <FieldItem label="Vendor Name" value={materialRequisitionVendorData?.VendorName} />
+                                <FieldItem label="Vendor Company" value={materialRequisitionVendorData?.CompanyName} />
+                                <FieldItem label="Base Amount" value={materialRequisitionVendorData?.VendorName} />
+                                <FieldItem label="Total Tax" value={materialRequisitionVendorData?.VendorName} />
+                                <FieldItem label="Grand Total" value={materialRequisitionVendorData?.VendorName} />
+                                <FieldItem label="Est. Delivery" value={materialRequisitionVendorData?.VendorName} />
+                                <FieldItem label="Paid Amount" value={materialRequisitionVendorData?.VendorName} />
+                                <FieldItem label="Pending Amount" value={materialRequisitionVendorData?.VendorName} />
+
                             </div>
                         </section>
                     </div>
 
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 h-[120px]">
                         <section className="bg-white px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Purchase Order</h4>
                             {matrialRequisitionData?.PurchaseOrderURL.length == 0 ? (
-                                <p className="text-gray-500">No Document</p>
+                                <p className="text-gray-900 text-md">No Document</p>
                             ) : (
                                 <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
                                     <p>Document</p>
@@ -156,8 +229,8 @@ export const Overview: React.FC = () => {
                 </div>
 
                 <div className="col-span-6">
-                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 overflow-y-auto thin-scroll h-[434px]">
-                        <div className="overflow-y-auto thin-scroll h-[420px]">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 overflow-y-auto thin-scroll h-[495px]">
+                        <div className="overflow-y-auto thin-scroll h-[476px]">
                             <section className="bg-white px-4 pt-1 pb-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Material Details</h4>
                                 {matrialRequisitionDetailData.map((item, index) => (
@@ -186,7 +259,7 @@ export const Overview: React.FC = () => {
                                             <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 rounded-lg p-2 mt-2 ">
                                                 <FieldItem label="Invoice Number" value={item.InvoiceNumber} />
                                                 <FieldItem label="Invoice Amount" value={<TooltipText text={item.InvoiceAmount ?? ''} />} />
-                                                <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(item.InvoiceDueDate)} />
+                                                <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(item.InvoiceDueDate ?? '')} />
                                             </div>
                                         ))}
                                     </div>

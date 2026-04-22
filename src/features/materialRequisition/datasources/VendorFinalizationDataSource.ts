@@ -70,7 +70,7 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
             const queryParams = new URLSearchParams({
                 ProjectId: (params.ProjectId ?? 0).toString(),
                 Uniquekey: (params.Uniquekey ?? null)?.toString() || '',
-                ClientRegistrationId: (params.ClientRegistrationId ?? 0).toString(),
+                MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
             })
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(

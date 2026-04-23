@@ -80,10 +80,8 @@ export const LOCAL_STORAGE_KEYS = {
     PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS: 'paymentScheduleSchemeMaster.selectedColumns',
 
     //CRM
-    BROKERAGE_BOOKING_SELECTED_COLUMNS: 'brokerage.selectedColumns',
+    BROKERAGE_BOOKING_SELECTED_COLUMNS: 'brokerage.selectedColumns'
 
-    //MORE
-    INWARD_OUTWARD_SELECTED_COLUMNS: 'inwardOutward.selectedColumns',
 
 
 } as const
@@ -105,6 +103,6 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     CHANNEL_PARTNER: 'channelPartner.listState',
     CHANNEL_PARTNER_SOURCING: 'channelPartnerSourcing.listState',
     INCENTIVE_REPORT: 'incentive_report.listState',
-    INWARD_OUTWARD: 'inwardOutward.listState'
-
+    BOOKING: 'booking.listState',
+    PAY_TRACK_BOOKING: 'payTrackBooking.listState'
 } as const

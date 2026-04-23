@@ -1,13 +1,13 @@
 import { useState } from "react";
 import Tabs from "@/ui/components/Tab/Tab";
 import BankDetails from "@/features/crmPayTrack/components/BankDetails";
-import BankLoanDocuments from "@/features/crmPayTrack/components/BankLoanDocuments";
+import BankDocuments from "@/features/crmPayTrack/components/BankDocuments";
 
 export const BankLoans: React.FC = () => {
 
     const BankLoansTabList = [
-        { id: 'BankDetails', label: 'Details' },
-        { id: 'BankDocuments', label: 'Documents' },
+        { id: 'BankDetails', label: 'Bank Details' },
+        { id: 'BankDocuments', label: 'Bank Documents' },
     ];
 
     const [activeTab, setActiveTab] = useState(BankLoansTabList[0].id);
@@ -26,8 +26,7 @@ export const BankLoans: React.FC = () => {
 
             <div>
                 {activeTab === "BankDetails" && <BankDetails />}
-                {activeTab === "BankDocuments" && <BankLoanDocuments/>}
-                
+                {activeTab === "BankDocuments" && <BankDocuments fileType="BANK DOCUMENT" />}
             </div>
 
         </div>

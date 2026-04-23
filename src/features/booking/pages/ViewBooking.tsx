@@ -132,6 +132,7 @@ export const ViewBooking: React.FC = () => {
                     if (booking?.EnquiryId && booking.EnquiryId > 0) {
 
                         await fetchEnquiryDetails(booking.EnquiryId);
+
                     }
 
                 } else {
@@ -573,12 +574,10 @@ export const ViewBooking: React.FC = () => {
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
                                         <FieldItem label="Expected Registration Date" value={bookingData.RegistrationDate ? formatDate_dd_MonthName_yy(bookingData.RegistrationDate) : '-'} />
-                                        <FieldItem label="Final Registration Date" value={bookingData.FinalRegistrationDate ? formatDate_dd_MonthName_yy(bookingData.FinalRegistrationDate) : '-'} />
                                         <FieldItem label="Handover Type" value={getSafeString(bookingData.HandoverType)} />
-                                        
+                                        <FieldItem label="Source Of Funding" value={getSafeString(bookingData.SourceOfFunding)} />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
-                                        <FieldItem label="Source Of Funding" value={getSafeString(bookingData.SourceOfFunding)} />
                                         <FieldItem label="Number Of Parking" value={getSafeString(bookingData.NumberOfParking)} />
                                     </div>
                                 </section>

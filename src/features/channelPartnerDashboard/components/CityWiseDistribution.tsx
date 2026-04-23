@@ -29,9 +29,9 @@ export default function CityWiseDistribution({ cityWiseDistributionData }: Props
                                         {item.Name ?? ''}
                                     </span>
 
-                                    <div className="relative flex-1 h-8 rounded-lg overflow-hidden">
+                                    <div className="relative flex-1 h-8 rounded-lg  overflow-hidden">
                                         <div
-                                            className="h-full rounded-lg bg-[#bfdbfe] flex items-center justify-end pr-2 transition-all duration-500"
+                                            className="h-full rounded-lg bg-[#bfdbfe] flex items-center justify-end pr-3 transition-all duration-500"
                                             style={{ width: `${widthPercent}%` }}
                                         >
                                             <span className="text-sm font-bold text-[#1d4ed8] whitespace-nowrap">

@@ -5,7 +5,6 @@ export interface FilterWithPaginationMaterialRequisitionGRN {
     Uniquekey?: string
     MaterialRequisitionId?: number
     MaterialRequisitionGRNId?: number
-    
 }
 
 export interface MaterialRequisitionGRNData {
@@ -46,7 +45,6 @@ export interface MaterialRequisitionDetailGRNData {
     ModifiedBy: string | null,
     ModifiedDate: string | null,
 }
-
 export interface AddUpdateMaterialRequisitionGRNRequest {
     MaterialRequisitionGRNId: number | 0
     Uniquekey: string | null

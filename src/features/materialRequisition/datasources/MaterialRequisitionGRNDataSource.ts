@@ -1,7 +1,7 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 import type { DeleteMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRNSummary, MaterialRequisitionGRNDeleteResponse, MaterialRequisitionGRNListResponse, MaterialRequisitionGRNSaveResponse, MaterialRequisitionGRNSummaryListResponse } from "../models/MaterialRequisitionGRNModel";
-import { MaterialRequisitionGRNApi } from "../api/MaterialRequisitionGRNApi";
+import { MaterialRequisitionGRNApi } from "../api/MaterialRequisitionGRN";
 
 export abstract class MaterialRequisitionGRNGRNDatasource {
     abstract pullMaterialRequisitionGRN(params: FilterWithPaginationMaterialRequisitionGRN, signal?: AbortSignal): Promise<MaterialRequisitionGRNListResponse>;
@@ -19,16 +19,14 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
     async pullMaterialRequisitionGRN(params: FilterWithPaginationMaterialRequisitionGRN, signal?: AbortSignal): Promise<MaterialRequisitionGRNListResponse> {
         try {
             const queryParams = new URLSearchParams({
-                PageSize: (params.PageSize ?? 10).toString(),
-                PageNumber: (params.PageNumber ?? 1).toString(),
+          
                 ProjectId: (params.ProjectId ?? 0).toString(),
             })
 
             if (params.MaterialRequisitionGRNId) queryParams.append('MaterialRequisitionGRNId', params.MaterialRequisitionGRNId.toString());
             if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());
             if (params.Uniquekey?.trim()) queryParams.append('Uniquekey', params.Uniquekey.trim());
-            if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
-            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+    
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${MaterialRequisitionGRNApi.PULL}?${queryParams.toString()}`, { signal }

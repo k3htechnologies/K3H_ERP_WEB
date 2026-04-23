@@ -250,7 +250,7 @@ export const Overview: React.FC = () => {
                                 {matrialRequisitionDetailData.map((item, index) => (
                                     <div key={index} className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-8 mb-4 border-b border-gray-300 last:border-b-0 last:pb-2 pb-4">
                                         <FieldItem label="Name" value={item.MaterialName} />
-                                        <FieldItem label="Sub Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
+                                        <FieldItem label="Sub-Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                         <FieldItem label="Quantity" value={item.MaterialQuantity} />
                                         <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item?.RequiredDate ?? '')} />
 

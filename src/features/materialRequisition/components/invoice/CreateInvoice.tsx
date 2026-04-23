@@ -114,7 +114,7 @@ const CreateInovice: React.FC = () => {
         },
         {
             key: 'SubMaterialName',
-            label: 'Sub Material',
+            label: 'Sub-Material',
             width: '15',
             sortable: false,
             align: 'left',
@@ -234,7 +234,9 @@ const CreateInovice: React.FC = () => {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-                    navigate("/materialRequisition/view");
+                    navigate("/materialRequisition/view", {
+                        state: { activeTab: "Invoice" }
+                    });
 
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');

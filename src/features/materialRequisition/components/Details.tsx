@@ -303,7 +303,7 @@ export const Details: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 flex-1">
                                 <FieldItem label="Name" value={item.MaterialName} />
-                                <FieldItem label="Sub Material Name" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
+                                <FieldItem label="Sub-Material Name" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                 <FieldItem label="Uom" value={item.Uom} />
                                 <FieldItem label="Quantity" value={item.MaterialQuantity} />
                                 <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />

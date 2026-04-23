@@ -101,7 +101,6 @@ import Bank from '@/features/projectMaster/pages/Bank';
 import Employee from '@/features/projectMaster/pages/Employee';
 import EmployeeDocument from '@/features/employeeMaster/pages/EmployeeDocument';
 import Rent from '@/features/rent/pages/Rent';
-import Event from '@/features/event/pages/Event';
 import AttendanceCalendar from '@/features/attendanceCalendar/pages/AttendanceCalendar';
 import CompOff from '@/features/compOff/pages/compoff';
 import LeaveCreditConfiguration from '@/features/leaveCreditConfiguration/pages/LeaveCreditConfiguration';
@@ -164,10 +163,6 @@ import Brokerage from '@/features/brokerage/pages/Brokerage';
 import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoice';
 import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
-import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
-import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
-import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
-import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
 import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
@@ -181,7 +176,7 @@ import MaterialRequisition from '@/features/materialRequisition/pages/MaterialRe
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 import CreateInovice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 
-// Loading component for Suspense fallback
+// Loading component for Suspense fallback 
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
     <div className="text-center">
@@ -354,13 +349,6 @@ function App() {
 
             {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
-
-            {/* COMMAN */}
-            <Route path="event" element={<Event />} />
-            <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
-            <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
-            <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
-
 
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />

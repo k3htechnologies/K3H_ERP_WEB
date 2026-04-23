@@ -121,7 +121,7 @@ const MakePayment: React.FC = () => {
         },
         {
             key: 'SubMaterialName',
-            label: 'Sub Material',
+            label: 'Sub-Material',
             width: '15',
             sortable: false,
             align: 'left',

@@ -45,6 +45,10 @@ export interface MaterialRequisitionData {
     TotalInvoice: number;
     PurchaseOrderURL: string;
     MaterialRequisitionDetailData: MaterialRequisitionDetailData[];
+    VendorName: string | null
+    CompanyName: string | null
+    ExpectedDeliveryInDays: number | 0
+    MaterialRequisitionInvoiceData: MaterialRequisitionInvoiceData[];
 
 }
 export interface AddUpdateMaterialRequisitionDetailRequest {
@@ -58,7 +62,7 @@ export interface AddUpdateMaterialRequisitionDetailRequest {
     MaterialQuantity: number;
     UomMasterId: number;
     UomCode: string;
-    // Uom: string;
+    Uom: string;
     RequiredDate: string | null;
 }
 export interface MaterialRequisitionDetailData {
@@ -81,6 +85,12 @@ export interface MaterialRequisitionDetailData {
     ModifiedById: number;
     ModifiedBy: string;
     ModifiedDate: null;
+}
+
+export interface MaterialRequisitionInvoiceData {
+    InvoiceNumber: string | null;
+    InvoiceAmount: number | 0;
+    InvoiceDueDate: string 
 }
 
 export interface AddUpdateMaterialRequisitionRequest {

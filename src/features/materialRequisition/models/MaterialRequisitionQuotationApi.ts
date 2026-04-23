@@ -47,8 +47,8 @@ export interface AddUpdateMaterialRequestQuotation {
     Total:number;
     ProjectId:number;
     MaterialRequisitionQuotationJSON:string;
-    MagicLinkUniquekey:string;
-    ClientRegistrationId: number;
+    // MagicLinkUniquekey:string;
+    // ClientRegistrationId: number;
 }
 
 export interface DeleteMaterialRequisitionQuotation{

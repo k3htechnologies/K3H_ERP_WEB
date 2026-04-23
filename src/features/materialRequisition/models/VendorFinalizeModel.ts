@@ -10,9 +10,8 @@ export interface FilterWithPaginationVendorForEnquiryRequest {
 export interface FilterWithPaginationVendorForSelectedEnquiryRequest {
     MaterialRequisitionId?: number
     Uniquekey?: string
-    ProjectId?: number | 0
-    ClientRegistrationId?: number | 0
-    ExportType?: "PDF" | "Excel"
+    ProjectId: number |0
+    ExportType? : "PDF" | "Excel"
 
 }
 
@@ -58,11 +57,11 @@ export interface SelectedVendorData {
     ProjectName: string;
 }
 //used for material quotation
-export interface AddVendorForEnquiryRequest {
-    MaterialRequisitionId: number;
-    Uniquekey: string;
-    VendorId: number | 0;
-    ProjectId: number | 0;
+export interface AddVendorForEnquiryRequest { 
+    MaterialRequisitionId:number;
+    Uniquekey:string;
+    VendorId: string | null;
+    ProjectId:number | 0;
 
 }
 export type SelectedVendorListResponse = ApiResponse<SelectedVendorData[]>;

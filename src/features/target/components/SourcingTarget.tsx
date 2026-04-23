@@ -15,7 +15,6 @@ import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import type { FilterWithPaginationSourcingTargetRequest, SourcingTargetData } from '@/features/target/models/SourcingTargetModel';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { sourcingTargetService } from '@/features/target/services/SourcingTargetService';
-import { Button } from '@/ui/components/forms';
 import MonthPicker from '@/ui/components/forms/MonthPicker';
 
 export const SourcingTarget: React.FC = () => {
@@ -54,11 +53,12 @@ export const SourcingTarget: React.FC = () => {
 
 
     useEffect(() => {
-        if (!projectId) return;
+        
+        if (!monthYear || !projectId) return;
 
         loadSourcingTarget(1, sortInfo, searchTerm?.trim());
 
-    }, [projectId]);
+    }, [projectId,monthYear]);
     //#endregion
 
     //#region DATA LOAD
@@ -320,15 +320,12 @@ export const SourcingTarget: React.FC = () => {
                 <MonthPicker
                     label="Select Month"
                     value={monthYear || ""}
-                    onChange={(val) => setMonthYear(val)}
+                    onChange={(val) => {
+                        setMonthYear(val);
+                        fetchSourcingTargetList(1);
+                    }}
                 />
-                {monthYear && projectId && (
-                    <div className="pt-6">
-                        <Button color="blue" size="md" onClick={() => fetchSourcingTargetList(1)}>
-                            Search
-                        </Button>
-                    </div>
-                )}
+                
             </div>
 
             <div className="pt-5">

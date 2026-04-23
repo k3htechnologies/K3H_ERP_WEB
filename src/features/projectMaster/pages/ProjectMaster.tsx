@@ -106,7 +106,7 @@ export const ProjectMaster: React.FC = () => {
           IsRedevelopment: filterParams.IsRedevelopment?.trim() || undefined,
           ProjectStatus: filterParams.ProjectStatus?.trim() || undefined,
           VillageName: filterParams.VillageName?.trim() || undefined,
-          ArchitectName: filterParams.ArchitectName?.trim() || undefined,
+          LiasoningArchitectName: filterParams.LiasoningArchitectName?.trim() || undefined,
           RERANumber: filterParams.RERANumber?.trim() || undefined,
           ProjectScheme: filterParams.ProjectScheme?.trim() || undefined,
           ProjectSubScheme: filterParams.ProjectSubScheme?.trim() || undefined,
@@ -185,7 +185,7 @@ export const ProjectMaster: React.FC = () => {
           IsRedevelopment: filters.IsRedevelopment?.trim() || undefined,
           ProjectStatus: filters.ProjectStatus?.trim() || undefined,
           VillageName: filters.VillageName?.trim() || undefined,
-          ArchitectName: filters.ArchitectName?.trim() || undefined,
+          LiasoningArchitectName: filters.LiasoningArchitectName?.trim() || undefined,
           RERANumber: filters.RERANumber?.trim() || undefined,
           ProjectScheme: filters.ProjectScheme?.trim() || undefined,
           ProjectSubScheme: filters.ProjectSubScheme?.trim() || undefined,
@@ -338,6 +338,14 @@ export const ProjectMaster: React.FC = () => {
         )
       },
       {
+        key: 'APFNumber',
+        label: 'APF Number',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
         key: 'RERANumber',
         label: 'RERA Number',
         width: '15',
@@ -398,6 +406,14 @@ export const ProjectMaster: React.FC = () => {
         label: 'Village',
         width: '15',
         sortable: true,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'LiasoningArchitectName',
+        label: 'Liasoning Architect',
+        width: '15',
+        sortable: false,
         align: 'left',
         render: (value) => value || '-'
       },
@@ -709,11 +725,11 @@ export const ProjectMaster: React.FC = () => {
             </div>
             <div>
               <Input
-                label='Architect Name'
+                label='Liasoning Architect Name'
                 type="text"
-                value={tempFilters.ArchitectName || ''}
-                onChange={(e) => handleFilterChange('ArchitectName', e.target.value)}
-                placeholder="Enter Architect Name"
+                value={tempFilters.LiasoningArchitectName || ''}
+                onChange={(e) => handleFilterChange('LiasoningArchitectName', e.target.value)}
+                placeholder="Enter Liasoning Architect Name"
               />
             </div>
             <div>

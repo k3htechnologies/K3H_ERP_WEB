@@ -61,7 +61,7 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             if (params.ProjectStatus?.trim()) queryParams.append('ProjectStatus', params.ProjectStatus.trim());
             if (params.VillageName?.trim()) queryParams.append('VillageName', params.VillageName.trim());
-            if (params.ArchitectName?.trim()) queryParams.append('ArchitectName', params.ArchitectName.trim());
+            if (params.LiasoningArchitectName?.trim()) queryParams.append('LiasoningArchitectName', params.LiasoningArchitectName.trim());
             if (params.RERANumber?.trim()) queryParams.append('RERANumber', params.RERANumber.trim());
             if (params.ProjectScheme?.trim()) queryParams.append('ProjectScheme', params.ProjectScheme.trim());
             if (params.ProjectSubScheme?.trim()) queryParams.append('ProjectSubScheme', params.ProjectSubScheme.trim());

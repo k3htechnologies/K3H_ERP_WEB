@@ -15,7 +15,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import {  Input } from '@/ui/components/forms';
+import { Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -33,6 +33,7 @@ import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { useChannelPartnerListState } from '@/features/ChannelPartner/context/ChannelPartnerListStateContext';
 import { isChannelPartnerComplete } from '@/features/ChannelPartner/utils/channelPartnerUtils';
+import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 
 
 export const ChannelPartner: React.FC = () => {
@@ -415,7 +416,14 @@ export const ChannelPartner: React.FC = () => {
         />
       )
     },
-
+    {
+      key: "DateOfBirth",
+      label: "DOB",
+      width: "14",
+      sortable: false,
+      align: "center",
+      render: (value) => (value ? formatDate_dd_MonthName_yy(value) : "-"),
+    },
 
     {
       key: 'Designation',

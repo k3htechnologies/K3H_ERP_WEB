@@ -52,49 +52,52 @@ export const ProjectRERADocumentCategoryMasterViewModal: React.FC<ProjectRERADoc
       size="xl"
     >
       <div className="space-y-6">
-      
-          <FieldItem
-            label="Document Category"
-            value={data.ProjectRERADocumentCategoryName}
-            isRow
-            withBorder
-            className="font-medium text-blue-900 "
-          />
-          <FieldItem label="Sequence" value={data.OrderBy} isRow withBorder />
-          <FieldItem label="Document Count" value={data.DocumentCount ?? 0} isRow withBorder />
-       
-          <h4 className="text-lg font-semibold">Action Details</h4>
 
+        <FieldItem
+          label="Document Category"
+          value={data.ProjectRERADocumentCategoryName}
+          isRow
+          withBorder
+          className="font-medium text-blue-900 "
+        />
+        <FieldItem label="Sequence" value={data.OrderBy} isRow withBorder />
+        <FieldItem label="Document Count" value={data.DocumentCount ?? 0} isRow withBorder />
+
+        <h4 className="text-lg font-semibold">Action Details</h4>
+
+        <FieldItem
+          label="Created By / Date"
+          isRow={true}
+          value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
+          withBorder={data.ModifiedBy !== '' ? true : false}
+        />
+
+        {data.ModifiedBy !== '' ? (
           <FieldItem
-            label="Created By / Date"
+            label="Modified By / Date"
             isRow={true}
-            value={data.CreatedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.CreatedDate || '-')}
-            withBorder={data.ModifiedBy !== '' ? true : false}
+            value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
+            withBorder={false}
           />
+        ) : (
+          ''
+        )}
 
-          {data.ModifiedBy !== '' ? (
-            <FieldItem
-              label="Modified By / Date"
-              isRow={true}
-              value={data.ModifiedBy + ' - ' + formatDate_dd_MonthName_yy_hh_mm(data.ModifiedDate || '-')}
-              withBorder={false}
-            />
-          ) : (
-            ''
-          )}
-          
+
         <div className="flex justify-between items-center">
           {canAction && (
             <>
-              <Button
-                color="red"
-                variant="solid"
-                colorMode="light"
-                size="md"
-                onClick={handleDelete}
-              >
-                Delete
-              </Button>
+              {data.DocumentCount === 0 ? (
+                <Button
+                  color="red"
+                  variant="solid"
+                  colorMode="light"
+                  size="md"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </Button>
+              ) : <div style={{ width: "120px", height: "44px" }}></div>}
 
               <Button
                 color="blue"
@@ -106,6 +109,8 @@ export const ProjectRERADocumentCategoryMasterViewModal: React.FC<ProjectRERADoc
             </>
           )}
         </div>
+
+
       </div>
     </Modal>
   );

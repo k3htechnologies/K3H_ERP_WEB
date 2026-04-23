@@ -41,7 +41,22 @@ export const MASTER_DATA = {
 
   documentStatus: ['Applied', 'Doc Missing', 'In Process', 'Issued', 'Not Applied', 'Not Applicable', 'Paid', 'Payment Due', 'Rejected'],
 
-  bankAccountType: ['Current', 'DEMAT', 'Fixed', 'Salary', 'Saving'],
+  bankAccountType: ['Current', 'Overdraft', 'RERA Escrow Current Account', 'Salary', 'Saving'],
+
+  natureOfAccount : [
+    "100% Collection Account",
+    "100% RERA Account",
+    "30% RERA Account",
+    "70% RERA Account",
+    "Collection Escrow Account",
+    "Escrow",
+    "Loan",
+    "Master Escrow Account",
+    "Non - Current Account",
+    "Overdraft",
+    "Regular Account",
+    "RERA Escrow Account"
+  ],
 
   landOwnershipType: ['Government', 'Landlord', 'Society'],
 
@@ -356,6 +371,7 @@ export const ETHNICITY_TYPE_OPTION = toOptions(MASTER_DATA.ethnicity)
 export const POSSESSION_TYPE_OPTIONS = toOptions(MASTER_DATA.possessionType)
 export const NATIONALITY_TYPE_OPTION = toOptions(MASTER_DATA.nationality)
 export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)
+export const NATURE_OF_ACCOUNT=toOptions(MASTER_DATA.natureOfAccount)
 export const LAND_OWNERSHIP_TYPE = toOptions(MASTER_DATA.landOwnershipType)
 export const FLAT_UNIT_TYPE = toOptions(MASTER_DATA.flat_unit_Type)
 export const RESIDENTIAL_FLAT_CONFIGURATION = toOptions(MASTER_DATA.residential_flat_configuration_Type)

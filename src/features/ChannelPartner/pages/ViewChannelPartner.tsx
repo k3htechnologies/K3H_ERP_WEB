@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { ChannelPartnerData } from "../models/ChannelPartnerModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useChannelPartnerListState } from "../context/ChannelPartnerListStateContext";
@@ -35,7 +35,7 @@ const ViewChannelPartner: React.FC = () => {
         if (channelPartnerId) {
             loadChannelPartnerDetails();
         }
-        
+
     }, [channelPartnerId]);
 
     const loadChannelPartnerDetails = async () => {
@@ -88,7 +88,7 @@ const ViewChannelPartner: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setChannelPartnerTeamMemberData(response.right.Data);
-                    
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -183,10 +183,11 @@ const ViewChannelPartner: React.FC = () => {
 
                         {/* Basic Deatils */}
                         <section className="p-4">
-                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Basic Details
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 ">
+                                <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(editChannelPartnerData?.DateOfBirth ?? "-")} />
                                 <FieldItem label="Mobile No:" value={editChannelPartnerData?.MobileNumber ? `+91 ${editChannelPartnerData?.MobileNumber}` : '-'} />
                                 <FieldItem label="E-Mail ID" value={editChannelPartnerData?.EmailId} />
                                 <FieldItem label="Alternative Contact No:" value={editChannelPartnerData?.AlternativeMobileNumber ? `+91 ${editChannelPartnerData?.AlternativeMobileNumber}` : '-'} />
@@ -194,6 +195,17 @@ const ViewChannelPartner: React.FC = () => {
                                 <FieldItem label="Firms Type" value={editChannelPartnerData?.FirmsType} />
                                 <FieldItem label="Type" value={editChannelPartnerData?.Type} />
                                 <FieldItem label="Designation" value={editChannelPartnerData?.Designation} />
+
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pb-4 pt-4">
+                                <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+                                    Website URL
+                                </div>
+                                {editChannelPartnerData?.WebsiteURL !== "" ?
+                                    <span className="text-blue-600 underline cursor-pointer break-all whitespace-normal"
+                                        onClick={() => window.open(editChannelPartnerData?.WebsiteURL, "_blank")}>
+                                        {editChannelPartnerData?.WebsiteURL}
+                                    </span> : "-"}
                             </div>
                         </section>
                         <hr className="border-t border-gray-200" />
@@ -241,15 +253,15 @@ const ViewChannelPartner: React.FC = () => {
                             </div>
                         </section>
 
-                         <hr className="border-t border-gray-200" />
+                        <hr className="border-t border-gray-200" />
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Enquiry & Booking Details
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="No Of Enquiry" value={editChannelPartnerData?.NoOfEnquiry}  />
-                                <FieldItem label="No Of Booking" value={editChannelPartnerData?.NoOfBooking}/>
+                                <FieldItem label="No Of Enquiry" value={editChannelPartnerData?.NoOfEnquiry} />
+                                <FieldItem label="No Of Booking" value={editChannelPartnerData?.NoOfBooking} />
                                 <FieldItem label="Brokerage Percentage (%)" value={editChannelPartnerData?.BrokeragePercentage} />
                                 <FieldItem label="Brokerage Amount (₹)" value={formatCurrency(editChannelPartnerData?.BrokerageAmount)} />
                                 <FieldItem label="Paid Brokerage Amount (₹)" value={formatCurrency(editChannelPartnerData?.PaidBrokerageAmount)} />
@@ -292,7 +304,7 @@ const ViewChannelPartner: React.FC = () => {
 
                             {filteredTeamMembers.length === 0 && (
                                 <p className="text-sm text-gray-400 text-center">
-                                    <NoDataView message="No team members found"/>
+                                    <NoDataView message="No team members found" />
                                 </p>
                             )}
 

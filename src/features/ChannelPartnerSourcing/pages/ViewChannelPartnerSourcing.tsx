@@ -17,7 +17,7 @@ import { Button } from "@/ui/components/forms/Button";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import RadioPill from "@/ui/components/forms/RadioPill";
-import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { Edit, Trash2 } from "lucide-react";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { Tabs, type TabItem } from "@/ui/components/Tab/Tab";
@@ -66,6 +66,8 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   //SET CHANNEL PARTNER DETAILS
   const [channelPartnerId, setChannelPartnerId] = useState<number>();
   const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
+  const [channelPartnerDOB, setChannelPartnerDOB] = useState<string | null>();
+  const [channelPartnerWebsiteURL, setChannelPartnerWebsiteURL] = useState<string>();
   const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<string>();
   const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
   const [channelPartnerFirmsType, setChannelPartnerFirmsType] = useState<string>();
@@ -110,6 +112,8 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       setChannelPartnerId(Number(channelPartner.ChannelPartnerId));
 
       setChannelPartnerFullName(channelPartner.Name ?? "");
+      setChannelPartnerDOB(channelPartner.DateOfBirth ?? "");
+      setChannelPartnerWebsiteURL(channelPartner.WebsiteURL ?? "");
       setChannelPartnerMobileNumber(channelPartner.MobileNumber ?? "");
       setChannelPartnerFirmsType(channelPartner.FirmsType ?? "");
       setChannelPartnerCompanyName(channelPartner.CompanyName ?? "");
@@ -418,10 +422,21 @@ const ViewChannelPartnerSourcing: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FieldItem label="CP Code" value={channelPartnerSystemGeneratedCode || '-'} />
                 <FieldItem label="Full Name" value={channelPartnerFullName || '-'} />
+                <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(channelPartnerDOB ?? "-")} />
                 <FieldItem label="Mobile No" value={channelPartnerMobileNumber ? `+91 ${channelPartnerMobileNumber}` : '-'} />
                 <FieldItem label="Designation" value={channelPartnerDesignation || '-'} />
                 <FieldItem label="Speciality" value={channelPartnerSpeciality || '-'} />
                 <FieldItem label="CP Type" value={channelPartnerType || '-'} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pb-4 pt-4">
+                <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+                  Website URL
+                </div>
+                {channelPartnerWebsiteURL !== "" ?
+                  <span className="text-blue-600 underline cursor-pointer break-all whitespace-normal"
+                    onClick={() => window.open(channelPartnerWebsiteURL, "_blank")}>
+                    {channelPartnerWebsiteURL}
+                  </span> : "-"}
               </div>
             </section>
 

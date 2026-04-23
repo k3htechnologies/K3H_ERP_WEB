@@ -286,6 +286,32 @@ export const isValidGoogleMapsUrl = (url: string): boolean => {
   return googleMapsRegex.test(url);
 };
 
+
+// ----------------------------------
+// 🔹 FILTER WEBSITE URL
+// ----------------------------------
+export const filterWebsiteUrl = (value: string): string => {
+  // remove spaces
+  value = value.replace(/\s+/g, '');
+
+  // allow only URL-safe characters
+  value = value.replace(/[^a-zA-Z0-9/:.?&=_\-#%]/g, '');
+
+  return value;
+};
+
+
+export const isValidWebsiteUrl = (url: string): boolean => {
+
+  if (!url) return false;
+
+  const urlRegex =
+    /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/i;
+
+  return urlRegex.test(url);
+  
+};
+
 // ----------------------------------
 // 🔹 FILTER ACCOUNT NUMBER
 // ----------------------------------
@@ -495,6 +521,20 @@ export const isValidTAN = (tan: string): boolean => {
   if (!tan) return false;
   const value = tan.toUpperCase().trim();
   const regex = /^[A-Z]{4}[0-9]{5}[A-Z]{1}$/;
+  return regex.test(value);
+};
+
+// Allowed: A-Z, 0-9, -, / | Max Length = 20
+export const filterAPF = (value: string): string =>
+  value.replace(/[^A-Za-z0-9\-\/]/g, "").toUpperCase().slice(0, 20);
+
+export const isValidAPF = (apf: string): boolean => {
+  if (!apf) return false;
+
+  const value = apf.toUpperCase().trim();
+
+  const regex = /^[A-Z0-9\-\/]{6,20}$/;
+
   return regex.test(value);
 };
 

@@ -13,12 +13,27 @@ export type MaterialRequisitionListState = {
     projectId: number | null;
     MaterialRequisitionId?: number;
     SystemGeneratedCode?: string;
-    Uniquekey?:string;
+    Uniquekey?: string;
     FromDate?: string;
     ToDate?: string;
     MaterialRequisitionStage?: string;
     MaterialRequisitionStatus?: string;
 };
+export type MaterialRequisitionDetailItem = {
+    MaterialRequisitionDetailId: number
+    Uniquekey: string
+    MaterialMasterId: number
+    MaterialCode: string
+    MaterialName: string
+    SubMaterialName: string
+    SubMaterialMasterId: number
+    MaterialQuantity: number
+    UomMasterId: number
+    UomCode: string
+    Uom: string
+    RequiredDate: string
+    MaterialReceivedQuantityTillDate: number
+}
 
 const STORAGE_KEY = 'MaterialRequisition.listState';
 const REQUIRED_COLUMN_KEYS = ['SystemGeneratedCode', 'Actions'];
@@ -34,7 +49,7 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
             projectId: currentProjectId,
             MaterialRequisitionId: undefined,
             SystemGeneratedCode: undefined,
-            Uniquekey:undefined,
+            Uniquekey: undefined,
             FromDate: undefined,
             ToDate: undefined,
             MaterialRequisitionStage: undefined,
@@ -66,7 +81,7 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
         projectId: currentProjectId,
         MaterialRequisitionId: undefined,
         SystemGeneratedCode: undefined,
-        Uniquekey:undefined,
+        Uniquekey: undefined,
         FromDate: undefined,
         ToDate: undefined,
         MaterialRequisitionStage: undefined,
@@ -81,6 +96,8 @@ type Ctx = {
     clearMaterialRequisitionContext: () => void;
     selectedColumnKeys: string[];
     setSelectedColumnKeys: (keys: string[]) => void;
+    detailData: MaterialRequisitionDetailItem[];
+    setDetailData: (data: MaterialRequisitionDetailItem[]) => void;
 };
 
 const MaterialRequisitionListStateContext = createContext<Ctx | null>(null);
@@ -88,7 +105,7 @@ const MaterialRequisitionListStateContext = createContext<Ctx | null>(null);
 export const MaterialRequisitionListStateProvider = ({ children }: { children: ReactNode }) => {
     const { projectId: currentProjectId } = useProject();
     const [listState, setListState] = useState<MaterialRequisitionListState>(() => getInitialState(currentProjectId));
-
+    const [detailData, setDetailData] = useState<MaterialRequisitionDetailItem[]>([]);
     // const allColumns = getMaterialRequisitionTableColumns();
     const allColumns = useMemo<TableColumn[]>(
         () => getMaterialRequisitionTableColumns(),
@@ -162,7 +179,7 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
             sortInfo: undefined,
             MaterialRequisitionId: undefined,
             SystemGeneratedCode: undefined,
-            Uniquekey:undefined,
+            Uniquekey: undefined,
             FromDate: undefined,
             ToDate: undefined,
             MaterialRequisitionStage: undefined,
@@ -181,7 +198,9 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
         clearMaterialRequisitionContext,
         selectedColumnKeys,
         setSelectedColumnKeys: handleSetSelectedColumnKeys,
-    }), [listState, updateListState, resetFilters, clearMaterialRequisitionContext, selectedColumnKeys, handleSetSelectedColumnKeys]);
+        detailData,
+        setDetailData,
+    }), [listState, updateListState, resetFilters, clearMaterialRequisitionContext, selectedColumnKeys, handleSetSelectedColumnKeys, detailData, setDetailData]);
 
     return (
         <MaterialRequisitionListStateContext.Provider value={contextValue}>

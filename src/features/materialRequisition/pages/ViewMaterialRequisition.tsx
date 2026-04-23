@@ -29,6 +29,8 @@ export const ViewMaterialRequisition: React.FC = () => {
     const { addToast } = useToast();
     const navigate = useNavigate();
     const { projectId } = useProject();
+    const { setDetailData } = useMaterialRequisitionListState()
+
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
@@ -91,6 +93,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                     const item = Array.isArray(data) ? data[0] : data;
 
                     setMaterialRequisitionData(item ?? null);
+                    setDetailData(item?.MaterialRequisitionDetailData);
 
                     setMaterialRequisitionDetailData(item?.MaterialRequisitionDetailData ?? []);
 

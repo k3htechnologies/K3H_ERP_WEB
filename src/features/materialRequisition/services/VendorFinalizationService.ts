@@ -1,7 +1,7 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
 import { VendorFinalizationDatasourceImpl } from "../datasources/VendorFinalizationDataSource";
-import type { AddVendorForEnquiryRequestResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "../models/VendorFinalizeModel";
+import type { AddVendorForEnquiryRequest, AddVendorForEnquiryRequestResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "../models/VendorFinalizeModel";
 import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
 
@@ -23,7 +23,7 @@ export const vendorFinalizationService = {
         }
     },
     
-    apiCallToAddMaterialRequisition: async (payload: AddVendorForEnquiryRequestResponse): Promise<E.Either<Failure, VendorListResponse>> => {
+    apiCallToAddVendorForEnquiry: async (payload: AddVendorForEnquiryRequest): Promise<E.Either<Failure, VendorListResponse>> => {
         try {
     
             return E.right(await VendorFinalizationDatasource.addVendorForEnquiry(payload));

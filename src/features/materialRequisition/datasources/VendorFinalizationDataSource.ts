@@ -1,13 +1,13 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { AddVendorForEnquiryRequestResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "../models/VendorFinalizeModel";
+import type { AddVendorForEnquiryRequest, AddVendorForEnquiryRequestResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "../models/VendorFinalizeModel";
 import { VendorFinalizationApi } from "../api/VendorFinalizationApi";
 import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
 
 export abstract class VendorFinalizationDatasource {
     abstract pullVendorsForEnquiry(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse>;
-    abstract addVendorForEnquiry(payload: AddVendorForEnquiryRequestResponse): Promise<VendorListResponse>;
+    abstract addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse>;
     abstract pullSelectedVendorForEnquiry(params: FilterWithPaginationVendorForSelectedEnquiryRequest,signal?: AbortSignal): Promise<SelectedVendorListResponse>;
     abstract addFinalizedVendor(payload: AddVendorForEnquiryRequestResponse): Promise<VendorListResponse>;
     abstract pullFinalizedVendor(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse>;
@@ -44,7 +44,7 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
             throw error
         }
     }
-    async addVendorForEnquiry(payload: AddVendorForEnquiryRequestResponse): Promise<VendorListResponse> {
+    async addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse> {
         try {
             
             const response = await this.k3hHttpClient.postRequestWithAuthentication(

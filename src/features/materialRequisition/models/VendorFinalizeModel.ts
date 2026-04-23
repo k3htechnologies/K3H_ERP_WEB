@@ -60,7 +60,7 @@ export interface SelectedVendorData {
 export interface AddVendorForEnquiryRequest { 
     MaterialRequisitionId:number;
     Uniquekey:string;
-    VendorId: number | 0;
+    VendorId: string | null;
     ProjectId:number | 0;
 
 }

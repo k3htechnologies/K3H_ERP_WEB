@@ -9,7 +9,8 @@ export interface TableActionToolbarProps {
   searchPlaceholder?: string
   onSearchChange?: (value: string) => void
   onClearSearch?: () => void
-
+  addExtraIcon?: React.ReactNode
+  addExtraWidth?: string | number
   /** FILTER BUTTON */
   isShowFilterButton?: boolean
   filters?: FilterInfo
@@ -85,7 +86,10 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
   // EXTRA ADD
   isShowAddExtraButton = true,
   addExtraTitle = 'Add',
-  onAddExtra
+  onAddExtra,
+  addExtraIcon,
+  addExtraWidth,
+
 }) => {
   const [isExportOpen, setIsExportOpen] = useState(false)
   const [isImportOpen, setIsImportOpen] = useState(false)
@@ -158,7 +162,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
       <div className="flex items-center justify-between gap-4 flex-wrap">
         {/* SEARCH BAR */}
         <div className={`relative min-w-0 w-[526px] ${isShowSearchBar ? 'block' : 'invisible'}`}>
-          
+
           <Input
             type="text"
             value={searchTerm}
@@ -433,8 +437,8 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
                   defineWidth
                   title={addExtraTitle}
                   aria-label={addExtraTitle}
-                  style={{ width: '95px' }}
-                  leftIcon={<Share2Icon className="h-4 w-4" />}
+                  style={{ width: addExtraWidth || '95px' }}
+                  leftIcon={addExtraIcon}
                 >
                   <span>{addExtraTitle}</span>
                 </Button>

@@ -1,14 +1,10 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
 export interface FilterWithPaginationMaterialRequisitionGRN {
-    PageSize: number
-    PageNumber: number
     ProjectId?: number
     Uniquekey?: string
     MaterialRequisitionId?: number
     MaterialRequisitionGRNId?: number
-    SortBy?: string
-    ExportType?: "PDF" | "Excel"
 }
 
 export interface MaterialRequisitionGRNData {
@@ -27,8 +23,28 @@ export interface MaterialRequisitionGRNData {
     ModifiedById: number;
     ModifiedBy: string;
     ModifiedDate: string;
+    MaterialRequisitionDetailGRNData: MaterialRequisitionDetailGRNData[]
 }
 
+export interface MaterialRequisitionDetailGRNData {
+    MaterialRequisitionDetailGRNId: number | 0,
+    Uniquekey: string | null,
+    MaterialRequisitionGRNId: number | 0,
+    MaterialRequisitionDetailId: number | 0,
+    MaterialName: string | null,
+    SubMaterialName: string | null,
+    MaterialQuantity: number | 0,
+    UomCode: string | null,
+    Uom: string | null,
+    RequiredDate: string | null,
+    TotalReceivedMaterialQuantity: number | 0,
+    CreatedById: number | 0,
+    CreatedBy: string | null,
+    CreatedDate: string | null,
+    ModifiedById: number | 0,
+    ModifiedBy: string | null,
+    ModifiedDate: string | null,
+}
 export interface AddUpdateMaterialRequisitionGRNRequest {
     MaterialRequisitionGRNId: number | 0
     Uniquekey: string | null

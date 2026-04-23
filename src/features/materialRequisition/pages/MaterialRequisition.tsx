@@ -29,6 +29,7 @@ import { DateInput } from "@/ui/components/forms/DateInput";
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import { getMaterialRequisitionStatusColor } from "../utils/materialRequisitionUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import { useMarketingContentListState } from "@/features/marketingContent/context/MarketingContentListStateContext";
 
 
 export const MaterialRequisition: React.FC = () => {
@@ -46,6 +47,7 @@ export const MaterialRequisition: React.FC = () => {
     const navigate = useNavigate();
     const { canAction, canExport } = useMenuPermissions();
     const { projectId } = useProject();
+    const { setDetailData } = useMaterialRequisitionListState()
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
     //#endregion
@@ -89,6 +91,7 @@ export const MaterialRequisition: React.FC = () => {
 
     const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage, MaterialRequisitionStatus: row.MaterialRequisitionStatus, SystemGeneratedCode: row.SystemGeneratedCode, Uniquekey: row.Uniquekey });
+        setDetailData(row.MaterialRequisitionDetailData);
         navigate('/materialRequisition/view');
     }, [navigate, updateListState],
     );
@@ -365,6 +368,7 @@ export const MaterialRequisition: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setMaterialRequisitionData(response.right.Data);
+
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,

@@ -50,6 +50,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   | 'indigo'
   | 'orange'
   | 'red'
+  |'red_light'
   | 'pink'
   | 'teal'
   | 'lime'

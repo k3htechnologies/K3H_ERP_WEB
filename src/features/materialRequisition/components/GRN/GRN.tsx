@@ -1,11 +1,11 @@
 import { runApiWithLoader } from "@/core/utils";
-import { useEffect, useMemo, useState } from "react";
-import type { FilterWithPaginationMaterialRequisitionGRNSummary, MaterialRequisitionGRNSummaryData } from "../../models/MaterialRequisitionGRNModel";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { type MaterialRequisitionGRNData, type FilterWithPaginationMaterialRequisitionGRN, type FilterWithPaginationMaterialRequisitionGRNSummary, type MaterialRequisitionGRNSummaryData, type MaterialRequisitionDetailGRNData } from "../../models/MaterialRequisitionGRNModel";
 import { useMaterialRequisitionListState } from "../../context/MaterialRequisitionListStateContext";
 import { useParams } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
-import type { TableColumn } from "@/ui/components/DataTable/DataTable";
+import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
 import * as E from "fp-ts/Either";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -16,6 +16,11 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import DataTableExpandable, { type DataTableExpandableRef } from "@/ui/components/DataTable/DataTableExpandable";
+import { PencilLine } from "lucide-react";
+
 
 export const GRN: React.FC = () => {
 
@@ -27,12 +32,16 @@ export const GRN: React.FC = () => {
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
+    const GRNTableRef = useRef<DataTableExpandableRef>(null);
+    const [GRNData, SetGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
+    const [GRN, SetGRN] = useState<MaterialRequisitionGRNData[]>([]);
     const [isViewGRNSummaryModalOpen, setIsViewGRNSummaryModalOpen] = useState(false);
     const [GRNSummaryDetailData, setGRNSummaryDetailData] = useState<MaterialRequisitionGRNSummaryData[]>([]);
+    const { canAction } = useMenuPermissions();
 
     useEffect(() => {
         if (!projectId) return;
-        loadGRNSummaryData();
+        loadGRNData();
     }, [projectId, currentMaterialRequisitionId])
 
     const loadGRNSummaryData = async () => {
@@ -51,13 +60,55 @@ export const GRN: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    setIsViewGRNSummaryModalOpen(false);
 
                     setGRNSummaryDetailData(response.right.Data);
                 } else {
                     addToast({ type: "error", title: response.left.message });
 
-                    setIsViewGRNSummaryModalOpen(false);
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            "Loading GRN SUMMARY",
+        );
+    };
+    const handleAddGRN = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+            }
+        )
+
+    }
+    const loadGRNData = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationMaterialRequisitionGRN = {
+
+                    MaterialRequisitionId: currentMaterialRequisitionId,
+                    Uniquekey: currentUniquekey,
+                    ProjectId: Number(projectId)
+
+                };
+
+                const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
+
+                if (E.isRight(response)) {
+                    const data = response.right.Data;
+                    SetGRNData(
+                        data?.[0]?.MaterialRequisitionDetailGRNData ?? []
+                    );
+                    SetGRN(data)
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+
                 }
                 return response;
             },
@@ -69,7 +120,70 @@ export const GRN: React.FC = () => {
             "Loading GRN",
         );
     };
+    const MaterialRequisitionGRNColumns = useMemo<TableColumn[]>(() =>
+        [
+            {
+                key: 'MaterialName',
+                label: 'Material Name',
+                width: '20',
+                sortable: false,
+                align: 'left',
+                render: (value?: string) => value || '-'
+            },
+            {
+                key: 'SubMaterialName',
+                label: 'Sub Material',
+                width: '20',
+                sortable: false,
+                align: 'left',
+                render: (value?: string) => (
+                    <TooltipText
+                        text={value || '-'}
+                        maxWidth="180px"
+                        tooltipThreshold={18}
+                    />
+                )
+            },
+            {
+                key: 'Uom',
+                label: 'UOM',
+                width: '20',
+                sortable: false,
+                align: 'left',
+                render: (value?: string) => value || '-'
+            },
+            {
+                key: 'MaterialQuantity',
+                label: 'Quantity',
+                width: '20',
+                sortable: false,
+                align: 'left',
+                render: (value?: string) => value || '-'
+            },
 
+            {
+                key: 'TotalReceivedMaterialQuantity',
+                label: 'Received Quantity',
+                width: '20',
+                sortable: false,
+                align: 'left',
+                render: (value?: string) => value || '-'
+            },
+            {
+                key: 'PendingQuantity',
+                label: 'Pending Quantity',
+                width: '20',
+                sortable: false,
+                align: 'left',
+                render: (_: any, row: MaterialRequisitionDetailGRNData) =>
+                    (row.MaterialQuantity || 0) -
+                    (row.TotalReceivedMaterialQuantity || 0)
+            }
+
+
+        ]
+
+        , [])
     const MaterialRequisitionDetailColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'MaterialName',
@@ -106,7 +220,7 @@ export const GRN: React.FC = () => {
     return (
         <div>
 
-            <div className="flex justify-end">
+            {/* <div className="flex justify-end">
                 <Button
                     className="bg-[#135BEC] text-white font-bold py-1 px-4 rounded-md"
                     onClick={() => {
@@ -115,8 +229,73 @@ export const GRN: React.FC = () => {
                 >
                     View Summary
                 </Button>
-            </div>
+            </div> */}
+            <TableActionToolbar
+                isShowSearchBar={false}
+                isShowAddButton={canAction}
+                addTitle="Add GRN"
+                isShowAddExtraButton={true}
+                addExtraTitle="View Summary"
+                onAddExtra={async () => {
+                    setIsViewGRNSummaryModalOpen(true);
+                    await loadGRNSummaryData();
+                }}
+                addExtraWidth={120}
+                onAdd={handleAddGRN}
 
+
+            />
+            <DataTableExpandable
+                ref={GRNTableRef}
+                data={GRNData}
+                columns={MaterialRequisitionGRNColumns}
+
+                emptyMessage={'No GRN Found'}
+                expandable={{
+                    keyField: 'MaterialRequisitionDetailGRNId',
+                    alwaysFetchOnOpen: false,
+
+                    fetchRow: async (row) => row,
+                    renderRow: (row) => {
+                        return (
+                            <div className="bg-gray-50 rounded-xl p-4">
+                                <div className="flex justify-between items-end">
+
+                                    <div className="grid grid-cols-4 gap-6 text-sm w-full">
+                                        <FieldItem
+                                            label="Date"
+                                            value={formatDate_dd_MonthName_yy(row.CreatedDate)}
+                                        />
+
+                                        <FieldItem
+                                            label="Challan No."
+                                            value={row.ChallanNumber || '-'}
+                                        />
+
+                                        <FieldItem
+                                            label="Vehicle No."
+                                            value={row.VehicleNumber || '-'}
+                                        />
+
+                                        <FieldItem
+                                            label="Quantity"
+                                            value={row.MaterialQuantity || '-'}
+                                        />
+                                    </div>
+
+                                    <div className="ml-4 bg-gray-200 p-1 rounded-md cursor-pointer mb-1">
+                                        <PencilLine className="h-4 w-4" />
+                                    </div>
+
+                                </div>
+                            </div>
+                        );
+                    },
+
+                    expandButton: { openText: 'Hide', closeText: 'Show' }
+                }}
+            />
+            {/* <DataTableExpandable data={GRNData} columns={MaterialRequisitionGRNColumns} /> */}
             <Modal
                 isOpen={isViewGRNSummaryModalOpen}
                 onClose={() => {

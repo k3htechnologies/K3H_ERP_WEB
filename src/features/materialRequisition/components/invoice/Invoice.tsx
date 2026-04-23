@@ -3,7 +3,6 @@ import { runApiWithLoader } from "@/core/utils";
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { usePagination } from "@/core/hooks/usePagination";
 import { useNavigate, useParams } from "react-router";
-import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
@@ -35,19 +34,16 @@ export const Invoice: React.FC = () => {
         loadInvoiceData(1, {});
     }, [projectId, currentMaterialRequisitionId])
 
-    const loadInvoiceData = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo,) => {
+    const loadInvoiceData = async (page: number, filterParams: FilterInfo,) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationMaterialRequisitionGRN = {
-                    PageNumber: page,
-                    PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
                     Uniquekey: currentUniquekey,
                     MaterialRequisitionGRNId: filterParams?.MaterialRequisitionGRNId ? Number(filterParams.MaterialRequisitionGRNId) : undefined,
-                    SortBy: getSortByParam(sortInfo ?? null, InvoiceColumns),
                 };
 
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
@@ -86,7 +82,7 @@ export const Invoice: React.FC = () => {
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
-        loadInvoiceData(1, {}, sort);
+        loadInvoiceData(1, {},);
     }, []);
 
     const InvoicePaginationInfo: PaginationInfo = useMemo(

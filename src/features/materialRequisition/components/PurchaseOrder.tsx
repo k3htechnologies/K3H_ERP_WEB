@@ -8,7 +8,6 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { materialRequisitionPurchaseOrderService } from "../services/MaterialRequisitionPurchaseOrderService";
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
-import usePagination from "@/core/hooks/usePagination";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
@@ -48,10 +47,8 @@ export const PurchaseOrder: React.FC = () => {
     const { projectId } = useProject();
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-    const { pagination, setPagination } = usePagination(20);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteGeneratePurchaseOrderData, setDeleteGeneratePurchaseOrderData] = useState<MaterialRequisitionPurchaseOrderData | null>(null)
-    const [generatePurchaseOrderPdfList, setGeneratePurchaseOrderPdfList] = useState<GenerateMaterialRequisitionPurchaseOrderPdfData[]>([])
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
@@ -170,34 +167,9 @@ export const PurchaseOrder: React.FC = () => {
 
                     setIsAddUpdateModalOpen(false);
 
-                    const isAdd = formData.MaterialRequisitionId === 0;
+                    loadPurchaseOrder()
 
-                    if (isAdd) {
-
-                        const newRecord = response.right.Data[0] as GenerateMaterialRequisitionPurchaseOrderPdfData
-
-                        loadPurchaseOrder()
-                        setGeneratePurchaseOrderPdfList(prevData => [newRecord, ...prevData]);
-                        setPagination({
-                            currentPage: pagination.currentPage,
-                            totalRecords: pagination.totalRecords + 1,
-                            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-                        });
-
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    } else {
-
-                        const updatedRecord = response.right.Data[0] as GenerateMaterialRequisitionPurchaseOrderPdfData;
-
-                        setGeneratePurchaseOrderPdfList(prevData =>
-                            prevData.map(item =>
-                                item.MaterialRequisitionId === formData.MaterialRequisitionId
-                                    ? updatedRecord
-                                    : item
-                            )
-                        )
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    }
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -300,15 +272,12 @@ export const PurchaseOrder: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: DeleteMaterialRequisitionPurchaseOrder = {
-
                     MaterialRequisitionId: deleteGeneratePurchaseOrderData.MaterialRequisitionId || 0,
                     MaterialRequisitionPurchaseOrderId: deleteGeneratePurchaseOrderData.MaterialRequisitionPurchaseOrderId || 0,
                     Uniquekey: deleteGeneratePurchaseOrderData.Uniquekey || "",
                     ProjectId: Number(projectId)
                 };
-
                 const response = await materialRequisitionPurchaseOrderService.apiCallDeleteMaterialRequisitionPurchaseOrder(params);
 
                 if (E.isRight(response)) {

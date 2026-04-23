@@ -18,6 +18,8 @@ import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitio
 import { materialRequisitionInvoiceService } from "../services/MaterialRequisitionInvoiceService";
 import type { FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorData } from "../models/VendorFinalizeModel";
 import { vendorFinalizationService } from "../services/VendorFinalizationService";
+import type { MaterialRequisitionQuotationDetailsTermsData } from "../models/MaterialRequisitionQuotationApi";
+import type { MaterialRequisitionPaymentData } from "../models/MaterialRequisitionPaymentModel";
 
 export const Overview: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -27,6 +29,9 @@ export const Overview: React.FC = () => {
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [MaterialRequisitionInvoiceData, setMaterialRequisitionInvoiceData] = useState<MaterialRequisitionInvoiceData[]>([])
     const [materialRequisitionVendorData, setMaterialRequisitionVendorData] = useState<SelectedVendorData | null>(null)
+    const [materialRequisitionQuotationTermsData, setMaterialRequisitionQuotationTermsData] = useState<MaterialRequisitionQuotationDetailsTermsData[]>([])
+    const [materialRequisitionPaymentData, setMaterialRequisitionPaymentData] = useState<MaterialRequisitionPaymentData | null>(null)
+    
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
@@ -96,6 +101,11 @@ export const Overview: React.FC = () => {
                     const data = response.right.Data;
 
                     setMaterialRequisitionVendorData(Array.isArray(data) ? (data[0] ?? null) : data);
+
+                    const Item = Array.isArray(data) ? data[0] : data;
+
+                    setMaterialRequisitionQuotationTermsData(Item?.MaterialRequisitionQuotationTermsData ?? []);
+
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -142,6 +152,11 @@ export const Overview: React.FC = () => {
         );
     };
 
+    const amount = Number(MaterialRequisitionInvoiceData[0]?.InvoiceAmount ?? 0)
+    const ampuntPaid = Number(materialRequisitionPaymentData?.AmountPaid ?? 0)
+
+    const PendingAmount = amount - ampuntPaid
+
     return (
         <div className="bg-white p-1">
             <Loader loading={isLoading} title={loadingMessage}> {" "} <div></div>{" "} </Loader>
@@ -178,13 +193,12 @@ export const Overview: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Vendor Name" value={materialRequisitionVendorData?.VendorName} />
                                 <FieldItem label="Vendor Company" value={materialRequisitionVendorData?.CompanyName} />
-                                <FieldItem label="Base Amount" value={materialRequisitionVendorData?.VendorName} />
-                                <FieldItem label="Total Tax" value={materialRequisitionVendorData?.VendorName} />
-                                <FieldItem label="Grand Total" value={materialRequisitionVendorData?.VendorName} />
-                                <FieldItem label="Est. Delivery" value={materialRequisitionVendorData?.VendorName} />
-                                <FieldItem label="Paid Amount" value={materialRequisitionVendorData?.VendorName} />
-                                <FieldItem label="Pending Amount" value={materialRequisitionVendorData?.VendorName} />
-
+                                <FieldItem label="Base Amount" value={`₹ ${materialRequisitionVendorData?.VendorName}`} />
+                                <FieldItem label="Total Tax" value={`₹ ${materialRequisitionQuotationTermsData[0]?.Total.toFixed(2)}`} />
+                                <FieldItem label="Grand Total" value={`₹ ${materialRequisitionVendorData?.VendorName}`} />
+                                <FieldItem label="Est. Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays} days`} />
+                                <FieldItem label="Paid Amount" value={`₹ ${materialRequisitionPaymentData?.AmountPaid.toFixed(2)}`} />
+                                <FieldItem label="Pending Amount" value={`₹ ${PendingAmount}`} />
                             </div>
                         </section>
                     </div>

@@ -12,8 +12,6 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
 import { FileText } from "lucide-react";
-import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
-import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { fetchTncMasterDropdown } from "@/features/tnc/tncDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
@@ -126,7 +124,7 @@ export const PurchaseOrder: React.FC = () => {
         }
 
         if (!formData.TermsCondition?.trim()) {
-            newErrors.TermsCondition = "Terms Condition is required.";
+            newErrors.TermsCondition = "Terms & Condition is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -264,10 +262,8 @@ export const PurchaseOrder: React.FC = () => {
     };
 
     const handleDeleteGeneratePurchaseOrder = async () => {
-
         setIsConfirmationDialogBoxOpen(false);
         if (!deleteGeneratePurchaseOrderData) return;
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -288,7 +284,6 @@ export const PurchaseOrder: React.FC = () => {
 
                     setIsConfirmationDialogBoxOpen(false);
                     setDeleteGeneratePurchaseOrderData(null);
-
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     setIsConfirmationDialogBoxOpen(false);
@@ -309,6 +304,8 @@ export const PurchaseOrder: React.FC = () => {
 
     const hasPurchaseOrder = materialRequisitionPurchaseOrder.length > 0 &&
         !!materialRequisitionPurchaseOrder[0];
+        
+    const isPdf = (url: string) => url.toLowerCase().includes(".pdf") || url.startsWith("blob:");
 
     return (
         <div className="bg-white p-1 h-[500px]">
@@ -350,20 +347,18 @@ export const PurchaseOrder: React.FC = () => {
             </div>
 
             {hasPurchaseOrder && (
-                <div className="bg-white-100 p-1 rounded-lg shadow-md relative">
+                <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 ">
 
-                    {/* HEADER */}
                     <h2 className="text-lg font-semibold mb-4">Purchase Order File</h2>
-                    <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
-                        <p>Document</p>
-                        <MultiImageViewer
-                            images={parseDocumentUrls(
-                                materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? ''
-                            )}
-                            title="Purchase Order"
-                            isIcon={false}
-                            triggerLabel="Document"
-                        />
+
+                    <div className="h-[400px]">
+                        {isPdf(materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? '') && (
+                            <iframe
+                                src={materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? ''}
+                                className="w-full h-full"
+                                title="pdf-preview"
+                            />
+                        )}
                     </div>
 
                     <div className="text-sm text-gray-600 mt-2">
@@ -375,14 +370,12 @@ export const PurchaseOrder: React.FC = () => {
                         </span>
                     </div>
 
-                    <div className="absolute bottom-4 right-4">
+                    <div className="absolute bottom-4 right-10">
                         <Button
                             color="red"
                             variant="solid"
                             onClick={() =>
-                                handleConfirmationDialogBoxOpen(
-                                    materialRequisitionPurchaseOrder[0]
-                                )
+                                handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder[0])
                             }
                             className="px-4 py-2 rounded-md"
                         >
@@ -391,7 +384,6 @@ export const PurchaseOrder: React.FC = () => {
                     </div>
                 </div>
             )}
-
 
             <Modal
                 isOpen={isAddUpdateModalOpen}
@@ -428,19 +420,6 @@ export const PurchaseOrder: React.FC = () => {
                             />
                         </div>
 
-                        {/* <div>
-                            <Input
-                                label='Terms Condition'
-                                required
-                                type="text"
-                                value={formData.TermsCondition ?? ''}
-                                onChange={(e) => handleFieldChange("TermsCondition", e.target.value)}
-                                error={errors.TermsCondition}
-                                maxLength={250}
-                                placeholder="Enter Terms Condition"
-                            />
-                        </div> */}
-
                         <div>
                             <SingleSelectDropdownWithPagination
                                 label="Term & Condition"
@@ -448,6 +427,7 @@ export const PurchaseOrder: React.FC = () => {
                                 size="lg"
                                 dataFetchCallBack={fetchTncByModuleName("Material Requisition")}
                                 onSelected={(item) => handleFieldChange("TermsCondition", item?.value)}
+                                error={errors.TermsCondition}
                             />
                         </div>
 
@@ -474,6 +454,7 @@ export const PurchaseOrder: React.FC = () => {
                 loading={isLoading}
                 pageName='Purchase Order'
             />
+
         </div>
     )
 }

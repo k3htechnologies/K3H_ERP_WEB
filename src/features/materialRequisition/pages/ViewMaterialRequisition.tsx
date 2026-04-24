@@ -20,9 +20,9 @@ import { Loader } from "@/core/utils/loader";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { FinalizedVendor } from "../components/FinalizedVendor";
 import DataTableEditable, { type EditableTableColumn } from "@/ui/components/DataTable/DataTableEditable";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, isPreviousDate } from "@/core/utils/dateFormat";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { DateInput } from "@/ui/components/forms/DateInput";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
@@ -72,7 +72,6 @@ export const ViewMaterialRequisition: React.FC = () => {
         fd.append("Remarks", matrialRequisitionData?.Remarks ?? '');
         fd.append("IsSplit", "false");
         fd.append("IsCopy", "true");
-
         fd.append(
             "MaterialRequisitionDetailJSON",
             JSON.stringify(
@@ -81,7 +80,9 @@ export const ViewMaterialRequisition: React.FC = () => {
                     MaterialMasterId: item.MaterialMasterId,
                     MaterialQuantity: item.MaterialQuantity,
                     UomMasterId: item.UomMasterId,
-                    RequiredDate: item.RequiredDate,
+                    RequiredDate: item.RequiredDate
+                        ? item.RequiredDate.split("T")[0]
+                        : null,
                     SubMaterialMasterId: item.SubMaterialMasterId,
                 }))
             )
@@ -121,8 +122,22 @@ export const ViewMaterialRequisition: React.FC = () => {
             });
     }
 
-    const handleCopyMaterialRequisition = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handleCopyMaterialRequisition = async (e?: React.FormEvent) => {
+        e?.preventDefault();
+        const hasPastDate = editableDetails.some(item => {
+            if (!item.RequiredDate) return false;
+
+            const dateString = item.RequiredDate.split("T")[0];
+            const date = new Date(dateString + "T00:00:00");
+
+            return isPreviousDate(date);
+        });
+
+        if (hasPastDate) {
+            addToast({ type: 'error', title: 'Required date cannot be in the past.' });
+            return;
+        }
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -219,10 +234,11 @@ export const ViewMaterialRequisition: React.FC = () => {
             sortable: false,
             editable: true,
             align: "left",
+            type: 'date',
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
             renderEditor: (value?: string, onChange?: any) => (
-                <DatePickerInput
+                <DateInput
                     label=""
                     value={formatDate_dd_mm_yyyy(value)}
                     onChange={(val) => onChange(convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
@@ -242,7 +258,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                     onCancel={() => handleBackToListMaterialRequisition()}
                 />
 
-                {(matrialRequisitionData?.IsCopy || activeTab === 'Details') && (
+                {matrialRequisitionData?.IsCopy && (
                     <Button
                         size="sm"
                         color="transparent"

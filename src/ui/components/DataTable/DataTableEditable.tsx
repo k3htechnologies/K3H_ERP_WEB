@@ -8,6 +8,7 @@ export type EditableColumnType =
   | "checkbox"
   | "computed"
   | "readonly"
+  | 'date'
 
 export interface EditableColumnGroup {
   label: string
@@ -21,6 +22,8 @@ export interface EditableTableColumn {
   label: string
   type?: EditableColumnType
   render?: (value: any, row: any, index: number) => React.ReactNode
+  renderEditor?: (value: any, onChange: (val: any) => void, row: any, index: number) => React.ReactNode  // ADD THIS
+
 
   className?: string
   headerClassName?: string
@@ -183,6 +186,15 @@ export const DataTableEditable: React.FC<Props> = ({
       const value = col.compute ? col.compute(row) : row[col.key]
       const safeValue = value ?? ""
       const isEditable = col.editable !== false
+
+      if (col.renderEditor && isEditable) {
+        return col.renderEditor(
+          safeValue,
+          (val: any) => updateCell(rowIndex, col.key, val),
+          row,
+          rowIndex
+        )
+      }
 
       if (col.render) {
         return col.render(value, row, rowIndex)

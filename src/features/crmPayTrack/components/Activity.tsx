@@ -20,7 +20,9 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatCurrency, getSafeString } from '@/core/utils/comman';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 
+
 export const Activity: React.FC = () => {
+
     const [bookingApplicantModificationLst, setBookingApplicantModificationLst] = useState<BookingApplicantModificationDataRequest[]>([]);
     const [parkingModificationList, setParkingModificationList] = useState<ParkingModificationDetailsData[]>([]);
     const [flatAlterationList, setFlatAlterationList] = useState<FlatAlterationRequestData[]>([]);
@@ -34,6 +36,7 @@ export const Activity: React.FC = () => {
     const { addToast } = useToast();
     const { pagination, setPagination } = usePagination(20);
 
+
     useEffect(() => {
         if (!projectId || !bookingId) return;
 
@@ -44,6 +47,7 @@ export const Activity: React.FC = () => {
 
     }, [projectId, bookingId]);
 
+    // #region Load Booking Applicant Modification Request History
     const loadBookingApplicantModificationRequestHistory = async (page: number) => {
         await runApiWithLoader(
             setIsLoading,
@@ -59,7 +63,14 @@ export const Activity: React.FC = () => {
                 const response = await bookingApplicantModificationService.apiCallPullBookingApplicantModification(params);
 
                 if (E.isRight(response)) {
-                    setBookingApplicantModificationLst(response.right.Data);
+                    console.log('Response data dd', response.right.Data);
+                    // Filter only Approved records
+                    const approvedData = response.right.Data.filter(
+                        (item) => item.ApprovalStatus === "Approved"
+                    );
+
+                    setBookingApplicantModificationLst(approvedData);
+
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,
@@ -78,7 +89,9 @@ export const Activity: React.FC = () => {
 
         );
     };
+    // #endregion
 
+    // #region Load Parking Modification Request History
     const loadParkingModificationRequestHistory = async (page: number) => {
         await runApiWithLoader(
             setIsLoading,
@@ -112,7 +125,9 @@ export const Activity: React.FC = () => {
             undefined,
         );
     };
+    // #endregion
 
+    // #region Load Flat Alteration Request History
     const loadFlatAlterationRequestHistory = async (page: number) => {
         await runApiWithLoader(
             setIsLoading,
@@ -147,9 +162,9 @@ export const Activity: React.FC = () => {
 
         );
     };
+    // #endregion
 
-    // #region View Refund Details History
-
+    // #region Load Refunded Amount Details History
     const loadRefundedAmountDetailsHistory = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -181,8 +196,7 @@ export const Activity: React.FC = () => {
         )
 
     }
-
-
+    // #endregion
 
     return (
         <div >
@@ -196,7 +210,7 @@ export const Activity: React.FC = () => {
                     showline={false}
                     title={
                         <div className="font-semibold text-lg pt-4 pb-4">
-                            View Booking Applicant History
+                            Booking Applicant History
                         </div>
                     }
                     child={
@@ -211,7 +225,6 @@ export const Activity: React.FC = () => {
                                             <div className="flex-1 border-t border-gray-200" />
                                         </div>
 
-                                        {/* Card Content */}
                                         <div className="bg-white rounded-lg px-8 py-4 border border-gray-200">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 md:gap-y-3">
                                                 <FieldItem label="Request Date" value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '')} />
@@ -256,7 +269,7 @@ export const Activity: React.FC = () => {
                     showline={false}
                     title={
                         <div className="font-semibold text-lg pt-4 pb-4">
-                            View Parking History
+                            Parking History
                         </div>
                     }
                     child={
@@ -303,7 +316,7 @@ export const Activity: React.FC = () => {
                     showline={false}
                     title={
                         <div className="font-semibold text-lg pt-4 pb-4">
-                            View Flat Alteration History
+                            Flat Alteration History
                         </div>
                     }
                     child={
@@ -336,7 +349,7 @@ export const Activity: React.FC = () => {
                     showline={false}
                     title={
                         <div className="font-semibold text-lg pt-4 pb-4">
-                            View Refunded Amount Details History
+                            Refunded Amount Details History
                         </div>
                     }
                     child={
@@ -347,7 +360,6 @@ export const Activity: React.FC = () => {
                                         key={data.RefundedAmountLedgerId || index}
                                         className="bg-white rounded-lg px-6 py-4 border border-gray-200"
                                     >
-                                        {/* Top Bar */}
                                         <div className="flex justify-between items-center border-b border-gray-200 pb-3">
                                             <div className="gap-6 text-sm text-gray-700">
                                                 <FieldItem
@@ -365,21 +377,18 @@ export const Activity: React.FC = () => {
 
                                         </div>
 
-                                        {/* 3 Column Grid */}
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm pt-5">
 
-                                            {/* Column 1: Our Bank Details */}
                                             <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 mb-2">Our Bank Details</h3>
+                                                <h3 className="font-semibold text-gray-900 mb-2">Developers Bank Details</h3>
                                                 <FieldItem label="Account Number" value={getSafeString(data.ProjectAccountNumber ?? '-')} isRow={false} />
                                                 <FieldItem label="Bank Name" value={getSafeString(data.ProjectBankName ?? '-')} isRow={false} />
                                                 <FieldItem label="IFSC Code" value={getSafeString(data.ProjectIFSCCode ?? '-')} isRow={false} />
                                                 <FieldItem label="Payment For" value={getSafeString(data.PaymentFor ?? '-')} isRow={false} />
                                             </div>
 
-                                            {/* Column 2: Opposite Party Bank Details */}
                                             <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 mb-2">Opposite Party Bank Details</h3>
+                                                <h3 className="font-semibold text-gray-900 mb-2">Customers Party Bank Details</h3>
                                                 <FieldItem label="Account Holder" value={getSafeString(data.AccountHolderName ?? '-')} />
                                                 <FieldItem label="Bank" value={getSafeString(data.BankName ?? '-')} />
                                                 <FieldItem
@@ -391,9 +400,14 @@ export const Activity: React.FC = () => {
                                                     label="Transaction / Cheque / DD Date"
                                                     value={formatDate_dd_MonthName_yy(data.TransactionChequeDemandDraftDate ?? '') || '-'}
                                                 />
+                                                <FieldItem
+                                                    label="Transaction / Cheque / DD URL"
+                                                    value={data.TransactionChequeDemandDraftURL ? 'View Document' : '-'}
+                                                    urls={data.TransactionChequeDemandDraftURL}
+                                                    isIcon
+                                                />
                                             </div>
 
-                                            {/* Column 3: Other Details */}
                                             <div className="space-y-3">
                                                 <h3 className="font-semibold text-gray-900 mb-2">Other Info</h3>
 
@@ -404,13 +418,18 @@ export const Activity: React.FC = () => {
                                                 <FieldItem label="Amount Type" value={getSafeString(data.AmountType ?? '-')} />
                                                 <FieldItem label="Payment Type" value={getSafeString(data.PaymentType ?? '-')} />
                                                 <FieldItem label="Created By" value={getSafeString(data.CreatedBy ?? '-')} />
+                                                <FieldItem
+                                                    label="Payment Receipt"
+                                                    value={data.PaymentReceiptURL ? 'View Receipt' : '-'}
+                                                    urls={data.PaymentReceiptURL}
+                                                    isIcon
+                                                />
                                             </div>
-
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-center text-gray-500 py-8 bg-gray-50 rounded-xl border border-dashed border-gray-300">
+                                <div className="text-center text-gray-500 py-8 bg-gray-50">
                                     No refunded amount details history found.
                                 </div>
                             )}

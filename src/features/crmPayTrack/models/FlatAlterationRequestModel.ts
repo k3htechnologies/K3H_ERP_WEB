@@ -30,6 +30,8 @@ export interface AddUpdateFlatAlterationRequest {
     BookingId: number;
     ProjectId: number;
     FlatAlterationRemark: string;
+    FlatAlterationDocumentURL?: File[] | null;
+    RemoveFlatAlterationDocumentURL?: string;
     IsApproval: boolean;
     ApprovalStatus: string;
     VersionNumber: string;

@@ -27,7 +27,7 @@ const ApprovalActionModal: React.FC<Props> = ({
 }) => {
 
   const [remark, setRemark] = useState("");
-    const [error, setError] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -49,15 +49,15 @@ const ApprovalActionModal: React.FC<Props> = ({
   };
 
   const modalTitle = (<span className="font-semibold"> {actionType === "approve" ? "Approve" : "Reject"} {title}
-      {titleText && (
-        <span className="text-gray-500 font-medium">
-          {" : "}
-          {titleText}
-          {subTitleText && <> {" > "} {subTitleText}</>}
-          {subSubTitleText && <> {" > "} {subSubTitleText}</>}
-        </span>
-      )}
-    </span>
+    {titleText && (
+      <span className="text-gray-500 font-medium">
+        {" : "}
+        {titleText}
+        {subTitleText && <> {" > "} {subTitleText}</>}
+        {subSubTitleText && <> {" > "} {subSubTitleText}</>}
+      </span>
+    )}
+  </span>
   );
 
   return (
@@ -71,7 +71,7 @@ const ApprovalActionModal: React.FC<Props> = ({
       size="lg"
       loading={loading}
     >
-      
+
       <div className="space-y-6 p-6 bg-blue-100">
 
         <TextArea

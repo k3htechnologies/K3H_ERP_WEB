@@ -330,7 +330,6 @@ export const AddUpdatePayTrackRent: React.FC = () => {
     fd.append('Tenure', tenure || '');
     fd.append('ChargeType', activeTab || '');
 
-
     transactionChequeDemandFiles.forEach(file => {
       if (file instanceof File) {
         fd.append('TransactionChequeDemandDraftURL', file);

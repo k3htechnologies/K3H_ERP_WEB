@@ -54,7 +54,6 @@ export interface AddUpdateRefundAmountDetailsRequest {
     AccountNumber: string | null;
     IFSCCode: string | null;
     AmountType: string | null;
-    PaymentType: string | null;
     RefundedAmount: number;
     TransactionChequeDemandDraftNumber: string | null;
     TransactionChequeDemandDraftURL: string | null;

@@ -42,6 +42,7 @@ export interface BookingApplicantModificationDataRequest {
     ModifiedById: number | null;
     ModifiedBy: string | null;
     ModifiedDate: string | null;
+    BookingApplicantModificationDocumentUploadURL: string | null;
 
 }
 
@@ -98,6 +99,8 @@ export interface BookingApplicantModificationRequest {
 
     PaymentProofURL?: File[] | null;
     RemovePaymentProofURL?: string;
+    BookingApplicantModificationDocumentUploadURL?: File[] | null;
+    RemoveBookingApplicantModificationDocumentUploadURL?: string;
 }
 
 export type BookingApplicantModificationListResponse = ApiResponse<BookingApplicantModificationDataRequest[]>;

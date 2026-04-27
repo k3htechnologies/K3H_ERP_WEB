@@ -16,6 +16,7 @@ export interface ParkingModificationDetailsData {
     ParkingId: string;
     ParkingData?: ParkingData[] | null;
     parkingData?: ParkingData[] | null;
+
     IsApproval: boolean;
     ApprovalStatus: string;
     VersionNumber: string;
@@ -33,6 +34,8 @@ export interface AddUpdateParkingModificationRequest {
     BookingId: number;
     ProjectId: number;
     ParkingId: string;
+    ParkingModificationDocumentURL?: File[] | null;
+    RemoveParkingModificationDocumentURL?: string;
     ParkingData?: ParkingData[] | null;
     parkingData?: ParkingData[] | null;
     IsApproval: boolean;

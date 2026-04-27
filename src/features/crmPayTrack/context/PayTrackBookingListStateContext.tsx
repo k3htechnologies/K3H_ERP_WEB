@@ -16,6 +16,9 @@ export type PayTrackBookingListState = {
   bookingOtherChargesData?: BookingOtherChargesData[];
   totalUnitCost: number;
   flat: string;
+  activeTab?: string;
+  activeSubTab?: string;
+  refreshKey: number;
 };
 
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.PAY_TRACK_BOOKING;
@@ -34,6 +37,9 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
       bookingOtherChargesData: [],
       totalUnitCost: 0,
       flat: "",
+      activeTab: undefined,
+      activeSubTab: undefined,
+      refreshKey: 0,
     };
   }
 
@@ -51,6 +57,9 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
           flat: parsed.state.flat || "",
           totalUnitCost: parsed.state.totalUnitCost || 0,
           bookingOtherChargesData: parsed.state.bookingOtherChargesData || [],
+          activeTab: parsed.state.activeTab,
+          activeSubTab: parsed.state.activeSubTab,
+          refreshKey: 0,
         };
       }
     }
@@ -68,9 +77,11 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
     bookingName: "",
     bookingType: "",
     flat: "",
-    totalUnitCost:0,
+    totalUnitCost: 0,
     bookingOtherChargesData: [],
-
+    activeTab: undefined,
+    activeSubTab: undefined,
+    refreshKey: 0,
   };
 };
 
@@ -79,8 +90,9 @@ type PayTrackBookingListStateContextType = {
   updateListState: (updates: Partial<PayTrackBookingListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string,totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[]) => void;
+  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[]) => void;
   clearPayTrackBookingContext: () => void;
+  triggerRefresh: () => void;
 };
 
 const PayTrackBookingListStateContext = createContext<PayTrackBookingListStateContextType | null>(null);
@@ -104,6 +116,9 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
         flat: "",
         totalUnitCost: 0,
         bookingOtherChargesData: [],
+        activeTab: undefined,
+        activeSubTab: undefined,
+        refreshKey: 0,
       };
       setListState(defaultState);
       try {
@@ -156,11 +171,14 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       flat: "",
       totalUnitCost: 0,
       bookingOtherChargesData: [],
+      activeTab: undefined,
+      activeSubTab: undefined,
+      refreshKey: 0,
     };
     setListState(defaultState);
   }, []);
 
-  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string,bookingType: string, flat: string,totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[]) => {
+  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[]) => {
     setListState((prev) => ({
       ...prev,
       bookingId,
@@ -169,6 +187,9 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       flat,
       totalUnitCost,
       bookingOtherChargesData: bookingOtherChargesData || [],
+      activeTab: undefined,
+      activeSubTab: undefined,
+      refreshKey: 0,
     }));
   }, []);
 
@@ -181,7 +202,14 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       flat: "",
       totalUnitCost: 0,
       bookingOtherChargesData: [],
+      activeTab: undefined,
+      activeSubTab: undefined,
+      refreshKey: 0,
     }));
+  }, []);
+
+  const triggerRefresh = useCallback(() => {
+    setListState((prev) => ({ ...prev, refreshKey: (prev.refreshKey || 0) + 1 }));
   }, []);
 
   const contextValue = useMemo<PayTrackBookingListStateContextType>(
@@ -192,8 +220,9 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       resetToDefault,
       setPayTrackBookingContext,
       clearPayTrackBookingContext,
+      triggerRefresh,
     }),
-    [listState, updateListState, resetFilters, resetToDefault, setPayTrackBookingContext, clearPayTrackBookingContext]
+    [listState, updateListState, resetFilters, resetToDefault, setPayTrackBookingContext, clearPayTrackBookingContext, triggerRefresh]
   );
 
   return (
@@ -210,4 +239,6 @@ export const usePayTrackBookingListState = () => {
   }
   return ctx;
 };
+
+
 

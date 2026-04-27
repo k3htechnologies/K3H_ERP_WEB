@@ -4,6 +4,7 @@ import { bookingService } from '@/features/booking/services/BookingService';
 import type { BookingData, FilterWithPaginationBookingRequest } from '@/features/booking/models/BookingModel';
 import type { FilterWithPaginationFlatAlterationRequest, FlatAlterationRequestData, AddUpdateFlatAlterationRequest } from '@/features/crmPayTrack/models/FlatAlterationRequestModel';
 import type { FilterWithPaginationBookingApplicantModificationRequest, BookingApplicantModificationDataRequest, BookingApplicantModificationRequest } from '@/features/crmPayTrack/models/BookingApplicantModificationModel';
+import type { ParkingModificationDetailsData } from '@/features/crmPayTrack/models/ParkingModificationModel';
 import { APPLICANT_TYPE } from "@/core/constants";
 import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
@@ -46,6 +47,8 @@ const initialFormState = (): AddUpdateParkingModificationRequest => ({
     IsApproval: false,
     ApprovalStatus: '',
     VersionNumber: '',
+    ParkingModificationDocumentURL: [],
+    RemoveParkingModificationDocumentURL: '',
     CreatedById: 0,
     CreatedBy: '',
     CreatedDate: '',
@@ -68,7 +71,9 @@ const initialFormStateForFlatAlterationRequest = (): AddUpdateFlatAlterationRequ
     CreatedDate: '',
     ModifiedById: 0,
     ModifiedBy: '',
-    ModifiedDate: ''
+    ModifiedDate: '',
+    FlatAlterationDocumentURL: [],
+    RemoveFlatAlterationDocumentURL: '',
 });
 
 const initialFormStateForDetailsRequest = (): BookingApplicantModificationRequest => ({
@@ -104,6 +109,8 @@ const initialFormStateForDetailsRequest = (): BookingApplicantModificationReques
     NomineeFormURL: [],
     StatementOfSourceOfFundsURL: [],
     PaymentProofURL: [],
+    BookingApplicantModificationDocumentUploadURL: [],
+    RemoveBookingApplicantModificationDocumentUploadURL: '',
 });
 
 type RequestBookingApplicantWithFiles = BookingApplicantModificationDataRequest & {
@@ -122,6 +129,7 @@ type RequestBookingApplicantWithFiles = BookingApplicantModificationDataRequest 
     _nomineeFormFiles?: (File | string)[];
     _statementOfSourceOfFundsFiles?: (File | string)[];
     _paymentProofFiles?: (File | string)[];
+    _bookingApplicantModificationDocumentUploadFiles?: (File | string)[];
 
     RemovePhotoURL?: string;
     RemoveAadharCardURL?: string;
@@ -139,6 +147,7 @@ type RequestBookingApplicantWithFiles = BookingApplicantModificationDataRequest 
     RemovePaymentProofURL?: string;
     CreatedDate?: string | null;
     ModifiedDate?: string | null;
+    RemoveBookingApplicantModificationDocumentUploadURL?: string;
 
 }
 
@@ -161,6 +170,10 @@ export const Requests: React.FC = () => {
     // Applicant Details Modal
     const [isAddUpdateApplicantDetailsModalOpen, setIsAddUpdateApplicantDetailsModalOpen] = useState(false);
     const [applicantList, setApplicantList] = useState<RequestBookingApplicantWithFiles[]>([]);
+
+    // BookingApplicantModificationDocumentUpload
+    const [bookingApplicantModificationDocumentUploadFiles, setBookingApplicantModificationDocumentUploadFiles] = useState<(File | string)[]>([]);
+    const [removedBookingApplicantModificationDocumentUploadURLs, setRemovedBookingApplicantModificationDocumentUploadURLs] = useState<string[]>([]);
 
     // ================= PHOTO =================
     const [applicantPhotoFiles, setApplicantPhotoFiles] = useState<(File | string)[]>([]);
@@ -234,48 +247,47 @@ export const Requests: React.FC = () => {
     // ERROR SET UP FOR APPLICANT DETAILS
     const [errorsBookingApplicant, setErrorsBookingApplicant] = useState<{ [k: string]: string }>({});
 
-    // APPROVAL LOG MODAL
+    // APPROVAL LOG MODAL FOR BOOKING APPLICANT MODIFICATION REQUEST
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
     const [ownerName, setOwnerName] = useState<string | null>("");
 
+    // APPROVAL LOG MODAL FOR PARKING MODIFICATION REQUEST
+    const [isParkingApprovalLogModalOpen, setIsParkingApprovalLogModalOpen] = useState(false);
+    const [approvalParkingLogRequest, setApprovalParkingLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [parkingNumber, setParkingNumber] = useState<string | null>("");
 
-    // APPROVAL ACTION MODAL
+
+    // APPROVAL ACTION MODAL FOR BOOKING APPLICANT MODIFICATION REQUEST
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [approvalRowData, setApprovalRowData] = useState<BookingApplicantModificationDataRequest | null>(null);
 
+    // APPROVAL ACTION MODAL FOR PARKING MODIFICATION REQUEST
+    const [isParkingApprovalActionModalOpen, setIsParkingApprovalActionModalOpen] = useState(false);
+    const [approvalParkingActionType, setApprovalParkingActionType] = useState<"approve" | "reject">("approve");
+    const [approvalParkingRowData, setApprovalParkingRowData] = useState<ParkingModificationDetailsData | null>(null);
+
 
     const { canAction } = useMenuPermissions("/payTrack");
-
     const { pagination, setPagination } = usePagination(10);
-
     const { addToast } = useToast();
-
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
     const { bookingId } = listState;
 
-    const isBookingCancelled = !!bookingData?.ApprovalStatus && ['Cancelled', 'Refund'].includes(bookingData.ApprovalStatus);
+    const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
     const isParkingDetailsEmpty = !bookingData?.ParkingNumber || bookingData.ParkingNumber === "-";
-
-    // Logic to group applicant data by Version Number
-    const groupedApplicantData = useMemo(() => {
-        const groups: Record<string, BookingApplicantModificationDataRequest[]> = {};
-
-        bookingApplicantModificationData.forEach((item) => {
-            const version = item.VersionNumber || "1";
-            if (!groups[version]) {
-                groups[version] = [];
-            }
-            groups[version].push(item);
-        });
-
-        return Object.entries(groups).sort((a, b) => Number(b[0]) - Number(a[0]));
-    }, [bookingApplicantModificationData]);
-
     const isParkingEmpty = !bookingData?.ParkingNumber || bookingData?.ParkingNumber === "-";
 
+    const latestApplicantData = useMemo(() => {
+        if (!bookingApplicantModificationData || bookingApplicantModificationData.length === 0) return [];
+        const latestRecord = bookingApplicantModificationData[bookingApplicantModificationData.length - 1];
+        return [latestRecord];
+
+    }, [bookingApplicantModificationData]);
+
+    // #region INIT
     useEffect(() => {
         if (!projectId || !bookingId) return;
 
@@ -284,6 +296,7 @@ export const Requests: React.FC = () => {
         fetchBookingApplicantModificationList();
 
     }, [projectId, bookingId]);
+    // #endregion
 
     const handleFieldChange = (field: keyof AddUpdateFlatAlterationRequest, value: any) => {
 
@@ -369,6 +382,52 @@ export const Requests: React.FC = () => {
                     setIsApprovalActionModalOpen(false);
                     await loadBookingForSummary();
                     await fetchBookingApplicantModificationList();
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
+
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
+        );
+    };
+
+    const handleParkingApprovalSubmit = async (remark: string) => {
+
+        if (!approvalParkingRowData) return;
+
+        const payload: UpdateModulesWorkflowApprovalRequest = {
+            ModuleName: "PARKING MODIFICATION APPROVAL",
+            Id: bookingId ?? 0,
+            ProjectId: projectId ?? 0,
+            IsApproved: approvalParkingActionType === "approve",
+            Remarks: remark ?? null,
+            SubId: approvalParkingRowData.ParkingModificationRequestId ?? 0
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsApprovalActionModalOpen(false);
+                    await loadBookingForSummary();
+                    await fetchBookingApplicantModificationList();
+                    // await fetchParkingModificationListNewParking();
 
                 } else {
 
@@ -571,6 +630,7 @@ export const Requests: React.FC = () => {
         const finalRemovedNomineeFormURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._nomineeFormFiles, nomineeFormFiles, removedNomineeFormURLs) : removedNomineeFormURLs;
         const finalRemovedStatementOfSourceOfFundsURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._statementOfSourceOfFundsFiles, statementOfSourceOfFundsFiles, removedStatementOfSourceOfFundsURLs) : removedStatementOfSourceOfFundsURLs;
         const finalRemovedPaymentProofURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._paymentProofFiles, paymentProofFiles, removedPaymentProofURLs) : removedPaymentProofURLs;
+        const finalRemovedBookingApplicantModificationDocumentUploadURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._bookingApplicantModificationDocumentUploadFiles, bookingApplicantModificationDocumentUploadFiles, removedBookingApplicantModificationDocumentUploadURLs) : removedBookingApplicantModificationDocumentUploadURLs.slice();
 
         const mergedPhotoFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, finalRemovedPhotoURLs) : applicantPhotoFiles.slice();
         const mergedAadharFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._aadharFiles, aadharCardFiles, finalRemovedAadharURLs) : aadharCardFiles.slice();
@@ -586,10 +646,12 @@ export const Requests: React.FC = () => {
         const mergedNomineeFormFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._nomineeFormFiles, nomineeFormFiles, finalRemovedNomineeFormURLs) : nomineeFormFiles.slice();
         const mergedStatementOfSourceOfFundsFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._statementOfSourceOfFundsFiles, statementOfSourceOfFundsFiles, finalRemovedStatementOfSourceOfFundsURLs) : statementOfSourceOfFundsFiles.slice();
         const mergedPaymentProofFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._paymentProofFiles, paymentProofFiles, finalRemovedPaymentProofURLs) : paymentProofFiles.slice();
+        const mergedBookingApplicantModificationDocumentUploadFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._bookingApplicantModificationDocumentUploadFiles, bookingApplicantModificationDocumentUploadFiles, finalRemovedBookingApplicantModificationDocumentUploadURLs) : bookingApplicantModificationDocumentUploadFiles.slice();
 
         const applicantToSave: RequestBookingApplicantWithFiles = {
 
             BookingApplicantModificationRequestId: editingApplicantData?.row.BookingApplicantModificationRequestId ?? 0,
+            BookingApplicantModificationDocumentUploadURL: createFileUrlString(mergedBookingApplicantModificationDocumentUploadFiles),
             ApplicantType: formDataDetails.ApplicantType || "",
             ApplicantName: formDataDetails.ApplicantName || "",
             ApplicantMobileNumber: formDataDetails.ApplicantMobileNumber || "",
@@ -605,11 +667,8 @@ export const Requests: React.FC = () => {
             DrivingLicenseURL: createFileUrlString(mergedDrivingFiles),
             VotingIdNumber: formDataDetails.VotingIdNumber || "",
             VotingIdURL: createFileUrlString(mergedVotingFiles),
-
-
             GSTNumber: formDataDetails.GSTNumber || "",
             GSTNumberURL: createFileUrlString(mergedGstFiles),
-
             CancelledChequeURL: createFileUrlString(mergedCancelledChequeFiles),
             POAURL: createFileUrlString(mergedPOAFiles),
             IncomeForm16ITRURL: createFileUrlString(mergedIncomeForm16ITRFiles),
@@ -617,7 +676,6 @@ export const Requests: React.FC = () => {
             NomineeFormURL: createFileUrlString(mergedNomineeFormFiles),
             StatementOfSourceOfFundsURL: createFileUrlString(mergedStatementOfSourceOfFundsFiles),
             PaymentProofURL: createFileUrlString(mergedPaymentProofFiles),
-
             IsApproval: false,
             ApprovalStatus: "",
             VersionNumber: "1",
@@ -657,6 +715,7 @@ export const Requests: React.FC = () => {
             RemoveNomineeFormURL: finalRemovedNomineeFormURLs.join(','),
             RemoveStatementOfSourceOfFundsURL: finalRemovedStatementOfSourceOfFundsURLs.join(','),
             RemovePaymentProofURL: finalRemovedPaymentProofURLs.join(','),
+            RemoveBookingApplicantModificationDocumentUploadURL: finalRemovedBookingApplicantModificationDocumentUploadURLs.join(','),
         };
 
         const updatedApplicantList: RequestBookingApplicantWithFiles[] = editingApplicantData
@@ -687,7 +746,7 @@ export const Requests: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-                debugger
+
                 const formDataToSend = new FormData();
                 formDataToSend.append('ProjectId', String(projectId));
                 formDataToSend.append('BookingId', String(bookingId));
@@ -741,6 +800,7 @@ export const Requests: React.FC = () => {
                     formDataToSend.append(`${prefix}.RemoveNomineeFormURL`, app.RemoveNomineeFormURL ?? "");
                     formDataToSend.append(`${prefix}.RemoveStatementOfSourceOfFundsURL`, app.RemoveStatementOfSourceOfFundsURL ?? "");
                     formDataToSend.append(`${prefix}.RemovePaymentProofURL`, app.RemovePaymentProofURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveBookingApplicantModificationDocumentUploadURL`, app.RemoveBookingApplicantModificationDocumentUploadURL ?? "");
 
                     formDataToSend.append(`${prefix}.CancelledChequeURL`, app.CancelledChequeURL ?? "");
                     formDataToSend.append(`${prefix}.POAURL`, app.POAURL ?? "");
@@ -811,8 +871,6 @@ export const Requests: React.FC = () => {
                 const response = await parkingModificationService.apiCallAddUpdateParkingModificationDetails(payload);
 
                 if (E.isRight(response)) {
-
-
 
                     setIsAddUpdateParkingSwapModalOpen(false);
 
@@ -919,6 +977,7 @@ export const Requests: React.FC = () => {
         autoFetchOptions: isAddUpdateParkingSwapModalOpen,
     });
 
+
     const fetchBookingApplicantModificationList = async () => {
         return await loadBookingApplicantModificationRequest();
     };
@@ -930,7 +989,7 @@ export const Requests: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationBookingApplicantModificationRequest = {
                     PageNumber: 1,
-                    PageSize: 1000,
+                    PageSize: 1,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
                 };
@@ -1253,7 +1312,6 @@ export const Requests: React.FC = () => {
                 render: (value, row) => (
 
                     <ApprovalActions
-
                         approvalStatus={value || "-"}
                         showApproval={row.IsApproval}
                         isIcons={true}
@@ -1264,8 +1322,6 @@ export const Requests: React.FC = () => {
 
                 )
             },
-
-
         ],
         [applicantList, canAction]
     )
@@ -1321,15 +1377,25 @@ export const Requests: React.FC = () => {
                 fixed: "left",
                 render: (value) => value || "-",
             },
+
             {
                 key: "ApprovalStatus",
                 label: "Approval Status",
                 sortable: false,
                 align: "left",
                 fixed: "left",
-                render: (value) => value || "-",
-            },
+                render: (value, row) => (
 
+                    <ApprovalActions
+                        approvalStatus={value || "-"}
+                        showApproval={row.IsApproval}
+                        isIcons={true}
+                        onHistory={() => handleParkingApprovalLog(row)}
+                        onApprove={() => handleParkingApproveRejectDocument(row, "approve")}
+                        onReject={() => handleParkingApproveRejectDocument(row, "reject")}
+                    />
+                )
+            },
         ],
         []
     )
@@ -1368,6 +1434,27 @@ export const Requests: React.FC = () => {
 
     };
 
+    const handleParkingApprovalLog = (row: ParkingModificationDetailsData) => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "PARKING MODIFICATION APPROVAL",
+            Id: bookingId ?? 0,
+            ProjectId: projectId ?? 0,
+            SubId: row.ParkingModificationRequestId ?? 0
+        };
+        setParkingNumber(row.ParkingData?.[0]?.ParkingNumber ?? "-");
+        setApprovalParkingLogRequest(request);
+        setIsParkingApprovalLogModalOpen(true);
+    };
+
+    const handleParkingApproveRejectDocument = (row: ParkingModificationDetailsData, approvalType: "approve" | "reject") => {
+
+        setApprovalParkingRowData(row);
+        setParkingNumber(row.ParkingData?.[0]?.ParkingNumber ?? "-");
+        setApprovalParkingActionType(approvalType);
+        setIsParkingApprovalActionModalOpen(true);
+    };
+
+
     return (
         <div>
             <Loader loading={isLoading} title={loadingMessage}>
@@ -1396,31 +1483,18 @@ export const Requests: React.FC = () => {
                     )}
                 </div>
 
-                <div className="space-y-10">
-                    {groupedApplicantData.map(([version, applicantDetailData]) => (
-                        <div key={version} className="space-y-6">
-                            <div className="flex items-center gap-3 -px-2 py-2 -mt-5">
-                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 tracking-wide">
-                                    Version {version}
-                                </span>
-                                <div className="flex-1 border-t border-gray-200" />
-                            </div>
-
-                            <DataTable
-                                columns={summaryColumns}
-                                data={applicantDetailData}
-                                fixedHeight={false}
-                                className="flex-1 shadow-sm border border-gray-100 rounded-lg"
-                            />
-                        </div>
-                    ))}
-
-                    {groupedApplicantData.length === 0 && (
-                        <div className="text-center py-10 border-2 border-dashed border-gray-100 rounded-xl text-gray-400">
-                            No applicant records found.
-                        </div>
-                    )}
-                </div>
+                {latestApplicantData.length > 0 ? (
+                    <DataTable
+                        columns={summaryColumns}
+                        data={latestApplicantData}
+                        fixedHeight={false}
+                        className="shadow-sm border border-gray-100 rounded-lg"
+                    />
+                ) : (
+                    <div className="text-center py-10  rounded-xl text-gray-400">
+                        No applicant records found.
+                    </div>
+                )}
             </section>
 
             {/* =================Parking Details ================= */}
@@ -1577,6 +1651,12 @@ export const Requests: React.FC = () => {
             >
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
+
+                        <div>
+                            <div>
+                                <MultiFilePicker label="Proof of Document" placeholder="Upload Document" error={errorsBookingApplicant.BookingApplicantModificationDocumentUploadURL} value={bookingApplicantModificationDocumentUploadFiles} onChange={setBookingApplicantModificationDocumentUploadFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedBookingApplicantModificationDocumentUploadURLs((prev) => [...prev, url])} />
+                            </div>
+                        </div>
                         <div>
                             <SinglePageSelection label="Applicant Type" placeholder="Select Applicant Type" required value={formDataDetails?.ApplicantType ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantType", String(e))} options={APPLICANT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))} error={errorsBookingApplicant.ApplicantType} />
                         </div>
@@ -1691,6 +1771,9 @@ export const Requests: React.FC = () => {
                 <div className="space-y-10 p-6 bg-blue-100">
                     <div className="space-y-4" >
                         <div>
+                            <MultiFilePicker label="Proof of Document" placeholder="Upload Document" error={errorsBookingApplicant.PaymentProofURL} value={paymentProofFiles} onChange={setPaymentProofFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPaymentProofURLs((prev) => [...prev, url])} />
+                        </div>
+                        <div>
                             <Input label="Current Parking Number" value={bookingData?.ParkingNumber || "-"} disabled />
                         </div>
                         <MultiSelectPagination
@@ -1731,7 +1814,10 @@ export const Requests: React.FC = () => {
                 loading={isLoading}
                 size='xl'
             >
-                <div className="space-y-10 p-6 bg-blue-100">
+                <div className="space-y-5 p-3 bg-blue-100">
+                    <div>
+                        <MultiFilePicker label="Proof of Document" placeholder="Upload Document" error={errorsBookingApplicant.PaymentProofURL} value={paymentProofFiles} onChange={setPaymentProofFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPaymentProofURLs((prev) => [...prev, url])} />
+                    </div>
                     <TextArea
                         label="Remark"
                         required
@@ -1743,12 +1829,11 @@ export const Requests: React.FC = () => {
                 </div>
             </Modal >
 
-
+            {/* Approval for Applicant Details */}
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
                 title='Applicant Details'
                 titleText={ownerName ?? ""}
-
                 onClose={() => setIsApprovalLogModalOpen(false)}
                 request={approvalLogRequest} />
 
@@ -1761,6 +1846,27 @@ export const Requests: React.FC = () => {
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />
+
+
+            {/* Approval for Parking Details */}
+            <ApprovalLogModal
+                isOpen={isParkingApprovalLogModalOpen}
+                title='Parking Details'
+                titleText={parkingNumber ?? ""}
+                onClose={() => setIsParkingApprovalLogModalOpen(false)}
+                request={approvalParkingLogRequest} />
+
+            <ApprovalActionModal
+                title="Parking Details"
+                isOpen={isParkingApprovalActionModalOpen}
+                onClose={() => setIsParkingApprovalActionModalOpen(false)}
+                actionType={approvalParkingActionType}
+                titleText={parkingNumber ?? ""}
+                onSubmit={handleParkingApprovalSubmit}
+                loading={isLoading}
+            />
+
+
         </div >
     )
 }

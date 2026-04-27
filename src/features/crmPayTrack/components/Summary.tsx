@@ -15,17 +15,14 @@ import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import { Modal } from "@/ui/components/Modal/Modal";
 import type { AddUpdateRefundAmountData, RefundAmountData } from "@/features/crmPayTrack/models/InitialRefundAmountModel";
 import { initialRefundAmountService } from "@/features/crmPayTrack/services/InitialRefundAmountService";
-import usePagination from "@/core/hooks/usePagination";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import { fetchFlatListMasterDropdown } from '@/features/crmPayTrack/flatListMasterDropDown';
-import { Search, XIcon } from 'lucide-react';
+import { XIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-
-import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
-import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
-import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
-import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
-import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
+// import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+// import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
+// import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
+// import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
+// import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 
 const initialFormStateForInitialAmountRefundRequest = (): RefundAmountData => ({
     BookingId: 0,
@@ -110,38 +107,33 @@ export const Summary: React.FC = () => {
 
     const [bookingData, setBookingData] = useState<BookingData | null>(null);
     const [initiateRefund, setInitiateRefund] = useState(false);
-    const [initiateTransfer, setInitiateTransfer] = useState(false);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
-    const [isBookingCancelled, setIsBookingCancelled] = useState(false);
-    const [isRefundSaved, setIsRefundSaved] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [addUpdateInitialAmountRefundRequest, setAddUpdateInitialAmountRefundRequest] = useState<AddUpdateRefundAmountData>(() => initialFormStateForInitialAmountRefundRequest());
-    const [flatListOptions, setFlatListOptions] = useState<{ label: string; value: string }[]>([]);
-    const [selectedFlatId, setSelectedFlatId] = useState<string>('');
-    const [searchBuildingWingFloorFlatTerm, setSearchBuildingWingFloorFlatTerm] = useState('');
 
-    // APPROVAL LOG MODAL
-    const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
-    const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-    const [ownerName, setOwnerName] = useState<string | null>("");
+    // // APPROVAL LOG MODAL
+    // const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+    // const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    // const [ownerName, setOwnerName] = useState<string | null>("");
 
-    // APPROVAL ACTION MODAL
-    const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
-    const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
-    const [approvalRowData, setApprovalRowData] = useState<BookingData | null>(null);
+    // // APPROVAL ACTION MODAL
+    // const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
+    // const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
+    // const [approvalRowData, setApprovalRowData] = useState<BookingData | null>(null);
 
     const { addToast } = useToast();
     const { projectId } = useProject();
-    const { listState } = usePayTrackBookingListState();
+    const { listState, triggerRefresh } = usePayTrackBookingListState();
     const { bookingId } = listState;
-    const { pagination, setPagination } = usePagination(10);
 
     const navigate = useNavigate();
 
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     const applicantData = bookingData?.BookingApplicantData;
+    const isBookingCancel = bookingData?.ApprovalStatus === 'Cancel';
+    const isRefundStatus = bookingData?.ApprovalStatus === 'Refund';
 
     const PushInitialAmountRefundFormData = (): AddUpdateRefundAmountData => {
         return {
@@ -180,7 +172,6 @@ export const Summary: React.FC = () => {
 
     const onCancelBooking = () => {
         setIsConfirmationDialogBoxOpen(false);
-        setIsBookingCancelled(true);
         loadCancelBooking();
     }
 
@@ -188,98 +179,85 @@ export const Summary: React.FC = () => {
         setInitiateRefund(true);
     }
 
-    const handleInitiateTransfer = () => {
-        setInitiateTransfer(true);
-    }
-
     const handleCancelBooking = () => {
         setIsConfirmationDialogBoxOpen(true);
     }
 
+    // #region INIT
     useEffect(() => {
         if (!projectId || !bookingId) return;
 
         loadBookingForSummary();
 
     }, [projectId, bookingId]);
+    // #endregion
 
+    // const handleApprovalLog = (row: BookingData) => {
+    //     const request: ModulesApprovalStatusRequest = {
+    //         ModuleName: "BOOKING REFUND APPROVAL",
+    //         Id: row.BookingId ?? 0,
+    //         ProjectId: projectId ? Number(projectId) : 0,
+    //         SubId: row.BookingId ?? 0
+    //     };
+    //     setOwnerName(row.ApplicantName);
+    //     setApprovalLogRequest(request);
+    //     setIsApprovalLogModalOpen(true);
+    // };
 
-    useEffect(() => {
-        if (!initiateTransfer) return;
-        const loadFlatList = async () => {
-            const response = await fetchFlatListMasterDropdown(1, { projectId: Number(projectId) });
-            setFlatListOptions(response.itemList);
-        };
-        loadFlatList();
-    }, [initiateTransfer, projectId]);
+    // const handleApproveRejectDocument = (row: BookingData, approvalType: "approve" | "reject") => {
+    //     setApprovalRowData(row);
+    //     setOwnerName(row.ApplicantName);
+    //     setApprovalActionType(approvalType);
+    //     setIsApprovalActionModalOpen(true);
+    // };
 
-    const handleAddFlatModal = (flatId: string) => {
-        setSelectedFlatId(flatId);
-    };
+    // const handleApprovalSubmit = async (remark: string) => {
 
-    const handleApprovalLog = (row: BookingData) => {
-        const request: ModulesApprovalStatusRequest = {
-            ModuleName: "BOOKING REFUND APPROVAL",
-            Id: row.BookingId ?? 0,
-            ProjectId: projectId ? Number(projectId) : 0,
-            SubId: 0
-        };
-        setOwnerName(row.ApplicantName);
-        setApprovalLogRequest(request);
-        setIsApprovalLogModalOpen(true);
-    };
+    //     if (!approvalRowData) return;
 
-    const handleApproveRejectDocument = (row: BookingData, approvalType: "approve" | "reject") => {
-        setApprovalRowData(row);
-        setOwnerName(row.ApplicantName);
-        setApprovalActionType(approvalType);
-        setIsApprovalActionModalOpen(true);
-    };
+    //     const payload: UpdateModulesWorkflowApprovalRequest = {
+    //         ModuleName: "BOOKING REFUND APPROVAL",
+    //         Id: approvalRowData.BookingId ?? 0,
+    //         ProjectId: projectId ? Number(projectId) : 0,
+    //         IsApproved: approvalActionType === "approve",
+    //         Remarks: remark ?? null,
+    //         SubId: approvalRowData.BookingId ?? 0
+    //     };
 
-    const handleApprovalSubmit = async (remark: string) => {
+    //     await runApiWithLoader(
+    //         setIsLoading,
+    //         setLoadingMessage,
+    //         async () => {
 
-        if (!approvalRowData) return;
+    //             const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
 
-        const payload: UpdateModulesWorkflowApprovalRequest = {
-            ModuleName: "BOOKING REFUND APPROVAL",
-            Id: approvalRowData.BookingId ?? 0,
-            ProjectId: projectId ? Number(projectId) : 0,
-            IsApproved: approvalActionType === "approve",
-            Remarks: remark ?? null,
-            SubId: 0
-        };
+    //             if (E.isRight(response)) {
 
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
+    //                 addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
-                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+    //                 setIsApprovalActionModalOpen(false);
+    //                 triggerRefresh();
+    //                 triggerRefresh();
+    //                 await loadBookingForSummary();
 
-                if (E.isRight(response)) {
+    //             } else {
 
-                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+    //                 addToast({ type: "error", title: response.left.message });
 
-                    setIsApprovalActionModalOpen(false);
-                    await loadBookingForSummary();
+    //             }
 
-                } else {
+    //             return response;
+    //         },
+    //         undefined,
+    //         (error: any) => {
+    //             addToast({ type: "error", title: error.message });
+    //         },
+    //         undefined,
+    //         approvalActionType === "approve" ? "Approving Refund" : "Rejecting Refund"
+    //     );
+    // };
 
-                    addToast({ type: "error", title: response.left.message });
-
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            approvalActionType === "approve" ? "Approving Refund" : "Rejecting Refund"
-        );
-    };
-
+    // #region Load Booking For Summary
     const loadBookingForSummary = async () => {
         if (!bookingId) return;
         await runApiWithLoader(
@@ -303,13 +281,7 @@ export const Summary: React.FC = () => {
                     setBookingData(booking);
 
                     if (booking) {
-                        const cancelledStatuses = ['Cancelled', 'Booking Cancelled', 'Refund'];
-                        if (booking.ApprovalStatus && cancelledStatuses.includes(booking.ApprovalStatus)) {
-                            setIsBookingCancelled(true);
-                        }
-                        if (booking.TotalAmountRefundedAgainstBooking && booking.TotalAmountRefundedAgainstBooking > 0) {
-                            setIsRefundSaved(true);
-                        }
+                        // State is now derived from bookingData?.ApprovalStatus
                     }
 
                 } else {
@@ -326,17 +298,17 @@ export const Summary: React.FC = () => {
             'Loading Booking Data'
         );
     };
+    // #endregion
 
+    // #region Add Update Initial Amount Refund
     const handleAddUpdateInitialAmountRefund = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        setErrors({})
-
-        const validation = validateInitialAmountRefundForm()
+        setErrors({});
+        const validation = validateInitialAmountRefundForm();
 
         if (!validation.isValid) {
-            setErrors(validation.errors)
-            return
+            setErrors(validation.errors);
+            return;
         }
 
         await runApiWithLoader(
@@ -347,30 +319,23 @@ export const Summary: React.FC = () => {
                 const response = await initialRefundAmountService.apiCallAddUpdateRefundAmount(payload);
 
                 if (E.isRight(response)) {
-
                     setInitiateRefund(false);
-                    setIsRefundSaved(true);
 
-                    setBookingData(prev => prev ? {
-                        ...prev,
-                        TotalAmountRefundedAgainstBooking: Number(addUpdateInitialAmountRefundRequest.TotalAmountRefundedAgainstBooking) || 0
-                    } : prev);
+                    setBookingData(prev => {
+                        const updated = prev ? {
+                            ...prev,
+                            ApprovalStatus: "Refund",
+                            TotalAmountRefundedAgainstBooking: Number(addUpdateInitialAmountRefundRequest.TotalAmountRefundedAgainstBooking) || 0
+                        } : prev;
 
-                    const isAdd = addUpdateInitialAmountRefundRequest.BookingId === 0;
+                        return updated;
+                    });
 
-                    if (isAdd) {
-                        setPagination({
-                            currentPage: pagination.currentPage,
-                            totalRecords: pagination.totalRecords + 1,
-                            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-                        });
-                        loadBookingForSummary();
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                        setAddUpdateInitialAmountRefundRequest(initialFormStateForInitialAmountRefundRequest());
-                    } else {
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    }
+                    triggerRefresh();
+                    await loadBookingForSummary();
 
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] || "Refund Initiated" });
+                    setAddUpdateInitialAmountRefundRequest(initialFormStateForInitialAmountRefundRequest());
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -378,13 +343,15 @@ export const Summary: React.FC = () => {
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: error.message })
-            },
-            undefined,
-        )
+                addToast({ type: 'error', title: error.message });
+            }
+        );
     };
+    // #endregion
 
+    // #region Load Cancel Booking
     const loadCancelBooking = async () => {
+
         if (!bookingId) return;
         await runApiWithLoader(
             setIsLoading,
@@ -400,11 +367,14 @@ export const Summary: React.FC = () => {
                 };
 
                 const response = await bookingService.apiCallCancelBooking(params);
+                console.log('Response', response);
 
                 if (E.isRight(response)) {
                     const booking = response.right.Data;
                     const item = Array.isArray(booking) ? booking[0] : booking;
+                    console.log('Item ', item.ApprovalStatus);
                     setBookingData(item);
+                    triggerRefresh();
                 }
                 else {
                     addToast({ type: 'error', title: response.left.message });
@@ -420,14 +390,15 @@ export const Summary: React.FC = () => {
             'Cancelling Booking'
         );
     };
+    // #endregion
 
     return (
         <div>
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
-            <div className="absolute top-5 right-2 z-10 flex gap-2">
-                {!isBookingCancelled ? (
+            <div className="absolute top-5 right-2 z-10  gap-2">
+                {(!isBookingCancel && !isRefundStatus) && (
                     <Button
                         onClick={handleCancelBooking}
                         variant="solid"
@@ -437,57 +408,58 @@ export const Summary: React.FC = () => {
                     >
                         Cancel Booking
                     </Button>
-                ) : (
+                )}
+
+                {isBookingCancel && (
                     <>
-                        {isRefundSaved ? (
-                            <div className="flex gap-2 items-center">
+                        <div className="flex justify-end items-center gap-3">
+                            {/* <ApprovalActions
+                                approvalStatus={bookingData?.ApprovalStatus || "-"}
+                                showApproval={bookingData?.IsApproval}
+                                isIcons={true}
+                                onHistory={() => handleApprovalLog(bookingData)}
+                                onApprove={() => handleApproveRejectDocument(bookingData, "approve")}
+                                onReject={() => handleApproveRejectDocument(bookingData, "reject")}
+                            /> */}
 
-                                {bookingData && (
-                                    <ApprovalActions
-                                        approvalStatus={bookingData?.ApprovalStatus || "-"}
-                                        showApproval={bookingData?.IsApproval}
-                                        isIcons={true}
-                                        onHistory={() => handleApprovalLog(bookingData)}
-                                        onApprove={() => handleApproveRejectDocument(bookingData, "approve")}
-                                        onReject={() => handleApproveRejectDocument(bookingData, "reject")}
-                                    />
-                                )}
+                            <Button
+                                onClick={handleInitiateRefund}
+                                color="blue"
+                                variant="solid"
+                                colorMode="extraLight"
+                                size="md"
+                                style={{ width: '190px', height: '40px' }}
+                            >
+                                Initiate Refund
+                            </Button>
+                        </div>
+                    </>
+                )}
 
-                                <Button
-                                    onClick={() => navigate(`/payTrack/view/addRefundDetails`)}
-                                    color="green"
-                                    variant="solid"
-                                    size="md"
-                                    style={{ width: '190px', height: '40px' }}
-                                    disabled={bookingData?.ApprovalStatus !== "Approved" && bookingData?.ApprovalStatus !== "Refund"}
-                                >
-                                    Make Payment
-                                </Button>
-                            </div>
+                {isRefundStatus && (
+                    <>
 
-                        ) : (
-                            <>
-                                <Button
-                                    onClick={handleInitiateRefund}
-                                    color="blue"
-                                    variant="solid"
-                                    colorMode="extraLight"
-                                    size="md"
-                                    style={{ width: '190px', height: '40px' }}
-                                >
-                                    Initiate Refund
-                                </Button>
-                                <Button
-                                    onClick={handleInitiateTransfer}
-                                    color="blue"
-                                    size="md"
-                                    variant="solid"
-                                    style={{ width: '190px', height: '40px' }}
-                                >
-                                    Initiate Transfer
-                                </Button>
-                            </>
-                        )}
+                        <div className="flex justify-end items-center gap-3">
+                            {/* <ApprovalActions
+                                approvalStatus={bookingData?.ApprovalStatus || "-"}
+                                showApproval={bookingData?.IsApproval}
+                                isIcons={true}
+                                onHistory={() => handleApprovalLog(bookingData)}
+                                onApprove={() => handleApproveRejectDocument(bookingData, "approve")}
+                                onReject={() => handleApproveRejectDocument(bookingData, "reject")}
+                            /> */}
+
+                            <Button
+                                onClick={() => navigate(`/payTrack/view/addRefundDetails`)}
+                                color="green"
+                                variant="solid"
+                                size="md"
+                                style={{ width: '190px', height: '40px' }}
+
+                            >
+                                Make Payment
+                            </Button>
+                        </div>
                     </>
                 )}
             </div>
@@ -517,7 +489,7 @@ export const Summary: React.FC = () => {
                                         <FieldItem label="GST Number" value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
                                         <FieldItem label="Cancelled Cheque" value={getSafeString(applicant?.CancelledChequeURL)} urls={applicant?.CancelledChequeURL} isIcon />
                                         <FieldItem label="POA" value={getSafeString(applicant?.POAURL)} urls={applicant?.POAURL} isIcon />
-                                        <FieldItem label="Income Form16IT" value={getSafeString(applicant?.IncomeForm16ITRURL)} urls={applicant?.IncomeForm16ITRURL} isIcon />
+                                        <FieldItem label="Income Form 16 IT" value={getSafeString(applicant?.IncomeForm16ITRURL)} urls={applicant?.IncomeForm16ITRURL} isIcon />
                                         <FieldItem label="Nre/Nro/BankDetails" value={getSafeString(applicant?.NreNroBankDetailsURL)} urls={applicant?.NreNroBankDetailsURL} isIcon />
                                         <FieldItem label="Nominee Form" value={getSafeString(applicant?.NomineeFormURL)} urls={applicant?.NomineeFormURL} isIcon />
                                         <FieldItem label="Statement Of Source Of Funds" value={getSafeString(applicant?.StatementOfSourceOfFundsURL)} urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
@@ -529,7 +501,7 @@ export const Summary: React.FC = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="py-6 text-center text-gray-500 text-sm bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="py-6 text-center text-gray-500 text-sm">
                             <NoDataView message="No Applicant Data Found" />
                         </div>
                     )}
@@ -589,37 +561,33 @@ export const Summary: React.FC = () => {
                 </div>
             </div>
 
-            {(isBookingCancelled && isRefundSaved) && (
+            {(isBookingCancel || isRefundStatus) && (
                 <div className="col-span-7 pt-5">
-
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
-                        <h4 className="text-lg font-semibold text-gray-900 pb-2">Cancellation Details</h4>
+                        <h4 className="text-lg font-semibold text-gray-900 pb-2">Cancellation Summary</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <FieldItem label="Current Status" value={bookingData?.ApprovalStatus || "-"} />
+                            <FieldItem label="Cancelled Date" value={formatDate_dd_MonthName_yy(bookingData?.CreatedDate ?? '')} />
+                            <FieldItem label="Cancelled By" value={getSafeString(bookingData?.CreatedBy)} />
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isRefundStatus && (
+                <div className="pt-5">
+                    <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
+                        <h4 className="text-lg font-semibold text-gray-900 pb-2">Refund Details</h4>
                         <div>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                <FieldItem label="Booking Status" value={bookingData?.ApprovalStatus || "-"} />
-                                <FieldItem label="Booking Cancelled Date" value={formatDate_dd_MonthName_yy(bookingData?.ModifiedDate ?? '')} />
-                                <FieldItem label="Cancelled By" value={getSafeString(bookingData?.ModifiedBy)} />
-                                <FieldItem label="Refunded Amount (₹)" value={formatCurrency(bookingData?.TotalAmountRefundedAgainstBooking) || "-"} />
+                                <FieldItem label="Total Refunded Amount (₹)" value={formatCurrency(bookingData?.TotalAmountRefundedAgainstBooking) || "-"} />
+                                <FieldItem label="Paid (₹)" value={formatCurrency(bookingData?.RefundedAmountOnTillDate) || "-"} />
+                                <FieldItem label="Pending (₹)" value={`${formatCurrency((bookingData?.TotalAmountRefundedAgainstBooking || 0) - (bookingData?.RefundedAmountOnTillDate || 0))}`} />
+                                <FieldItem label="Refund Status" value={bookingData?.ApprovalStatus || "-"} />
+                                <FieldItem label="Ledger Count" value={bookingData?.LedgerCount || 0} />
                             </div>
                         </div>
                     </div>
-
-                    {/* Refund Details */}
-                    <div className="col-span-7 pt-5">
-                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
-                            <h4 className="text-lg font-semibold text-gray-900 pb-2">Refund Details</h4>
-                            <div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    <FieldItem label="Total Refunded Amount (₹)" value={formatCurrency(bookingData?.TotalAmountRefundedAgainstBooking) || "-"} />
-                                    <FieldItem label="Paid (₹)" value={formatCurrency(bookingData?.RefundedAmountOnTillDate) || "-"} />
-                                    <FieldItem label="Pending (₹)" value={`${formatCurrency((bookingData?.TotalAmountRefundedAgainstBooking || 0) - (bookingData?.RefundedAmountOnTillDate || 0))}`} />
-                                    <FieldItem label="Refund Status" value={bookingData?.ApprovalStatus || "-"} />
-                                    {/* Add Ledger Count */}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
             )}
 
@@ -669,85 +637,13 @@ export const Summary: React.FC = () => {
                 </div>
             </Modal >
 
-            <Modal
-                isOpen={initiateTransfer}
-                onClose={() => {
-                    setInitiateTransfer(false);
-                    setSearchBuildingWingFloorFlatTerm('');
-                    setErrors({});
-                    setSelectedFlatId('');
-                }}
-                onCancel={() => {
-                    setInitiateTransfer(false);
-                    setSearchBuildingWingFloorFlatTerm('');
-                    setErrors({});
-                    setSelectedFlatId('');
-                }}
-                title="Select Flat"
-                loading={isLoading}
-                size="small-half"
-            >
-                <div>
-                    <div className=" space-y-4 ">
-                        <Input
-                            type="text"
-                            placeholder="Search"
-                            value={searchBuildingWingFloorFlatTerm}
-                            onChange={e => {
-                                setSearchBuildingWingFloorFlatTerm(e.target.value);
-                            }}
-                            leftIcon={<Search className="h-8 w-8 pb-1 text-gray-400" />}
-                            className="w-full p-12 border border-gray-300 rounded mb-1"
-                        />
-                    </div>
-
-                    <div className="overflow-x-auto thin-scroll">
-                        {flatListOptions
-                            .filter(flat =>
-                                (flat?.label || '').toLowerCase().includes(searchBuildingWingFloorFlatTerm.toLowerCase())
-                            ).length === 0 ? (
-                            <div className="flex items-center justify-center p-10 text-gray-500 text-sm">
-                                <NoDataView />
-                            </div>
-
-                        ) : (
-                            flatListOptions
-                                .filter(flat =>
-                                    (flat?.label || '').toLowerCase().includes(searchBuildingWingFloorFlatTerm.toLowerCase())
-                                )
-                                .map(flat => {
-                                    const isChecked = selectedFlatId === flat.value;
-                                    return (
-                                        <label
-                                            key={flat.value}
-                                            className="flex items-center justify-between gap-2 px-6 py-3 border-b border-blue-200 cursor-pointer last:border-b-0"
-                                        >
-                                            <span className="text-gray-700 text-sm">{flat.label}</span>
-                                            <input
-                                                type="radio"
-                                                name="select-flat"
-                                                value={flat.value}
-                                                checked={isChecked}
-                                                onChange={() => {
-                                                    handleAddFlatModal(flat.value);
-                                                    navigate(`/booking/add/${bookingData?.BookingId}/${bookingData?.EnquiryId}/${flat.value}`)
-                                                }}
-                                                className="w-4 h-4 cursor-pointer"
-                                            />
-                                        </label>
-                                    );
-                                })
-                        )}
-                    </div>
-                </div>
-            </Modal>
-
-            <ApprovalLogModal
+            {/* <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
                 title='Refund Details'
                 titleText={ownerName ?? ""}
                 onClose={() => setIsApprovalLogModalOpen(false)}
-                request={approvalLogRequest} />
+                request={approvalLogRequest}
+            />
 
             <ApprovalActionModal
                 title="Refund Details"
@@ -757,7 +653,7 @@ export const Summary: React.FC = () => {
                 titleText={ownerName ?? ""}
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
-            />
+            /> */}
         </div>
     )
 }

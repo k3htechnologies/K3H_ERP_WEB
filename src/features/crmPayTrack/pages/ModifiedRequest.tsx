@@ -1,10 +1,14 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import Tabs from '@/ui/components/Tab/Tab';
 import Summary from "@/features/crmPayTrack/components/Summary";
 import Requests from "@/features/crmPayTrack/components/Requests";
 import Activity from "@/features/crmPayTrack/components/Activity";
+import { usePayTrackBookingListState } from "@/features/crmPayTrack/context/PayTrackBookingListStateContext";
 
 export const ModifiedRequest: React.FC = () => {
+
+    const { listState, updateListState } = usePayTrackBookingListState();
 
     const modifiedRequestTabList = [
         { id: 'Summary', label: 'Summary' },
@@ -12,7 +16,13 @@ export const ModifiedRequest: React.FC = () => {
         { id: 'Activity', label: 'Activity' },
     ];
 
-    const [activeTab, setActiveTab] = useState<string>(modifiedRequestTabList[0].id);
+    const [activeTab, setActiveTab] = useState<string>(listState.activeSubTab || modifiedRequestTabList[0].id);
+
+    useEffect(() => {
+        if (listState.activeSubTab && listState.activeSubTab !== activeTab) {
+            setActiveTab(listState.activeSubTab);
+        }
+    }, [listState.activeSubTab]);
 
     return (
         <div className="relative">
@@ -23,6 +33,7 @@ export const ModifiedRequest: React.FC = () => {
                     islarge={true}
                     onTabChange={(t) => {
                         setActiveTab(t.id);
+                        updateListState({ activeSubTab: t.id });
                     }}
                     isChips={false}
                 />

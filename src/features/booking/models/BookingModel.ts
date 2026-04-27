@@ -93,7 +93,7 @@ export interface BookingData {
 
     RegistrationDate: string | null;
     FinalRegistrationDate: string | null;
-    
+
     AgreementValue: number | null;
     AgreementValueTDS: number | null;
     AgreementValueGSTPercentage: number | null;
@@ -139,6 +139,7 @@ export interface BookingData {
     TransferBookingId: number | null;
     TransferFlat: string | null;
     TenantId: number | null;
+    LedgerCount: number | null;
 }
 
 export interface BookingApplicantData {

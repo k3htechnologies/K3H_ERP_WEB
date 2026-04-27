@@ -429,15 +429,12 @@ export const ACTIVE_INACTIVE_OPTIONS = toOptions(MASTER_DATA.activeInactive);
 export const PAYMENT_FOR_OPTIONS = toOptions(MASTER_DATA.paymentFor);
 export const PAYMENT_RECEIVED_FROM_OPTIONS = toOptions(MASTER_DATA.paymentReceivedFrom);
 export const CRM_PAY_TRACK_FILE_NAME_OPTIONS = toOptions(MASTER_DATA.crmPayTrackFileName);
-<<<<<<< HEAD
-export const REFUNDED_DETAILS_AMOUNT_TYPE_OPTIONS = toOptions(MASTER_DATA.refundedDetaisAmountType);
-=======
 export const CALL_STATUS_OPTIONS = toOptions(MASTER_DATA.callStatus);
 export const CALL_PURPOSE_OPTIONS = toOptions(MASTER_DATA.callPurpose);
 export const DELIVERY_STATUS = toOptions(MASTER_DATA.deliveryStatus);
 export const DELIVERY_MODE = toOptions(MASTER_DATA.deliveryMode);
 export const DOCUMENT_TYPE = toOptions(MASTER_DATA.documentType);
->>>>>>> a67963c97957118e8bce93d0b9459bcb42dd16eb
+export const REFUNDED_DETAILS_AMOUNT_TYPE_OPTIONS = toOptions(MASTER_DATA.refundedDetaisAmountType);
 
 
 // ============================================================================

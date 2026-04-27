@@ -31,7 +31,6 @@ export const Overview: React.FC = () => {
     const [materialRequisitionVendorData, setMaterialRequisitionVendorData] = useState<SelectedVendorData | null>(null)
     const [materialRequisitionQuotationTermsData, setMaterialRequisitionQuotationTermsData] = useState<MaterialRequisitionQuotationDetailsTermsData[]>([])
     const [materialRequisitionPaymentData, setMaterialRequisitionPaymentData] = useState<MaterialRequisitionPaymentData | null>(null)
-    
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
@@ -127,7 +126,7 @@ export const Overview: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationMaterialRequisitionInvoice = {
                     PageNumber: 1,
-                    PageSize: 1,
+                    PageSize: 50,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
                 };
@@ -154,7 +153,6 @@ export const Overview: React.FC = () => {
 
     const amount = Number(MaterialRequisitionInvoiceData[0]?.InvoiceAmount ?? 0)
     const ampuntPaid = Number(materialRequisitionPaymentData?.AmountPaid ?? 0)
-
     const PendingAmount = amount - ampuntPaid
 
     return (
@@ -173,6 +171,7 @@ export const Overview: React.FC = () => {
                                 <FieldItem label="Unique ID" value={matrialRequisitionData?.SystemGeneratedCode} />
                                 <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
                                 <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
+
                                 <div>
                                     <p className="text-gray-500">Attachment</p>
                                     <MultiImageViewer
@@ -182,6 +181,7 @@ export const Overview: React.FC = () => {
                                         triggerLabel="-"
                                     />
                                 </div>
+
                             </div>
                         </section>
                     </div>
@@ -198,7 +198,7 @@ export const Overview: React.FC = () => {
                                 <FieldItem label="Grand Total" value={`₹ ${materialRequisitionVendorData?.VendorName}`} />
                                 <FieldItem label="Est. Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays} days`} />
                                 <FieldItem label="Paid Amount" value={`₹ ${materialRequisitionPaymentData?.AmountPaid.toFixed(2)}`} />
-                                <FieldItem label="Pending Amount" value={`₹ ${PendingAmount}`} />
+                                <FieldItem label="Pending Amount" value={`₹ ${PendingAmount.toFixed(2)}`} />
                             </div>
                         </section>
                     </div>
@@ -252,7 +252,8 @@ export const Overview: React.FC = () => {
                                         <FieldItem label="Name" value={item.MaterialName} />
                                         <FieldItem label="Sub-Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                         <FieldItem label="Quantity" value={item.MaterialQuantity} />
-                                        <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item?.RequiredDate ?? '')} />
+                                        <FieldItem label="Received Quantity" value={<TooltipText text={item.MaterialReceivedQuantityTillDate ?? ''} />} />
+                                        <FieldItem label="Remark" value={item.Remark} />
 
                                     </div>
                                 ))}
@@ -267,13 +268,15 @@ export const Overview: React.FC = () => {
                                 {MaterialRequisitionInvoiceData.length === 0 ? (
                                     <div className="flex flex-col justify-center items-center h-full">
                                         <NoDataView />
-                                    </div>) : (
+                                    </div>
+                                ) : (
                                     <div>
                                         {MaterialRequisitionInvoiceData.map((item, index) => (
                                             <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 rounded-lg p-2 mt-2 ">
                                                 <FieldItem label="Invoice Number" value={item.InvoiceNumber} />
-                                                <FieldItem label="Invoice Amount" value={<TooltipText text={item.InvoiceAmount ?? ''} />} />
+                                                <FieldItem label="Invoice Amount" value={`₹ ${item.InvoiceAmount ?? ''}`} />
                                                 <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(item.InvoiceDueDate ?? '')} />
+
                                             </div>
                                         ))}
                                     </div>

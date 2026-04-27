@@ -72,7 +72,7 @@ const MakePayment: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            "Loading Invoice",
+            "Loading GRN Data",
         );
     };
 
@@ -147,7 +147,7 @@ const MakePayment: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
-            <div className="pb-2">
+            <div className="pb-4">
                 <HeaderActionBar
                     titleText={'Make Payment'}
                     cancelText="Cancel"
@@ -162,9 +162,10 @@ const MakePayment: React.FC = () => {
                         <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
                         <FieldItem label="Challan No." value={materialRequisitionGRNData?.ChallanNumber} />
                         <FieldItem label="Vehicle No." value={materialRequisitionGRNData?.VehicleNumber} />
-                        <FieldItem label="Total Requisition Amount" value={materialRequisitionGRNData?.Remarks} />
-                        <FieldItem label="Paid  Requisition Amount" value={materialRequisitionGRNData?.VehicleNumber} />
-                        <FieldItem label="Remaining Requisition Amount " value={materialRequisitionGRNData?.VehicleNumber} />
+                        <FieldItem label="Total Requisition Amount" value={`₹ ${materialRequisitionGRNData?.Remarks}`} />
+                        <FieldItem label="Paid  Requisition Amount" value={`₹ ${materialRequisitionGRNData?.VehicleNumber}`} />
+                        <FieldItem label="Remaining Requisition Amount " value={`₹ ${materialRequisitionGRNData?.VehicleNumber}`} />
+
                     </div>
                 </div>
 
@@ -180,12 +181,16 @@ const MakePayment: React.FC = () => {
             </div>
 
             <div className="gap-x-4 rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
-
                 <div className="flex justify-between mb-2">
-                    <FieldItem label="Invoice Number" value={invoiceData?.InvoiceNumber} />
+                    <span >Invoice Number : {invoiceData?.InvoiceNumber}</span>
                     <Button
-                        size="sm"
-                    >
+                        size="mxs"
+                        color="transparent"
+                        style={{
+                            color: '#FFFFFF',
+                            padding: '4px 8px',
+                            backgroundColor: '#135BEC'
+                        }}                    >
                         Make Payment
                     </Button>
                 </div>
@@ -197,20 +202,24 @@ const MakePayment: React.FC = () => {
                         <FieldItem label="DuDate" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDueDate ?? '')} />
                         <div>
                             <p className="text-gray-500">Invoice Document</p>
-                            <MultiImageViewer
-                                images={parseDocumentUrls(invoiceData?.UploadInvoiceURL)}
-                                title="Attachment"
-                                isIcon={false}
-                                triggerLabel="-"
-                            />
+                            <div className="flex">
+                                <span className="text-[#135BEC]">View</span>
+                                <MultiImageViewer
+                                    images={parseDocumentUrls(invoiceData?.UploadInvoiceURL)}
+                                    title="Attachment"
+                                    isIcon={false}
+                                    triggerLabel="View"
+                                />
+                            </div>
                         </div>
+
                         <div>
                             <p className="text-gray-500">Performance Report</p>
                             <MultiImageViewer
                                 images={parseDocumentUrls(invoiceData?.PerformaInvoiceURL)}
                                 title="Attachment"
                                 isIcon={false}
-                                triggerLabel="-"
+                                triggerLabel="View"
                             />
                         </div>
                     </div>

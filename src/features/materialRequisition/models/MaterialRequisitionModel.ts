@@ -79,6 +79,7 @@ export interface MaterialRequisitionDetailData {
     Uom: string;
     RequiredDate: string;
     MaterialReceivedQuantityTillDate: number;
+    Remark: string | null
     CreatedById: number;
     CreatedBy: string;
     CreatedDate: Date;
@@ -90,7 +91,7 @@ export interface MaterialRequisitionDetailData {
 export interface MaterialRequisitionInvoiceData {
     InvoiceNumber: string | null;
     InvoiceAmount: number | 0;
-    InvoiceDueDate: string 
+    InvoiceDueDate: string
 }
 
 export interface AddUpdateMaterialRequisitionRequest {

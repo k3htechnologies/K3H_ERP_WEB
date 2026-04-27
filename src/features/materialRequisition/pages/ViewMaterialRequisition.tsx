@@ -8,14 +8,14 @@ import { Invoice } from "../components/invoice/Invoice";
 import Overview from "../components/Overview";
 import PurchaseOrder from "../components/PurchaseOrder";
 import GRN from "../components/GRN/GRN";
-import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "../models/MaterialRequisitionModel";
+import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "../models/MaterialRequisitionModel";
 import { Button } from "@/ui/components/forms";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { materialRequisitionService } from "../services/MaterialRequisitionService";
 import * as E from "fp-ts/Either";
-import { Copy } from "lucide-react";
+import { Copy, X } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { FinalizedVendor } from "../components/FinalizedVendor";
@@ -23,6 +23,7 @@ import DataTableEditable, { type EditableTableColumn } from "@/ui/components/Dat
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, isPreviousDate } from "@/core/utils/dateFormat";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { DateInput } from "@/ui/components/forms/DateInput";
+import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
@@ -39,8 +40,11 @@ export const ViewMaterialRequisition: React.FC = () => {
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const systemGeneratedCode = listState.SystemGeneratedCode;
+    const materialRequisitionStatus = listState.MaterialRequisitionStatus;
     const [isEditModalOpen, setEditIsModalOpen] = useState(false);
     const location = useLocation();
+    const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
+    const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
 
     const MaterialRequisitionTabList = [
         { id: 'Overview', label: 'Overview' },
@@ -51,9 +55,8 @@ export const ViewMaterialRequisition: React.FC = () => {
         { id: 'Invoice', label: 'Invoice' },
     ];
 
-    const [activeTab, setActiveTab] = useState(
-        location.state?.activeTab || MaterialRequisitionTabList[0].id
-    );
+    const [activeTab, setActiveTab] = useState(location.state?.activeTab || MaterialRequisitionTabList[0].id);
+
     const handleBackToListMaterialRequisition = () => {
         navigate('/materialRequisition');
     };
@@ -96,12 +99,14 @@ export const ViewMaterialRequisition: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
+
                 const params: FilterWithPaginationMaterialRequisition = {
                     PageNumber: 1,
                     PageSize: 1,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
                 };
+
                 const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
 
                 if (E.isRight(response)) {
@@ -124,6 +129,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
     const handleCopyMaterialRequisition = async (e?: React.FormEvent) => {
         e?.preventDefault();
+
         const hasPastDate = editableDetails.some(item => {
             if (!item.RequiredDate) return false;
 
@@ -247,37 +253,97 @@ export const ViewMaterialRequisition: React.FC = () => {
         },
     ], [])
 
+    const handleCloseRequisition = async () => {
+        if (!selectedMaterialRequisitionItem) return;
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const payload: DeleteMaterialRequisitionRequest = {
+                    MaterialRequisitionId: selectedMaterialRequisitionItem.MaterialRequisitionId,
+                    Uniquekey: selectedMaterialRequisitionItem.Uniquekey,
+                    ProjectId: Number(projectId),
+                }
+
+                const response = await materialRequisitionService.apiCallCloseMaterialRequisition(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage[0], });
+
+                    setIsCloseRequisitionDialogOpen(false);
+                    loadMaterialRequisition();
+
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                    setIsCloseRequisitionDialogOpen(false)
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Closing Requisition",
+        );
+    };
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
+
             <div className="flex justify-between">
                 <HeaderActionBar
-                    titleText={systemGeneratedCode ?? "-"}
+                    subTitleText={systemGeneratedCode ?? "-"}
+                    subSubTitleText={materialRequisitionStatus ?? ''}
                     cancelText="Cancel"
                     EditText="Edit"
                     onCancel={() => handleBackToListMaterialRequisition()}
                 />
 
-                {matrialRequisitionData?.IsCopy && (
-                    <Button
-                        size="sm"
-                        color="transparent"
-                        style={{
-                            color: '#135BEC',
-                            padding: '4px 8px',
-                            backgroundColor: '#DBEAFE'
-                        }}
-                        onClick={() => {
-                            handleOpenRequisitionModal();
-                        }}
-                    >
-                        <Copy className="h-4 w-4" color="blue" />
-                        Copy Entry
-                    </Button>
-                )}
+                <div className="flex justify-end gap-4">
+                    {matrialRequisitionData?.IsCopy && activeTab === 'Details' && (
+                        <Button
+                            size="mxs"
+                            color="transparent"
+                            style={{
+                                color: '#135BEC',
+                                padding: '4px 8px',
+                                backgroundColor: '#DBEAFE'
+                            }}
+                            onClick={() => {
+                                handleOpenRequisitionModal();
+                            }}
+                        >
+                            <Copy className="h-4 w-4" color="blue" />
+                            Copy Entry
+                        </Button>
+                    )}
+
+                    {matrialRequisitionData?.MaterialRequisitionStatus !== 'Completed' && activeTab === 'Details' && (
+                        <div className="flex justify-end pb-2">
+                            <Button
+                                size="mxs"
+                                color="transparent"
+                                style={{
+                                    color: '#E92C2C',
+                                    padding: '4px 8px',
+                                    backgroundColor: '#FFF2F2'
+                                }}
+                                onClick={() => {
+                                    setSelectedMaterialRequisitionItem(matrialRequisitionData);
+                                    setIsCloseRequisitionDialogOpen(true);
+                                }}
+                            >
+                                <X className="h-4 w-4" color="red" />
+                                Close Requisition
+                            </Button>
+                        </div>
+                    )}
+                </div>
             </div>
 
-            <div className="pt-3 pb-3">
+            <div className="pt-3 pb-2">
                 <Tabs
                     tabs={MaterialRequisitionTabList}
                     defaultActive={activeTab}
@@ -310,6 +376,20 @@ export const ViewMaterialRequisition: React.FC = () => {
                     />
                 </div>
             </Modal>
+
+            <ConfirmationDialogBox
+                isOpen={isCloseRequisitionDialogOpen}
+                onClose={() => {
+                    setIsCloseRequisitionDialogOpen(false);
+                    setSelectedMaterialRequisitionItem(null);
+                }}
+                onConfirm={handleCloseRequisition}
+                title="Close Requisition"
+                message={`Are you sure you want to Close this Material Requisition?`}
+                confirmText="Close"
+                cancelText="Cancel"
+                loading={isLoading}
+            />
         </div>
     );
 };

@@ -31,10 +31,10 @@ export const Invoice: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-        loadInvoiceData(1, {});
+        loadMaterialRequisitionGRNData(1, {});
     }, [projectId, currentMaterialRequisitionId])
 
-    const loadInvoiceData = async (page: number, filterParams: FilterInfo,) => {
+    const loadMaterialRequisitionGRNData = async (page: number, filterParams: FilterInfo,) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -49,6 +49,7 @@ export const Invoice: React.FC = () => {
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
                 if (E.isRight(response)) {
+
                     setInvoiceList(response.right.Data);
                     setPagination({
                         currentPage: page,
@@ -76,13 +77,13 @@ export const Invoice: React.FC = () => {
 
     const handlePageChange = (page: number) => {
         setPagination({ currentPage: 1 });
-        loadInvoiceData(page, {})
+        loadMaterialRequisitionGRNData(page, {})
     }
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
-        loadInvoiceData(1, {},);
+        loadMaterialRequisitionGRNData(1, {},);
     }, []);
 
     const InvoicePaginationInfo: PaginationInfo = useMemo(
@@ -150,7 +151,7 @@ export const Invoice: React.FC = () => {
     ], []);
 
     return (
-        <div>
+        <div className="pt-2">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <DataTable

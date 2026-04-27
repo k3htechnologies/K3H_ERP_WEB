@@ -64,10 +64,10 @@ const CreateInovice: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-        loadmaterialRequisitionGRNData();
+        loadMaterialRequisitionGRNData();
     }, [projectId, currentMaterialRequisitionId])
 
-    const loadmaterialRequisitionGRNData = async () => {
+    const loadMaterialRequisitionGRNData = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -99,7 +99,7 @@ const CreateInovice: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            "Loading Invoice",
+            "Loading Material Requisition GRN",
         );
     };
 
@@ -145,9 +145,7 @@ const CreateInovice: React.FC = () => {
     };
 
     const validateAddInvoiceForm = (): {
-
         isValid: boolean
-
         errors: { [key: string]: string }
 
     } => {
@@ -258,7 +256,7 @@ const CreateInovice: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
-            <div className="pb-2">
+            <div className="pb-4">
                 <HeaderActionBar
                     titleText={'Create Invoice'}
                     cancelText="Cancel"
@@ -274,9 +272,10 @@ const CreateInovice: React.FC = () => {
                         <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
                         <FieldItem label="Challan No." value={materialRequisitionGRNData?.ChallanNumber} />
                         <FieldItem label="Vehicle No." value={materialRequisitionGRNData?.VehicleNumber} />
-                        <FieldItem label="Total Requisition Amount" value={materialRequisitionGRNData?.Remarks} />
-                        <FieldItem label="Paid  Requisition Amount" value={materialRequisitionGRNData?.VehicleNumber} />
-                        <FieldItem label="Remaining Requisition Amount " value={materialRequisitionGRNData?.VehicleNumber} />
+                        <FieldItem label="Total Requisition Amount" value={`₹ ${materialRequisitionGRNData?.Remarks}`} />
+                        <FieldItem label="Paid  Requisition Amount" value={`₹ ${materialRequisitionGRNData?.VehicleNumber}`} />
+                        <FieldItem label="Remaining Requisition Amount " value={`₹ ${materialRequisitionGRNData?.VehicleNumber}`} />
+
                     </div>
                 </div>
 

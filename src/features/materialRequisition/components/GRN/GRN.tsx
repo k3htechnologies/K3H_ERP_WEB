@@ -20,6 +20,7 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import DataTableExpandable, { type DataTableExpandableRef } from "@/ui/components/DataTable/DataTableExpandable";
 import { PencilLine } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
+import { Button } from "@/ui/components/forms";
 
 
 export const GRN: React.FC = () => {
@@ -72,7 +73,7 @@ export const GRN: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            "Loading GRN",
+            "Loading GRN Summary",
         );
     };
 
@@ -120,6 +121,7 @@ export const GRN: React.FC = () => {
             "Loading GRN",
         );
     };
+
     const MaterialRequisitionGRNColumns = useMemo<TableColumn[]>(() =>
         [
             {
@@ -181,9 +183,8 @@ export const GRN: React.FC = () => {
             }
 
 
-        ]
+        ], [])
 
-        , [])
     const MaterialRequisitionDetailColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'MaterialName',
@@ -219,14 +220,24 @@ export const GRN: React.FC = () => {
 
     return (
         <div>
-            <Loader loading={isLoading} title={loadingMessage}>
-                {" "}
-                <div></div>{" "}
-            </Loader>
-            
-            {/* <div className="flex justify-end">
+            <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
+
+            <div className="flex justify-end gap-4">
+                <TableActionToolbar
+                    isShowSearchBar={false}
+                    isShowAddButton={canAction}
+                    addTitle="Add GRN"
+                    onAdd={handleAddGRN}
+                />
+
                 <Button
-                    className="bg-[#135BEC] text-white font-bold py-1 px-4 rounded-md"
+                    size="md"
+                    color="transparent"
+                    style={{
+                        color: '#FFFFFF',
+                        padding: '4px 8px',
+                        backgroundColor: '#135BEC'
+                    }}
                     onClick={() => {
                         setIsViewGRNSummaryModalOpen(true);
                         loadGRNSummaryData()
@@ -234,27 +245,12 @@ export const GRN: React.FC = () => {
                 >
                     View Summary
                 </Button>
-            </div> */}
-            <TableActionToolbar
-                isShowSearchBar={false}
-                isShowAddButton={canAction}
-                addTitle="Add GRN"
-                isShowAddExtraButton={true}
-                addExtraTitle="View Summary"
-                onAddExtra={async () => {
-                    setIsViewGRNSummaryModalOpen(true);
-                    await loadGRNSummaryData();
-                }}
-                addExtraWidth={120}
-                onAdd={handleAddGRN}
+            </div>
 
-
-            />
             <DataTableExpandable
                 ref={GRNTableRef}
                 data={GRNData}
                 columns={MaterialRequisitionGRNColumns}
-
                 emptyMessage={'No GRN Found'}
                 expandable={{
                     keyField: 'MaterialRequisitionDetailGRNId',
@@ -267,25 +263,10 @@ export const GRN: React.FC = () => {
                                 <div className="flex justify-between items-end">
 
                                     <div className="grid grid-cols-4 gap-6 text-sm w-full">
-                                        <FieldItem
-                                            label="Date"
-                                            value={formatDate_dd_MonthName_yy(row.CreatedDate)}
-                                        />
-
-                                        <FieldItem
-                                            label="Challan No."
-                                            value={row.ChallanNumber || '-'}
-                                        />
-
-                                        <FieldItem
-                                            label="Vehicle No."
-                                            value={row.VehicleNumber || '-'}
-                                        />
-
-                                        <FieldItem
-                                            label="Quantity"
-                                            value={row.MaterialQuantity || '-'}
-                                        />
+                                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(row.CreatedDate)} />
+                                        <FieldItem label="Challan No." value={row.ChallanNumber || '-'} />
+                                        <FieldItem label="Vehicle No." value={row.VehicleNumber || '-'} />
+                                        <FieldItem label="Quantity" value={row.MaterialQuantity || '-'} />
                                     </div>
 
                                     <div className="ml-4 bg-gray-200 p-1 rounded-md cursor-pointer mb-1">
@@ -316,9 +297,7 @@ export const GRN: React.FC = () => {
             >
                 <div className="space-y-4">
                     {GRNSummaryDetailData?.map((item, index) => (
-                        <div
-                            key={index}
-                            className="bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4"
+                        <div key={index} className="bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4"
                         >
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-3">
                                 <FieldItem label="Date" value={formatDate_dd_MonthName_yy(item?.CreatedDate ?? '')} />

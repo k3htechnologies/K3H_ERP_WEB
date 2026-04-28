@@ -185,50 +185,6 @@ export const PurchaseOrder: React.FC = () => {
         )
     };
 
-    // //PUSH FORM DATA
-    // const PushUploadPurchaseOrderFormData = (e: any): FormData => {
-    //     const file = e.target.files?.[0];
-    //     const fd = new FormData();
-    //     fd.append("MaterialRequisitionPurchaseOrderId", uploadData.MaterialRequisitionPurchaseOrderId.toString());
-    //     fd.append("Uniquekey", uploadData.Uniquekey ?? "");
-    //     fd.append("ProjectId", projectId!.toString());
-    //     fd.append("MaterialRequisitionId", (currentMaterialRequisitionId ?? 0).toString());
-    //     fd.append("PurchaseOrderURL", file);
-
-    //     return fd;
-    // };
-
-    // // UPLOAD PURCHASE ORDER
-    // const handleUploadPurchaseOrder = async () => {
-    //     await runApiWithLoader(
-    //         setIsLoading,
-    //         setLoadingMessage,
-    //         async () => {
-
-    //             const payload = PushUploadPurchaseOrderFormData();
-
-    //             const response = await materialRequisitionPurchaseOrderService.apiCallAddUpdateMaterialRequisitionPurchaseOrder(payload);
-
-    //             if (E.isRight(response)) {
-
-    //                 addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
-
-    //                 loadPurchaseOrder();
-
-    //             } else {
-    //                 addToast({ type: "error", title: response.left.message });
-    //             }
-    //             return response;
-    //         },
-    //         undefined,
-    //         (error: any) => {
-    //             addToast({ type: "error", title: error.message });
-    //         },
-    //         undefined,
-    //         "Loading Purchase Order ",
-    //     );
-    // };
-
     const handleUploadPurchaseOrder = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;

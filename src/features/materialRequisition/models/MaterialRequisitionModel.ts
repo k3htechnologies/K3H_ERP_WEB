@@ -62,7 +62,6 @@ export interface AddUpdateMaterialRequisitionDetailRequest {
     MaterialQuantity: number;
     UomMasterId: number;
     UomCode: string;
-    Uom: string;
     RequiredDate: string | null;
 }
 export interface MaterialRequisitionDetailData {

@@ -48,7 +48,7 @@ export const vendorFinalizationService = {
         
     },
         
-    apiCallAddFinalizedVendor: async (payload: AddVendorForEnquiryRequestResponse): Promise<E.Either<Failure, VendorListResponse>> => {
+    apiCallAddFinalizedVendor: async (payload: AddVendorForEnquiryRequest): Promise<E.Either<Failure, VendorListResponse>> => {
         try {
     
             return E.right(await VendorFinalizationDatasource.addFinalizedVendor(payload));

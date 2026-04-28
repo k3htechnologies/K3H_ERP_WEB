@@ -1,6 +1,6 @@
 export const handleExportFile = (
   response: any,
-  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other',
+  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other'| 'VENDOR COMPARISON CHART' ,
   fileName: string,
   addToast: (options: { type: 'success' | 'error'; title: string }) => void,
   message?: string
@@ -21,7 +21,7 @@ export const handleExportFile = (
 
 export const handleBase64Export = (
   fileData: any,
-  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other',
+  exportType: 'Excel' | 'PDF' | 'Image' | 'Word' | 'Other' | 'VENDOR COMPARISON CHART',
   fileName: string,
   addToast: (options: { type: 'success' | 'error'; title: string }) => void,
   message?: string,
@@ -84,6 +84,8 @@ export const handleBase64Export = (
             ? 'png'
             : exportType === 'Word'
               ? 'docx'
+              : exportType === 'VENDOR COMPARISON CHART'
+              ? 'xlsx'
               : 'bin');
 
     link.download =

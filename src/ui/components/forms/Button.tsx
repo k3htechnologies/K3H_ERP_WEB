@@ -23,6 +23,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             children,
             className = '',
             style,
+            hover,
             ...props
         },
         ref
@@ -117,7 +118,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             }
         }
 
-
+        const resolvedHover = hover ?? colorStyles.hover
         return (
             <button
                 ref={ref}
@@ -126,7 +127,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
                 style={buttonStyles}
                 className={className}
                 onMouseEnter={(e) => {
-                    if (!disabled && !loading && colorStyles.hover) Object.assign(e.currentTarget.style, colorStyles.hover)
+                    if (!disabled && !loading && colorStyles.hover) (Object.assign(e.currentTarget.style, resolvedHover))
                 }}
                 onMouseLeave={(e) => {
                     if (!disabled && !loading) Object.assign(e.currentTarget.style, buttonStyles)

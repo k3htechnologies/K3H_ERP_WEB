@@ -1,7 +1,6 @@
 export const computeAmount = (r: any): number => {
   const amount = Number(r.Amount || 0)
 
-  // if manual amount present use it
   if (amount > 0) return amount
 
   return (
@@ -28,5 +27,9 @@ export const computeBaseTotal = (lines: any[]) =>
 export const computeTaxTotal = (lines: any[]) =>
   lines.reduce((s, r) => s + computeTaxAmount(r), 0)
 
-export const computeLinesTotal = (lines: any[]) =>
-  lines.reduce((s, r) => s + computeGrandTotal(r), 0)
+export const computeLinesTotal = (rows?: any[]) => {
+  return (rows ?? []).reduce(
+    (sum, r) => sum + computeGrandTotal(r),
+    0
+  )
+}

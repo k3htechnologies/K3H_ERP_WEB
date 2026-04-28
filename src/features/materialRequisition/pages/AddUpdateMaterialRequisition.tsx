@@ -22,11 +22,9 @@ import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { materialRequisitionService } from "../services/MaterialRequisitionService";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import DatePicker from "react-datepicker";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import { cons } from "fp-ts/lib/ReadonlyNonEmptyArray";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import React from "react";
+import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionRequest => ({
     MaterialRequisitionId: 0,
@@ -378,7 +376,39 @@ export const AddUpdateMaterialRequisition = () => {
         );
         return form;
     };
+
+    const validateMaterialRequisitionForm = (): {
+        isValid: boolean
+        errors: { [key: string]: string }
+    } => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (!formData.Remarks) {
+            newErrors.Remarks = ' Remarks is required.';
+        }
+        if (!hasAnyDocumentFile(documentFiles, documentURL, removeddocumentFilesURLs)) {
+            newErrors.AttachmentsURL = "File is required.";
+        }
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors
+        };
+    };
+
     const handleSave = async () => {
+
+        if (materialList.length === 0) {
+            addToast({ type: "error", title: "Please select at least one Material" });
+            return;
+        }
+
+        setErrors({});
+        const validation = validateMaterialRequisitionForm();
+
+        if (!validation.isValid) {
+            setErrors(validation.errors);
+            return;
+        }
 
         await runApiWithLoader(
             setIsLoading,
@@ -545,7 +575,9 @@ export const AddUpdateMaterialRequisition = () => {
                                     onChange={setdocumentFiles}
                                     availableFilesURL={documentURL}
                                     allowedTypes={["image/jpeg", "image/png"]}
+                                    required
                                     maxFiles={1}
+                                    error={errors.AttachmentsURL}
                                     maxSizeMB={5}
                                     onRemoveExisting={(url) =>
                                         setRemoveddocumentFilesURLs((prev) => [...prev, url])

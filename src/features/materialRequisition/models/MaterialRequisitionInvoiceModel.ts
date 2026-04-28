@@ -22,7 +22,10 @@ export interface MaterialRequisitionInvoiceData {
     RemoveUploadInvoiceURL: string | null;
     PerformaInvoiceURL: string | null;
     RemovePerformaInvoiceURL: string | null;
+    MeasurementInvoiceURL: string | null;
+    RemoveMeasurementInvoiceURL: string | null;
     InvoiceAmount: number | 0;
+    InvoiceAmountPaidTillDate: number | 0;
     InvoiceDueDate: string | null;
     Remarks: string | null;
 }
@@ -38,6 +41,8 @@ export interface AddUpdateMaterialRequisitionInvoice {
     RemoveUploadInvoiceURL: string | null;
     PerformaInvoiceURL: string | null;
     RemovePerformaInvoiceURL: string | null;
+    MeasurementInvoiceURL: string | null;
+    RemoveMeasurementInvoiceURL: string | null;
     InvoiceAmount: number | 0;
     InvoiceDueDate: string | null;
     Remarks: string | null;

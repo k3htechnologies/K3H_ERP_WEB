@@ -5,17 +5,17 @@ import type { AddUpdateMaterialRequisitionPurchaseOrder, DeleteMaterialRequisiti
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import { useParams } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import { materialRequisitionPurchaseOrderService } from "../services/MaterialRequisitionPurchaseOrderService";
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
-import usePagination from "@/core/hooks/usePagination";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
-import { FileText } from "lucide-react";
-import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
-import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import { FileText, Maximize2, Minimize2 } from "lucide-react";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import { materialRequisitionPurchaseOrderService } from "../services/MaterialRequisitionPurchaseOrderService";
+import { fetchTncMasterDropdown } from "@/features/tnc/tncDropDown";
+import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
+import RichTextEditor from "@/ui/components/forms/RichTextEditor";
 
 const initialFormState = (): GenerateMaterialRequisitionPurchaseOrderPdfData => ({
     MaterialRequisitionId: 0,
@@ -41,19 +41,18 @@ export const PurchaseOrder: React.FC = () => {
     const { addToast } = useToast();
     const [materialRequisitionPurchaseOrder, setMaterialRequisitionPurchaseOrder] = useState<MaterialRequisitionPurchaseOrderData[]>([])
     const [formData, setFormData] = useState<GenerateMaterialRequisitionPurchaseOrderPdfData>(() => initialFormState());
-    const [uploadData, setUploadData] = useState<AddUpdateMaterialRequisitionPurchaseOrder>(() => InitialFormState());
+    const [uploadData,] = useState<AddUpdateMaterialRequisitionPurchaseOrder>(() => InitialFormState());
     const { projectId } = useProject();
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-    const { pagination, setPagination } = usePagination(20);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteGeneratePurchaseOrderData, setDeleteGeneratePurchaseOrderData] = useState<MaterialRequisitionPurchaseOrderData | null>(null)
-    const [generatePurchaseOrderPdfList, setGeneratePurchaseOrderPdfList] = useState<GenerateMaterialRequisitionPurchaseOrderPdfData[]>([])
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isMaximized, setIsMaximized] = useState(false);
 
     useEffect(() => {
         if (!projectId) return
@@ -91,6 +90,14 @@ export const PurchaseOrder: React.FC = () => {
         );
     };
 
+    //#region FETCH TNC DROPDOWN WITH MODULE NAME
+    const fetchTncByModuleName = (moduleName: string) => (page: number, params?: { value?: string }) =>
+        fetchTncMasterDropdown(page, {
+            value: params?.value || "",
+            moduleName: moduleName,
+        });
+    //#endregion
+
     const handleFieldChange = (field: keyof GenerateMaterialRequisitionPurchaseOrderPdfData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
         if (errors[field]) {
@@ -118,7 +125,7 @@ export const PurchaseOrder: React.FC = () => {
         }
 
         if (!formData.TermsCondition?.trim()) {
-            newErrors.TermsCondition = "Terms Condition is required.";
+            newErrors.TermsCondition = "Terms & Condition is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -146,6 +153,7 @@ export const PurchaseOrder: React.FC = () => {
             setErrors(validation.errors)
             return
         }
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -159,34 +167,10 @@ export const PurchaseOrder: React.FC = () => {
 
                     setIsAddUpdateModalOpen(false);
 
-                    const isAdd = formData.MaterialRequisitionId === 0;
+                    loadPurchaseOrder()
 
-                    if (isAdd) {
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
-                        const newRecord = response.right.Data[0] as GenerateMaterialRequisitionPurchaseOrderPdfData
-
-                        loadPurchaseOrder()
-                        setGeneratePurchaseOrderPdfList(prevData => [newRecord, ...prevData]);
-                        setPagination({
-                            currentPage: pagination.currentPage,
-                            totalRecords: pagination.totalRecords + 1,
-                            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-                        });
-
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    } else {
-
-                        const updatedRecord = response.right.Data[0] as GenerateMaterialRequisitionPurchaseOrderPdfData;
-
-                        setGeneratePurchaseOrderPdfList(prevData =>
-                            prevData.map(item =>
-                                item.MaterialRequisitionId === formData.MaterialRequisitionId
-                                    ? updatedRecord
-                                    : item
-                            )
-                        )
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    }
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -291,7 +275,6 @@ export const PurchaseOrder: React.FC = () => {
             async () => {
 
                 const params: DeleteMaterialRequisitionPurchaseOrder = {
-
                     MaterialRequisitionId: deleteGeneratePurchaseOrderData.MaterialRequisitionId || 0,
                     MaterialRequisitionPurchaseOrderId: deleteGeneratePurchaseOrderData.MaterialRequisitionPurchaseOrderId || 0,
                     Uniquekey: deleteGeneratePurchaseOrderData.Uniquekey || "",
@@ -329,6 +312,8 @@ export const PurchaseOrder: React.FC = () => {
 
     const hasPurchaseOrder = materialRequisitionPurchaseOrder.length > 0 &&
         !!materialRequisitionPurchaseOrder[0];
+
+    const isPdf = (url: string) => url.toLowerCase().includes(".pdf") || url.startsWith("blob:");
 
     return (
         <div className="bg-white p-1 h-[500px]">
@@ -370,20 +355,25 @@ export const PurchaseOrder: React.FC = () => {
             </div>
 
             {hasPurchaseOrder && (
-                <div className="bg-white-100 p-1 rounded-lg shadow-md relative">
+                <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mt-1 mb-4 ">
+                    <div className="flex justify-between">
+                        <h2 className="text-lg font-semibold mb-2">Purchase Order File</h2>
+                        <button
+                            onClick={() => setIsMaximized(true)}
+                            className="px-2 py-2 mb-2 hover:bg-gray-100 rounded"
+                        >
+                            <Maximize2 className="h-5 w-5 text-gray-700" />
+                        </button>
+                    </div>
 
-                    {/* HEADER */}
-                    <h2 className="text-lg font-semibold mb-4">Purchase Order File</h2>
-                    <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
-                        <p>Document</p>
-                        <MultiImageViewer
-                            images={parseDocumentUrls(
-                                materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? ''
-                            )}
-                            title="Purchase Order"
-                            isIcon={false}
-                            triggerLabel="Document"
-                        />
+                    <div className="h-[400px]">
+                        {isPdf(materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? '') && (
+                            <iframe
+                                src={materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? ''}
+                                className="w-full h-full"
+                                title="pdf-preview"
+                            />
+                        )}
                     </div>
 
                     <div className="text-sm text-gray-600 mt-2">
@@ -395,14 +385,12 @@ export const PurchaseOrder: React.FC = () => {
                         </span>
                     </div>
 
-                    <div className="absolute bottom-4 right-4">
+                    <div className="absolute bottom-4 right-10">
                         <Button
                             color="red"
                             variant="solid"
                             onClick={() =>
-                                handleConfirmationDialogBoxOpen(
-                                    materialRequisitionPurchaseOrder[0]
-                                )
+                                handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder[0])
                             }
                             className="px-4 py-2 rounded-md"
                         >
@@ -412,6 +400,30 @@ export const PurchaseOrder: React.FC = () => {
                 </div>
             )}
 
+            {isMaximized && (
+                <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center">
+                    <div className="w-full h-full bg-white flex flex-col">
+                        <div className="flex justify-between items-center p-3 border-b">
+                            <h2 className="font-semibold">Purchase Order File</h2>
+                            <button
+                                onClick={() => setIsMaximized(false)}
+                                className="px-2 py-2 hover:bg-gray-100 rounded"
+                            >
+                                <Minimize2 className="h-5 w-5 text-gray-700" />
+                            </button>
+                        </div>
+
+                        <div className="flex-1">
+                            <iframe
+                                src={materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? ''}
+                                className="w-full h-full"
+                                title="pdf-preview"
+                            />
+                        </div>
+
+                    </div>
+                </div>
+            )}
 
             <Modal
                 isOpen={isAddUpdateModalOpen}
@@ -449,18 +461,28 @@ export const PurchaseOrder: React.FC = () => {
                         </div>
 
                         <div>
-                            <Input
-                                label='Terms Condition'
-                                required
-                                type="text"
-                                value={formData.TermsCondition ?? ''}
-                                onChange={(e) => handleFieldChange("TermsCondition", e.target.value)}
+                            <SingleSelectDropdownWithPagination
+                                label="Term & Condition"
+                                title="Term & Condition"
+                                size="lg"
+                                dataFetchCallBack={fetchTncByModuleName("Material Requisition")}
+                                onSelected={(item) => handleFieldChange("TermsCondition", item?.value)}
                                 error={errors.TermsCondition}
-                                maxLength={250}
-                                placeholder="Enter Terms Condition"
                             />
                         </div>
+
+                        {formData?.TermsCondition && (
+                            <div>
+                                <RichTextEditor
+                                    value={formData.TermsCondition}
+                                    onChange={(e) => handleFieldChange("TermsCondition", e)}
+                                    readOnly
+                                    className="overflow-y-auto thin-scroll h-[250px]"
+                                />
+                            </div>
+                        )}
                     </div>
+
                 </div>
             </Modal>
 

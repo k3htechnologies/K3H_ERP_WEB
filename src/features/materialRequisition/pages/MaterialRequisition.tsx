@@ -50,18 +50,15 @@ export const MaterialRequisition: React.FC = () => {
     const { setDetailData } = useMaterialRequisitionListState()
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
-    //#endregion
 
     const applyFilters = () => {
         updateListState({ filters: tempFilters, page: 1 });
-        loadDetailsdata(1, tempFilters);
         setShowFilterPopup(false);
     };
 
     const clearFilters = () => {
         setTempFilters({});
         updateListState({ filters: {}, page: 1 });
-        loadDetailsdata(1, {});
     };
 
     const handleFilterChange = (key: string, value: string) => {
@@ -155,9 +152,9 @@ export const MaterialRequisition: React.FC = () => {
             'Deleting Requisition'
         );
     };
-    const handlePageChange = useCallback((page: number) => {
-        fetchLoadDetailsList(page);
-    }, []);
+    const handlePageChange = (page: number) => {
+        updateListState({ page });
+    };
 
     const handleMaterialRequisitionEdit = useCallback((row: MaterialRequisitionData) => {
         debugger
@@ -332,13 +329,14 @@ export const MaterialRequisition: React.FC = () => {
     }, [filters, updateListState, searchTerm]);
 
     useEffect(() => {
-        setPagination({ currentPage: listState.page });
+        if (!projectId) return;
+
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
             loadDetailsdata(listState.page, { SystemGeneratedCode: String(listState.searchTerm).trim() }, listState.sortInfo);
         } else {
             loadDetailsdata(listState.page, listState.filters, listState.sortInfo);
         }
-    }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
+    }, [projectId, listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
     const fetchLoadDetailsList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadDetailsdata(page, filters, sort ?? sortInfo);

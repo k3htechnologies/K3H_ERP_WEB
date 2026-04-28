@@ -7,15 +7,12 @@ import useToast from "@/core/hooks/useToast";
 import { materialRequisitionService } from "../services/MaterialRequisitionService";
 import { Loader } from "@/core/utils/loader";
 import { useNavigate, useParams } from "react-router-dom";
-import type { FilterInfo } from "@/ui/components/DataTable/DataTableWithoutBorder";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { Modal } from "@/ui/components/Modal/Modal";
 import Checkbox from "@/ui/components/forms/Checkbox";
-import { X } from "lucide-react";
-import { ConfirmationDialogBox } from "@/core/utils/confirmationDialogBox";
 import { Button } from "@/ui/components/forms";
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
@@ -30,22 +27,19 @@ export const Details: React.FC = () => {
     const [, setMaterialRequisitionList] = useState<MaterialRequisitionData[]>([]);
     const [active, setActive] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
-    const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
-    const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!projectId) return;
         fetchDetailsdata();
     }, [projectId, currentMaterialRequisitionId])
 
-    const navigate = useNavigate();
-
-    const fetchDetailsdata = async (filterParams?: FilterInfo) => {
+    const fetchDetailsdata = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -55,10 +49,6 @@ export const Details: React.FC = () => {
                     PageSize: 1,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
-                    MaterialRequisitionStatus: filterParams?.MaterialRequisitionStatus ?? undefined,
-                    MaterialRequisitionStage: filterParams?.MaterialRequisitionStage ?? undefined,
-                    FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
-                    ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
                 };
 
                 const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
@@ -85,8 +75,9 @@ export const Details: React.FC = () => {
         );
     };
 
-    const PushMaterialRequisitionFormData = (): FormData => {
+    const PushSplitMaterialRequisitionFormData = (): FormData => {
         const fd = new FormData();
+
         fd.append("ProjectId", Number(projectId).toString());
         fd.append("MaterialRequisitionId", "0");
         fd.append("Uniquekey", matrialRequisitionData?.Uniquekey ?? '');
@@ -104,23 +95,19 @@ export const Details: React.FC = () => {
                 SubMaterialMasterId: item.SubMaterialMasterId,
             }))
         ));
+
         return fd;
     };
-
 
     const handleSplitMaterialRequisition = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        if (selectedIds.length === 0) {
-            addToast({ type: "error", title: "Please select at least one material" });
-            return;
-        }
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
 
-                const payload = PushMaterialRequisitionFormData();
+                const payload = PushSplitMaterialRequisitionFormData();
 
                 const response = await materialRequisitionService.apiCallToAddMaterialRequisition(payload);
 
@@ -129,6 +116,7 @@ export const Details: React.FC = () => {
                     setIsAddUpdateModalOpen(false);
 
                     const newRecord = response.right.Data as MaterialRequisitionData;
+
                     setSelectedIds([]);
 
                     setActive(false);
@@ -158,45 +146,6 @@ export const Details: React.FC = () => {
         );
     };
 
-    const selectedMaterials = matrialRequisitionDetailData.filter(item =>
-        selectedIds.includes(item.MaterialRequisitionDetailId)
-    );
-
-    const handleCloseRequisition = async () => {
-        if (!selectedMaterialRequisitionItem) return;
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const payload: DeleteMaterialRequisitionRequest = {
-
-                    MaterialRequisitionId: selectedMaterialRequisitionItem.MaterialRequisitionId,
-                    Uniquekey: selectedMaterialRequisitionItem.Uniquekey,
-                    ProjectId: Number(projectId),
-                }
-
-                const response = await materialRequisitionService.apiCallCloseMaterialRequisition(payload);
-
-                if (E.isRight(response)) {
-
-                    addToast({ type: "success", title: response.right.SuccessMessage[0], });
-
-                    setIsCloseRequisitionDialogOpen(false);
-                    fetchDetailsdata();
-
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                    setIsCloseRequisitionDialogOpen(false)
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => addToast({ type: "error", title: error.message }),
-            undefined,
-            "Closing Requisition",
-        );
-    };
-
     const handleDeleteRequest = async () => {
         if (!deleteData) return;
 
@@ -210,13 +159,17 @@ export const Details: React.FC = () => {
                     Uniquekey: deleteData.Uniquekey,
                     ProjectId: Number(projectId)
                 };
+
                 const response = await materialRequisitionService.apiCallDeleteMaterialRequisition(payload);
 
                 if (E.isRight(response)) {
+
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
+
                 setDeleteData(null)
                 return response;
             },
@@ -229,38 +182,22 @@ export const Details: React.FC = () => {
         );
     };
 
+    const selectedMaterials = matrialRequisitionDetailData.filter(item =>
+        selectedIds.includes(item.MaterialRequisitionDetailId)
+    );
+
     return (
         <div className="justify-center">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
-            {matrialRequisitionData?.MaterialRequisitionStatus !== 'Completed' && (
-                <div className="flex justify-end pb-2">
-                    <Button
-                        size="sm"
-                        color="transparent"
-                        style={{
-                            color: '#E92C2C',
-                            padding: '4px 8px',
-                            backgroundColor: '#FFF2F2'
-                        }}
-                        onClick={() => {
-                            setSelectedMaterialRequisitionItem(matrialRequisitionData);
-                            setIsCloseRequisitionDialogOpen(true);
-                        }}
-                    >
-                        <X className="h-4 w-4" color="red" />
-                        Close Requisition
-                    </Button>
-                </div>
-            )}
-
-            <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+            <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4 mt-2">
                 <h1 className="text-lg font-semibold text-gray-900 pb-2">Basic Details</h1>
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <FieldItem label="Unique ID" value={matrialRequisitionData?.SystemGeneratedCode} />
                         <FieldItem label="Status" value={matrialRequisitionData?.MaterialRequisitionStatus} />
                         <FieldItem label="Stage" value={matrialRequisitionData?.MaterialRequisitionStage} />
+
                         <div>
                             <p className="text-gray-500">Attachment</p>
                             <MultiImageViewer
@@ -281,7 +218,13 @@ export const Details: React.FC = () => {
 
                     {matrialRequisitionData?.IsSplit && (
                         <Button
-                            className="bg-[#135BEC] text-white font-bold py-1 p-4 rounded-md"
+                            size="md"
+                            color="transparent"
+                            style={{
+                                color: '#FFFFFF',
+                                padding: '4px 8px',
+                                backgroundColor: '#135BEC'
+                            }}
                             onClick={() => setActive(true)}
                         >
                             Split
@@ -308,7 +251,7 @@ export const Details: React.FC = () => {
 
                             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 flex-1">
                                 <FieldItem label="Name" value={item.MaterialName} />
-                                <FieldItem label="Sub Material Name" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
+                                <FieldItem label="Sub-Material Name" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                 <FieldItem label="Uom" value={item.Uom} />
                                 <FieldItem label="Quantity" value={item.MaterialQuantity} />
                                 <FieldItem label="Required Date" value={formatDate_dd_MonthName_yy(item.RequiredDate)} />
@@ -317,16 +260,28 @@ export const Details: React.FC = () => {
                     ))}
                 </div>
 
-                {active && (
-                    <Button
-                        className="bg-[#135BEC] text-white font-bold py-1 px-4 rounded-md"
-                        onClick={() => {
-                            setIsAddUpdateModalOpen(true);
-                        }}
-                    >
-                        Split All
-                    </Button>
-                )}
+                <div className="flex justify-end">
+                    {active && (
+                        <Button
+                            size="md"
+                            color="transparent"
+                            style={{
+                                color: '#FFFFFF',
+                                padding: '4px 8px',
+                                backgroundColor: '#135BEC'
+                            }}
+                            onClick={() => {
+                                if (selectedIds.length === 0) {
+                                    addToast({ type: "error", title: "Please select at least one material" });
+                                    return;
+                                }
+                                setIsAddUpdateModalOpen(true);
+                            }}
+                        >
+                            Save Split
+                        </Button>
+                    )}
+                </div>
             </div>
 
             <div className=" gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
@@ -347,15 +302,21 @@ export const Details: React.FC = () => {
             </div>
 
             <div className="pt-2 flex justify-end gap-2">
-                <button
-                    className="bg-[#D0D7DE] text-[#1D1D1D] font-500 py-1 px-4 rounded-md"
+                <Button
+                    size="md"
+                    color="transparent"
+                    style={{
+                        color: '#1D1D1D',
+                        padding: '4px 8px',
+                        backgroundColor: '#D0D7DE'
+                    }}
                     onClick={() => {
                         setDeleteData(matrialRequisitionData);
                         handleDeleteRequest()
                     }}
                 >
                     Cancel
-                </button>
+                </Button>
             </div>
 
             <Modal
@@ -374,37 +335,19 @@ export const Details: React.FC = () => {
                 size="xl"
             >
                 <div className="max-h-[400px] overflow-y-auto">
+
                     {selectedMaterials.map((item) => (
                         <div key={item.MaterialRequisitionDetailId} className="flex items-center gap-x-4">
                             <Checkbox
                                 checked={selectedIds.includes(item.MaterialRequisitionDetailId)}
-                                onChange={() => {
-                                    setSelectedIds(prev =>
-                                        prev.includes(item.MaterialRequisitionDetailId)
-                                            ? prev.filter(id => id !== item.MaterialRequisitionDetailId)
-                                            : [...prev, item.MaterialRequisitionDetailId]
-                                    );
-                                }}
                             />
                             <p className="font-semibold">{item.SubMaterialName}</p>
                         </div>
                     ))}
+
                 </div>
             </Modal>
 
-            <ConfirmationDialogBox
-                isOpen={isCloseRequisitionDialogOpen}
-                onClose={() => {
-                    setIsCloseRequisitionDialogOpen(false);
-                    setSelectedMaterialRequisitionItem(null);
-                }}
-                onConfirm={handleCloseRequisition}
-                title="Close Requisition"
-                message={`Are you sure you want to close this requisition?`}
-                confirmText="Close"
-                cancelText="Cancel"
-                loading={isLoading}
-            />
         </div>
     )
 }

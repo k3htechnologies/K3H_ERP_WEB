@@ -17,14 +17,12 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { TextArea } from "@/ui/components/forms/Textarea";
-import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
-import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
-import { materialRequisitionService } from "../../services/MaterialRequisitionService";
+import { filterNumbers, hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
+import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
-import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
-import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
 
 const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     MaterialRequisitionId: 0,
@@ -39,13 +37,15 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     RemoveUploadInvoiceURL: null,
     PerformaInvoiceURL: '',
     RemovePerformaInvoiceURL: null,
+    MeasurementInvoiceURL: '',
+    RemoveMeasurementInvoiceURL: null,
     Remarks: ''
 })
 
-const AddUpdateInovice: React.FC = () => {
+const CreateInovice: React.FC = () => {
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionInvoice>(() => initialFormState());
-    const [invoiceData, setInvoiceData] = useState<MaterialRequisitionGRNData | null>(null);
-    const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
+    const [materialRequisitionGRNData, setMaterialRequisitionGRNData] = useState<MaterialRequisitionGRNData | null>(null);
+    const [matrialRequisitionDetailGRNData, setMaterialRequisitionDetailGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { projectId } = useProject();
@@ -58,6 +58,9 @@ const AddUpdateInovice: React.FC = () => {
     const [performaInvoiceURLFiles, setPerformaInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removePerformaInvoiceUrls, SetRemovePerformaInvoiceUrls] = useState<string[]>([]);
     const [performaInvoiceURL, setPerformaInvoiceURLL] = useState<string>();
+    const [measurementInvoiceURLFiles, setMeasurementInvoiceURLFiles] = useState<(File | string)[]>([]);
+    const [removeMeasurementInvoiceUrls, SetRemoveMeasurementInvoiceUrls] = useState<string[]>([]);
+    const [measurementInvoiceURL, setMeasurementInvoiceURL] = useState<string>();
     const [uploadInvoiceURLFiles, setUploadInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removeUploadInvoiceUrls, SetRemoveUploadInvoiceUrls] = useState<string[]>([]);
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
@@ -66,18 +69,15 @@ const AddUpdateInovice: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-        loadInvoiceData();
-        fetchMaterialRequisitionDetailData();
+        loadMaterialRequisitionGRNData();
     }, [projectId, currentMaterialRequisitionId])
 
-    const loadInvoiceData = async () => {
+    const loadMaterialRequisitionGRNData = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationMaterialRequisitionGRN = {
-                    PageNumber: 1,
-                    PageSize: 1,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
                     Uniquekey: currentUniquekey
@@ -89,42 +89,11 @@ const AddUpdateInovice: React.FC = () => {
 
                     const data = response.right.Data;
 
-                    setInvoiceData(Array.isArray(data) ? (data[0] ?? null) : data);
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            "Loading Invoice",
-        );
-    };
-
-    const fetchMaterialRequisitionDetailData = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationMaterialRequisition = {
-                    PageNumber: 1,
-                    PageSize: 1,
-                    ProjectId: Number(projectId),
-                    MaterialRequisitionId: currentMaterialRequisitionId,
-                };
-
-                const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
-
-                if (E.isRight(response)) {
-
-                    const data = response.right.Data;
+                    setMaterialRequisitionGRNData(Array.isArray(data) ? (data[0] ?? null) : data);
 
                     const Item = Array.isArray(data) ? data[0] : data;
 
-                    setMaterialRequisitionDetailData(Item?.MaterialRequisitionDetailData ?? []);
+                    setMaterialRequisitionDetailGRNData(Item?.MaterialRequisitionDetailGRNData ?? []);
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -135,7 +104,7 @@ const AddUpdateInovice: React.FC = () => {
                 addToast({ type: "error", title: error.message });
             },
             undefined,
-            "Loading Material Requisition",
+            "Loading Material Requisition GRN",
         );
     };
 
@@ -150,7 +119,7 @@ const AddUpdateInovice: React.FC = () => {
         },
         {
             key: 'SubMaterialName',
-            label: 'Sub Material',
+            label: 'Sub-Material',
             width: '15',
             sortable: false,
             align: 'left',
@@ -181,9 +150,7 @@ const AddUpdateInovice: React.FC = () => {
     };
 
     const validateAddInvoiceForm = (): {
-
         isValid: boolean
-
         errors: { [key: string]: string }
 
     } => {
@@ -211,6 +178,9 @@ const AddUpdateInovice: React.FC = () => {
         if (!hasAnyDocumentFile(performaInvoiceURLFiles, performaInvoiceURL, removePerformaInvoiceUrls)) {
             newErrors.PerformaInvoiceURL = "File is required.";
         }
+        // if (!hasAnyDocumentFile(measurementInvoiceURLFiles, measurementInvoiceURL, removeMeasurementInvoiceUrls)) {
+        //     newErrors.MeasurementInvoiceURL = "File is required.";
+        // }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -270,10 +240,13 @@ const AddUpdateInovice: React.FC = () => {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-                    navigate("/materialRequisition/view");
+                    navigate("/materialRequisition/view", {
+                        state: { activeTab: "Invoice" }
+                    });
 
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');
+                    setMeasurementInvoiceURL('');
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -292,7 +265,7 @@ const AddUpdateInovice: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
-            <div className="pb-2">
+            <div className="pb-4">
                 <HeaderActionBar
                     titleText={'Create Invoice'}
                     cancelText="Cancel"
@@ -305,18 +278,19 @@ const AddUpdateInovice: React.FC = () => {
             <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(invoiceData?.CreatedDate ?? '')} />
-                        <FieldItem label="Challan No." value={invoiceData?.ChallanNumber} />
-                        <FieldItem label="Vehicle No." value={invoiceData?.VehicleNumber} />
-                        <FieldItem label="Total Requisition Amount" value={invoiceData?.Remarks} />
-                        <FieldItem label="Paid  Requisition Amount" value={invoiceData?.VehicleNumber} />
-                        <FieldItem label="Remaining Requisition Amount " value={invoiceData?.VehicleNumber} />
+                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
+                        <FieldItem label="Challan No." value={materialRequisitionGRNData?.ChallanNumber} />
+                        <FieldItem label="Vehicle No." value={materialRequisitionGRNData?.VehicleNumber} />
+                        <FieldItem label="Total Requisition Amount" value={`₹ ${materialRequisitionGRNData?.Remarks}`} />
+                        <FieldItem label="Paid  Requisition Amount" value={`₹ ${materialRequisitionGRNData?.VehicleNumber}`} />
+                        <FieldItem label="Remaining Requisition Amount " value={`₹ ${materialRequisitionGRNData?.VehicleNumber}`} />
+
                     </div>
                 </div>
 
                 <DataTableWithHeadColor
                     columns={MaterialRequisitionDetailColumns}
-                    data={matrialRequisitionDetailData}
+                    data={matrialRequisitionDetailGRNData}
                     emptyMessage="No Material Requisition Found"
                     maxHeight={'255'}
                     className="flex-1"
@@ -357,7 +331,7 @@ const AddUpdateInovice: React.FC = () => {
                                 required
                                 label='Invoice Amount'
                                 value={formData.InvoiceAmount ?? ""}
-                                onChange={(e) => handleFieldChange("InvoiceAmount", e.target.value)}
+                                onChange={(e) => handleFieldChange("InvoiceAmount", filterNumbers(e.target.value))}
                                 placeholder="Enter Invoice Amount"
                                 maxLength={250}
                                 error={errors.InvoiceAmount}
@@ -409,6 +383,24 @@ const AddUpdateInovice: React.FC = () => {
                                 }}
                             />
                         </div>
+
+                        <div>
+                            <MultiFilePicker
+                                label="Measurement Report"
+                                placeholder="Select Files"
+                                required
+                                error={errors.MeasurementInvoiceURL}
+                                value={measurementInvoiceURLFiles}
+                                onChange={setMeasurementInvoiceURLFiles}
+                                availableFilesURL={measurementInvoiceURL ?? ""}
+                                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                maxFiles={5}
+                                maxSizeMB={50}
+                                onRemoveExisting={(url) => {
+                                    SetRemoveMeasurementInvoiceUrls((prev) => [...prev, url]);
+                                }}
+                            />
+                        </div>
                     </div>
 
                     <div>
@@ -440,4 +432,4 @@ const AddUpdateInovice: React.FC = () => {
 
     )
 }
-export default AddUpdateInovice;
+export default CreateInovice;

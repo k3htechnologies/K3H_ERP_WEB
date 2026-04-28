@@ -3,7 +3,6 @@ import { runApiWithLoader } from "@/core/utils";
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { usePagination } from "@/core/hooks/usePagination";
 import { useNavigate, useParams } from "react-router";
-import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
@@ -14,7 +13,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useMaterialRequisitionListState } from "../../context/MaterialRequisitionListStateContext";
 import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
-//
+
 export const Invoice: React.FC = () => {
     const [invoiceList, setInvoiceList] = useState<MaterialRequisitionGRNData[]>([]);
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -32,27 +31,25 @@ export const Invoice: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-        loadInvoiceData(1, {});
+        loadMaterialRequisitionGRNData(1, {});
     }, [projectId, currentMaterialRequisitionId])
 
-    const loadInvoiceData = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo,) => {
+    const loadMaterialRequisitionGRNData = async (page: number, filterParams: FilterInfo,) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationMaterialRequisitionGRN = {
-                    PageNumber: page,
-                    PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
                     Uniquekey: currentUniquekey,
                     MaterialRequisitionGRNId: filterParams?.MaterialRequisitionGRNId ? Number(filterParams.MaterialRequisitionGRNId) : undefined,
-                    SortBy: getSortByParam(sortInfo ?? null, InvoiceColumns),
                 };
 
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
                 if (E.isRight(response)) {
+
                     setInvoiceList(response.right.Data);
                     setPagination({
                         currentPage: page,
@@ -80,13 +77,13 @@ export const Invoice: React.FC = () => {
 
     const handlePageChange = (page: number) => {
         setPagination({ currentPage: 1 });
-        loadInvoiceData(page, {})
+        loadMaterialRequisitionGRNData(page, {})
     }
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
-        loadInvoiceData(1, {}, sort);
+        loadMaterialRequisitionGRNData(1, {},);
     }, []);
 
     const InvoicePaginationInfo: PaginationInfo = useMemo(
@@ -154,7 +151,7 @@ export const Invoice: React.FC = () => {
     ], []);
 
     return (
-        <div>
+        <div className="pt-2">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
 
             <DataTable

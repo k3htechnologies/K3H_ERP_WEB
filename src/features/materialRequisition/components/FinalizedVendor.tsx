@@ -8,7 +8,7 @@ import type {
     SelectedVendorData,
     SelectedVendorListResponse
 } from "../models/VendorFinalizeModel"
-import { useParams } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext"
 import { useProject } from "@/features/projectMaster/context/ProjectContext"
 import { runApiWithLoader } from "@/core/utils"
@@ -83,6 +83,7 @@ export const FinalizedVendor: React.FC = () => {
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [materialRequisitionVendorSelectedList, setMaterialRequisitionVendorSelectedList] = useState<any[]>([])
     const [materialRequisitionVendorFinalizedList, setMaterialRequisitionVendorFinalizedList] = useState<any[]>([])
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!projectId) return
@@ -101,7 +102,7 @@ export const FinalizedVendor: React.FC = () => {
         await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
             const params: FilterWithPaginationVendorForEnquiryRequest = {
                 MaterialRequisitionId: Number(currentMaterialRequisitionId),
-                Uniquekey: currentUniquekey ?? null,
+                Uniquekey: currentUniquekey ?? '',
                 ProjectId: Number(projectId),
             }
             const response = await vendorFinalizationService.apiCallpullVendorsForEnquiry(params)
@@ -116,7 +117,7 @@ export const FinalizedVendor: React.FC = () => {
         await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
             const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
                 MaterialRequisitionId: Number(currentMaterialRequisitionId),
-                Uniquekey: currentUniquekey ?? null,
+                Uniquekey: currentUniquekey ?? '',
                 ProjectId: Number(projectId),
             }
             const response = await vendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params)
@@ -229,6 +230,7 @@ export const FinalizedVendor: React.FC = () => {
         )
     }
     const addSelectedVendors = async () => {
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -249,6 +251,10 @@ export const FinalizedVendor: React.FC = () => {
                         )
 
                     setMaterialRequisitionVendorSelectedList(selected)
+
+                    // navigate("/materialRequisition/view", {
+                    //     state: { activeTab: "Finalize Vendor" }
+                    // });
 
                     setQuotationAvailable(false)
                     setSelectedVendorIds([])
@@ -298,7 +304,7 @@ export const FinalizedVendor: React.FC = () => {
 
                 const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
                     MaterialRequisitionId: Number(currentMaterialRequisitionId),
-                    Uniquekey: currentUniquekey ?? null,
+                    Uniquekey: currentUniquekey ?? '',
                     ProjectId: Number(projectId),
                     ExportType: exportType
                 }

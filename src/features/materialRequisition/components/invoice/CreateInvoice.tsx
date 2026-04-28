@@ -42,7 +42,7 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     Remarks: ''
 })
 
-const CreateInovice: React.FC = () => {
+const CreateInvoice: React.FC = () => {
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionInvoice>(() => initialFormState());
     const [materialRequisitionGRNData, setMaterialRequisitionGRNData] = useState<MaterialRequisitionGRNData | null>(null);
     const [matrialRequisitionDetailGRNData, setMaterialRequisitionDetailGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
@@ -432,4 +432,4 @@ const CreateInovice: React.FC = () => {
 
     )
 }
-export default CreateInovice;
+export default CreateInvoice;

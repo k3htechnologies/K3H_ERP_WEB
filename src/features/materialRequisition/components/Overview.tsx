@@ -205,7 +205,7 @@ export const Overview: React.FC = () => {
                                 <FieldItem label="Base Amount" value={`₹ ${computeBaseTotal(Vendoramount).toFixed(2)}`} />
                                 <FieldItem label="Total Tax" value={`₹ ${computeTaxTotal(Vendoramount).toFixed(2)}`} />
                                 <FieldItem label="Grand Total" value={`₹ ${computeLinesTotal(Vendoramount).toFixed(2)}`} />
-                                <FieldItem label="Est. Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays} days`} />
+                                <FieldItem label="Est. Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays ?? 0} days`} />
                                 <FieldItem label="Paid Amount" value={`₹ ${amountPaid.toFixed(2)}`} />
                                 <FieldItem label="Pending Amount" value={`₹ ${PendingAmount.toFixed(2)}`} />
                             </div>
@@ -257,7 +257,7 @@ export const Overview: React.FC = () => {
                             <section className="bg-white px-4 pt-1 pb-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Material Details</h4>
                                 {matrialRequisitionDetailData.map((item, index) => (
-                                     <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-2 mb-3 border-b border-gray-300 last:border-b-0 last:pb-0 pb-2">
+                                    <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-2 mb-3 border-b border-gray-300 last:border-b-0 last:pb-0 pb-2">
                                         <FieldItem label="Name" value={item.MaterialName} />
                                         <FieldItem label="Sub-Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                         <FieldItem label="Quantity" value={item.MaterialQuantity} />

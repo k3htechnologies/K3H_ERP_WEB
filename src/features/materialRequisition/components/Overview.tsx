@@ -16,10 +16,11 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceData } from "../models/MaterialRequisitionInvoiceModel";
 import { materialRequisitionInvoiceService } from "../services/MaterialRequisitionInvoiceService";
-import type { FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorData } from "../models/VendorFinalizeModel";
+import type { FilterWithPaginationVendorForSelectedEnquiryRequest } from "../models/VendorFinalizeModel";
 import { vendorFinalizationService } from "../services/VendorFinalizationService";
 import type { MaterialRequisitionQuotationDetailsTermsData } from "../models/MaterialRequisitionQuotationApi";
 import { computeBaseTotal, computeLinesTotal, computeTaxTotal } from "../utils/finalizeVendorUtils";
+import type { VendorData } from "@/features/vendor/models/VendorModel";
 
 export const Overview: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -28,7 +29,7 @@ export const Overview: React.FC = () => {
     const [matrialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData | null>(null);
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [MaterialRequisitionInvoiceData, setMaterialRequisitionInvoiceData] = useState<MaterialRequisitionInvoiceData[]>([])
-    const [materialRequisitionVendorData, setMaterialRequisitionVendorData] = useState<SelectedVendorData | null>(null)
+    const [materialRequisitionVendorData, setMaterialRequisitionVendorData] = useState<VendorData | null>(null)
     const [materialRequisitionQuotationTermsData, setMaterialRequisitionQuotationTermsData] = useState<MaterialRequisitionQuotationDetailsTermsData[]>([])
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
@@ -92,7 +93,7 @@ export const Overview: React.FC = () => {
                     Uniquekey: currentUniquekey,
                 };
 
-                const response = await vendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params);
+                const response = await vendorFinalizationService.apiCallPullFinalizedVendor(params);
 
                 if (E.isRight(response)) {
 

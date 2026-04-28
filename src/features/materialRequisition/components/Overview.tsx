@@ -19,7 +19,7 @@ import { materialRequisitionInvoiceService } from "../services/MaterialRequisiti
 import type { FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorData } from "../models/VendorFinalizeModel";
 import { vendorFinalizationService } from "../services/VendorFinalizationService";
 import type { MaterialRequisitionQuotationDetailsTermsData } from "../models/MaterialRequisitionQuotationApi";
-import type { MaterialRequisitionPaymentData } from "../models/MaterialRequisitionPaymentModel";
+import { computeBaseTotal, computeLinesTotal, computeTaxTotal } from "../utils/finalizeVendorUtils";
 
 export const Overview: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -30,7 +30,6 @@ export const Overview: React.FC = () => {
     const [MaterialRequisitionInvoiceData, setMaterialRequisitionInvoiceData] = useState<MaterialRequisitionInvoiceData[]>([])
     const [materialRequisitionVendorData, setMaterialRequisitionVendorData] = useState<SelectedVendorData | null>(null)
     const [materialRequisitionQuotationTermsData, setMaterialRequisitionQuotationTermsData] = useState<MaterialRequisitionQuotationDetailsTermsData[]>([])
-    const [materialRequisitionPaymentData, setMaterialRequisitionPaymentData] = useState<MaterialRequisitionPaymentData | null>(null)
     const { projectId } = useProject();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
@@ -41,7 +40,7 @@ export const Overview: React.FC = () => {
         if (!projectId) return;
         fetchMaterialRequisitiondata();
         fetchVendordata();
-        fetchInvoicedata()
+        fetchInvoicedata();
     }, [projectId, currentMaterialRequisitionId]);
 
     const fetchMaterialRequisitiondata = async () => {
@@ -151,9 +150,19 @@ export const Overview: React.FC = () => {
         );
     };
 
-    const amount = Number(MaterialRequisitionInvoiceData[0]?.InvoiceAmount ?? 0)
-    const ampuntPaid = Number(materialRequisitionPaymentData?.AmountPaid ?? 0)
-    const PendingAmount = amount - ampuntPaid
+    const totalInvoiceAmount = MaterialRequisitionInvoiceData.reduce(
+        (sum, item) => sum + Number(item.InvoiceAmount ?? 0),
+        0
+    );
+
+    const amountPaid = MaterialRequisitionInvoiceData.reduce(
+        (sum, item) => sum + Number(item.InvoiceAmountPaidTillDate ?? 0),
+        0
+    );
+    const PendingAmount = Math.max(0, totalInvoiceAmount - amountPaid);
+
+    const firstTerm = materialRequisitionVendorData?.MaterialRequisitionQuotationTermsData?.[0];
+    const Vendoramount = firstTerm?.MaterialRequisitionQuotationData || []
 
     return (
         <div className="bg-white p-1">
@@ -193,11 +202,11 @@ export const Overview: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Vendor Name" value={materialRequisitionVendorData?.VendorName} />
                                 <FieldItem label="Vendor Company" value={materialRequisitionVendorData?.CompanyName} />
-                                <FieldItem label="Base Amount" value={`₹ ${materialRequisitionVendorData?.VendorName}`} />
-                                <FieldItem label="Total Tax" value={`₹ ${materialRequisitionQuotationTermsData[0]?.Total.toFixed(2)}`} />
-                                <FieldItem label="Grand Total" value={`₹ ${materialRequisitionVendorData?.VendorName}`} />
+                                <FieldItem label="Base Amount" value={`₹ ${computeBaseTotal(Vendoramount).toFixed(2)}`} />
+                                <FieldItem label="Total Tax" value={`₹ ${computeTaxTotal(Vendoramount).toFixed(2)}`} />
+                                <FieldItem label="Grand Total" value={`₹ ${computeLinesTotal(Vendoramount).toFixed(2)}`} />
                                 <FieldItem label="Est. Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays} days`} />
-                                <FieldItem label="Paid Amount" value={`₹ ${materialRequisitionPaymentData?.AmountPaid.toFixed(2)}`} />
+                                <FieldItem label="Paid Amount" value={`₹ ${amountPaid.toFixed(2)}`} />
                                 <FieldItem label="Pending Amount" value={`₹ ${PendingAmount.toFixed(2)}`} />
                             </div>
                         </section>
@@ -248,13 +257,15 @@ export const Overview: React.FC = () => {
                             <section className="bg-white px-4 pt-1 pb-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Material Details</h4>
                                 {matrialRequisitionDetailData.map((item, index) => (
-                                    <div key={index} className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-4 gap-8 mb-4 border-b border-gray-300 last:border-b-0 last:pb-2 pb-4">
+                                     <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-2 mb-3 border-b border-gray-300 last:border-b-0 last:pb-0 pb-2">
                                         <FieldItem label="Name" value={item.MaterialName} />
                                         <FieldItem label="Sub-Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                         <FieldItem label="Quantity" value={item.MaterialQuantity} />
                                         <FieldItem label="Received Quantity" value={<TooltipText text={item.MaterialReceivedQuantityTillDate ?? ''} />} />
-                                        <FieldItem label="Remark" value={item.Remark} />
 
+                                        <div className="col-span-1 md:col-span-4 mt-1">
+                                            <FieldItem label="Remark" value={item.Remark} />
+                                        </div>
                                     </div>
                                 ))}
                             </section>

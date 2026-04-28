@@ -182,7 +182,7 @@ const MakePayment: React.FC = () => {
 
             <div className="gap-x-4 rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="flex justify-between mb-2">
-                    <span >Invoice Number : {invoiceData?.InvoiceNumber}</span>
+                    <span className="text-gray-600">Invoice Number : {invoiceData?.InvoiceNumber}</span>
                     <Button
                         size="mxs"
                         color="transparent"
@@ -202,15 +202,12 @@ const MakePayment: React.FC = () => {
                         <FieldItem label="DuDate" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDueDate ?? '')} />
                         <div>
                             <p className="text-gray-500">Invoice Document</p>
-                            <div className="flex">
-                                <span className="text-[#135BEC]">View</span>
-                                <MultiImageViewer
-                                    images={parseDocumentUrls(invoiceData?.UploadInvoiceURL)}
-                                    title="Attachment"
-                                    isIcon={false}
-                                    triggerLabel="View"
-                                />
-                            </div>
+                            <MultiImageViewer
+                                images={parseDocumentUrls(invoiceData?.UploadInvoiceURL)}
+                                title="Attachment"
+                                isIcon={false}
+                                triggerLabel="View"
+                            />
                         </div>
 
                         <div>
@@ -222,6 +219,16 @@ const MakePayment: React.FC = () => {
                                 triggerLabel="View"
                             />
                         </div>
+
+                        <div>
+                            <p className="text-gray-500">Measurement Report</p>
+                            <MultiImageViewer
+                                images={parseDocumentUrls(invoiceData?.MeasurementInvoiceURL)}
+                                title="Attachment"
+                                isIcon={false}
+                                triggerLabel="-"
+                            />
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 pt-2">
@@ -230,7 +237,6 @@ const MakePayment: React.FC = () => {
                 </div>
             </div>
         </div>
-
     )
 }
 export default MakePayment;

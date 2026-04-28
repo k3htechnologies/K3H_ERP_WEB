@@ -182,7 +182,6 @@ export const Details: React.FC = () => {
         );
     };
 
-
     const selectedMaterials = matrialRequisitionDetailData.filter(item =>
         selectedIds.includes(item.MaterialRequisitionDetailId)
     );

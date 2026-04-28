@@ -17,7 +17,7 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { TextArea } from "@/ui/components/forms/Textarea";
-import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterNumbers, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
@@ -37,6 +37,8 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     RemoveUploadInvoiceURL: null,
     PerformaInvoiceURL: '',
     RemovePerformaInvoiceURL: null,
+    MeasurementInvoiceURL: '',
+    RemoveMeasurementInvoiceURL: null,
     Remarks: ''
 })
 
@@ -56,6 +58,9 @@ const CreateInovice: React.FC = () => {
     const [performaInvoiceURLFiles, setPerformaInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removePerformaInvoiceUrls, SetRemovePerformaInvoiceUrls] = useState<string[]>([]);
     const [performaInvoiceURL, setPerformaInvoiceURLL] = useState<string>();
+    const [measurementInvoiceURLFiles, setMeasurementInvoiceURLFiles] = useState<(File | string)[]>([]);
+    const [removeMeasurementInvoiceUrls, SetRemoveMeasurementInvoiceUrls] = useState<string[]>([]);
+    const [measurementInvoiceURL, setMeasurementInvoiceURL] = useState<string>();
     const [uploadInvoiceURLFiles, setUploadInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removeUploadInvoiceUrls, SetRemoveUploadInvoiceUrls] = useState<string[]>([]);
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
@@ -173,6 +178,9 @@ const CreateInovice: React.FC = () => {
         if (!hasAnyDocumentFile(performaInvoiceURLFiles, performaInvoiceURL, removePerformaInvoiceUrls)) {
             newErrors.PerformaInvoiceURL = "File is required.";
         }
+        // if (!hasAnyDocumentFile(measurementInvoiceURLFiles, measurementInvoiceURL, removeMeasurementInvoiceUrls)) {
+        //     newErrors.MeasurementInvoiceURL = "File is required.";
+        // }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -238,6 +246,7 @@ const CreateInovice: React.FC = () => {
 
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');
+                    setMeasurementInvoiceURL('');
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -322,7 +331,7 @@ const CreateInovice: React.FC = () => {
                                 required
                                 label='Invoice Amount'
                                 value={formData.InvoiceAmount ?? ""}
-                                onChange={(e) => handleFieldChange("InvoiceAmount", e.target.value)}
+                                onChange={(e) => handleFieldChange("InvoiceAmount", filterNumbers(e.target.value))}
                                 placeholder="Enter Invoice Amount"
                                 maxLength={250}
                                 error={errors.InvoiceAmount}
@@ -371,6 +380,24 @@ const CreateInovice: React.FC = () => {
                                 maxSizeMB={50}
                                 onRemoveExisting={(url) => {
                                     SetRemovePerformaInvoiceUrls((prev) => [...prev, url]);
+                                }}
+                            />
+                        </div>
+
+                        <div>
+                            <MultiFilePicker
+                                label="Measurement Report"
+                                placeholder="Select Files"
+                                required
+                                error={errors.MeasurementInvoiceURL}
+                                value={measurementInvoiceURLFiles}
+                                onChange={setMeasurementInvoiceURLFiles}
+                                availableFilesURL={measurementInvoiceURL ?? ""}
+                                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                                maxFiles={5}
+                                maxSizeMB={50}
+                                onRemoveExisting={(url) => {
+                                    SetRemoveMeasurementInvoiceUrls((prev) => [...prev, url]);
                                 }}
                             />
                         </div>

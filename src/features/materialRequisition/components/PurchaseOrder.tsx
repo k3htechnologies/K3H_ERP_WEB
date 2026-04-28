@@ -357,11 +357,13 @@ export const PurchaseOrder: React.FC = () => {
             {hasPurchaseOrder && (
                 <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mt-1 mb-4 ">
                     <div className="flex justify-between">
-                        <h2 className="text-lg font-semibold mb-4">Purchase Order File</h2>
-                        <Maximize2
+                        <h2 className="text-lg font-semibold mb-2">Purchase Order File</h2>
+                        <button
                             onClick={() => setIsMaximized(true)}
-                            className="h-5 w-5 text-gray-700 cursor-pointer"
-                        />
+                            className="px-2 py-2 mb-2 hover:bg-gray-100 rounded"
+                        >
+                            <Maximize2 className="h-5 w-5 text-gray-700" />
+                        </button>
                     </div>
 
                     <div className="h-[400px]">
@@ -403,11 +405,12 @@ export const PurchaseOrder: React.FC = () => {
                     <div className="w-full h-full bg-white flex flex-col">
                         <div className="flex justify-between items-center p-3 border-b">
                             <h2 className="font-semibold">Purchase Order File</h2>
-                            <Minimize2
+                            <button
                                 onClick={() => setIsMaximized(false)}
-                                className="h-5 w-5 text-gray-700 cursor-pointer"
+                                className="px-2 py-2 hover:bg-gray-100 rounded"
                             >
-                            </Minimize2>
+                                <Minimize2 className="h-5 w-5 text-gray-700" />
+                            </button>
                         </div>
 
                         <div className="flex-1">
@@ -493,7 +496,6 @@ export const PurchaseOrder: React.FC = () => {
                 loading={isLoading}
                 pageName='Purchase Order'
             />
-
         </div>
     )
 }

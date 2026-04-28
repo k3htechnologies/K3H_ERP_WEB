@@ -53,14 +53,12 @@ export const MaterialRequisition: React.FC = () => {
 
     const applyFilters = () => {
         updateListState({ filters: tempFilters, page: 1 });
-        loadDetailsdata(1, tempFilters);
         setShowFilterPopup(false);
     };
 
     const clearFilters = () => {
         setTempFilters({});
         updateListState({ filters: {}, page: 1 });
-        loadDetailsdata(1, {});
     };
 
     const handleFilterChange = (key: string, value: string) => {
@@ -155,9 +153,9 @@ export const MaterialRequisition: React.FC = () => {
             'Deleting Requisition'
         );
     };
-    const handlePageChange = useCallback((page: number) => {
-        fetchLoadDetailsList(page);
-    }, []);
+    const handlePageChange = (page: number) => {
+        updateListState({ page });
+    };
 
     const handleMaterialRequisitionEdit = useCallback((row: MaterialRequisitionData) => {
         debugger
@@ -334,7 +332,6 @@ export const MaterialRequisition: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
 
-        setPagination({ currentPage: listState.page });
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
             loadDetailsdata(listState.page, { SystemGeneratedCode: String(listState.searchTerm).trim() }, listState.sortInfo);
         } else {

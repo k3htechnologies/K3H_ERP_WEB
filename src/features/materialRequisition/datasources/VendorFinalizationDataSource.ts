@@ -7,7 +7,7 @@ import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
 export abstract class VendorFinalizationDatasource {
     abstract pullVendorsForEnquiry(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse>;
-    abstract addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse>;
+    abstract addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<AddVendorForEnquiryRequestResponse>;
     abstract pullSelectedVendorForEnquiry(params: FilterWithPaginationVendorForSelectedEnquiryRequest,signal?: AbortSignal): Promise<SelectedVendorListResponse>;
     abstract addFinalizedVendor(payload: AddVendorForEnquiryRequestResponse): Promise<VendorListResponse>;
     abstract pullFinalizedVendor(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse>;
@@ -72,6 +72,7 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
                 Uniquekey: (params.Uniquekey ?? null)?.toString() || '',
                 ProjectId: (params.ProjectId ?? 0).toString(),
             })
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${VendorFinalizationApi.PULL_SELECTED_VENDOR}?${queryParams.toString()}`, { signal }
@@ -93,7 +94,7 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
         }
     }
 
-    async addFinalizedVendor(payload: AddVendorForEnquiryRequestResponse): Promise<VendorListResponse> {
+    async addFinalizedVendor(payload: AddVendorForEnquiryRequest): Promise<AddVendorForEnquiryRequestResponse> {
         try {
         
             const response = await this.k3hHttpClient.postRequestWithAuthentication(

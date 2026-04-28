@@ -91,7 +91,6 @@ export const MaterialRequisition: React.FC = () => {
 
     const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage, MaterialRequisitionStatus: row.MaterialRequisitionStatus, SystemGeneratedCode: row.SystemGeneratedCode, Uniquekey: row.Uniquekey });
-        setDetailData(row.MaterialRequisitionDetailData);
         navigate('/materialRequisition/view');
     }, [navigate, updateListState],
     );

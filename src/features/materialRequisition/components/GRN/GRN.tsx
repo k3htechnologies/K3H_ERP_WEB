@@ -1,8 +1,8 @@
 import { runApiWithLoader } from "@/core/utils";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type MaterialRequisitionGRNData, type FilterWithPaginationMaterialRequisitionGRN, type FilterWithPaginationMaterialRequisitionGRNSummary, type MaterialRequisitionGRNSummaryData, type MaterialRequisitionDetailGRNData } from "../../models/MaterialRequisitionGRNModel";
 import { useMaterialRequisitionListState } from "../../context/MaterialRequisitionListStateContext";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
@@ -38,6 +38,7 @@ export const GRN: React.FC = () => {
     const [isViewGRNSummaryModalOpen, setIsViewGRNSummaryModalOpen] = useState(false);
     const [GRNSummaryDetailData, setGRNSummaryDetailData] = useState<MaterialRequisitionGRNSummaryData[]>([]);
     const { canAction } = useMenuPermissions();
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!projectId) return;
@@ -76,15 +77,11 @@ export const GRN: React.FC = () => {
             "Loading GRN SUMMARY",
         );
     };
-    const handleAddGRN = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-            }
-        )
+    const handleAddGRN = useCallback(() => {
+        navigate('/finalizeVendor/add');
+    }, [navigate]);
 
-    }
+
     const loadGRNData = async () => {
         await runApiWithLoader(
             setIsLoading,

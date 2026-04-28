@@ -13,11 +13,11 @@ type Row = {
     id: string
     MaterialName: string
     MaterialQuantity: number
-    MaterialPerUnit: number
+    MaterialPerUnit: number | 0
     CGST: number
     SGST: number
     UGST: number
-    TGST: number
+    IGST: number
     Amount: number
 }
 
@@ -25,10 +25,11 @@ interface Props {
     data: Row[]
     isEditable?: boolean
     columns?: EditableTableColumn[]
+
     onChange?: (rows: Row[]) => void
     vendorId?: number
     termId?: number
-    onSave?: () => void
+    onSave?: (rows: Row[]) => void
 }
 
 export const FinalizedVendorQuotationTable: React.FC<Props> = ({
@@ -43,22 +44,21 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     const [stagedRows, setStagedRows] = useState<Row[]>(data)
     const [isEditing, setIsEditing] = useState(false)
 
-    // correct sync
     useEffect(() => {
         setRows(data)
         setStagedRows(data)
     }, [data])
 
-
-
-    const computedRows = useMemo(() =>
-        (isEditing ? stagedRows : rows).map(r => ({
-            ...r,
-            id: r.id ?? `row-${r.MaterialName}-${r.MaterialQuantity}`,
-            Amount: computeAmount(r)
-        })),
+    const computedRows = useMemo(
+        () =>
+            (isEditing ? stagedRows : rows).map(r => ({
+                ...r,
+                id: r.id ?? `row-${r.MaterialName}-${r.MaterialQuantity}`,
+                Amount: computeAmount(r),
+            })),
         [rows, stagedRows, isEditing]
     )
+
     const handleChange = useCallback((newRows: Row[]) => {
         setStagedRows(newRows)
     }, [])
@@ -66,7 +66,12 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     const handleSave = () => {
         setRows(stagedRows)
         onChange?.(stagedRows)
-        onSave?.()
+        onSave?.(
+            stagedRows.map(r => ({
+                ...r,
+                Amount: computeAmount(r),
+            }))
+        )
         setIsEditing(false)
     }
 
@@ -78,7 +83,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     const GROUPS: EditableColumnGroup[] = [
         { label: "ITEM INFORMATION", keys: ["MaterialOrService", "MaterialQuantity"], background: "#0F2744" },
         { label: "PRICING", keys: ["MaterialPerUnit", "Amount"], background: "#1A3560" },
-        { label: "TAX BREAKDOWN (%)", keys: ["CGST", "SGST", "UGST", "TGST"], background: "#1E3A5F", color: "#FDE68A" },
+        { label: "TAX BREAKDOWN (%)", keys: ["CGST", "SGST", "UGST", "IGST"], background: "#1E3A5F", color: "#FDE68A" },
         { label: "SUMMARY", keys: ["Total"], background: "#0F2744" }
     ]
 
@@ -92,10 +97,8 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             align: "left",
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
             cellClassName: "font-medium text-gray-900",
-
             render: (_value, row) => {
-                const isService = !!row?.Logistics;
-
+                const isService = !!row?.Logistics
                 return (
                     <div className="flex flex-col">
                         <span className="text-gray-900">
@@ -114,7 +117,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                             {isService ? "SERVICE" : "MATERIAL"}
                         </span>
                     </div>
-                );
+                )
             }
         },
         {
@@ -127,19 +130,19 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
             render: (_value, row) => (
                 <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1 inline-flex items-center gap-1">
-                    {row?.MaterialQuantity} {row?.UomCode}
+                    {row?.MaterialQuantity || 0} {row?.UomCode}
                 </span>
             )
         },
         {
             key: "MaterialPerUnit",
-            label: "UNIT PRICE(₹)",
+            label: "UNIT PRICE (₹)",
             type: "number",
             editable: isEditing,
             width: 100,
             align: "right",
             prefix: "₹",
-            headerClassName: "bg-[#253E60] text-white tracking-[1px]"
+            headerClassName: "bg-[#253E60] text-white tracking-[0.8px]"
         },
         {
             key: "Amount",
@@ -161,12 +164,10 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
-            cellClassName: (value) => value !== 0 ? "text-yellow-600 font-semibold bg-yellow-50" : "text-gray-400 font-semibold bg-gray-100"
-            // render: (_value, row) => (
-            //     <span>
-            //         {row.CGST}%
-            //     </span>
-            // )
+            cellClassName: (value) =>
+                value !== 0
+                    ? "text-yellow-600 font-semibold bg-yellow-50"
+                    : "text-gray-400 font-semibold bg-gray-100"
         },
         {
             key: "SGST",
@@ -177,13 +178,10 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
-            cellClassName: (value) => value !== 0 ? "text-yellow-600 font-semibold bg-yellow-50" : "text-gray-400 font-semibold  bg-gray-100"
-
-            // render: (_value, row) => (
-            //     <span>
-            //         {row.SGST}%
-            //     </span>
-            // )
+            cellClassName: (value) =>
+                value !== 0
+                    ? "text-yellow-600 font-semibold bg-yellow-50"
+                    : "text-gray-400 font-semibold bg-gray-100"
         },
         {
             key: "UGST",
@@ -194,29 +192,24 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
-            cellClassName: (value) => value !== 0 ? "text-yellow-600 font-semibold bg-yellow-50" : "text-gray-400 font-semibold  bg-gray-100"
-            // render: (_value, row) => (
-            //     <span>
-            //         {row.UGST}% 
-            //     </span>
-            // )
+            cellClassName: (value) =>
+                value !== 0
+                    ? "text-yellow-600 font-semibold bg-yellow-50"
+                    : "text-gray-400 font-semibold bg-gray-100"
         },
         {
             key: "TGST",
-            label: "TGST(%)",
+            label: "IGST(%)",
             editable: isEditing,
             type: "number",
             width: 90,
             align: "right",
             headerClassName: "bg-[#2A3F5F] text-yellow-200 tracking-[1.1px]",
             suffix: "%",
-            cellClassName: (value) => value !== 0 ? "text-yellow-600 font-semibold bg-yellow-50" : "text-gray-400 font-semibold  bg-gray-100"
-
-            // render: (_value, row) => (
-            //     <span>
-            //         {row.TGST}%
-            //     </span>
-            // )
+            cellClassName: (value) =>
+                value !== 0
+                    ? "text-yellow-600 font-semibold bg-yellow-50"
+                    : "text-gray-400 font-semibold bg-gray-100"
         },
         {
             key: "Total",
@@ -229,16 +222,12 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             prefix: "₹",
             headerClassName: "bg-[#1E3A5F] text-green-200 tracking-[1px]",
             cellClassName: "text-green-600 font-semibold"
-
         }
-    ], [isEditing, computeAmount])
-
-    const grandTotal = computedRows.reduce((sum, r) => sum + r.Amount, 0)
+    ], [isEditing])
 
     return (
         <div className="space-y-4 bg-white rounded-xl shadow-sm">
-            <div className="flex items-center justify-between p-4 ">
-
+            <div className="flex items-center justify-between p-4">
                 <div className="text-lg font-semibold text-gray-900">
                     Quotation
                 </div>
@@ -258,7 +247,6 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                         >
                             Cancel
                         </button>
-
                         <button
                             onClick={handleSave}
                             className="px-4 py-2 text-sm bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
@@ -267,7 +255,6 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                         </button>
                     </div>
                 )}
-
             </div>
 
             <DataTableEditable
@@ -283,12 +270,8 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
                     headerBg: "#0f1f3d",
                     groupBg: "#111827",
                     totalsBg: "#0F2744",
-                    // accent: "#10b981"
                 }}
-
             />
-
-
         </div>
     )
 }

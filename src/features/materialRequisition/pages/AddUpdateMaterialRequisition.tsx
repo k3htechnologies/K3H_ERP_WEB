@@ -575,7 +575,7 @@ export const AddUpdateMaterialRequisition = () => {
                         formData.MaterialRequisitionId &&
                             formData.MaterialRequisitionId > 0 ? "Update" : "Add"
                     }
-                    onCancel={() => navigate(-1)}
+                    onCancel={() => (-1)}
                     canAction={canAction}
                     onSave={() => {
                         void handleSave();

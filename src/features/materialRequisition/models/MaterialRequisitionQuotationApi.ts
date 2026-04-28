@@ -33,7 +33,7 @@ export interface MaterialRequisitionQuotationDetailsData {
     CGST:number;
     SGST:number;
     UGST:number;
-    TGST:number;
+    IGST:number;
     
 }
 

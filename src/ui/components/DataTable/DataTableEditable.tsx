@@ -181,7 +181,10 @@ export const DataTableEditable: React.FC<Props> = ({
     (row: any, rowIndex: number, col: EditableTableColumn) => {
 
       const value = col.compute ? col.compute(row) : row[col.key]
-      const safeValue = value ?? ""
+      const safeValue =
+        col.type === "number" || col.type === "computed"
+          ? (value ?? 0)
+          : (value ?? "")
       const isEditable = col.editable !== false
 
       if (col.render) {

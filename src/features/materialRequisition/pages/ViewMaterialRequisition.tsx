@@ -271,6 +271,8 @@ export const ViewMaterialRequisition: React.FC = () => {
                 if (E.isRight(response)) {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0], });
+                    
+                    navigate("/materialRequisition");
 
                     setIsCloseRequisitionDialogOpen(false);
                     loadMaterialRequisition();

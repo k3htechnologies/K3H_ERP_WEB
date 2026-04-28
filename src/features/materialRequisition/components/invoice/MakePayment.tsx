@@ -173,7 +173,7 @@ const MakePayment: React.FC = () => {
                 <DataTableWithHeadColor
                     columns={MaterialRequisitionDetailColumns}
                     data={matrialRequisitionDetailGRNData}
-                    emptyMessage="No Material Requisition Found"
+                    emptyMessage="No Material Requisition Details Found"
                     fixedHeight={true}
                     className="flex-1"
                 />

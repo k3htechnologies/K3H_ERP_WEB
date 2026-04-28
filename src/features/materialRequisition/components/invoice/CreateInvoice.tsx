@@ -291,7 +291,7 @@ const CreateInvoice: React.FC = () => {
                 <DataTableWithHeadColor
                     columns={MaterialRequisitionDetailColumns}
                     data={matrialRequisitionDetailGRNData}
-                    emptyMessage="No Material Requisition Found"
+                    emptyMessage="No Material Requisition Details Found"
                     maxHeight={'255'}
                     className="flex-1"
                 />

@@ -16,6 +16,7 @@ import Checkbox from "@/ui/components/forms/Checkbox";
 import { Button } from "@/ui/components/forms";
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 
 export const Details: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -25,6 +26,7 @@ export const Details: React.FC = () => {
     const [matrialRequisitionDetailData, setMaterialRequisitionDetailData] = useState<MaterialRequisitionDetailData[]>([]);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [, setMaterialRequisitionList] = useState<MaterialRequisitionData[]>([]);
+    const [isDeleteRequisitionDialogOpen, setIsDeleteRequisitionDialogOpen] = useState(false);
     const [active, setActive] = useState(false);
     const [selectedIds, setSelectedIds] = useState<number[]>([]);
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
@@ -166,10 +168,15 @@ export const Details: React.FC = () => {
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
 
+                    navigate("/materialRequisition");
+
+                    setIsDeleteRequisitionDialogOpen(false);
+
+                    fetchDetailsdata();
                 } else {
                     addToast({ type: 'error', title: response.left.message });
+                    setIsDeleteRequisitionDialogOpen(false)
                 }
-
                 setDeleteData(null)
                 return response;
             },
@@ -312,10 +319,10 @@ export const Details: React.FC = () => {
                     }}
                     onClick={() => {
                         setDeleteData(matrialRequisitionData);
-                        handleDeleteRequest()
+                        setIsDeleteRequisitionDialogOpen(true)
                     }}
                 >
-                    Cancel
+                    Delete
                 </Button>
             </div>
 
@@ -348,6 +355,19 @@ export const Details: React.FC = () => {
                 </div>
             </Modal>
 
+            <ConfirmationDialogBox
+                isOpen={isDeleteRequisitionDialogOpen}
+                onClose={() => {
+                    setIsDeleteRequisitionDialogOpen(false);
+                    setDeleteData(null);
+                }}
+                onConfirm={handleDeleteRequest}
+                title="Delete Requisition"
+                message={`Are you sure you want to Delete this Material Requisition?`}
+                confirmText="Delete"
+                cancelText="Cancel"
+                loading={isLoading}
+            />
         </div>
     )
 }

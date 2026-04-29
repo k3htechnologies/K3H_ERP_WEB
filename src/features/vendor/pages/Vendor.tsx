@@ -225,9 +225,8 @@ export const Vendor: React.FC = () => {
   //#region TABLE CONFIG
 
   const handlePageChange = useCallback((page: number) => {
-    updateListState({ page });
-    fetchVendorList(page);
-  }, [updateListState]);
+      updateListState({ page });
+    }, [sortInfo, updateListState]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
     updateListState({ sortInfo: sort, page: 1 });

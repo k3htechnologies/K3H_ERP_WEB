@@ -378,6 +378,8 @@ export const BankDetails: React.FC = () => {
 
     const canDeleteActiveBank = canAction && !activeLoans[0]?.NoOfBankDocument && activeLoans[0]?.BankStatusClosedActive !== "Closed";
 
+    const canClosedBank = canAction && activeLoans[0]?.NoOfBankDocument > 0 && activeLoans[0]?.BankStatusClosedActive !== "Closed";
+
     const closedLoans = bookingLoanDetailsList.filter((x) => x.BankStatusClosedActive === "Closed");
 
     return (
@@ -517,7 +519,7 @@ export const BankDetails: React.FC = () => {
                                                         />
                                                     </div>
 
-                                                    {canDeleteActiveBank && (
+                                                    {canClosedBank && (
                                                         <div className="mt-5 flex justify-between items-center">
                                                             <Checkbox
                                                                 label="Do you want to closed this account?"

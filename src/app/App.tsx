@@ -175,6 +175,9 @@ import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
 import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
 import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
 import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/BookingBrokerageListStateContext';
+import { ChannelPartnerUniverseListStateProvider } from '@/features/channelPartnerUniverse/context/ChannelPartnerUniverseListStateContext';
+import ChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ChannelPartnerUniverse';
+import ViewChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ViewChannelPartnerUniverse';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -217,7 +220,7 @@ function App() {
   return (
     <CountryStateCityDistrictVillage>
       <Suspense fallback={<LoadingSpinner />}>
-      
+
         <Routes>
           {/* Public Routes */}
 
@@ -361,6 +364,9 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
+
+            <Route path="cpUniverse" element={<ChannelPartnerUniverseListStateProvider><ChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
+            <Route path="cpUniverse/view" element={<ChannelPartnerUniverseListStateProvider><ViewChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
 
             <Route path="sourcing" element={<ChannelPartnerSourcingListStateProvider><ChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
             <Route path="sourcing/view" element={<ChannelPartnerSourcingListStateProvider><ViewChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />

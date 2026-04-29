@@ -332,7 +332,7 @@ export const getPageInfo = (path: string) => {
                 title: 'Inward Outward',
                 description: 'Inward Outward',
             }
-            
+
             {/* INVENTORY */ }
 
         case 'inventoryDashboard':
@@ -366,6 +366,11 @@ export const getPageInfo = (path: string) => {
             return {
                 title: "Channel Partner Dashboard",
                 description: "Centralized enquiry management for faster response",
+            }
+        case 'cpUniverse':
+            return {
+                title: "Channel Partner Universe",
+                description: "Single source of truth for channel partner information",
             }
 
         case 'channelPartner':
@@ -475,7 +480,7 @@ export const getPageInfo = (path: string) => {
                 description: "Secure your unit by completing the booking process",
             }
 
-            case 'brokerage':
+        case 'brokerage':
             return {
                 title: "Brokerage",
                 description: "Brokerage",

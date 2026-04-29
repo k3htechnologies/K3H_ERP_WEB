@@ -68,6 +68,17 @@ export interface ChannelPartnerData {
     Speciality: string
 
     Status: string
+
+    PrimaryProjectPortfolioId:number
+    PrimaryProjectPortfolio: string | ''
+
+    SecondaryProjectPortfolioId: string;  
+    SecondaryProjectPortfolio: string;   
+    
+    MicromarketProximity: string; 
+
+    VerifiedNonVerified: string
+
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -131,6 +142,15 @@ export interface ChannelPartnerTeamData {
     Speciality: string
 
     Status: string
+
+    PrimaryProjectPortfolioId:number
+    PrimaryProjectPortfolio: string | ''
+
+    SecondaryProjectPortfolioId: string;  
+    SecondaryProjectPortfolio: string;
+    
+    MicromarketProximity: string;
+
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -173,6 +193,9 @@ export interface AddUpdateChannelPartnerRequest {
     StateMasterId: number | null;
     CityMasterId: number | null;
     VillageMasterId: number | null;
+    PrimaryProjectPortfolioId:number
+    SecondaryProjectPortfolioId: string; 
+    
     OTP?: string | null;
 }
 

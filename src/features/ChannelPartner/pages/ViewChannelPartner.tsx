@@ -267,6 +267,20 @@ const ViewChannelPartner: React.FC = () => {
                                 <FieldItem label="Paid Brokerage Amount (₹)" value={formatCurrency(editChannelPartnerData?.PaidBrokerageAmount)} />
                             </div>
                         </section>
+
+                        <hr className="border-t border-gray-200" />
+                        <section className="p-4">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Primary & Secondary Project Portfolio
+                            </h4>
+
+                            <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
+                                <FieldItem label="Primary" value={editChannelPartnerData?.PrimaryProjectPortfolio} />
+                                <FieldItem label="Secondary" value={editChannelPartnerData?.SecondaryProjectPortfolio} />
+                                <FieldItem label="Micromarket Proximity" value={editChannelPartnerData?.MicromarketProximity} />
+                            </div>
+                        </section>
+
                         <hr className="border-t border-gray-200" />
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
@@ -300,7 +314,7 @@ const ViewChannelPartner: React.FC = () => {
                         </div>
 
                         {/* Team Member List */}
-                        <div className="mt-4 space-y-4 overflow-y-auto h-[1220px] thin-scroll">
+                        <div className="mt-4 space-y-4 overflow-y-auto h-[1600px] thin-scroll">
 
                             {filteredTeamMembers.length === 0 && (
                                 <p className="text-sm text-gray-400 text-center">

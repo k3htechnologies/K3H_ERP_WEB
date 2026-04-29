@@ -1372,7 +1372,6 @@ const ProjectDocument: React.FC = () => {
               availableFilesURL={projectDocumentURL ?? ""}
               allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
               maxFiles={5}
-              maxSizeMB={10}
               error={errors.ProjectDocumentURL}
               onRemoveExisting={(url) => {
                 setRemoveProjectDocumentUrls((prev) => [...prev, url]);

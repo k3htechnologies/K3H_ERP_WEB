@@ -25,8 +25,6 @@ export interface ChannelPartnerSourcingData {
   ModifiedById: number | null;
   ModifiedBy: string;
   ModifiedDate: string | null;
-  Message: string;
-  TotalRecords: number;
 }
 
 export interface AddUpdateChannelPartnerSourcingRequest {

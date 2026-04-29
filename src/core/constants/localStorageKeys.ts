@@ -67,6 +67,7 @@ export const LOCAL_STORAGE_KEYS = {
 
     // CHANNEL PARTNER
     CHANNEL_PARTNER_SELECTED_COLUMNS: 'channelPartnerMaster.selectedColumns',
+    CHANNEL_PARTNER_UNIVERSE_SELECTED_COLUMNS: 'channelPartnerUniverse.selectedColumns',
 
     // SALES
     CALLING_DATA_SELECTED_COLUMNS: 'callTracker.selectedColumns',
@@ -106,6 +107,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     OUTDOOR: 'outdoor.listState',
     CHANNEL_PARTNER: 'channelPartner.listState',
     CHANNEL_PARTNER_SOURCING: 'channelPartnerSourcing.listState',
+    CHANNEL_PARTNER_UNIVERSE: 'channelPartnerUniverse.listState',
     INCENTIVE_REPORT: 'incentive_report.listState',
     BOOKING: 'booking.listState',
     PAY_TRACK_BOOKING: 'payTrackBooking.listState',

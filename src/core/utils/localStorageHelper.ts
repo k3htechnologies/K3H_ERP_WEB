@@ -400,6 +400,32 @@ export const LocalStorageHelper = {
     return null;
   },
   //#endregion
+
+   //#region STORE CHANNEL PARTNER UNIVERSE COLUMNS
+  storeChannelPartnerUniverseTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_UNIVERSE_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Channel Partner Columns Details:", error);
+    }
+  },
+  //#endregion
+
+  //#region GET CHANNEL PARTNER UNIVERSE COLUMNS
+  getChannelPartnerUniverseTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_UNIVERSE_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_UNIVERSE_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Channel Partner Universe Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+  //#endregion
+
   //#region STORE CHANNEL PARTNER SOURCING COLUMNS
   storeChannelPartnerSourcingTableColumns: (columns: string): void => {
     try {
@@ -409,6 +435,7 @@ export const LocalStorageHelper = {
     }
   },
   //#endregion
+
   //#region GET CHANNEL PARTNER SOURCING COLUMNS
   getChannelPartnerSourcingTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS);
@@ -423,6 +450,7 @@ export const LocalStorageHelper = {
     return null;
   },
   //#endregion
+  
   //#region STORE ENQUIRY MASTER COLUMNS
   storeEnquiryTableColumns: (columns: string): void => {
     try {
@@ -1250,6 +1278,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_UNIVERSE_SELECTED_COLUMNS);
 
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
@@ -1264,6 +1293,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.LITIGATION);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.CHANNEL_PARTNER);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.CHANNEL_PARTNER_SOURCING);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.CHANNEL_PARTNER_UNIVERSE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.INCENTIVE_REPORT);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.OUTDOOR);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.LEAVE);

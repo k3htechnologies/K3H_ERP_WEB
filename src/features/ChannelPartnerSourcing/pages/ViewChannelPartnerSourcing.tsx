@@ -90,6 +90,9 @@ const ViewChannelPartnerSourcing: React.FC = () => {
   const [channelPartnerDistrictName, setChannelPartnerDistrictName] = useState<string>();
   const [channelPartnerCityName, setChannelPartnerCityName] = useState<string>();
   const [channelPartnerVillageName, setChannelPartnerVillageName] = useState<string>();
+  const [channelPartnerPrimaryProjectPortfolio, setChannelPartnerPrimaryProjectPortfolio] = useState<string>();
+  const [channelPartnerSecondaryProjectPortfolio, setChannelPartnerSecondaryProjectPortfolio] = useState<string>();
+  const [channelPartnerMicromarketProximity, setChannelPartnerMicromarketProximity] = useState<string>();
 
   // Professional Details
   const [channelPartnerSpeciality, setChannelPartnerSpeciality] = useState<string>();
@@ -126,7 +129,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       setChannelPartnerGSTURL(channelPartner.GSTCertificateURL ?? "");
       setChannelPartnerSystemGeneratedCode(channelPartner.SystemGeneratedCode ?? '');
       setChannelPartnerDesignation(channelPartner.Designation ?? '');
-      // Type & Address
       setChannelPartnerType(channelPartner.Type ?? '');
       setChannelPartnerOfficeAddress(channelPartner.OfficeAddress ?? '');
 
@@ -136,7 +138,9 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       setChannelPartnerDistrictName(channelPartner.DistrictName ?? '');
       setChannelPartnerCityName(channelPartner.CityName ?? '');
       setChannelPartnerVillageName(channelPartner.VillageName ?? '');
-
+      setChannelPartnerPrimaryProjectPortfolio(channelPartner.PrimaryProjectPortfolio ?? '')
+      setChannelPartnerSecondaryProjectPortfolio(channelPartner.SecondaryProjectPortfolio ?? '')
+      setChannelPartnerMicromarketProximity(channelPartner.MicromarketProximity ?? '')
       // Professional Details
       setChannelPartnerSpeciality(channelPartner.Speciality ?? '');
     });
@@ -486,7 +490,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
             <hr className="border-t border-gray-200" />
 
-            {/* DOCUMENT DETAILS */}
             <section className="p-4">
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
                 Document Details
@@ -497,6 +500,19 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                 <FieldItem label="PAN Number" value={channelPartnerPanNumber || '-'} urls={channelPartnerPanURL} isIcon />
                 <FieldItem label="Aadhaar Number" value={channelPartnerAadhaarCardNumber || '-'} urls={channelPartnerAadhaarCardURL} isIcon />
                 <FieldItem label="GST Number" value={channelPartnerGSTNumber || '-'} urls={channelPartnerGSTURL} isIcon />
+              </div>
+            </section>
+
+            <hr className="border-t border-gray-200" />
+            <section className="p-4">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Primary & Secondary Project Portfolio
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
+                <FieldItem label="Primary" value={channelPartnerPrimaryProjectPortfolio} />
+                <FieldItem label="Secondary" value={channelPartnerSecondaryProjectPortfolio} />
+                <FieldItem label="Micromarket Proximity" value={channelPartnerMicromarketProximity} />
               </div>
             </section>
 

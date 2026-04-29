@@ -641,7 +641,6 @@ export const AddUpdateVendor: React.FC = () => {
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={5}
-              maxSizeMB={10}
               onRemoveExisting={(url) => {
                 setRemovedAadharCardUrls((prev) => [...prev, url])
               }}
@@ -672,7 +671,6 @@ export const AddUpdateVendor: React.FC = () => {
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={5}
-              maxSizeMB={10}
               onRemoveExisting={(url) => {
                 setRemovedPanCardUrls((prev) => [...prev, url])
               }}
@@ -703,7 +701,6 @@ export const AddUpdateVendor: React.FC = () => {
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={5}
-              maxSizeMB={10}
               onRemoveExisting={(url) => {
                 setRemovedGSTCertificateUrls((prev) => [...prev, url])
               }}

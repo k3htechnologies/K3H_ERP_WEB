@@ -338,7 +338,7 @@ export const PaymentLedger: React.FC = () => {
           },
           {
             key: "PendingAmount",
-            label: "Pending (₹)",
+            label: "Outstanding (₹)",
             align: "right",
             render: (_: number, row: any) => {
               const value =
@@ -921,7 +921,7 @@ export const PaymentLedger: React.FC = () => {
 
                       <div className="grid grid-cols-3 gap-6 text-sm pt-5">
                         <div className="space-y-3">
-                          <h3 className="font-semibold mb-2">Our Bank Details</h3>
+                          <h3 className="font-semibold mb-2">Developer Bank Details</h3>
 
                           <FieldItem label="Account Number" value={row.ProjectAccountNumber || "-"} isRow={false} />
                           <FieldItem label="Bank Name" value={row.ProjectBankName || "-"} isRow={false} />
@@ -929,7 +929,7 @@ export const PaymentLedger: React.FC = () => {
                         </div>
 
                         <div className="space-y-3">
-                          <h3 className="font-semibold mb-2">Opposite Party Bank Details</h3>
+                          <h3 className="font-semibold mb-2">Customer Bank Details</h3>
 
                           <FieldItem label="Bank" value={row.BankName || "-"} />
 

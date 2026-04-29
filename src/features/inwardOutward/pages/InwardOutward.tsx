@@ -877,7 +877,6 @@ export const InwardOutward: React.FC = () => {
                                 onChange={setRevertDocumentURLFiles}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                 maxFiles={5}
-                                maxSizeMB={10}
                                 error={errors.RevertDocumentURL}
                             />
                         </div>

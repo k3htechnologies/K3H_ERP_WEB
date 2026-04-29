@@ -436,7 +436,7 @@ const PayTrack: React.FC = () => {
         },
         {
             key: 'pending',
-            label: 'Pending Amount',
+            label: 'Outstanding Amount',
             align: 'right',
             width: "300px",
             render: (_, row) => {

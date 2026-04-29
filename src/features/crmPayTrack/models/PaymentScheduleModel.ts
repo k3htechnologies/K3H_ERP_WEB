@@ -57,8 +57,17 @@ export interface PaymentScheduleDemandSummaryModelData {
     LastModifiedDate: string | null
 }
 
+export interface AddUpdatePayTrackPaymentScheduleDemandRequest
+{
+    BookingPaymentScheduleId : number;
+    BookingId : number;
+    ProjectId : number;
+    PaymentScheduleDemandType : string | null
+}
+
 export type PaymentScheduleListResponse = ApiResponse<PaymentScheduleModelData[]>;
 export type PaymentScheduleDemandSummaryListResponse = ApiResponse<PaymentScheduleDemandSummaryModelData[]>;
+export type PaymentScheduleDemandResponse = ApiResponse<string>;
 
 
 

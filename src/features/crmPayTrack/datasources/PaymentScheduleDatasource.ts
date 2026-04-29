@@ -1,12 +1,13 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { FilterWithPaginationPaymentSchedule, FilterWithPaginationPaymentScheduleDemandSummary, PaymentScheduleDemandSummaryListResponse, PaymentScheduleListResponse } from "@/features/crmPayTrack/models/PaymentScheduleModel";
+import type { AddUpdatePayTrackPaymentScheduleDemandRequest, FilterWithPaginationPaymentSchedule, FilterWithPaginationPaymentScheduleDemandSummary, PaymentScheduleDemandResponse, PaymentScheduleDemandSummaryListResponse, PaymentScheduleListResponse } from "@/features/crmPayTrack/models/PaymentScheduleModel";
 
 import { PaymentScheduleApi } from "@/features/crmPayTrack/api/PaymentScheduleApi";
 
 export abstract class PaymentScheduleDatasource {
     abstract pullPaymentSchedule(params: FilterWithPaginationPaymentSchedule, signal?: AbortSignal): Promise<PaymentScheduleListResponse>;
     abstract pullPaymentScheduleDemandSummary(params: FilterWithPaginationPaymentScheduleDemandSummary, signal?: AbortSignal): Promise<PaymentScheduleDemandSummaryListResponse>;
+    abstract addPayTrackPaymentScheduleDemand(params: AddUpdatePayTrackPaymentScheduleDemandRequest): Promise<PaymentScheduleDemandResponse>;
 }
 
 export class PaymentScheduleDatasourceImpl implements PaymentScheduleDatasource {
@@ -23,7 +24,7 @@ export class PaymentScheduleDatasourceImpl implements PaymentScheduleDatasource 
 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
             if (params.BookingId) queryParams.append("BookingId", params.BookingId.toString());
-            if (params.Name) queryParams.append("Name", params.Name);                     
+            if (params.Name) queryParams.append("Name", params.Name);
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
@@ -37,7 +38,7 @@ export class PaymentScheduleDatasourceImpl implements PaymentScheduleDatasource 
             console.error("ERROR: PULL PAYMENT SCHEDULE :", error);
 
             if (error instanceof TokenExpiredException) {
-              return  await this.pullPaymentSchedule(params);
+                return await this.pullPaymentSchedule(params);
             }
             throw error;
         }
@@ -52,7 +53,7 @@ export class PaymentScheduleDatasourceImpl implements PaymentScheduleDatasource 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
             if (params.BookingId) queryParams.append("BookingId", params.BookingId.toString());
             if (params.BookingPaymentScheduleId) queryParams.append("BookingPaymentScheduleId", params.BookingPaymentScheduleId.toString());
-            if (params.Name) queryParams.append("Name", params.Name);                     
+            if (params.Name) queryParams.append("Name", params.Name);
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
@@ -66,13 +67,34 @@ export class PaymentScheduleDatasourceImpl implements PaymentScheduleDatasource 
             console.error("ERROR: PULL PAYMENT SCHEDULE DEMAND SUMMARY:", error);
 
             if (error instanceof TokenExpiredException) {
-                
-              return  await this.pullPaymentScheduleDemandSummary(params);
+
+                return await this.pullPaymentScheduleDemandSummary(params);
             }
             throw error;
         }
     }
 
+
+    async addPayTrackPaymentScheduleDemand(params: AddUpdatePayTrackPaymentScheduleDemandRequest): Promise<PaymentScheduleDemandResponse> {
+
+        try {
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                PaymentScheduleApi.ADD_UPDATE_PAYMENT_SCHEDULE_DEMAND,
+                params
+            )
+
+            return response
+        } catch (error) {
+
+            console.error('ERROR: ADD DEMAND:', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addPayTrackPaymentScheduleDemand(params);
+            }
+            throw error
+        }
+    }
 }
 
 

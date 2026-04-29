@@ -622,7 +622,6 @@ export const ApprovedBankFile: React.FC = () => {
                                 error={errors.ApprovedBankFileURL}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                 maxFiles={5}
-                                maxSizeMB={10}
                                 onRemoveExisting={(url) => {
                                     setRemoveApprovedBankFileUrls((prev) => [...prev, url])
                                 }}

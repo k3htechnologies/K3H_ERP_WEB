@@ -17,7 +17,6 @@ import { ChannelPartnerService } from '@/features/ChannelPartner/services/Channe
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
-import { isChannelPartnerComplete } from '@/features/ChannelPartner/utils/channelPartnerUtils';
 import { AlertTriangle } from 'lucide-react';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 
@@ -147,9 +146,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
   //#region TABLE CONFIG
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
-    fetchChannelPartnerList(page);
-  }, [updateListState]
-  );
+  }, [sortInfo, updateListState]);
 
   const handleSortColumn = useCallback(
     (sort: SortInfo) => {
@@ -199,7 +196,6 @@ export const ChannelPartnerSourcing: React.FC = () => {
         fixed: 'left',
         align: 'left',
         render: (value, row) => {
-          const complete = isChannelPartnerComplete(row)
           return (
             <div className="flex items-center justify-center gap-2">
 
@@ -210,7 +206,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
                 tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
               />
 
-              {!complete && (
+               {row.VerifiedNonVerified!=='Verified' && (
                 <span title="Channel Partner Profile Incomplete">
                   <AlertTriangle className="w-4 h-4 text-amber-500 cursor-pointer" />
                 </span>
@@ -234,7 +230,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
             onClick={() => handleNavigateToView(row)}
           />
         )
-      }, 
+      },
       {
         key: "DateOfBirth",
         label: "DOB",

@@ -584,7 +584,6 @@ export const EmployeeResignation: React.FC = () => {
                     availableFilesURL={offerLetterURL ?? ""}
                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                     maxFiles={5}
-                    maxSizeMB={10}
                     onRemoveExisting={(url) => {
                       setRemovedOfferLetterUrls((prev) => [...prev, url])
                     }}

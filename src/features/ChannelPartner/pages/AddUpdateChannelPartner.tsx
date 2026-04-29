@@ -53,6 +53,11 @@ import { sendOTP } from "@/features/technical/services/OTPService";
 import { getChannelPartnerVerificationSteps } from "@/features/ChannelPartner/utils/channelPartnerVerificationSteps";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { fetchProjectDropdown } from "@/features/projectMaster/projectDropdown";
+import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
+import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
+import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
+import { checkDuplicateField } from "@/core/utils/duplicateValidation";
 
 const initialFormState = (): AddUpdateChannelPartnerRequest => ({
   ChannelPartnerId: 0,
@@ -92,14 +97,14 @@ const initialFormState = (): AddUpdateChannelPartnerRequest => ({
   StateMasterId: null,
   CityMasterId: null,
   VillageMasterId: null,
+  PrimaryProjectPortfolioId: 0,
+  SecondaryProjectPortfolioId: "",
   OTP: "",
 });
 
 export const AddUpdateChannelPartner: React.FC = () => {
   //#region STATE MANAGEMENT
-  const [formData, setFormData] = useState<AddUpdateChannelPartnerRequest>(() =>
-    initialFormState(),
-  );
+  const [formData, setFormData] = useState<AddUpdateChannelPartnerRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
 
@@ -144,18 +149,12 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
   const [isReadOnly, setIsReadOnly] = useState<boolean>();
 
-  // TOASTs
   const { addToast } = useToast();
 
-  // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  //#endregion
 
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions("/channelPartner");
-  //#endregion
 
-  //#region COUNTRY STATE CITY DISTRICT
   const {
     isLoading: isLocationLoading,
     countries,
@@ -215,31 +214,34 @@ export const AddUpdateChannelPartner: React.FC = () => {
       }))
       : [];
 
-  //#endregion
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    primaryProjectPortfolio?: string;
+  }>({});
 
-  //#region HANDLE FIELD CHANGE EVENT
-  const handleFieldChange = (
-    field: keyof AddUpdateChannelPartnerRequest,
-    value: any,
-  ) => {
+  const [selectedSecondaryProjectValues, setSelectedSecondaryProjectValues] = useState<string | number | null>(null);
+
+  const secondaryProjectDropdown = useMultiSelectDropdown({
+    value: selectedSecondaryProjectValues,
+    fetchCallback: fetchProjectDropdown,
+    autoFetchOptions: true,
+  });
+
+
+  const handleFieldChange = (field: keyof AddUpdateChannelPartnerRequest, value: any,) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
-  //#endregion
 
-  //#region INITIALIZATION
   useEffect(() => {
     if (!isAddMode) {
       fetchChannelPartnerDetails();
     }
   }, [ChannelPartnerId]);
 
-  //#endregion
 
-  //#region FETCH CHANNEL PARTNER MASTER DETAILS
   const fetchChannelPartnerDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -292,6 +294,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
               DistrictMasterId: e.DistrictMasterId ?? prev.DistrictMasterId,
               CityMasterId: e.CityMasterId ?? prev.CityMasterId,
               VillageMasterId: e.VillageMasterId ?? prev.VillageMasterId,
+              PrimaryProjectPortfolioId: e.PrimaryProjectPortfolioId ?? prev.PrimaryProjectPortfolioId,
+              SecondaryProjectPortfolioId: e.SecondaryProjectPortfolioId ?? prev.SecondaryProjectPortfolioId,
             }));
             setPanCardURLFiles([]);
             setPanCardURL(e.PanCardURL);
@@ -312,6 +316,12 @@ export const AddUpdateChannelPartner: React.FC = () => {
             setSelectedVillageId(e.VillageMasterId ?? null);
 
             setIsReadOnly(e.Designation === "Owner" ? false : true);
+
+            setDropdownLabels({
+              primaryProjectPortfolio: e.PrimaryProjectPortfolio || ""
+            });
+
+            setSelectedSecondaryProjectValues(e.SecondaryProjectPortfolioId || "");
           }
         } else {
           addToast({ type: "error", title: response.left.message });
@@ -327,7 +337,6 @@ export const AddUpdateChannelPartner: React.FC = () => {
       "Loading Channel Partner",
     );
   };
-  //#endregion
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddChannelPartnerForm = (): {
@@ -460,10 +469,10 @@ export const AddUpdateChannelPartner: React.FC = () => {
       errors: newErrors,
     };
   };
-  //#endregion
 
-  //#region PUSH DATA
   const PushChannelPartnerFormData = (): FormData => {
+
+    const secondaryProjectIdsString = secondaryProjectDropdown.selectedValues.length > 0 ? secondaryProjectDropdown.selectedValues.join(",") : "";
     const fd = new FormData();
 
     fd.append("ChannelPartnerId", String(formData.ChannelPartnerId ?? 0));
@@ -477,22 +486,20 @@ export const AddUpdateChannelPartner: React.FC = () => {
     fd.append("Designation", formData.Designation ?? "");
     fd.append("EmailId", formData.EmailId ?? "");
     fd.append("MobileNumber", formData.MobileNumber ?? "");
-    fd.append(
-      "AlternativeMobileNumber",
-      formData.AlternativeMobileNumber ?? "",
-    );
+    fd.append("AlternativeMobileNumber", formData.AlternativeMobileNumber ?? "");
     fd.append("AadharCardNumber", formData.AadharCardNumber ?? "");
     fd.append("PanNumber", formData.PanNumber ?? "");
     fd.append("RERANumber", formData.RERANumber ?? "");
     fd.append("GSTNumber", formData.GSTNumber ?? "");
     fd.append("OfficeAddress", formData.OfficeAddress ?? "");
     fd.append("Speciality", formData.Speciality ?? "");
-
     fd.append("CountryMasterId", String(formData.CountryMasterId ?? 0));
     fd.append("DistrictMasterId", String(formData.DistrictMasterId ?? 0));
     fd.append("StateMasterId", String(formData.StateMasterId ?? 0));
     fd.append("CityMasterId", String(formData.CityMasterId ?? 0));
     fd.append("VillageMasterId", String(formData.VillageMasterId ?? 0));
+    fd.append("PrimaryProjectPortfolioId", String(formData.PrimaryProjectPortfolioId ?? 0));
+    fd.append("SecondaryProjectPortfolioId", secondaryProjectIdsString);
     fd.append("OTP", otp?.trim() ?? "");
 
     panCardURLFiles.forEach((file) => {
@@ -521,15 +528,15 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     return fd;
   };
-  //#endregion
 
-  //#region HANDLE ADD AND UPDATE CHANNEL PARTNER MASTER
   const handleAddUpdateChannelPartner = async () => {
+
     setErrors({});
 
     const validation = validateAddChannelPartnerForm();
 
     if (!validation.isValid) {
+
       setErrors(validation.errors);
 
       addToast({ type: "error", title: "Please fill the required filed" });
@@ -537,8 +544,30 @@ export const AddUpdateChannelPartner: React.FC = () => {
       return;
     }
 
+    const isDuplicate = await checkDuplicateField({
+      fieldName: "MobileNumber",
+      fieldValue: formData.MobileNumber,
+      apiCallback: ChannelPartnerService.apiCallPullChannelPartner,
+      setIsLoading,
+      setLoadingMessage,
+      loadingMessage: "Checking mobile number..."
+    });
+
+    if (isDuplicate) {
+      setErrors(prev => ({
+        ...prev,
+        MobileNumber: "Mobile number already exists"
+      }));
+
+      addToast({ type: "error", title: "Mobile number already exists" });
+
+      return;
+    }
+
     if (formData.ChannelPartnerId === 0 && !isOtpVerified) {
+
       if (!isOtpSent) {
+
         const sent = await sendOTP({
           mobileNumber: formData.MobileNumber || "",
           module: "CHANNEL PARTNER",
@@ -554,26 +583,27 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
         return;
       }
+
     }
 
     await runApiWithLoader(
+
       setIsLoading,
 
       setLoadingMessage,
 
       async () => {
+
         const payload = PushChannelPartnerFormData();
 
-        const response =
-          await ChannelPartnerService.apiCallAddUpdateChannelPartner(payload);
+        const response = await ChannelPartnerService.apiCallAddUpdateChannelPartner(payload);
 
         if (E.isRight(response)) {
-          addToast({
-            type: "success",
-            title: response.right.SuccessMessage[0],
-          });
+
+          addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
           navigate("/channelPartner");
+
         } else {
           addToast({ type: "error", title: response.left?.message });
         }
@@ -588,7 +618,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
       isAddMode ? "Add" : "Update",
     );
   };
-  //#endregion
+
 
   const applyExistingCompanyData = (channelPartner: any) => {
 
@@ -886,7 +916,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                   type="text"
                   value={formData.WebsiteURL}
                   onChange={e => handleFieldChange('WebsiteURL', filterWebsiteUrl(e.target.value))}
-                  rightIcon={<Globe  className="w-4 h-4" />}
+                  rightIcon={<Globe className="w-4 h-4" />}
                   error={errors.WebsiteURL}
                   placeholder="Enter Website URL"
                 />
@@ -1251,6 +1281,58 @@ export const AddUpdateChannelPartner: React.FC = () => {
                 error={errors.OfficeAddress}
               />
             </div>
+          </div>
+
+          <div className="space-y-4 pt-5">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Primary & Secondary Project Portfolio Details
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+              <div>
+
+                <SingleSelectDropdownWithPagination
+                  label="Primary Project"
+                  title="Select Project"
+                  size="lg"
+                  dataFetchCallBack={fetchProjectDropdown}
+
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("PrimaryProjectPortfolioId", 0);
+                      return;
+                    }
+                    handleFieldChange("PrimaryProjectPortfolioId", Number(item.value));
+                  }}
+
+                  initialValue={createDropdownInitialValue(formData.PrimaryProjectPortfolioId, dropdownLabels.primaryProjectPortfolio)}
+                  error={errors.PrimaryProjectPortfolioId}
+                />
+              </div>
+
+              <div>
+                <MultiSelectPagination
+                  label="Secondary Project"
+                  dataFetchCallBack={fetchProjectDropdown}
+                  selectedValues={secondaryProjectDropdown.selectedValues}
+                  options={secondaryProjectDropdown.initialOptions}
+                  onChange={(values) => {
+
+                    const { idsString } = secondaryProjectDropdown.handleChange(values);
+
+                    setSelectedSecondaryProjectValues(idsString || null);
+
+                    if (errors.SecondaryProjectPortfolioId) {
+                      setErrors((prev) => ({
+                        ...prev,
+                        SecondaryProjectPortfolioId: "",
+                      }));
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
           </div>
         </form>
       </div>

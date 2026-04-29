@@ -581,7 +581,6 @@ export const AddUpdatePayTrackRent: React.FC = () => {
                     availableFilesURL={transactionChequeDemandURL ?? ""}
                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                     maxFiles={5}
-                    maxSizeMB={10}
                     onRemoveExisting={(url) => {
                       setRemovedTransactionChequeDemandUrls((prev) => [...prev, url])
                     }}
@@ -599,7 +598,6 @@ export const AddUpdatePayTrackRent: React.FC = () => {
                     availableFilesURL={paymentReceiptURL ?? ""}
                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                     maxFiles={5}
-                    maxSizeMB={10}
                     onRemoveExisting={(url) => {
                       setRemovedPaymentReceiptUrls((prev) => [...prev, url])
                     }}

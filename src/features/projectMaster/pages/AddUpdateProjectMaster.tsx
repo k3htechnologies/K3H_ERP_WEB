@@ -599,7 +599,6 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     availableFilesURL={projectPhotoURL ?? ""}
                                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                     maxFiles={5}
-                                    maxSizeMB={10}
                                     onRemoveExisting={(url) => {
                                         setRemovedProjectPhotoUrls((prev) => [...prev, url])
                                     }}
@@ -656,9 +655,13 @@ const AddUpdateProjectMaster: React.FC = () => {
                                             handleFieldChange('TenderPurchaseEndDate', null);
                                             handleFieldChange('TenderChequeNumber', "");
 
+
+                                            if (tenderChequeNumberURL) {
+                                                setRemovedTenderChequeNumberUrls(prev => [...prev, tenderChequeNumberURL]);
+                                            }
+
                                             setTenderChequeNumberFiles([]);
-                                            setTenderChequeNumberURL("")
-                                            setRemovedTenderChequeNumberUrls([]);
+                                            setTenderChequeNumberURL("");
 
                                             handleFieldChange('TenderSubmissionDate', null);
                                             handleFieldChange('TenderIssueDate', null);
@@ -673,9 +676,15 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         handleFieldChange('TenderPurchaseStartDate', null);
                                         handleFieldChange('TenderPurchaseEndDate', null);
                                         handleFieldChange('TenderChequeNumber', "");
+
+
+                                        if (tenderChequeNumberURL) {
+                                            setRemovedTenderChequeNumberUrls(prev => [...prev, tenderChequeNumberURL]);
+                                        }
+
                                         setTenderChequeNumberFiles([]);
-                                        setTenderChequeNumberURL("")
-                                        setRemovedTenderChequeNumberUrls([]);
+                                        setTenderChequeNumberURL("");
+
                                         handleFieldChange('TenderSubmissionDate', null);
                                         handleFieldChange('TenderIssueDate', null);
                                         handleFieldChange('TenderPayorderRemark', "");
@@ -742,7 +751,6 @@ const AddUpdateProjectMaster: React.FC = () => {
                                             availableFilesURL={tenderChequeNumberURL ?? ""}
                                             allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                             maxFiles={5}
-                                            maxSizeMB={10}
                                             onRemoveExisting={(url) => {
                                                 setRemovedTenderChequeNumberUrls((prev) => [...prev, url])
                                             }}

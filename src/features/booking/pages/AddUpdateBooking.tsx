@@ -2830,37 +2830,37 @@ export const AddUpdateBooking: React.FC = () => {
                 placeholder="Enter Email Id" />
             </div>
             <div>
-              <MultiFilePicker label="Photo" placeholder="Select Photo" required error={errorsBookingApplicant.PhotoURL} value={applicantPhotoFiles} onChange={setApplicantPhotoFiles} allowedTypes={["image/jpeg", "image/png"]} maxFiles={1} maxSizeMB={5} onRemoveExisting={(url) => setRemovedApplicantPhotoURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="Photo" placeholder="Select Photo" required error={errorsBookingApplicant.PhotoURL} value={applicantPhotoFiles} onChange={setApplicantPhotoFiles} allowedTypes={["image/jpeg", "image/png"]} maxFiles={1} onRemoveExisting={(url) => setRemovedApplicantPhotoURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="Aadhaar Number" error={errorsBookingApplicant.AadharCardNumber} required type="text" value={formDataForApplicant.AadharCardNumber ?? ""} maxLength={12} onChange={(e) => handleFieldChangeBookingApplicant("AadharCardNumber", filterAadhaar(e.target.value))} placeholder="Enter Aadhaar Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="Aadhaar Card" required placeholder="Select Aadhaar Card" error={errorsBookingApplicant.AadharCardURL} value={aadharCardFiles} onChange={setAadharCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={2} maxSizeMB={10} onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="Aadhaar Card" required placeholder="Select Aadhaar Card" error={errorsBookingApplicant.AadharCardURL} value={aadharCardFiles} onChange={setAadharCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={2}  onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="PAN Number" required error={errorsBookingApplicant.PanNumber} type="text" value={formDataForApplicant.PanNumber ?? ""} maxLength={10} onChange={(e) => handleFieldChangeBookingApplicant("PanNumber", filterPAN(e.target.value).toUpperCase())} placeholder="Enter PAN Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="PAN Card" required placeholder="Select PAN Card" error={errorsBookingApplicant.PanCardURL} value={panCardFiles} onChange={setPanCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]} maxFiles={2} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="PAN Card" required placeholder="Select PAN Card" error={errorsBookingApplicant.PanCardURL} value={panCardFiles} onChange={setPanCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]} maxFiles={2}  onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="Passport Number" error={errorsBookingApplicant.PassportNumber} type="text" value={formDataForApplicant.PassportNumber ?? ""} maxLength={8} onChange={(e) => handleFieldChangeBookingApplicant("PassportNumber", filterPassportNumber(e.target.value.toUpperCase()))} placeholder="Enter Passport Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="Passport" placeholder="Select Passport" error={errorsBookingApplicant.PassportURL} value={passportFiles} onChange={setPassportFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="Passport" placeholder="Select Passport" error={errorsBookingApplicant.PassportURL} value={passportFiles} onChange={setPassportFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3}  onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="Driving License Number" error={errorsBookingApplicant.DrivingLicenseNumber} type="text" value={formDataForApplicant.DrivingLicenseNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicant("DrivingLicenseNumber", filterDrivingLicenseNumber(e.target.value.toUpperCase()))} placeholder="Enter Driving License Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="Driving License" placeholder="Select Driving License" error={errorsBookingApplicant.DrivingLicenseURL} value={drivingLicenseFiles} onChange={setDrivingLicenseFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="Driving License" placeholder="Select Driving License" error={errorsBookingApplicant.DrivingLicenseURL} value={drivingLicenseFiles} onChange={setDrivingLicenseFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3}  onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="Voting ID Number" error={errorsBookingApplicant.VotingIdNumber} type="text" value={formDataForApplicant.VotingIdNumber ?? ""} maxLength={10} onChange={(e) => handleFieldChangeBookingApplicant("VotingIdNumber", filterVoterId(e.target.value.toUpperCase()))} placeholder="Enter Voting ID Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="Voting ID" placeholder="Select Voting ID" error={errorsBookingApplicant.VotingIdURL} value={votingIdFiles} onChange={setVotingIdFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="Voting ID" placeholder="Select Voting ID" error={errorsBookingApplicant.VotingIdURL} value={votingIdFiles} onChange={setVotingIdFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3}  onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="GST Number" error={errorsBookingApplicant.GSTNumber} type="text" value={formDataForApplicant.GSTNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicant("GSTNumber", filterGST(e.target.value.toUpperCase()))} placeholder="Enter GST Number" rightIcon={<IdCardIcon />} />
@@ -2900,7 +2900,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setPOAFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedPOAURLs((prev) => [...prev, url])
                 }
@@ -2915,7 +2914,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setIncomeFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedIncomeURLs((prev) => [...prev, url])
                 }
@@ -2930,7 +2928,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setNreNroFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedNreNroURLs((prev) => [...prev, url])
                 }
@@ -2945,7 +2942,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setNomineeFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedNomineeURLs((prev) => [...prev, url])
                 }
@@ -2960,7 +2956,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setSourceOfFundsFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedSourceOfFundsURLs((prev) => [...prev, url])
                 }
@@ -2975,7 +2970,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setPaymentProofFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedPaymentProofURLs((prev) => [...prev, url])
                 }

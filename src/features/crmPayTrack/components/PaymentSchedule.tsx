@@ -2,13 +2,12 @@ import { type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { runApiWithLoader } from '@/core/utils';
-import type { FilterWithPaginationPaymentSchedule, FilterWithPaginationPaymentScheduleDemandSummary, PaymentScheduleModelData } from '@/features/crmPayTrack/models/PaymentScheduleModel';
+import type { AddUpdatePayTrackPaymentScheduleDemandRequest, FilterWithPaginationPaymentSchedule, FilterWithPaginationPaymentScheduleDemandSummary, PaymentScheduleModelData } from '@/features/crmPayTrack/models/PaymentScheduleModel';
 import { paymentScheduleService } from '@/features/crmPayTrack/services/PaymentScheduleService';
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
 import { Loader } from '@/core/utils/loader';
-import { Button, Input } from '@/ui/components/forms';
-import { Modal } from '@/ui/components/Modal/Modal';
+import { Button } from '@/ui/components/forms';
 import { usePayTrackBookingListState } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import { formatCurrency } from '@/core/utils/comman';
@@ -22,15 +21,9 @@ export const PaymentSchedule: React.FC = () => {
     const [paymentScheduleCrmList, setPaymentScheduleCrmList] = useState<PaymentScheduleModelData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-    const [isAddDemandLetterModalOpen, setIsAddDemandLetterModalOpen] = useState(false);
-    const [demandLetterDocumentName, setDemandLetterDocumentName] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
 
     const dtRef = useRef<DataTableExpandableRef | null>(null);
-
-    const [, setExpandedParentRow] = useState<any>(null);
-
-    const [, setExpandedParentId] = useState<number>(0);
 
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -230,7 +223,7 @@ export const PaymentSchedule: React.FC = () => {
             },
             {
                 key: "AgreementGroup",
-                label: "Agreement Amount",
+                label: "Agreement Amount Excluding TDS ",
                 align: "center",
                 children: [
                     {
@@ -255,7 +248,7 @@ export const PaymentSchedule: React.FC = () => {
                     },
                     {
                         key: "PaymentSchedulePendingAmount",
-                        label: "Pending (₹)",
+                        label: "Outstanding (₹)",
                         align: "right",
                         render: (_: number, row: any) => {
                             const value =
@@ -298,7 +291,7 @@ export const PaymentSchedule: React.FC = () => {
                     },
                     {
                         key: "PaymentSchedulePendingGSTAmount",
-                        label: "Pending (₹)",
+                        label: "Outstanding (₹)",
                         align: "right",
                         render: (_: number, row: any) => {
                             const value =
@@ -341,7 +334,7 @@ export const PaymentSchedule: React.FC = () => {
                     },
                     {
                         key: "PaymentSchedulePendingTDSAmount",
-                        label: "Pending (₹)",
+                        label: "Outstanding (₹)",
                         align: "right",
                         render: (_: number, row: any) => {
                             const value =
@@ -365,7 +358,7 @@ export const PaymentSchedule: React.FC = () => {
                 align: 'center',
                 render: (_value, row) => {
 
-                    const isLocked = !row?.BookingPaymentScheduleId;
+                    const isLocked = !(row?.BookingPaymentScheduleId > 0) || !row?.DemandType?.trim();
 
                     if (isLocked) return null;
 
@@ -380,7 +373,10 @@ export const PaymentSchedule: React.FC = () => {
                                     e.preventDefault()
                                     e.stopPropagation()
                                     if (isLocked) return;
-                                }}>{row.DemandType}</Button>
+                                    handleGenerateDemand(row)
+                                }}>
+                                {row.DemandType}
+                            </Button>
 
                         </div>
                     )
@@ -390,6 +386,55 @@ export const PaymentSchedule: React.FC = () => {
 
     }, []);
 
+
+    const handleGenerateDemand = async (row: PaymentScheduleModelData) => {
+        if (row.BookingPaymentScheduleId === 0) {
+            return;
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const payload: AddUpdatePayTrackPaymentScheduleDemandRequest = {
+                    BookingPaymentScheduleId: row.BookingPaymentScheduleId,
+                    BookingId: bookingId,
+                    ProjectId: Number(projectId),
+                    PaymentScheduleDemandType: row.DemandType === "Demand" ? 'Demand Letter' : row.DemandType
+                };
+
+                const response = await paymentScheduleService.apiCallAddPayTrackPaymentScheduleDemand(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
+                    await loadPaymentScheduleCrmDetails(searchTerm);
+
+                    if (dtRef.current) {
+                        dtRef.current.collapseAll?.();
+                    }
+
+                    setTimeout(() => {
+                        if (row.BookingPaymentScheduleId) {
+                            dtRef.current?.expandRow?.(String(row.BookingPaymentScheduleId), row);
+                        }
+                    }, 50);
+
+                } else {
+                    addToast({ type: "error", title: response.left?.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Generate Demand'
+        )
+    };
 
     return (
         <div>
@@ -424,8 +469,6 @@ export const PaymentSchedule: React.FC = () => {
                     alwaysFetchOnOpen: true,
                     rowExpandable: (row) => row?.BookingPaymentScheduleId > 0 && !row.isTotal,
                     fetchRow: async (row) => {
-                        setExpandedParentRow(row);
-                        setExpandedParentId(row.BookingPaymentScheduleId);
 
                         if (!row || row.isTotal || row.BookingPaymentScheduleId === 0) {
                             return [];
@@ -466,54 +509,38 @@ export const PaymentSchedule: React.FC = () => {
 
                         return (
                             <div className="space-y-4">
-                                {details.map((row, index) => {
-                                    return (
-                                        <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                                            <div className="flex justify-between items-center">
-                                                <div className="text-sm text-gray-700">
-                                                    <FieldItem
-                                                        label="Demand Type"
-                                                        value={row.PaymentScheduleDemandType}
-                                                        urls={row.PaymentScheduleDemandSummaryURL}
-                                                        isRow
-                                                        isIcon={true}
-                                                    />
+                                <div className="p-4">
+                                    <div className="relative flex items-start gap-16 px-6 overflow-x-auto">
+
+                                        <div className="absolute top-[6px] left-0 w-full h-px bg-gray-300"></div>
+
+                                        {details.map((row, index) => (
+
+                                            <div key={index} className="flex flex-col items-center relative z-10 min-w-[180px]">
+
+                                                <div className="flex items-center">
+                                                    <div className="w-3 h-3 rounded-full bg-blue-500 z-10"></div>
+
+                                                    {index !== details.length - 1 && (
+                                                        <div className="h-[2px] w-16"></div>
+                                                    )}
                                                 </div>
 
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex flex-col mt-2">
+                                                    <FieldItem label="" value={row?.PaymentScheduleDemandType} urls={row?.PaymentScheduleDemandSummaryURL} />
 
-                                                    <Button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            e.stopPropagation();
+                                                    <span className="text-xs text-gray-500 pt-1">
+                                                        {row?.CreatedBy ?? "-"}
+                                                    </span>
 
-                                                        }}
-                                                        color="transparent"
-                                                        isborderRadius
-
-                                                        title="Edit"
-                                                    >
-
-                                                    </Button>
-
+                                                    <span className="text-sm text-gray-500 pt-1">
+                                                        {formatDate_dd_MonthName_yy_hh_mm(row?.CreatedDate ?? "-")}
+                                                    </span>
                                                 </div>
                                             </div>
-
-                                            <h3 className="font-semibold pt-5 mb-2">Action Details</h3>
-
-                                            <div className="grid grid-cols-3 gap-6 text-sm  space-y-3">
-
-
-                                                <FieldItem label="Created By" value={row?.CreatedBy ?? "-"} />
-
-                                                <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.CreatedDate ?? "-")} />
-                                                <FieldItem label="Modified By" value={row?.ModifiedBy ?? "-"} />
-                                                <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.ModifiedDate ?? "-")} />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         );
                     },
@@ -521,42 +548,6 @@ export const PaymentSchedule: React.FC = () => {
                     expandButton: { openText: "Hide", closeText: "Show" },
                 }}
             />
-
-            <Modal
-                isOpen={isAddDemandLetterModalOpen}
-                onClose={() => setIsAddDemandLetterModalOpen(false)}
-                title="Demand Letter"
-
-            >
-                <div>
-                    <Input
-                        label=" Document Name"
-                        placeholder="Document Name"
-                        type="text"
-                        value={demandLetterDocumentName ?? ''}
-                        onChange={(e) => setDemandLetterDocumentName(e.target.value)}
-                        required
-                    />
-
-                </div>
-
-
-                {/* 
-                <div>
-                    <Button
-                        onClick={() => { generateDemandLetter(); }}
-                        color='blue'
-                        isborderRadius
-                        size='sm'
-                        style={{
-                            color: 'white',
-                            padding: '4px 8px'
-                        }}
-                        title="Generate Demand Letter">
-                        Generate Demand Letter
-                    </Button>
-                </div> */}
-            </Modal>
 
 
         </div>

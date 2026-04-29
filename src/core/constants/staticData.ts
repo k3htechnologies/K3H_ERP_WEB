@@ -66,7 +66,7 @@ export const MASTER_DATA = {
 
   commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
-  flat_unit_facing: ['EAST', 'FRONT', 'GARDEN', 'NORTH', 'PARK', 'ROAD', 'SOUTH', 'WEST'],
+  flat_unit_facing: ['BACK','EAST', 'FRONT', 'GARDEN', 'NORTH', 'PARK', 'ROAD', 'SOUTH', 'WEST'],
 
   applicant_type: ['Applicant', 'Co - Applicant'],
 
@@ -311,6 +311,8 @@ export const MASTER_DATA = {
 
   documentType: ['Inward', 'Outward'],
 
+  reasonForInactivity: ['Firm Closed', 'Key SPOC left','Brokerage Pending','Did not like project/brand'],
+
 } as const
 
 // ============================================================================
@@ -432,6 +434,7 @@ export const CALL_PURPOSE_OPTIONS = toOptions(MASTER_DATA.callPurpose);
 export const DELIVERY_STATUS = toOptions(MASTER_DATA.deliveryStatus);
 export const DELIVERY_MODE = toOptions(MASTER_DATA.deliveryMode);
 export const DOCUMENT_TYPE = toOptions(MASTER_DATA.documentType);
+export const REASON_FOR_INAACTIVITY = toOptions(MASTER_DATA.reasonForInactivity);
 
 
 // ============================================================================

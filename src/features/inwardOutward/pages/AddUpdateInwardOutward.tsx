@@ -719,7 +719,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             availableFilesURL={documentURL ?? ''}
                             allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                             maxFiles={5}
-                            maxSizeMB={10}
                             error={errors.DocumentURL}
                             onRemoveExisting={(url) => {
                                 setRemovedDocumentURLs((prev) => [...prev, url]);
@@ -807,7 +806,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             availableFilesURL={receiversSignatureURL ?? ''}
                             allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                             maxFiles={5}
-                            maxSizeMB={10}
                             onRemoveExisting={(url) => {
                                 setRemovedReceiversSignatureURLs((prev) => [...prev, url]);
                             }}
@@ -823,7 +821,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             availableFilesURL={acknowledgementURL ?? ''}
                             allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                             maxFiles={5}
-                            maxSizeMB={10}
                             onRemoveExisting={(url) => {
                                 setRemovedAcknowledgementURLs((prev) => [...prev, url]);
                             }}

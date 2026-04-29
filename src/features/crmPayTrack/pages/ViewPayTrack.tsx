@@ -237,7 +237,7 @@ export const ViewPayTrack: React.FC = () => {
       />
 
       <ApprovalActionModal
-        title="Refund Details"
+        title="Refund Details Action"
         isOpen={isApprovalActionModalOpen}
         onClose={() => setIsApprovalActionModalOpen(false)}
         actionType={approvalActionType}

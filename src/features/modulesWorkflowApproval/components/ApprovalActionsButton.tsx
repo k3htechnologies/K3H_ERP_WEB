@@ -7,6 +7,7 @@ interface ApprovalActionsProps {
     isIcons?: boolean;
     displayText?: string;
     approvalStatus?: string;
+    disableApprove?: boolean;
     onHistory?: () => void;
     onApprove?: () => void;
     onReject?: () => void;
@@ -15,8 +16,9 @@ interface ApprovalActionsProps {
 const ApprovalActions = ({
     showApproval = false,
     isIcons = false,
-    displayText="",
+    displayText = "",
     approvalStatus = "Pending",
+    disableApprove = false,
     onHistory,
     onApprove,
     onReject,
@@ -26,12 +28,12 @@ const ApprovalActions = ({
 
             {/* HISTORY - Always visible */}
             {!displayText && (
-            <span className={`px-2 py-1 text-xs font-semibold  ${getStatusColor(
+                <span className={`px-2 py-1 text-xs font-semibold  ${getStatusColor(
                     approvalStatus
                 )}`}
-            >
-                {approvalStatus}
-            </span>
+                >
+                    {approvalStatus}
+                </span>
             )}
 
             <button
@@ -44,7 +46,7 @@ const ApprovalActions = ({
                     }`}
             >
                 {isIcons ? <History size={16} /> : "History"}
-                
+
             </button>
 
             {/* APPROVE + REJECT only if approval required */}
@@ -52,11 +54,17 @@ const ApprovalActions = ({
                 <>
                     <button
                         onClick={(e) => {
+                            if (disableApprove) return;
                             e.preventDefault();
                             e.stopPropagation();
                             onApprove?.();
                         }}
-                        className="px-3 py-1 text-sm text-green-600 border-r hover:bg-gray-100"
+                        disabled={disableApprove}
+                        title={disableApprove ? "Already approved for this version" : "Approve"}
+                        className={`px-3 py-1 text-sm border-r ${disableApprove
+                                ? "text-gray-300 cursor-not-allowed"
+                                : "text-green-600 hover:bg-gray-100"
+                            }`}
                     >
                         {isIcons ? <CheckCircle size={16} /> : "Approve"}
                     </button>

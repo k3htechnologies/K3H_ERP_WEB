@@ -393,8 +393,7 @@ const PayTrack: React.FC = () => {
                         render: (v) => v ? 'Yes' : 'No'
                     }
                 ]
-            }
-
+            },
 
         ], [handleViewpayTrackBDetails]
     );

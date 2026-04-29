@@ -1,5 +1,5 @@
 
-import useToast from '@/core/hooks/useToast';
+
 import type { FilterWithPaginationBookingApplicantModificationRequest, BookingApplicantModificationDataRequest } from '@/features/crmPayTrack/models/BookingApplicantModificationModel';
 import type { FilterWithPaginationParkingModificationDetails, ParkingModificationDetailsData } from '@/features/crmPayTrack/models/ParkingModificationModel';
 import type { FilterWithPaginationFlatAlterationRequest, FlatAlterationRequestData } from '@/features/crmPayTrack/models/FlatAlterationRequestModel';
@@ -19,6 +19,7 @@ import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatCurrency, getSafeString } from '@/core/utils/comman';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import useToast from '@/core/hooks/useToast';
 
 
 export const Activity: React.FC = () => {
@@ -63,13 +64,9 @@ export const Activity: React.FC = () => {
                 const response = await bookingApplicantModificationService.apiCallPullBookingApplicantModification(params);
 
                 if (E.isRight(response)) {
-                    console.log('Response data dd', response.right.Data);
-                    // Filter only Approved records
-                    const approvedData = response.right.Data.filter(
-                        (item) => item.ApprovalStatus === "Approved"
-                    );
 
-                    setBookingApplicantModificationLst(approvedData);
+                    const allApprovalStatusData = response.right.Data;
+                    setBookingApplicantModificationLst(allApprovalStatusData);
 
                     setPagination({
                         currentPage: page,
@@ -176,7 +173,6 @@ export const Activity: React.FC = () => {
                 };
 
                 const response = await refundAmountDetailsCrmService.apiCallPullRefundAmountDetails(params);
-                console.log('View refunded details hISTORY', response);
 
                 if (E.isRight(response)) {
 
@@ -215,8 +211,8 @@ export const Activity: React.FC = () => {
                     }
                     child={
                         <div>
-                            {bookingApplicantModificationLst.length > 0 ? (
-                                bookingApplicantModificationLst.map((data, index) => (
+                            {bookingApplicantModificationLst.length > 1 ? (
+                                bookingApplicantModificationLst.slice(0, -1).map((data, index) => (
                                     <div key={data.BookingApplicantModificationRequestId || index}>
                                         <div className="flex items-center gap-3 px-2 py-2 -mt-5">
                                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 tracking-wide">
@@ -320,20 +316,31 @@ export const Activity: React.FC = () => {
                         </div>
                     }
                     child={
-                        <div className="space-y-4">
-                            {flatAlterationList.length > 0 ? (
-                                flatAlterationList.map((data, index) => (
-                                    <div
-                                        key={data.FlatAlterationRequestId || index}
-                                        className="bg-white rounded-lg px-8 py-6 border border-gray-200"
-                                    >
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 md:gap-y-6">
-                                            <FieldItem label="Flat Alteration Remark" value={getSafeString(data.FlatAlterationRemark)} />
-                                            <FieldItem label="Created By" value={getSafeString(data.CreatedBy)} />
-                                            <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '')} />
-                                            <FieldItem label="Modified By" value={getSafeString(data.ModifiedBy)} />
-                                            <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(data.ModifiedDate ?? '')} />
+                        <div>
+                            {flatAlterationList.length > 1 ? (
+                                flatAlterationList.slice(0, -1).map((data, index) => (
+                                    <div key={data.FlatAlterationRequestId || index}>
+                                        <div className="flex items-center gap-3 px-2 py-2 -mt-5">
+                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 tracking-wide">
+                                                Version {data.VersionNumber}
+                                            </span>
+                                            <div className="flex-1 border-t border-gray-200" />
                                         </div>
+
+                                        <div className="bg-white rounded-lg px-8 py-4 border border-gray-200">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 md:gap-y-3">
+                                                <FieldItem label="Flat Alteration Remark" value={getSafeString(data.FlatAlterationRemark)} />
+                                                <FieldItem label="Approval Status" value={getSafeString(data.ApprovalStatus)} />
+                                                <FieldItem label="Created By" value={getSafeString(data.CreatedBy)} />
+                                                <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '')} />
+                                                <FieldItem label="Modified By" value={getSafeString(data.ModifiedBy)} />
+                                                <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(data.ModifiedDate ?? '')} />
+                                            </div>
+                                        </div>
+
+                                        {index < flatAlterationList.length - 2 && (
+                                            <hr className="my-6 border-gray-200" />
+                                        )}
                                     </div>
                                 ))
                             ) : (

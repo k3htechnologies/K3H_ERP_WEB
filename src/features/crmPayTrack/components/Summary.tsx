@@ -267,7 +267,7 @@ export const Summary: React.FC = () => {
 
                 const params: FilterWithPaginationBookingRequest = {
                     PageNumber: 1,
-                    PageSize: 1,
+                    PageSize: 100,
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
                     IsCheckPermission: false
@@ -367,12 +367,11 @@ export const Summary: React.FC = () => {
                 };
 
                 const response = await bookingService.apiCallCancelBooking(params);
-                console.log('Response', response);
 
                 if (E.isRight(response)) {
                     const booking = response.right.Data;
+                    console.log('Cancel Booking Data', booking);
                     const item = Array.isArray(booking) ? booking[0] : booking;
-                    console.log('Item ', item.ApprovalStatus);
                     setBookingData(item);
                     triggerRefresh();
                 }
@@ -413,14 +412,6 @@ export const Summary: React.FC = () => {
                 {isBookingCancel && (
                     <>
                         <div className="flex justify-end items-center gap-3">
-                            {/* <ApprovalActions
-                                approvalStatus={bookingData?.ApprovalStatus || "-"}
-                                showApproval={bookingData?.IsApproval}
-                                isIcons={true}
-                                onHistory={() => handleApprovalLog(bookingData)}
-                                onApprove={() => handleApproveRejectDocument(bookingData, "approve")}
-                                onReject={() => handleApproveRejectDocument(bookingData, "reject")}
-                            /> */}
 
                             <Button
                                 onClick={handleInitiateRefund}
@@ -440,14 +431,6 @@ export const Summary: React.FC = () => {
                     <>
 
                         <div className="flex justify-end items-center gap-3">
-                            {/* <ApprovalActions
-                                approvalStatus={bookingData?.ApprovalStatus || "-"}
-                                showApproval={bookingData?.IsApproval}
-                                isIcons={true}
-                                onHistory={() => handleApprovalLog(bookingData)}
-                                onApprove={() => handleApproveRejectDocument(bookingData, "approve")}
-                                onReject={() => handleApproveRejectDocument(bookingData, "reject")}
-                            /> */}
 
                             <Button
                                 onClick={() => navigate(`/payTrack/view/addRefundDetails`)}

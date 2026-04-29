@@ -1,3 +1,4 @@
+
 import { runApiWithLoader } from "@/core/utils";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { bookingService } from '@/features/booking/services/BookingService';
@@ -12,12 +13,11 @@ import * as E from 'fp-ts/Either';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { usePayTrackBookingListState } from "../context/PayTrackBookingListStateContext";
-import { FieldItem } from "@/ui/components/forms/FieldItem";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button, Input } from "@/ui/components/forms";
-import { IdCardIcon, Plus } from "lucide-react";
+import { IdCardIcon, Plus, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { fetchParkingDropdown } from "@/features/parking/parkingDropDown";
@@ -36,6 +36,7 @@ import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
+import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 
 const initialFormState = (): AddUpdateParkingModificationRequest => ({
     ParkingModificationRequestId: 0,
@@ -158,6 +159,8 @@ export const Requests: React.FC = () => {
     const [flatAlterationData, setFlatAlterationData] = useState<FlatAlterationRequestData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
+    const [flatAlterationConfirmModalOpen, setFlatAlterationConfirmModalOpen] = useState(false);
+
 
     // ParkingSwapModal
     const [isAddUpdateParkingSwapModalOpen, setIsAddUpdateParkingSwapModalOpen] = useState(false);
@@ -257,6 +260,11 @@ export const Requests: React.FC = () => {
     const [approvalParkingLogRequest, setApprovalParkingLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
     const [parkingNumber, setParkingNumber] = useState<string | null>("");
 
+    //APPROVAL LOG MODAL FOR FLAT ALTERATION MODIFICATION REQUEST
+    const [isFlatAlterationApprovalLogModalOpen, setIsFlatAlterationApprovalLogModalOpen] = useState(false);
+    const [approvalFlatAlterationLogRequest, setApprovalFlatAlterationLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [flatAlterationOwnerRemark, setFlatAlterationOwnerRemark] = useState<string | null>("");
+
 
     // APPROVAL ACTION MODAL FOR BOOKING APPLICANT MODIFICATION REQUEST
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
@@ -267,6 +275,11 @@ export const Requests: React.FC = () => {
     const [isParkingApprovalActionModalOpen, setIsParkingApprovalActionModalOpen] = useState(false);
     const [approvalParkingActionType, setApprovalParkingActionType] = useState<"approve" | "reject">("approve");
     const [approvalParkingRowData, setApprovalParkingRowData] = useState<ParkingModificationDetailsData | null>(null);
+
+    // APPROVAL ACTION MODAL FOR FLAT ALTERATION MODIFICATION REQUEST
+    const [isFlatAlterationApprovalActionModalOpen, setIsFlatAlterationApprovalActionModalOpen] = useState(false);
+    const [approvalFlatAlterationActionType, setApprovalFlatAlterationActionType] = useState<"approve" | "reject">("approve");
+    const [approvalFlatAlterationRowData, setApprovalFlatAlterationRowData] = useState<FlatAlterationRequestData | null>(null);
 
 
     const { canAction } = useMenuPermissions("/payTrack");
@@ -280,12 +293,39 @@ export const Requests: React.FC = () => {
     const isParkingDetailsEmpty = !bookingData?.ParkingNumber || bookingData.ParkingNumber === "-";
     const isParkingEmpty = !bookingData?.ParkingNumber || bookingData?.ParkingNumber === "-";
 
-    const latestApplicantData = useMemo(() => {
-        if (!bookingApplicantModificationData || bookingApplicantModificationData.length === 0) return [];
-        const latestRecord = bookingApplicantModificationData[bookingApplicantModificationData.length - 1];
-        return [latestRecord];
-
+    const applicantModificationList = useMemo(() => {
+        return (bookingApplicantModificationData || []).filter((app) => app.VersionNumber !== "1");
     }, [bookingApplicantModificationData]);
+
+    const applicantTypeOptions = useMemo(() => {
+        // 1. Check if 'Applicant' exists in saved modifications (excluding version 1)
+        const hasApplicantInSavedModifications = (bookingApplicantModificationData || [])
+            .filter((app) => app.VersionNumber !== "1")
+            .some(
+                (app) =>
+                    app.ApplicantType === "Applicant" &&
+                    app.BookingApplicantModificationRequestId !== editingApplicantData?.row.BookingApplicantModificationRequestId
+            );
+
+        // 2. Check if 'Applicant' exists in the local (unsaved) pending list
+        // We exclude the item we are currently editing (by index) so we don't disable it for itself
+        const hasApplicantInLocalList = applicantList.some(
+            (app, index) =>
+                app.ApplicantType === "Applicant" &&
+                index !== editingApplicantData?.index
+        );
+
+        // If 'Applicant' exists in either place, we should disable the option
+        const shouldDisableApplicant = hasApplicantInSavedModifications || hasApplicantInLocalList;
+
+        return APPLICANT_TYPE.filter((opt) => {
+            if (opt.name === "Applicant" && shouldDisableApplicant) {
+                // Only keep 'Applicant' in the list if the record being edited IS already an 'Applicant'
+                return editingApplicantData?.row.ApplicantType === "Applicant";
+            }
+            return true;
+        }).map((opt) => ({ label: opt.name, value: opt.id }));
+    }, [bookingApplicantModificationData, editingApplicantData, applicantList]); // Added applicantList as dependency
 
     // #region INIT
     useEffect(() => {
@@ -397,6 +437,52 @@ export const Requests: React.FC = () => {
             },
             undefined,
             approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
+        );
+    };
+
+
+    const handleFlatAlterationApprovalSubmit = async (remark: string) => {
+
+        if (!approvalFlatAlterationRowData) return;
+
+        const payload: UpdateModulesWorkflowApprovalRequest = {
+            ModuleName: "FLAT ALTERATION APPROVAL",
+            Id: bookingId ?? 0,
+            ProjectId: projectId ?? 0,
+            IsApproved: approvalFlatAlterationActionType === "approve",
+            Remarks: remark ?? null,
+            SubId: approvalFlatAlterationRowData.FlatAlterationRequestId ?? 0
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsFlatAlterationApprovalActionModalOpen(false);
+                    await loadBookingForSummary();
+                    await fetchFlatAlterationRequest();
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
+
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            approvalFlatAlterationActionType === "approve" ? "Approving Flat Alteration" : "Rejecting Flat Alteration"
         );
     };
 
@@ -718,11 +804,20 @@ export const Requests: React.FC = () => {
             RemoveBookingApplicantModificationDocumentUploadURL: finalRemovedBookingApplicantModificationDocumentUploadURLs.join(','),
         };
 
-        const updatedApplicantList: RequestBookingApplicantWithFiles[] = editingApplicantData
-            ? applicantList.map((item, i) => (i === editingApplicantData.index ? applicantToSave : item))
-            : [...applicantList, applicantToSave];
+        // const updatedApplicantList: RequestBookingApplicantWithFiles[] = editingApplicantData
+        //     ? applicantList.map((item, i) => (i === editingApplicantData.index ? applicantToSave : item))
+        //     : [...applicantList, applicantToSave];
 
-        setApplicantList(updatedApplicantList);
+        setApplicantList((prev) => {
+            if (editingApplicantData) {
+                const updated = [...prev];
+                updated[editingApplicantData.index] = applicantToSave;
+                return updated;
+            }
+            return [...prev, applicantToSave];
+        });
+
+        // setApplicantList(updatedApplicantList);
         setIsAddUpdateApplicantDetailsModalOpen(false);
         setEditingApplicantData(null);
         setFormDataDetails(initialFormStateForDetailsRequest());
@@ -740,115 +835,8 @@ export const Requests: React.FC = () => {
         setNomineeFormFiles([]);
         setStatementOfSourceOfFundsFiles([]);
         setPaymentProofFiles([]);
-
-        await runApiWithLoader(
-
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const formDataToSend = new FormData();
-                formDataToSend.append('ProjectId', String(projectId));
-                formDataToSend.append('BookingId', String(bookingId));
-
-                // Helper function to add files with existing
-                const addFilesWithExisting = (fdLocal: FormData, prefix: string, fileArray: (File | string)[] | undefined, fieldKey: string) => {
-                    if (!fileArray || fileArray.length === 0) return;
-
-                    const existingNames = fileArray
-                        .filter((x) => typeof x === "string" && String(x).trim().length > 0)
-                        .map((x) => String(x).trim())
-                        .join(",");
-
-                    if (existingNames) {
-                        fdLocal.append(`${prefix}.${fieldKey}`, existingNames);
-                    }
-
-                    fileArray.forEach((item) => {
-                        if (item instanceof File) {
-                            fdLocal.append(`${prefix}.${fieldKey}`, item, item.name);
-                        }
-                    });
-                };
-
-                updatedApplicantList.forEach((app, index) => {
-                    const prefix = `bookingApplicantModificationRequests[${index}]`;
-
-                    formDataToSend.append(`${prefix}.BookingApplicantModificationRequestId`, String(app.BookingApplicantModificationRequestId ?? 0));
-                    formDataToSend.append(`${prefix}.ApplicantType`, app.ApplicantType ?? "");
-                    formDataToSend.append(`${prefix}.ApplicantName`, app.ApplicantName ?? "");
-                    formDataToSend.append(`${prefix}.ApplicantMobileNumber`, app.ApplicantMobileNumber ?? "");
-                    formDataToSend.append(`${prefix}.ApplicantEmailId`, app.ApplicantEmailId ?? "");
-                    formDataToSend.append(`${prefix}.AadharCardNumber`, app.AadharCardNumber ?? "");
-                    formDataToSend.append(`${prefix}.PanNumber`, app.PanNumber ?? "");
-                    formDataToSend.append(`${prefix}.PassportNumber`, app.PassportNumber ?? "");
-                    formDataToSend.append(`${prefix}.DrivingLicenseNumber`, app.DrivingLicenseNumber ?? "");
-                    formDataToSend.append(`${prefix}.VotingIdNumber`, app.VotingIdNumber ?? "");
-                    formDataToSend.append(`${prefix}.GSTNumber`, app.GSTNumber ?? "");
-
-                    formDataToSend.append(`${prefix}.RemovePhotoURL`, app.RemovePhotoURL ?? "");
-                    formDataToSend.append(`${prefix}.RemoveAadharCardURL`, app.RemoveAadharCardURL ?? "");
-                    formDataToSend.append(`${prefix}.RemovePanCardURL`, app.RemovePanCardURL ?? "");
-                    formDataToSend.append(`${prefix}.RemovePassportURL`, app.RemovePassportURL ?? "");
-                    formDataToSend.append(`${prefix}.RemoveDrivingLicenseURL`, app.RemoveDrivingLicenseURL ?? "");
-                    formDataToSend.append(`${prefix}.RemoveVotingIdURL`, app.RemoveVotingIdURL ?? "");
-                    formDataToSend.append(`${prefix}.RemoveGSTNumberURL`, app.RemoveGSTNumberURL ?? "");
-                    formDataToSend.append(`${prefix}.RemoveCancelledChequeURL`, app.RemoveCancelledChequeURL ?? "");
-                    formDataToSend.append(`${prefix}.RemovePOAURL`, app.RemovePOAURL ?? "");
-                    formDataToSend.append(`${prefix}.RemoveIncomeForm16ITRURL`, app.RemoveIncomeForm16ITRURL ?? "");
-                    formDataToSend.append(`${prefix}.RemoveNreNroBankDetailsURL`, app.RemoveNreNroBankDetailsURL ?? "");
-                    formDataToSend.append(`${prefix}.RemoveNomineeFormURL`, app.RemoveNomineeFormURL ?? "");
-                    formDataToSend.append(`${prefix}.RemoveStatementOfSourceOfFundsURL`, app.RemoveStatementOfSourceOfFundsURL ?? "");
-                    formDataToSend.append(`${prefix}.RemovePaymentProofURL`, app.RemovePaymentProofURL ?? "");
-                    formDataToSend.append(`${prefix}.RemoveBookingApplicantModificationDocumentUploadURL`, app.RemoveBookingApplicantModificationDocumentUploadURL ?? "");
-
-                    formDataToSend.append(`${prefix}.CancelledChequeURL`, app.CancelledChequeURL ?? "");
-                    formDataToSend.append(`${prefix}.POAURL`, app.POAURL ?? "");
-                    formDataToSend.append(`${prefix}.IncomeForm16ITRURL`, app.IncomeForm16ITRURL ?? "");
-                    formDataToSend.append(`${prefix}.NreNroBankDetailsURL`, app.NreNroBankDetailsURL ?? "");
-                    formDataToSend.append(`${prefix}.NomineeFormURL`, app.NomineeFormURL ?? "");
-                    formDataToSend.append(`${prefix}.StatementOfSourceOfFundsURL`, app.StatementOfSourceOfFundsURL ?? "");
-                    formDataToSend.append(`${prefix}.PaymentProofURL`, app.PaymentProofURL ?? "");
-
-                    const realApp: any = app;
-                    addFilesWithExisting(formDataToSend, prefix, realApp._photoFiles, "PhotoURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._aadharFiles, "AadharCardURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._panFiles, "PanCardURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._passportFiles, "PassportURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._drivingFiles, "DrivingLicenseURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._votingFiles, "VotingIdURL");
-
-
-                    addFilesWithExisting(formDataToSend, prefix, realApp._gstFiles, "GSTNumberURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._cancelledChequeFiles, "CancelledChequeURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._pOAFiles, "POAURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._incomeForm16ITRFiles, "IncomeForm16ITRURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._nreNroBankDetailsFiles, "NreNroBankDetailsURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._nomineeFormFiles, "NomineeFormURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._statementOfSourceOfFundsFiles, "StatementOfSourceOfFundsURL");
-                    addFilesWithExisting(formDataToSend, prefix, realApp._paymentProofFiles, "PaymentProofURL");
-                });
-
-                const response = await bookingApplicantModificationService.apiCallAddUpdateBookingApplicantModification(formDataToSend);
-
-                if (E.isRight(response)) {
-
-                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
-                    fetchBookingApplicantModificationList();
-
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-        );
     };
+    // #endregion
 
     const handleAddUpdateParkingSwap = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -902,10 +890,9 @@ export const Requests: React.FC = () => {
         )
     };
 
-    const handleAddUpdateFlatAlteration = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        setErrors({})
+    // #region Flat Alteration
+    const handleAddUpdateFlatAlteration = async () => {
+        setErrors({});
 
         const validation = validateAddFlatAlterationForm()
 
@@ -924,6 +911,9 @@ export const Requests: React.FC = () => {
                 if (E.isRight(response)) {
 
                     setIsAddUpdateFlatAlterationModalOpen(false);
+
+                    await fetchFlatAlterationRequest();
+                    await loadBookingForSummary();
 
                     const isAdd = formDataForFlatAlteration.FlatAlterationRequestId === 0;
 
@@ -961,6 +951,7 @@ export const Requests: React.FC = () => {
             undefined,
         )
     };
+    // #endregion
 
     const fetchParkingProjectWise = useCallback(async (pageNumber: number, params?: { value?: string }) => {
         return fetchParkingDropdown(pageNumber, {
@@ -989,9 +980,10 @@ export const Requests: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationBookingApplicantModificationRequest = {
                     PageNumber: 1,
-                    PageSize: 1,
+                    PageSize: 10,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
+
                 };
 
                 const response = await bookingApplicantModificationService.apiCallPullBookingApplicantModification(params);
@@ -1049,6 +1041,7 @@ export const Requests: React.FC = () => {
         );
     };
 
+    // #region Loading Flat Alteration Request
     const fetchFlatAlterationRequest = async (page: number = pagination.currentPage) => {
         return await loadFlatAlterationRequest(page);
     };
@@ -1094,6 +1087,114 @@ export const Requests: React.FC = () => {
         );
 
     };
+    // #region
+
+    const handleSaveApplicantRequests = async () => {
+        if (applicantList.length === 0) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const formDataToSend = new FormData();
+                formDataToSend.append('ProjectId', String(projectId));
+                formDataToSend.append('BookingId', String(bookingId));
+
+                const addFilesWithExisting = (fdLocal: FormData, prefix: string, fileArray: (File | string)[] | undefined, fieldKey: string) => {
+                    if (!fileArray || fileArray.length === 0) return;
+
+                    const existingNames = fileArray
+                        .filter((x) => typeof x === "string" && String(x).trim().length > 0)
+                        .map((x) => String(x).trim())
+                        .join(",");
+
+                    if (existingNames) {
+                        fdLocal.append(`${prefix}.${fieldKey}`, existingNames);
+                    }
+
+                    fileArray.forEach((item) => {
+                        if (item instanceof File) {
+                            fdLocal.append(`${prefix}.${fieldKey}`, item, item.name);
+                        }
+                    });
+                };
+
+                applicantList.forEach((app, index) => {
+                    const prefix = `bookingApplicantModificationRequests[${index}]`;
+
+                    formDataToSend.append(`${prefix}.BookingApplicantModificationRequestId`, String(app.BookingApplicantModificationRequestId ?? 0));
+                    formDataToSend.append(`${prefix}.ApplicantType`, app.ApplicantType ?? "");
+                    formDataToSend.append(`${prefix}.ApplicantName`, app.ApplicantName ?? "");
+                    formDataToSend.append(`${prefix}.ApplicantMobileNumber`, app.ApplicantMobileNumber ?? "");
+                    formDataToSend.append(`${prefix}.ApplicantEmailId`, app.ApplicantEmailId ?? "");
+                    formDataToSend.append(`${prefix}.AadharCardNumber`, app.AadharCardNumber ?? "");
+                    formDataToSend.append(`${prefix}.PanNumber`, app.PanNumber ?? "");
+                    formDataToSend.append(`${prefix}.PassportNumber`, app.PassportNumber ?? "");
+                    formDataToSend.append(`${prefix}.DrivingLicenseNumber`, app.DrivingLicenseNumber ?? "");
+                    formDataToSend.append(`${prefix}.VotingIdNumber`, app.VotingIdNumber ?? "");
+                    formDataToSend.append(`${prefix}.GSTNumber`, app.GSTNumber ?? "");
+
+                    formDataToSend.append(`${prefix}.RemovePhotoURL`, app.RemovePhotoURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveAadharCardURL`, app.RemoveAadharCardURL ?? "");
+                    formDataToSend.append(`${prefix}.RemovePanCardURL`, app.RemovePanCardURL ?? "");
+                    formDataToSend.append(`${prefix}.RemovePassportURL`, app.RemovePassportURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveDrivingLicenseURL`, app.RemoveDrivingLicenseURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveVotingIdURL`, app.RemoveVotingIdURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveGSTNumberURL`, app.RemoveGSTNumberURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveCancelledChequeURL`, app.RemoveCancelledChequeURL ?? "");
+                    formDataToSend.append(`${prefix}.RemovePOAURL`, app.RemovePOAURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveIncomeForm16ITRURL`, app.RemoveIncomeForm16ITRURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveNreNroBankDetailsURL`, app.RemoveNreNroBankDetailsURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveNomineeFormURL`, app.RemoveNomineeFormURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveStatementOfSourceOfFundsURL`, app.RemoveStatementOfSourceOfFundsURL ?? "");
+                    formDataToSend.append(`${prefix}.RemovePaymentProofURL`, app.RemovePaymentProofURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveBookingApplicantModificationDocumentUploadURL`, app.RemoveBookingApplicantModificationDocumentUploadURL ?? "");
+
+                    formDataToSend.append(`${prefix}.CancelledChequeURL`, app.CancelledChequeURL ?? "");
+                    formDataToSend.append(`${prefix}.POAURL`, app.POAURL ?? "");
+                    formDataToSend.append(`${prefix}.IncomeForm16ITRURL`, app.IncomeForm16ITRURL ?? "");
+                    formDataToSend.append(`${prefix}.NreNroBankDetailsURL`, app.NreNroBankDetailsURL ?? "");
+                    formDataToSend.append(`${prefix}.NomineeFormURL`, app.NomineeFormURL ?? "");
+                    formDataToSend.append(`${prefix}.StatementOfSourceOfFundsURL`, app.StatementOfSourceOfFundsURL ?? "");
+                    formDataToSend.append(`${prefix}.PaymentProofURL`, app.PaymentProofURL ?? "");
+
+                    const realApp: any = app;
+                    addFilesWithExisting(formDataToSend, prefix, realApp._photoFiles, "PhotoURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._aadharFiles, "AadharCardURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._panFiles, "PanCardURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._passportFiles, "PassportURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._drivingFiles, "DrivingLicenseURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._votingFiles, "VotingIdURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._gstFiles, "GSTNumberURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._cancelledChequeFiles, "CancelledChequeURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._pOAFiles, "POAURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._incomeForm16ITRFiles, "IncomeForm16ITRURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._nreNroBankDetailsFiles, "NreNroBankDetailsURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._nomineeFormFiles, "NomineeFormURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._statementOfSourceOfFundsFiles, "StatementOfSourceOfFundsURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._paymentProofFiles, "PaymentProofURL");
+                });
+
+                const response = await bookingApplicantModificationService.apiCallAddUpdateBookingApplicantModification(formDataToSend);
+
+                if (E.isRight(response)) {
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+                    setApplicantList([]);
+                    fetchBookingApplicantModificationList();
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            "Saving Applicant Requests"
+        );
+    };
 
     const summaryColumns = useMemo<TableColumn[]>(
         () => [
@@ -1104,8 +1205,12 @@ export const Requests: React.FC = () => {
                 sortable: false,
                 align: "left",
                 fixed: "left",
-                render: (value, row) => {
-                    return <MultiImageViewer images={parseDocumentUrls(row.PhotoURL)} title="Applicant Document" triggerLabel={value || "-"} isWrap={false} />;
+                render: (value: string, row: any) => {
+                    return (
+                        <div className="flex flex-col gap-1">
+                            <MultiImageViewer images={parseDocumentUrls(row.PhotoURL)} title="Applicant Document" triggerLabel={value || "-"} isWrap={false} />
+                        </div>
+                    );
                 },
             },
             {
@@ -1304,27 +1409,97 @@ export const Requests: React.FC = () => {
                 },
             },
             {
+                key: "VersionNumber",
+                label: "Version",
+                width: "10",
+                sortable: false,
+                align: "center",
+                render: (value) => value || "-",
+            },
+            {
                 key: "ApprovalStatus",
                 label: "Approval Status",
                 width: "18",
                 sortable: false,
                 align: "center",
-                render: (value, row) => (
+                render: (value, row) => {
+                    // Collect all version numbers that already have an "Approved" entry
+                    const approvedVersions = new Set(
+                        applicantModificationList
+                            .filter((r: any) => r.ApprovalStatus === "Approved")
+                            .map((r: any) => r.VersionNumber)
+                    );
+                    const isVersionAlreadyApproved = approvedVersions.has(row.VersionNumber);
 
-                    <ApprovalActions
-                        approvalStatus={value || "-"}
-                        showApproval={row.IsApproval}
-                        isIcons={true}
-                        onHistory={() => handleApprovalLog(row)}
-                        onApprove={() => handleApproveRejectDocument(row, "approve")}
-                        onReject={() => handleApproveRejectDocument(row, "reject")}
-                    />
+                    return (
+                        <ApprovalActions
+                            approvalStatus={value || "-"}
+                            showApproval={row.IsApproval}
+                            isIcons={true}
+                            disableApprove={isVersionAlreadyApproved}
+                            onHistory={() => handleApprovalLog(row)}
+                            onApprove={() => handleApproveRejectDocument(row, "approve")}
+                            onReject={() => handleApproveRejectDocument(row, "reject")}
+                        />
+                    );
+                }
+            },
+            // {
+            //     key: "actions",
+            //     label: "Actions",
+            //     width: "10",
+            //     sortable: false,
+            //     align: "center",
+            //     render: (_value, row) => {
+            //         const isEditable = !row.ApprovalStatus || row.ApprovalStatus === "Pending";
+            //         return (
+            //             <div className="flex justify-center gap-2">
+            //                 <Button
+            //                     onClick={() => handleEditApplicant(row)}
+            //                     variant="outline"
+            //                     color="transparent"
+            //                     size="sm"
+            //                     disabled={!isEditable}
+            //                     title="Edit Request"
+            //                 >
+            //                     <Edit2 className="h-4 w-4" />
+            //                 </Button>
+            //             </div>
+            //         );
+            //     },
+            // },
+        ],
+        [bookingApplicantModificationData, canAction]
+    )
 
-                )
+    const pendingColumns = useMemo<TableColumn[]>(
+        () => [
+            ...summaryColumns.filter(
+                (col) => col.key !== "ApprovalStatus" && col.key !== "VersionNumber"
+            ),
+            {
+                key: "actions",
+                label: "Actions",
+                width: "10",
+                sortable: false,
+                align: "center" as const,
+                render: (_v: any, _row: any, index: number) => (
+                    <div className="flex justify-center">
+                        <Button
+                            onClick={() => setApplicantList((prev) => prev.filter((_, i) => i !== index))}
+                            variant="outline"
+                            color="transparent"
+                            size="sm"
+                            title="Remove"
+                        >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                    </div>
+                ),
             },
         ],
-        [applicantList, canAction]
-    )
+        [summaryColumns]
+    );
 
     const parkingColumns = useMemo<TableColumn[]>(
         () => [
@@ -1400,6 +1575,35 @@ export const Requests: React.FC = () => {
         []
     )
 
+    const flatAlterationColumns = useMemo<TableColumn[]>(() => [
+        {
+            key: "FlatAlterationRemark",
+            label: "Flat Alteration Remark",
+            sortable: false,
+            align: "left",
+            render: (value, row) => value || row.FlatAlterationRemark || "-",
+        },
+        {
+            key: "ApprovalStatus",
+            label: "Approval Status",
+            width: "18",
+            sortable: false,
+            align: "left",
+            render: (value, row) => (
+
+                <ApprovalActions
+                    approvalStatus={value || "-"}
+                    showApproval={row.IsApproval}
+                    isIcons={true}
+                    onHistory={() => handleFlatAlterationApprovalLog(row)}
+                    onApprove={() => handleFlatAlterationApproveRejectDocument(row, "approve")}
+                    onReject={() => handleFlatAlterationApproveRejectDocument(row, "reject")}
+                />
+            )
+
+        }
+    ], []);
+
     const handleCreateRequestModal = () => {
         setIsAddUpdateApplicantDetailsModalOpen(true);
     }
@@ -1410,7 +1614,13 @@ export const Requests: React.FC = () => {
 
     const handleCreateRequestFlatSpecificationModal = () => {
         setIsAddUpdateFlatAlterationModalOpen(true);
+        const currentActiveRemark = flatAlterationData?.FlatAlterationRemark ?? bookingData?.FlatAlterationRemark ?? "";
+        setFormDataForFlatAlteration((prev) => ({
+            ...prev,
+            FlatAlterationRemark: currentActiveRemark
+        }));
     }
+
 
     const handleApprovalLog = (row: BookingApplicantModificationDataRequest) => {
         const request: ModulesApprovalStatusRequest = {
@@ -1454,6 +1664,27 @@ export const Requests: React.FC = () => {
         setIsParkingApprovalActionModalOpen(true);
     };
 
+    // FLat Alteration Approval Log:-
+
+    const handleFlatAlterationApprovalLog = (row: FlatAlterationRequestData) => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "FLAT ALTERATION APPROVAL",
+            Id: bookingId ?? 0,
+            ProjectId: projectId ?? 0,
+            SubId: row.FlatAlterationRequestId ?? 0
+        };
+        setFlatAlterationOwnerRemark(row.FlatAlterationRemark);
+        setApprovalFlatAlterationLogRequest(request);
+        setIsFlatAlterationApprovalLogModalOpen(true);
+    };
+
+    const handleFlatAlterationApproveRejectDocument = (row: FlatAlterationRequestData, approvalType: "approve" | "reject") => {
+        setApprovalFlatAlterationRowData(row);
+        setFlatAlterationOwnerRemark(row.FlatAlterationRemark);
+        setApprovalFlatAlterationActionType(approvalType);
+        setIsFlatAlterationApprovalActionModalOpen(true);
+    };
+
 
     return (
         <div>
@@ -1483,17 +1714,43 @@ export const Requests: React.FC = () => {
                     )}
                 </div>
 
-                {latestApplicantData.length > 0 ? (
+                {applicantList.length > 0 && (
+                    <div className="mb-8">
+                        <div className="flex justify-between items-center mb-4">
+                            <h5 className="text-md font-medium text-blue-800">Pending Requests (unsaved)</h5>
+                            <Button
+                                onClick={handleSaveApplicantRequests}
+                                color="green"
+                                size="sm"
+                                variant="solid"
+                                loading={isLoading}
+                                style={{ width: '140px' }}
+                            >
+                                Save
+                            </Button>
+                        </div>
+                        <DataTable
+                            columns={pendingColumns}
+                            data={applicantList}
+                            fixedHeight={false}
+                            className="shadow-sm border border-blue-100 rounded-lg"
+                        />
+                    </div>
+                )}
+
+                {applicantModificationList.length > 0 ? (
                     <DataTable
                         columns={summaryColumns}
-                        data={latestApplicantData}
+                        data={applicantModificationList}
                         fixedHeight={false}
                         className="shadow-sm border border-gray-100 rounded-lg"
                     />
                 ) : (
-                    <div className="text-center py-10  rounded-xl text-gray-400">
-                        No applicant records found.
-                    </div>
+                    applicantList.length === 0 && (
+                        <div className="text-center py-10  rounded-xl text-gray-400">
+                            No applicant records found.
+                        </div>
+                    )
                 )}
             </section>
 
@@ -1534,12 +1791,11 @@ export const Requests: React.FC = () => {
                 />
             </section>
 
-            {/* =================Flat Specification Remark ================= */}
-            <div className="col-span-7 pt-5">
-
+            {/* =================Flat Alteration Remark ================= */}
+            <section className="bg-white rounded-xl pt-5">
                 <div className="flex justify-between items-center pb-4">
                     <h4 className="text-lg font-semibold text-gray-900">
-                        Flat Specification Remark
+                        Flat Alteration Remark
                     </h4>
 
                     {canAction && (
@@ -1557,15 +1813,29 @@ export const Requests: React.FC = () => {
                     )}
                 </div>
 
-                <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
-                    <div className="lg:col-span-3 pt-1">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
-                            <FieldItem label="" value={flatAlterationData?.FlatAlterationRemark || "-"} />
-                        </div>
+                {/* Logic: Show table if we have modification data OR original booking data */}
+                {flatAlterationData || bookingData?.FlatAlterationRemark ? (
+                    <DataTable
+                        columns={flatAlterationColumns}
+                        data={
+                            flatAlterationData
+                                ? [flatAlterationData]
+                                : [{
+                                    FlatAlterationRemark: bookingData?.FlatAlterationRemark,
+                                    ApprovalStatus: bookingData?.FlatAlterationRequestApprovalStatus,
+                                    IsApproval: bookingData?.FlatAlterationRequestIsApproval
+                                }]
+                        }
+                        fixedHeight={false}
+                        className="shadow-sm border border-gray-100 rounded-lg"
+                    />
+                ) : (
+                    <div className="text-center py-10 rounded-xl text-gray-400 border border-dashed border-gray-200">
+                        No alteration remarks found.
                     </div>
-                </div>
+                )}
+            </section>
 
-            </div>
 
             {/* ADD BOOKING APPLICANT MODAL */}
             <Modal
@@ -1658,7 +1928,7 @@ export const Requests: React.FC = () => {
                             </div>
                         </div>
                         <div>
-                            <SinglePageSelection label="Applicant Type" placeholder="Select Applicant Type" required value={formDataDetails?.ApplicantType ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantType", String(e))} options={APPLICANT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))} error={errorsBookingApplicant.ApplicantType} />
+                            <SinglePageSelection label="Applicant Type" placeholder="Select Applicant Type" required value={formDataDetails?.ApplicantType ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantType", String(e))} options={applicantTypeOptions} error={errorsBookingApplicant.ApplicantType} />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1810,7 +2080,10 @@ export const Requests: React.FC = () => {
                 }}
                 title="Flat Alteration Request"
                 saveText="Add"
-                onSubmit={handleAddUpdateFlatAlteration}
+                onSubmit={(e) => {
+                    if (e) e.preventDefault(); // Stop the page refresh
+                    setFlatAlterationConfirmModalOpen(true);
+                }}
                 loading={isLoading}
                 size='xl'
             >
@@ -1829,10 +2102,11 @@ export const Requests: React.FC = () => {
                 </div>
             </Modal >
 
+
             {/* Approval for Applicant Details */}
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
-                title='Applicant Details'
+                title='Applicant Details '
                 titleText={ownerName ?? ""}
                 onClose={() => setIsApprovalLogModalOpen(false)}
                 request={approvalLogRequest} />
@@ -1846,7 +2120,6 @@ export const Requests: React.FC = () => {
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />
-
 
             {/* Approval for Parking Details */}
             <ApprovalLogModal
@@ -1866,6 +2139,41 @@ export const Requests: React.FC = () => {
                 loading={isLoading}
             />
 
+            {/* Approval Action Modal for flat specification remark */}
+            <ApprovalLogModal
+                isOpen={isFlatAlterationApprovalLogModalOpen}
+                title='Flat Alteration Remarks'
+                titleText={flatAlterationOwnerRemark ?? ""}
+                onClose={() => setIsFlatAlterationApprovalLogModalOpen(false)}
+                request={approvalFlatAlterationLogRequest} />
+
+            <ApprovalActionModal
+                title="Flat Alteration Remarks"
+                isOpen={isFlatAlterationApprovalActionModalOpen}
+                onClose={() => setIsFlatAlterationApprovalActionModalOpen(false)}
+                actionType={approvalFlatAlterationActionType}
+                titleText={flatAlterationOwnerRemark ?? ""}
+                onSubmit={handleFlatAlterationApprovalSubmit}
+                loading={isLoading}
+            />
+
+
+            <ConfirmationDialogBox
+                isOpen={flatAlterationConfirmModalOpen}
+                onClose={() => {
+                    setFlatAlterationConfirmModalOpen(false)
+                }}
+                onConfirm={() => {
+                    handleAddUpdateFlatAlteration();
+                    setFlatAlterationConfirmModalOpen(false);
+                }}
+                title="Are you sure you want to change the flat alteration request?"
+                message="This will update its contents."
+                confirmText="Confirm"
+                cancelText="Cancel"
+                loading={false}
+                variant="logout"
+            />
 
         </div >
     )

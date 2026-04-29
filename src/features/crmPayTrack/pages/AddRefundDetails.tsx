@@ -198,7 +198,6 @@ export const AddRefundDetails: React.FC = () => {
             }
         });
         fd.append('RemovePaymentReceiptURL', removedPaymentReceiptUrls.join(','));
-        console.log("fd", fd);
 
         return fd;
 
@@ -282,7 +281,6 @@ export const AddRefundDetails: React.FC = () => {
                 const payload = PushAddUpdateRefundAmountDetailsData();
 
                 const response = await refundAmountDetailsCrmService.apiCallAddUpdateRefundAmountDetails(payload);
-                console.log('Add Refund Amount Details Response', response);
 
                 if (E.isRight(response)) {
 

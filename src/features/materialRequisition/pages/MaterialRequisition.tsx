@@ -29,7 +29,6 @@ import { DateInput } from "@/ui/components/forms/DateInput";
 import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import { getMaterialRequisitionStatusColor } from "../utils/materialRequisitionUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
-import { useMarketingContentListState } from "@/features/marketingContent/context/MarketingContentListStateContext";
 
 
 export const MaterialRequisition: React.FC = () => {
@@ -47,7 +46,6 @@ export const MaterialRequisition: React.FC = () => {
     const navigate = useNavigate();
     const { canAction, canExport } = useMenuPermissions();
     const { projectId } = useProject();
-    const { setDetailData } = useMaterialRequisitionListState()
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
     const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
 

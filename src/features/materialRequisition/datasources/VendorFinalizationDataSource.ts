@@ -1,7 +1,7 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { AddVendorForEnquiryRequest, AddVendorForEnquiryRequestResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "../models/VendorFinalizeModel";
-import { VendorFinalizationApi } from "../api/VendorFinalizationApi";
+import type { AddVendorForEnquiryRequest, AddVendorForEnquiryRequestResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
+import { VendorFinalizationApi } from "@/features/materialRequisition/api/VendorFinalizationApi";
 import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
 

@@ -11,7 +11,7 @@ import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMater
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import * as E from "fp-ts/Either";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import type { AddUpdateMaterialRequisitionDetailRequest, AddUpdateMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "../models/MaterialRequisitionModel";
+import type { AddUpdateMaterialRequisitionDetailRequest, AddUpdateMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";

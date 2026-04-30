@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import type { AddUpdateMaterialRequisitionInvoice } from "../../models/MaterialRequisitionInvoiceModel";
+import type { AddUpdateMaterialRequisitionInvoice } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { useNavigate, useParams } from "react-router-dom";
-import { useMaterialRequisitionListState } from "../../context/MaterialRequisitionListStateContext";
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { runApiWithLoader } from "@/core/utils";
-import { materialRequisitionInvoiceService } from "../../services/MaterialRequisitionInvoiceService";
+import { materialRequisitionInvoiceService } from "@/features/materialRequisition/services/MaterialRequisitionInvoiceService";
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
@@ -18,8 +18,8 @@ import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { filterNumbers, hasAnyDocumentFile } from "@/core/utils/fileValidation";
-import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
-import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
+import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
+import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
@@ -66,11 +66,12 @@ const CreateInvoice: React.FC = () => {
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
     const { canAction } = useMenuPermissions('/materialRequisition/view');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
+    const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
 
     useEffect(() => {
         if (!projectId) return;
         loadMaterialRequisitionGRNData();
-    }, [projectId, currentMaterialRequisitionId])
+    }, [projectId, currentMaterialRequisitionId, MaterialRequisitionGRNId])
 
     const loadMaterialRequisitionGRNData = async () => {
         await runApiWithLoader(
@@ -80,7 +81,8 @@ const CreateInvoice: React.FC = () => {
                 const params: FilterWithPaginationMaterialRequisitionGRN = {
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
-                    Uniquekey: currentUniquekey
+                    Uniquekey: currentUniquekey,
+                    MaterialRequisitionGRNId: MaterialRequisitionGRNId ? Number(MaterialRequisitionGRNId) : undefined
                 };
 
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
@@ -214,6 +216,15 @@ const CreateInvoice: React.FC = () => {
         });
 
         fd.append("RemovePerformaInvoiceURL", removePerformaInvoiceUrls.join(","));
+
+        measurementInvoiceURLFiles.forEach((file) => {
+            if (file instanceof File) {
+                fd.append("MeasurementInvoiceURL", file);
+            }
+        });
+
+        fd.append("RemoveMeasurementInvoiceURL", removeMeasurementInvoiceUrls.join(","));
+
         return fd;
     };
 
@@ -247,6 +258,7 @@ const CreateInvoice: React.FC = () => {
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');
                     setMeasurementInvoiceURL('');
+                    
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -270,8 +282,10 @@ const CreateInvoice: React.FC = () => {
                     titleText={'Create Invoice'}
                     cancelText="Cancel"
                     EditText="Edit"
-                    onCancel={() => navigate(-1)}
-
+                    onCancel={() =>
+                        navigate("/materialRequisition/view", {
+                            state: { activeTab: "Invoice" }
+                        })}
                 />
             </div>
 
@@ -292,7 +306,8 @@ const CreateInvoice: React.FC = () => {
                     columns={MaterialRequisitionDetailColumns}
                     data={matrialRequisitionDetailGRNData}
                     emptyMessage="No Material Requisition Details Found"
-                    maxHeight={'255'}
+                    fixedHeight={true}
+                    recordsPerPage={3}
                     className="flex-1"
                 />
             </div>
@@ -421,15 +436,17 @@ const CreateInvoice: React.FC = () => {
             <BottomActionBar
                 cancelText="Cancel"
                 saveText={formData.MaterialRequisitionInvoiceId ? "Update" : "Add"}
-                onCancel={() => navigate(-1)}
+                onCancel={() => navigate("/materialRequisition/view", {
+                    state: { activeTab: "Invoice" }
+                })}
                 canAction={canAction}
                 onSave={() => {
                     handleAddUpdateInvoice();
                 }}
                 isLoading={isLoading}
             />
-        </div>
 
+        </div>
     )
 }
 export default CreateInvoice;

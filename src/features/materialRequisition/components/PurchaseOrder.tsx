@@ -1,11 +1,11 @@
 import useToast from "@/core/hooks/useToast";
 import { runApiWithLoader } from "@/core/utils";
 import { useEffect, useRef, useState } from "react";
-import type { AddUpdateMaterialRequisitionPurchaseOrder, DeleteMaterialRequisitionPurchaseOrder, FilterWithPaginationMaterialRequisitionPurchaseOrder, GenerateMaterialRequisitionPurchaseOrderPdfData, MaterialRequisitionPurchaseOrderData } from "../models/MaterialRequisitionPurchaseOrderModel";
-import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
+import type { AddUpdateMaterialRequisitionPurchaseOrder, DeleteMaterialRequisitionPurchaseOrder, FilterWithPaginationMaterialRequisitionPurchaseOrder, GenerateMaterialRequisitionPurchaseOrderPdfData, MaterialRequisitionPurchaseOrderData } from "@/features/materialRequisition/models/MaterialRequisitionPurchaseOrderModel";
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { useParams } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { materialRequisitionPurchaseOrderService } from "../services/MaterialRequisitionPurchaseOrderService";
+import { materialRequisitionPurchaseOrderService } from "@/features/materialRequisition/services/MaterialRequisitionPurchaseOrderService";
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
@@ -438,7 +438,6 @@ export const PurchaseOrder: React.FC = () => {
                             </div>
                         )}
                     </div>
-
                 </div>
             </Modal>
 

@@ -9,11 +9,11 @@ import type {
     SelectedVendorListResponse
 } from "../models/VendorFinalizeModel"
 import { useNavigate, useParams } from "react-router-dom"
-import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext"
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext"
 import { useProject } from "@/features/projectMaster/context/ProjectContext"
 import { runApiWithLoader } from "@/core/utils"
 import * as E from "fp-ts/Either"
-import { vendorFinalizationService } from "../services/VendorFinalizationService"
+import { vendorFinalizationService } from "@/features/materialRequisition/services/VendorFinalizationService"
 import { FieldItem } from "@/ui/components/forms/FieldItem"
 import Checkbox from "@/ui/components/forms/Checkbox"
 import { FinalizedVendorQuotationTable } from "./FinalizedVendorQuotationTable"

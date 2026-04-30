@@ -1,11 +1,11 @@
 import { runApiWithLoader } from "@/core/utils";
-import { type FilterWithPaginationMaterialRequisitionGRNSummary, type MaterialRequisitionGRNSummaryData, type MaterialRequisitionDetailGRNData, type FilterWithPaginationMaterialRequisitionGRN, type MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";import { useMaterialRequisitionListState } from "../../context/MaterialRequisitionListStateContext";
+import { type FilterWithPaginationMaterialRequisitionGRNSummary, type MaterialRequisitionGRNSummaryData, type MaterialRequisitionDetailGRNData, type FilterWithPaginationMaterialRequisitionGRN, type MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"; import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { type TableColumn } from "@/ui/components/DataTable/DataTable";
-import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
+import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import * as E from "fp-ts/Either";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
@@ -20,7 +20,6 @@ import DataTableExpandable, { type DataTableExpandableRef } from "@/ui/component
 import { PencilLine } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Button } from "@/ui/components/forms";
-
 
 export const GRN: React.FC = () => {
 
@@ -80,7 +79,6 @@ export const GRN: React.FC = () => {
         navigate('/finalizeVendor/add');
     }, [navigate]);
 
-
     const loadGRNData = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -97,10 +95,11 @@ export const GRN: React.FC = () => {
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
                 if (E.isRight(response)) {
+
                     const data = response.right.Data;
-                    SetGRNData(
-                        data?.[0]?.MaterialRequisitionDetailGRNData ?? []
-                    );
+
+                    SetGRNData(data?.[0]?.MaterialRequisitionDetailGRNData ?? []);
+
                     SetGRN(data)
                 } else {
                     addToast({ type: "error", title: response.left.message });
@@ -276,6 +275,7 @@ export const GRN: React.FC = () => {
                     expandButton: { openText: 'Hide', closeText: 'Show' }
                 }}
             />
+            
             {/* <DataTableExpandable data={GRNData} columns={MaterialRequisitionGRNColumns} /> */}
             <Modal
                 isOpen={isViewGRNSummaryModalOpen}

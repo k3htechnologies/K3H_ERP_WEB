@@ -1,10 +1,10 @@
 import { runApiWithLoader } from "@/core/utils";
 import { useEffect, useState } from "react";
-import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "../models/MaterialRequisitionModel";
+import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
-import { materialRequisitionService } from "../services/MaterialRequisitionService";
+import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import { Loader } from "@/core/utils/loader";
 import { useNavigate, useParams } from "react-router-dom";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
@@ -14,7 +14,7 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { Modal } from "@/ui/components/Modal/Modal";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import { Button } from "@/ui/components/forms";
-import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 
@@ -38,10 +38,10 @@ export const Details: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
-        fetchDetailsdata();
+        fetchDetailsData();
     }, [projectId, currentMaterialRequisitionId])
 
-    const fetchDetailsdata = async () => {
+    const fetchDetailsData = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -123,7 +123,7 @@ export const Details: React.FC = () => {
 
                     setActive(false);
 
-                    fetchDetailsdata();
+                    fetchDetailsData();
 
                     setMaterialRequisitionList(prev => [newRecord, ...prev]);
 
@@ -172,7 +172,7 @@ export const Details: React.FC = () => {
 
                     setIsDeleteRequisitionDialogOpen(false);
 
-                    fetchDetailsdata();
+                    fetchDetailsData();
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     setIsDeleteRequisitionDialogOpen(false)

@@ -8,11 +8,10 @@ import useToast from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { Button } from "@/ui/components/forms";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { useMaterialRequisitionListState } from "../../context/MaterialRequisitionListStateContext";
-import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
-import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
+import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
+import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 
 export const Invoice: React.FC = () => {
     const [invoiceList, setInvoiceList] = useState<MaterialRequisitionGRNData[]>([]);
@@ -25,7 +24,6 @@ export const Invoice: React.FC = () => {
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
-    const { canAction } = useMenuPermissions();
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const navigate = useNavigate();
 
@@ -71,8 +69,12 @@ export const Invoice: React.FC = () => {
         );
     };
 
-    const handleCreateInvoice = useCallback(() => {
-        navigate(`/addInvoice/add`);
+    const handleCreateInvoice = useCallback((row: MaterialRequisitionGRNData) => {
+        navigate(`/addInvoice/add/${row.MaterialRequisitionGRNId}`);
+    }, [navigate]);
+
+    const handleMakePayment = useCallback((row: MaterialRequisitionGRNData) => {
+        navigate(`/makePayment/add/${row.MaterialRequisitionGRNId}`);
     }, [navigate]);
 
     const handlePageChange = (page: number) => {
@@ -96,7 +98,7 @@ export const Invoice: React.FC = () => {
         }),
         [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
     );
-
+    
     const InvoiceForTable = useMemo(() => invoiceList, [invoiceList]);
 
     const InvoiceColumns = useMemo<TableColumn[]>(() => [
@@ -130,21 +132,23 @@ export const Invoice: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'center',
-            render: (_value) => (
-                <div className="flex items-center justify-center">
-                    {canAction && (
-                        <>
-                            <Button
-                                color="blue"
-                                size="sm"
-                                onClick={() => {
-                                    handleCreateInvoice()
-                                }}
-                            >
-                                Create Invoice
-                            </Button>
-                        </>
-                    )}
+            render: (_value, row) => (
+                <div className="flex justify-end gap-2">
+                    <Button
+                        color="blue"
+                        size="sm"
+                        onClick={() => handleCreateInvoice(row)}
+                    >
+                        Create Invoice
+                    </Button>
+
+                    <Button
+                        color="blue"
+                        size="sm"
+                        onClick={() => handleMakePayment(row)}
+                    >
+                        Make Payment
+                    </Button>
                 </div>
             )
         },
@@ -165,7 +169,6 @@ export const Invoice: React.FC = () => {
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}
             />
-
         </div>
     )
 }

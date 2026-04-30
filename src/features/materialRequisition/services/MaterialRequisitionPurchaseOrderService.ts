@@ -13,7 +13,7 @@ import type {
 
 } from "@/features/materialRequisition/models/MaterialRequisitionPurchaseOrderModel";
 
-import { MaterialRequisitionPurchaseOrderDatasourceImpl } from "../datasources/MaterialRequisitionPurchaseOrderDataSource";
+import { MaterialRequisitionPurchaseOrderDatasourceImpl } from "@/features/materialRequisition/datasources/MaterialRequisitionPurchaseOrderDataSource";
 
 export const MaterialRequisitionPurchaseOrderDataSource = new MaterialRequisitionPurchaseOrderDatasourceImpl();
 

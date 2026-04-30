@@ -25,10 +25,10 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { cons } from "fp-ts/lib/ReadonlyNonEmptyArray";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import React from "react";
-import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "../../models/MaterialRequisitionGRNModel";
-import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
-import { useMaterialRequisitionListState } from "../../context/MaterialRequisitionListStateContext";
-import type { AddUpdateMaterialRequisitionDetailRequest, MaterialRequisitionDetailData } from "../../models/MaterialRequisitionModel";
+import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
+import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
+import type { AddUpdateMaterialRequisitionDetailRequest, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNRequest => ({
     MaterialRequisitionId: 0,

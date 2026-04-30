@@ -1,8 +1,8 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
-import { MaterialRequisitionQuotationDatasourceImpl } from "../datasources/MaterialRequisitionQuotationDataSource";
-import type { AddVendorForEnquiryRequest } from "../models/VendorFinalizeModel";
-import type { AddUpdateMaterialRequestQuotation, DeleteMaterialRequisitionQuotation, MaterialRequisitionQuotationListResponse, MaterialRequisitionQuotationSaveReponse } from "../models/MaterialRequisitionQuotationApi";
+import { MaterialRequisitionQuotationDatasourceImpl } from "@/features/materialRequisition/datasources/MaterialRequisitionQuotationDataSource";
+import type { AddVendorForEnquiryRequest } from "@/features/materialRequisition/models/VendorFinalizeModel";
+import type { AddUpdateMaterialRequestQuotation, DeleteMaterialRequisitionQuotation, MaterialRequisitionQuotationListResponse, MaterialRequisitionQuotationSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionQuotationApi";
 
 
 

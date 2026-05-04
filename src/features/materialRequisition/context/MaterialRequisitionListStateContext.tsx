@@ -33,6 +33,7 @@ export type MaterialRequisitionDetailItem = {
     Uom: string
     RequiredDate: string
     MaterialReceivedQuantityTillDate: number
+
 }
 
 const STORAGE_KEY = 'MaterialRequisition.listState';

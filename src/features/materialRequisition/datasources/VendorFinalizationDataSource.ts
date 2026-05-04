@@ -7,9 +7,9 @@ import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
 export abstract class VendorFinalizationDatasource {
     abstract pullVendorsForEnquiry(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse>;
-    abstract addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<AddVendorForEnquiryRequestResponse>;
+    abstract addVendorForEnquiry(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse>;
     abstract pullSelectedVendorForEnquiry(params: FilterWithPaginationVendorForSelectedEnquiryRequest,signal?: AbortSignal): Promise<SelectedVendorListResponse>;
-    abstract addFinalizedVendor(payload: AddVendorForEnquiryRequestResponse): Promise<VendorListResponse>;
+    abstract addFinalizedVendor(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse>;
     abstract pullFinalizedVendor(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse>;
 
 }
@@ -94,7 +94,7 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
         }
     }
 
-    async addFinalizedVendor(payload: AddVendorForEnquiryRequest): Promise<AddVendorForEnquiryRequestResponse> {
+    async addFinalizedVendor(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse> {
         try {
         
             const response = await this.k3hHttpClient.postRequestWithAuthentication(

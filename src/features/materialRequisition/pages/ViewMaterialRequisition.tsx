@@ -240,7 +240,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             sortable: false,
             editable: true,
             align: "left",
-            type: 'date',
+            type: 'datetime',
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
             renderEditor: (value?: string, onChange?: any) => (

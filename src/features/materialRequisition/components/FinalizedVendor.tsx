@@ -101,7 +101,7 @@ export const FinalizedVendor: React.FC = () => {
         await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
             const params: FilterWithPaginationVendorForEnquiryRequest = {
                 MaterialRequisitionId: Number(currentMaterialRequisitionId),
-                Uniquekey: currentUniquekey ?? null,
+                Uniquekey: currentUniquekey ?? '',
                 ProjectId: Number(projectId),
             }
             const response = await vendorFinalizationService.apiCallpullVendorsForEnquiry(params)
@@ -116,7 +116,7 @@ export const FinalizedVendor: React.FC = () => {
         await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
             const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
                 MaterialRequisitionId: Number(currentMaterialRequisitionId),
-                Uniquekey: currentUniquekey ?? null,
+                Uniquekey: currentUniquekey ?? '',
                 ProjectId: Number(projectId),
             }
             const response = await vendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params)
@@ -298,7 +298,7 @@ export const FinalizedVendor: React.FC = () => {
 
                 const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
                     MaterialRequisitionId: Number(currentMaterialRequisitionId),
-                    Uniquekey: currentUniquekey ?? null,
+                    Uniquekey: currentUniquekey ?? '',
                     ProjectId: Number(projectId),
                     ExportType: exportType
                 }

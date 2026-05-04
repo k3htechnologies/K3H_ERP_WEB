@@ -5,7 +5,7 @@ import { useMaterialRequisitionListState } from "../../context/MaterialRequisiti
 import { useNavigate, useParams } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
-import { type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
 import * as E from "fp-ts/Either";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -18,9 +18,10 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import DataTableExpandable, { type DataTableExpandableRef } from "@/ui/components/DataTable/DataTableExpandable";
-import { PencilLine } from "lucide-react";
+import { Edit, PencilLine } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Button } from "@/ui/components/forms";
+import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
 
 
 export const GRN: React.FC = () => {
@@ -40,6 +41,7 @@ export const GRN: React.FC = () => {
     const [GRNSummaryDetailData, setGRNSummaryDetailData] = useState<MaterialRequisitionGRNSummaryData[]>([]);
     const { canAction } = useMenuPermissions();
     const navigate = useNavigate();
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         if (!projectId) return;
@@ -78,9 +80,22 @@ export const GRN: React.FC = () => {
         );
     };
     const handleAddGRN = useCallback(() => {
-        navigate('/finalizeVendor/add');
+        navigate('/grn/add');
     }, [navigate]);
+    const filteredGRN = useMemo(() => {
+        if (!searchTerm.trim()) return GRN;
 
+        return GRN.filter(item =>
+            item.ChallanNumber?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [GRN, searchTerm]);
+    const clearSearchGRN = () => {
+        setSearchTerm('');
+    };
+    const handleGRNEdit = useCallback((row: MaterialRequisitionGRNData) => {
+        debugger
+        navigate(`/grn/add/${row.MaterialRequisitionId}/${row.MaterialRequisitionGRNId}`);
+    }, [navigate]);
 
     const loadGRNData = async () => {
         await runApiWithLoader(
@@ -94,6 +109,7 @@ export const GRN: React.FC = () => {
                     ProjectId: Number(projectId)
 
                 };
+
 
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
@@ -153,7 +169,7 @@ export const GRN: React.FC = () => {
             {
                 key: 'MaterialQuantity',
                 label: 'Quantity',
-                width: '20',
+                width: '10',
                 sortable: false,
                 align: 'left',
                 render: (value?: string) => value || '-'
@@ -162,7 +178,7 @@ export const GRN: React.FC = () => {
             {
                 key: 'TotalReceivedMaterialQuantity',
                 label: 'Received Quantity',
-                width: '20',
+                width: '10',
                 sortable: false,
                 align: 'left',
                 render: (value?: string) => value || '-'
@@ -170,7 +186,7 @@ export const GRN: React.FC = () => {
             {
                 key: 'PendingQuantity',
                 label: 'Pending Quantity',
-                width: '20',
+                width: '10',
                 sortable: false,
                 align: 'left',
                 render: (_: any, row: MaterialRequisitionDetailGRNData) =>
@@ -180,6 +196,57 @@ export const GRN: React.FC = () => {
 
 
         ], [])
+
+    const GRNColumns = useMemo<TableColumn[]>(() => [
+        {
+            key: 'CreatedDate',
+            label: 'Date',
+            width: '30',
+            render: (value?: string) => formatDate_dd_MonthName_yy(value || '')
+        },
+        {
+            key: 'ChallanNumber',
+            label: 'Challan No.',
+            width: '25',
+            render: (value?: string) => value || '-'
+        },
+        {
+            key: 'VehicleNumber',
+            label: 'Vehicle No.',
+            width: '35',
+            render: (value?: string) => value || '-'
+        },
+        {
+            key: 'actions',
+            label: 'Actions',
+            width: '10',
+            align: 'center',
+            render: (_: any, row: any) => {
+                return (
+                    <div className="flex items-center justify-center gap-1">
+                        {canAction && (
+                            <>
+                                <Button
+                                    type="button"
+                                    color="transparent"
+                                    size="sm"
+
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleGRNEdit(row);
+                                    }}
+                                    leftIcon={<Edit className="h-4 w-4" />}
+                                />
+
+
+                            </>
+                        )}
+                    </div>
+                );
+            }
+        }
+    ], [canAction]);
 
     const MaterialRequisitionDetailColumns = useMemo<TableColumn[]>(() => [
         {
@@ -207,7 +274,7 @@ export const GRN: React.FC = () => {
         {
             key: 'MaterialQuantity',
             label: 'Quantity',
-            width: '20',
+            width: '10',
             sortable: false,
             align: 'left',
             render: (value?: string) => value || '-'
@@ -217,67 +284,59 @@ export const GRN: React.FC = () => {
     return (
         <div>
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
+            {/* className="flex justify-end gap-4" */}
+            <TableActionToolbar
+                isShowSearchBar
+                searchTerm={searchTerm}
+                searchPlaceholder="Search By Challan Number"
+                onSearchChange={v => {
+                    setSearchTerm(v);
+                }}
+                onClearSearch={clearSearchGRN}
+                isShowAddButton={canAction}
+                addTitle="Add GRN"
+                onAdd={handleAddGRN}
+                isShowAddExtraButton={true}
+                addExtraTitle='View Summary'
+                onAddExtra={() => {
+                    setIsViewGRNSummaryModalOpen(true);
+                    loadGRNSummaryData();
+                }}
+                addExtraWidth={150}
+            />
 
-            <div className="flex justify-end gap-4">
-                <TableActionToolbar
-                    isShowSearchBar={false}
-                    isShowAddButton={canAction}
-                    addTitle="Add GRN"
-                    onAdd={handleAddGRN}
-                />
 
-                <Button
-                    size="md"
-                    color="transparent"
-                    style={{
-                        color: '#FFFFFF',
-                        padding: '4px 8px',
-                        backgroundColor: '#135BEC'
-                    }}
-                    onClick={() => {
-                        setIsViewGRNSummaryModalOpen(true);
-                        loadGRNSummaryData()
-                    }}
-                >
-                    View Summary
-                </Button>
-            </div>
+
 
             <DataTableExpandable
-                ref={GRNTableRef}
-                data={GRNData}
-                columns={MaterialRequisitionGRNColumns}
-                emptyMessage={'No GRN Found'}
+                data={filteredGRN}
+                columns={GRNColumns}
                 expandable={{
-                    keyField: 'MaterialRequisitionDetailGRNId',
-                    alwaysFetchOnOpen: false,
+                    keyField: "MaterialRequisitionGRNId",
 
-                    fetchRow: async (row) => row,
-                    renderRow: (row) => {
+                    fetchRow: async (row: MaterialRequisitionGRNData) => {
+                        return row?.MaterialRequisitionDetailGRNData ?? [];
+                    },
+
+                    renderRow: (fetchedData) => {
+                        const materials = Array.isArray(fetchedData) ? fetchedData : [];
+
+                        if (!materials.length) {
+                            return <div className="p-2 text-center text-gray-500">No Materials</div>;
+                        }
+
                         return (
-                            <div className="bg-gray-50 rounded-xl p-4">
-                                <div className="flex justify-between items-end">
-
-                                    <div className="grid grid-cols-4 gap-6 text-sm w-full">
-                                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(row.CreatedDate)} />
-                                        <FieldItem label="Challan No." value={row.ChallanNumber || '-'} />
-                                        <FieldItem label="Vehicle No." value={row.VehicleNumber || '-'} />
-                                        <FieldItem label="Quantity" value={row.MaterialQuantity || '-'} />
-                                    </div>
-
-                                    <div className="ml-4 bg-gray-200 p-1 rounded-md cursor-pointer mb-1">
-                                        <PencilLine className="h-4 w-4" />
-                                    </div>
-
-                                </div>
-                            </div>
+                            <DataTableWithOutBorder
+                                data={materials}
+                                columns={MaterialRequisitionGRNColumns}
+                                fixedHeight={true}
+                            />
                         );
                     },
 
-                    expandButton: { openText: 'Hide', closeText: 'Show' }
+                    expandButton: { openText: "Hide", closeText: "Show" }
                 }}
             />
-            {/* <DataTableExpandable data={GRNData} columns={MaterialRequisitionGRNColumns} /> */}
             <Modal
                 isOpen={isViewGRNSummaryModalOpen}
                 onClose={() => {

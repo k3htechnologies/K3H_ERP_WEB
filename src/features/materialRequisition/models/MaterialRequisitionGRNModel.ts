@@ -11,7 +11,7 @@ export interface MaterialRequisitionGRNData {
     MaterialRequisitionGRNId: number | 0
     Uniquekey: string | null
     MaterialRequisitionId: number | 0
-    ChallanNumber: string | 0
+    ChallanNumber: string | ''
     VehicleNumber: string | null
     UploadChallanURL: string | null
     RemoveUploadChallanURL: string | ''
@@ -49,12 +49,27 @@ export interface AddUpdateMaterialRequisitionGRNRequest {
     MaterialRequisitionGRNId: number | 0
     Uniquekey: string | null
     MaterialRequisitionId: number | 0
-    ChallanNumber: string | 0
+    ChallanNumber: string | ''
     VehicleNumber: string | null
     UploadChallanURL: string | null
     RemoveUploadChallanURL: string | ''
-    Remarks: string | null
+    Remarks: string 
     ProjectId: number | 0
+    MaterialRequisitionDetailGRNJSON:string
+}
+
+export interface MaterialRequisitionDetailGRN{
+    MaterialMasterId: number;
+    MaterialName: string;
+    SubMaterialName: string;
+    SubMaterialMasterId: number;
+    UomMasterId: number;
+    UomCode: string;
+    MaterialQuantity: number | 0;
+    QualityAnalystRemark: string;
+    MaterialRequisitionDetailGRNId: number | 0
+    MaterialRequisitionDetailId: number | 0;
+    TotalReceivedMaterialQuantity:  number
 }
 
 export interface DeleteMaterialRequisitionGRN {
@@ -78,7 +93,7 @@ export interface MaterialRequisitionGRNSummaryData {
     MaterialName: string | null
     SubMaterialName: string | null
     MaterialQuantity: number | 0
-    ChallanNumber: string | 0
+    ChallanNumber: string | ''
     VehicleNumber: string | null
     UploadChallanURL: string | null
     CreatedDate: string;

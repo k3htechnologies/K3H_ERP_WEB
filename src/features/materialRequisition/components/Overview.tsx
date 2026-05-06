@@ -1,25 +1,25 @@
 import { runApiWithLoader } from "@/core/utils";
 import { useEffect, useState } from "react";
-import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "../models/MaterialRequisitionModel";
+import type { FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
-import { materialRequisitionService } from "../services/MaterialRequisitionService";
+import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import { useParams } from "react-router-dom";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { Loader } from "@/core/utils/loader";
-import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceData } from "../models/MaterialRequisitionInvoiceModel";
-import { materialRequisitionInvoiceService } from "../services/MaterialRequisitionInvoiceService";
-import type { FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorData } from "../models/VendorFinalizeModel";
-import { vendorFinalizationService } from "../services/VendorFinalizationService";
-import type { MaterialRequisitionQuotationDetailsTermsData } from "../models/MaterialRequisitionQuotationApi";
-import { computeBaseTotal, computeLinesTotal, computeTaxTotal } from "../utils/finalizeVendorUtils";
+import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
+import { materialRequisitionInvoiceService } from "@/features/materialRequisition/services/MaterialRequisitionInvoiceService";
+import type { FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorData } from "@/features/materialRequisition/models/VendorFinalizeModel";
+import { vendorFinalizationService } from "@/features/materialRequisition/services/VendorFinalizationService";
+import type { MaterialRequisitionQuotationDetailsTermsData } from "@/features/materialRequisition/models/MaterialRequisitionQuotationApi";
+import { computeBaseTotal, computeLinesTotal, computeTaxTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils";
 
 export const Overview: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -39,8 +39,8 @@ export const Overview: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
         fetchMaterialRequisitiondata();
-        fetchVendordata();
-        fetchInvoicedata();
+        fetchVendorData();
+        fetchInvoiceData();
     }, [projectId, currentMaterialRequisitionId]);
 
     const fetchMaterialRequisitiondata = async () => {
@@ -81,7 +81,7 @@ export const Overview: React.FC = () => {
         );
     };
 
-    const fetchVendordata = async () => {
+    const fetchVendorData = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -118,7 +118,7 @@ export const Overview: React.FC = () => {
         );
     };
 
-    const fetchInvoicedata = async () => {
+    const fetchInvoiceData = async () => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -159,6 +159,7 @@ export const Overview: React.FC = () => {
         (sum, item) => sum + Number(item.InvoiceAmountPaidTillDate ?? 0),
         0
     );
+    
     const PendingAmount = Math.max(0, totalInvoiceAmount - amountPaid);
 
     const firstTerm = materialRequisitionVendorData?.MaterialRequisitionQuotationTermsData?.[0];
@@ -205,7 +206,7 @@ export const Overview: React.FC = () => {
                                 <FieldItem label="Base Amount" value={`₹ ${computeBaseTotal(Vendoramount).toFixed(2)}`} />
                                 <FieldItem label="Total Tax" value={`₹ ${computeTaxTotal(Vendoramount).toFixed(2)}`} />
                                 <FieldItem label="Grand Total" value={`₹ ${computeLinesTotal(Vendoramount).toFixed(2)}`} />
-                                <FieldItem label="Est. Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays} days`} />
+                                <FieldItem label="Est. Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays ?? 0} days`} />
                                 <FieldItem label="Paid Amount" value={`₹ ${amountPaid.toFixed(2)}`} />
                                 <FieldItem label="Pending Amount" value={`₹ ${PendingAmount.toFixed(2)}`} />
                             </div>
@@ -261,7 +262,7 @@ export const Overview: React.FC = () => {
                                         <FieldItem label="Name" value={item.MaterialName} />
                                         <FieldItem label="Sub-Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                         <FieldItem label="Quantity" value={item.MaterialQuantity} />
-                                        <FieldItem label="Received Quantity" value={<TooltipText text={item.MaterialReceivedQuantityTillDate ?? ''} />} />
+                                        <FieldItem label="Received Quantity" value={item.MaterialReceivedQuantityTillDate ?? ''} />
 
                                         <div className="col-span-1 md:col-span-4 mt-1">
                                             <FieldItem label="Remark" value={item.Remark} />

@@ -114,10 +114,11 @@ export const GRN: React.FC = () => {
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
                 if (E.isRight(response)) {
+
                     const data = response.right.Data;
-                    SetGRNData(
-                        data?.[0]?.MaterialRequisitionDetailGRNData ?? []
-                    );
+
+                    SetGRNData(data?.[0]?.MaterialRequisitionDetailGRNData ?? []);
+
                     SetGRN(data)
                 } else {
                     addToast({ type: "error", title: response.left.message });

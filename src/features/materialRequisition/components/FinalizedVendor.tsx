@@ -8,12 +8,12 @@ import type {
     SelectedVendorData,
     SelectedVendorListResponse
 } from "../models/VendorFinalizeModel"
-import { useParams } from "react-router-dom"
-import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext"
+import { useNavigate, useParams } from "react-router-dom"
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext"
 import { useProject } from "@/features/projectMaster/context/ProjectContext"
 import { runApiWithLoader } from "@/core/utils"
 import * as E from "fp-ts/Either"
-import { vendorFinalizationService } from "../services/VendorFinalizationService"
+import { vendorFinalizationService } from "@/features/materialRequisition/services/VendorFinalizationService"
 import { FieldItem } from "@/ui/components/forms/FieldItem"
 import Checkbox from "@/ui/components/forms/Checkbox"
 import { FinalizedVendorQuotationTable } from "./FinalizedVendorQuotationTable"
@@ -83,6 +83,7 @@ export const FinalizedVendor: React.FC = () => {
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [materialRequisitionVendorSelectedList, setMaterialRequisitionVendorSelectedList] = useState<any[]>([])
     const [materialRequisitionVendorFinalizedList, setMaterialRequisitionVendorFinalizedList] = useState<any[]>([])
+    const navigate = useNavigate();
 
     useEffect(() => {
         if (!projectId) return
@@ -229,6 +230,7 @@ export const FinalizedVendor: React.FC = () => {
         )
     }
     const addSelectedVendors = async () => {
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -249,6 +251,10 @@ export const FinalizedVendor: React.FC = () => {
                         )
 
                     setMaterialRequisitionVendorSelectedList(selected)
+
+                    // navigate("/materialRequisition/view", {
+                    //     state: { activeTab: "Finalize Vendor" }
+                    // });
 
                     setQuotationAvailable(false)
                     setSelectedVendorIds([])

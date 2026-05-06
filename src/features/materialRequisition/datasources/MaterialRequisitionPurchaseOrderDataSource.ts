@@ -1,7 +1,7 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { DeleteMaterialRequisitionPurchaseOrder, FilterWithPaginationMaterialRequisitionPurchaseOrder, GenerateMaterialRequisitionPurchaseOrderPdfData, GenerateMaterialRequisitionPurchaseOrderPdfSaveResponse, MaterialRequisitionPurchaseOrderDeleteResponse, MaterialRequisitionPurchaseOrderListResponse, MaterialRequisitionPurchaseOrderSaveResponse } from "../models/MaterialRequisitionPurchaseOrderModel";
-import { MaterialRequisitionPurchaseOrderApi } from "../api/MaterialRequisitionPurchaseOrderApi";
+import type { DeleteMaterialRequisitionPurchaseOrder, FilterWithPaginationMaterialRequisitionPurchaseOrder, GenerateMaterialRequisitionPurchaseOrderPdfData, GenerateMaterialRequisitionPurchaseOrderPdfSaveResponse, MaterialRequisitionPurchaseOrderDeleteResponse, MaterialRequisitionPurchaseOrderListResponse, MaterialRequisitionPurchaseOrderSaveResponse } from "@/features/materialRequisition/models/MaterialRequisitionPurchaseOrderModel";
+import { MaterialRequisitionPurchaseOrderApi } from "@/features/materialRequisition/api/MaterialRequisitionPurchaseOrderApi";
 
 export abstract class MaterialRequisitionPurchaseOrderDatasource {
     abstract pullMaterialRequisitionPurchaseOrder(params: FilterWithPaginationMaterialRequisitionPurchaseOrder, signal?: AbortSignal): Promise<MaterialRequisitionPurchaseOrderListResponse>;

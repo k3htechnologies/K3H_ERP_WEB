@@ -100,6 +100,7 @@ export interface MaterialRequisitionGRNSummaryData {
 
 }
 
+
 export type MaterialRequisitionGRNListResponse = ApiResponse<MaterialRequisitionGRNData[]>;
 export type MaterialRequisitionGRNSaveResponse = ApiResponse<MaterialRequisitionGRNData[]>;
 export type MaterialRequisitionGRNDeleteResponse = ApiResponse<number>;

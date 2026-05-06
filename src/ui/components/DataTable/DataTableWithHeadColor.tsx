@@ -1,5 +1,6 @@
 import React from 'react'
 import { ChevronLeft, ChevronRight, ArrowUpDown } from 'lucide-react'
+import { useViewportHeight } from '@/core/utils/useViewportHeight'
 import NoDataView from '@/ui/components/NoDataView/NoDataView'
 import { useHorizontalScroll } from './useHorizontalScroll'
 
@@ -50,6 +51,7 @@ export const DataTableWithHeadColor: React.FC<DataTableWithHeadColorProps> = ({
     emptyMessage = 'No data available',
     className = '',
     fixedHeight = false,
+    maxHeight = useViewportHeight(255, 350, 900),
     recordsPerPage = 10,
     sortInfo,
     onSort,
@@ -108,14 +110,12 @@ export const DataTableWithHeadColor: React.FC<DataTableWithHeadColorProps> = ({
 
             <div
                 ref={scrollRef}
-                className={` thin-scroll overflow-x-auto ${fixedHeight ? 'overflow-y-auto' : ''}`}
-                style={
-                    fixedHeight
-                        ? {
-                            maxHeight: `calc(${recordsPerPage} * 2.5rem + 2.5rem)`
-                        }
-                        : {}
-                }
+                className={`overflow-x-auto ${fixedHeight ? 'overflow-y-auto' : ''}`}
+                style={fixedHeight ? {
+                    maxHeight: recordsPerPage === 10
+                        ? 'calc(10 * 2.5rem + 2.5rem)'
+                        : maxHeight
+                } : {}}
             >
                 <table className="min-w-full border-collapse">
 

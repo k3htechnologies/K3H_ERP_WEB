@@ -1,29 +1,29 @@
 import { useEffect, useMemo, useState } from "react";
 import Tabs from "@/ui/components/Tab/Tab";
-import Details from "@/features/materialRequisition/components/Details";
+import Details from "../components/Details";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
-import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
+import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Invoice } from "@/features/materialRequisition/components/invoice/Invoice";
-import Overview from "@/features/materialRequisition/components/Overview";
-import PurchaseOrder from "@/features/materialRequisition/components/PurchaseOrder";
-import GRN from "@/features/materialRequisition/components/GRN/GRN";
-import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import { Invoice } from "../components/invoice/Invoice";
+import Overview from "../components/Overview";
+import PurchaseOrder from "../components/PurchaseOrder";
+import GRN from "../components/GRN/GRN";
+import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "../models/MaterialRequisitionModel";
 import { Button } from "@/ui/components/forms";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
-import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
+import { materialRequisitionService } from "../services/MaterialRequisitionService";
 import * as E from "fp-ts/Either";
 import { Copy, X } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Modal } from "@/ui/components/Modal/Modal";
-import { FinalizedVendor } from "@/features/materialRequisition/components/FinalizedVendor";
+import { FinalizedVendor } from "../components/FinalizedVendor";
 import DataTableEditable, { type EditableTableColumn } from "@/ui/components/DataTable/DataTableEditable";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, isPreviousDate } from "@/core/utils/dateFormat";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { DateInput } from "@/ui/components/forms/DateInput";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
-import DatePickerInput from "@/ui/components/forms/Datepicker";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
@@ -116,7 +116,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                     const item = Array.isArray(data) ? data[0] : data;
 
                     setMaterialRequisitionData(item ?? null);
-
                     setDetailData(item?.MaterialRequisitionDetailData);
 
                     setMaterialRequisitionDetailData(item?.MaterialRequisitionDetailData ?? []);
@@ -136,18 +135,12 @@ export const ViewMaterialRequisition: React.FC = () => {
 
             const dateString = item.RequiredDate.split("T")[0];
             const date = new Date(dateString + "T00:00:00");
+
             return isPreviousDate(date);
         });
 
         if (hasPastDate) {
-            addToast({ type: 'error', title: 'Required Date cannot be in the past.' });
-            return;
-        }
-
-        const hasEmptyDate = editableDetails.some(item => !item.RequiredDate);
-
-        if (hasEmptyDate) {
-            addToast({ type: 'error', title: 'Required Date is required.' });
+            addToast({ type: 'error', title: 'Required date cannot be in the past.' });
             return;
         }
 
@@ -251,7 +244,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
             renderEditor: (value?: string, onChange?: any) => (
-                <DatePickerInput
+                <DateInput
                     label=""
                     value={formatDate_dd_mm_yyyy(value)}
                     onChange={(val) => onChange(convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
@@ -278,8 +271,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                 if (E.isRight(response)) {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0], });
-
-                    navigate("/materialRequisition");
 
                     setIsCloseRequisitionDialogOpen(false);
                     loadMaterialRequisition();

@@ -1,11 +1,11 @@
 import useToast from "@/core/hooks/useToast";
 import { runApiWithLoader } from "@/core/utils";
 import { useEffect, useRef, useState } from "react";
-import type { AddUpdateMaterialRequisitionPurchaseOrder, DeleteMaterialRequisitionPurchaseOrder, FilterWithPaginationMaterialRequisitionPurchaseOrder, GenerateMaterialRequisitionPurchaseOrderPdfData, MaterialRequisitionPurchaseOrderData } from "@/features/materialRequisition/models/MaterialRequisitionPurchaseOrderModel";
-import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
+import type { AddUpdateMaterialRequisitionPurchaseOrder, DeleteMaterialRequisitionPurchaseOrder, FilterWithPaginationMaterialRequisitionPurchaseOrder, GenerateMaterialRequisitionPurchaseOrderPdfData, MaterialRequisitionPurchaseOrderData } from "../models/MaterialRequisitionPurchaseOrderModel";
+import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
 import { useParams } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { materialRequisitionPurchaseOrderService } from "@/features/materialRequisition/services/MaterialRequisitionPurchaseOrderService";
+import { materialRequisitionPurchaseOrderService } from "../services/MaterialRequisitionPurchaseOrderService";
 import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
@@ -184,6 +184,50 @@ export const PurchaseOrder: React.FC = () => {
             'Generate Purchase Order'
         )
     };
+
+    // //PUSH FORM DATA
+    // const PushUploadPurchaseOrderFormData = (e: any): FormData => {
+    //     const file = e.target.files?.[0];
+    //     const fd = new FormData();
+    //     fd.append("MaterialRequisitionPurchaseOrderId", uploadData.MaterialRequisitionPurchaseOrderId.toString());
+    //     fd.append("Uniquekey", uploadData.Uniquekey ?? "");
+    //     fd.append("ProjectId", projectId!.toString());
+    //     fd.append("MaterialRequisitionId", (currentMaterialRequisitionId ?? 0).toString());
+    //     fd.append("PurchaseOrderURL", file);
+
+    //     return fd;
+    // };
+
+    // // UPLOAD PURCHASE ORDER
+    // const handleUploadPurchaseOrder = async () => {
+    //     await runApiWithLoader(
+    //         setIsLoading,
+    //         setLoadingMessage,
+    //         async () => {
+
+    //             const payload = PushUploadPurchaseOrderFormData();
+
+    //             const response = await materialRequisitionPurchaseOrderService.apiCallAddUpdateMaterialRequisitionPurchaseOrder(payload);
+
+    //             if (E.isRight(response)) {
+
+    //                 addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+    //                 loadPurchaseOrder();
+
+    //             } else {
+    //                 addToast({ type: "error", title: response.left.message });
+    //             }
+    //             return response;
+    //         },
+    //         undefined,
+    //         (error: any) => {
+    //             addToast({ type: "error", title: error.message });
+    //         },
+    //         undefined,
+    //         "Loading Purchase Order ",
+    //     );
+    // };
 
     const handleUploadPurchaseOrder = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -438,6 +482,7 @@ export const PurchaseOrder: React.FC = () => {
                             </div>
                         )}
                     </div>
+
                 </div>
             </Modal>
 

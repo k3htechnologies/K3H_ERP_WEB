@@ -1,7 +1,7 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
-import { VendorFinalizationDatasourceImpl } from "@/features/materialRequisition/datasources/VendorFinalizationDataSource";
-import type { AddVendorForEnquiryRequest, AddVendorForEnquiryRequestResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
+import { VendorFinalizationDatasourceImpl } from "../datasources/VendorFinalizationDataSource";
+import type { AddVendorForEnquiryRequest, AddVendorForEnquiryRequestResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "../models/VendorFinalizeModel";
 import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
 

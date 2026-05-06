@@ -11,7 +11,7 @@ import type {
 
 } from "@/features/materialRequisition/models/MaterialRequisitionPaymentModel";
 
-import { MaterialRequisitionPaymentDatasourceImpl } from "@/features/materialRequisition/datasources/MaterialRequisitionPaymentDataSource";
+import { MaterialRequisitionPaymentDatasourceImpl } from "../datasources/MaterialRequisitionPaymentDataSource";
 
 export const MaterialRequisitionPaymentDataSource = new MaterialRequisitionPaymentDatasourceImpl();
 

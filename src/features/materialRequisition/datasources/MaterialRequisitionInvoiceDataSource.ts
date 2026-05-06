@@ -1,7 +1,7 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { DeleteMaterialRequisitionInvoice, FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceDeleteResponse, MaterialRequisitionInvoiceListResponse, MaterialRequisitionInvoiceSaveResponse } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
-import { MaterialRequisitionInvoiceApi } from "@/features/materialRequisition/api/MaterialRequisitionInvoiceApi";
+import type { DeleteMaterialRequisitionInvoice, FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceDeleteResponse, MaterialRequisitionInvoiceListResponse, MaterialRequisitionInvoiceSaveResponse } from "../models/MaterialRequisitionInvoiceModel";
+import { MaterialRequisitionInvoiceApi } from "../api/MaterialRequisitionInvoiceApi";
 
 export abstract class MaterialRequisitionInvoiceDatasource {
     abstract pullMaterialRequisitionInvoice(params: FilterWithPaginationMaterialRequisitionInvoice, signal?: AbortSignal): Promise<MaterialRequisitionInvoiceListResponse>;

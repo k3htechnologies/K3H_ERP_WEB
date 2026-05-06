@@ -1,7 +1,7 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
-import type { DeleteMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRNSummary, MaterialRequisitionGRNDeleteResponse, MaterialRequisitionGRNListResponse, MaterialRequisitionGRNSaveResponse, MaterialRequisitionGRNSummaryListResponse } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
-import { MaterialRequisitionGRNGRNDatasourceImpl } from "@/features/materialRequisition/datasources/MaterialRequisitionGRNDataSource";
+import type { DeleteMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRNSummary, MaterialRequisitionGRNDeleteResponse, MaterialRequisitionGRNListResponse, MaterialRequisitionGRNSaveResponse, MaterialRequisitionGRNSummaryListResponse } from "../models/MaterialRequisitionGRNModel";
+import { MaterialRequisitionGRNGRNDatasourceImpl } from "../datasources/MaterialRequisitionGRNDataSource";
 
 
 const materialRequisitionGRNDatasource = new MaterialRequisitionGRNGRNDatasourceImpl();

@@ -1,16 +1,14 @@
-
-
-import type { FilterWithPaginationBookingApplicantModificationRequest, BookingApplicantModificationDataRequest } from '@/features/crmPayTrack/models/BookingApplicantModificationModel';
-import type { FilterWithPaginationParkingModificationDetails, ParkingModificationDetailsData } from '@/features/crmPayTrack/models/ParkingModificationModel';
-import type { FilterWithPaginationFlatAlterationRequest, FlatAlterationRequestData } from '@/features/crmPayTrack/models/FlatAlterationRequestModel';
-import type { FilterWithPaginationRefundAmountDetails, RefundAmountDetailsData } from '@/features/crmPayTrack/models/RefundAmountDetailsModel';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
-import { useEffect, useState } from 'react';
-import { usePayTrackBookingListState } from '../context/PayTrackBookingListStateContext';
+import { useState } from 'react';
+import { usePayTrackBookingListState } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 import { runApiWithLoader } from '@/core/utils';
 import { Loader } from '@/core/utils/loader';
 import usePagination from '@/core/hooks/usePagination';
 import { bookingApplicantModificationService } from '@/features/crmPayTrack/services/BookingApplicantModelCrmService';
+import type { FilterWithPaginationBookingApplicantModificationRequest, BookingApplicantModificationDataRequest } from '@/features/crmPayTrack/models/BookingApplicantModificationModel';
+import type { FilterWithPaginationParkingModificationDetails, ParkingModificationDetailsData } from '@/features/crmPayTrack/models/ParkingModificationModel';
+import type { FilterWithPaginationFlatAlterationRequest, FlatAlterationRequestData } from '@/features/crmPayTrack/models/FlatAlterationRequestModel';
+import type { FilterWithPaginationRefundAmountDetails, RefundAmountDetailsData } from '@/features/crmPayTrack/models/RefundAmountDetailsModel';
 import { flatAlterationService } from '@/features/crmPayTrack/services/FlatAlterationService';
 import { parkingModificationService } from '@/features/crmPayTrack/services/ParkingModificationService';
 import { refundAmountDetailsCrmService } from '@/features/crmPayTrack/services/RefundAmountDetailsCrmService';
@@ -20,7 +18,9 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatCurrency, getSafeString } from '@/core/utils/comman';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import useToast from '@/core/hooks/useToast';
-
+import { useNavigate } from 'react-router-dom';
+import { Edit } from 'lucide-react';
+import { Button } from '@/ui/components/forms';
 
 export const Activity: React.FC = () => {
 
@@ -36,19 +36,8 @@ export const Activity: React.FC = () => {
     const { bookingId } = listState;
     const { addToast } = useToast();
     const { pagination, setPagination } = usePagination(20);
+    const navigate = useNavigate();
 
-
-    useEffect(() => {
-        if (!projectId || !bookingId) return;
-
-        loadBookingApplicantModificationRequestHistory(1);
-        loadParkingModificationRequestHistory(1);
-        loadFlatAlterationRequestHistory(1);
-        loadRefundedAmountDetailsHistory();
-
-    }, [projectId, bookingId]);
-
-    // #region Load Booking Applicant Modification Request History
     const loadBookingApplicantModificationRequestHistory = async (page: number) => {
         await runApiWithLoader(
             setIsLoading,
@@ -66,7 +55,8 @@ export const Activity: React.FC = () => {
                 if (E.isRight(response)) {
 
                     const allApprovalStatusData = response.right.Data;
-                    setBookingApplicantModificationLst(allApprovalStatusData);
+                    const allApprovalStatusDataHere = allApprovalStatusData.filter(item => item.ApprovalStatus === 'Approved');
+                    setBookingApplicantModificationLst(allApprovalStatusDataHere);
 
                     setPagination({
                         currentPage: page,
@@ -86,9 +76,7 @@ export const Activity: React.FC = () => {
 
         );
     };
-    // #endregion
 
-    // #region Load Parking Modification Request History
     const loadParkingModificationRequestHistory = async (page: number) => {
         await runApiWithLoader(
             setIsLoading,
@@ -104,7 +92,9 @@ export const Activity: React.FC = () => {
                 const response = await parkingModificationService.apiCallPullParkingModificationDetails(params);
 
                 if (E.isRight(response)) {
+
                     setParkingModificationList(response.right.Data);
+
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,
@@ -122,9 +112,7 @@ export const Activity: React.FC = () => {
             undefined,
         );
     };
-    // #endregion
 
-    // #region Load Flat Alteration Request History
     const loadFlatAlterationRequestHistory = async (page: number) => {
         await runApiWithLoader(
             setIsLoading,
@@ -140,7 +128,10 @@ export const Activity: React.FC = () => {
                 const response = await flatAlterationService.apiCallPullFlatAlterationRequest(params);
 
                 if (E.isRight(response)) {
-                    setFlatAlterationList(response.right.Data);
+
+                    const allFlatAlterationData = response.right.Data;
+                    const allFlatAlterationDataHere = allFlatAlterationData.filter(item => item.ApprovalStatus === 'Approved');
+                    setFlatAlterationList(allFlatAlterationDataHere);
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,
@@ -159,9 +150,7 @@ export const Activity: React.FC = () => {
 
         );
     };
-    // #endregion
 
-    // #region Load Refunded Amount Details History
     const loadRefundedAmountDetailsHistory = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -192,7 +181,6 @@ export const Activity: React.FC = () => {
         )
 
     }
-    // #endregion
 
     return (
         <div >
@@ -204,6 +192,11 @@ export const Activity: React.FC = () => {
                 <ExpandableCard
                     expandedheight={400}
                     showline={false}
+                    onClick={(isOpen) => {
+                        if (isOpen) {
+                            loadBookingApplicantModificationRequestHistory(1);
+                        }
+                    }}
                     title={
                         <div className="font-semibold text-lg pt-4 pb-4">
                             Booking Applicant History
@@ -211,8 +204,8 @@ export const Activity: React.FC = () => {
                     }
                     child={
                         <div>
-                            {bookingApplicantModificationLst.length > 1 ? (
-                                bookingApplicantModificationLst.slice(0, -1).map((data, index) => (
+                            {bookingApplicantModificationLst.length > 0 ? (
+                                bookingApplicantModificationLst.map((data, index) => (
                                     <div key={data.BookingApplicantModificationRequestId || index}>
                                         <div className="flex items-center gap-3 px-2 py-2 -mt-5">
                                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 tracking-wide">
@@ -263,6 +256,11 @@ export const Activity: React.FC = () => {
 
                 <ExpandableCard
                     showline={false}
+                    onClick={(isOpen) => {
+                        if (isOpen) {
+                            loadParkingModificationRequestHistory(1);
+                        }
+                    }}
                     title={
                         <div className="font-semibold text-lg pt-4 pb-4">
                             Parking History
@@ -310,6 +308,11 @@ export const Activity: React.FC = () => {
 
                 <ExpandableCard
                     showline={false}
+                    onClick={(isOpen) => {
+                        if (isOpen) {
+                            loadFlatAlterationRequestHistory(1);
+                        }
+                    }}
                     title={
                         <div className="font-semibold text-lg pt-4 pb-4">
                             Flat Alteration History
@@ -317,15 +320,9 @@ export const Activity: React.FC = () => {
                     }
                     child={
                         <div>
-                            {flatAlterationList.length > 1 ? (
-                                flatAlterationList.slice(0, -1).map((data, index) => (
+                            {flatAlterationList.length > 0 ? (
+                                flatAlterationList.map((data, index) => (
                                     <div key={data.FlatAlterationRequestId || index}>
-                                        <div className="flex items-center gap-3 px-2 py-2 -mt-5">
-                                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 tracking-wide">
-                                                Version {data.VersionNumber}
-                                            </span>
-                                            <div className="flex-1 border-t border-gray-200" />
-                                        </div>
 
                                         <div className="bg-white rounded-lg px-8 py-4 border border-gray-200">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 md:gap-y-3">
@@ -354,6 +351,11 @@ export const Activity: React.FC = () => {
 
                 <ExpandableCard
                     showline={false}
+                    onClick={(isOpen) => {
+                        if (isOpen) {
+                            loadRefundedAmountDetailsHistory();
+                        }
+                    }}
                     title={
                         <div className="font-semibold text-lg pt-4 pb-4">
                             Refunded Amount Details History
@@ -369,19 +371,18 @@ export const Activity: React.FC = () => {
                                     >
                                         <div className="flex justify-between items-center border-b border-gray-200 pb-3">
                                             <div className="gap-6 text-sm text-gray-700">
-                                                <FieldItem
-                                                    label="Refunded Amount"
-                                                    value={formatCurrency(data.RefundedAmount)}
-                                                    isRow
-                                                />
-                                                <FieldItem
-                                                    label="Payment Mode"
-                                                    value={getSafeString(data.PaymentMode ?? '-')}
-                                                    isRow
-                                                />
+                                                <FieldItem label="Refunded Amount" value={formatCurrency(data.RefundedAmount)} isRow />
+                                                <FieldItem label="Payment Mode" value={getSafeString(data.PaymentMode ?? '-')} isRow />
                                             </div>
-
-
+                                            <Button onClick={() => {
+                                                navigate('/payTrack/view/addRefundDetails', { state: { refundData: data } });
+                                            }}
+                                                color="transparent"
+                                                isborderRadius
+                                                className="w-4 h-4"
+                                            >
+                                                <Edit size={18} />
+                                            </Button>
                                         </div>
 
                                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm pt-5">
@@ -398,21 +399,9 @@ export const Activity: React.FC = () => {
                                                 <h3 className="font-semibold text-gray-900 mb-2">Customers Party Bank Details</h3>
                                                 <FieldItem label="Account Holder" value={getSafeString(data.AccountHolderName ?? '-')} />
                                                 <FieldItem label="Bank" value={getSafeString(data.BankName ?? '-')} />
-                                                <FieldItem
-                                                    label="Transaction / Cheque / DD No"
-                                                    value={getSafeString(data.TransactionChequeDemandDraftNumber ?? '-')}
-                                                    urls={data.TransactionChequeDemandDraftURL}
-                                                />
-                                                <FieldItem
-                                                    label="Transaction / Cheque / DD Date"
-                                                    value={formatDate_dd_MonthName_yy(data.TransactionChequeDemandDraftDate ?? '') || '-'}
-                                                />
-                                                <FieldItem
-                                                    label="Transaction / Cheque / DD URL"
-                                                    value={data.TransactionChequeDemandDraftURL ? 'View Document' : '-'}
-                                                    urls={data.TransactionChequeDemandDraftURL}
-                                                    isIcon
-                                                />
+                                                <FieldItem label="Transaction / Cheque / DD No" value={getSafeString(data.TransactionChequeDemandDraftNumber ?? '-')} urls={data.TransactionChequeDemandDraftURL} />
+                                                <FieldItem label="Transaction / Cheque / DD Date" value={formatDate_dd_MonthName_yy(data.TransactionChequeDemandDraftDate ?? '') || '-'} />
+                                                <FieldItem label="Transaction / Cheque / DD URL" value={data.TransactionChequeDemandDraftURL ? 'View Document' : '-'} urls={data.TransactionChequeDemandDraftURL} isIcon />
                                             </div>
 
                                             <div className="space-y-3">

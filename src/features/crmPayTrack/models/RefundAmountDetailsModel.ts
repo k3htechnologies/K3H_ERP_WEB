@@ -11,8 +11,8 @@ export interface RefundAmountDetailsData {
     Uniquekey: string | null;
     BookingId: number;
     ProjectId: number;
-    PaymentFor: string | null;
-    PaymentMode: string | null;
+    PaymentFor: string;
+    PaymentMode: string;
     ProjectBankListMasterId: number;
     ProjectBankName: string | null;
     ProjectAccountNumber: string | null;

@@ -30,17 +30,12 @@ export const ViewPayTrack: React.FC = () => {
   const { bookingName, bookingType, flat } = listState;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [welcome, setWelcome] = useState<string>("");
-
   const [bookingData, setBookingData] = useState<BookingData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
-
-  // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
   const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
   const [ownerName, setOwnerName] = useState<string | null>("");
-
-  // APPROVAL ACTION MODAL
   const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
   const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
   const [approvalRowData, setApprovalRowData] = useState<BookingData | null>(null);
@@ -90,6 +85,7 @@ export const ViewPayTrack: React.FC = () => {
         if (E.isRight(response)) {
           const booking = response.right.Data?.[0] ?? null;
           setBookingData(booking);
+          updateListState({ bookingData: booking as any });
         } else {
           addToast({ type: 'error', title: response.left.message });
         }
@@ -110,7 +106,6 @@ export const ViewPayTrack: React.FC = () => {
       ModuleName: "BOOKING REFUND APPROVAL",
       Id: row.BookingId ?? 0,
       ProjectId: projectId ? Number(projectId) : 0,
-      SubId: row.BookingId ?? 0
     };
     setOwnerName(row.ApplicantName);
     setApprovalLogRequest(request);
@@ -133,7 +128,6 @@ export const ViewPayTrack: React.FC = () => {
       ProjectId: projectId ? Number(projectId) : 0,
       IsApproved: approvalActionType === "approve",
       Remarks: remark ?? null,
-      SubId: approvalRowData.BookingId ?? 0
     };
 
     await runApiWithLoader(

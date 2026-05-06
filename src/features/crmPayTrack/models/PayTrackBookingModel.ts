@@ -1,5 +1,6 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 import type { BookingOtherChargesData } from "@/features/booking/models/BookingModel";
+import type { ParkingData } from "@/features/parking/models/ParkingModel";
 
 export interface FilterWithPaginationPayTrackBooking {
     PageNumber: number;
@@ -19,7 +20,7 @@ export interface FilterWithPaginationPayTrackBooking {
     ExportType?: "PDF" | "Excel";
 }
 
-    
+
 export type PayTrackRow = {
     type: string;
     total: number;
@@ -36,6 +37,7 @@ export interface PayTrackBookingData {
     ApplicantName: string | null;
     ApplicantMobileNumber: string | null;
     BookingType: string | null;
+    ParkingData: ParkingData[] | null;
 
     InventoryFlatId: number | null;
     BuildingNumber: string | null;
@@ -46,9 +48,11 @@ export interface PayTrackBookingData {
     FlatType: string | null;
     RERACarpetAreaSqFt: number | null;
     FlatConfiguration: string | null;
-    
+
     RegistrationDate: string | null;
     FinalRegistrationDate: string | null;
+
+    FlatAlterationRemark: string | null;
 
     AgreementValue: number | null;
     ReceivedAgreementValue: number | null;
@@ -72,7 +76,7 @@ export interface PayTrackBookingData {
     ReceivedOtherChargesGSTAmount: number | null;
 
     ApprovalStatus: string | null;
-    
+
     TotalAmountReceivedAgainstBooking: number | null;
     TotalAmountRefundedAgainstBooking: number | null;
     RefundedAmountOnTillDate: number | null;
@@ -86,6 +90,7 @@ export interface PayTrackBookingData {
     BookingApplicantModificationRequestApprovalStatus: string | null;
 
     TenantId: number | null;
+
 
     BookingOtherChargesData?: BookingOtherChargesData[] | null;
 }
@@ -133,7 +138,6 @@ export interface PayTrackBookingPaymentScheduleData {
     ModifiedBy: string | null;
     ModifiedDate: string | null;
 }
-
 
 export interface PayTrackBookingOtherChargesData {
     BookingOtherChargesId: number | null;

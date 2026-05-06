@@ -26,23 +26,23 @@ export interface BookingApplicantModificationDataRequest {
     VotingIdURL: string;
     GSTNumber: string;
     GSTNumberURL: string;
-    CancelledChequeURL: string | null;
-    POAURL: string | null;
-    IncomeForm16ITRURL: string | null;
-    NreNroBankDetailsURL: string | null;
-    NomineeFormURL: string | null;
-    StatementOfSourceOfFundsURL: string | null;
-    PaymentProofURL: string | null;
+    CancelledChequeURL: string;
+    POAURL: string;
+    IncomeForm16ITRURL: string;
+    NreNroBankDetailsURL: string;
+    NomineeFormURL: string;
+    StatementOfSourceOfFundsURL: string;
+    PaymentProofURL: string;
     IsApproval: boolean;
     ApprovalStatus: string;
     VersionNumber: string;
-    CreatedById: number | null;
-    CreatedBy: string | null;
+    CreatedById: number;
+    CreatedBy: string;
     CreatedDate: string | null;
-    ModifiedById: number | null;
-    ModifiedBy: string | null;
+    ModifiedById: number;
+    ModifiedBy: string;
     ModifiedDate: string | null;
-    BookingApplicantModificationDocumentUploadURL: string | null;
+    BookingApplicantModificationDocumentUploadURL: string;
 
 }
 

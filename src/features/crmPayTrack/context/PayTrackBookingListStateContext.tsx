@@ -3,6 +3,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
 import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
 import type { BookingOtherChargesData } from "@/features/booking/models/BookingModel";
+import type { PayTrackBookingData } from "../models/PayTrackBookingModel";
 
 export type PayTrackBookingListState = {
   page: number;
@@ -14,6 +15,7 @@ export type PayTrackBookingListState = {
   bookingName: string;
   bookingType: string;
   bookingOtherChargesData?: BookingOtherChargesData[];
+  bookingData?: PayTrackBookingData | null;
   totalUnitCost: number;
   flat: string;
   activeTab?: string;
@@ -35,6 +37,7 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
       bookingName: "",
       bookingType: "",
       bookingOtherChargesData: [],
+      bookingData: null,
       totalUnitCost: 0,
       flat: "",
       activeTab: undefined,
@@ -57,6 +60,7 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
           flat: parsed.state.flat || "",
           totalUnitCost: parsed.state.totalUnitCost || 0,
           bookingOtherChargesData: parsed.state.bookingOtherChargesData || [],
+          bookingData: parsed.state.bookingData || null,
           activeTab: parsed.state.activeTab,
           activeSubTab: parsed.state.activeSubTab,
           refreshKey: 0,
@@ -79,6 +83,7 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
     flat: "",
     totalUnitCost: 0,
     bookingOtherChargesData: [],
+    bookingData: null,
     activeTab: undefined,
     activeSubTab: undefined,
     refreshKey: 0,
@@ -90,7 +95,7 @@ type PayTrackBookingListStateContextType = {
   updateListState: (updates: Partial<PayTrackBookingListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[]) => void;
+  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData) => void;
   clearPayTrackBookingContext: () => void;
   triggerRefresh: () => void;
 };
@@ -116,6 +121,7 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
         flat: "",
         totalUnitCost: 0,
         bookingOtherChargesData: [],
+        bookingData: null,
         activeTab: undefined,
         activeSubTab: undefined,
         refreshKey: 0,
@@ -171,6 +177,7 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       flat: "",
       totalUnitCost: 0,
       bookingOtherChargesData: [],
+      bookingData: null,
       activeTab: undefined,
       activeSubTab: undefined,
       refreshKey: 0,
@@ -178,7 +185,7 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
     setListState(defaultState);
   }, []);
 
-  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[]) => {
+  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData) => {
     setListState((prev) => ({
       ...prev,
       bookingId,
@@ -187,6 +194,7 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       flat,
       totalUnitCost,
       bookingOtherChargesData: bookingOtherChargesData || [],
+      bookingData: bookingData || null,
       activeTab: undefined,
       activeSubTab: undefined,
       refreshKey: 0,
@@ -202,6 +210,7 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       flat: "",
       totalUnitCost: 0,
       bookingOtherChargesData: [],
+      bookingData: null,
       activeTab: undefined,
       activeSubTab: undefined,
       refreshKey: 0,

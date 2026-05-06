@@ -20,10 +20,11 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import * as E from "fp-ts/Either";
 import { runApiWithLoader } from "@/core/utils";
 import { refundAmountDetailsCrmService } from "@/features/crmPayTrack/services/RefundAmountDetailsCrmService";
-import { usePayTrackBookingListState } from "../context/PayTrackBookingListStateContext";
+import { usePayTrackBookingListState } from "@/features/crmPayTrack/context/PayTrackBookingListStateContext";
 import { bookingService } from '@/features/booking/services/BookingService';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import type { BookingData, FilterWithPaginationBookingRequest } from "@/features/booking/models/BookingModel";
+import type { RefundAmountDetailsData } from "@/features/crmPayTrack/models/RefundAmountDetailsModel";
 
 const initialFormState = (): AddUpdateRefundAmountDetailsRequest => ({
     RefundedAmountLedgerId: 0,
@@ -56,30 +57,74 @@ export const AddRefundDetails: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
     const [projectWithBankData, setProjectWithBankData] = useState<ProjectWithBankDetails | null>(null);
     const [formData, setFormData] = useState<AddUpdateRefundAmountDetailsRequest>(() => initialFormState());
-
-    // File states
     const [transactionChequeDemandFiles, setTransactionChequeDemandFiles] = useState<(File | string)[]>([]);
     const [removedTransactionChequeDemandUrls, setRemovedTransactionChequeDemandUrls] = useState<string[]>([]);
     const [transactionChequeDemandURL, _setTransactionChequeDemandURL] = useState<string>();
-
     const [paymentReceiptFiles, setPaymentReceiptFiles] = useState<(File | string)[]>([]);
     const [removedPaymentReceiptUrls, setRemovedPaymentReceiptUrls] = useState<string[]>([]);
     const [paymentReceiptURL, _setPaymentReceiptURL] = useState<string>();
-
     const [bookingData, setBookingData] = useState<BookingData | null>(null);
-
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     const { projectId } = useProject();
-
     const { listState, updateListState } = usePayTrackBookingListState();
     const { bookingId } = listState;
-
     const { canAction } = useMenuPermissions("/payTrack");
-
     const { addToast } = useToast();
 
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const [dropdownLabels, setDropdownLabels] = useState<{
+        projectBankName?: string;
+        bankName?: string;
+    }>({});
+
+    useEffect(() => {
+        if (location.state?.refundData) {
+            const data = location.state.refundData as RefundAmountDetailsData;
+            setFormData({
+                RefundedAmountLedgerId: data.RefundedAmountLedgerId,
+                Uniquekey: data.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+                BookingId: data.BookingId,
+                ProjectId: data.ProjectId,
+                PaymentFor: data.PaymentFor,
+                PaymentMode: data.PaymentMode,
+                ProjectBankListMasterId: data.ProjectBankListMasterId,
+                ProjectBankName: data.ProjectBankName,
+                ProjectAccountNumber: data.ProjectAccountNumber,
+                ProjectIFSCCode: data.ProjectIFSCCode,
+                AccountHolderName: data.AccountHolderName,
+                BankListMasterId: data.BankListMasterId,
+                BankName: data.BankName,
+                AccountNumber: data.AccountNumber,
+                IFSCCode: data.IFSCCode,
+                AmountType: data.AmountType,
+                RefundedAmount: data.RefundedAmount,
+                TransactionChequeDemandDraftNumber: data.TransactionChequeDemandDraftNumber,
+                TransactionChequeDemandDraftURL: data.TransactionChequeDemandDraftURL,
+                TransactionChequeDemandDraftDate: data.TransactionChequeDemandDraftDate,
+                PaymentReceiptURL: data.PaymentReceiptURL,
+            });
+
+            if (data.TransactionChequeDemandDraftURL) {
+                _setTransactionChequeDemandURL(data.TransactionChequeDemandDraftURL);
+            }
+            if (data.PaymentReceiptURL) {
+                _setPaymentReceiptURL(data.PaymentReceiptURL);
+            }
+
+            setDropdownLabels({
+                projectBankName: data.ProjectBankName || '',
+                bankName: data.BankName || '',
+            });
+
+            setProjectWithBankData({
+                AccountNumber: data.ProjectAccountNumber || '',
+                IFSCCode: data.ProjectIFSCCode || '',
+            } as ProjectWithBankDetails);
+        }
+    }, [location.state]);
 
 
     useEffect(() => {
@@ -158,9 +203,7 @@ export const AddRefundDetails: React.FC = () => {
             errors: newErrors
         };
     };
-    //#endregion
 
-    // #region PUSH DATA
     const PushAddUpdateRefundAmountDetailsData = (): FormData => {
 
         const fd = new FormData();
@@ -202,13 +245,6 @@ export const AddRefundDetails: React.FC = () => {
         return fd;
 
     }
-    //#endregion
-
-
-    const [dropdownLabels] = useState<{
-        projectBankName?: string;
-        bankName?: string;
-    }>({});
 
     const handleFieldChange = (field: keyof AddUpdateRefundAmountDetailsRequest, value: any) => {
 
@@ -257,7 +293,6 @@ export const AddRefundDetails: React.FC = () => {
         );
     };
 
-    // #region HANDLE ADD UPDATE REFUNDED AMOUNT LEDGER
 
     const handleAddUpdateRefundedAmountLedgerDetails = async (e?: React.FormEvent) => {
         e?.preventDefault();
@@ -285,7 +320,7 @@ export const AddRefundDetails: React.FC = () => {
                 if (E.isRight(response)) {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
-                    updateListState({ activeTab: 'ModifiedRequest', activeSubTab: 'Summary' });
+                    updateListState({ activeTab: 'ModifiedRequest', activeSubTab: 'Activity' });
                     navigate(`/payTrack/view`)
 
                 } else {
@@ -303,8 +338,6 @@ export const AddRefundDetails: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-            {/* Loader */}
-
             <Loader loading={isLoading} title={loadingMessage}>
                 {" "}
                 <div>
@@ -535,7 +568,7 @@ export const AddRefundDetails: React.FC = () => {
 
             <div className="mt-4">
                 <BottomActionBar
-                    saveText={"Save"}
+                    saveText={formData.RefundedAmountLedgerId ? "Update" : "Save"}
                     cancelText={"Cancel"}
                     canAction={canAction}
                     onSave={() => {

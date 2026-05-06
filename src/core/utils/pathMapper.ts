@@ -67,33 +67,36 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/content': '/content',
         '/sourcing': '/sourcing',
         '/booking': '/booking',
-        '/calltracker':'/callTracker',
-        '/othercharges':'/otherCharges',
+        '/calltracker': '/callTracker',
+        '/othercharges': '/otherCharges',
         '/settingdashboard': '/settingDashboard',
         '/payrolldashboard': '/payrollDashboard',
-        '/saledashboard':'/saleDashboard',
-        '/enquiryreport':'/enquiryReport',
-        '/cpenquiryreport':'/cpEnquiryReport',
-        '/paymentschedulereport':'/paymentScheduleReport',
-        '/paymentschedule':'/paymentSchedule',
-        '/litigation':'/litigation',
-        '/target':'/target',
-        '/incentivereport':'/incentiveReport',
-        '/paymentschedulescheme':'/paymentScheduleScheme',
-        '/legaldashboard':'/legalDashboard',
-        '/classificationparameter':'/classificationParameter',
+        '/saledashboard': '/saleDashboard',
+        '/enquiryreport': '/enquiryReport',
+        '/cpenquiryreport': '/cpEnquiryReport',
+        '/paymentschedulereport': '/paymentScheduleReport',
+        '/paymentschedule': '/paymentSchedule',
+        '/litigation': '/litigation',
+        '/target': '/target',
+        '/incentivereport': '/incentiveReport',
+        '/paymentschedulescheme': '/paymentScheduleScheme',
+        '/legaldashboard': '/legalDashboard',
+        '/classificationparameter': '/classificationParameter',
         '/performance': '/performance',
-        '/channelpartnerdashboard':'/channelPartnerDashboard',
+        '/channelpartnerdashboard': '/channelPartnerDashboard',
 
         // CRM
-        '/paytrack':'/payTrack',
-        '/brokerage':'/brokerage',
+        '/paytrack': '/payTrack',
+        '/brokerage': '/brokerage',
 
         //MORE
-        '/inwardoutward':'/inwardOutward',
+        '/inwardoutward': '/inwardOutward',
 
         //SETTING EXTRA
-        '/companypolicy':'/companyPolicy',
+        '/companypolicy': '/companyPolicy',
+
+        // InventoryParkingOverallReport
+        '/inventoryparkingoverallreport': '/inventoryParkingOverallReport'
     }
 
 

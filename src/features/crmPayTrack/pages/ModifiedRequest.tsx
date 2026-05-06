@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 import Tabs from '@/ui/components/Tab/Tab';
 import Summary from "@/features/crmPayTrack/components/Summary";
-import Requests from "@/features/crmPayTrack/components/Requests";
 import Activity from "@/features/crmPayTrack/components/Activity";
 import { usePayTrackBookingListState } from "@/features/crmPayTrack/context/PayTrackBookingListStateContext";
+import RequestsTab from "@/features/crmPayTrack/components/RequestsTab";
 
 export const ModifiedRequest: React.FC = () => {
 
@@ -39,9 +39,8 @@ export const ModifiedRequest: React.FC = () => {
                 />
             </div>
 
-            {/* Tabs Content */}
             {activeTab === "Summary" && <Summary />}
-            {activeTab === "Requests" && <Requests />}
+            {activeTab === "Requests" && <RequestsTab />}
             {activeTab === "Activity" && <Activity />}
 
         </div>

@@ -27,16 +27,13 @@ import { usePayTrackBookingListState } from '../context/PayTrackBookingListState
 
 const PayTrack: React.FC = () => {
 
-    //#region STATE
     const [payTrackList, setPayTrackList] = useState<PayTrackBookingData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const navigate = useNavigate();
 
     const { pagination, setPagination } = usePagination(20);
-
     const { addToast } = useToast();
-
 
     const [showFilterPopup, setShowFilterPopup] = useState(false);
 
@@ -96,9 +93,7 @@ const PayTrack: React.FC = () => {
         )
 
     }
-    //#endregion
 
-    //#region INIT
     useEffect(() => {
 
         if (!projectId) return;
@@ -129,9 +124,6 @@ const PayTrack: React.FC = () => {
 
     }, [filters]);
 
-    //#endregion
-
-    //#region SEARCH PAY TRACK BOOKING FILTER
 
     const debouncedSearch = useDebouncedCallback((value: string, isSearch: boolean = true) => {
 
@@ -160,17 +152,13 @@ const PayTrack: React.FC = () => {
         debouncedSearch(searchValue, false);
     };
 
-    //#endregion
 
-    //#region CLEAR SEARCH PAY TRACK BOOKING
     const clearPayTrackSearchBookings = () => {
         debouncedSearch.cancel?.();
         resetFilters();
         setTempFilters({});
     };
 
-    //#endregion
-    //#region EXPORT EXCEL AND PDF
     const handleExportPayTrackExcel = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -205,9 +193,7 @@ const PayTrack: React.FC = () => {
 
     const handleExportPayTrackExcelFile = () => handleExportPayTrackExcel('Excel');
     const handleExportPayTrackPdfFile = () => handleExportPayTrackExcel('PDF');
-    //#endregion
 
-    //#region TABLE CONFIG
     const handlePageChange = useCallback((newPage: number) => {
         updateListState({ page: newPage });
     }, [updateListState]);
@@ -231,9 +217,7 @@ const PayTrack: React.FC = () => {
     );
 
     const payTrackBookingsForTable = useMemo(() => payTrackList, [payTrackList]);
-    //#endregion
 
-    //#region VIEW BOOKING DETAILS
     const handleViewpayTrackBDetails = useCallback((row: PayTrackBookingData) => {
         updateListState({
             bookingId: row.BookingId ?? 0,
@@ -241,6 +225,7 @@ const PayTrack: React.FC = () => {
             bookingType: row.BookingType ?? '',
             flat: row.Flat ?? '',
             bookingOtherChargesData: row.BookingOtherChargesData ?? [],
+            bookingData: row ?? [],
             totalUnitCost:
                 (row.AgreementValue || 0) +
                 (row.AgreementValueGSTAmount || 0) +
@@ -251,10 +236,6 @@ const PayTrack: React.FC = () => {
         });
         navigate('/payTrack/view');
     }, [navigate, updateListState]);
-    //#endregion
-
-    //#region TABLE COLUMN
-
 
     const payTrackColumns = useMemo<TableColumn[]>(
         () => [
@@ -511,9 +492,7 @@ const PayTrack: React.FC = () => {
 
                 isShowFilterButton
                 onCustomize={() => setIsShowCustomizePayTrackColumnsModal(true)}
-                // IMPORT
                 isShowImportButton={false}
-                // EXPORT
                 isShowExportButton={canExport && payTrackBookingsForTable.length > 0}
                 onExportExcel={handleExportPayTrackExcelFile}
                 onExportPdf={handleExportPayTrackPdfFile}

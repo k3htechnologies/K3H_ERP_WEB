@@ -177,6 +177,9 @@ import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwa
 import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
 import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/BookingBrokerageListStateContext';
 
+// InventoryParkingOverallReport
+import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
+
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
   <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -218,7 +221,7 @@ function App() {
   return (
     <CountryStateCityDistrictVillage>
       <Suspense fallback={<LoadingSpinner />}>
-      
+
         <Routes>
           {/* Public Routes */}
 
@@ -228,6 +231,7 @@ function App() {
 
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
+
 
             {/* SETTING -> COMPANY SETUP */}
             <Route path="settingDashboard" element={<SettingsDashboard />} />
@@ -335,6 +339,8 @@ function App() {
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
+            <Route path="InventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
+
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />

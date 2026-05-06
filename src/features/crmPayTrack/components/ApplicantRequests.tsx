@@ -1,33 +1,21 @@
 
 import { runApiWithLoader } from "@/core/utils";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { bookingService } from '@/features/booking/services/BookingService';
-import type { BookingData, FilterWithPaginationBookingRequest } from '@/features/booking/models/BookingModel';
-import type { FilterWithPaginationFlatAlterationRequest, FlatAlterationRequestData, AddUpdateFlatAlterationRequest } from '@/features/crmPayTrack/models/FlatAlterationRequestModel';
+import React, { useEffect, useMemo, useState } from "react";
 import type { FilterWithPaginationBookingApplicantModificationRequest, BookingApplicantModificationDataRequest, BookingApplicantModificationRequest } from '@/features/crmPayTrack/models/BookingApplicantModificationModel';
-import type { ParkingModificationDetailsData } from '@/features/crmPayTrack/models/ParkingModificationModel';
 import { APPLICANT_TYPE } from "@/core/constants";
 import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import * as E from 'fp-ts/Either';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
-import { usePayTrackBookingListState } from "../context/PayTrackBookingListStateContext";
+import { usePayTrackBookingListState } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button, Input } from "@/ui/components/forms";
 import { IdCardIcon, Plus, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
-import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
-import { fetchParkingDropdown } from "@/features/parking/parkingDropDown";
-import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
-import type { AddUpdateParkingModificationRequest } from '@/features/crmPayTrack/models/ParkingModificationModel';
-import { parkingModificationService } from '@/features/crmPayTrack/services/ParkingModificationService';
-import { flatAlterationService } from '@/features/crmPayTrack/services/FlatAlterationService';
 import { bookingApplicantModificationService } from '@/features/crmPayTrack/services/BookingApplicantModelCrmService';
-import usePagination from "@/core/hooks/usePagination";
-import { TextArea } from "@/ui/components/forms/Textarea";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { filterEmail, filterAadhaar, filterPAN, filterPassportNumber, filterDrivingLicenseNumber, filterVoterId, filterGST, isValidMobile, isValidEmail, calculateMergedFiles, isValidAadhaar, isValidPAN, isValidPassportNumber, isValidDrivingLicenseNumber, isValidVoterId, isValidGST, mergeFiles, calculateRemovedFiles, createFileUrlString, filterMobile } from "@/core/utils/fileValidation";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
@@ -36,46 +24,6 @@ import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
-import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
-
-const initialFormState = (): AddUpdateParkingModificationRequest => ({
-    ParkingModificationRequestId: 0,
-    Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    BookingId: 0,
-    ProjectId: 0,
-    ParkingId: '',
-    ParkingData: [],
-    IsApproval: false,
-    ApprovalStatus: '',
-    VersionNumber: '',
-    ParkingModificationDocumentURL: [],
-    RemoveParkingModificationDocumentURL: '',
-    CreatedById: 0,
-    CreatedBy: '',
-    CreatedDate: '',
-    ModifiedById: 0,
-    ModifiedBy: '',
-    ModifiedDate: ''
-});
-
-const initialFormStateForFlatAlterationRequest = (): AddUpdateFlatAlterationRequest => ({
-    FlatAlterationRequestId: 0,
-    UniqueKey: "7b14cc10-2533-f111-854a-c7681b271aa8",
-    BookingId: 0,
-    ProjectId: 0,
-    FlatAlterationRemark: '',
-    IsApproval: false,
-    ApprovalStatus: '',
-    VersionNumber: '',
-    CreatedById: 0,
-    CreatedBy: '',
-    CreatedDate: '',
-    ModifiedById: 0,
-    ModifiedBy: '',
-    ModifiedDate: '',
-    FlatAlterationDocumentURL: [],
-    RemoveFlatAlterationDocumentURL: '',
-});
 
 const initialFormStateForDetailsRequest = (): BookingApplicantModificationRequest => ({
     BookingApplicantModificationRequestId: 0,
@@ -152,153 +100,67 @@ type RequestBookingApplicantWithFiles = BookingApplicantModificationDataRequest 
 
 }
 
-export const Requests: React.FC = () => {
+export const ApplicantRequests: React.FC = () => {
 
-    const [bookingData, setBookingData] = useState<BookingData | null>(null);
     const [bookingApplicantModificationData, setBookingApplicantModificationData] = useState<BookingApplicantModificationDataRequest[]>([]);
-    const [flatAlterationData, setFlatAlterationData] = useState<FlatAlterationRequestData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
-    const [flatAlterationConfirmModalOpen, setFlatAlterationConfirmModalOpen] = useState(false);
-
-
-    // ParkingSwapModal
-    const [isAddUpdateParkingSwapModalOpen, setIsAddUpdateParkingSwapModalOpen] = useState(false);
-    const [swapParkingFormData, setSwapParkingFormData] = useState<any>({});
-    const [swapParkingErrors, setSwapParkingErrors] = useState<any>({});
-
-    // FlatAlterationModal
-    const [isAddUpdateFlatAlterationModalOpen, setIsAddUpdateFlatAlterationModalOpen] = useState(false);
-
-    // Applicant Details Modal
     const [isAddUpdateApplicantDetailsModalOpen, setIsAddUpdateApplicantDetailsModalOpen] = useState(false);
     const [applicantList, setApplicantList] = useState<RequestBookingApplicantWithFiles[]>([]);
-
-    // BookingApplicantModificationDocumentUpload
     const [bookingApplicantModificationDocumentUploadFiles, setBookingApplicantModificationDocumentUploadFiles] = useState<(File | string)[]>([]);
     const [removedBookingApplicantModificationDocumentUploadURLs, setRemovedBookingApplicantModificationDocumentUploadURLs] = useState<string[]>([]);
-
-    // ================= PHOTO =================
     const [applicantPhotoFiles, setApplicantPhotoFiles] = useState<(File | string)[]>([]);
     const [removedApplicantPhotoURLs, setRemovedApplicantPhotoURLs] = useState<string[]>([]);
-
-    // ================= AADHAR =================
     const [aadharCardFiles, setAadharCardFiles] = useState<(File | string)[]>([]);
     const [removedAadharCardURLs, setRemovedAadharCardURLs] = useState<string[]>([]);
-
-    // ================= PAN =================
     const [panCardFiles, setPanCardFiles] = useState<(File | string)[]>([]);
     const [removedPanCardURLs, setRemovedPanCardURLs] = useState<string[]>([]);
-
-    // ================= PASSPORT =================
     const [passportFiles, setPassportFiles] = useState<(File | string)[]>([]);
     const [removedPassportURLs, setRemovedPassportURLs] = useState<string[]>([]);
-
-    // ================= DRIVING LICENSE =================
     const [drivingLicenseFiles, setDrivingLicenseFiles] = useState<(File | string)[]>([]);
     const [removedDrivingLicenseURLs, setRemovedDrivingLicenseURLs] = useState<string[]>([]);
-
-    // ================= VOTING ID =================
     const [votingIdFiles, setVotingIdFiles] = useState<(File | string)[]>([]);
     const [removedVotingIdURLs, setRemovedVotingIdURLs] = useState<string[]>([]);
-
-    // ================= GST =================
     const [gstFiles, setGstFiles] = useState<(File | string)[]>([]);
     const [removedGstURLs, setRemovedGstURLs] = useState<string[]>([]);
-
-    // ================= CANCELLED CHEQUE =================
     const [cancelledChequeFiles, setCancelledChequeFiles] = useState<(File | string)[]>([]);
     const [removedCancelledChequeURLs, setRemovedCancelledChequeURLs] = useState<string[]>([]);
-
-    // ================= POA =================
     const [pOAFiles, setPOAFiles] = useState<(File | string)[]>([]);
     const [removedPOAURLs, setRemovedPOAURLs] = useState<string[]>([]);
-
-    // ================= INCOME FORM 16 / ITR =================
     const [incomeForm16ITRFiles, setIncomeForm16ITRFiles] = useState<(File | string)[]>([]);
     const [removedIncomeForm16ITRURLs, setRemovedIncomeForm16ITRURLs] = useState<string[]>([]);
-
-    // ================= NRE / NRO BANK DETAILS =================
     const [nreNroBankDetailsFiles, setNreNroBankDetailsFiles] = useState<(File | string)[]>([]);
     const [removedNreNroBankDetailsURLs, setRemovedNreNroBankDetailsURLs] = useState<string[]>([]);
-
-    // ================= NOMINEE FORM =================
     const [nomineeFormFiles, setNomineeFormFiles] = useState<(File | string)[]>([]);
     const [removedNomineeFormURLs, setRemovedNomineeFormURLs] = useState<string[]>([]);
-
-    // ================= STATEMENT OF SOURCE OF FUNDS =================
     const [statementOfSourceOfFundsFiles, setStatementOfSourceOfFundsFiles] = useState<(File | string)[]>([]);
     const [removedStatementOfSourceOfFundsURLs, setRemovedStatementOfSourceOfFundsURLs] = useState<string[]>([]);
-
-    // ================= PAYMENT PROOF =================
     const [paymentProofFiles, setPaymentProofFiles] = useState<(File | string)[]>([]);
     const [removedPaymentProofURLs, setRemovedPaymentProofURLs] = useState<string[]>([]);
-
-    //ADD UPDATE PARKING MODIFICATION REQUEST 
-    const [formData, setFormData] = useState<AddUpdateParkingModificationRequest>(() => initialFormState());
-
-    // ADD UPDATE FLAT ALTERATION REQUEST
-    const [formDataForFlatAlteration, setFormDataForFlatAlteration] = useState<AddUpdateFlatAlterationRequest>(() => initialFormStateForFlatAlterationRequest());
-
-    // ADD UPDATE APPLICANT DETAILS REQUEST
     const [formDataDetails, setFormDataDetails] = useState<BookingApplicantModificationRequest>(() => initialFormStateForDetailsRequest());
     const [editingApplicantData, setEditingApplicantData] = useState<{ row: RequestBookingApplicantWithFiles; index: number } | null>(null);
-
-    //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
-    // ERROR SET UP FOR APPLICANT DETAILS
     const [errorsBookingApplicant, setErrorsBookingApplicant] = useState<{ [k: string]: string }>({});
-
-    // APPROVAL LOG MODAL FOR BOOKING APPLICANT MODIFICATION REQUEST
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
     const [ownerName, setOwnerName] = useState<string | null>("");
-
-    // APPROVAL LOG MODAL FOR PARKING MODIFICATION REQUEST
-    const [isParkingApprovalLogModalOpen, setIsParkingApprovalLogModalOpen] = useState(false);
-    const [approvalParkingLogRequest, setApprovalParkingLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-    const [parkingNumber, setParkingNumber] = useState<string | null>("");
-
-    //APPROVAL LOG MODAL FOR FLAT ALTERATION MODIFICATION REQUEST
-    const [isFlatAlterationApprovalLogModalOpen, setIsFlatAlterationApprovalLogModalOpen] = useState(false);
-    const [approvalFlatAlterationLogRequest, setApprovalFlatAlterationLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-    const [flatAlterationOwnerRemark, setFlatAlterationOwnerRemark] = useState<string | null>("");
-
-
-    // APPROVAL ACTION MODAL FOR BOOKING APPLICANT MODIFICATION REQUEST
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [approvalRowData, setApprovalRowData] = useState<BookingApplicantModificationDataRequest | null>(null);
 
-    // APPROVAL ACTION MODAL FOR PARKING MODIFICATION REQUEST
-    const [isParkingApprovalActionModalOpen, setIsParkingApprovalActionModalOpen] = useState(false);
-    const [approvalParkingActionType, setApprovalParkingActionType] = useState<"approve" | "reject">("approve");
-    const [approvalParkingRowData, setApprovalParkingRowData] = useState<ParkingModificationDetailsData | null>(null);
-
-    // APPROVAL ACTION MODAL FOR FLAT ALTERATION MODIFICATION REQUEST
-    const [isFlatAlterationApprovalActionModalOpen, setIsFlatAlterationApprovalActionModalOpen] = useState(false);
-    const [approvalFlatAlterationActionType, setApprovalFlatAlterationActionType] = useState<"approve" | "reject">("approve");
-    const [approvalFlatAlterationRowData, setApprovalFlatAlterationRowData] = useState<FlatAlterationRequestData | null>(null);
-
-
     const { canAction } = useMenuPermissions("/payTrack");
-    const { pagination, setPagination } = usePagination(10);
     const { addToast } = useToast();
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
-    const { bookingId } = listState;
+    const { bookingId, bookingData } = listState;
 
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
-    const isParkingDetailsEmpty = !bookingData?.ParkingNumber || bookingData.ParkingNumber === "-";
-    const isParkingEmpty = !bookingData?.ParkingNumber || bookingData?.ParkingNumber === "-";
 
     const applicantModificationList = useMemo(() => {
         return (bookingApplicantModificationData || []).filter((app) => app.VersionNumber !== "1");
     }, [bookingApplicantModificationData]);
 
     const applicantTypeOptions = useMemo(() => {
-        // 1. Check if 'Applicant' exists in saved modifications (excluding version 1)
         const hasApplicantInSavedModifications = (bookingApplicantModificationData || [])
             .filter((app) => app.VersionNumber !== "1")
             .some(
@@ -307,45 +169,29 @@ export const Requests: React.FC = () => {
                     app.BookingApplicantModificationRequestId !== editingApplicantData?.row.BookingApplicantModificationRequestId
             );
 
-        // 2. Check if 'Applicant' exists in the local (unsaved) pending list
-        // We exclude the item we are currently editing (by index) so we don't disable it for itself
         const hasApplicantInLocalList = applicantList.some(
             (app, index) =>
                 app.ApplicantType === "Applicant" &&
                 index !== editingApplicantData?.index
         );
-
-        // If 'Applicant' exists in either place, we should disable the option
         const shouldDisableApplicant = hasApplicantInSavedModifications || hasApplicantInLocalList;
 
         return APPLICANT_TYPE.filter((opt) => {
             if (opt.name === "Applicant" && shouldDisableApplicant) {
-                // Only keep 'Applicant' in the list if the record being edited IS already an 'Applicant'
                 return editingApplicantData?.row.ApplicantType === "Applicant";
             }
             return true;
         }).map((opt) => ({ label: opt.name, value: opt.id }));
-    }, [bookingApplicantModificationData, editingApplicantData, applicantList]); // Added applicantList as dependency
+    }, [bookingApplicantModificationData, editingApplicantData, applicantList]);
 
-    // #region INIT
+
     useEffect(() => {
         if (!projectId || !bookingId) return;
 
-        loadBookingForSummary();
-        fetchFlatAlterationRequest();
         fetchBookingApplicantModificationList();
 
     }, [projectId, bookingId]);
-    // #endregion
 
-    const handleFieldChange = (field: keyof AddUpdateFlatAlterationRequest, value: any) => {
-
-        setFormDataForFlatAlteration((prev) => ({ ...prev, [field]: value }));
-
-        if (errors[field]) {
-            setErrors((prev) => ({ ...prev, [field]: "" }));
-        }
-    };
 
     const handleFieldChangeBookingApplicantDetails = (field: keyof BookingApplicantModificationRequest, value: any) => {
 
@@ -354,45 +200,6 @@ export const Requests: React.FC = () => {
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
-    };
-
-    const PushParkingModificationFormData = (): AddUpdateParkingModificationRequest => {
-        return {
-            ParkingModificationRequestId: formData.ParkingModificationRequestId,
-            Uniquekey: formData.Uniquekey,
-            BookingId: bookingId,
-            ProjectId: Number(projectId),
-            ParkingId: swapParkingFormData?.ParkingId,
-            ParkingData: formData.ParkingData,
-            IsApproval: formData.IsApproval,
-            ApprovalStatus: formData.ApprovalStatus,
-            VersionNumber: formData.VersionNumber,
-            CreatedById: formData.CreatedById,
-            CreatedBy: formData.CreatedBy,
-            CreatedDate: formData.CreatedDate,
-            ModifiedById: formData.ModifiedById,
-            ModifiedBy: formData.ModifiedBy,
-            ModifiedDate: formData.ModifiedDate
-        };
-    };
-
-    const PushFlatAlterationFormData = (): AddUpdateFlatAlterationRequest => {
-        return {
-            FlatAlterationRequestId: formDataForFlatAlteration.FlatAlterationRequestId,
-            UniqueKey: formDataForFlatAlteration.UniqueKey,
-            BookingId: bookingId,
-            ProjectId: Number(projectId),
-            FlatAlterationRemark: formDataForFlatAlteration.FlatAlterationRemark,
-            IsApproval: formDataForFlatAlteration.IsApproval,
-            ApprovalStatus: formDataForFlatAlteration.ApprovalStatus,
-            VersionNumber: formDataForFlatAlteration.VersionNumber,
-            CreatedById: formDataForFlatAlteration.CreatedById,
-            CreatedBy: formDataForFlatAlteration.CreatedBy,
-            CreatedDate: formDataForFlatAlteration.CreatedDate,
-            ModifiedById: formDataForFlatAlteration.ModifiedById,
-            ModifiedBy: formDataForFlatAlteration.ModifiedBy,
-            ModifiedDate: formDataForFlatAlteration.ModifiedDate
-        };
     };
 
     const handleApprovalSubmit = async (remark: string) => {
@@ -420,7 +227,7 @@ export const Requests: React.FC = () => {
                     addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
 
                     setIsApprovalActionModalOpen(false);
-                    await loadBookingForSummary();
+
                     await fetchBookingApplicantModificationList();
 
                 } else {
@@ -440,97 +247,6 @@ export const Requests: React.FC = () => {
         );
     };
 
-
-    const handleFlatAlterationApprovalSubmit = async (remark: string) => {
-
-        if (!approvalFlatAlterationRowData) return;
-
-        const payload: UpdateModulesWorkflowApprovalRequest = {
-            ModuleName: "FLAT ALTERATION APPROVAL",
-            Id: bookingId ?? 0,
-            ProjectId: projectId ?? 0,
-            IsApproved: approvalFlatAlterationActionType === "approve",
-            Remarks: remark ?? null,
-            SubId: approvalFlatAlterationRowData.FlatAlterationRequestId ?? 0
-        };
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
-
-                if (E.isRight(response)) {
-
-                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
-
-                    setIsFlatAlterationApprovalActionModalOpen(false);
-                    await loadBookingForSummary();
-                    await fetchFlatAlterationRequest();
-
-                } else {
-
-                    addToast({ type: "error", title: response.left.message });
-
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            approvalFlatAlterationActionType === "approve" ? "Approving Flat Alteration" : "Rejecting Flat Alteration"
-        );
-    };
-
-    const handleParkingApprovalSubmit = async (remark: string) => {
-
-        if (!approvalParkingRowData) return;
-
-        const payload: UpdateModulesWorkflowApprovalRequest = {
-            ModuleName: "PARKING MODIFICATION APPROVAL",
-            Id: bookingId ?? 0,
-            ProjectId: projectId ?? 0,
-            IsApproved: approvalParkingActionType === "approve",
-            Remarks: remark ?? null,
-            SubId: approvalParkingRowData.ParkingModificationRequestId ?? 0
-        };
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
-
-                if (E.isRight(response)) {
-
-                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
-
-                    setIsApprovalActionModalOpen(false);
-                    await loadBookingForSummary();
-                    await fetchBookingApplicantModificationList();
-                    // await fetchParkingModificationListNewParking();
-
-                } else {
-
-                    addToast({ type: "error", title: response.left.message });
-
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
-        );
-    };
 
     const validateAddApplicantForm = (): {
         isValid: boolean;
@@ -659,38 +375,6 @@ export const Requests: React.FC = () => {
         };
     };
 
-    const validateAddParkingSwapForm = (): {
-        isValid: boolean;
-        errors: { [k: string]: string };
-    } => {
-        const errors: { [k: string]: string } = {};
-
-        if (!swapParkingFormData.ParkingId) {
-            errors.ParkingId = "Parking is required";
-        }
-
-        return {
-            isValid: Object.keys(errors).length === 0,
-            errors,
-        };
-    };
-
-    const validateAddFlatAlterationForm = (): {
-        isValid: boolean;
-        errors: { [k: string]: string };
-    } => {
-        const errors: { [k: string]: string } = {};
-
-        if (!formDataForFlatAlteration.FlatAlterationRemark) {
-            errors.FlatAlterationRemark = "Flat Alteration Remark is required";
-        }
-
-        return {
-            isValid: Object.keys(errors).length === 0,
-            errors,
-        };
-    };
-
     const handleAddUpdateBookingApplicant = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrorsBookingApplicant({});
@@ -804,10 +488,6 @@ export const Requests: React.FC = () => {
             RemoveBookingApplicantModificationDocumentUploadURL: finalRemovedBookingApplicantModificationDocumentUploadURLs.join(','),
         };
 
-        // const updatedApplicantList: RequestBookingApplicantWithFiles[] = editingApplicantData
-        //     ? applicantList.map((item, i) => (i === editingApplicantData.index ? applicantToSave : item))
-        //     : [...applicantList, applicantToSave];
-
         setApplicantList((prev) => {
             if (editingApplicantData) {
                 const updated = [...prev];
@@ -817,7 +497,6 @@ export const Requests: React.FC = () => {
             return [...prev, applicantToSave];
         });
 
-        // setApplicantList(updatedApplicantList);
         setIsAddUpdateApplicantDetailsModalOpen(false);
         setEditingApplicantData(null);
         setFormDataDetails(initialFormStateForDetailsRequest());
@@ -836,138 +515,6 @@ export const Requests: React.FC = () => {
         setStatementOfSourceOfFundsFiles([]);
         setPaymentProofFiles([]);
     };
-    // #endregion
-
-    const handleAddUpdateParkingSwap = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        setErrors({})
-        const validation = validateAddParkingSwapForm()
-
-        if (!validation.isValid) {
-            setErrors(validation.errors)
-            return
-        }
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const payload = PushParkingModificationFormData();
-
-                const response = await parkingModificationService.apiCallAddUpdateParkingModificationDetails(payload);
-
-                if (E.isRight(response)) {
-
-                    setIsAddUpdateParkingSwapModalOpen(false);
-
-                    const isAdd = formData.ParkingModificationRequestId === 0;
-
-                    if (isAdd) {
-                        setPagination({
-                            currentPage: pagination.currentPage,
-                            totalRecords: pagination.totalRecords + 1,
-                            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-                        });
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    } else {
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    }
-
-                    loadBookingForSummary();
-                } else {
-                    addToast({ type: "error", title: response.left?.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message })
-            },
-            undefined,
-            'Add Parking Modification Data'
-        )
-    };
-
-    // #region Flat Alteration
-    const handleAddUpdateFlatAlteration = async () => {
-        setErrors({});
-
-        const validation = validateAddFlatAlterationForm()
-
-        if (!validation.isValid) {
-            setErrors(validation.errors)
-            return
-        }
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const payload = PushFlatAlterationFormData();
-                const response = await flatAlterationService.apiCallAddUpdateFlatAlterationRequest(payload);
-
-                if (E.isRight(response)) {
-
-                    setIsAddUpdateFlatAlterationModalOpen(false);
-
-                    await fetchFlatAlterationRequest();
-                    await loadBookingForSummary();
-
-                    const isAdd = formDataForFlatAlteration.FlatAlterationRequestId === 0;
-
-                    if (isAdd) {
-                        setPagination({
-                            currentPage: pagination.currentPage,
-                            totalRecords: pagination.totalRecords + 1,
-                            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-                        });
-                        fetchFlatAlterationRequest();
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                        setFormDataForFlatAlteration({
-                            FlatAlterationRequestId: 0,
-                            UniqueKey: "",
-                            BookingId: bookingId,
-                            ProjectId: Number(projectId),
-                            FlatAlterationRemark: "",
-                            IsApproval: false,
-                            ApprovalStatus: "",
-                            VersionNumber: "",
-                        });
-                    } else {
-                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
-                    }
-
-                } else {
-                    addToast({ type: "error", title: response.left?.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message })
-            },
-            undefined,
-        )
-    };
-    // #endregion
-
-    const fetchParkingProjectWise = useCallback(async (pageNumber: number, params?: { value?: string }) => {
-        return fetchParkingDropdown(pageNumber, {
-            ...params,
-            value: params?.value || "",
-            projectId: Number(projectId) || 0,
-            displayParkingId: swapParkingFormData?.ParkingId || "",
-        });
-    }, [projectId, swapParkingFormData?.ParkingId]);
-
-    const parkingDropdown = useMultiSelectDropdown({
-        value: swapParkingFormData?.ParkingId || null,
-        fetchCallback: fetchParkingProjectWise,
-        autoFetchOptions: isAddUpdateParkingSwapModalOpen,
-    });
-
 
     const fetchBookingApplicantModificationList = async () => {
         return await loadBookingApplicantModificationRequest();
@@ -1005,90 +552,6 @@ export const Requests: React.FC = () => {
         );
     };
 
-    const loadBookingForSummary = async () => {
-        if (!bookingId) return;
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const params: FilterWithPaginationBookingRequest = {
-                    PageNumber: 1,
-                    PageSize: 1,
-                    BookingId: bookingId,
-                    ProjectId: Number(projectId),
-                    IsCheckPermission: false
-                };
-
-                const response = await bookingService.apiCallPullBooking(params);
-
-                if (E.isRight(response)) {
-                    const booking = response.right.Data?.[0] ?? null;
-                    setBookingData(booking);
-
-                } else {
-                    addToast({ type: 'error', title: response.left.message });
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message });
-            },
-            undefined,
-            'Loading Booking Data'
-        );
-    };
-
-    // #region Loading Flat Alteration Request
-    const fetchFlatAlterationRequest = async (page: number = pagination.currentPage) => {
-        return await loadFlatAlterationRequest(page);
-    };
-
-    const loadFlatAlterationRequest = async (page: number) => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationFlatAlterationRequest = {
-                    PageNumber: page,
-                    PageSize: 100,
-                    ProjectId: Number(projectId),
-                    BookingId: bookingId,
-                };
-
-                const response = await flatAlterationService.apiCallPullFlatAlterationRequest(params);
-
-                if (E.isRight(response)) {
-                    if (response.right.Data && response.right.Data.length > 0) {
-                        const latestDataIndex = response.right.Data.length - 1;
-
-                        setFlatAlterationData(response.right.Data[latestDataIndex]);
-                    } else {
-                        setFlatAlterationData(null);
-                    }
-
-                    setPagination({
-                        currentPage: page,
-                        totalRecords: response.right.TotalNumberOfRecord,
-                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
-                    });
-
-                } else {
-                    addToast({ type: 'error', title: response.left.message });
-                }
-            },
-            undefined,
-            (error: any) =>
-                addToast({ type: 'error', title: error.message }),
-            undefined,
-            'Loading Flat Alteration Data'
-        );
-
-    };
-    // #region
-
     const handleSaveApplicantRequests = async () => {
         if (applicantList.length === 0) return;
 
@@ -1096,6 +559,7 @@ export const Requests: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
+
                 const formDataToSend = new FormData();
                 formDataToSend.append('ProjectId', String(projectId));
                 formDataToSend.append('BookingId', String(bookingId));
@@ -1133,7 +597,6 @@ export const Requests: React.FC = () => {
                     formDataToSend.append(`${prefix}.DrivingLicenseNumber`, app.DrivingLicenseNumber ?? "");
                     formDataToSend.append(`${prefix}.VotingIdNumber`, app.VotingIdNumber ?? "");
                     formDataToSend.append(`${prefix}.GSTNumber`, app.GSTNumber ?? "");
-
                     formDataToSend.append(`${prefix}.RemovePhotoURL`, app.RemovePhotoURL ?? "");
                     formDataToSend.append(`${prefix}.RemoveAadharCardURL`, app.RemoveAadharCardURL ?? "");
                     formDataToSend.append(`${prefix}.RemovePanCardURL`, app.RemovePanCardURL ?? "");
@@ -1408,14 +871,7 @@ export const Requests: React.FC = () => {
                     );
                 },
             },
-            {
-                key: "VersionNumber",
-                label: "Version",
-                width: "10",
-                sortable: false,
-                align: "center",
-                render: (value) => value || "-",
-            },
+
             {
                 key: "ApprovalStatus",
                 label: "Approval Status",
@@ -1423,20 +879,12 @@ export const Requests: React.FC = () => {
                 sortable: false,
                 align: "center",
                 render: (value, row) => {
-                    // Collect all version numbers that already have an "Approved" entry
-                    const approvedVersions = new Set(
-                        applicantModificationList
-                            .filter((r: any) => r.ApprovalStatus === "Approved")
-                            .map((r: any) => r.VersionNumber)
-                    );
-                    const isVersionAlreadyApproved = approvedVersions.has(row.VersionNumber);
 
                     return (
                         <ApprovalActions
                             approvalStatus={value || "-"}
                             showApproval={row.IsApproval}
                             isIcons={true}
-                            disableApprove={isVersionAlreadyApproved}
                             onHistory={() => handleApprovalLog(row)}
                             onApprove={() => handleApproveRejectDocument(row, "approve")}
                             onReject={() => handleApproveRejectDocument(row, "reject")}
@@ -1444,30 +892,6 @@ export const Requests: React.FC = () => {
                     );
                 }
             },
-            // {
-            //     key: "actions",
-            //     label: "Actions",
-            //     width: "10",
-            //     sortable: false,
-            //     align: "center",
-            //     render: (_value, row) => {
-            //         const isEditable = !row.ApprovalStatus || row.ApprovalStatus === "Pending";
-            //         return (
-            //             <div className="flex justify-center gap-2">
-            //                 <Button
-            //                     onClick={() => handleEditApplicant(row)}
-            //                     variant="outline"
-            //                     color="transparent"
-            //                     size="sm"
-            //                     disabled={!isEditable}
-            //                     title="Edit Request"
-            //                 >
-            //                     <Edit2 className="h-4 w-4" />
-            //                 </Button>
-            //             </div>
-            //         );
-            //     },
-            // },
         ],
         [bookingApplicantModificationData, canAction]
     )
@@ -1501,127 +925,6 @@ export const Requests: React.FC = () => {
         [summaryColumns]
     );
 
-    const parkingColumns = useMemo<TableColumn[]>(
-        () => [
-            {
-                key: "ParkingNumber",
-                label: "Parking Number",
-                sortable: false,
-                align: "left",
-                fixed: "left",
-                render: (value) => value || "-",
-
-            },
-            {
-                key: "ParkingCategory",
-                label: "Category",
-                sortable: false,
-                align: "left",
-                fixed: "left",
-                render: (value) => value || "-",
-            },
-            {
-                key: "ParkingType",
-                label: "Type",
-                sortable: false,
-                align: "left",
-                fixed: "left",
-                render: (value) => value || "-",
-            },
-            {
-                key: "ParkingSubType",
-                label: "Size",
-                sortable: false,
-                align: "left",
-                fixed: "left",
-                render: (value) => value || "-",
-            },
-            {
-                key: "ParkingDimensions",
-                label: "Dimensions",
-                sortable: false,
-                align: "left",
-                fixed: "left",
-                render: (value) => value || "-",
-            },
-            {
-                key: "ParkingStatus",
-                label: "Parking Status",
-                sortable: false,
-                align: "left",
-                fixed: "left",
-                render: (value) => value || "-",
-            },
-
-            {
-                key: "ApprovalStatus",
-                label: "Approval Status",
-                sortable: false,
-                align: "left",
-                fixed: "left",
-                render: (value, row) => (
-
-                    <ApprovalActions
-                        approvalStatus={value || "-"}
-                        showApproval={row.IsApproval}
-                        isIcons={true}
-                        onHistory={() => handleParkingApprovalLog(row)}
-                        onApprove={() => handleParkingApproveRejectDocument(row, "approve")}
-                        onReject={() => handleParkingApproveRejectDocument(row, "reject")}
-                    />
-                )
-            },
-        ],
-        []
-    )
-
-    const flatAlterationColumns = useMemo<TableColumn[]>(() => [
-        {
-            key: "FlatAlterationRemark",
-            label: "Flat Alteration Remark",
-            sortable: false,
-            align: "left",
-            render: (value, row) => value || row.FlatAlterationRemark || "-",
-        },
-        {
-            key: "ApprovalStatus",
-            label: "Approval Status",
-            width: "18",
-            sortable: false,
-            align: "left",
-            render: (value, row) => (
-
-                <ApprovalActions
-                    approvalStatus={value || "-"}
-                    showApproval={row.IsApproval}
-                    isIcons={true}
-                    onHistory={() => handleFlatAlterationApprovalLog(row)}
-                    onApprove={() => handleFlatAlterationApproveRejectDocument(row, "approve")}
-                    onReject={() => handleFlatAlterationApproveRejectDocument(row, "reject")}
-                />
-            )
-
-        }
-    ], []);
-
-    const handleCreateRequestModal = () => {
-        setIsAddUpdateApplicantDetailsModalOpen(true);
-    }
-
-    const handleCreateParkingSwapModal = () => {
-        setIsAddUpdateParkingSwapModalOpen(true);
-    }
-
-    const handleCreateRequestFlatSpecificationModal = () => {
-        setIsAddUpdateFlatAlterationModalOpen(true);
-        const currentActiveRemark = flatAlterationData?.FlatAlterationRemark ?? bookingData?.FlatAlterationRemark ?? "";
-        setFormDataForFlatAlteration((prev) => ({
-            ...prev,
-            FlatAlterationRemark: currentActiveRemark
-        }));
-    }
-
-
     const handleApprovalLog = (row: BookingApplicantModificationDataRequest) => {
         const request: ModulesApprovalStatusRequest = {
             ModuleName: "BOOKING APPLICANT MODIFICATION APPROVAL",
@@ -1636,55 +939,11 @@ export const Requests: React.FC = () => {
     };
 
     const handleApproveRejectDocument = (row: BookingApplicantModificationDataRequest, approvalType: "approve" | "reject") => {
-
         setApprovalRowData(row);
         setOwnerName(row.ApplicantName);
         setApprovalActionType(approvalType);
         setIsApprovalActionModalOpen(true);
-
     };
-
-    const handleParkingApprovalLog = (row: ParkingModificationDetailsData) => {
-        const request: ModulesApprovalStatusRequest = {
-            ModuleName: "PARKING MODIFICATION APPROVAL",
-            Id: bookingId ?? 0,
-            ProjectId: projectId ?? 0,
-            SubId: row.ParkingModificationRequestId ?? 0
-        };
-        setParkingNumber(row.ParkingData?.[0]?.ParkingNumber ?? "-");
-        setApprovalParkingLogRequest(request);
-        setIsParkingApprovalLogModalOpen(true);
-    };
-
-    const handleParkingApproveRejectDocument = (row: ParkingModificationDetailsData, approvalType: "approve" | "reject") => {
-
-        setApprovalParkingRowData(row);
-        setParkingNumber(row.ParkingData?.[0]?.ParkingNumber ?? "-");
-        setApprovalParkingActionType(approvalType);
-        setIsParkingApprovalActionModalOpen(true);
-    };
-
-    // FLat Alteration Approval Log:-
-
-    const handleFlatAlterationApprovalLog = (row: FlatAlterationRequestData) => {
-        const request: ModulesApprovalStatusRequest = {
-            ModuleName: "FLAT ALTERATION APPROVAL",
-            Id: bookingId ?? 0,
-            ProjectId: projectId ?? 0,
-            SubId: row.FlatAlterationRequestId ?? 0
-        };
-        setFlatAlterationOwnerRemark(row.FlatAlterationRemark);
-        setApprovalFlatAlterationLogRequest(request);
-        setIsFlatAlterationApprovalLogModalOpen(true);
-    };
-
-    const handleFlatAlterationApproveRejectDocument = (row: FlatAlterationRequestData, approvalType: "approve" | "reject") => {
-        setApprovalFlatAlterationRowData(row);
-        setFlatAlterationOwnerRemark(row.FlatAlterationRemark);
-        setApprovalFlatAlterationActionType(approvalType);
-        setIsFlatAlterationApprovalActionModalOpen(true);
-    };
-
 
     return (
         <div>
@@ -1692,7 +951,6 @@ export const Requests: React.FC = () => {
                 <div></div>
             </Loader>
 
-            {/* =================Applicant Details ================= */}
             <section className="bg-white rounded-xl pt-5">
                 <div className="flex justify-between items-center mb-8">
                     <h4 className="text-lg font-semibold text-gray-900">
@@ -1701,7 +959,7 @@ export const Requests: React.FC = () => {
 
                     {canAction && (
                         <Button
-                            onClick={handleCreateRequestModal}
+                            onClick={() => { setIsAddUpdateApplicantDetailsModalOpen(true); }}
                             color="blue"
                             size="sm"
                             variant="solid"
@@ -1720,11 +978,12 @@ export const Requests: React.FC = () => {
                             <h5 className="text-md font-medium text-blue-800">Pending Requests (unsaved)</h5>
                             <Button
                                 onClick={handleSaveApplicantRequests}
-                                color="green"
+                                color="blue"
                                 size="sm"
                                 variant="solid"
                                 loading={isLoading}
                                 style={{ width: '140px' }}
+                                disabled={isBookingCancelled}
                             >
                                 Save
                             </Button>
@@ -1754,90 +1013,6 @@ export const Requests: React.FC = () => {
                 )}
             </section>
 
-            {/* =================Parking Details ================= */}
-            <section className="bg-white rounded-xl pt-5">
-                <div className="flex justify-between items-center mb-4">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4 ">
-                        Parking Details
-                    </h4>
-
-                    <div className="">
-                        {canAction && (
-                            <div className="flex justify-end pb-2">
-                                <Button
-                                    onClick={() => {
-                                        handleCreateParkingSwapModal();
-                                    }}
-                                    color="blue"
-                                    size="sm"
-                                    variant="solid"
-                                    defineWidth
-                                    style={{ width: '190px' }}
-                                    leftIcon={<Plus className="h-4 w-4" />}
-                                    disabled={isBookingCancelled || isParkingDetailsEmpty}
-                                >
-                                    Create Requests
-                                </Button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-
-                <DataTable
-                    columns={parkingColumns}
-                    data={bookingData?.ParkingData || []}
-                    fixedHeight={true}
-                    className="flex-1"
-                />
-            </section>
-
-            {/* =================Flat Alteration Remark ================= */}
-            <section className="bg-white rounded-xl pt-5">
-                <div className="flex justify-between items-center pb-4">
-                    <h4 className="text-lg font-semibold text-gray-900">
-                        Flat Alteration Remark
-                    </h4>
-
-                    {canAction && (
-                        <Button
-                            onClick={handleCreateRequestFlatSpecificationModal}
-                            color="blue"
-                            size="sm"
-                            variant="solid"
-                            style={{ width: '190px' }}
-                            leftIcon={<Plus className="h-4 w-4" />}
-                            disabled={isBookingCancelled}
-                        >
-                            Create Requests
-                        </Button>
-                    )}
-                </div>
-
-                {/* Logic: Show table if we have modification data OR original booking data */}
-                {flatAlterationData || bookingData?.FlatAlterationRemark ? (
-                    <DataTable
-                        columns={flatAlterationColumns}
-                        data={
-                            flatAlterationData
-                                ? [flatAlterationData]
-                                : [{
-                                    FlatAlterationRemark: bookingData?.FlatAlterationRemark,
-                                    ApprovalStatus: bookingData?.FlatAlterationRequestApprovalStatus,
-                                    IsApproval: bookingData?.FlatAlterationRequestIsApproval
-                                }]
-                        }
-                        fixedHeight={false}
-                        className="shadow-sm border border-gray-100 rounded-lg"
-                    />
-                ) : (
-                    <div className="text-center py-10 rounded-xl text-gray-400 border border-dashed border-gray-200">
-                        No alteration remarks found.
-                    </div>
-                )}
-            </section>
-
-
-            {/* ADD BOOKING APPLICANT MODAL */}
             <Modal
                 isOpen={isAddUpdateApplicantDetailsModalOpen}
                 onClose={() => {
@@ -1921,7 +1096,6 @@ export const Requests: React.FC = () => {
             >
                 <div className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-
                         <div>
                             <div>
                                 <MultiFilePicker label="Proof of Document" placeholder="Upload Document" error={errorsBookingApplicant.BookingApplicantModificationDocumentUploadURL} value={bookingApplicantModificationDocumentUploadFiles} onChange={setBookingApplicantModificationDocumentUploadFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedBookingApplicantModificationDocumentUploadURLs((prev) => [...prev, url])} />
@@ -1933,14 +1107,7 @@ export const Requests: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <Input
-                                label="Name"
-                                placeholder="Enter Your Name"
-                                type="text"
-                                value={formDataDetails.ApplicantName ?? ''}
-                                onChange={(e) => handleFieldChangeBookingApplicantDetails('ApplicantName', e.target.value)}
-                                error={errorsBookingApplicant.ApplicantName}
-                                required
+                            <Input label="Name" placeholder="Enter Your Name" type="text" value={formDataDetails.ApplicantName ?? ''} onChange={(e) => handleFieldChangeBookingApplicantDetails('ApplicantName', e.target.value)} error={errorsBookingApplicant.ApplicantName} required
                             />
                         </div>
 
@@ -2015,95 +1182,6 @@ export const Requests: React.FC = () => {
                 </div>
             </Modal>
 
-            {/*MODAL FOR PARKING REQUEST */}
-            <Modal
-                isOpen={isAddUpdateParkingSwapModalOpen}
-                onClose={() => {
-                    setIsAddUpdateParkingSwapModalOpen(false);
-                    setSwapParkingFormData(initialFormState());
-                    setSwapParkingErrors({});
-                    setFormData(initialFormState());
-                    setErrors({});
-                }}
-                onCancel={() => {
-                    setIsAddUpdateParkingSwapModalOpen(false);
-                    setSwapParkingFormData(initialFormState());
-                    setSwapParkingErrors({});
-                    setFormData(initialFormState());
-                    setErrors({});
-                }}
-                title="Swap Parking"
-                saveText="Save"
-                onSubmit={handleAddUpdateParkingSwap}
-                loading={isLoading}
-                size='xl'
-            >
-                <div className="space-y-10 p-6 bg-blue-100">
-                    <div className="space-y-4" >
-                        <div>
-                            <MultiFilePicker label="Proof of Document" placeholder="Upload Document" error={errorsBookingApplicant.PaymentProofURL} value={paymentProofFiles} onChange={setPaymentProofFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPaymentProofURLs((prev) => [...prev, url])} />
-                        </div>
-                        <div>
-                            <Input label="Current Parking Number" value={bookingData?.ParkingNumber || "-"} disabled />
-                        </div>
-                        <MultiSelectPagination
-                            label="Parking Type"
-                            dataFetchCallBack={fetchParkingProjectWise}
-                            selectedValues={parkingDropdown.selectedValues}
-                            options={parkingDropdown.initialOptions}
-                            disabled={isParkingEmpty}
-                            onChange={(values) => {
-                                const { idsString } = parkingDropdown.handleChange(values);
-                                setSwapParkingFormData((prev: any) => ({ ...prev, ParkingId: idsString }));
-                                if (swapParkingErrors.ParkingId) {
-                                    setSwapParkingErrors((prev: any) => ({ ...prev, ParkingId: "" }));
-                                }
-                            }}
-                            error={errors.ParkingId}
-                        />
-                    </div>
-                </div>
-            </Modal>
-
-            {/* MODAL FOR FLAT ALTERATION REQUEST */}
-            <Modal
-                isOpen={isAddUpdateFlatAlterationModalOpen}
-                onClose={() => {
-                    setIsAddUpdateFlatAlterationModalOpen(false);
-                    setFormDataForFlatAlteration(initialFormStateForFlatAlterationRequest());
-                    setErrors({});
-                }}
-                onCancel={() => {
-                    setIsAddUpdateFlatAlterationModalOpen(false);
-                    setFormDataForFlatAlteration(initialFormStateForFlatAlterationRequest());
-                    setErrors({});
-                }}
-                title="Flat Alteration Request"
-                saveText="Add"
-                onSubmit={(e) => {
-                    if (e) e.preventDefault(); // Stop the page refresh
-                    setFlatAlterationConfirmModalOpen(true);
-                }}
-                loading={isLoading}
-                size='xl'
-            >
-                <div className="space-y-5 p-3 bg-blue-100">
-                    <div>
-                        <MultiFilePicker label="Proof of Document" placeholder="Upload Document" error={errorsBookingApplicant.PaymentProofURL} value={paymentProofFiles} onChange={setPaymentProofFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPaymentProofURLs((prev) => [...prev, url])} />
-                    </div>
-                    <TextArea
-                        label="Remark"
-                        required
-                        placeholder="Enter Remark"
-                        value={formDataForFlatAlteration.FlatAlterationRemark}
-                        onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)}
-                        error={errors.FlatAlterationRemark}
-                    />
-                </div>
-            </Modal >
-
-
-            {/* Approval for Applicant Details */}
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
                 title='Applicant Details '
@@ -2120,63 +1198,8 @@ export const Requests: React.FC = () => {
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />
-
-            {/* Approval for Parking Details */}
-            <ApprovalLogModal
-                isOpen={isParkingApprovalLogModalOpen}
-                title='Parking Details'
-                titleText={parkingNumber ?? ""}
-                onClose={() => setIsParkingApprovalLogModalOpen(false)}
-                request={approvalParkingLogRequest} />
-
-            <ApprovalActionModal
-                title="Parking Details"
-                isOpen={isParkingApprovalActionModalOpen}
-                onClose={() => setIsParkingApprovalActionModalOpen(false)}
-                actionType={approvalParkingActionType}
-                titleText={parkingNumber ?? ""}
-                onSubmit={handleParkingApprovalSubmit}
-                loading={isLoading}
-            />
-
-            {/* Approval Action Modal for flat specification remark */}
-            <ApprovalLogModal
-                isOpen={isFlatAlterationApprovalLogModalOpen}
-                title='Flat Alteration Remarks'
-                titleText={flatAlterationOwnerRemark ?? ""}
-                onClose={() => setIsFlatAlterationApprovalLogModalOpen(false)}
-                request={approvalFlatAlterationLogRequest} />
-
-            <ApprovalActionModal
-                title="Flat Alteration Remarks"
-                isOpen={isFlatAlterationApprovalActionModalOpen}
-                onClose={() => setIsFlatAlterationApprovalActionModalOpen(false)}
-                actionType={approvalFlatAlterationActionType}
-                titleText={flatAlterationOwnerRemark ?? ""}
-                onSubmit={handleFlatAlterationApprovalSubmit}
-                loading={isLoading}
-            />
-
-
-            <ConfirmationDialogBox
-                isOpen={flatAlterationConfirmModalOpen}
-                onClose={() => {
-                    setFlatAlterationConfirmModalOpen(false)
-                }}
-                onConfirm={() => {
-                    handleAddUpdateFlatAlteration();
-                    setFlatAlterationConfirmModalOpen(false);
-                }}
-                title="Are you sure you want to change the flat alteration request?"
-                message="This will update its contents."
-                confirmText="Confirm"
-                cancelText="Cancel"
-                loading={false}
-                variant="logout"
-            />
-
         </div >
     )
 }
 
-export default Requests
+export default ApplicantRequests

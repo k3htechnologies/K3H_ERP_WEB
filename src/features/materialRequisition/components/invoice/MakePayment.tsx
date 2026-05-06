@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import { PAYMENT_MODE, PAYMENT_TYPE } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
@@ -6,7 +5,6 @@ import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialVa
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { Input } from "@/ui/components/forms/Input";
 import { filterIFSC, filterNumbers } from "@/core/utils/fileValidation";
-import { Loader } from "@/core/utils/loader";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -15,7 +13,23 @@ import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import useToast from "@/core/hooks/useToast";
 import * as E from "fp-ts/Either";
 import { materialRequisitionPaymentService } from "../../services/MaterialRequisitionPaymentService";
-import { useMaterialRequisitionListState } from "../../context/MaterialRequisitionListStateContext";
+import { useEffect, useMemo, useState } from "react";
+import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
+import { Loader } from "@/core/utils/loader";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
+import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
+import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
+import type { TableColumn } from "@/ui/components/DataTable/DataTable";
+import { materialRequisitionInvoiceService } from "@/features/materialRequisition/services/MaterialRequisitionInvoiceService";
+import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
+import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
+import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import { Button } from "@/ui/components/forms";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
 
 const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     totalAmount = 0,

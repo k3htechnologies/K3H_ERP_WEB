@@ -11,7 +11,7 @@ import type {
 
 } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
 
-import { MaterialRequisitionInvoiceDatasourceImpl } from "../datasources/MaterialRequisitionInvoiceDataSource";
+import { MaterialRequisitionInvoiceDatasourceImpl } from "@/features/materialRequisition/datasources/MaterialRequisitionInvoiceDataSource";
 
 export const MaterialRequisitionInvoiceDataSource = new MaterialRequisitionInvoiceDatasourceImpl();
 

@@ -177,6 +177,7 @@ import { AddUpdateGRN } from '@/features/materialRequisition/components/GRN/AddU
 import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 import InvoicePayment from '@/features/materialRequisition/components/invoice/InvoicePayment';
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
+import StockManagement from '@/features/stockManagement/pages/StockManagement';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -456,6 +457,14 @@ function App() {
             <Route path="addInvoice/add" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
             <Route path="invoicePayment" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="payment" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
+            <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
+            <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
+            <Route path="addInvoice/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
+            <Route path="makePayment/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
+
+            {/* Stock Management */}
+            <Route path="stock" element={<StockManagement />} />
+
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

@@ -92,6 +92,7 @@ export const AddUpdateGRN = () => {
     const { detailData } = useMaterialRequisitionListState()
 
     const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
+    console.log("MaterialRequisitionGRNId from params:", MaterialRequisitionGRNId);
     useEffect(() => {
         if (!MaterialRequisitionId) return;
         (async () => {
@@ -413,11 +414,11 @@ export const AddUpdateGRN = () => {
         debugger
         const form = new FormData();
         form.append('MaterialRequisitionId', String(currentMaterialRequisitionId ?? 0));
-        form.append('Uniquekey', formData.Uniquekey || "");
+        form.append('Uniquekey', formData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6");
         form.append('Remarks', formData.Remarks ?? '');
         form.append('ChallanNumber', formData.ChallanNumber);
         form.append('VehicleNumber', formData.VehicleNumber ?? '');
-        form.append('MaterialRequisitionGRNId', String(MaterialRequisitionGRNId))
+        form.append('MaterialRequisitionGRNId', String(MaterialRequisitionGRNId) ?? "0");
         const filtered = materialList
             .filter(x => x.TotalReceivedMaterialQuantity > 0)
             .map(x => ({

@@ -455,12 +455,12 @@ function App() {
             <Route path="materialRequisition/view/:MaterialRequisitionId?" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="grn/add/:MaterialRequisitionId?/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
             <Route path="addInvoice/add" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
-            <Route path="invoicePayment" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
+            <Route path="invoicePayment/:MaterialRequisitionGRNId?" element={<MaterialRequisitionListStateProvider><InvoicePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="payment" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
             <Route path="addInvoice/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
-            <Route path="makePayment/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
+            <Route path="makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
 
             {/* Stock Management */}
             <Route path="stock" element={<StockManagement />} />

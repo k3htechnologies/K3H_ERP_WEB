@@ -74,7 +74,7 @@ export const Invoice: React.FC = () => {
     }, [navigate]);
 
     const handleMakePayment = useCallback((row: MaterialRequisitionGRNData) => {
-        navigate(`/makePayment/add/${row.MaterialRequisitionGRNId}`);
+        navigate(`/invoicePayment/${row.MaterialRequisitionGRNId}`);
     }, [navigate]);
 
     const handlePageChange = (page: number) => {
@@ -98,7 +98,7 @@ export const Invoice: React.FC = () => {
         }),
         [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
     );
-    
+
     const InvoiceForTable = useMemo(() => invoiceList, [invoiceList]);
 
     const InvoiceColumns = useMemo<TableColumn[]>(() => [

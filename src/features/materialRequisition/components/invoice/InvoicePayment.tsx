@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
 import { useNavigate, useParams } from "react-router-dom";
@@ -19,6 +19,9 @@ import { Button } from "@/ui/components/forms";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 
 const InvoicePayment: React.FC = () => {
     const [materialRequisitionGRNData, setMaterialRequisitionGRNData] = useState<MaterialRequisitionGRNData | null>(null);
@@ -33,13 +36,38 @@ const InvoicePayment: React.FC = () => {
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const navigate = useNavigate();
-
+    const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+    const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
+    const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     useEffect(() => {
         if (!projectId) return;
         loadmaterialRequisitionGRNData();
         loadInvoiceData();
     }, [projectId, currentMaterialRequisitionId])
 
+    const handleMakePayment = useCallback((row: MaterialRequisitionInvoiceData) => {
+        console.log("Row data for Make Payment:", row);
+        navigate(`/makePayment/add/${row.MaterialRequisitionInvoiceId}`);
+    }, [navigate]);
+
+    const handleApproveRejectInvoice = (approvalType: "approve" | "reject") => {
+
+        setApprovalActionType(approvalType);
+        setIsApprovalActionModalOpen(true);
+
+    };
+    const handleApprovalLog = (row: number) => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "ADD INVOICE",
+            Id: currentMaterialRequisitionId ?? 0,
+            SubId: row,
+            ProjectId: projectId ?? 0,
+        };
+
+        setApprovalLogRequest(request);
+        setIsApprovalLogModalOpen(true);
+    };
     const loadmaterialRequisitionGRNData = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -96,6 +124,8 @@ const InvoicePayment: React.FC = () => {
                     const data = response.right.Data;
 
                     setInvoiceData(Array.isArray(data) ? (data[0] ?? null) : data);
+                    const finalizedVendor =
+                        materialRequisitionVendorSelectedList.find(v => v.IsFinalized)
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -182,10 +212,29 @@ const InvoicePayment: React.FC = () => {
 
             <div className="gap-x-4 rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
                 <div className="flex justify-between mb-2">
-                    <span className="text-gray-600">Invoice Number : {invoiceData?.InvoiceNumber}</span>
+                    <span className="text-gray-900">Invoice Number : {invoiceData?.InvoiceNumber}</span>
+                    <ApprovalActions
+                        approvalStatus={invoiceData?.InvoiceStatus}
+
+                        onApprove={() => handleApproveRejectInvoice("approve")}
+                        onReject={() => handleApproveRejectInvoice("reject")}
+                        showApproval={true}
+                        isIcons={true}
+                        onHistory={() => handleApprovalLog(invoiceData?.MaterialRequisitionInvoiceId ?? 0)}
+                    // onApprove={() => handleApproveRejectDocument("approve")}
+                    // onReject={() => handleApproveRejectDocument("reject")}
+                    />
+                    <ApprovalLogModal
+                        isOpen={isApprovalLogModalOpen}
+                        title='Invoice'
+
+                        onClose={() => setIsApprovalLogModalOpen(false)}
+                        request={approvalLogRequest} />
                     <Button
                         size="mxs"
                         color="transparent"
+                        onClick={() => handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)}
+
                         style={{
                             color: '#FFFFFF',
                             padding: '4px 8px',

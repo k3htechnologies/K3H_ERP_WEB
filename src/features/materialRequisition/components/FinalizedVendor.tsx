@@ -367,8 +367,7 @@ export const FinalizedVendor: React.FC = () => {
                         showApproval={isApprovalAvailable}
                         isIcons={true}
                         onHistory={handleApprovalLog}
-                    // onApprove={() => handleApproveRejectDocument("approve")}
-                    // onReject={() => handleApproveRejectDocument("reject")}
+
                     />
                 )}
                 {isAnyFinalized && <ApprovalLogModal

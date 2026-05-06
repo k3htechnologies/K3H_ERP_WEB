@@ -543,25 +543,26 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
       return;
     }
+    if (formData.ChannelPartnerId === 0) {
+      const isDuplicate = await checkDuplicateField({
+        fieldName: "MobileNumber",
+        fieldValue: formData.MobileNumber,
+        apiCallback: ChannelPartnerService.apiCallPullChannelPartner,
+        setIsLoading,
+        setLoadingMessage,
+        loadingMessage: "Checking mobile number..."
+      });
 
-    const isDuplicate = await checkDuplicateField({
-      fieldName: "MobileNumber",
-      fieldValue: formData.MobileNumber,
-      apiCallback: ChannelPartnerService.apiCallPullChannelPartner,
-      setIsLoading,
-      setLoadingMessage,
-      loadingMessage: "Checking mobile number..."
-    });
+      if (isDuplicate) {
+        setErrors(prev => ({
+          ...prev,
+          MobileNumber: "Mobile number already exists"
+        }));
+        
+        addToast({ type: "error", title: "Mobile number already exists" });
 
-    if (isDuplicate) {
-      setErrors(prev => ({
-        ...prev,
-        MobileNumber: "Mobile number already exists"
-      }));
-
-      addToast({ type: "error", title: "Mobile number already exists" });
-
-      return;
+        return;
+      }
     }
 
     if (formData.ChannelPartnerId === 0 && !isOtpVerified) {
@@ -571,6 +572,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
         const sent = await sendOTP({
           mobileNumber: formData.MobileNumber || "",
           module: "CHANNEL PARTNER",
+          name: formData.Name || "",
+          companyName: formData.CompanyName || "",
           setIsLoading,
           setLoadingMessage,
           addToast,

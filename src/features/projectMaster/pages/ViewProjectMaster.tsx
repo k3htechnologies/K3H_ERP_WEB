@@ -505,7 +505,7 @@ export const ViewProjectMaster: React.FC = () => {
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                         Designing Architect
                                     </h4>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
                                         <FieldItem label="Name" value={editProjectData?.DesigningArchitectName ?? '-'} />
                                         <FieldItem label="Mobile Number" value={editProjectData?.DesigningArchitectMobileNumber
                                             ? `+91 ${editProjectData?.DesigningArchitectMobileNumber}`

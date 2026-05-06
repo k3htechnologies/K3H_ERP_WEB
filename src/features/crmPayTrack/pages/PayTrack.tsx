@@ -241,6 +241,7 @@ const PayTrack: React.FC = () => {
             bookingType: row.BookingType ?? '',
             flat: row.Flat ?? '',
             bookingOtherChargesData: row.BookingOtherChargesData ?? [],
+            bookingData: row ?? [],
             totalUnitCost:
                 (row.AgreementValue || 0) +
                 (row.AgreementValueGSTAmount || 0) +

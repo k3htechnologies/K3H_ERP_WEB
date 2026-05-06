@@ -350,6 +350,12 @@ export const getPageInfo = (path: string) => {
                 title: "Parking Management",
                 description: "Track parking availability across buildings and projects",
             }
+            case 'inventoryParkingOverallReport':
+            return {
+                title: "Inventory and Parking Overall Report",
+                description: "Comprehensive report for inventory and parking management with real-time insights and actionable data",
+            }
+            
 
             {/* SALES */ }
         case 'saleDashboard':
@@ -474,6 +480,13 @@ export const getPageInfo = (path: string) => {
             }
 
         //CRM  
+        
+         case 'crmDashboard':
+            return {
+                title: "CRM Dashboard",
+                description: "Secure your unit by completing the booking process",
+            }
+
         case 'payTrack':
             return {
                 title: "Pay Track",

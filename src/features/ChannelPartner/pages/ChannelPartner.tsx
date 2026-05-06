@@ -415,6 +415,22 @@ export const ChannelPartner: React.FC = () => {
       )
     },
     {
+      key: 'NoOfIbm',
+      label: 'No of IBM',
+      width: '15',
+      sortable: false,
+      align: 'left',
+      render: (value) => value || '0'
+    },
+    {
+      key: 'NoOfObm',
+      label: 'No of OBM',
+      width: '15',
+      sortable: false,
+      align: 'left',
+      render: (value) => value || '0'
+    },
+    {
       key: "DateOfBirth",
       label: "DOB",
       width: "14",

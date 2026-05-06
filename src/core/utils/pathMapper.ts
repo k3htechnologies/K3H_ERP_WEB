@@ -55,47 +55,56 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/event': '/event',
         '/approvalcategory': '/approvalCategory',
         '/approvaldocument': '/approvalDocument',
-        '/channelpartner': '/channelPartner',
+
         '/enquiry': '/enquiry',
         '/resignation': '/resignation',
         '/payrollreport': '/payrollReport',
         '/attendancecalendar': '/attendanceCalendar',
         '/compoff': '/compOff',
         '/redevelopmentdashboard': '/redevelopmentDashboard',
-        '/inventorydashboard': '/inventoryDashboard',
+
         '/approvedbank': '/approvedBank',
         '/content': '/content',
         '/sourcing': '/sourcing',
         '/booking': '/booking',
-        '/calltracker':'/callTracker',
-        '/othercharges':'/otherCharges',
+        '/calltracker': '/callTracker',
+        '/othercharges': '/otherCharges',
         '/settingdashboard': '/settingDashboard',
         '/payrolldashboard': '/payrollDashboard',
-        '/saledashboard':'/saleDashboard',
-        '/enquiryreport':'/enquiryReport',
-        '/cpenquiryreport':'/cpEnquiryReport',
-        '/paymentschedulereport':'/paymentScheduleReport',
-        '/paymentschedule':'/paymentSchedule',
-        '/litigation':'/litigation',
-        '/target':'/target',
-        '/incentivereport':'/incentiveReport',
-        '/paymentschedulescheme':'/paymentScheduleScheme',
-        '/legaldashboard':'/legalDashboard',
-        '/classificationparameter':'/classificationParameter',
+        '/saledashboard': '/saleDashboard',
+        '/enquiryreport': '/enquiryReport',
+        '/cpenquiryreport': '/cpEnquiryReport',
+        '/paymentschedulereport': '/paymentScheduleReport',
+        '/paymentschedule': '/paymentSchedule',
+        '/litigation': '/litigation',
+        '/target': '/target',
+        '/incentivereport': '/incentiveReport',
+        '/paymentschedulescheme': '/paymentScheduleScheme',
+        '/legaldashboard': '/legalDashboard',
+        '/classificationparameter': '/classificationParameter',
         '/performance': '/performance',
-        '/channelpartnerdashboard':'/channelPartnerDashboard',
-         //CHANNEL PARTNER
-         '/cpuniverse':'/cpUniverse',
+
+        // INVENTORY
+        '/inventorydashboard': '/inventoryDashboard',
+        '/inventory': '/inventory',
+        '/parking': '/parking',
+        '/inventoryparkingoverallreport': '/inventoryParkingOverallReport',
+
+        //CHANNEL PARTNER
+        '/channelpartnerdashboard': '/channelPartnerDashboard',
+        '/channelpartner': '/channelPartner',
+        '/cpuniverse': '/cpUniverse',
 
         // CRM
-        '/paytrack':'/payTrack',
-        '/brokerage':'/brokerage',
+        '/crmdashboard': '/crmDashboard',
+        '/paytrack': '/payTrack',
+        '/brokerage': '/brokerage',
 
         //MORE
-        '/inwardoutward':'/inwardOutward',
+        '/inwardoutward': '/inwardOutward',
 
         //SETTING EXTRA
-        '/companypolicy':'/companyPolicy',
+        '/companypolicy': '/companyPolicy',
     }
 
 

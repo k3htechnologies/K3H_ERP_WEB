@@ -392,6 +392,7 @@ const ViewChannelPartnerUniverse: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                 <FieldItem label="Gross Walkins" value={channelPartnerMasterList?.NoOfGrossWalkins} />
                 <FieldItem label="Net Bookings" value={channelPartnerMasterList?.NoOfNetBooking} />
+                <FieldItem label="CP Category" value={channelPartnerMasterList?.ChannelPartnerCategory} />
                 <FieldItem label="Net Revenue" value={formatCurrency(channelPartnerMasterList?.NetBookingRevenue)} />
               </div>
             </section>

@@ -256,15 +256,18 @@ const ViewChannelPartner: React.FC = () => {
                         <hr className="border-t border-gray-200" />
                         <section className="p-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Enquiry & Booking Details
+                                Enquiry , Booking ,IBM & OBM  Details
                             </h4>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="No Of Enquiry" value={editChannelPartnerData?.NoOfEnquiry} />
                                 <FieldItem label="No Of Booking" value={editChannelPartnerData?.NoOfBooking} />
+                                
                                 <FieldItem label="Brokerage Percentage (%)" value={editChannelPartnerData?.BrokeragePercentage} />
                                 <FieldItem label="Brokerage Amount (₹)" value={formatCurrency(editChannelPartnerData?.BrokerageAmount)} />
                                 <FieldItem label="Paid Brokerage Amount (₹)" value={formatCurrency(editChannelPartnerData?.PaidBrokerageAmount)} />
+                                <FieldItem label="No Of IBM" value={editChannelPartnerData?.NoOfIbm} />
+                                <FieldItem label="No Of OBM" value={editChannelPartnerData?.NoOfObm} />
                             </div>
                         </section>
 

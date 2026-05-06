@@ -139,6 +139,7 @@ export interface BookingData {
     TransferBookingId: number | null;
     TransferFlat: string | null;
     TenantId: number | null;
+    LedgerCount: number | null;
 }
 
 export interface BookingApplicantData {

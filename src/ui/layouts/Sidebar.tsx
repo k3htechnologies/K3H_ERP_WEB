@@ -185,7 +185,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const handleItemClick = (item: MenuItem) => {
     if (item.children && item.children.length > 0) {
 
-      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard" || item.path === "payrollDashboard" || item.path === "saleDashboard" || item.path === "legalDashboard" || item.path === "channelPartnerDashboard") {
+      if (item.path === "redevelopmentDashboard" || item.path === "inventoryDashboard" || item.path === "settingDashboard" || item.path === "payrollDashboard" || item.path === "saleDashboard" || item.path === "legalDashboard" || item.path === "channelPartnerDashboard" ||  item.path === "crmDashboard") {
 
         const route = mapPathToRoute(item.path)
 

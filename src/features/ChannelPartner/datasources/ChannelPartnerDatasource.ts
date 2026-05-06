@@ -30,6 +30,7 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
                 IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
             })
 
+            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
             if (params.ChannelPartnerId) queryParams.append('ChannelPartnerId', params.ChannelPartnerId.toString());
             if (params.ChannelPartnerName?.trim()) queryParams.append('ChannelPartnerName', params.ChannelPartnerName.trim());
             if (params.MobileNumber?.trim()) queryParams.append('MobileNumber', params.MobileNumber.trim());

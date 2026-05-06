@@ -1654,6 +1654,9 @@ export const AddUpdateBooking: React.FC = () => {
         const sent = await sendOTP({
           mobileNumber: applicantList.find((x) => x.ApplicantType === "Applicant")?.ApplicantMobileNumber || "",
           module: "BOOKING",
+          name: applicantList.find((x) => x.ApplicantType === "Applicant")?.ApplicantName || "",
+          projectName: enquiryList?.ProjectName || "",
+          source: enquiryList?.Source || "",
           setIsLoading,
           setLoadingMessage,
           addToast,

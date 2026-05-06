@@ -357,6 +357,14 @@ export const ChannelPartnerUniverse: React.FC = () => {
         render: (value) => value || '-'
       },
       {
+        key: 'ChannelPartnerCategory',
+        label: 'CP Category',
+        width: '12',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
         key: 'NoOfGrossWalkins',
         label: 'Gross Walkins',
         width: '12',

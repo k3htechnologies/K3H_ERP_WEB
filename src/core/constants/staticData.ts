@@ -313,6 +313,8 @@ export const MASTER_DATA = {
 
   reasonForInactivity: ['Firm Closed', 'Key SPOC left','Brokerage Pending','Did not like project/brand'],
 
+  refundedDetaisAmountType: ['Agreement Amount'],
+
 } as const
 
 // ============================================================================
@@ -435,6 +437,7 @@ export const DELIVERY_STATUS = toOptions(MASTER_DATA.deliveryStatus);
 export const DELIVERY_MODE = toOptions(MASTER_DATA.deliveryMode);
 export const DOCUMENT_TYPE = toOptions(MASTER_DATA.documentType);
 export const REASON_FOR_INAACTIVITY = toOptions(MASTER_DATA.reasonForInactivity);
+export const REFUNDED_DETAILS_AMOUNT_TYPE_OPTIONS = toOptions(MASTER_DATA.refundedDetaisAmountType);
 
 
 // ============================================================================

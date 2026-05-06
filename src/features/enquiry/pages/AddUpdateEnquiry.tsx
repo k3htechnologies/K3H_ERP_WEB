@@ -645,6 +645,9 @@ export const AddUpdateEnquiry: React.FC = () => {
         const sent = await sendOTP({
           mobileNumber: formData.MobileNumber || "",
           module: "ENQUIRY",
+          name: formData.Name || "",
+          projectName: dropdownLabels.referelProjectName || "",
+          source: formData.Source || "",
           setIsLoading,
           setLoadingMessage,
           addToast,

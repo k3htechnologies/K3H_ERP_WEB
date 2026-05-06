@@ -87,6 +87,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
           IsCheckPermission: false,
           ChannelPartnerId: filterParams.ChannelPartnerId ? Number(filterParams.ChannelPartnerId) : undefined,
           MobileNumber: searchtext ?? filterParams.Name?.trim() ?? undefined,
+          ProjectId: projectId ?? 0,
           SortBy: getSortByParam(sortInfo ?? null, channelPartnerColumns)
         };
 
@@ -206,7 +207,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
                 tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
               />
 
-               {row.VerifiedNonVerified!=='Verified' && (
+              {row.VerifiedNonVerified !== 'Verified' && (
                 <span title="Channel Partner Profile Incomplete">
                   <AlertTriangle className="w-4 h-4 text-amber-500 cursor-pointer" />
                 </span>
@@ -230,6 +231,22 @@ export const ChannelPartnerSourcing: React.FC = () => {
             onClick={() => handleNavigateToView(row)}
           />
         )
+      },
+      {
+        key: 'NoOfIbm',
+        label: 'No of IBM',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '0'
+      },
+      {
+        key: 'NoOfObm',
+        label: 'No of OBM',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '0'
       },
       {
         key: "DateOfBirth",

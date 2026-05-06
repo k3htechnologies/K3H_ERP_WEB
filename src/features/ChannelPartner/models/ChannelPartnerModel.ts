@@ -3,6 +3,7 @@ import type { ApiResponse } from "@/core/api/ApiResponse"
 export interface FilterWithPaginationChannelPartnerRequest {
     PageSize: number
     PageNumber: number
+    ProjectId?: number
     IsCheckPermission?: boolean
     ChannelPartnerId?: number
     ChannelPartnerName?: string
@@ -78,6 +79,9 @@ export interface ChannelPartnerData {
     MicromarketProximity: string; 
 
     VerifiedNonVerified: string
+
+    NoOfIbm:number | 0
+    NoOfObm:number | 0
 
     CreatedById: number | 0
     CreatedBy: string | ''

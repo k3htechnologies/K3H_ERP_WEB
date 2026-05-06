@@ -322,7 +322,6 @@ export const SourcingTarget: React.FC = () => {
                     value={monthYear || ""}
                     onChange={(val) => {
                         setMonthYear(val);
-                        fetchSourcingTargetList(1);
                     }}
                 />
                 

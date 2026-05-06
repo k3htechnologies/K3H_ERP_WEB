@@ -178,6 +178,8 @@ import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/
 import { ChannelPartnerUniverseListStateProvider } from '@/features/channelPartnerUniverse/context/ChannelPartnerUniverseListStateContext';
 import ChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ChannelPartnerUniverse';
 import ViewChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ViewChannelPartnerUniverse';
+import CrmDashboard from '@/features/crmDashboard/pages/CrmDashboard';
+import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -337,6 +339,7 @@ function App() {
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
+            <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
@@ -447,7 +450,7 @@ function App() {
             <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
             {/* CRM */}
-
+            <Route path="crmDashboard" element={<CrmDashboard />} />
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
 

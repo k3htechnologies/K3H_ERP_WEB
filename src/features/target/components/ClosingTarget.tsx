@@ -331,7 +331,6 @@ export const ClosingTarget: React.FC = () => {
                     value={monthYear || ""}
                     onChange={(val) => {
                         setMonthYear(val);
-                        loadClosingTarget(1, sortInfo, searchTerm);
                     }}
                 />
 

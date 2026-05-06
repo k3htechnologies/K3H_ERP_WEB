@@ -5,6 +5,10 @@ import { authenticationService } from "@/features/authentication/services/Authen
 export interface SendOTPParams {
     mobileNumber: string;
     module: string;
+    name?: string;
+    companyName?: string;
+    projectName?: string;
+    source?: string;
     setIsLoading: (loading: boolean) => void;
     setLoadingMessage: (msg: string) => void;
     addToast: (toast: { type: "success" | "error"; title: string }) => void;
@@ -13,6 +17,10 @@ export interface SendOTPParams {
 export const sendOTP = async ({
     mobileNumber,
     module,
+    name,
+    companyName,
+    projectName,
+    source,
     setIsLoading,
     setLoadingMessage,
     addToast
@@ -33,7 +41,7 @@ export const sendOTP = async ({
         setLoadingMessage,
         async () => {
 
-            const response =await authenticationService.apicallSendOTPMobileNumberAndModule(mobileNumber,module);
+            const response =await authenticationService.apicallSendOTPMobileNumberAndModule(mobileNumber,module,name,companyName,projectName,source);
 
             if (E.isRight(response)) {
 

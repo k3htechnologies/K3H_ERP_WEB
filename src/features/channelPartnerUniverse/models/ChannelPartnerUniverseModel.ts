@@ -39,6 +39,7 @@ export interface ChannelPartnerUniverseData {
     SecondaryProjectPortfolio: string
     MicromarketProximity: string;
     Status: string
+    ChannelPartnerCategory: string
     NoOfGrossWalkins: number | 0
     NoOfNetBooking: number | 0
     NetBookingRevenue: number | 0

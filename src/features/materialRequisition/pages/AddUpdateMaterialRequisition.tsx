@@ -51,7 +51,8 @@ const initialFormState = (): AddUpdateMaterialRequisitionDetailRequest => ({
     SubMaterialName: "",
     UomCode: "",
     // Uom: "",
-    RequiredDate: ""
+    RequiredDate: "",
+    Remark: ""
 })
 export const AddUpdateMaterialRequisition = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -171,7 +172,8 @@ export const AddUpdateMaterialRequisition = () => {
                                     UomMasterId: x.UomMasterId,
                                     MaterialQuantity: x.MaterialQuantity,
                                     RequiredDate: x.RequiredDate,
-                                    MaterialName: x.MaterialName
+                                    MaterialName: x.MaterialName,
+                                    Remark: x.Remark
                                 }))
                             );
                         }
@@ -216,7 +218,8 @@ export const AddUpdateMaterialRequisition = () => {
                 || convert_dd_mm_yyyy_To_Yyyy_mm_dd(row.RequiredDate)
                 || "",
             SubMaterialName: row.SubMaterialName,
-            MaterialName: row.MaterialName
+            MaterialName: row.MaterialName,
+            Remark: row.Remark
         });
         setDropdownLabels({
             materialName: row.MaterialName || "",
@@ -272,6 +275,18 @@ export const AddUpdateMaterialRequisition = () => {
             label: "Required Date",
             align: "left",
             render: (value) => value ? formatDate_dd_MonthName_yy(value) : '-'
+        },
+        {
+            key: "Remark",
+            label: "Remark",
+            align: "left",
+            render: (value) => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="250px"
+                    tooltipThreshold={25}
+                />
+            )
         },
         {
             key: "action",
@@ -733,6 +748,19 @@ export const AddUpdateMaterialRequisition = () => {
                         />
                         {errors.RequiredDate && <p className="text-red-500 text-sm mt-1">{errors.RequiredDate}</p>}
                     </div>
+                    <TextArea
+                        label="Remark"
+                        className="thin-scroll"
+                        value={materialData.Remark}
+                        onChange={(e) =>
+                            setMaterialData(prev => ({
+                                ...prev,
+                                Remark: e.target.value
+                            }))
+                        }
+                        placeholder="Enter Remark"
+                        error={errors.Remark}
+                    />
                 </div>
             </Modal>
         </>

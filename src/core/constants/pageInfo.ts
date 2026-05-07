@@ -12,9 +12,9 @@ export const getPageInfo = (path: string) => {
         case 'materialRequisition':
             return {
                 title: 'Material Requisition',
-                description: 'Streamlined material requests for efficient project execution',       
+                description: 'Streamlined material requests for efficient project execution',
             }
-    
+
             {/* SETTING -> COMPANY SETUP */ }
         case 'settingDashboard':
             return {
@@ -472,6 +472,13 @@ export const getPageInfo = (path: string) => {
             return {
                 title: "Pay Track",
                 description: "Secure your unit by completing the booking process",
+            }
+
+        //STOCK MANAGEMENT
+        case 'stock':
+            return {
+                title: "Stock Management",
+                description: "Seamless tracking and management of all materials in store",
             }
 
         default:

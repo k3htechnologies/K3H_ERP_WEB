@@ -177,6 +177,8 @@ import MakePayment from '@/features/materialRequisition/components/invoice/MakeP
 import { AddUpdateGRN } from '@/features/materialRequisition/components/GRN/AddUpdateGRN';
 import CreateInvoice from '@/features/materialRequisition/components/invoice/CreateInvoice';
 import StockManagement from '@/features/stockManagement/pages/StockManagement';
+import { StockManagementListStateProvider } from '@/features/stockManagement/context/StockManagementListStateContext';
+import ViewStockManagement from '@/features/stockManagement/pages/ViewStockManagement';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -438,7 +440,6 @@ function App() {
             <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
             {/* CRM */}
-            {/* CRM */}
 
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
@@ -456,7 +457,8 @@ function App() {
             <Route path="makePayment/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
 
             {/* Stock Management */}
-            <Route path="stock" element={<StockManagement />} />
+            <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
+            <Route path="stock/view" element={<StockManagementListStateProvider><ViewStockManagement /></StockManagementListStateProvider>} />
 
           </Route>
 

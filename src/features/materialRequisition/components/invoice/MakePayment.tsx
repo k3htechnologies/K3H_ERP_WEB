@@ -19,6 +19,7 @@ import { Button } from "@/ui/components/forms";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
+import { formatCurrency } from "@/core/utils/comman";
 
 const MakePayment: React.FC = () => {
     const [materialRequisitionGRNData, setMaterialRequisitionGRNData] = useState<MaterialRequisitionGRNData | null>(null);
@@ -201,7 +202,7 @@ const MakePayment: React.FC = () => {
 
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <FieldItem label="Invoice Amount" value={invoiceData?.InvoiceAmount} />
+                        <FieldItem label="Invoice Amount" value={formatCurrency(invoiceData?.InvoiceAmount)} />
                         <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDate ?? '')} />
                         <FieldItem label="DuDate" value={formatDate_dd_MonthName_yy(invoiceData?.InvoiceDueDate ?? '')} />
                         <div>

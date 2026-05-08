@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo, SortInfo, TableColumn } from "@/ui/components/DataTable/DataTable";
-import { getMaterialRequisitionTableColumns } from "../constants/MaterialRequisitionColumns";
+import { getMaterialRequisitionTableColumns } from "@/features/materialRequisition/constants/MaterialRequisitionColumns";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 
 export type MaterialRequisitionListState = {
@@ -19,6 +19,7 @@ export type MaterialRequisitionListState = {
     MaterialRequisitionStage?: string;
     MaterialRequisitionStatus?: string;
 };
+
 export type MaterialRequisitionDetailItem = {
     MaterialRequisitionDetailId: number
     Uniquekey: string
@@ -33,6 +34,7 @@ export type MaterialRequisitionDetailItem = {
     Uom: string
     RequiredDate: string
     MaterialReceivedQuantityTillDate: number
+
 }
 
 const STORAGE_KEY = 'MaterialRequisition.listState';
@@ -160,7 +162,7 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
     }, [currentProjectId]);
 
     const handleSetSelectedColumnKeys = useCallback((keys: string[]) => {
-        // Ensure required columns are always present
+
         const withRequired = Array.from(new Set([...keys, ...REQUIRED_COLUMN_KEYS]));
         setSelectedColumnKeys(withRequired);
 

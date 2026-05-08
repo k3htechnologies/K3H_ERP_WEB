@@ -9,7 +9,7 @@ import Overview from "@/features/materialRequisition/components/Overview";
 import PurchaseOrder from "@/features/materialRequisition/components/PurchaseOrder";
 import GRN from "@/features/materialRequisition/components/GRN/GRN";
 import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
-import { Button } from "@/ui/components/forms";
+import { Button, Input } from "@/ui/components/forms";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
@@ -24,6 +24,7 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { filterNumbers } from "@/core/utils/fileValidation";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
@@ -150,7 +151,6 @@ export const ViewMaterialRequisition: React.FC = () => {
             addToast({ type: 'error', title: 'Required Date is required.' });
             return;
         }
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -230,6 +230,14 @@ export const ViewMaterialRequisition: React.FC = () => {
             editable: true,
             align: "left",
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            render: (value?: string) => value || "-",
+            renderEditor: (value?: string, onChange?: any) => (
+                <Input
+                    className="w-full border rounded px-2 py-1"
+                    value={value ?? ""}
+                    onChange={(e) => onChange(filterNumbers(e.target.value))}
+                />
+            )
         },
         {
             key: "Uom",
@@ -247,7 +255,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             sortable: false,
             editable: true,
             align: "left",
-            type: 'date',
+            type: 'datetime',
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
             renderEditor: (value?: string, onChange?: any) => (

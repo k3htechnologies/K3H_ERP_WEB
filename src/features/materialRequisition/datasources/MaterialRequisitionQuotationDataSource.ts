@@ -8,7 +8,6 @@ export abstract class MaterialRequisitionQuotationDatasource {
     abstract pullMaterialRequisitionQuotation(params: AddVendorForEnquiryRequest, signal?: AbortSignal): Promise<MaterialRequisitionQuotationListResponse>;
     abstract addUpdateMaterialRequisitionQuotation(payload: AddUpdateMaterialRequestQuotation): Promise<MaterialRequisitionQuotationSaveReponse>;
     abstract deleteMaterialRequisitionQuotation(params: DeleteMaterialRequisitionQuotation): Promise<DeleteMaterialRequisitionQuotation>;
-
 }
 
 export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequisitionQuotationDatasource {
@@ -32,6 +31,7 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
                 `${MaterialRequisitionQuotationApi.PULL}?${queryParams.toString()}`, { signal }
             )
             return response;
+            
         } catch (error: any) {
 
             console.error('ERROR: PULL MATERIAL REQUISITION QUOTATION :', error);
@@ -44,6 +44,7 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
             throw error
         }
     }
+
     async addUpdateMaterialRequisitionQuotation(payload: AddUpdateMaterialRequestQuotation): Promise<MaterialRequisitionQuotationSaveReponse> {
         try {
             
@@ -94,5 +95,4 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
         }
     }
 
-    
 }

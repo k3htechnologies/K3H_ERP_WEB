@@ -43,6 +43,7 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
 })
 
 const CreateInvoice: React.FC = () => {
+    
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionInvoice>(() => initialFormState());
     const [materialRequisitionGRNData, setMaterialRequisitionGRNData] = useState<MaterialRequisitionGRNData | null>(null);
     const [matrialRequisitionDetailGRNData, setMaterialRequisitionDetailGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
@@ -96,6 +97,7 @@ const CreateInvoice: React.FC = () => {
                     const Item = Array.isArray(data) ? data[0] : data;
 
                     setMaterialRequisitionDetailGRNData(Item?.MaterialRequisitionDetailGRNData ?? []);
+
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }

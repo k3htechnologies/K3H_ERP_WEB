@@ -1,13 +1,11 @@
 import { useMemo, useState, useCallback, useEffect } from "react"
 import {
     DataTableEditable,
-    type EditableTableColumn as TableColumn,
     type EditableColumnGroup,
-    type EditableColumnType,
     type EditableTableColumn
 } from "@/ui/components/DataTable/DataTableEditable"
 import TooltipText from "@/ui/components/Tooltip/TooltipText"
-import { computeAmount, computeGrandTotal } from "../utils/finalizeVendorUtils"
+import { computeAmount, computeGrandTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils"
 
 type Row = {
     id: string
@@ -25,7 +23,6 @@ interface Props {
     data: Row[]
     isEditable?: boolean
     columns?: EditableTableColumn[]
-
     onChange?: (rows: Row[]) => void
     vendorId?: number
     termId?: number
@@ -34,10 +31,7 @@ interface Props {
 
 export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     data,
-    isEditable = false,
     onChange,
-    vendorId,
-    termId,
     onSave
 }) => {
     const [rows, setRows] = useState<Row[]>(data)

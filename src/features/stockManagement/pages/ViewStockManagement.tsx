@@ -24,7 +24,7 @@ export const ViewStockManagement: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const { addToast } = useToast();
-    const { projectId } = useProject();5
+    const { projectId } = useProject(); 5
     const { pagination, setPagination } = usePagination(20);
     const { canExport } = useMenuPermissions();
     const [sortInfo] = useState<SortInfo | undefined>(undefined);
@@ -119,21 +119,6 @@ export const ViewStockManagement: React.FC = () => {
             //     ),
             // },
             {
-                key: "Reason",
-                label: 'Reason',
-                width: "20",
-                sortable: false,
-                fixed: "left",
-                align: "left",
-                render: (value) => (
-                    <TooltipText
-                        text={value || "-"}
-                        maxWidth="250px"
-                        tooltipThreshold={25}
-                    />
-                ),
-            },
-            {
                 key: "MaterialQuantityInwardOutward",
                 label:
                     activeTab === "Material In" ? "Material In"
@@ -152,6 +137,21 @@ export const ViewStockManagement: React.FC = () => {
                         </span>
                     );
                 }
+            },
+            {
+                key: "Reason",
+                label: 'Reason',
+                width: "20",
+                sortable: false,
+                fixed: "left",
+                align: "left",
+                render: (value) => (
+                    <TooltipText
+                        text={value || "-"}
+                        maxWidth="250px"
+                        tooltipThreshold={25}
+                    />
+                ),
             },
             {
                 key: "CreatedBy",

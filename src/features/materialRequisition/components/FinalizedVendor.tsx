@@ -2,13 +2,10 @@ import { ExpandableCard } from "@/ui/components/Card/ExpandableCard"
 import { useEffect, useState } from "react"
 import useToast from "@/core/hooks/useToast"
 import type {
-    AddVendorForEnquiryRequestResponse,
     FilterWithPaginationVendorForEnquiryRequest,
     FilterWithPaginationVendorForSelectedEnquiryRequest,
-    SelectedVendorData,
-    SelectedVendorListResponse
 } from "../models/VendorFinalizeModel"
-import { useNavigate, useParams } from "react-router-dom"
+import { useParams } from "react-router-dom"
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext"
 import { useProject } from "@/features/projectMaster/context/ProjectContext"
 import { runApiWithLoader } from "@/core/utils"
@@ -19,25 +16,23 @@ import Checkbox from "@/ui/components/forms/Checkbox"
 import { FinalizedVendorQuotationTable } from "./FinalizedVendorQuotationTable"
 import NoDataView from "@/ui/components/NoDataView/NoDataView"
 import {
-    computeGrandTotal,
     computeTaxTotal,
     computeBaseTotal,
     computeLinesTotal
-} from "../utils/finalizeVendorUtils"
-import { materialRequisitionQuotationService } from "../services/MaterialRequisitionQuotationService"
-import type { AddUpdateMaterialRequestQuotation } from "../models/MaterialRequisitionQuotationApi"
+} from "@/features/materialRequisition/utils/finalizeVendorUtils"
+import { materialRequisitionQuotationService } from "@/features/materialRequisition/services/MaterialRequisitionQuotationService"
+import type { AddUpdateMaterialRequestQuotation } from "@/features/materialRequisition/models/MaterialRequisitionQuotationApi"
 import { Button } from "@/ui/components/forms/Button"
 import { Modal } from "@/ui/components/Modal/Modal"
 import { Input } from "@/ui/components/forms/Input"
-import { Check, CheckLine, Copy, MessageSquareQuote, Scale } from "lucide-react"
+import { CheckLine, Copy, MessageSquareQuote, Scale } from "lucide-react"
 import { handleExportFile } from "@/core/utils/exportFile"
-import ModuleApprovalStatus from "@/features/payrollReport/components/moduleApprovalStatus"
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton"
 import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel"
-import type { VendorData, VendorListResponse } from "@/features/vendor/models/VendorModel"
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal"
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal"
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService"
+import { Loader } from "@/core/utils/loader";
 
 const DEFAULT_LOGISTICS = [
     { Logistics: "Transportation" },
@@ -83,7 +78,6 @@ export const FinalizedVendor: React.FC = () => {
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [materialRequisitionVendorSelectedList, setMaterialRequisitionVendorSelectedList] = useState<any[]>([])
     const [materialRequisitionVendorFinalizedList, setMaterialRequisitionVendorFinalizedList] = useState<any[]>([])
-    const navigate = useNavigate();
 
     useEffect(() => {
         if (!projectId) return
@@ -143,6 +137,7 @@ export const FinalizedVendor: React.FC = () => {
             setSelectedVendorIds(prev => [...new Set([...prev, ...visibleIds])])
         }
     }
+
     const PushVendorForEnquiry = (vendorIds: string) => {
         return {
             MaterialRequisitionId: Number(currentMaterialRequisitionId),
@@ -151,9 +146,8 @@ export const FinalizedVendor: React.FC = () => {
             VendorId: vendorIds
         }
     }
+
     const handleApprovalSubmit = async (remark: string) => {
-
-
         const payload: UpdateModulesWorkflowApprovalRequest = {
             ModuleName: "MATERIAL REQUISITION",
             Id: Number(currentMaterialRequisitionId) ?? 0,
@@ -180,7 +174,6 @@ export const FinalizedVendor: React.FC = () => {
                 } else {
 
                     addToast({ type: "error", title: response.left.message });
-
                 }
 
                 return response;
@@ -229,6 +222,7 @@ export const FinalizedVendor: React.FC = () => {
             }
         )
     }
+
     const addSelectedVendors = async () => {
 
         await runApiWithLoader(
@@ -296,6 +290,7 @@ export const FinalizedVendor: React.FC = () => {
             return response
         })
     }
+
     const handleCompareVendor = async (exportType: 'VENDOR COMPARISON CHART') => {
         await runApiWithLoader(
             setIsLoading,
@@ -308,13 +303,14 @@ export const FinalizedVendor: React.FC = () => {
                     ProjectId: Number(projectId),
                     ExportType: exportType
                 }
+
                 const response = await vendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params)
+
                 if (E.isRight(response)) {
+
                     handleExportFile(response, exportType, 'Vendor Comparison', addToast);
                 }
                 return response
-
-
             },
             undefined,
             (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
@@ -322,6 +318,7 @@ export const FinalizedVendor: React.FC = () => {
             'Preparing Export'
         );
     };
+
     const finalizedVendor =
         materialRequisitionVendorSelectedList.find(v => v.IsFinalized)
 
@@ -337,12 +334,10 @@ export const FinalizedVendor: React.FC = () => {
         setApprovalLogRequest(request);
         setIsApprovalLogModalOpen(true);
     };
+
     const handleApproveRejectVendor = (approvalType: "approve" | "reject") => {
-
-
         setApprovalActionType(approvalType);
         setIsApprovalActionModalOpen(true);
-
     };
 
     const finalizeSelectedVendors = async () => {
@@ -354,9 +349,13 @@ export const FinalizedVendor: React.FC = () => {
 
         await finalizeVendor(String(checkedFinalVendor))
     }
+
     const handleExportCompareVendorExcel = () => handleCompareVendor('VENDOR COMPARISON CHART')
+
     return (
         <div className="space-y-4">
+            <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
+
             <div className="flex justify-end gap-2">
                 {isAnyFinalized && (
                     <ApprovalActions
@@ -371,6 +370,7 @@ export const FinalizedVendor: React.FC = () => {
                     // onReject={() => handleApproveRejectDocument("reject")}
                     />
                 )}
+
                 {isAnyFinalized && <ApprovalLogModal
                     isOpen={isApprovalLogModalOpen}
                     title='Finalized Vendor'
@@ -414,6 +414,7 @@ export const FinalizedVendor: React.FC = () => {
                         Finalize Vendor
                     </Button>
                 )}
+
                 <ApprovalActionModal
                     title='Document'
                     isOpen={isApprovalActionModalOpen}
@@ -442,7 +443,6 @@ export const FinalizedVendor: React.FC = () => {
                 </Button>)}
 
             </div>
-
 
             {materialRequisitionVendorSelectedList.length === 0
                 ? <NoDataView />
@@ -485,6 +485,7 @@ export const FinalizedVendor: React.FC = () => {
                                                 {vendor.CompanyName}
                                             </div>
                                         </div>
+
                                         <Copy
                                             className="text-gray-500 cursor-pointer mt-1"
                                             size={16}
@@ -500,22 +501,10 @@ export const FinalizedVendor: React.FC = () => {
                                     </div>
 
                                     <div className="col-span-9 grid grid-cols-4 gap-4">
-                                        <FieldItem
-                                            label="BASE AMOUNT"
-                                            value={`₹${computeBaseTotal(headerLines).toFixed(2)}`}
-                                        />
-                                        <FieldItem
-                                            label="TOTAL TAX"
-                                            value={`₹${computeTaxTotal(headerLines).toFixed(2)}`}
-                                        />
-                                        <FieldItem
-                                            label="GRAND TOTAL"
-                                            value={`₹${computeLinesTotal(headerLines).toFixed(2)}`}
-                                        />
-                                        <FieldItem
-                                            label="EST. DELIVERY"
-                                            value={`${firstTerm?.ExpectedDeliveryInDays || 0} Days`}
-                                        />
+                                        <FieldItem label="BASE AMOUNT" value={`₹${computeBaseTotal(headerLines).toFixed(2)}`} />
+                                        <FieldItem label="TOTAL TAX" value={`₹${computeTaxTotal(headerLines).toFixed(2)}`} />
+                                        <FieldItem label="GRAND TOTAL" value={`₹${computeLinesTotal(headerLines).toFixed(2)}`} />
+                                        <FieldItem label="EST. DELIVERY" value={`${firstTerm?.ExpectedDeliveryInDays || 0} Days`} />
                                     </div>
                                 </div>
                             }
@@ -573,7 +562,6 @@ export const FinalizedVendor: React.FC = () => {
                 isOpen={isQuotationAvailable}
                 saveText="Add"
                 resetText=""
-
                 onSubmit={addSelectedVendors}
                 onClose={() => {
                     setQuotationAvailable(false)
@@ -676,6 +664,6 @@ export const FinalizedVendor: React.FC = () => {
         </div>
     )
 }
-
+export default FinalizedVendor;
 
 

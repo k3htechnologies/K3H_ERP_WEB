@@ -4,14 +4,10 @@ import { MaterialRequisitionQuotationDatasourceImpl } from "@/features/materialR
 import type { AddVendorForEnquiryRequest } from "@/features/materialRequisition/models/VendorFinalizeModel";
 import type { AddUpdateMaterialRequestQuotation, DeleteMaterialRequisitionQuotation, MaterialRequisitionQuotationListResponse, MaterialRequisitionQuotationSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionQuotationApi";
 
-
-
 const materialRequisitionQuotationDatasource = new MaterialRequisitionQuotationDatasourceImpl
 
 export const materialRequisitionQuotationService = {
    
-
-    
     apiCallPullMaterialRequisitionQuotation: async (params: AddVendorForEnquiryRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, MaterialRequisitionQuotationListResponse>> => {
         try {
     
@@ -49,5 +45,4 @@ export const materialRequisitionQuotationService = {
         
     },
         
-  
 }

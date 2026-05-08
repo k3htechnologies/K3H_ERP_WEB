@@ -1,6 +1,6 @@
 import { Loader } from "@/core/utils/loader";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData } from "../models/MaterialRequisitionModel";
+import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { useToast } from "@/core/hooks/useToast";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo } from "@/ui/components/DataTable/DataTableWithoutBorder";
@@ -26,8 +26,8 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { MATERIAL_REQUISITION_STAGES_OPTIONS, MATERIAL_REQUISITION_STATUS_OPTIONS } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { DateInput } from "@/ui/components/forms/DateInput";
-import { useMaterialRequisitionListState } from "../context/MaterialRequisitionListStateContext";
-import { getMaterialRequisitionStatusColor } from "../utils/materialRequisitionUtils";
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
+import { getMaterialRequisitionStatusColor } from "@/features/materialRequisition/utils/materialRequisitionUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 
@@ -66,7 +66,6 @@ export const MaterialRequisition: React.FC = () => {
         searchMaterialRequisition(value)
     }, 350);
 
-    //#region SEARCH & CLEAR
     const searchMaterialRequisition = async (searchValue: string) => {
         updateListState({ searchTerm: searchValue });
 
@@ -87,8 +86,7 @@ export const MaterialRequisition: React.FC = () => {
     const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage, MaterialRequisitionStatus: row.MaterialRequisitionStatus, SystemGeneratedCode: row.SystemGeneratedCode, Uniquekey: row.Uniquekey });
         navigate('/materialRequisition/view');
-    }, [navigate, updateListState],
-    );
+    }, [navigate, updateListState],);
 
     const handleDeleteRequest = async () => {
         setIsConfirmationDialogBoxOpen(false);
@@ -150,6 +148,7 @@ export const MaterialRequisition: React.FC = () => {
             'Deleting Requisition'
         );
     };
+
     const handlePageChange = (page: number) => {
         updateListState({ page });
     };
@@ -295,6 +294,7 @@ export const MaterialRequisition: React.FC = () => {
                             </>
                         )}
                     </div>
+
                 );
             }
         }
@@ -310,11 +310,9 @@ export const MaterialRequisition: React.FC = () => {
             if (saved) {
 
                 const parsed = JSON.parse(saved) as string[]
-                // Ensure required columns are always present
 
                 const withRequired = Array.from(new Set([...parsed, ...requiredMaterialRequisitionColumnKeys]));
 
-                // Filter out any keys that no longer exist
                 return withRequired.filter(k => allMaterialRequisitioKeys.includes(k));
             }
         } catch { }
@@ -390,6 +388,7 @@ export const MaterialRequisition: React.FC = () => {
         setTempFilters({});
         loadDetailsdata(1, { SystemGeneratedCode: '' }, sortInfo, undefined);
     };
+
     const handleAddMaterialRequisitionModal = useCallback(() => {
         navigate('/materialRequisition/add');
     }, [navigate]);
@@ -398,6 +397,7 @@ export const MaterialRequisition: React.FC = () => {
 
         return await materialRequisitionService.apiCallPullMaterialRequisition(filterParams);
     }
+
     const handleExportMaterialRequisition = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -432,10 +432,11 @@ export const MaterialRequisition: React.FC = () => {
 
     const handleExportMaterialRequisitionsExcel = () => handleExportMaterialRequisition('Excel')
     const handleExportMaterialRequisitionPdf = () => handleExportMaterialRequisition('PDF')
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
-            {/* Loader */}
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
+
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
@@ -453,21 +454,16 @@ export const MaterialRequisition: React.FC = () => {
                 }}
                 isShowCustomizeButton
                 onCustomize={() => setIsShowCustomizeMaterialRequisitionColumnsModal(true)}
-
-                // ADD
                 isShowAddButton={canAction}
                 addTitle="Add"
                 onAdd={handleAddMaterialRequisitionModal}
-
-                // IMPORT 
                 isShowImportButton={canAction}
-
-                // EXPORT
                 isShowExportButton={canExport && materialRequisitionData.length > 0}
                 onExportExcel={handleExportMaterialRequisitionsExcel}
                 onExportPdf={handleExportMaterialRequisitionPdf}
                 exportLoading={isLoading}
             />
+
             <DataTable
                 data={materialRequisitionData}
                 columns={MaterialRequisitionColumns}
@@ -479,6 +475,7 @@ export const MaterialRequisition: React.FC = () => {
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}
             />
+
             <CustomizeColumnsModal
                 isOpen={isShowCustomizeMaterialRequisitionColumnsModal}
                 onClose={() => setIsShowCustomizeMaterialRequisitionColumnsModal(false)}
@@ -501,6 +498,7 @@ export const MaterialRequisition: React.FC = () => {
                 requiredKeys={requiredMaterialRequisitionColumnKeys}
                 title="Customize Table Columns"
             />
+
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
                 onClose={() => {
@@ -536,7 +534,6 @@ export const MaterialRequisition: React.FC = () => {
                         />
                     </div>
 
-                    {/* Material Requisition Status */}
                     <div>
                         <SinglePageSelection
                             label="Material Requisition Status"
@@ -565,6 +562,7 @@ export const MaterialRequisition: React.FC = () => {
                     </div>
                 </div>
             </Modal>
+            
         </div>
     )
 }

@@ -124,8 +124,8 @@ const InvoicePayment: React.FC = () => {
                     const data = response.right.Data;
 
                     setInvoiceData(Array.isArray(data) ? (data[0] ?? null) : data);
-                    const finalizedVendor =
-                        materialRequisitionVendorSelectedList.find(v => v.IsFinalized)
+                    // const finalizedVendor =
+                    //     materialRequisitionVendorSelectedList.find(v => v.IsFinalized)
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }

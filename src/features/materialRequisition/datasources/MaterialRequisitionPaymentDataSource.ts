@@ -32,6 +32,7 @@ export class MaterialRequisitionPaymentDatasourceImpl implements MaterialRequisi
                 `${MaterialRequisitionPaymentApi.PULL}?${queryParams.toString()}`, { signal }
             )
             return response;
+
         } catch (error: any) {
 
             console.error('ERROR: PULL MATERIAL REQUISITION PAYMENT:', error);
@@ -44,6 +45,7 @@ export class MaterialRequisitionPaymentDatasourceImpl implements MaterialRequisi
             throw error
         }
     }
+    
     async addUpdateMaterialRequisitionPayment(formData: FormData): Promise<MaterialRequisitionPaymentSaveResponse> {
         try {
 

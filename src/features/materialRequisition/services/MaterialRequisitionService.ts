@@ -3,13 +3,10 @@ import * as E from 'fp-ts/Either';
 import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionDeleteResponse, MaterialRequisitionListResponse, MaterialRequisitionSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { MaterialRequisitionDatasourceImpl } from "@/features/materialRequisition/datasources/MaterialRequisitionDataSource";
 
-
 const materialRequisitionDatasource = new MaterialRequisitionDatasourceImpl
 
 export const materialRequisitionService = {
    
-
-    
     apiCallPullMaterialRequisition: async (params: FilterWithPaginationMaterialRequisition, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, MaterialRequisitionListResponse>> => {
         try {
     

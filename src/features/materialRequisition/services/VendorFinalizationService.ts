@@ -1,16 +1,13 @@
 import type { Failure } from "@/core/api/FailureResponse";
 import * as E from 'fp-ts/Either';
 import { VendorFinalizationDatasourceImpl } from "@/features/materialRequisition/datasources/VendorFinalizationDataSource";
-import type { AddVendorForEnquiryRequest, AddVendorForEnquiryRequestResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
+import type { AddVendorForEnquiryRequest, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
 import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
-
 
 const VendorFinalizationDatasource = new VendorFinalizationDatasourceImpl
 
 export const vendorFinalizationService = {
    
-
-    
     apiCallpullVendorsForEnquiry: async (params: FilterWithPaginationVendorForEnquiryRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, VendorListResponse>> => {
         try {
     
@@ -60,6 +57,7 @@ export const vendorFinalizationService = {
             
         }
     },
+
     apiCallPullFinalizedVendor: async (params: FilterWithPaginationVendorForEnquiryRequest): Promise<E.Either<Failure, VendorListResponse>> => {
         try {
     
@@ -69,7 +67,6 @@ export const vendorFinalizationService = {
             
             return E.left({ message: error.message, code: error.code });
 
-            
         }
     } 
 }

@@ -13,6 +13,10 @@ export interface FilterWithPaginationStockManagementRequest {
 export interface StockManagementRequestData {
     MaterialName: string | null
     SubMaterialName: string | null
+    SubMaterialMasterId: number | 0
+    UomCode: string | null
+    TotalMaterialQuantityInStock: number | null
+    AvailableMaterialQuantityInStock:number | null
 }
 
 export interface FilterWithPaginationStockManagementHistoryRequest {
@@ -27,6 +31,14 @@ export interface FilterWithPaginationStockManagementHistoryRequest {
 export interface StockManagementRequestHistoryData {
     MaterialName: string | null
     SubMaterialName: string | null
+    SubMaterialMasterId: number | 0
+    UomCode: string | null
+    MaterialQuantityInwardOutward: number | 0
+    InwardOutwardType: string | null
+    Reason: string | null
+    CreatedById: number | 0
+    CreatedBy: string | ''
+    CreatedDate: string | null
 }
 
 export interface AddUpdateStockManagementRequest {

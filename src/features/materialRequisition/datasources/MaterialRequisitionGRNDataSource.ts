@@ -19,19 +19,19 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
     async pullMaterialRequisitionGRN(params: FilterWithPaginationMaterialRequisitionGRN, signal?: AbortSignal): Promise<MaterialRequisitionGRNListResponse> {
         try {
             const queryParams = new URLSearchParams({
-          
                 ProjectId: (params.ProjectId ?? 0).toString(),
             })
 
             if (params.MaterialRequisitionGRNId) queryParams.append('MaterialRequisitionGRNId', params.MaterialRequisitionGRNId.toString());
             if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());
             if (params.Uniquekey?.trim()) queryParams.append('Uniquekey', params.Uniquekey.trim());
-    
+
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${MaterialRequisitionGRNApi.PULL}?${queryParams.toString()}`, { signal }
             )
             return response;
+
         } catch (error: any) {
 
             console.error('ERROR: PULL MATERIAL REQUISITION GRN:', error);
@@ -96,10 +96,9 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
     async pullMaterialRequisitionGRNSummary(params: FilterWithPaginationMaterialRequisitionGRNSummary, signal?: AbortSignal): Promise<MaterialRequisitionGRNSummaryListResponse> {
         try {
             const queryParams = new URLSearchParams({
+                MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
+                Uniquekey: params.Uniquekey ?? '',
             })
-
-            if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());
-            if (params.Uniquekey?.trim()) queryParams.append('Uniquekey', params.Uniquekey.trim());
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${MaterialRequisitionGRNApi.PULL_SUMMARY}?${queryParams.toString()}`, { signal }

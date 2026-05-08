@@ -747,14 +747,14 @@ export const LocalStorageHelper = {
   //#endregion
   //#region MATERIAL REQUISITION
 
-   storeMaterialRequisitionTableColumns: (columns: string): void => {
+  storeMaterialRequisitionTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS, columns);
     } catch (error) {
       console.error("Error Material Requisition Columns Details:", error);
     }
   },
-    getMaterialRequisitionTableColumns: (): string | null => {
+  getMaterialRequisitionTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
     if (stored) {
       try {
@@ -765,7 +765,7 @@ export const LocalStorageHelper = {
       }
     }
     return null;
-  }, 
+  },
   //#endregion
   //#region STORE SUB MATERIAL MASTER COLUMNS
   storeSubMaterialMasterTableColumns: (columns: string): void => {
@@ -1178,6 +1178,29 @@ export const LocalStorageHelper = {
     return null
   },
   //#endregion
+  //#region STORE STOCK MANAGEMENT COLUMNS
+  storeStockManagementTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Stock Management Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET STOCK MANAGEMENT COLUMNS
+  getStockManagementTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Stock Management Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+  //#endregion
 
   //#region CLEAR LOCAL STORAGE
   clearLocalStorageData: (): void => {
@@ -1221,6 +1244,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS);
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
@@ -1240,6 +1264,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.LEAVECREDITCONFIGURATION);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PAY_TRACK_BOOKING);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.STOCK_MANAGEMENT);
     } catch (error) {
       console.error("ERROR : CLEARING LOCAL STORAGE:", error);
     }

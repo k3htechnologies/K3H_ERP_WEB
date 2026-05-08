@@ -1,6 +1,6 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { AddVendorForEnquiryRequest, AddVendorForEnquiryRequestResponse, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
+import type { AddVendorForEnquiryRequest, FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorListResponse } from "@/features/materialRequisition/models/VendorFinalizeModel";
 import { VendorFinalizationApi } from "@/features/materialRequisition/api/VendorFinalizationApi";
 import type { VendorListResponse } from "@/features/vendor/models/VendorModel";
 
@@ -82,7 +82,7 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
 
         } catch (error) {
 
-            console.error('ERROR: DELETE MATERIAL REQUISITION :', error)
+            console.error('ERROR: PULL SELECTED VENDOR FOR ENQUIRY  :', error)
 
             if (error instanceof TokenExpiredException) {
 
@@ -105,7 +105,7 @@ export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatas
         
         } catch (error) {
 
-            console.error('ERROR: CLOSE MATERIAL REQUISITION :', error)
+            console.error('ERROR: ADD FINALIZED VENDOR :', error)
             
             if (error instanceof TokenExpiredException) {
 

@@ -1,12 +1,12 @@
 import { runApiWithLoader } from "@/core/utils";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { type MaterialRequisitionGRNData, type FilterWithPaginationMaterialRequisitionGRN, type FilterWithPaginationMaterialRequisitionGRNSummary, type MaterialRequisitionGRNSummaryData, type MaterialRequisitionDetailGRNData } from "../../models/MaterialRequisitionGRNModel";
-import { useMaterialRequisitionListState } from "../../context/MaterialRequisitionListStateContext";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { type MaterialRequisitionGRNData, type FilterWithPaginationMaterialRequisitionGRN, type MaterialRequisitionDetailGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
+import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { useNavigate, useParams } from "react-router-dom";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import useToast from "@/core/hooks/useToast";
-import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
-import { materialRequisitionGRNService } from "../../services/MaterialRequisitionGRNService";
+import { type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import * as E from "fp-ts/Either";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
@@ -17,12 +17,11 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import DataTableExpandable, { type DataTableExpandableRef } from "@/ui/components/DataTable/DataTableExpandable";
-import { Edit, PencilLine } from "lucide-react";
+import DataTableExpandable from "@/ui/components/DataTable/DataTableExpandable";
+import { Edit } from "lucide-react";
 import { Loader } from "@/core/utils/loader";
 import { Button } from "@/ui/components/forms";
-import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
-
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 export const GRN: React.FC = () => {
 
@@ -34,11 +33,9 @@ export const GRN: React.FC = () => {
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
-    const GRNTableRef = useRef<DataTableExpandableRef>(null);
     const [GRNData, SetGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const [GRN, SetGRN] = useState<MaterialRequisitionGRNData[]>([]);
     const [isViewGRNSummaryModalOpen, setIsViewGRNSummaryModalOpen] = useState(false);
-    const [GRNSummaryDetailData, setGRNSummaryDetailData] = useState<MaterialRequisitionGRNSummaryData[]>([]);
     const { canAction } = useMenuPermissions();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
@@ -48,40 +45,11 @@ export const GRN: React.FC = () => {
         loadGRNData()
     }, [projectId, currentMaterialRequisitionId])
 
-    const loadGRNSummaryData = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationMaterialRequisitionGRNSummary = {
-                    PageNumber: 1,
-                    PageSize: 100,
-                    MaterialRequisitionId: currentMaterialRequisitionId,
-                    Uniquekey: currentUniquekey,
-                };
 
-                const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRNSummary(params);
-
-                if (E.isRight(response)) {
-
-                    setGRNSummaryDetailData(response.right.Data);
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            "Loading GRN Summary",
-        );
-    };
     const handleAddGRN = useCallback(() => {
         navigate('/grn/add');
     }, [navigate]);
+
     const filteredGRN = useMemo(() => {
         if (!searchTerm.trim()) return GRN;
 
@@ -89,9 +57,11 @@ export const GRN: React.FC = () => {
             item.ChallanNumber?.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [GRN, searchTerm]);
+
     const clearSearchGRN = () => {
         setSearchTerm('');
     };
+
     const handleGRNEdit = useCallback((row: MaterialRequisitionGRNData) => {
         debugger
         navigate(`/grn/add/${row.MaterialRequisitionId}/${row.MaterialRequisitionGRNId}`);
@@ -103,13 +73,10 @@ export const GRN: React.FC = () => {
             setLoadingMessage,
             async () => {
                 const params: FilterWithPaginationMaterialRequisitionGRN = {
-
                     MaterialRequisitionId: currentMaterialRequisitionId,
                     Uniquekey: currentUniquekey,
                     ProjectId: Number(projectId)
-
                 };
-
 
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
 
@@ -117,9 +84,10 @@ export const GRN: React.FC = () => {
 
                     const data = response.right.Data;
 
+                    SetGRN(data)
+
                     SetGRNData(data?.[0]?.MaterialRequisitionDetailGRNData ?? []);
 
-                    SetGRN(data)
                 } else {
                     addToast({ type: "error", title: response.left.message });
 
@@ -175,7 +143,6 @@ export const GRN: React.FC = () => {
                 align: 'left',
                 render: (value?: string) => value || '-'
             },
-
             {
                 key: 'TotalReceivedMaterialQuantity',
                 label: 'Received Quantity',
@@ -193,9 +160,7 @@ export const GRN: React.FC = () => {
                 render: (_: any, row: MaterialRequisitionDetailGRNData) =>
                     (row.MaterialQuantity || 0) -
                     (row.TotalReceivedMaterialQuantity || 0)
-            }
-
-
+            },
         ], [])
 
     const GRNColumns = useMemo<TableColumn[]>(() => [
@@ -280,12 +245,20 @@ export const GRN: React.FC = () => {
             align: 'left',
             render: (value?: string) => value || '-'
         },
+        {
+            key: 'TotalReceivedMaterialQuantity',
+            label: 'Received Quantity',
+            width: '10',
+            sortable: false,
+            align: 'left',
+            render: (value?: string) => value || '-'
+        },
     ], []);
 
     return (
         <div>
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
-            {/* className="flex justify-end gap-4" */}
+
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
@@ -301,13 +274,10 @@ export const GRN: React.FC = () => {
                 addExtraTitle='View Summary'
                 onAddExtra={() => {
                     setIsViewGRNSummaryModalOpen(true);
-                    loadGRNSummaryData();
+                    loadGRNData();
                 }}
                 addExtraWidth={150}
             />
-
-
-
 
             <DataTableExpandable
                 data={filteredGRN}
@@ -338,6 +308,7 @@ export const GRN: React.FC = () => {
                     expandButton: { openText: "Hide", closeText: "Show" }
                 }}
             />
+
             <Modal
                 isOpen={isViewGRNSummaryModalOpen}
                 onClose={() => {
@@ -352,36 +323,47 @@ export const GRN: React.FC = () => {
                 size="xl"
             >
                 <div className="space-y-4">
-                    {GRNSummaryDetailData?.map((item, index) => (
-                        <div key={index} className="bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4"
-                        >
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-3">
-                                <FieldItem label="Date" value={formatDate_dd_MonthName_yy(item?.CreatedDate ?? '')} />
-                                <FieldItem label="Challan No." value={item?.ChallanNumber || '-'} />
-                                <FieldItem label="Vehicle No." value={item?.VehicleNumber || '-'} />
-
-                                <div>
-                                    <p className="text-gray-500">Document</p>
-                                    <MultiImageViewer
-                                        images={parseDocumentUrls(item?.UploadChallanURL)}
-                                        title="Attachment"
-                                        isIcon={false}
-                                        triggerLabel="-"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm border border-gray-300 h-[220px]">
-                                <DataTableWithOutBorder
-                                    columns={MaterialRequisitionDetailColumns}
-                                    data={GRNSummaryDetailData}
-                                    emptyMessage="No Material Requisition Found"
-                                    fixedHeight={true}
-                                    className="flex-1"
-                                />
-                            </div>
+                    {GRN.length === 0 ? (
+                        <div className="flex flex-col justify-center items-center h-full">
+                            <NoDataView
+                                message="No Data Available"
+                            />
                         </div>
-                    ))}
+                    ) : (
+                        <div>
+                            {GRN?.map((item, index) => (
+                                <div key={index} className="bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4"
+                                >
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pb-3">
+                                        <FieldItem label="Date" value={formatDate_dd_MonthName_yy(item?.CreatedDate ?? '')} />
+                                        <FieldItem label="Challan No." value={item?.ChallanNumber || '-'} />
+                                        <FieldItem label="Vehicle No." value={item?.VehicleNumber || '-'} />
+
+                                        <div>
+                                            <p className="text-gray-500">Document</p>
+                                            <MultiImageViewer
+                                                images={parseDocumentUrls(item?.UploadChallanURL)}
+                                                title="Attachment"
+                                                isIcon={false}
+                                                triggerLabel="-"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white rounded-lg p-4 space-y-4 shadow-sm border border-gray-300 h-[220px]">
+                                        <DataTableWithOutBorder
+                                            columns={MaterialRequisitionDetailColumns}
+                                            data={item?.MaterialRequisitionDetailGRNData ?? []}
+                                            emptyMessage="No Material Requisition Found"
+                                            fixedHeight={true}
+                                            recordsPerPage={3}
+                                            className="flex-1"
+                                        />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </Modal>
         </div>

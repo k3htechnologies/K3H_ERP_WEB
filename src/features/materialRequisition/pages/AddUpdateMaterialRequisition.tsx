@@ -1,7 +1,6 @@
 import { Loader } from "@/core/utils/loader"
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { Button } from "@/ui/components/forms/Button";
-import { DateInput } from "@/ui/components/forms/DateInput";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Edit, Plus, Trash2 } from "lucide-react";
 import { useState, useEffect, useMemo, useCallback } from "react";
@@ -11,7 +10,7 @@ import type { FilterWithPaginationMaterialSubMaterialMasterUOM, MaterialSubMater
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import * as E from "fp-ts/Either";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import type { AddUpdateMaterialRequisitionDetailRequest, AddUpdateMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition, MaterialRequisitionDetailData } from "@/features/materialRequisition/models/MaterialRequisitionModel";
+import type { AddUpdateMaterialRequisitionDetailRequest, AddUpdateMaterialRequisitionRequest, FilterWithPaginationMaterialRequisition } from "@/features/materialRequisition/models/MaterialRequisitionModel";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -54,6 +53,7 @@ const initialFormState = (): AddUpdateMaterialRequisitionDetailRequest => ({
     RequiredDate: "",
     Remark: ""
 })
+
 export const AddUpdateMaterialRequisition = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -67,19 +67,14 @@ export const AddUpdateMaterialRequisition = () => {
     const [removeddocumentFilesURLs, setRemoveddocumentFilesURLs] = useState<string[]>([]);
     const [documentURL, setDocumentURL] = useState<string>("");
     const { canAction } = useMenuPermissions("/materialRequisition");
-    const [uomMaster, setUomMaster] = useState<any[]>([]);
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [dropdownLabels, setDropdownLabels] = useState({ materialName: "", uom: "" });
     const [dropdownMaterialResetKey, setDropdownMaterialResetKey] = useState(0);
     const [dropdownSubMaterialResetKey, setDropdownSubMaterialResetKey] = useState(-1);
     const [materialOptions, setMaterialOptions] = useState<any[]>([]);
-    const [selectedMaterialId, setSelectedMaterialId] = useState<number | null>(null);
-    const [selectedUom, setSelectedUom] = useState<string>("");
     const [editIndex, setEditIndex] = useState<number | null>(null);
-    const [selectedSubMaterialId, setSelectedSubMaterialId] = useState<number | null>(null);
     const navigate = useNavigate();
     const { projectId } = useProject();
-
     const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
 
     useEffect(() => {
@@ -90,11 +85,13 @@ export const AddUpdateMaterialRequisition = () => {
         })
             ();
     }, [MaterialRequisitionId]);
+
     useEffect(() => {
         if (addMaterialPopUp) {
             loadMaterialsSubMaterialMasterUOM();
         }
     }, [addMaterialPopUp]);
+
     useEffect(() => {
         const uniqueMaterials = [
             ...new Map(
@@ -113,6 +110,7 @@ export const AddUpdateMaterialRequisition = () => {
         );
 
     }, [materialsubmaterialList]);
+
     const validateMaterialForm = (): {
         isValid: boolean;
         errors: { [key: string]: string };
@@ -136,6 +134,7 @@ export const AddUpdateMaterialRequisition = () => {
             errors: newErrors,
         };
     };
+
     const loadDetailsdata = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -197,6 +196,7 @@ export const AddUpdateMaterialRequisition = () => {
             "Loading Material Requisition",
         );
     };
+
     const handleAddMaterial = async () => {
 
         setErrors({});
@@ -205,6 +205,7 @@ export const AddUpdateMaterialRequisition = () => {
         setMaterialData(initialFormState());
 
     }
+
     const handleEditMaterial = useCallback((row: AddUpdateMaterialRequisitionDetailRequest, index: number) => {
         setErrors({});
         setEditIndex(index);
@@ -235,7 +236,7 @@ export const AddUpdateMaterialRequisition = () => {
             label: "Material",
             align: "left",
             width: "30",
-            render: (value, row) => (
+            render: (value) => (
                 <TooltipText
                     text={value || '-'}
                     maxWidth="250px"
@@ -342,6 +343,7 @@ export const AddUpdateMaterialRequisition = () => {
 
     ]
         , [canAction, materialList, materialOptions, handleEditMaterial]);
+
     // const onFieldChange = useCallback((field: keyof MaterialDetail, value: any) => {
     //     setFormData(prev => ({
     //         ...prev,
@@ -354,6 +356,7 @@ export const AddUpdateMaterialRequisition = () => {
     //         }));
     //     }
     // }, [errors]);
+
     const subMaterialOptions = useMemo(() => {
         if (!materialData.MaterialMasterId) return [];
 
@@ -432,21 +435,16 @@ export const AddUpdateMaterialRequisition = () => {
 
                 const payload = PushMaterialRequisitionFormData();
 
-                const response =
-                    await materialRequisitionService.apiCallToAddMaterialRequisition(payload);
+                const response = await materialRequisitionService.apiCallToAddMaterialRequisition(payload);
 
                 if (E.isRight(response)) {
-                    addToast({
-                        type: "success",
-                        title: response.right.SuccessMessage[0]
-                    });
+
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
                     navigate("/materialRequisition");
+
                 } else {
-                    addToast({
-                        type: "error",
-                        title: response.left?.message
-                    });
+                    addToast({ type: "error", title: response.left?.message });
                 }
 
                 return response;
@@ -502,19 +500,17 @@ export const AddUpdateMaterialRequisition = () => {
     };
 
     const saveMaterial = async () => {
-
         setErrors({});
 
         const validation = validateMaterialForm();
 
         if (!validation.isValid) {
-
             setErrors(validation.errors);
-
             addToast({ type: "error", title: "Please fill the required filed" });
 
             return;
         }
+
         const newItem: AddUpdateMaterialRequisitionDetailRequest = {
             ...materialData
         };
@@ -535,9 +531,8 @@ export const AddUpdateMaterialRequisition = () => {
 
         setEditIndex(null);
         setMaterialData(initialFormState());
-
-
     };
+
     return (
         <>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -548,9 +543,10 @@ export const AddUpdateMaterialRequisition = () => {
                     <form onSubmit={(e) => { e.preventDefault(); void handleSave(); }}>
                         <div className="space-y-6">
                             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">Material Requisition Details </h3>
-                            <div className="flex items-center justify-between">                                <h3 className="text-md font-medium text-gray-500">
-                                Material Details
-                            </h3>
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-md font-medium text-gray-500">
+                                    Material Details
+                                </h3>
 
 
                                 <Button
@@ -576,12 +572,9 @@ export const AddUpdateMaterialRequisition = () => {
                                         className="flex-1"
                                     />
                                 </div>
-
                             )}
 
-
                             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
-
                             <div className="flex items-center justify-between pb-3">
                                 <MultiFilePicker
                                     label="Upload Document"
@@ -616,6 +609,7 @@ export const AddUpdateMaterialRequisition = () => {
                         </div>
                     </form>
                 </div>
+
                 <BottomActionBar
                     cancelText="Cancel"
                     saveText={
@@ -629,9 +623,6 @@ export const AddUpdateMaterialRequisition = () => {
                     }}
                     isLoading={isLoading}
                 />
-
-
-
             </div>
 
             <Modal
@@ -682,6 +673,7 @@ export const AddUpdateMaterialRequisition = () => {
                         }}
                         error={errors.MaterialMasterId}
                     />
+
                     <SingleSelectDropdownWithPagination
                         required
                         label="Sub Material"
@@ -734,6 +726,7 @@ export const AddUpdateMaterialRequisition = () => {
                         error={errors.MaterialQuantity}
                     />
                     <div>
+
                         <DatePickerInput
                             label="Required Date"
                             required
@@ -748,6 +741,7 @@ export const AddUpdateMaterialRequisition = () => {
                         />
                         {errors.RequiredDate && <p className="text-red-500 text-sm mt-1">{errors.RequiredDate}</p>}
                     </div>
+
                     <TextArea
                         label="Remark"
                         className="thin-scroll"
@@ -762,6 +756,7 @@ export const AddUpdateMaterialRequisition = () => {
                         error={errors.Remark}
                     />
                 </div>
+                
             </Modal>
         </>
 

@@ -49,7 +49,6 @@ export interface GenerateMaterialRequisitionPurchaseOrderPdfData {
     Uniquekey: string | null;
     Remarks: string | null;
     TermsCondition: string | null;
-    
 }
 
 export type MaterialRequisitionPurchaseOrderListResponse = ApiResponse<MaterialRequisitionPurchaseOrderData[]>;

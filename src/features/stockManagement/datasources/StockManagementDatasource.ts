@@ -1,7 +1,7 @@
 import baseClient from '@/core/config/baseClient'
 import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import type { AddUpdateStockManagementRequest, FilterWithPaginationStockManagementHistoryRequest, FilterWithPaginationStockManagementRequest, StockManagementHistoryListResponse, StockManagementListResponse, StockManagementSaveResponse } from 'features/stockManagement/models/StockManagementModel';
-import { StockManagementApi } from 'features/stockManagement/api/StockManagementApi';
+import { StockManagementApi } from '@/features/stockManagement/api/StockManagementApi';
 
 export abstract class StockManagementDatasource {
 
@@ -67,15 +67,13 @@ export class StockManagementDatasourceImpl implements StockManagementDatasource 
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.pullStockManagement(params);
+                return await this.pullStockManagementHistory(params);
             }
-
             throw error
         }
     }
 
     async addUpdateStockManagement(params: AddUpdateStockManagementRequest): Promise<StockManagementSaveResponse> {
-
         try {
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(

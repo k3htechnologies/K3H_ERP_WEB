@@ -45,6 +45,7 @@ export interface MaterialRequisitionDetailGRNData {
     ModifiedBy: string | null,
     ModifiedDate: string | null,
 }
+
 export interface AddUpdateMaterialRequisitionGRNRequest {
     MaterialRequisitionGRNId: number | 0
     Uniquekey: string | null
@@ -97,7 +98,6 @@ export interface MaterialRequisitionGRNSummaryData {
     VehicleNumber: string | null
     UploadChallanURL: string | null
     CreatedDate: string;
-
 }
 
 export type MaterialRequisitionGRNListResponse = ApiResponse<MaterialRequisitionGRNData[]>;

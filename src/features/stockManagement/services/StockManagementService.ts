@@ -1,7 +1,7 @@
 import type { Failure } from '@/core/api/FailureResponse';
 import * as E from 'fp-ts/Either';
-import { StockManagementDatasourceImpl } from 'features/stockManagement/datasources/StockManagementDatasource';
 import type { AddUpdateStockManagementRequest, FilterWithPaginationStockManagementHistoryRequest, FilterWithPaginationStockManagementRequest, StockManagementHistoryListResponse, StockManagementListResponse, StockManagementSaveResponse } from 'features/stockManagement/models/StockManagementModel';
+import { StockManagementDatasourceImpl } from '@/features/stockManagement/datasources/StockManagementDatasource';
 
 const StockManagementDatasource = new StockManagementDatasourceImpl();
 

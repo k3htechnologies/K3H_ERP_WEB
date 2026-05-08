@@ -49,8 +49,8 @@ export interface MaterialRequisitionData {
     CompanyName: string | null
     ExpectedDeliveryInDays: number | 0
     MaterialRequisitionInvoiceData: MaterialRequisitionInvoiceData[];
-
 }
+
 export interface AddUpdateMaterialRequisitionDetailRequest {
     // MaterialRequisitionDetailId:number;
     // Uniquekey:string;
@@ -65,6 +65,7 @@ export interface AddUpdateMaterialRequisitionDetailRequest {
     RequiredDate: string | null;
     Remark: string ;
 }
+
 export interface MaterialRequisitionDetailData {
     MaterialRequisitionDetailId: number;
     Uniquekey: string;
@@ -105,6 +106,7 @@ export interface AddUpdateMaterialRequisitionRequest {
     RemoveAttachmentsURL: string | null;
     MaterialRequisitionDetailJSON: string;
 }
+
 //used in delete and close both as the payload is same
 export interface DeleteMaterialRequisitionRequest {
     MaterialRequisitionId: number,

@@ -180,6 +180,7 @@ import ChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/Chan
 import ViewChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ViewChannelPartnerUniverse';
 import CrmDashboard from '@/features/crmDashboard/pages/CrmDashboard';
 import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
+import AchievementReport from '@/features/achievement/pages/AchievementReport';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -397,6 +398,7 @@ function App() {
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
 
             <Route path="performance" element={<PerformanceReport />} />
+            <Route path="achievement" element={<AchievementReport />} />
 
 
             {/* REDEVELOPMENT */}

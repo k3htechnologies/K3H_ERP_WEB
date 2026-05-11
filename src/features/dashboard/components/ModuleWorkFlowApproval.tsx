@@ -131,7 +131,7 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
             >
 
                 <p className="text-md font-semibold text-gray-500 pb-3">
-                    Pending Module Approvals
+                    Pending Approvals
                 </p>
 
                 {/* GRID */}

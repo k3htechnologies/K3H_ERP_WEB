@@ -46,7 +46,7 @@ const Employee: React.FC = () => {
   //#endregion
 
   //#region MENU PERMISSIONS
-  const { canAction } = useMenuPermissions('/projectMaster');
+  const { canAction } = useMenuPermissions('/projectMasterAssignEmployee');
   //#endregion
 
 

@@ -5,10 +5,18 @@ export interface FilterWithPaginationInventoryParkingOverallReportRequest {
     PageNumber: number;
     ProjectId?: number | null;
     ProjectName?: string | null;
-    ExportType?: 'Excel' | 'PDF' | 'SAMPLE';
+    ExportType?: 'Excel' | 'PDF';
     SortBy?: string;
 }
+export interface ProjectInventoryParkingDetailsData {
+    ProjectId: number | null;
+    ProjectName: string | null;
 
+    TotalBuilding: number | null;
+    TotalReraArea: number | null;
+    TotalUnit: number | null;
+    AvailableUnit: number | null;
+}
 export interface InventoryParkingOverallReportData {
     ProjectId: number | null;
     InventoryFlatFloorBasementPodiumWingId: number | null;
@@ -30,11 +38,15 @@ export interface InventoryParkingOverallReportData {
     BlockUnit: number | null;
     TotalUnit: number | null;
 
+    AvailableParking: number | null;
+    BlockedParking: number | null;
+    BookedParking: number | null;
+    HoldParking: number | null;
     MemberParking: number | null;
-    SalesParking: number | null;
     TotalParking: number | null;
 }
 
+export type ProjectInventoryParkingDetailsResponse = ApiResponse<ProjectInventoryParkingDetailsData[]>;
 export type InventoryParkingOverallReportResponse = ApiResponse<InventoryParkingOverallReportData[]>;
 
 

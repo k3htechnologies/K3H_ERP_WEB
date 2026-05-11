@@ -28,6 +28,7 @@ export interface Table0 {
     TotalBrokerageAmount: number
     PaidBrokerageAmount: number
     OutstandingBrokerageAmount: number
+    TotalChannelPartner: number
 }
 export interface Table1 {
     BrokerageAmount: number

@@ -76,7 +76,7 @@ const Bank: React.FC = () => {
   //#endregion
 
   //#region MENU PERMISSIONS
-  const { canAction } = useMenuPermissions('/projectMaster');
+  const { canAction } = useMenuPermissions('/projectMasterBankDetails');
   //#endregion
 
   //#region INIT

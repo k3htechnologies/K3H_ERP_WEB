@@ -400,6 +400,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FieldItem label="CP Code" value={editChannelPartnerData?.SystemGeneratedCode || '-'} />
                 <FieldItem label="Full Name" value={editChannelPartnerData?.Name || '-'} />
+                <FieldItem label="E-mail Id" value={editChannelPartnerData?.EmailId || '-'} />
                 <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(editChannelPartnerData?.DateOfBirth ?? "-")} />
                 <FieldItem label="Mobile No" value={editChannelPartnerData?.MobileNumber ? `+91 ${editChannelPartnerData.MobileNumber}` : '-'} />
                 <FieldItem label="Designation" value={editChannelPartnerData?.Designation || '-'} />
@@ -441,17 +442,13 @@ const ViewChannelPartnerSourcing: React.FC = () => {
             <hr className="border-t border-gray-200" />
 
             {/* ADDRESS DETAILS */}
-            <section className="p-4">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Address
-              </h4>
-
+            
               <section className="p-4">
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
                   Address
                 </h4>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                   <FieldItem label="Country" value={editChannelPartnerData?.CountryName ?? '-'} />
                   <FieldItem label="State" value={editChannelPartnerData?.StateName ?? '-'} />
                   <FieldItem label="District" value={editChannelPartnerData?.DistrictName ?? '-'} />
@@ -462,7 +459,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                   <FieldItem label="Office Address" value={editChannelPartnerData?.OfficeAddress} />
                 </div>
               </section>
-            </section>
 
             <hr className="border-t border-gray-200" />
 
@@ -471,14 +467,11 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                 Document Details
               </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                   <FieldItem label="PAN Number" value={editChannelPartnerData?.PanNumber} urls={editChannelPartnerData?.PanCardURL} isIcon />
                   <FieldItem label="Aadhaar Number" value={editChannelPartnerData?.AadharCardNumber} urls={editChannelPartnerData?.AadharCardURL} isIcon />
                   <FieldItem label="GST Number" value={editChannelPartnerData?.GSTNumber} urls={editChannelPartnerData?.GSTCertificateURL} isIcon />
                 </div>
-              </div>
             </section>
 
             <hr className="border-t border-gray-200" />

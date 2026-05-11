@@ -49,27 +49,40 @@ export const ViewProjectMaster: React.FC = () => {
     const { addToast } = useToast()
 
     const navigate = useNavigate();
+
     const { listState } = useProjectMasterListState();
 
-    const { canAction } = useMenuPermissions('/projectMaster');
+    const { canView: canProjectView, canAction: canProjectAction } = useMenuPermissions('/projectDetails');
+
+    const { canView: canApprovalView, canAction: canApprovalAction } = useMenuPermissions('/projectMasterApprovalSetup');
+
+    const { canView: canBankView, canAction: canBankAction } = useMenuPermissions('/projectMasterBankDetails');
+
+    const { canView: canCompanyView, canAction: canCompanyAction } = useMenuPermissions('/projectMasterSetCompany');
+
+    const { canView: canAssignEmployeeView, canAction: canAssignEmployeeAction } = useMenuPermissions('/projectMasterAssignEmployee');
 
     const [editProjectData, setEditProjectData] = useState<ProjectMasterData | null>(null);
 
-    const TabList = [
-        { id: "Project Overview", label: 'Project Overview' },
-        { id: "Employee", label: 'Employee' },
-        { id: "Bank Details", label: 'Bank Details' },
-        { id: "Company", label: 'Company' },
-        { id: "Approval", label: 'Approval' }
-    ];
+    const TabList: { id: string; label: string }[] = [
 
+        canProjectView  ? { id: "Project Overview", label: "Project Overview" } : null,
 
-    const [activeTab, setActiveTab] = useState<string>(TabList[0].id);
-    //#endregion
+        canAssignEmployeeView ? { id: "Employee", label: "Employee" } : null,
 
-    //#region INIT
+        canBankView ? { id: "Bank Details", label: "Bank Details" } : null,
+
+        canCompanyView  ? { id: "Company", label: "Company" } : null,
+
+        canApprovalView  ? { id: "Approval", label: "Approval" } : null
+
+    ].filter(Boolean) as { id: string; label: string }[];
+
+    const [activeTab, setActiveTab] = useState<string>(TabList?.[0]?.id ?? '');
+
     useEffect(() => {
         if (listState.projectId) {
+
             loadProjectData();
         }
     }, [listState.projectId]);
@@ -121,10 +134,6 @@ export const ViewProjectMaster: React.FC = () => {
         );
     };
 
-    //#endregion
-
-    //#region DATA LOAD PROJECT WITH EMPLOYEE | COMPANY | BANK DETAILS
-
     const loadProjectMasterWithEmployee = async (ProjectId: number, searchText = "") => {
         await runApiWithLoader(
             setIsLoading,
@@ -153,23 +162,18 @@ export const ViewProjectMaster: React.FC = () => {
         );
     };
 
-    //#region SERACH EMPLOYEE NAME 
     const searchEmployeeName = async (searchValue: string) => {
 
         setSearchTermForEmployeeName(searchValue);
         await loadProjectMasterWithEmployee(editProjectData!.ProjectId, searchValue);
 
     }
-    //#endregion
-
-    //#region CLEAR SERACH DEPARTMENT 
+    
     const clearsearchForEmployeeName = async () => {
         setSearchTermForEmployeeName('');
         debouncedSearchForEmployeeName.cancel?.();
         await loadProjectMasterWithEmployee(editProjectData!.ProjectId);
     }
-
-    //#endregion
 
     const loadProjectMasterWithCompany = async (ProjectId: number) => {
         await runApiWithLoader(
@@ -272,51 +276,35 @@ export const ViewProjectMaster: React.FC = () => {
     };
 
 
-    //#endregion 
-
-    //#region BACK VIEW PROJECT PAGE TO TABLE PROJECT MASTER
     const handleBackToListProjectMaster = () => {
         navigate('/projectMaster');
     };
-    //#endregion
-
-    //#region EDIT PROJECT
+    
     const handleEditProjectMaster = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate(`/projectMaster/add/${row.ProjectId}`);
     };
-    //#endregion
-
-    //#region EDIT PROJECT WITH EMPLOYEE
+    
     const handleEditProjectMasterWithEmployee = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/employee');
     };
-    //#endregion
-
-    //#region EDIT PROJECT WITH COMPANY
+    
     const handleEditProjectMasterWithCompany = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/company');
     };
-    //#endregion
-
-    //#endregion
-    //#region EDIT PROJECT WITH BANK
+    
     const handleEditProjectMasterWithBank = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/bank');
     };
-    //#endregion
-
-    //#region EDIT PROJECT WITH EMPLOYEE
+    
     const handleEditApproval = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/approval');
     };
-    //#endregion
-
-    //#endregion
+    
 
     useEffect(() => {
         if (activeTabForModulesWorkflowApproval.length > 0 && !activeModuleTab) {
@@ -341,7 +329,11 @@ export const ViewProjectMaster: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListProjectMaster()}
-                canAction={canAction}
+                canAction={activeTab === "Project Overview" ? canProjectAction 
+                         : activeTab === 'Employee' ? canAssignEmployeeAction 
+                         : activeTab === 'Bank Details' ? canBankAction 
+                         : activeTab === 'Company' ? canCompanyAction 
+                         : canApprovalAction}
                 onEdit={() => {
 
                     if (activeTab === "Project Overview") {
@@ -511,7 +503,7 @@ export const ViewProjectMaster: React.FC = () => {
                                             ? `+91 ${editProjectData?.DesigningArchitectMobileNumber}`
                                             : '-'}
                                         />
-                                        
+
 
                                     </div>
 
@@ -519,7 +511,7 @@ export const ViewProjectMaster: React.FC = () => {
                                         RCC Consultant
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                       
+
                                         <FieldItem label="Name" value={editProjectData?.RCCConsultantName ?? '-'} />
                                         <FieldItem label="Mobile Number" value={editProjectData?.RCCConsultantMobileNumber
                                             ? `+91 ${editProjectData?.RCCConsultantMobileNumber}`

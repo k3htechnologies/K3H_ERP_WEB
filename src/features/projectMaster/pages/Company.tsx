@@ -44,7 +44,7 @@ const Company: React.FC = () => {
   //#endregion
 
   //#region MENU PERMISSIONS
-  const { canAction } = useMenuPermissions('/projectMaster');
+  const { canAction } = useMenuPermissions('/projectMasterSetCompany');
   //#endregion
 
 

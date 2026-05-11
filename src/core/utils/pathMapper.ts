@@ -56,7 +56,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/approvalcategory': '/approvalCategory',
         '/approvaldocument': '/approvalDocument',
 
-        '/enquiry': '/enquiry',
+
         '/resignation': '/resignation',
         '/payrollreport': '/payrollReport',
         '/attendancecalendar': '/attendanceCalendar',
@@ -65,24 +65,32 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         '/approvedbank': '/approvedBank',
         '/content': '/content',
+
+        '/settingdashboard': '/settingDashboard',
+        '/payrolldashboard': '/payrollDashboard',
+
+        //LEGAL
+        '/litigation': '/litigation',
+        '/legaldashboard': '/legalDashboard',
+
+        //SALES
+        '/saledashboard': '/saleDashboard',
+        '/enquiry': '/enquiry',
+        '/enquiryreport': '/enquiryReport',
+        '/cpenquiryreport': '/cpEnquiryReport',
+        '/classificationparameter': '/classificationParameter',
+        '/performance': '/performance',
+        '/achievement': '/achievement',
         '/sourcing': '/sourcing',
         '/booking': '/booking',
         '/calltracker': '/callTracker',
         '/othercharges': '/otherCharges',
-        '/settingdashboard': '/settingDashboard',
-        '/payrolldashboard': '/payrollDashboard',
-        '/saledashboard': '/saleDashboard',
-        '/enquiryreport': '/enquiryReport',
-        '/cpenquiryreport': '/cpEnquiryReport',
-        '/paymentschedulereport': '/paymentScheduleReport',
-        '/paymentschedule': '/paymentSchedule',
-        '/litigation': '/litigation',
+        '/paymentschedulescheme': '/paymentScheduleScheme',
         '/target': '/target',
         '/incentivereport': '/incentiveReport',
-        '/paymentschedulescheme': '/paymentScheduleScheme',
-        '/legaldashboard': '/legalDashboard',
-        '/classificationparameter': '/classificationParameter',
-        '/performance': '/performance',
+        '/paymentschedulereport': '/paymentScheduleReport',
+        '/paymentschedule': '/paymentSchedule',
+
 
         // INVENTORY
         '/inventorydashboard': '/inventoryDashboard',

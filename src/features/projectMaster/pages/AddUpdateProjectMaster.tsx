@@ -113,7 +113,7 @@ const AddUpdateProjectMaster: React.FC = () => {
     //#endregion
 
     //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/projectMaster');
+    const { canAction } = useMenuPermissions('/projectDetails');
     //#endregion
 
     //#region COUNTRY STATE CITY DISTRICT 

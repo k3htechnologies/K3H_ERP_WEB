@@ -11,7 +11,7 @@ const InventoryHeader: React.FC = () => {
 
   return (
     <div className="bg-white rounded-xl p-3 flex items-center justify-end" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
-      {/* RIGHT SIDE */}
+      
       <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
        
           <Button

@@ -111,14 +111,14 @@ export const fetchChannelPartnerByMobileNumber = async (mobileNumber: string) =>
 
 };
 
-export const fetchChannelPartnerById = async (channelPartnerId: number, projectId: number) => {
+export const fetchChannelPartnerById = async (channelPartnerId: number, projectId?: number) => {
 
     const responseEither = await ChannelPartnerService.apiCallPullChannelPartner({
         PageSize: 1,
         PageNumber: 1,
         IsCheckPermission: false,
         ChannelPartnerId: Number(channelPartnerId),
-        ProjectId: Number(projectId)
+        ProjectId: Number(projectId) ?? 0
     });
 
     if (E.isLeft(responseEither)) return null;

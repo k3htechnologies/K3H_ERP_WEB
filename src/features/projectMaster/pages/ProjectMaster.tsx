@@ -30,7 +30,6 @@ import ToggleSwitch from '@/ui/components/forms/ToggleSwitch';
 
 export const ProjectMaster: React.FC = () => {
 
-  //#region STATE
   const [projectMasterList, setProjectMasterList] = useState<ProjectMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -38,38 +37,31 @@ export const ProjectMaster: React.FC = () => {
   const { listState, updateListState } = useProjectMasterListState();
   const { searchTerm, filters, sortInfo } = listState;
 
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
-  // TOAST
   const { addToast } = useToast()
 
-  // SINGLE SEARCH TEXT BOX
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchProjects(value)
   }, 350)
 
-
-  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeProjectMasterColumnsModal, setIsShowCustomizeProjectMasterColumnsModal] = useState(false);
 
-  //#endregion
+  const { canAction: canProjectAction, canExport: canProjectExport } = useMenuPermissions('/projectDetails');
 
-  //#region MENU PERMISSIONS
-  const { canAction, canExport } = useMenuPermissions();
-  //#endregion
+  const { canAction: canApprovalAction } = useMenuPermissions('/projectMasterApprovalSetup');
 
-  //#region INIT
+  const { canAction: canBankAction } = useMenuPermissions('/projectMasterBankDetails');
+
+  const { canAction: canCompanyAction } = useMenuPermissions('/projectMasterSetCompany');
+
+  const { canAction: canAssignEmployeeAction } = useMenuPermissions('/projectMasterAssignEmployee');
 
   useEffect(() => {
-    // Sync pagination with context state
     setPagination({ currentPage: listState.page });
-
-    // Load projects with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
       loadProjects(listState.page, { ProjectName: String(listState.searchTerm).trim() }, listState.sortInfo);
     } else {
@@ -424,84 +416,100 @@ export const ProjectMaster: React.FC = () => {
         fixed: 'right',
         align: 'center',
         render: (_value, row) => (
-          canAction ? (
-            <div className="flex items-center justify-center gap-2">
 
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleViewProjectEmployee(row)
-                }}
-                color='transparent'
-                isborderRadius
-                size='sm'
-                style={{
-                  color: 'blue',
-                  padding: '4px 8px'
-                }}
-                title="Project Employee"
-              >
-                <User2 className="h-4 w-4" />
-              </Button>
+          <div className="flex items-center justify-center gap-2">
 
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleViewProjectCompany(row)
-                }}
-                color='transparent'
-                isborderRadius
-                size='sm'
-                style={{
-                  color: 'green',
-                  padding: '4px 8px'
-                }}
-                title="Project Company"
-              >
-                <Building2Icon className="h-4 w-4" />
-              </Button>
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (!canAssignEmployeeAction) return;
+                handleViewProjectEmployee(row)
+              }}
+              color='transparent'
+              isborderRadius
+              size='sm'
 
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleViewProjectBank(row)
-                }}
-                color='transparent'
-                isborderRadius
-                size='sm'
-                style={{
-                  color: 'gray',
-                  padding: '4px 8px'
-                }}
-                title="Project Bank"
-              >
-                <BanknoteXIcon className="h-4 w-4" />
-              </Button>
+              style={{
+                color: canAssignEmployeeAction ? 'blue' : '#9CA3AF',
+                padding: '4px 8px',
+                cursor: canAssignEmployeeAction ? 'pointer' : 'not-allowed',
+                opacity: canAssignEmployeeAction ? 1 : 0.5
+              }}
+              title="Project Employee"
+            >
+              <User2 className="h-4 w-4" />
+            </Button>
 
-              <Button
-                onClick={(e) => {
-                  e.preventDefault()
-                  e.stopPropagation()
-                  handleViewProjectApproval(row)
-                }}
-                color='transparent'
-                isborderRadius
-                size='sm'
-                style={{
-                  color: 'black',
-                  padding: '4px 8px'
-                }}
-                title="Modules Workflow Approval"
-              >
-                <CheckCircle className="h-4 w-4" />
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (!canCompanyAction) return;
+                handleViewProjectCompany(row)
+              }}
+              color='transparent'
+              isborderRadius
 
-              </Button>
-            </div>
-          ) : null
+              size='sm'
 
+              style={{
+                color: canCompanyAction ? 'green' : '#9CA3AF',
+                padding: '4px 8px',
+                cursor: canCompanyAction ? 'pointer' : 'not-allowed',
+                opacity: canCompanyAction ? 1 : 0.5
+              }}
+              title="Project Company"
+            >
+              <Building2Icon className="h-4 w-4" />
+            </Button>
+
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (!canBankAction) return;
+                handleViewProjectBank(row)
+              }}
+              color='transparent'
+              isborderRadius
+              disabled={!canBankAction}
+              size='sm'
+              style={{
+                color: canBankAction ? 'gray' : '#9CA3AF',
+                padding: '4px 8px',
+                cursor: canBankAction ? 'pointer' : 'not-allowed',
+                opacity: canBankAction ? 1 : 0.5
+              }}
+              title="Project Bank"
+            >
+              <BanknoteXIcon className="h-4 w-4" />
+            </Button>
+
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                if (!canApprovalAction) return;
+                handleViewProjectApproval(row)
+              }}
+              color='transparent'
+              isborderRadius
+              disabled={!canApprovalAction}
+              size='sm'
+              
+              style={{
+                color: canApprovalAction ? 'black' : '#9CA3AF',
+                padding: '4px 8px',
+                cursor: canApprovalAction ? 'pointer' : 'not-allowed',
+                opacity: canApprovalAction ? 1 : 0.5
+              }}
+              title="Modules Workflow Approval"
+            >
+              <CheckCircle className="h-4 w-4" />
+
+            </Button>
+          </div>
 
         )
       }
@@ -608,15 +616,15 @@ export const ProjectMaster: React.FC = () => {
         onCustomize={() => setIsShowCustomizeProjectMasterColumnsModal(true)}
 
         // ADD
-        isShowAddButton={canAction}
+        isShowAddButton={canProjectAction}
         addTitle="Add"
         onAdd={handleAddProjectMasterModal}
 
         // IMPORT 
-        isShowImportButton={canAction}
+        isShowImportButton={canProjectAction}
 
         // EXPORT
-        isShowExportButton={canExport && projectListForTable.length > 0}
+        isShowExportButton={canProjectExport && projectListForTable.length > 0}
         onExportExcel={handleExportProjectExcel}
         onExportPdf={handleExportProjectPdf}
         exportLoading={isLoading}

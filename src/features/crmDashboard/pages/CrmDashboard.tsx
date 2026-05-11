@@ -24,7 +24,7 @@ const CrmDashboard: React.FC = () => {
     const { addToast } = useToast();
     const { projectId } = useProject();
 
-    const [filterType, setFilterType] = useState<"TODAY" | "WEEKLY" | "MONTHLY" | "DATEWISE">("WEEKLY");
+    const [filterType, setFilterType] = useState<"TODAY" | "WEEKLY" | "MONTHLY" | "DATEWISE">("MONTHLY");
     const [fromDate, setFromDate] = useState<string | null>(null);
     const [toDate, setToDate] = useState<string | null>(null);
 
@@ -91,27 +91,32 @@ const CrmDashboard: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}><div /></Loader>
 
 
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
 
                 <div className="flex gap-2">
+                    {["Today", "Weekly", "Monthly", "Datewise", "Overall"].map((tab) => {
 
-                    {["Today", "Weekly", "Monthly", "Datewise","Overall"].map((tab) => (
+                        const tabValue = tab.toUpperCase();
 
-                        <button
-                            key={tab}
-                            onClick={() => {
-                                setFilterType(tab as any);
+                        return (
+                            <button
+                                key={tab}
+                                onClick={() => {
 
-                                if (tab.toUpperCase() !== "DATEWISE") {
-                                    setFromDate(null);
-                                    setToDate(null);
-                                }
-                            }}
-                            className={`px-6 py-3 rounded-md text-sm font-medium transition-all  ${filterType === tab ? "bg-blue-600 text-white shadow" : "bg-gray-200 hover:bg-gray-200 text-gray-700"}`}
-                        >
-                            {tab}
-                        </button>
-                    ))}
+                                    setFilterType(tabValue as any);
+
+                                    if (tabValue !== "DATEWISE") {
+                                        setFromDate(null);
+                                        setToDate(null);
+                                    }
+                                }}
+                                className={`px-6 py-3 rounded-md text-sm font-medium transition-all ${filterType === tabValue ? "bg-blue-600 text-white shadow" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
+                                    }`}
+                            >
+                                {tab}
+                            </button>
+                        );
+                    })}
                 </div>
 
 
@@ -133,8 +138,8 @@ const CrmDashboard: React.FC = () => {
 
             </div>
 
-            
-            <div className="pb-1">
+
+            <div className="pt-5">
                 <OverviewCards overViewData={overViewCardData} />
             </div>
 

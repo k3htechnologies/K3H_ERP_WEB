@@ -1233,6 +1233,79 @@ export const LocalStorageHelper = {
   },
   //#endregion
 
+  //#region STORE ACHIEVEMENT BY PROJECT COLUMNS
+  storeAchievementByProjectTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_PROJECT_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Project Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET ACHIEVEMENT BY PROJECT COLUMNS
+  getAchievementByProjectTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_PROJECT_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_PROJECT_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Project Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+  //#endregion
+
+  //#region STORE ACHIEVEMENT BY SOURCING COLUMNS
+  storeAchievementBySourcingTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_SOURCING_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Sourcing Columns Details:', error)
+    }
+  },
+  //#endregion
+  //#region GET ACHIEVEMENT BY SOURCING COLUMNS
+  getAchievementBySourcingTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_SOURCING_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_SOURCING_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Sourcing Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+  //#endregion
+
+  //#region STORE ACHIEVEMENT BY CLOSING COLUMNS
+  storeAchievementByClosingTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CLOSING_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Closing Columns Details:', error)
+    }
+  },
+  //#endregion
+  
+  //#region GET ACHIEVEMENT BY CLOSING COLUMNS
+  getAchievementByClosingTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CLOSING_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CLOSING_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Closing Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+  //#endregion
+
 
   //#region CLEAR LOCAL STORAGE
   clearLocalStorageData: (): void => {
@@ -1278,7 +1351,9 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_UNIVERSE_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_PROJECT_COLUMNS); 
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CLOSING_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_SOURCING_COLUMNS);
 
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);

@@ -451,6 +451,11 @@ export const getPageInfo = (path: string) => {
                 title: "Performance",
                 description: "Track Team Progress Against Every Target",
             }
+        case 'achievement':
+            return {
+                title: "Achievement",
+                description: "Recognize and Reward Top Performers",
+            }
 
 
 

@@ -77,6 +77,10 @@ export const LOCAL_STORAGE_KEYS = {
     BOOKING_SELECTED_COLUMNS: 'booking.selectedColumns',
     INCENTIVE_REPORT_COLUMNS: 'incentive_report.selectedColumns',
     PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS: 'paymentScheduleSchemeMaster.selectedColumns',
+    ACHIEVEMENT_BY_PROJECT_COLUMNS: 'achievementByProject.selectedColumns',
+    ACHIEVEMENT_BY_CLOSING_COLUMNS: 'achievementByClosing.selectedColumns',
+    ACHIEVEMENT_BY_SOURCING_COLUMNS: 'achievementBySourcing.selectedColumns',
+
 
     //CRM
     BROKERAGE_BOOKING_SELECTED_COLUMNS: 'brokerage.selectedColumns',

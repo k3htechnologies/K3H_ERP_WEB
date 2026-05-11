@@ -58,6 +58,8 @@ import { fetchInventoryFlatDetails, fetchPaginatedInventoryFlatDropdown } from "
 import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
 import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
 import { fetchPaginationProjectWithEmployeeDropdown } from "@/features/projectMaster/projectWiseEmployeeDropdown";
+import { checkDuplicateField } from "@/core/utils/duplicateValidation";
+import { ChannelPartnerService } from "@/features/ChannelPartner/services/ChannelPartnerService";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
   EnquiryId: 0,
@@ -638,6 +640,29 @@ export const AddUpdateEnquiry: React.FC = () => {
       addToast({ type: "error", title: "Please fill the required filed" });
 
       return;
+    }
+
+    if (formData.EnquiryId === 0 && formData.ChannelPartnerTeamMemberMobileNumber !== "") {
+
+      const isDuplicate = await checkDuplicateField({
+        fieldName: "MobileNumber",
+        fieldValue: formData.ChannelPartnerTeamMemberMobileNumber || "",
+        apiCallback: ChannelPartnerService.apiCallPullChannelPartner,
+        setIsLoading,
+        setLoadingMessage,
+        loadingMessage: "Checking Team Member Mobile Number..."
+      });
+
+      if (isDuplicate) {
+        setErrors(prev => ({
+          ...prev,
+          ChannelPartnerTeamMemberMobileNumber: "Team Member Mobile number already exists"
+        }));
+
+        addToast({ type: "error", title: "Team Member Mobile number already exists" });
+
+        return;
+      }
     }
 
     if (formData.EnquiryId === 0 && !isOtpVerified) {

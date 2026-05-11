@@ -18,9 +18,9 @@ const BrokerageSummary: React.FC<Props> = ({ summary, topBroker }) => {
 
                 {/* Header */}
                 <div className="flex justify-between items-center text-sm font-medium text-gray-600 border-b pb-2" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
-                    <span>Total Broker</span>
+                    <span>Total Channel Partners</span>
                     <span className="font-semibold text-gray-900">
-                        {s.TotalBroker || 0}
+                        {s.TotalChannelPartner || 0}
                     </span>
                 </div>
 

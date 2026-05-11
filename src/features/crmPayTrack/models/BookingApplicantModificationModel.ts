@@ -101,6 +101,9 @@ export interface BookingApplicantModificationRequest {
     RemovePaymentProofURL?: string;
     BookingApplicantModificationDocumentUploadURL?: File[] | null;
     RemoveBookingApplicantModificationDocumentUploadURL?: string;
+    ModifiedBy?:string | null;
+    CreatedBy?:string | null;
+
 }
 
 export type BookingApplicantModificationListResponse = ApiResponse<BookingApplicantModificationDataRequest[]>;

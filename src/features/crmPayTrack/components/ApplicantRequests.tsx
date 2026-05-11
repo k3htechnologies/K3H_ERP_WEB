@@ -94,9 +94,11 @@ type RequestBookingApplicantWithFiles = BookingApplicantModificationDataRequest 
     RemoveNomineeFormURL?: string;
     RemoveStatementOfSourceOfFundsURL?: string;
     RemovePaymentProofURL?: string;
+    
+    RemoveBookingApplicantModificationDocumentUploadURL?: string;
+
     CreatedDate?: string | null;
     ModifiedDate?: string | null;
-    RemoveBookingApplicantModificationDocumentUploadURL?: string;
 
 }
 
@@ -449,11 +451,11 @@ export const ApplicantRequests: React.FC = () => {
             IsApproval: false,
             ApprovalStatus: "",
             VersionNumber: "1",
-            CreatedById: null,
-            CreatedBy: null,
+            CreatedById: 0,
+            CreatedBy: "",
             CreatedDate: null,
-            ModifiedById: null,
-            ModifiedBy: null,
+            ModifiedById: 0,
+            ModifiedBy: "",
             ModifiedDate: null,
 
             _photoFiles: mergedPhotoFiles,

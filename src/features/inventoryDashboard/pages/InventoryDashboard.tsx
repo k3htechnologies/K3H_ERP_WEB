@@ -19,6 +19,9 @@ import { type TableColumn } from "@/ui/components/DataTable/DataTableWithoutBord
 import { DataTable, type PaginationInfo } from "@/ui/components/DataTable/DataTable";
 import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
+import type { ParkingData } from "@/features/parking/models/ParkingModel";
+import { parkingService } from "@/features/parking/services/ParkingService";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const InventoryDashboard: React.FC = () => {
 
@@ -32,7 +35,11 @@ const InventoryDashboard: React.FC = () => {
   const [alertsData, setAlertsData] = useState<Table3[]>([]);
   const [wingData, setWingData] = useState<Table4[]>([]);
   const [selectedCard, setSelectedcard] = useState<any>(null);
-  const [modalData, setModalData] = useState<InventoryFlatData[]>([]);
+  const [inventoryModalData, setInventoryModalData] = useState<InventoryFlatData[]>([]);
+  const [parkingModalData, setParkingModalData] = useState<ParkingData[]>([]);
+
+  const { canAction: canInventoryAction } = useMenuPermissions("/inventory");
+  const { canAction: canParkingAction } = useMenuPermissions("/parking");
 
   useEffect(() => {
     if (!projectId) return;
@@ -70,50 +77,96 @@ const InventoryDashboard: React.FC = () => {
     );
   }, [projectId, addToast]);
 
-  const handleOpenModal = useCallback(async (cardName: string, flatStatus: string, count: number) => {
+  // --============================== Modal Handling ==============================--
 
-    setModalData([]);
+  const handleOpenModal = useCallback(async (type: string, cardName: string, status: string, count: number, row?: Table4) => {
 
     setSelectedcard({
+      type: type ?? "",
       cardName: cardName ?? "",
-      data: count ?? 0
+      data: count ?? 0,
+      buildingNumber: row?.Building ?? "",
+      wing: row?.Wing ?? ""
     });
 
-    const params = {
-      PageSize: count > 0 ? count : 10,
-      PageNumber: 1,
-      ProjectId: Number(projectId),
-      FlatStatus: flatStatus
-    };
+    if (type === "Inventory") {
+      setInventoryModalData([]);
 
-    await runApiWithLoader(
-      setIsLoading,
-      setLoadingMessage,
-      async () => {
+      const params = {
+        PageSize: count > 0 ? count : 10,
+        PageNumber: 1,
+        ProjectId: Number(projectId),
+        BuildingNumber: row?.Building ?? "",
+        Wing: row?.Wing ?? "",
+        FlatStatus: status
+      };
 
-        const response = await inventoryService.apiCallPullPaginatedFlats(params);
+      await runApiWithLoader(
+        setIsLoading,
+        setLoadingMessage,
+        async () => {
 
-        if (E.isRight(response)) {
+          const response = await inventoryService.apiCallPullPaginatedFlats(params);
 
-          setModalData(response.right.Data || []);
-          
-        } else {
-          addToast({ type: "error", title: response.left.message });
-        }
+          if (E.isRight(response)) {
 
-        return response;
-      },
-      undefined,
-      (error: any) => {
-        addToast({ type: "error", title: error.message });
-      },
-      undefined,
-      "Loading Units"
-    );
+            setInventoryModalData(response.right.Data || []);
 
+          } else {
+            addToast({ type: "error", title: response.left.message });
+          }
+
+          return response;
+        },
+        undefined,
+        (error: any) => {
+          addToast({ type: "error", title: error.message });
+        },
+        undefined,
+        "Loading Units"
+      );
+
+    } else {
+      setParkingModalData([]);
+
+      const params = {
+        PageSize: count > 0 ? count : 10,
+        PageNumber: 1,
+        ProjectId: Number(projectId),
+        Building: row?.Building ?? "",
+        Wing: row?.Wing ?? "",
+        ParkingStatus: status,
+        IsAcessOnlyApprovedParking:false
+      };
+
+      await runApiWithLoader(
+        setIsLoading,
+        setLoadingMessage,
+        async () => {
+
+          const response = await parkingService.apiCallPullParkingWithPagination(params);
+
+          if (E.isRight(response)) {
+
+            setParkingModalData(response.right.Data || []);
+
+          } else {
+            addToast({ type: "error", title: response.left.message });
+          }
+
+          return response;
+        },
+        undefined,
+        (error: any) => {
+          addToast({ type: "error", title: error.message });
+        },
+        undefined,
+        "Loading Parking"
+      );
+    }
   }, [projectId, addToast]);
 
-  const tableColumns: TableColumn[] = useMemo(() => [
+  const inventoryTableColumns: TableColumn[] = useMemo(() => [
     {
       key: 'Floor',
       label: 'Floor',
@@ -169,16 +222,90 @@ const InventoryDashboard: React.FC = () => {
 
   ], []);
 
+  const ParkingTableColumns: TableColumn[] = useMemo(
+    () => [
+      {
+        key: "ParkingNumber",
+        label: "Parking Number",
+        width: "150px",
+        sortable: false,
+      },
+      {
+        key: "ParkingCategory",
+        label: "Category",
+        width: "150px",
+        sortable: false,
+      },
+      {
+        key: "ParkingType",
+        label: "Type",
+        width: "150px",
+        sortable: false,
+      },
+      {
+        key: "ParkingSubType",
+        label: "Size",
+        width: "120px",
+        sortable: false,
+      },
+      {
+        key: "ParkingDimensions",
+        label: "Dimensions",
+        width: "130px",
+        sortable: false,
+      },
+      {
+        key: "ParkingStatus",
+        label: "Status",
+        width: "120px",
+        sortable: false,
+      },
+      {
+        key: "IsEVChargingAvailable",
+        label: "EV Charging",
+        width: "120px",
+        sortable: false,
+        render: (value: boolean) => (value ? "Yes" : "No"),
+      },
+      {
+        key: "OwnerName",
+        label: 'Owner / Alloted / Blocked / Hold By',
+        width: '600px',
+        sortable: false,
+        render: (value: string, row: ParkingData) => {
 
-  const paginationInfo: PaginationInfo = useMemo(
+        if (row?.ParkingStatus?.toUpperCase() === 'BLOCKED' || row?.ParkingStatus?.toUpperCase() === 'HOLD') {
+          return `${row?.ParkingStatus} BY ${row?.ModifiedBy || '-'} on ${formatDate_dd_MonthName_yy_hh_mm(row?.ModifiedDate ?? "-")}`;
+        }
+
+        return value?.trim() || '-';
+      }
+      },
+
+    ],
+    [],
+  );
+
+  const inventorypaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: 1,
       totalPages: 1,
-      totalRecords: modalData.length,
-      pageSize: modalData.length,
+      totalRecords: inventoryModalData.length,
+      pageSize: inventoryModalData.length,
       onPageChange: () => { }
     }),
-    [modalData]
+    [inventoryModalData]
+  );
+
+  const parkingpaginationInfo: PaginationInfo = useMemo(
+    () => ({
+      currentPage: 1,
+      totalPages: 1,
+      totalRecords: parkingModalData.length,
+      pageSize: parkingModalData.length,
+      onPageChange: () => { }
+    }),
+    [parkingModalData]
   );
 
   return (
@@ -207,7 +334,7 @@ const InventoryDashboard: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
-            <WingDetails wingData={wingData} />
+            <WingDetails wingData={wingData} onOpenModal={handleOpenModal} canInventoryAction={canInventoryAction} canParkingAction={canParkingAction} />
           </div>
         </>
       ) :
@@ -221,23 +348,30 @@ const InventoryDashboard: React.FC = () => {
           isOpen={!!selectedCard}
           onClose={() => setSelectedcard(null)}
           title={
-            <div className="flex items-center justify-between w-full gap-1">
-              {selectedCard.cardName ?? "Details"} -
-              <span className="text-md font-normal text-gray-500">
-                {selectedCard.data ?? 0}
+
+            <div className="flex flex-col">
+
+              <span className="font-semibold text-base">
+                {selectedCard.cardName || ""} ({selectedCard.data ?? 0})
               </span>
+
+              <span className="text-sm text-gray-500">
+                {selectedCard.buildingNumber ? ` Bldg: ${selectedCard.buildingNumber}` : ""}
+                {selectedCard.wing ? ` | Wing: ${selectedCard.wing}` : ""}
+              </span>
+
             </div>
           }
           size="large-half"
         >
           <DataTable
-            data={modalData}
-            columns={tableColumns}
-            recordsPerPage={modalData.length}
+            data={selectedCard?.type === "Inventory" ? inventoryModalData : parkingModalData}
+            columns={selectedCard?.type === "Inventory" ? inventoryTableColumns : ParkingTableColumns}
+            recordsPerPage={selectedCard?.type === "Inventory" ? inventoryModalData.length : parkingModalData.length}
             loading={isLoading}
             fixedHeight
             className="flex-1"
-            pagination={paginationInfo}
+            pagination={selectedCard?.type === "Inventory" ? inventorypaginationInfo : parkingpaginationInfo}
           />
 
         </Modal>

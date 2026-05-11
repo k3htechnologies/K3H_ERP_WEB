@@ -31,7 +31,9 @@ const initialFormState = (): AddUpdateStockManagementRequest => ({
     ProjectId: 0,
     Reason: "",
     InwardOutwardType: "",
-    MaterialQuantityInwardOutward: 0
+    MaterialQuantityInwardOutward: 0,
+    SenderName: "",
+    ReceiverName: ""
 })
 
 export const StockManagement: React.FC = () => {
@@ -339,7 +341,7 @@ export const StockManagement: React.FC = () => {
         const newErrors: { [key: string]: string } = {}
 
         if (!formData.Reason?.trim()) {
-            newErrors.Reason = "Reason is required.";
+            newErrors.Reason = "Remark is required.";
         }
         if (!formData.MaterialQuantityInwardOutward) {
             newErrors.MaterialQuantityInwardOutward = "Quantity is required.";
@@ -348,6 +350,14 @@ export const StockManagement: React.FC = () => {
         ) {
             newErrors.MaterialQuantityInwardOutward = "You Cannot remove stock more than available stock.";
         }
+
+        // if (formData.InwardOutwardType === "INWARD" && !formData.SenderName?.trim()) {
+        //     newErrors.SenderName = "Sender Name is required.";
+        // }
+
+        // if (formData.InwardOutwardType === "OUTWARD" && !formData.ReceiverName?.trim()) {
+        //     newErrors.ReceiverName = "Receiver Name is required.";
+        // }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -360,7 +370,9 @@ export const StockManagement: React.FC = () => {
             Reason: formData.Reason,
             InwardOutwardType: formData.InwardOutwardType,
             ProjectId: Number(projectId),
-            MaterialQuantityInwardOutward: formData.MaterialQuantityInwardOutward
+            MaterialQuantityInwardOutward: formData.MaterialQuantityInwardOutward,
+            SenderName: formData.SenderName,
+            ReceiverName: formData.ReceiverName
         };
     };
 
@@ -587,6 +599,24 @@ export const StockManagement: React.FC = () => {
 
                         <div>
                             <Input
+                                label={isInward ? "Sender Name" : "Receiver Name"}
+                                required
+                                type="text"
+                                value={isInward ? formData.SenderName ?? '' : formData.ReceiverName ?? ''}
+                                onChange={(e) =>
+                                    handleFieldChange(
+                                        isInward ? "SenderName" : "ReceiverName",
+                                        e.target.value
+                                    )
+                                }
+                                error={isInward ? errors.SenderName : errors.ReceiverName}
+                                maxLength={250}
+                                placeholder={isInward ? "Enter Sender Name" : "Enter Receiver Name"}
+                            />
+                        </div>
+
+                        <div>
+                            <Input
                                 label='Quantity'
                                 required
                                 type="text"
@@ -600,13 +630,13 @@ export const StockManagement: React.FC = () => {
 
                         <div>
                             <TextArea
-                                label='Reason'
+                                label='Remark'
                                 required
                                 value={formData.Reason || ''}
                                 onChange={(e) => handleFieldChange("Reason", e.target.value)}
                                 error={errors.Reason}
                                 maxLength={255}
-                                placeholder="Enter Reason"
+                                placeholder="Enter Remark"
                                 rows={4}
                             />
                         </div>

@@ -30,6 +30,7 @@ export interface MaterialRequisitionInvoiceData {
     Remarks: string | null;
     InvoiceStatus: string;
     MaterialRequisitionGRNId: number | 0;
+    IsApproval: boolean
 }
 
 export interface AddUpdateMaterialRequisitionInvoice {

@@ -223,6 +223,15 @@ export const ViewMaterialRequisition: React.FC = () => {
             ),
         },
         {
+            key: "Uom",
+            label: "UOM",
+            width: "15",
+            sortable: true,
+            align: "left",
+            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            render: (value?: string) => value || "-",
+        },
+        {
             key: "MaterialQuantity",
             label: "Quantity",
             width: "15",
@@ -240,15 +249,6 @@ export const ViewMaterialRequisition: React.FC = () => {
             )
         },
         {
-            key: "Uom",
-            label: "UOM",
-            width: "15",
-            sortable: true,
-            align: "left",
-            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
-            render: (value?: string) => value || "-",
-        },
-        {
             key: "RequiredDate",
             label: "Required Date",
             width: "15",
@@ -263,6 +263,24 @@ export const ViewMaterialRequisition: React.FC = () => {
                     label=""
                     value={formatDate_dd_mm_yyyy(value)}
                     onChange={(val) => onChange(convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                />
+            )
+        },
+         {
+            key: "Remark",
+            label: "Remark",
+            width: "15",
+            sortable: false,
+            editable: true,
+            align: "left",
+            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            render: (value?: string) => value || "-",
+            renderEditor: (value?: string, onChange?: any) => (
+                <Input
+                    className="w-full border rounded px-2 py-1"
+                    value={value ?? ""}
+                    onChange={(e) => onChange((e.target.value))}
+                    placeholder="Enter Remark"
                 />
             )
         },

@@ -28,6 +28,8 @@ export interface MaterialRequisitionInvoiceData {
     InvoiceAmountPaidTillDate: number | 0;
     InvoiceDueDate: string | null;
     Remarks: string | null;
+    InvoiceStatus: string
+    IsApproval: boolean
 }
 
 export interface AddUpdateMaterialRequisitionInvoice {

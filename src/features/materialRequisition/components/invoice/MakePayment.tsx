@@ -152,14 +152,19 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             setIsLoading,
             setLoadingMessage,
             async () => {
-                const response =
-                    await materialRequisitionPaymentService.apiCallAddUpdateMaterialRequisitionPayment(
-                        pushPaymentData()
-                    );
+
+                const response = await materialRequisitionPaymentService.apiCallAddUpdateMaterialRequisitionPayment(
+                    pushPaymentData()
+                );
 
                 if (E.isRight(response)) {
+
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
-                    navigate(-1);
+
+                    navigate("/materialRequisition/view", {
+                        state: { activeTab: "Invoice" }
+                    });
+
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -336,7 +341,9 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             <BottomActionBar
                 cancelText="Cancel"
                 saveText="Save"
-                onCancel={() => navigate(-1)}
+                onCancel={() => navigate("/materialRequisition/view", {
+                    state: { activeTab: "Invoice" }
+                })}
                 onSave={handleAddPayment}
                 isLoading={isLoading}
                 canAction

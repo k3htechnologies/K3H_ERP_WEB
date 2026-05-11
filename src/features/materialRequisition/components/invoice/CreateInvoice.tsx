@@ -43,7 +43,7 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
 })
 
 const CreateInvoice: React.FC = () => {
-    
+
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionInvoice>(() => initialFormState());
     const [materialRequisitionGRNData, setMaterialRequisitionGRNData] = useState<MaterialRequisitionGRNData | null>(null);
     const [matrialRequisitionDetailGRNData, setMaterialRequisitionDetailGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
@@ -68,6 +68,7 @@ const CreateInvoice: React.FC = () => {
     const { canAction } = useMenuPermissions('/materialRequisition/view');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
+    const systemGeneratedCode = listState.SystemGeneratedCode;
 
     useEffect(() => {
         if (!projectId) return;
@@ -260,7 +261,7 @@ const CreateInvoice: React.FC = () => {
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');
                     setMeasurementInvoiceURL('');
-                    
+
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -281,7 +282,8 @@ const CreateInvoice: React.FC = () => {
 
             <div className="pb-4">
                 <HeaderActionBar
-                    titleText={'Create Invoice'}
+                    titleText={'Create Invoice :'}
+                    subTitleText={systemGeneratedCode ?? "-"}
                     cancelText="Cancel"
                     EditText="Edit"
                     onCancel={() =>
@@ -297,10 +299,7 @@ const CreateInvoice: React.FC = () => {
                         <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
                         <FieldItem label="Challan No." value={materialRequisitionGRNData?.ChallanNumber} />
                         <FieldItem label="Vehicle No." value={materialRequisitionGRNData?.VehicleNumber} />
-                        <FieldItem label="Total Requisition Amount" value={`₹ ${materialRequisitionGRNData?.Remarks}`} />
-                        <FieldItem label="Paid  Requisition Amount" value={`₹ ${materialRequisitionGRNData?.VehicleNumber}`} />
-                        <FieldItem label="Remaining Requisition Amount " value={`₹ ${materialRequisitionGRNData?.VehicleNumber}`} />
-
+                        
                     </div>
                 </div>
 

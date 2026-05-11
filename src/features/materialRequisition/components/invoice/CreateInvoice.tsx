@@ -39,11 +39,13 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     RemovePerformaInvoiceURL: null,
     MeasurementInvoiceURL: '',
     RemoveMeasurementInvoiceURL: null,
-    Remarks: ''
+    Remarks: '',
+    MaterialRequisitionGRNId: 0,
+
 })
 
 const CreateInvoice: React.FC = () => {
-    
+
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionInvoice>(() => initialFormState());
     const [materialRequisitionGRNData, setMaterialRequisitionGRNData] = useState<MaterialRequisitionGRNData | null>(null);
     const [matrialRequisitionDetailGRNData, setMaterialRequisitionDetailGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
@@ -202,7 +204,7 @@ const CreateInvoice: React.FC = () => {
         fd.append("InvoiceDueDate", formData.InvoiceDueDate ?? "");
         fd.append("InvoiceAmount", formData.InvoiceAmount.toString());
         fd.append("Remarks", formData.Remarks ?? "");
-
+        fd.append("MaterialRequisitionGRNId", Number(MaterialRequisitionGRNId)!.toString());
         uploadInvoiceURLFiles.forEach((file) => {
             if (file instanceof File) {
                 fd.append("UploadInvoiceURL", file);
@@ -260,7 +262,7 @@ const CreateInvoice: React.FC = () => {
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');
                     setMeasurementInvoiceURL('');
-                    
+
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }

@@ -32,6 +32,7 @@ const InvoicePayment: React.FC = () => {
     const { projectId } = useProject();
     const { addToast } = useToast();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
+    const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string; }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
@@ -76,7 +77,8 @@ const InvoicePayment: React.FC = () => {
                 const params: FilterWithPaginationMaterialRequisitionGRN = {
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
-                    Uniquekey: currentUniquekey
+                    Uniquekey: currentUniquekey,
+                    MaterialRequisitionGRNId: MaterialRequisitionGRNId ? Number(MaterialRequisitionGRNId) : 0,
                 };
 
                 const response = await materialRequisitionGRNService.apiCallPullMaterialRequisitionGRN(params);
@@ -115,6 +117,7 @@ const InvoicePayment: React.FC = () => {
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
                     Uniquekey: currentUniquekey
+                    // MaterialRequisitionGRNId: MaterialRequisitionGRNId ? Number(MaterialRequisitionGRNId) : 0,
                 };
 
                 const response = await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoice(params);
@@ -191,10 +194,12 @@ const InvoicePayment: React.FC = () => {
                         <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
                         <FieldItem label="Challan No." value={materialRequisitionGRNData?.ChallanNumber} />
                         <FieldItem label="Vehicle No." value={materialRequisitionGRNData?.VehicleNumber} />
-                        <FieldItem label="Total Requisition Amount" value={`₹ ${materialRequisitionGRNData?.Remarks}`} />
-                        <FieldItem label="Paid  Requisition Amount" value={`₹ ${materialRequisitionGRNData?.VehicleNumber}`} />
-                        <FieldItem label="Remaining Requisition Amount " value={`₹ ${materialRequisitionGRNData?.VehicleNumber}`} />
-
+                        <FieldItem label="Total Requisition Amount" value={`₹ ${invoiceData?.InvoiceAmount}`} />
+                        <FieldItem label="Paid  Requisition Amount" value={`₹ ${invoiceData?.InvoiceAmountPaidTillDate}`} />
+                        <FieldItem
+                            label="Remaining Requisition Amount"
+                            value={`₹ ${(invoiceData?.InvoiceAmount ?? 0) - (invoiceData?.InvoiceAmountPaidTillDate ?? 0)}`}
+                        />
                     </div>
                 </div>
 

@@ -28,6 +28,8 @@ export interface MaterialRequisitionInvoiceData {
     InvoiceAmountPaidTillDate: number | 0;
     InvoiceDueDate: string | null;
     Remarks: string | null;
+    InvoiceStatus: string;
+    MaterialRequisitionGRNId: number | 0;
 }
 
 export interface AddUpdateMaterialRequisitionInvoice {
@@ -46,6 +48,8 @@ export interface AddUpdateMaterialRequisitionInvoice {
     InvoiceAmount: number | 0;
     InvoiceDueDate: string | null;
     Remarks: string | null;
+    MaterialRequisitionGRNId: number | 0;
+
 }
 
 export interface DeleteMaterialRequisitionInvoice {

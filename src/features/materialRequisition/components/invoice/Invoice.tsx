@@ -12,6 +12,8 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
+import { ro } from "react-day-picker/locale";
+import type { MaterialRequisitionInvoiceData } from "../../models/MaterialRequisitionModel";
 
 export const Invoice: React.FC = () => {
     const [invoiceList, setInvoiceList] = useState<MaterialRequisitionGRNData[]>([]);
@@ -69,8 +71,8 @@ export const Invoice: React.FC = () => {
         );
     };
 
-    const handleCreateInvoice = useCallback((row: MaterialRequisitionGRNData) => {
-        navigate(`/addInvoice/add/${row.MaterialRequisitionGRNId}`);
+    const handleCreateInvoice = useCallback((row: MaterialRequisitionInvoiceData) => {
+        navigate(`/addInvoice/add/${row.MaterialRequisitionGRNId}/${row.MaterialRequisitionInvoiceId}`);
     }, [navigate]);
 
     const handleMakePayment = useCallback((row: MaterialRequisitionGRNData) => {
@@ -129,27 +131,35 @@ export const Invoice: React.FC = () => {
         {
             key: 'Action',
             label: 'Action',
-            width: '15',
+            width: '10',
             sortable: false,
             align: 'center',
             render: (_value, row) => (
-                <div className="flex justify-end gap-2">
-                    <Button
-                        color="blue"
-                        size="sm"
-                        onClick={() => handleCreateInvoice(row)}
-                    >
-                        Create Invoice
-                    </Button>
+                <div>
+                    {
+                        row.IsInvoiceCreated == false && (
+                            <Button
+                                color="blue"
+                                size="sm"
+                                onClick={() => handleCreateInvoice(row)}
+                            >
+                                Create Invoice
+                            </Button>
+                        )
+                    }
+                    {
+                        row.IsInvoiceCreated == true && (
 
-                    <Button
-                        color="blue"
-                        size="sm"
-                        onClick={() => handleMakePayment(row)}
-                    >
-                        Make Payment
-                    </Button>
-                </div>
+                            <Button
+                                color="blue"
+                                size="sm"
+                                onClick={() => handleMakePayment(row)}
+                            >
+                                Make Payment
+                            </Button>
+                        )
+                    }
+                </div >
             )
         },
     ], []);

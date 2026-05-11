@@ -124,7 +124,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
             render: (_value, row) => (
                 <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1 inline-flex items-center gap-1">
-                    {row?.MaterialQuantity || 0} {row?.UomCode}
+                    {row?.MaterialQuantity || '-'} {row?.UomCode}
                 </span>
             )
         },

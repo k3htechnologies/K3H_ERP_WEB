@@ -20,7 +20,6 @@ import type { FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendo
 import { vendorFinalizationService } from "@/features/materialRequisition/services/VendorFinalizationService";
 import type { MaterialRequisitionQuotationDetailsTermsData } from "@/features/materialRequisition/models/MaterialRequisitionQuotationApi";
 import { computeBaseTotal, computeLinesTotal, computeTaxTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils";
-import { formatCurrency } from "@/core/utils/comman";
 
 export const Overview: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -204,9 +203,9 @@ export const Overview: React.FC = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Vendor Name" value={materialRequisitionVendorData?.VendorName} />
                                 <FieldItem label="Vendor Company" value={materialRequisitionVendorData?.CompanyName} />
-                                <FieldItem label="Base Amount" value={formatCurrency(computeBaseTotal(Vendoramount).toFixed(2))} />
-                                <FieldItem label="Total Tax" value={formatCurrency(computeTaxTotal(Vendoramount).toFixed(2))} />
-                                <FieldItem label="Grand Total" value={formatCurrency(computeLinesTotal(Vendoramount).toFixed(2))} />
+                                <FieldItem label="Base Amount" value={(computeBaseTotal(Vendoramount).toFixed(2))} />
+                                <FieldItem label="Total Tax" value={(computeTaxTotal(Vendoramount).toFixed(2))} />
+                                <FieldItem label="Grand Total" value={(computeLinesTotal(Vendoramount).toFixed(2))} />
                                 <FieldItem label="Est. Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays ?? 0} days`} />
                                 <FieldItem label="Paid Amount" value={`₹ ${amountPaid.toFixed(2)}`} />
                                 <FieldItem label="Pending Amount" value={`₹ ${PendingAmount.toFixed(2)}`} />

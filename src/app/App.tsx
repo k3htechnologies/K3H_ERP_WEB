@@ -460,7 +460,7 @@ function App() {
             <Route path="payment" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
             <Route path="materialRequisition/view" element={<MaterialRequisitionListStateProvider><ViewMaterialRequisition /></MaterialRequisitionListStateProvider>} />
             <Route path="finalizeVendor/add" element={<MaterialRequisitionListStateProvider><AddUpdateGRN /></MaterialRequisitionListStateProvider>} />
-            <Route path="addInvoice/add/:MaterialRequisitionGRNId" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
+            <Route path="addInvoice/add/:MaterialRequisitionGRNId/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><CreateInvoice /></MaterialRequisitionListStateProvider>} />
             <Route path="makePayment/add/:MaterialRequisitionInvoiceId?" element={<MaterialRequisitionListStateProvider><MakePayment /></MaterialRequisitionListStateProvider>} />
 
             {/* Stock Management */}

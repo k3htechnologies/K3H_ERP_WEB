@@ -169,8 +169,8 @@ const InvoicePayment: React.FC = () => {
                     PageSize: 1,
                     ProjectId: Number(projectId),
                     MaterialRequisitionId: currentMaterialRequisitionId,
-                    Uniquekey: currentUniquekey
-                    // MaterialRequisitionGRNId: MaterialRequisitionGRNId ? Number(MaterialRequisitionGRNId) : 0,
+                    Uniquekey: currentUniquekey,
+                    MaterialRequisitionGRNId: MaterialRequisitionGRNId ? Number(MaterialRequisitionGRNId) : 0,
                 };
 
                 const response = await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoice(params);

@@ -25,6 +25,8 @@ export class MaterialRequisitionInvoiceDatasourceImpl implements MaterialRequisi
 
             if (params.MaterialRequisitionInvoiceId) queryParams.append('MaterialRequisitionInvoiceId', params.MaterialRequisitionInvoiceId.toString());
             if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());
+            if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());
+            if (params.MaterialRequisitionGRNId) queryParams.append('MaterialRequisitionGRNId', params.MaterialRequisitionGRNId.toString());
             if (params.Uniquekey) queryParams.append('Uniquekey', params.Uniquekey);
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);

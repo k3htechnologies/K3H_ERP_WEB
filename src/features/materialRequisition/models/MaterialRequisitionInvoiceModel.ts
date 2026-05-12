@@ -7,6 +7,7 @@ export interface FilterWithPaginationMaterialRequisitionInvoice {
     Uniquekey?: string
     MaterialRequisitionId?: number
     MaterialRequisitionInvoiceId?: number
+    MaterialRequisitionGRNId?: number
     SortBy?: string
     ExportType?: "PDF" | "Excel"
 }

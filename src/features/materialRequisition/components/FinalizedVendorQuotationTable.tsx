@@ -11,12 +11,13 @@ type Row = {
     id: string
     MaterialName: string
     MaterialQuantity: number
-    MaterialPerUnit: number | 0
+    MaterialPerUnit: number
     CGST: number
     SGST: number
     UGST: number
     IGST: number
     Amount: number
+    Logistics?: string
 }
 
 interface Props {
@@ -48,7 +49,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             (isEditing ? stagedRows : rows).map(r => ({
                 ...r,
                 id: r.id ?? `row-${r.MaterialName}-${r.MaterialQuantity}`,
-                Amount: computeAmount(r),
+                Amount: r.Logistics ? (r.Amount ?? 0) : computeAmount(r),  // ← key fix
             })),
         [rows, stagedRows, isEditing]
     )
@@ -63,7 +64,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
         onSave?.(
             stagedRows.map(r => ({
                 ...r,
-                Amount: computeAmount(r),
+                Amount: r.Logistics ? (r.Amount ?? 0) : computeAmount(r),
             }))
         )
         setIsEditing(false)
@@ -136,19 +137,65 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
             width: 100,
             align: "right",
             prefix: "₹",
-            headerClassName: "bg-[#253E60] text-white tracking-[0.8px]"
+            headerClassName: "bg-[#253E60] text-white tracking-[0.8px]",
+            render: (_value, row) => {
+
+                if (row?.Logistics) return
+                <span className="inline-flex items-center justify-center min-w-[70px] px-3 py-1.5 rounded-md bg-gradient-to-r from-gray-100 to-gray-200 border border-gray-300 text-gray-500 text-xs font-semibold shadow-sm">
+                    —
+                </span>
+                return (
+                    <span className="bg-gray-200 text-gray-700 text-xs font-medium rounded px-2 py-1 inline-flex items-center gap-1">
+                        {row?.MaterialPerUnit || '-'}
+                    </span>
+                )
+            },
+            renderEditor: (_value, onChange, row) => {
+                if (row?.Logistics) return <span className=" text-gray-300">-</span>
+                return (
+                    <input
+                        type="number"
+                        defaultValue={row?.MaterialPerUnit ?? 0}
+                        onChange={e => onChange(Number(e.target.value) || 0)}
+                        className="w-full px-2 py-1.5 text-sm rounded border border-blue-300 bg-white focus:ring-2 focus:ring-blue-500 outline-none text-right"
+                    />
+                )
+            }
         },
         {
             key: "Amount",
             label: "AMOUNT(₹)",
-            type: "computed",
-            compute: computeAmount,
-            editable: false,
+            type: "number",
+            editable: isEditing,
             width: 120,
             align: "right",
             prefix: "₹",
             headerClassName: "bg-[#253E60] text-white tracking-[1px]",
+            renderEditor: (_value, onChange, row) => {
+                if (row.Logistics) {
+                    return (
+                        <input
+                            type="number"
+                            defaultValue={row.Amount ?? 0}
+                            onChange={e => onChange(Number(e.target.value) || 0)}
+                            className="w-full px-2 py-1.5 text-sm 
+                            focus:ring-2 focus:ring-blue-500 outline-none text-right"
+                        />
+                    )
+                }
+                return (
+                    <span className="w-full block text-right pr-1 font-bold text-black-300">
+                        ₹{computeAmount(row).toLocaleString()}
+                    </span>
+                )
+            },
+            render: (_value, row) => (
+                <span className="w-full block text-right pr-1">
+                    ₹{(row.Logistics ? (row.Amount ?? 0) : computeAmount(row)).toLocaleString()}
+                </span>
+            )
         },
+
         {
             key: "CGST",
             label: "CGST(%)",

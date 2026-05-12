@@ -38,8 +38,8 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     RemoveUploadInvoiceURL: null,
     PerformaInvoiceURL: '',
     RemovePerformaInvoiceURL: null,
-    MeasurementInvoiceURL: '',
-    RemoveMeasurementInvoiceURL: null,
+    MeasurementReportURL: '',
+    RemoveMeasurementReportURL: null,
     Remarks: '',
     MaterialRequisitionGRNId: 0,
 
@@ -62,9 +62,9 @@ const CreateInvoice: React.FC = () => {
     const [performaInvoiceURLFiles, setPerformaInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removePerformaInvoiceUrls, SetRemovePerformaInvoiceUrls] = useState<string[]>([]);
     const [performaInvoiceURL, setPerformaInvoiceURLL] = useState<string>();
-    const [measurementInvoiceURLFiles, setMeasurementInvoiceURLFiles] = useState<(File | string)[]>([]);
-    const [removeMeasurementInvoiceUrls, SetRemoveMeasurementInvoiceUrls] = useState<string[]>([]);
-    const [measurementInvoiceURL, setMeasurementInvoiceURL] = useState<string>();
+    const [measurementReportURLFiles, setMeasurementReportURLFiles] = useState<(File | string)[]>([]);
+    const [removeMeasurementReportUrls, SetRemoveMeasurementReportUrls] = useState<string[]>([]);
+    const [measurementReportURL, setMeasurementReportURL] = useState<string>();
     const [uploadInvoiceURLFiles, setUploadInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removeUploadInvoiceUrls, SetRemoveUploadInvoiceUrls] = useState<string[]>([]);
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
@@ -191,8 +191,8 @@ const CreateInvoice: React.FC = () => {
         if (!hasAnyDocumentFile(performaInvoiceURLFiles, performaInvoiceURL, removePerformaInvoiceUrls)) {
             newErrors.PerformaInvoiceURL = "File is required.";
         }
-        if (!hasAnyDocumentFile(measurementInvoiceURLFiles, measurementInvoiceURL, removeMeasurementInvoiceUrls)) {
-            newErrors.MeasurementInvoiceURL = "File is required.";
+        if (!hasAnyDocumentFile(measurementReportURLFiles, measurementReportURL, removeMeasurementReportUrls)) {
+            newErrors.MeasurementReportURL = "File is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -228,13 +228,13 @@ const CreateInvoice: React.FC = () => {
 
         fd.append("RemovePerformaInvoiceURL", removePerformaInvoiceUrls.join(","));
 
-        measurementInvoiceURLFiles.forEach((file) => {
+        measurementReportURLFiles.forEach((file) => {
             if (file instanceof File) {
-                fd.append("MeasurementInvoiceURL", file);
+                fd.append("MeasurementReportURL", file);
             }
         });
 
-        fd.append("RemoveMeasurementInvoiceURL", removeMeasurementInvoiceUrls.join(","));
+        fd.append("RemoveMeasurementReportURL", removeMeasurementReportUrls.join(","));
 
         return fd;
     };
@@ -268,7 +268,7 @@ const CreateInvoice: React.FC = () => {
 
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');
-                    setMeasurementInvoiceURL('');
+                    setMeasurementReportURL('');
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -413,15 +413,15 @@ const CreateInvoice: React.FC = () => {
                                 label="Measurement Report"
                                 placeholder="Select Files"
                                 required
-                                error={errors.MeasurementInvoiceURL}
-                                value={measurementInvoiceURLFiles}
-                                onChange={setMeasurementInvoiceURLFiles}
-                                availableFilesURL={measurementInvoiceURL ?? ""}
+                                error={errors.MeasurementReportURL}
+                                value={measurementReportURLFiles}
+                                onChange={setMeasurementReportURLFiles}
+                                availableFilesURL={measurementReportURL ?? ""}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                 maxFiles={5}
                                 maxSizeMB={50}
                                 onRemoveExisting={(url) => {
-                                    SetRemoveMeasurementInvoiceUrls((prev) => [...prev, url]);
+                                    SetRemoveMeasurementReportUrls((prev) => [...prev, url]);
                                 }}
                             />
                         </div>

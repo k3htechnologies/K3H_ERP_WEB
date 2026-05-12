@@ -12,6 +12,7 @@ export interface FilterWithPaginationMaterialRequisitionInvoice {
     ExportType?: "PDF" | "Excel"
 }
 
+
 export interface MaterialRequisitionInvoiceData {
     MaterialRequisitionInvoiceId: number | 0;
     Uniquekey: string | null;
@@ -23,8 +24,8 @@ export interface MaterialRequisitionInvoiceData {
     RemoveUploadInvoiceURL: string | null;
     PerformaInvoiceURL: string | null;
     RemovePerformaInvoiceURL: string | null;
-    MeasurementInvoiceURL: string | null;
-    RemoveMeasurementInvoiceURL: string | null;
+    MeasurementReportURL: string | null;
+    RemoveMeasurementReportURL: string | null;
     InvoiceAmount: number | 0;
     InvoiceAmountPaidTillDate: number | 0;
     InvoiceDueDate: string | null;
@@ -45,8 +46,8 @@ export interface AddUpdateMaterialRequisitionInvoice {
     RemoveUploadInvoiceURL: string | null;
     PerformaInvoiceURL: string | null;
     RemovePerformaInvoiceURL: string | null;
-    MeasurementInvoiceURL: string | null;
-    RemoveMeasurementInvoiceURL: string | null;
+    MeasurementReportURL: string | null;
+    RemoveMeasurementReportURL: string | null;
     InvoiceAmount: number | 0;
     InvoiceDueDate: string | null;
     Remarks: string | null;
@@ -61,6 +62,21 @@ export interface DeleteMaterialRequisitionInvoice {
     ProjectId: number | 0;
 }
 
+export interface FilterWithPaginationMaterialRequisitionInvoiceSummary {
+    MaterialRequisitionId?: number
+}
+
+export interface MaterialRequisitionInvoiceSummaryData {
+    MaterialRequisitionId: number | 0;
+    TotalInvoiceAmount: number | 0,
+    TotalAmountPaid: number | 0,
+    RemainingInvoiceAmount: number | 0,
+    TotalRequisitionAmount: number | 0,
+    PaidRequisitionAmount: number | 0,
+    PendingRequisitionAmount: number | 0
+}
+
 export type MaterialRequisitionInvoiceListResponse = ApiResponse<MaterialRequisitionInvoiceData[]>;
 export type MaterialRequisitionInvoiceSaveResponse = ApiResponse<MaterialRequisitionInvoiceData>;
 export type MaterialRequisitionInvoiceDeleteResponse = ApiResponse<number>;
+export type MaterialRequisitionInvoiceSummaryListResponse = ApiResponse<MaterialRequisitionInvoiceSummaryData[]>;

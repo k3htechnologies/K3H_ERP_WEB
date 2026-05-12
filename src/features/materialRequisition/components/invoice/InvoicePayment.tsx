@@ -394,7 +394,7 @@ const InvoicePayment: React.FC = () => {
                         <div>
                             <p className="text-gray-500">Measurement Report</p>
                             <MultiImageViewer
-                                images={parseDocumentUrls(invoiceData?.MeasurementInvoiceURL)}
+                                images={parseDocumentUrls(invoiceData?.MeasurementReportURL)}
                                 title="Attachment"
                                 isIcon={false}
                                 triggerLabel="-"

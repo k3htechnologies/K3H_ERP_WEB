@@ -1,12 +1,13 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import type { DeleteMaterialRequisitionInvoice, FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitionInvoiceDeleteResponse, MaterialRequisitionInvoiceListResponse, MaterialRequisitionInvoiceSaveResponse } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
+import type { DeleteMaterialRequisitionInvoice, FilterWithPaginationMaterialRequisitionInvoice, FilterWithPaginationMaterialRequisitionInvoiceSummary, MaterialRequisitionInvoiceDeleteResponse, MaterialRequisitionInvoiceListResponse, MaterialRequisitionInvoiceSaveResponse, MaterialRequisitionInvoiceSummaryListResponse } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
 import { MaterialRequisitionInvoiceApi } from "@/features/materialRequisition/api/MaterialRequisitionInvoiceApi";
 
 export abstract class MaterialRequisitionInvoiceDatasource {
     abstract pullMaterialRequisitionInvoice(params: FilterWithPaginationMaterialRequisitionInvoice, signal?: AbortSignal): Promise<MaterialRequisitionInvoiceListResponse>;
     abstract addUpdateMaterialRequisitionInvoice(data: FormData): Promise<MaterialRequisitionInvoiceSaveResponse>;
     abstract deleteMaterialRequisitionInvoice(params: DeleteMaterialRequisitionInvoice): Promise<MaterialRequisitionInvoiceDeleteResponse>;
+    abstract pullMaterialRequisitionInvoiceSummary(params: FilterWithPaginationMaterialRequisitionInvoiceSummary, signal?: AbortSignal): Promise<MaterialRequisitionInvoiceSummaryListResponse>;
 }
 
 export class MaterialRequisitionInvoiceDatasourceImpl implements MaterialRequisitionInvoiceDatasource {
@@ -47,7 +48,7 @@ export class MaterialRequisitionInvoiceDatasourceImpl implements MaterialRequisi
             throw error
         }
     }
-    
+
     async addUpdateMaterialRequisitionInvoice(formData: FormData): Promise<MaterialRequisitionInvoiceSaveResponse> {
         try {
 
@@ -98,4 +99,26 @@ export class MaterialRequisitionInvoiceDatasourceImpl implements MaterialRequisi
         }
     }
 
+    async pullMaterialRequisitionInvoiceSummary(params: FilterWithPaginationMaterialRequisitionInvoiceSummary, signal?: AbortSignal): Promise<MaterialRequisitionInvoiceSummaryListResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
+            })
+
+            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+                `${MaterialRequisitionInvoiceApi.PULL_INVOICE_SUMMARY}?${queryParams.toString()}`, { signal }
+            )
+            return response;
+        } catch (error: any) {
+
+            console.error('ERROR: PULL MATERIAL REQUISITION INVOICE SUMMARY :', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullMaterialRequisitionInvoiceSummary(params);
+            }
+
+            throw error
+        }
+    }
 }

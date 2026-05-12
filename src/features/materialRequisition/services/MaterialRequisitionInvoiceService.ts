@@ -3,9 +3,11 @@ import * as E from 'fp-ts/Either';
 import type {
     DeleteMaterialRequisitionInvoice,
     FilterWithPaginationMaterialRequisitionInvoice,
+    FilterWithPaginationMaterialRequisitionInvoiceSummary,
     MaterialRequisitionInvoiceDeleteResponse,
     MaterialRequisitionInvoiceListResponse,
-    MaterialRequisitionInvoiceSaveResponse
+    MaterialRequisitionInvoiceSaveResponse,
+    MaterialRequisitionInvoiceSummaryListResponse
 
 } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
 import { MaterialRequisitionInvoiceDatasourceImpl } from "@/features/materialRequisition/datasources/MaterialRequisitionInvoiceDataSource";
@@ -45,6 +47,18 @@ export const materialRequisitionInvoiceService = {
         } catch (error: any) {
 
             return E.left({ message: error.message, code: error.code });
+        }
+    },
+
+    apiCallPullMaterialRequisitionInvoiceSummary: async (params: FilterWithPaginationMaterialRequisitionInvoiceSummary, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, MaterialRequisitionInvoiceSummaryListResponse>> => {
+
+        try {
+
+            return E.right(await MaterialRequisitionInvoiceDataSource.pullMaterialRequisitionInvoiceSummary(params, options?.signal));
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
         }
     },
 }

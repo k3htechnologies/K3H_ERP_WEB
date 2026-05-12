@@ -12,9 +12,13 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
+import type { FilterWithPaginationMaterialRequisitionInvoiceSummary, MaterialRequisitionInvoiceSummaryData } from "../../models/MaterialRequisitionInvoiceModel";
+import { materialRequisitionInvoiceService } from "../../services/MaterialRequisitionInvoiceService";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 export const Invoice: React.FC = () => {
     const [invoiceList, setInvoiceList] = useState<MaterialRequisitionGRNData[]>([]);
+    const [invoiceSummaryData, setInvoiceSummaryData] = useState<MaterialRequisitionInvoiceSummaryData | null>(null);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { pagination, setPagination } = usePagination(20);
@@ -30,6 +34,7 @@ export const Invoice: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
         loadMaterialRequisitionGRNData(1, {});
+        loadmaterialRequisitionInvoiceSummary();
     }, [projectId, currentMaterialRequisitionId])
 
     const loadMaterialRequisitionGRNData = async (page: number, filterParams: FilterInfo,) => {
@@ -66,6 +71,35 @@ export const Invoice: React.FC = () => {
             },
             undefined,
             "Loading GRN",
+        );
+    };
+
+    const loadmaterialRequisitionInvoiceSummary = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationMaterialRequisitionInvoiceSummary = {
+                    MaterialRequisitionId: currentMaterialRequisitionId,
+                };
+
+                const response = await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoiceSummary(params);
+
+                if (E.isRight(response)) {
+
+                    setInvoiceSummaryData(response.right.Data[0] ?? null);
+
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            "Loading Invoice Summary",
         );
     };
 
@@ -135,7 +169,7 @@ export const Invoice: React.FC = () => {
             render: (_value, row) => (
                 <div>
                     {
-                        row.IsInvoiceCreated == false && (
+                        row.IsInvoiceCreated === false && (
                             <Button
                                 color="blue"
                                 size="sm"
@@ -145,9 +179,9 @@ export const Invoice: React.FC = () => {
                             </Button>
                         )
                     }
-                    {
-                        row.IsInvoiceCreated == true && (
 
+                    {
+                        row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === false && (
                             <Button
                                 color="blue"
                                 size="sm"
@@ -157,14 +191,39 @@ export const Invoice: React.FC = () => {
                             </Button>
                         )
                     }
-                </div >
+
+                    {
+                        row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === true && (
+                            <Button
+                                color="blue"
+                                size="sm"
+                                onClick={() => handleMakePayment(row)}
+                            >
+                                View Payment
+                            </Button>
+                        )
+                    }
+                </div>
             )
-        },
+        }
     ], []);
 
     return (
         <div className="pt-2">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
+
+            <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+                <div className="lg:col-span-5 pb-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <FieldItem label="Total Requisition Amount" value={`₹ ${invoiceSummaryData?.TotalRequisitionAmount?.toFixed(2) ?? ''}`} />
+                        <FieldItem label="Paid  Requisition Amount" value={`₹ ${invoiceSummaryData?.PaidRequisitionAmount?.toFixed(2) ?? ''}`} />
+                        <FieldItem label="Pending Requisition Amount" value={`₹ ${invoiceSummaryData?.PendingRequisitionAmount?.toFixed(2) ?? ''}`} />
+                        <FieldItem label="Total Invoice Amount" value={`₹ ${invoiceSummaryData?.TotalInvoiceAmount?.toFixed(2) ?? ''}`} />
+                        <FieldItem label="Paid  Invoice Amount" value={`₹ ${invoiceSummaryData?.TotalAmountPaid?.toFixed(2) ?? ''}`} />
+                        <FieldItem label="Pending Invoice Amount" value={`₹ ${invoiceSummaryData?.RemainingInvoiceAmount?.toFixed(2) ?? ''}`} />
+                    </div>
+                </div>
+            </div>
 
             <DataTable
                 data={InvoiceForTable}

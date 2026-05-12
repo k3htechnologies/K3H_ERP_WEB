@@ -1,10 +1,10 @@
-import { MATERIAL_REQUISITION_PAYMENT_TYPE, PAYMENT_MODE, PAYMENT_TYPE } from "@/core/constants/staticData";
+import { MATERIAL_REQUISITION_PAYMENT_TYPE, PAYMENT_MODE } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { Input } from "@/ui/components/forms/Input";
-import { filterIFSC, filterNumbers, hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterIFSC, filterNumbers, hasAnyDocumentFile, isValidAccount, isValidIFSC } from "@/core/utils/fileValidation";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -94,13 +94,24 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
         const ddChequeModes = ["Cheque", "Demand Draft"];
 
         if (bankTransferModes.includes(formData.PaymentMode)) {
-            if (!formData.BankListMasterId) newErrors.BankListMasterId = "Required";
-            if (!formData.AccountNumber) newErrors.AccountNumber = "Required";
-            if (!formData.IFSCCode) newErrors.IFSCCode = "Required";
+            if (!formData.BankListMasterId) newErrors.BankListMasterId = "Bank Name is required.";
+            if (!formData.AccountNumber) {
+                newErrors.AccountNumber = "Account Number is required.";
+            } else if (!isValidAccount(formData.AccountNumber)) {
+                newErrors.AccountNumber = "Enter a valid Account Number (6–18 digits)";
+            }
+
+            if (!formData.IFSCCode) {
+                newErrors.IFSCCode = "IFSC Code is required.";
+            } else if (formData.IFSCCode.trim().length !== 11) {
+                newErrors.IFSCCode = "IFSC Code must be 11 characters.";
+            } else if (!isValidIFSC(formData.IFSCCode)) {
+                newErrors.IFSCCode = "Enter a valid IFSC Code";
+            }
         }
 
         if (ddChequeModes.includes(formData.PaymentMode)) {
-            if (!formData.BankListMasterId) newErrors.BankListMasterId = "Required";
+            if (!formData.BankListMasterId) newErrors.BankListMasterId = "Bank Name is required.";
         }
 
         if (!hasAnyDocumentFile(transactionFiles, existingURL, removedFiles)) {

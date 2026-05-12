@@ -28,7 +28,6 @@ import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeCol
 import { useNavigate } from "react-router-dom";
 import { updateFilter } from "@/core/utils/filterHelper";
 import { FileText, Trash2 } from "lucide-react";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { litigationService } from "@/features/litigation/services/LitigationServices";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { getLitigationStatuscolor } from "./Status";
@@ -37,60 +36,33 @@ import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { useLitigationListState } from "@/features/litigation/context/LitigationListStateContext";
 
 export const Litigation: React.FC = () => {
-  //#region STATE MANAGEMENT
+
   const [litigationList, setLitigationList] = useState<LitigationData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
-
-  // USE NAVIGATE
   const navigate = useNavigate();
-
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
-
-  // TOAST
   const { addToast } = useToast();
-
-  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-
-  //DELETE LITIGATION
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] =
-    useState(false);
-  const [deleteLitigationDetailsData, setDeleteLitigationDetailsData] =
-    useState<LitigationData | null>(null);
-
-  //CUSTOMIZE COLUMN MODAL
-  const [
-    isShowCustomizeLitigationColumnsModal,
-    setIsShowCustomizeLitigationColumnsModal,
-  ] = useState(false);
-
-  //#region MENU PERMISSIONS
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+  const [deleteLitigationDetailsData, setDeleteLitigationDetailsData] = useState<LitigationData | null>(null);
+  const [isShowCustomizeLitigationColumnsModal, setIsShowCustomizeLitigationColumnsModal] = useState(false);
   const { canAction, canExport } = useMenuPermissions();
-  //#endregion
-
-  //#region PROJECT SELECTION GET ID
-  const { projectId } = useProject();
-  //#endregion
-
-  //#region LITIGATION LIST STATE CONTEXT
-  const { listState, updateListState, resetFilters, clearLitigationContext } =
-    useLitigationListState();
+  const { listState, updateListState, resetFilters, clearLitigationContext } = useLitigationListState();
   const { page, filters, sortInfo, searchTerm } = listState;
-  //#endregion
 
-  //#region INIT
   useEffect(() => {
-    if (!projectId) return;
-
     if (searchTerm && searchTerm.trim()) {
+
       loadLitigation(page, { Title: searchTerm.trim() }, sortInfo);
+
     } else {
+
       loadLitigation(page, filters, sortInfo);
+
     }
-  }, [projectId, page, filters, sortInfo, searchTerm, clearLitigationContext]);
+  }, [page, filters, sortInfo, searchTerm, clearLitigationContext]);
 
   useEffect(() => {
     setPagination({ currentPage: page });
@@ -99,47 +71,43 @@ export const Litigation: React.FC = () => {
   useEffect(() => {
     setTempFilters(filters);
   }, [filters]);
-  //#endregion
 
-  const debouncedSearch = useDebouncedCallback(
-    (value: string, isSerach: boolean = true) => {
+
+  const debouncedSearch = useDebouncedCallback((value: string, isSerach: boolean = true) => {
+
       let filterParams: FilterInfo = {};
 
       if (value.trim() === "") {
+
         updateListState({ searchTerm: "", filters: {}, page: 1 });
+
         return;
       }
       if (isSerach) {
+        
         filterParams = { Title: value.trim() };
       }
       updateListState({ searchTerm: value, filters: filterParams, page: 1 });
     },
     350,
   );
-  //#endregion
 
-  //#region DATA LOADING | FETCH |  LOAD | SEARCH
-  const loadLitigation = async (
-    page: number,
-    filterParams: FilterInfo,
-    sortInfo?: SortInfo,
-    searchtext?: string,
-  ) => {
+  const loadLitigation = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
     await runApiWithLoader(
+
       setIsLoading,
       setLoadingMessage,
+
       async () => {
         const params: FilterWithPaginationLitigationRequest = {
           PageNumber: page,
           PageSize: pagination.pageSize,
-          LitigationId: filterParams.LitigationId
-            ? Number(filterParams.LitigationId)
-            : undefined,
+          LitigationId: filterParams.LitigationId ? Number(filterParams.LitigationId) : undefined,
           Title: searchtext ?? filterParams.Title ?? undefined,
           CaseNumber: filterParams.CaseNumber ?? undefined,
           CourtName: filterParams.CourtName ?? undefined,
-          SortBy: getSortByParam(sortInfo ?? null, LitigationColumns),
-          ProjectId: Number(projectId),
+          ProjectName: filterParams.ProjectName ?? undefined,
+          SortBy: getSortByParam(sortInfo ?? null, LitigationColumns)
         };
 
         const response = await litigationService.apiCallPullLitigation(params);
@@ -147,12 +115,14 @@ export const Litigation: React.FC = () => {
         if (E.isRight(response)) {
 
           setLitigationList(response.right.Data);
+
           setPagination({
             currentPage: page,
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(
               response.right.TotalNumberOfRecord / pagination.pageSize,
             ),
+            
           });
 
         } else {
@@ -166,24 +136,18 @@ export const Litigation: React.FC = () => {
       "Loading Litigation",
     );
   };
-  //#endregion
 
-  //#region SEARCH LITIGATION
   const searchLitigation = (searchValue: string) => {
     updateListState({ searchTerm: searchValue });
     debouncedSearch(searchValue, false);
   };
-  //#endregion
 
-  //#region CLEAR LITIGATION
   const clearSearchLitigation = () => {
     debouncedSearch.cancel?.();
     resetFilters();
     setTempFilters({});
   };
-  //#endregion
 
-  //#region EXPORT / IMPORT EXCEL AND PDF
   const handleExportLitigation = async (exportType: 'Excel' | 'PDF') => {
 
     await runApiWithLoader(
@@ -196,13 +160,12 @@ export const Litigation: React.FC = () => {
           Title: filters.Title?.trim() || undefined,
           CaseNumber: filters.CaseNumber ?? undefined,
           CourtName: filters.CourtName ?? undefined,
-          ProjectId: Number(projectId),
+          ProjectName: filters.ProjectName ?? undefined,
           SortBy: getSortByParam(sortInfo ?? null, LitigationColumns),
           ExportType: exportType,
         };
 
-        const response =
-          await litigationService.apiCallPullLitigation(params);
+        const response = await litigationService.apiCallPullLitigation(params);
 
         handleExportFile(response, exportType, "Litigation", addToast);
 
@@ -218,26 +181,17 @@ export const Litigation: React.FC = () => {
 
   const handleExportLitigationExcel = () => handleExportLitigation("Excel");
   const handleExportLitigationPdf = () => handleExportLitigation("PDF");
-  //#endregion
 
-  //#region HANDLE PAGE CHNAGE
-  const handlePageChange = useCallback(
-    (newPage: number) => {
-      updateListState({ page: newPage });
-    },
-    [updateListState],
+  const handlePageChange = useCallback((newPage: number) => {
+    updateListState({ page: newPage });
+  }, [updateListState],
   );
 
-  //#region TABLE SORT COLUMN
-  const handleSortColumn = useCallback(
-    (sort: SortInfo) => {
-      updateListState({ sortInfo: sort, page: 1 });
-    },
-    [updateListState],
+  const handleSortColumn = useCallback((sort: SortInfo) => {
+    updateListState({ sortInfo: sort, page: 1 });
+  }, [updateListState],
   );
-  //#endregion
 
-  //#region TABLE PAGINATION INFO
   const LitigationPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
@@ -255,47 +209,50 @@ export const Litigation: React.FC = () => {
   );
   const LitigationForTable = useMemo(() => litigationList, [litigationList]);
 
-  //#endregion
-
-  //#region NAVIGATE TO  VIEW LITIGATION
-  const handleViewLitigationDetails = useCallback(
-    (row: LitigationData) => {
-      updateListState({
-        LitigationId: row.LitigationId ?? 0,
-        Title: row.Title ?? "",
-      });
-      navigate("/litigation/view");
-    },
-    [navigate, updateListState],
+  const handleViewLitigationDetails = useCallback((row: LitigationData) => {
+    updateListState({
+      LitigationId: row.LitigationId ?? 0,
+      projectId: row.ProjectId ?? 0,
+      Title: row.Title ?? "",
+    });
+    navigate("/litigation/view");
+  }, [navigate, updateListState],
   );
-  //#endregion
 
-  //#region NAVIGATE TO ADD LITIGATION
   const handleAddLitigation = useCallback(() => {
     navigate("/litigation/add");
   }, [navigate]);
-  //#endregion
 
-  //#region NAVIGATE TO LITIGATION DOCUMENT
   const handleViewLitigationDocument = useCallback(
     (row: LitigationData) => {
-      updateListState({ LitigationId: row.LitigationId, Title: row.Title });
+
+      updateListState({
+        LitigationId: row.LitigationId,
+        projectId: row.ProjectId ?? 0,
+        Title: row.Title
+      });
+
       navigate("/litigation/document");
+
     },
     [navigate, updateListState],
   );
-  //#endregion
 
-  //#region CONFIRMATION DIALOG BOX
   const handleConfirmationDialogBoxOpen = useCallback((row: LitigationData) => {
     setDeleteLitigationDetailsData(row);
     setIsConfirmationDialogBoxOpen(true);
   }, []);
-  //#endregion
 
-  //#region TABLE COLUMNS
   const LitigationColumns = useMemo<TableColumn[]>(
     () => [
+      {
+        key: "ProjectName",
+        label: "Project Name",
+        width: "16",
+        sortable: false,
+        align: "left",
+        render: (value) => value || "-",
+      },
       {
         key: "Title",
         label: "Title",
@@ -485,28 +442,28 @@ export const Litigation: React.FC = () => {
               >
                 <FileText className="h-4 w-4" />
               </Button>
-           
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if(!row?.IsDelete) return;
-                    handleConfirmationDialogBoxOpen(row);
-                  }}
-                  color="transparent"
-                  isborderRadius
-                  size="sm"
-                  disabled={!row?.IsDelete}
-                  style={{
-                    color: row?.IsDelete ? 'red' : '#9CA3AF',
-                    cursor: row?.IsDelete ? 'pointer' : 'not-allowed',
-                    opacity: row?.IsDelete ? 1 : 0.5
-                  }}
-                  title="Delete Litigation"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              
+
+              <Button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!row?.IsDelete) return;
+                  handleConfirmationDialogBoxOpen(row);
+                }}
+                color="transparent"
+                isborderRadius
+                size="sm"
+                disabled={!row?.IsDelete}
+                style={{
+                  color: row?.IsDelete ? 'red' : '#9CA3AF',
+                  cursor: row?.IsDelete ? 'pointer' : 'not-allowed',
+                  opacity: row?.IsDelete ? 1 : 0.5
+                }}
+                title="Delete Litigation"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+
             </div>
           );
         },
@@ -663,7 +620,7 @@ export const Litigation: React.FC = () => {
         isShowCustomizeButton
         onCustomize={() => setIsShowCustomizeLitigationColumnsModal(true)}
         // ADD
-        isShowAddButton={canAction && Number(projectId) > 0}
+        isShowAddButton={canAction}
         addTitle="Add"
         onAdd={handleAddLitigation}
         // IMPORT
@@ -731,6 +688,15 @@ export const Litigation: React.FC = () => {
         size="small-half"
       >
         <div className="space-y-4">
+          <div>
+            <Input
+              type="text"
+              label="Project Name"
+              value={tempFilters?.ProjectName ?? ""}
+              onChange={(e) => handleFilterChange("ProjectName", e.target.value)}
+              placeholder="Enter Project Name"
+            />
+          </div>
           <div>
             <Input
               type="text"

@@ -12,9 +12,9 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { CASE_TYPE_OPTION, COURT_TYPE_OPTION } from "@/core/constants";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { Loader } from "@/core/utils/loader";
 import { TextArea } from "@/ui/components/forms/Textarea";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 
 const initialFormState = (): AddUpdateLitigationRequest => ({
     LitigationId: 0,
@@ -37,33 +37,23 @@ const initialFormState = (): AddUpdateLitigationRequest => ({
 
 export const AddUpdateLitigation: React.FC = () => {
 
-    //#region STATE MANAGEMENT
     const [formData, setFormData] = useState<AddUpdateLitigationRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
-    // NAVIGATE
     const navigate = useNavigate();
 
-    // GET VALUE FROM URL LITIGATION ID
     const { LitigationId } = useParams<{ LitigationId?: string }>();
     const litigationId = LitigationId ? Number(LitigationId) : 0;
 
     const isAddMode = litigationId === 0;
 
-    // ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-    const { projectId } = useProject();
 
-    // TOAST
     const { addToast } = useToast();
-    //#endregion
-
-    //#region MENU PERMISSIONS
+    
     const { canAction } = useMenuPermissions('/litigation');
-    //#endregion
-
-    //#region HANDLE FIELD CHANGE EVENT
+    
     const handleFieldChange = (field: keyof AddUpdateLitigationRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -71,14 +61,11 @@ export const AddUpdateLitigation: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-    //#endregion
-
-    //#region INITIALIZATION
+    
     useEffect(() => {
         if (!isAddMode) {
             fetchLitigationDetails();
         }
-
     }, [litigationId]);
     //#endregion
 
@@ -95,7 +82,7 @@ export const AddUpdateLitigation: React.FC = () => {
                     PageNumber: 1,
                     PageSize: 20,
                     LitigationId: Number(LitigationId),
-                    ProjectId: Number(projectId),
+                    ProjectId: Number(formData.ProjectId) ?? 0,
                 };
 
                 const response = await litigationService.apiCallPullLitigation(params);
@@ -150,9 +137,12 @@ export const AddUpdateLitigation: React.FC = () => {
     } => {
         const newErrors: { [key: string]: string } = {};
 
+        if (!formData.ProjectId) {
+            newErrors.ProjectId = 'Project is required.';
+        }
         if (!formData.Title?.trim()) {
             newErrors.Title = 'Title  is required.';
-        } 
+        }
         if (!formData.DateOfFilling) {
             newErrors.DateOfFilling = 'Date Of Filling is required.';
         }
@@ -180,9 +170,7 @@ export const AddUpdateLitigation: React.FC = () => {
         if (!formData.AssignedRepresentative) {
             newErrors.AssignedRepresentative = 'Assigned Representative is required.';
         }
-        if (!formData.OpposingRepresentative) {
-            newErrors.OpposingRepresentative = 'Opposing Representative is required.';
-        }
+        
         if (!formData.CaseBrief) {
             newErrors.CaseBrief = 'Case Brief / Petition / Suit is required.';
         }
@@ -203,7 +191,7 @@ export const AddUpdateLitigation: React.FC = () => {
         return {
             LitigationId: formData.LitigationId ?? 0,
             Uniquekey: formData.Uniquekey ?? "",
-            ProjectId: Number(projectId) ?? "",
+            ProjectId: Number(formData.ProjectId) ?? 0,
             Title: formData.Title ?? "",
             CaseNumber: formData.CaseNumber ?? "",
             CaseType: formData.CaseType ?? "",
@@ -285,6 +273,23 @@ export const AddUpdateLitigation: React.FC = () => {
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Case Details</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 
+                            <div>
+                                <SinglePageSelection
+                                    label="Project"
+                                    required
+                                    isShowClearSelection={false}
+                                    options={( LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).map(opt => ({
+                                        label: opt.ProjectName,
+                                        value: opt.ProjectId
+                                    }))}
+
+                                    value={formData.ProjectId ?? 0}
+                                    onChange={(value) => handleFieldChange("ProjectId", value)}
+                                    placeholder="Select Project"
+                                    error={errors.ProjectId}
+
+                                />
+                            </div>
                             <div>
                                 <Input
                                     type="text"
@@ -417,7 +422,6 @@ export const AddUpdateLitigation: React.FC = () => {
                             <div>
                                 <Input
                                     type="text"
-                                    required
                                     label='Opposing Representative'
                                     value={formData.OpposingRepresentative ?? ""}
                                     onChange={(e) => handleFieldChange("OpposingRepresentative", e.target.value)}
@@ -439,7 +443,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                 error={errors.CaseBrief} />
                         </div>
 
-                       <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                             <TextArea
                                 label=" Case Remarks / Comments"
                                 required

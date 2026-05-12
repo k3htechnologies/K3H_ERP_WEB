@@ -343,7 +343,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             }
             touch-manipulation
           `,
-          icon: 'h-5 w-5',
+          icon: item.label === 'Dashboard' ? 'h-5 w-5' : 'h-5 w-5 pt-2',
           text: 'text-sm font-medium',
           chevron: 'h-4 w-4'
         }

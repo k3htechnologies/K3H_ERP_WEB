@@ -4,7 +4,7 @@ import { type SortInfo, type TableColumn, type FilterInfo, type PaginationInfo }
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
-import type { PayTrackBookingData, FilterWithPaginationPayTrackBooking, PayTrackRow } from '@/features/crmPayTrack/models/PayTrackBookingModel';
+import type { PayTrackBookingData, FilterWithPaginationPayTrackBooking } from '@/features/crmPayTrack/models/PayTrackBookingModel';
 import { payTrackBookingService } from '@/features/crmPayTrack/services/PayTrackBookingService';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { handleExportFile } from '@/core/utils/exportFile';
@@ -22,10 +22,9 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 import { updateFilter } from "@/core/utils/filterHelper";
 import { Input } from '@/ui/components/forms';
 import DataTableExpandable from '@/ui/components/DataTable/DataTableExpandable';
-import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
-import { usePayTrackBookingListState } from '../context/PayTrackBookingListStateContext';
+import { usePayTrackReportListState } from '../context/PayTrackReportListStateContext';
 
-const PayTrack: React.FC = () => {
+const PayTrackReport: React.FC = () => {
 
     //#region STATE
     const [payTrackList, setPayTrackList] = useState<PayTrackBookingData[]>([]);
@@ -48,7 +47,7 @@ const PayTrack: React.FC = () => {
 
     const { projectId } = useProject();
 
-    const { listState, updateListState, resetFilters, clearPayTrackBookingContext } = usePayTrackBookingListState();
+    const { listState, updateListState, resetFilters, clearPayTrackReportContext } = usePayTrackReportListState();
 
     const { page, filters, sortInfo, searchTerm } = listState;
 
@@ -103,7 +102,7 @@ const PayTrack: React.FC = () => {
 
         if (!projectId) return;
 
-        clearPayTrackBookingContext();
+        clearPayTrackReportContext();
 
         if (searchTerm && searchTerm.trim()) {
 
@@ -114,7 +113,7 @@ const PayTrack: React.FC = () => {
             loadPayTrackList(page, filters, sortInfo);
 
         }
-    }, [projectId, page, filters, sortInfo, searchTerm, clearPayTrackBookingContext]);
+    }, [projectId, page, filters, sortInfo, searchTerm, clearPayTrackReportContext]);
 
 
     useEffect(() => {
@@ -191,6 +190,7 @@ const PayTrack: React.FC = () => {
                 }
 
                 const response = await payTrackBookingService.apiCallPullPayTrackBooking(params);
+
                 handleExportFile(response, exportType, 'PayTrack', addToast)
                 return response;
             },
@@ -310,7 +310,13 @@ const PayTrack: React.FC = () => {
                 align: 'left',
                 render: value => value || '-'
             },
-            {
+
+             {
+                key: "UnitGroup",
+                label: "Unit Details",
+                align: "center",
+                children: [
+                     {
                 key: 'BuildingNumber',
                 label: 'Building Number',
                 width: '14',
@@ -346,6 +352,9 @@ const PayTrack: React.FC = () => {
                 align: 'left',
                 render: value => value || '-'
             },
+                ]
+            },
+           
             {
                 key: 'RegistrationDate',
                 label: 'Expected Registration Date ',
@@ -360,98 +369,9 @@ const PayTrack: React.FC = () => {
                 align: 'left',
                 render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
             },
-            {
-                key: "ApprovalGroup",
-                label: "Approval Details",
-                align: "center",
-                children: [
-                    {
-                        key: 'PendingLedgerApprovalCount',
-                        label: 'Pending Ledger',
-                        width: '14',
-                        align: 'left',
-                        render: (v) => v || '0'
-                    },
-                    {
-                        key: 'FlatAlterationRequestIsApproval',
-                        label: 'Flat Alteration',
-                        width: '14',
-                        align: 'left',
-                        render: (v) => v ? 'Yes' : 'No'
-                    },
-                    {
-                        key: 'ParkingModificationRequestIsApproval',
-                        label: 'Parking Modification',
-                        width: '14',
-                        align: 'left',
-                        render: (v) => v ? 'Yes' : 'No'
-                    },
-                    {
-                        key: 'BookingApplicantModificationRequestIsApproval',
-                        label: 'Applicant Modification',
-                        width: '14',
-                        align: 'left',
-                        render: (v) => v ? 'Yes' : 'No'
-                    }
-                ]
-            }
-
 
         ], [handleViewpayTrackBDetails]
     );
-
-    const payTrackPaymentColumns = useMemo<TableColumn[]>(() => [
-
-        {
-            key: 'type',
-            label: 'Type',
-            align: 'left',
-            width: "200px",
-            render: (value, row) => (
-                <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
-                    {value}
-                </span>
-            )
-        },
-        {
-            key: 'total',
-            label: 'Total Amount',
-            align: 'right',
-            width: "300px",
-            render: (value, row) => (
-                <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
-                    ₹ {value.toLocaleString()}
-                </span>
-            )
-        },
-        {
-            key: 'paid',
-            label: 'Paid Amount',
-            align: 'right',
-            width: "300px",
-            render: (value, row) => (
-                <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
-                    ₹ {value.toLocaleString()}
-                </span>
-            )
-        },
-        {
-            key: 'pending',
-            label: 'Outstanding Amount',
-            align: 'right',
-            width: "300px",
-            render: (_, row) => {
-                const pending = (row.total || 0) - (row.paid || 0);
-
-                return (
-                    <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
-                        ₹ {pending.toLocaleString()}
-                    </span>
-                );
-            }
-        }
-
-    ], []);
 
     const requiredPayTrackBookingColumnKeys: string[] = ['ApplicantName', 'Actions'];
 
@@ -459,7 +379,7 @@ const PayTrack: React.FC = () => {
 
     const [selectedPayTrackBookingColumnKeys, setSelectedPayTrackBookingColumnKeys] = useState<string[]>(() => {
         try {
-            const saved = LocalStorageHelper.getPayTrackBookingTableColumns?.();
+            const saved = LocalStorageHelper.getPayTrackReportTableColumns?.();
             if (saved) {
                 const parsed = JSON.parse(saved) as string[];
                 const withRequired = Array.from(new Set([...parsed, ...requiredPayTrackBookingColumnKeys]));
@@ -485,12 +405,9 @@ const PayTrack: React.FC = () => {
         [payTrackColumns, selectedPayTrackBookingColumnKeys]
     );
 
-
     const handleFilterChange = (key: string, value: string) => {
         setTempFilters(prev => updateFilter(prev, key, value));
     };
-
-
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -533,87 +450,6 @@ const PayTrack: React.FC = () => {
                 loading={isLoading}
                 fixedHeight
                 recordsPerPage={20}
-                expandable={{
-                    keyField: 'BookingId',
-                    alwaysFetchOnOpen: false,
-
-                    fetchRow: async (row) => {
-                        return [
-                            {
-                                type: 'Stamp Duty',
-                                total: row.StampDutyAmount || 0,
-                                paid: row.ReceivedStampDutyAmount || 0,
-                            },
-                            {
-                                type: 'Registration Fees',
-                                total: row.RegistrationFees || 0,
-                                paid: row.ReceivedRegistrationFees || 0,
-                            },
-                            {
-                                type: 'Agreement Value',
-                                total: row.AgreementValue || 0,
-                                paid: row.ReceivedAgreementValue || 0,
-                            },
-                            {
-                                type: 'Agreement Value GST',
-                                total: row.AgreementValueGSTAmount || 0,
-                                paid: row.ReceivedAgreementValueGSTAmount || 0,
-                            },
-                            {
-                                type: 'Agreement Value TDS',
-                                total: row.AgreementValueTDS || 0,
-                                paid: row.ReceivedAgreementValueTDS || 0,
-                            },
-
-                            {
-                                type: 'Other Charges Value',
-                                total: row.OtherChargesAmount || 0,
-                                paid: row.ReceivedOtherChargesAmount || 0,
-                            },
-                            {
-                                type: 'Other Charges GST',
-                                total: row.OtherChargesGSTAmount || 0,
-                                paid: row.ReceivedOtherChargesGSTAmount || 0,
-                            },
-
-
-                        ];
-                    },
-
-                    renderRow: (fetchedData: PayTrackRow[]) => {
-
-                        const totalAmount = fetchedData.reduce((sum, r) => sum + r.total, 0);
-                        const totalPaid = fetchedData.reduce((sum, r) => sum + r.paid, 0);
-
-                        const totalPending = totalAmount - totalPaid;
-
-                        const dataWithTotal = [
-                            ...fetchedData,
-                            {
-                                type: 'Total',
-                                total: totalAmount,
-                                paid: totalPaid,
-                                pending: totalPending,
-                                isTotal: true
-                            }
-                        ];
-
-                        return (
-                            <DataTableWithOutBorder
-                                data={dataWithTotal}
-                                columns={payTrackPaymentColumns}
-                                emptyMessage="No Data Found"
-                                recordsPerPage={20}
-                                className="flex-1"
-                                sortInfo={sortInfo}
-                                onSort={handleSortColumn}
-                                loading={isLoading}
-                            />
-                        );
-                    },
-
-                    expandButton: { openText: 'Hide', closeText: 'Show' }
-                }}
             />
 
             <CustomizeColumnsModal
@@ -626,7 +462,7 @@ const PayTrack: React.FC = () => {
                     setSelectedPayTrackBookingColumnKeys(withRequired);
 
                     try {
-                        LocalStorageHelper.storePayTrackBookingTableColumns?.(
+                        LocalStorageHelper.storePayTrackReportTableColumns?.(
                             JSON.stringify(withRequired)
                         );
                     } catch { }
@@ -718,4 +554,4 @@ const PayTrack: React.FC = () => {
         </div>
     )
 }
-export default PayTrack;
+export default PayTrackReport;

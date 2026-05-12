@@ -799,7 +799,7 @@ export const InwardOutward: React.FC = () => {
                 onAdd={handleAddInwardOutward}
             />
 
-            <div className="p-2">
+            <div className="pt-2">
                 <Tabs
                     tabs={InwardOutwardTabList}
                     defaultActive={activeTab}
@@ -940,18 +940,19 @@ export const InwardOutward: React.FC = () => {
             </Modal>
 
             {/* DATA TABLE */}
-
-            <DataTable
-                data={InwardOutwardDataForTable}
-                columns={visibleInwardOutwardColumns}
-                pagination={InwardOutwardDataPaginationInfo}
-                emptyMessage="No Inward Outward Data Found"
-                fixedHeight={true}
-                recordsPerPage={20}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-            />
+            <div className="pt-5">
+                <DataTable
+                    data={InwardOutwardDataForTable}
+                    columns={visibleInwardOutwardColumns}
+                    pagination={InwardOutwardDataPaginationInfo}
+                    emptyMessage="No Inward Outward Data Found"
+                    fixedHeight={true}
+                    recordsPerPage={20}
+                    className="flex-1"
+                    sortInfo={sortInfo}
+                    onSort={handleSortColumn}
+                />
+            </div>
 
             {/* DELETE CONFIRMATION INWARD OUTWARD MODAL */}
 

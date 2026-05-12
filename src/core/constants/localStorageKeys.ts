@@ -83,6 +83,8 @@ export const LOCAL_STORAGE_KEYS = {
 
 
     //CRM
+    PAY_TRACK_BOOKING_SELECTED_COLUMNS: 'payTrackBooking.selectedColumns',
+    PAY_TRACK_REPORT_SELECTED_COLUMNS: 'payTrackReport.selectedColumns',
     BROKERAGE_BOOKING_SELECTED_COLUMNS: 'brokerage.selectedColumns',
     PAY_TRACK_CALL_LOG_SELECTED_COLUMNS: 'payTrackCallLog.selectedColumns',
 
@@ -115,6 +117,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     INCENTIVE_REPORT: 'incentive_report.listState',
     BOOKING: 'booking.listState',
     PAY_TRACK_BOOKING: 'payTrackBooking.listState',
+    PAY_TRACK_REPORT: 'payTrackReport.listState',
     INWARD_OUTWARD: 'inwardOutward.listState',
     BOOKING_Brokerage: 'bookingBrokerage.listState',
 

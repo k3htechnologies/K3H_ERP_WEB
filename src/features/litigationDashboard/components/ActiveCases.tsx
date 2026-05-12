@@ -13,6 +13,12 @@ const ActiveCases: React.FC<Props> = ({ activeCaseData }) => {
     const activeCaseColumns = useMemo<any[]>(
         () => [
             {
+                key: "ProjectName",
+                label: "Project Name",
+                align: "left",
+                render: (value?: string) => value ?  value : '-'
+            },
+            {
                 key: "Title",
                 label: "Case Title",
                 align: "left",
@@ -81,7 +87,7 @@ const ActiveCases: React.FC<Props> = ({ activeCaseData }) => {
         <div className="space-y-3 pt-5">
 
             <h2 className="text-lg font-semibold text-gray-800">Active Cases</h2>
-            <div className="bg-white rounded-lg p-4 space-y-4 h-[280px] border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+            <div className="bg-white rounded-lg p-4 space-y-4 h-[380px] border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                 <DataTableWithOutBorder
                     columns={activeCaseColumns}
                     data={activeCaseData}

@@ -181,6 +181,8 @@ import ViewChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/
 import CrmDashboard from '@/features/crmDashboard/pages/CrmDashboard';
 import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
 import AchievementReport from '@/features/achievement/pages/AchievementReport';
+import { PayTrackReportListStateProvider } from '@/features/crmPayTrackReport/context/PayTrackReportListStateContext';
+import PayTrackReport from '@/features/crmPayTrackReport/pages/PayTrackReport';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -455,6 +457,9 @@ function App() {
             <Route path="crmDashboard" element={<CrmDashboard />} />
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
+
+            <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
+            {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
 
             <Route path="brokerage" element={<BookingBrokerageListStateProvider><Brokerage /></BookingBrokerageListStateProvider>} />
             <Route path="brokerage/brokerageInvoice/view" element={<BookingBrokerageListStateProvider><ViewBrokerageInvoice /></BookingBrokerageListStateProvider>} />

@@ -23,7 +23,6 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import type {
   AddUpdateLitigationDocumentRequest,
@@ -53,79 +52,47 @@ const initialFormState = (): AddUpdateLitigationDocumentRequest => ({
 
 export const LitigationDocument: React.FC = () => {
   //#region STATE MANAGEMENT
-  const [litigationData, setLitigationData] = useState<LitigationData | null>(
-    null,
-  );
-  const [LitigationDocumentList, setLitigationDocumentList] = useState<
-    LitigationDocumentData[]
-  >([]);
+  const [litigationData, setLitigationData] = useState<LitigationData | null>(null);
+  const [LitigationDocumentList, setLitigationDocumentList] = useState<LitigationDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
 
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
-  //TABLE SORT INFO
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
-  // TOAST
   const { addToast } = useToast();
 
-  // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchLitigationDocuments(value);
   }, 350);
 
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  // EDIT LITIGATION DOCUMENT
-  const [editingLitigationDocumentData, setEditingLitigationDocumentData] =
-    useState<LitigationDocumentData | null>(null);
+  const [editingLitigationDocumentData, setEditingLitigationDocumentData] =useState<LitigationDocumentData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  //ADD UPDATE LITIGATION DOCUMENT
-  const [formData, setFormData] = useState<AddUpdateLitigationDocumentRequest>(
-    () => initialFormState(),
-  );
+  const [formData, setFormData] = useState<AddUpdateLitigationDocumentRequest>(() => initialFormState());
 
-  //DELETE LITIGATION DOCUMENT STATES
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] =
-    useState(false);
-  const [
-    deleteLitigationDocumentDetailsData,
-    setDeleteLitigationDocumentDetailsData,
-  ] = useState<LitigationDocumentData | null>(null);
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] =useState(false);
+  const [deleteLitigationDocumentDetailsData,setDeleteLitigationDocumentDetailsData] = useState<LitigationDocumentData | null>(null);
 
-  //FILE STATES
   const [documentFiles, setDocumentFiles] = useState<(File | string)[]>([]);
   const [removedDocumentURLs, setRemovedDocumentURLs] = useState<string[]>([]);
   const [documentURL, setDocumentURL] = useState<string>();
 
-  // NAVIGATION
   const navigate = useNavigate();
-  //#endregion
-
-  //#region PROJECT SELECTION GET ID
-  const { projectId } = useProject();
-  //#endregion
-
+  
   const { LitigationId } = useParams<{ LitigationId?: string }>();
   const { listState } = useLitigationListState();
-  const currentLitigationId = LitigationId
-    ? Number(LitigationId)
-    : listState.LitigationId;
-
+  const currentLitigationId = LitigationId ? Number(LitigationId) : listState.LitigationId;
+  const projectId  = listState.projectId;
   const litigationStatus = litigationData?.Status;
-  const canModifyDocument =
-    litigationStatus === "Open" || litigationStatus === "Reopen";
+  const canModifyDocument = litigationStatus === "Open" || litigationStatus === "Reopen";
 
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions();
-  //#endregion
-
-  //#region INIT
+  
   useEffect(() => {
     if (!projectId) return;
     fetchLitigationDocumentList();

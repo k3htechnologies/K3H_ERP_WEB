@@ -106,6 +106,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         // CRM
         '/crmdashboard': '/crmDashboard',
         '/paytrack': '/payTrack',
+        '/paytrackreport': '/payTrackReport',
         '/brokerage': '/brokerage',
 
         //MORE

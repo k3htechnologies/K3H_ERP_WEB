@@ -43,7 +43,7 @@ export const MASTER_DATA = {
 
   bankAccountType: ['Current', 'Overdraft', 'RERA Escrow Current Account', 'Salary', 'Saving'],
 
-  natureOfAccount : [
+  natureOfAccount: [
     "100% Collection Account",
     "100% RERA Account",
     "30% RERA Account",
@@ -66,7 +66,7 @@ export const MASTER_DATA = {
 
   commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
-  flat_unit_facing: ['BACK','EAST', 'FRONT', 'GARDEN', 'NORTH', 'PARK', 'ROAD', 'SOUTH', 'WEST'],
+  flat_unit_facing: ['BACK', 'EAST', 'FRONT', 'GARDEN', 'NORTH', 'PARK', 'ROAD', 'SOUTH', 'WEST'],
 
   applicant_type: ['Applicant', 'Co - Applicant'],
 
@@ -269,7 +269,24 @@ export const MASTER_DATA = {
 
   caseType: ['Civil', 'Criminal'],
 
-  courtType: ['Civil Court', 'District Court', 'High Court', 'Session Court', 'Supreme Court'],
+  courtType: [
+    'Charity Commissioner',
+    'City Civil and Sessions Court',
+    'Civil Court',
+    'Co-operative Court',
+    'Debt Recovery Tribunal',
+    'District Court',
+    'District Deputy Registrar',
+    'High Court',
+    'Industrial / Labour Courts',
+    'MahaRERA',
+    'MahaREAT',
+    'Metropolitan Magistrate Court',
+    'National Consumer Dispute Redressal Commission',
+    'Small Causes Court',
+    'State Consumer Dispute Redressal Commission',
+    'Supreme Court of India',
+  ],
 
   paymentMode: ['Cheque', 'Demand Draft', 'IMPS', 'NEFT', 'Online Transfer', 'RTGS', 'UPI'],
 
@@ -311,7 +328,7 @@ export const MASTER_DATA = {
 
   documentType: ['Inward', 'Outward'],
 
-  reasonForInactivity: ['Firm Closed', 'Key SPOC left','Brokerage Pending','Did not like project/brand'],
+  reasonForInactivity: ['Firm Closed', 'Key SPOC left', 'Brokerage Pending', 'Did not like project/brand'],
 
   refundedDetaisAmountType: ['Agreement Amount'],
 
@@ -373,7 +390,7 @@ export const ETHNICITY_TYPE_OPTION = toOptions(MASTER_DATA.ethnicity)
 export const POSSESSION_TYPE_OPTIONS = toOptions(MASTER_DATA.possessionType)
 export const NATIONALITY_TYPE_OPTION = toOptions(MASTER_DATA.nationality)
 export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)
-export const NATURE_OF_ACCOUNT=toOptions(MASTER_DATA.natureOfAccount)
+export const NATURE_OF_ACCOUNT = toOptions(MASTER_DATA.natureOfAccount)
 export const LAND_OWNERSHIP_TYPE = toOptions(MASTER_DATA.landOwnershipType)
 export const FLAT_UNIT_TYPE = toOptions(MASTER_DATA.flat_unit_Type)
 export const RESIDENTIAL_FLAT_CONFIGURATION = toOptions(MASTER_DATA.residential_flat_configuration_Type)

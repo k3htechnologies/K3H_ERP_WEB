@@ -8,7 +8,6 @@ export interface LitigationDashboardDataset {
     Table4: Table4[];
     Table5: Table5[];
     Table6: Table6[];
-    Table7: Table7[];
 }
 
 export interface Table0 {
@@ -34,6 +33,7 @@ export interface Table3 {
 }
 
 export interface Table4 {
+    ProjectName:string | null
     Title: string | null
     CaseNumber: number | 0
     CaseType: string | null
@@ -42,6 +42,7 @@ export interface Table4 {
 }
 
 export interface Table5 {
+    ProjectName:string | null
     CaseNumber: number | 0
     CaseType: string | null
     CourtType: string | null
@@ -49,16 +50,8 @@ export interface Table5 {
     DaysRemaining: number | 0
 }
 
-export interface Table6 {
-    DocumentName: string | null
-    CaseNumber: number | 0
-    RecentDate: string | null
-    ClosureAttachementURL: string | '',
-    DocumentURL: string | '',
-    HearingAttachementURL: string | ''
-}
 
-export interface Table7 {
+export interface Table6 {
     MonthName: string | null
     MonthNumber: number | 0
     TotalCases: number | 0

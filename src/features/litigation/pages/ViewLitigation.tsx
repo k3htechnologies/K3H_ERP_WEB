@@ -9,9 +9,8 @@ import {
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useEffect, useState } from "react";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { Modal } from "@/ui/components/Modal/Modal";
-import { Button } from "@/ui/components/forms";
+import { Button, Input } from "@/ui/components/forms";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import useToast from "@/core/hooks/useToast";
@@ -20,23 +19,9 @@ import { runApiWithLoader } from "@/core/utils";
 import { Loader } from "@/core/utils/loader";
 import { Edit, Trash2 } from "lucide-react";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
-import type {
-  AddUpdateLitigationClosureRequest,
-  FilterWithPaginationLitigationClosureRequest,
-  LitigationClosureData,
-} from "@/features/litigation/models/LitigationClosureModel";
-import type {
-  AddUpdateLitigationHearingRequest,
-  DeleteLitigationHearingRequest,
-  FilterWithPaginationLitigationHearingRequest,
-  LitigationHearingData,
-} from "@/features/litigation/models/LitigationHearingModel";
-import type {
-  FilterWithPaginationLitigationRequest,
-  LitigationData,
-  LitigationReopenData,
-  UpdateLitigationReopenRequest,
-} from "@/features/litigation/models/LitigationModel";
+import type { AddUpdateLitigationClosureRequest, FilterWithPaginationLitigationClosureRequest, LitigationClosureData } from "@/features/litigation/models/LitigationClosureModel";
+import type { AddUpdateLitigationHearingRequest, DeleteLitigationHearingRequest, FilterWithPaginationLitigationHearingRequest, LitigationHearingData } from "@/features/litigation/models/LitigationHearingModel";
+import type { FilterWithPaginationLitigationRequest, LitigationData, LitigationReopenData, UpdateLitigationReopenRequest } from "@/features/litigation/models/LitigationModel";
 import { litigationClosureService } from "@/features/litigation/services/LitigationClosureServices";
 import { litigationHearingService } from "@/features/litigation/services/LitigationHearingServices";
 import { litigationService } from "@/features/litigation/services/LitigationServices";
@@ -52,19 +37,16 @@ import { litigationDocumentService } from "@/features/litigation/services/Litiga
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const ViewLitigation: React.FC = () => {
-  // EDIT LITIGATION DATA FROM STATE
+
   const { LitigationId } = useParams<{ LitigationId?: string }>();
   const { listState } = useLitigationListState();
   const currentLitigationId = LitigationId ? Number(LitigationId) : listState.LitigationId;
-
-  // PROJECT CONTEXT
-  const projectContext = useProject();
-  const projectId = projectContext?.projectId ? Number(projectContext.projectId) : 0;
+  const projectId = listState.projectId ?? 0;
 
   const initialClosureFormData: AddUpdateLitigationClosureRequest = {
     LitigationClosureId: 0,
     Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    LitigationId: currentLitigationId,
+    LitigationId: Number(currentLitigationId),
     ProjectId: Number(projectId),
     ClosureDate: "",
     Conclusion: "",
@@ -76,15 +58,15 @@ const ViewLitigation: React.FC = () => {
   const initialHearingFormData = (): AddUpdateLitigationHearingRequest => ({
     LitigationHearingId: 0,
     Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    LitigationId: currentLitigationId,
+    LitigationId: Number(currentLitigationId),
     ProjectId: Number(projectId),
     HearingDate: "",
     Remark: "",
+    FileName:"",
     HearingAttachementURL: null,
     RemoveHearingAttachementURL: "",
   });
 
-  //#region STATE MANAGEMENT
   const [litigationData, setLitigationData] = useState<LitigationData | null>(null);
   const [loadingMessage, setLoadingMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -98,39 +80,30 @@ const ViewLitigation: React.FC = () => {
   const [hearingData, setHearingData] = useState<LitigationHearingData[]>([]);
   const [isHearingModalOpen, setIsHearingModalOpen] = useState(false);
 
-  // DELETE HEARING STATE
   const [isDeleteHearingDialogOpen, setIsDeleteHearingDialogOpen] = useState(false);
   const [selectedHearingItem, setSelectedHearingItem] = useState<LitigationHearingData | null>(null);
 
-  // HEARING ATTACHMENT URL FILES
   const [hearingURLFiles, setHearingURLFiles] = useState<(File | string)[]>([]);
   const [removeHearingAttachementUrls, SetRemoveHearingAttachementUrls] = useState<string[]>([]);
   const [hearingURL, setHearingURL] = useState<string>();
 
-  // CLOSURE ATTACHMENT URL FILES
   const [closureURLFiles, setClosureURLFiles] = useState<(File | string)[]>([]);
   const [removeClosureAttachementUrls, SetRemoveClosureAttachementUrls] = useState<string[]>([]);
   const [closureURL, setClosureURL] = useState<string>();
   const [closureFormData, setClosureFormData] = useState<AddUpdateLitigationClosureRequest>(() => initialClosureFormData);
   const [hearingFormData, setHearingFormData] = useState<AddUpdateLitigationHearingRequest>(() => initialHearingFormData());
 
-  // NAVIGATE
   const navigate = useNavigate();
 
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions("/litigation");
-  //#endregion
 
-  // TOAST
   const { addToast } = useToast();
 
   const litigationStatus = litigationData?.Status;
   const isEditable = canAction && (litigationStatus === "Open" || litigationStatus === "Reopen");
 
-  //#region ERROR STATE MANAGEMENT
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  //#region TAB ACTIVITY
   const litigationTabList = [
     { id: "Overview", label: "Overview" },
     { id: "Document", label: "Document" },
@@ -139,7 +112,6 @@ const ViewLitigation: React.FC = () => {
   const [activeTab, setActiveTab] = useState<string>(litigationTabList[0].id);
   const isEditDisabled = !isEditable;
 
-  //#region USE EFFECT TO FETCH CLOSURE DETAILS
   useEffect(() => {
     if (!projectId || !currentLitigationId || currentLitigationId === 0) return;
 
@@ -149,7 +121,6 @@ const ViewLitigation: React.FC = () => {
 
     fetchHearingDetails();
   }, [projectId, currentLitigationId, addToast]);
-  //#endregion
 
   const fetchLitigationDetails = async () => {
     await runApiWithLoader(
@@ -159,7 +130,7 @@ const ViewLitigation: React.FC = () => {
         const params: FilterWithPaginationLitigationRequest = {
           PageNumber: 1,
           PageSize: 1,
-          LitigationId: currentLitigationId,
+          LitigationId: Number(currentLitigationId),
           ProjectId: Number(projectId),
         };
         const response = await litigationService.apiCallPullLitigation(params);
@@ -182,7 +153,6 @@ const ViewLitigation: React.FC = () => {
     );
   };
 
-  //#region CLOSURE MODAL MANAGEMENT
   const handleopenClosureModal = (item?: LitigationClosureData) => {
     setErrors({});
     setClosureURLFiles([]);
@@ -192,7 +162,7 @@ const ViewLitigation: React.FC = () => {
       setClosureFormData({
         LitigationClosureId: item.LitigationClosureId || 0,
         Uniquekey: item.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        LitigationId: currentLitigationId,
+        LitigationId: Number(currentLitigationId),
         ProjectId: Number(projectId),
         ClosureDate: item.ClosureDate || "",
         Conclusion: item.Conclusion || "",
@@ -204,17 +174,13 @@ const ViewLitigation: React.FC = () => {
     }
     setIsClosureModalOpen(true);
   };
-  //#endregion
 
-  //#region CLOSE CLOSURE MODAL
   const handleClosureModal = () => {
     setIsClosureModalOpen(false);
     setClosureFormData(initialClosureFormData);
     setErrors({});
   };
-  //endregion
 
-  //#region HANDLE FIELD CHANGE EVENT
   const handleFieldChange = (field: keyof AddUpdateLitigationClosureRequest, value: any) => {
     setClosureFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -223,7 +189,6 @@ const ViewLitigation: React.FC = () => {
     }
   };
 
-  //#region FETCH CLOSURE DETAILS
   const fetchClouserDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -233,7 +198,7 @@ const ViewLitigation: React.FC = () => {
           PageNumber: 1,
           PageSize: 50,
           ProjectId: Number(projectId),
-          LitigationId: currentLitigationId,
+          LitigationId: Number(currentLitigationId),
         };
 
         const response = await litigationClosureService.apiCallPullLitigationClosure(params);
@@ -253,9 +218,7 @@ const ViewLitigation: React.FC = () => {
       "Loading Closure Details",
     );
   };
-  //#endregion
 
-  //Validation Function
   const validateAddClosureForm = (): {
     isValid: boolean;
     errors: { [key: string]: string };
@@ -282,15 +245,13 @@ const ViewLitigation: React.FC = () => {
       errors: newErrors,
     };
   };
-  //#endregion
 
-  //#region PUSH FORM DATA
   const PushClosureFormData = (): FormData => {
     const fd = new FormData();
     fd.append("LitigationClosureId", closureFormData.LitigationClosureId.toString());
     fd.append("Uniquekey", closureFormData.Uniquekey ?? "");
-    fd.append("LitigationId", currentLitigationId.toString());
-    fd.append("ProjectId", projectId!.toString());
+    fd.append("LitigationId", Number(currentLitigationId).toString());
+    fd.append("ProjectId", Number(projectId).toString());
     fd.append("ClosureDate", closureFormData.ClosureDate ?? "");
     fd.append("Conclusion", closureFormData.Conclusion ?? "");
     fd.append("Remark", closureFormData.Remark ?? "");
@@ -304,10 +265,9 @@ const ViewLitigation: React.FC = () => {
     fd.append("RemoveClosureAttachementURL", removeClosureAttachementUrls.join(","));
     return fd;
   };
-  //#endregion
 
-  //#region ADD AND UPDATE CLOSURE
   const handleAddUpdateClosure = async (e: React.FormEvent) => {
+
     e.preventDefault();
     setErrors({});
 
@@ -349,9 +309,7 @@ const ViewLitigation: React.FC = () => {
       closureFormData.LitigationClosureId ? "Updating Closure" : "Adding Closure",
     );
   };
-  //#endregion
 
-  //#region HEARING MODAL MANAGEMENT
 
   const handleopenHearingModal = (item?: Partial<LitigationHearingData>) => {
     setErrors({});
@@ -362,10 +320,11 @@ const ViewLitigation: React.FC = () => {
       setHearingFormData({
         LitigationHearingId: item.LitigationHearingId ?? 0,
         Uniquekey: item.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        LitigationId: currentLitigationId,
+        LitigationId: Number(currentLitigationId),
         ProjectId: Number(projectId),
         HearingDate: item.HearingDate || "",
         Remark: item.Remark || "",
+        FileName:item.FileName ||"",
         HearingAttachementURL: item.HearingAttachementURL || "",
         RemoveHearingAttachementURL: "",
       });
@@ -373,17 +332,13 @@ const ViewLitigation: React.FC = () => {
     }
     setIsHearingModalOpen(true);
   };
-  //#endregion
 
-  //#region HEARING MODAL
   const handleHearingModal = () => {
     setIsHearingModalOpen(false);
     setHearingFormData(initialHearingFormData);
     setErrors({});
   };
-  //#endregion
 
-  //HEARING HANDLE CHANGE
   const handleHearingFieldChange = (field: keyof AddUpdateLitigationHearingRequest, value: any) => {
     setHearingFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -392,24 +347,29 @@ const ViewLitigation: React.FC = () => {
     }
   };
 
-  //#region FETCH HEARING DETAILS
   const fetchHearingDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
+
         const params: FilterWithPaginationLitigationHearingRequest = {
           PageNumber: 1,
           PageSize: 50,
           ProjectId: Number(projectId),
-          LitigationId: currentLitigationId,
+          LitigationId: Number(currentLitigationId),
         };
+
         const response = await litigationHearingService.apiCallPullLitigationHearing(params);
 
         if (E.isRight(response)) {
+
           setHearingData(response.right.Data);
+
         } else {
+
           addToast({ type: "error", title: response.left.message });
+
         }
         return response;
       },
@@ -419,9 +379,7 @@ const ViewLitigation: React.FC = () => {
       "Loading Hearing Details",
     );
   };
-  //#endregion
 
-  //Validation Function
   const validateAddHearingForm = (): {
     isValid: boolean;
     errors: { [key: string]: string };
@@ -437,29 +395,21 @@ const ViewLitigation: React.FC = () => {
       newErrors.HearingDate = "Hearing Date cannot be in the past.";
     }
 
-    if (!hearingFormData.Remark?.trim()) {
-      newErrors.Remark = "Remark is required.";
-    }
-
-    if (!hasAnyDocumentFile(hearingURLFiles, hearingURL, removeHearingAttachementUrls)) {
-      newErrors.HearingAttachementURL = "File is required.";
-    }
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors,
     };
   };
-  //#endregion
 
-  //#region PUSH HEARING DATA
   const PushHearingFormData = (): FormData => {
     const fd = new FormData();
     fd.append("LitigationHearingId", String(hearingFormData.LitigationHearingId ?? 0));
     fd.append("Uniquekey", hearingFormData.Uniquekey ?? "");
     fd.append("LitigationId", String(hearingFormData.LitigationId ?? 0));
-    fd.append("ProjectId", projectId!.toString());
+    fd.append("ProjectId", String(projectId ?? 0));
     fd.append("HearingDate", hearingFormData.HearingDate ?? null);
     fd.append("Remark", hearingFormData.Remark ?? "");
+    fd.append("FileName", hearingFormData.FileName ?? "");
 
     hearingURLFiles.forEach((file) => {
       if (file instanceof File) {
@@ -469,9 +419,7 @@ const ViewLitigation: React.FC = () => {
     fd.append("RemoveHearingAttachementURL", removeHearingAttachementUrls.join(","));
     return fd;
   };
-  //#endregion
 
-  //#region AND UPDATE HEARING
   const handleAddUpdateHearing = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -514,7 +462,6 @@ const ViewLitigation: React.FC = () => {
     );
   };
 
-  //#region HEARING DELETE HANDLER
   const handleDeleteHearing = (item: LitigationHearingData) => {
     setSelectedHearingItem(item);
     setIsDeleteHearingDialogOpen(true);
@@ -530,7 +477,7 @@ const ViewLitigation: React.FC = () => {
         const params: DeleteLitigationHearingRequest = {
           LitigationHearingId: selectedHearingItem.LitigationHearingId || 0,
           Uniquekey: selectedHearingItem.Uniquekey || "",
-          LitigationId: currentLitigationId,
+          LitigationId: Number(currentLitigationId),
           ProjectId: Number(projectId),
         };
         const response = await litigationHearingService.apiCallDeleteLitigationHearing(params);
@@ -556,28 +503,21 @@ const ViewLitigation: React.FC = () => {
       "Deleting Hearing Details",
     );
   };
-  //#endregion
 
-  //#region EDIT LITIGATION
   const handleEditLitigation = (row: LitigationData) => {
     if (!row?.LitigationId) return;
     navigate(`/litigation/add/${row.LitigationId}`);
   };
-  //#endregion
-  //#region EDIT DOCUMENT
+
   const handleEditLitigationDocument = (row: LitigationDocumentData) => {
     if (!row?.LitigationId) return;
     navigate(`/litigation/document`);
   };
-  //#endregion
 
-  //#region BACK PROJECT PAGE
   const handleBackToListLitigation = () => {
     navigate("/litigation");
   };
-  //#endregion
 
-  //#region HANDLE LITIGATION REOEPN
   const handleLitigationReopen = async () => {
     if (!selectedLitigationItem) return;
 
@@ -626,7 +566,7 @@ const ViewLitigation: React.FC = () => {
           PageNumber: 1,
           PageSize: 100,
           ProjectId: Number(projectId),
-          LitigationId: currentLitigationId,
+          LitigationId: Number(currentLitigationId),
         };
         const response = await litigationDocumentService.apiCallPullLitigationDocument(params);
 
@@ -645,25 +585,18 @@ const ViewLitigation: React.FC = () => {
       "Loading Litigation Document",
     );
   };
-  //#endregion
 
-  //#region CHECK DOCUMENT URL EXISTS
   const docsWithUrls = litigationDocumentList.filter((d) => {
     const urls = parseDocumentUrls(d.DocumentURL ?? "").filter((x) => x?.trim()?.length);
 
     return urls.length > 0;
   });
-  //#endregion
+
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
-      {/* Loader */}
 
-      <Loader loading={isLoading} title={loadingMessage}>
-        {" "}
-        <div></div>{" "}
-      </Loader>
-      {/* Header Details*/}
+      <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "}</Loader>
 
       <HeaderActionBar
         titleText="Litigation : "
@@ -677,9 +610,7 @@ const ViewLitigation: React.FC = () => {
           if (activeTab === "Overview" && litigationData) {
             handleEditLitigation(litigationData);
           } else if (activeTab === "Document" && litigationData) {
-            handleEditLitigationDocument({
-              LitigationId: litigationData.LitigationId,
-            } as LitigationDocumentData);
+            handleEditLitigationDocument({ LitigationId: litigationData.LitigationId } as LitigationDocumentData);
           }
         }}
         isLoading={false}
@@ -969,15 +900,17 @@ const ViewLitigation: React.FC = () => {
 
                         <p className="mt-2 text-sm text-gray-700">{item.Remark || "-"}</p>
 
-                        <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
-                          <p>Document</p>
-                          <MultiImageViewer
-                            images={parseDocumentUrls(item.HearingAttachementURL)}
-                            title="Hearing Document"
-                            isIcon={false}
-                            triggerLabel="Document"
-                          />
-                        </div>
+                        {item.HearingAttachementURL && (
+                          <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
+                            <p>{item.FileName}</p>
+                            <MultiImageViewer
+                              images={parseDocumentUrls(item.HearingAttachementURL)}
+                              title="Hearing Document"
+                              isIcon={false}
+                              triggerLabel="Document"
+                            />
+                          </div>
+                        )}
                       </div>
                     );
                   })
@@ -985,8 +918,6 @@ const ViewLitigation: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* CLOSURE MODAL */}
 
           <Modal
             isOpen={isClosureModalOpen}
@@ -1052,7 +983,6 @@ const ViewLitigation: React.FC = () => {
             </div>
           </Modal>
 
-          {/* HEARING MODAL */}
 
           <Modal
             isOpen={isHearingModalOpen}
@@ -1073,11 +1003,20 @@ const ViewLitigation: React.FC = () => {
                   error={errors.HearingDate}
                 />
               </div>
-
+              <div>
+                <Input
+                  type="text"
+                  label='File Name'
+                  value={hearingFormData.FileName ?? ""}
+                  onChange={(e) => handleHearingFieldChange("FileName", e.target.value)}
+                  placeholder="Enter File Name "
+                  maxLength={250}
+                  error={errors.FileName}
+                />
+              </div>
               <div>
                 <MultiFilePicker
                   label="Files"
-                  required
                   placeholder="Select Files"
                   error={errors.HearingAttachementURL}
                   value={hearingURLFiles}
@@ -1096,7 +1035,6 @@ const ViewLitigation: React.FC = () => {
                 <div>
                   <TextArea
                     label="Remark"
-                    required
                     className="thin-scroll"
                     value={hearingFormData.Remark ?? ""}
                     placeholder="Enter Remarks"
@@ -1108,7 +1046,6 @@ const ViewLitigation: React.FC = () => {
             </div>
           </Modal>
 
-          {/*Litigation Reopen Confirmation Dialog Box*/}
 
           <ConfirmationDialogBox
             isOpen={isLitigationReopenDialogOpen}
@@ -1124,7 +1061,6 @@ const ViewLitigation: React.FC = () => {
             loading={isLoading}
           />
 
-          {/*Delete Hearing Confirmation Dialog Box*/}
 
           <DeleteDialog
             isOpen={isDeleteHearingDialogOpen}

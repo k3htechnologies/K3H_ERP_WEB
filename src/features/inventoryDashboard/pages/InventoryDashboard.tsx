@@ -95,7 +95,7 @@ const InventoryDashboard: React.FC = () => {
       const params = {
         PageSize: count > 0 ? count : 10,
         PageNumber: 1,
-        ProjectId: Number(projectId),
+        ProjectId: Number(row?.ProjectId || projectId),
         BuildingNumber: row?.Building ?? "",
         Wing: row?.Wing ?? "",
         FlatStatus: status
@@ -132,7 +132,7 @@ const InventoryDashboard: React.FC = () => {
       const params = {
         PageSize: count > 0 ? count : 10,
         PageNumber: 1,
-        ProjectId: Number(projectId),
+        ProjectId: Number(row?.ProjectId || projectId),
         Building: row?.Building ?? "",
         Wing: row?.Wing ?? "",
         ParkingStatus: status,

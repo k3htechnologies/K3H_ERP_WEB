@@ -32,6 +32,7 @@ export interface CallLogData {
     VillageMasterId: string | null;
     VillageName?: string
     
+    IsEditable: boolean
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

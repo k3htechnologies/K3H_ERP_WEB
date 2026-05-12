@@ -489,7 +489,7 @@ export const CallLog: React.FC = () => {
             align: 'center',
             render: (_value, row) => {
 
-                const isLocked = !canAction || !!row.RescheduleDate || !!row.Remark;
+                const isLocked = !canAction || !row.IsEditable ;
 
                 return (
                     <div className="flex items-center justify-center">

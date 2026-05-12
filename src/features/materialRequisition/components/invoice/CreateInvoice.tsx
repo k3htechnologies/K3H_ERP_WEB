@@ -23,6 +23,7 @@ import { materialRequisitionGRNService } from "@/features/materialRequisition/se
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithHeadColor";
+import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     MaterialRequisitionId: 0,
@@ -169,12 +170,17 @@ const CreateInvoice: React.FC = () => {
 
         if (!formData.InvoiceAmount) {
             newErrors.InvoiceAmount = ' Invoice Amount is required.';
+        } else if (Number(formData.InvoiceAmount) <= 0) {
+            newErrors.InvoiceAmount = ' Invoice Amount must be greater than zero.';
         }
         if (!formData.InvoiceDate) {
             newErrors.InvoiceDate = ' Invoice Date is required.';
         }
         if (!formData.InvoiceDueDate) {
             newErrors.InvoiceDueDate = ' Invoice Due Date is required.';
+
+        } else if (formData.InvoiceDate != null && formData.InvoiceDate !== "" && !isToDateGreaterOrEqualFromDate(formData.InvoiceDate, formData.InvoiceDueDate)) {
+            newErrors.InvoiceDueDate = "Due Date must be greater than Invoice Date";
         }
         if (!formData.InvoiceNumber) {
             newErrors.InvoiceNumber = ' Invoice Number is required.';
@@ -185,9 +191,9 @@ const CreateInvoice: React.FC = () => {
         if (!hasAnyDocumentFile(performaInvoiceURLFiles, performaInvoiceURL, removePerformaInvoiceUrls)) {
             newErrors.PerformaInvoiceURL = "File is required.";
         }
-        // if (!hasAnyDocumentFile(measurementInvoiceURLFiles, measurementInvoiceURL, removeMeasurementInvoiceUrls)) {
-        //     newErrors.MeasurementInvoiceURL = "File is required.";
-        // }
+        if (!hasAnyDocumentFile(measurementInvoiceURLFiles, measurementInvoiceURL, removeMeasurementInvoiceUrls)) {
+            newErrors.MeasurementInvoiceURL = "File is required.";
+        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -301,7 +307,7 @@ const CreateInvoice: React.FC = () => {
                         <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
                         <FieldItem label="Challan No." value={materialRequisitionGRNData?.ChallanNumber} />
                         <FieldItem label="Vehicle No." value={materialRequisitionGRNData?.VehicleNumber} />
-                        
+
                     </div>
                 </div>
 

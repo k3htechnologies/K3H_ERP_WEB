@@ -38,7 +38,7 @@ export const MaterialRequisition: React.FC = () => {
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const { pagination, setPagination } = usePagination(20);
     const [materialRequisitionData, setMaterialRequisitionData] = useState<MaterialRequisitionData[]>([]);
-    const { listState, updateListState } = useMaterialRequisitionListState();
+    const { listState, updateListState, clearMaterialRequisitionContext } = useMaterialRequisitionListState();
     const { searchTerm, filters, sortInfo } = listState;
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
@@ -84,7 +84,7 @@ export const MaterialRequisition: React.FC = () => {
 
 
     const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
-        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId, MaterialRequisitionStage: row.MaterialRequisitionStage, MaterialRequisitionStatus: row.MaterialRequisitionStatus, SystemGeneratedCode: row.SystemGeneratedCode, Uniquekey: row.Uniquekey });
+        updateListState({ MaterialRequisitionId: row.MaterialRequisitionId ?? 0, MaterialRequisitionStage: row.MaterialRequisitionStage ?? "", MaterialRequisitionStatus: row.MaterialRequisitionStatus ?? "", SystemGeneratedCode: row.SystemGeneratedCode ?? "", Uniquekey: row.Uniquekey ?? "" });
         navigate('/materialRequisition/view');
     }, [navigate, updateListState],);
 
@@ -154,7 +154,7 @@ export const MaterialRequisition: React.FC = () => {
     };
 
     const handleMaterialRequisitionEdit = useCallback((row: MaterialRequisitionData) => {
-        debugger
+        
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId });
         navigate(`/materialRequisition/add/${row.MaterialRequisitionId}`);
     }, [navigate, updateListState]);
@@ -332,7 +332,7 @@ export const MaterialRequisition: React.FC = () => {
         } else {
             loadDetailsdata(listState.page, listState.filters, listState.sortInfo);
         }
-    }, [projectId, listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
+    }, [projectId, listState.page, listState.filters, listState.sortInfo, listState.searchTerm, clearMaterialRequisitionContext]);
 
     const fetchLoadDetailsList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadDetailsdata(page, filters, sort ?? sortInfo);
@@ -529,7 +529,8 @@ export const MaterialRequisition: React.FC = () => {
                         <SinglePageSelection
                             label="Material Requisition Stage"
                             placeholder="Select Stage"
-                            options={MATERIAL_REQUISITION_STAGES_OPTIONS?.map(stage => ({ label: stage.name, value: stage.id })) || []}
+                            value={tempFilters?.MaterialRequisitionStage || ""}
+                            options={MATERIAL_REQUISITION_STAGES_OPTIONS.map((stage) => ({ label: stage.name, value: stage.id }))}
                             onChange={(value) => handleFilterChange('MaterialRequisitionStage', String(value))}
                         />
                     </div>
@@ -538,7 +539,8 @@ export const MaterialRequisition: React.FC = () => {
                         <SinglePageSelection
                             label="Material Requisition Status"
                             placeholder="Select Status"
-                            options={MATERIAL_REQUISITION_STATUS_OPTIONS?.map(status => ({ label: status.name, value: status.id })) || []}
+                            value={tempFilters?.MaterialRequisitionStatus || ""}
+                            options={MATERIAL_REQUISITION_STATUS_OPTIONS.map((status) => ({ label: status.name, value: status.id }))}
                             onChange={(value) => handleFilterChange('MaterialRequisitionStatus', String(value))}
                         />
                     </div>
@@ -562,7 +564,7 @@ export const MaterialRequisition: React.FC = () => {
                     </div>
                 </div>
             </Modal>
-            
+
         </div>
     )
 }

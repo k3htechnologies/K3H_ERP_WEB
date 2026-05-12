@@ -1,4 +1,4 @@
-import { PAYMENT_MODE, PAYMENT_TYPE } from "@/core/constants/staticData";
+import { MATERIAL_REQUISITION_PAYMENT_TYPE, PAYMENT_MODE, PAYMENT_TYPE } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
@@ -278,7 +278,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                     required
                     value={formData.PaymentType}
                     onChange={(e) => handleFieldChange("PaymentType", String(e))}
-                    options={PAYMENT_TYPE.map(opt => ({
+                    options={MATERIAL_REQUISITION_PAYMENT_TYPE.map(opt => ({
                         label: opt.name,
                         value: opt.id
                     }))}

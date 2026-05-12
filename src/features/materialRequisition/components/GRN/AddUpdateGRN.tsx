@@ -22,6 +22,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
+import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNRequest => ({
     MaterialRequisitionId: 0,
@@ -111,29 +112,7 @@ export const AddUpdateGRN = () => {
 
 
     }, [detailData]);
-    // const validateMaterialForm = (): {
-    //     isValid: boolean;
-    //     errors: { [key: string]: string };
-    // } => {
-    //     const newErrors: { [key: string]: string } = {};
 
-    //     if (!materialData.MaterialMasterId || materialData.MaterialMasterId === 0)
-    //         newErrors.MaterialMasterId = "Material is required";
-
-    //     if (!materialData.SubMaterialMasterId || materialData.SubMaterialMasterId === 0)
-    //         newErrors.SubMaterialMasterId = "Sub Material is required";
-
-    //     if (!materialData.MaterialQuantity || materialData.MaterialQuantity <= 0)
-    //         newErrors.MaterialQuantity = "Quantity must be greater than 0";
-
-    //     if (!materialData.RequiredDate || materialData.RequiredDate === "")
-    //         newErrors.RequiredDate = "Required Date is required";
-
-    //     return {
-    //         isValid: Object.keys(newErrors).length === 0,
-    //         errors: newErrors,
-    //     };
-    // };
 
     const loadGRNData = async () => {
         await runApiWithLoader(
@@ -391,6 +370,33 @@ export const AddUpdateGRN = () => {
         return { label, value: String(id) };
     };
 
+
+    const validateMaterialRequisitionGRNForm = (): {
+        isValid: boolean
+        errors: { [key: string]: string }
+    } => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (!formData.Remarks) {
+            newErrors.Remarks = ' Remarks is required.';
+        }
+
+        if (!formData.VehicleNumber) {
+            newErrors.VehicleNumber = ' Vehicle Number is required.';
+        }
+
+        if (!formData.ChallanNumber) {
+            newErrors.ChallanNumber = ' Challan Number is required.';
+        }
+        if (!hasAnyDocumentFile(uploadChallanFiles, uploadChallanURL, removedUploadChallanUrls)) {
+            newErrors.UploadChallanFiles = "File is required.";
+        }
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors
+        };
+    };
+
     const PushMaterialRequisitionGRNFormData = (): FormData => {
 
         const form = new FormData();
@@ -426,6 +432,19 @@ export const AddUpdateGRN = () => {
 
     const handleSave = async () => {
 
+        if (materialList.length === 0) {
+            addToast({ type: "error", title: "Please select at least one Material" });
+            return;
+        }
+
+        setErrors({});
+        const validation = validateMaterialRequisitionGRNForm();
+
+        if (!validation.isValid) {
+            setErrors(validation.errors);
+            return;
+        }
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -439,7 +458,9 @@ export const AddUpdateGRN = () => {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-                    navigate("/materialRequisition");
+                    navigate("/materialRequisition/view", {
+                        state: { activeTab: "GRN" }
+                    });
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -497,7 +518,36 @@ export const AddUpdateGRN = () => {
         );
     };
 
+    const validateMaterialDetailsForm = (): {
+        isValid: boolean;
+        errors: { [key: string]: string };
+    } => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (!materialData.MaterialMasterId || materialData.MaterialMasterId === 0)
+            newErrors.MaterialMasterId = "Material is required";
+
+        if (!materialData.SubMaterialMasterId || materialData.SubMaterialMasterId === 0)
+            newErrors.SubMaterialMasterId = "Sub Material is required";
+
+        if (!materialData.TotalReceivedMaterialQuantity)
+            newErrors.TotalReceivedMaterialQuantity = "Received Quantity is required";
+
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors,
+        };
+    };
+
     const saveMaterial = () => {
+
+        setErrors({});
+        const validation = validateMaterialDetailsForm();
+
+        if (!validation.isValid) {
+            setErrors(validation.errors);
+            return;
+        }
 
         const newItem: MaterialRequisitionDetailGRN = {
             ...materialData
@@ -572,6 +622,8 @@ export const AddUpdateGRN = () => {
                                             VehicleNumber: e.target.value
                                         }))
                                     }
+                                    error={errors.VehicleNumber}
+                                    required
                                 />
 
                                 <Input
@@ -585,6 +637,8 @@ export const AddUpdateGRN = () => {
                                             ChallanNumber: e.target.value
                                         }))
                                     }
+                                    error={errors.ChallanNumber}
+                                    required
                                 />
 
                                 <MultiFilePicker
@@ -599,6 +653,8 @@ export const AddUpdateGRN = () => {
                                     onRemoveExisting={(url) =>
                                         setRemovedUploadChallanUrls(prev => [...prev, url])
                                     }
+                                    error={errors.UploadChallanFiles}
+                                    required
                                 />
                             </div>
 
@@ -611,7 +667,11 @@ export const AddUpdateGRN = () => {
                                             ...prev,
                                             Remarks: e.target.value
                                         }))
-                                    } placeholder="Enter Remark" error={errors.Remarks} />
+                                    }
+                                    placeholder="Enter Remark"
+                                    error={errors.Remarks}
+                                    required
+                                />
 
                             </div>
 
@@ -625,7 +685,9 @@ export const AddUpdateGRN = () => {
                         formData.MaterialRequisitionId &&
                             formData.MaterialRequisitionId > 0 ? "Update" : "Add"
                     }
-                    onCancel={() => navigate(-1)}
+                    onCancel={() => navigate("/materialRequisition/view", {
+                        state: { activeTab: "GRN" }
+                    })}
                     canAction={canAction}
                     onSave={() => {
                         void handleSave();
@@ -640,7 +702,6 @@ export const AddUpdateGRN = () => {
                 onClose={() => {
                     setAddMaterialPopUp(false);
                     setMaterialData(initialFormState());
-
                 }}
                 title={editIndex !== null ? "Edit Material" : "Add Material"}
                 onSubmit={e => {

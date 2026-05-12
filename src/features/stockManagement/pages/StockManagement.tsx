@@ -604,10 +604,7 @@ export const StockManagement: React.FC = () => {
                                 type="text"
                                 value={isInward ? formData.SenderName ?? '' : formData.ReceiverName ?? ''}
                                 onChange={(e) =>
-                                    handleFieldChange(
-                                        isInward ? "SenderName" : "ReceiverName",
-                                        e.target.value
-                                    )
+                                    handleFieldChange(isInward ? "SenderName" : "ReceiverName", e.target.value)
                                 }
                                 error={isInward ? errors.SenderName : errors.ReceiverName}
                                 maxLength={250}

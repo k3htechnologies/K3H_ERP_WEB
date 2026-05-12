@@ -4,7 +4,7 @@ import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleS
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { Input } from "@/ui/components/forms/Input";
-import { filterIFSC, filterNumbers } from "@/core/utils/fileValidation";
+import { filterIFSC, filterNumbers, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -103,6 +103,9 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             if (!formData.BankListMasterId) newErrors.BankListMasterId = "Required";
         }
 
+        if (!hasAnyDocumentFile(transactionFiles, existingURL, removedFiles)) {
+            newErrors.TransactionReceiptURL = "File is required.";
+        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -161,9 +164,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-                    navigate("/materialRequisition/view", {
-                        state: { activeTab: "Invoice" }
-                    });
+                    navigate(-1);
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -215,7 +216,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                 className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6"
             >
 
-                <div className="col-span-full text-sm font-semibold text-gray-600">
+                <div className="col-span-full text-lg font-semibold text-gray-900">
                     Payment Details
                 </div>
 
@@ -323,7 +324,14 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                     value={transactionFiles}
                     onChange={setTransactionFiles}
                     availableFilesURL={existingURL ?? ""}
+                    allowedTypes={["image/jpeg", "image/png"]}
                     maxFiles={1}
+                    maxSizeMB={5}
+                    onRemoveExisting={(url) =>
+                        setRemovedFiles(prev => [...prev, url])
+                    }
+                    error={errors.TransactionReceiptURL}
+                    required
                 />
 
                 <div className="flex items-end h-full">
@@ -341,9 +349,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             <BottomActionBar
                 cancelText="Cancel"
                 saveText="Save"
-                onCancel={() => navigate("/materialRequisition/view", {
-                    state: { activeTab: "Invoice" }
-                })}
+                onCancel={() => navigate(-1)}
                 onSave={handleAddPayment}
                 isLoading={isLoading}
                 canAction

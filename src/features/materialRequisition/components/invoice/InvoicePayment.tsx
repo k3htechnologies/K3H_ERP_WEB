@@ -295,12 +295,7 @@ const InvoicePayment: React.FC = () => {
                         <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
                         <FieldItem label="Challan No." value={materialRequisitionGRNData?.ChallanNumber} />
                         <FieldItem label="Vehicle No." value={materialRequisitionGRNData?.VehicleNumber} />
-                        <FieldItem label="Total Requisition Amount" value={`₹ ${invoiceData?.InvoiceAmount}`} />
-                        <FieldItem label="Paid  Requisition Amount" value={`₹ ${invoiceData?.InvoiceAmountPaidTillDate}`} />
-                        <FieldItem
-                            label="Remaining Requisition Amount"
-                            value={`₹ ${(invoiceData?.InvoiceAmount ?? 0) - (invoiceData?.InvoiceAmountPaidTillDate ?? 0)}`}
-                        />
+
                     </div>
                 </div>
 

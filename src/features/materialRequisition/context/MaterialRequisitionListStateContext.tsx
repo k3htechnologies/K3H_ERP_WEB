@@ -3,6 +3,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo, SortInfo, TableColumn } from "@/ui/components/DataTable/DataTable";
 import { getMaterialRequisitionTableColumns } from "@/features/materialRequisition/constants/MaterialRequisitionColumns";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants/localStorageKeys";
 
 export type MaterialRequisitionListState = {
     page: number;
@@ -11,13 +12,13 @@ export type MaterialRequisitionListState = {
     filters: FilterInfo;
     sortInfo: SortInfo | undefined;
     projectId: number | null;
-    MaterialRequisitionId?: number;
-    SystemGeneratedCode?: string;
-    Uniquekey?: string;
-    FromDate?: string;
-    ToDate?: string;
-    MaterialRequisitionStage?: string;
-    MaterialRequisitionStatus?: string;
+    MaterialRequisitionId: number;
+    SystemGeneratedCode: string;
+    Uniquekey: string;
+    FromDate: string;
+    ToDate: string;
+    MaterialRequisitionStage: string;
+    MaterialRequisitionStatus: string;
 };
 
 export type MaterialRequisitionDetailItem = {
@@ -37,7 +38,7 @@ export type MaterialRequisitionDetailItem = {
 
 }
 
-const STORAGE_KEY = 'MaterialRequisition.listState';
+const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.MATERIAL_REQUISITION;
 const REQUIRED_COLUMN_KEYS = ['SystemGeneratedCode', 'Actions'];
 
 function getInitialState(currentProjectId: number | null): MaterialRequisitionListState {
@@ -49,13 +50,13 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
             filters: {},
             sortInfo: undefined,
             projectId: currentProjectId,
-            MaterialRequisitionId: undefined,
-            SystemGeneratedCode: undefined,
-            Uniquekey: undefined,
-            FromDate: undefined,
-            ToDate: undefined,
-            MaterialRequisitionStage: undefined,
-            MaterialRequisitionStatus: undefined,
+            MaterialRequisitionId: 0,
+            SystemGeneratedCode: "",
+            Uniquekey: "",
+            FromDate: "",
+            ToDate: "",
+            MaterialRequisitionStage: "",
+            MaterialRequisitionStatus: "",
         };
     }
 
@@ -67,6 +68,13 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
                 return {
                     ...parsed.state,
                     projectId: currentProjectId,
+                    MaterialRequisitionId: parsed.state.MaterialRequisitionId || 0,
+                    SystemGeneratedCode: parsed.state.SystemGeneratedCode || "",
+                    Uniquekey: parsed.state.Uniquekey || "",
+                    FromDate: parsed.state.FromDate || "",
+                    ToDate: parsed.state.ToDate || "",
+                    MaterialRequisitionStage: parsed.state.MaterialRequisitionStage || "",
+                    MaterialRequisitionStatus: parsed.state.MaterialRequisitionStatus || "",
                 };
             }
         }
@@ -81,13 +89,13 @@ function getInitialState(currentProjectId: number | null): MaterialRequisitionLi
         filters: {},
         sortInfo: undefined,
         projectId: currentProjectId,
-        MaterialRequisitionId: undefined,
-        SystemGeneratedCode: undefined,
-        Uniquekey: undefined,
-        FromDate: undefined,
-        ToDate: undefined,
-        MaterialRequisitionStage: undefined,
-        MaterialRequisitionStatus: undefined,
+        MaterialRequisitionId: 0,
+        SystemGeneratedCode: "",
+        Uniquekey: "",
+        FromDate: "",
+        ToDate: "",
+        MaterialRequisitionStage: "",
+        MaterialRequisitionStatus: "",
     };
 }
 
@@ -179,13 +187,13 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
             searchTerm: '',
             filters: {},
             sortInfo: undefined,
-            MaterialRequisitionId: undefined,
-            SystemGeneratedCode: undefined,
-            Uniquekey: undefined,
-            FromDate: undefined,
-            ToDate: undefined,
-            MaterialRequisitionStage: undefined,
-            MaterialRequisitionStatus: undefined,
+            MaterialRequisitionId: 0,
+            SystemGeneratedCode: "",
+            Uniquekey: "",
+            FromDate: "",
+            ToDate: "",
+            MaterialRequisitionStage: "",
+            MaterialRequisitionStatus: "",
         });
     }, [updateListState]);
 

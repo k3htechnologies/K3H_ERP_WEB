@@ -1245,6 +1245,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.STOCK_MANAGEMENT_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
@@ -1265,6 +1266,8 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PAY_TRACK_BOOKING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.STOCK_MANAGEMENT);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.MATERIAL_REQUISITION);
+
     } catch (error) {
       console.error("ERROR : CLEARING LOCAL STORAGE:", error);
     }

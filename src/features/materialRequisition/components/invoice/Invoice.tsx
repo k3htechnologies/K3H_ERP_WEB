@@ -12,8 +12,6 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
-import { ro } from "react-day-picker/locale";
-import type { MaterialRequisitionInvoiceData } from "../../models/MaterialRequisitionModel";
 
 export const Invoice: React.FC = () => {
     const [invoiceList, setInvoiceList] = useState<MaterialRequisitionGRNData[]>([]);
@@ -71,8 +69,8 @@ export const Invoice: React.FC = () => {
         );
     };
 
-    const handleCreateInvoice = useCallback((row: MaterialRequisitionInvoiceData) => {
-        navigate(`/addInvoice/add/${row.MaterialRequisitionGRNId}/${row.MaterialRequisitionInvoiceId}`);
+    const handleCreateInvoice = useCallback((row: MaterialRequisitionGRNData) => {
+        navigate(`/addInvoice/add/${row.MaterialRequisitionGRNId}`);
     }, [navigate]);
 
     const handleMakePayment = useCallback((row: MaterialRequisitionGRNData) => {

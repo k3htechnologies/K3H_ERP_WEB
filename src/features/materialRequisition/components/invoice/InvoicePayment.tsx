@@ -126,7 +126,6 @@ const InvoicePayment: React.FC = () => {
             ProjectId: Number(projectId),
             IsApproved: approvalActionType === "approve",
             Remarks: remark ?? null,
-            Uniquekey: invoiceData.Uniquekey ?? null
         };
 
         await runApiWithLoader(

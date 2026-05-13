@@ -55,27 +55,21 @@ const Inventory = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
-    //EXCEL IMPORT 
     const [showImportModal, setShowImportModal] = useState(false);
 
-    // DELETE CONFIRMATION DIALOG
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState(false);
     const [selectedFlatToDelete, setSelectedFlatToDelete] = useState<InventoryFlatData | null>(null);
     const [, setIsDeleting] = useState(false);
 
-    // DELETE WING CONFIRMATION DIALOG
     const [isDeleteWingDialogOpen, setIsDeleteWingDialogOpen] = useState(false);
     const [wingToDelete, setWingToDelete] = useState<InventoryFlatFloorBasementPodiumWingData | null>(null);
 
-    // DELETE BUILDING CONFIRMATION DIALOG
     const [isDeleteBuildingDialogOpen, setIsDeleteBuildingDialogOpen] = useState(false);
     const [buildingToDelete, setBuildingToDelete] = useState<InventoryData | null>(null);
 
-    // DELETE FLOOR CONFIRMATION DIALOG
     const [isDeleteFloorDialogOpen, setIsDeleteFloorDialogOpen] = useState(false);
     const [floorToDelete, setFloorToDelete] = useState<{ floor: import("@/features/inventory/models/InventoryMasterModel").InventoryFloorData; wing: InventoryFlatFloorBasementPodiumWingData; building: InventoryData } | null>(null);
 
-    // ADD BUILDING MODAL
     const [isAddBuildingModalOpen, setIsAddBuildingModalOpen] = useState(false);
     const [buildingNumber, setBuildingNumber] = useState<string>('');
     const [noOfBasement, setNoOfBasement] = useState<string>('');
@@ -83,54 +77,35 @@ const Inventory = () => {
     const [noOfWings, setNoOfWings] = useState<string>('');
     const [wingData, setWingData] = useState<Array<{ Wing: string; MaxNoOfFlatPerFloor: string; NoOfFloorExcludingPodium: string }>>([]);
 
-    // ADD WING MODAL
     const [isAddWingModalOpen, setIsAddWingModalOpen] = useState(false);
     const [wingNoOfFloor, setWingNoOfFloor] = useState<string>('');
     const [wingMaxNoOfFlatsPerFloor, setWingMaxNoOfFlatsPerFloor] = useState<string>('');
 
-    // SEARCH STATE
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [selectedStatus, setSelectedStatus] = useState<string>('');
 
-    // APPROVAL LOG MODAL
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
     const [buildingName, setBuildingName] = useState<string | null>("");
     const [wingName, setWingName] = useState<string | null>("");
 
-    // APPROVAL ACTION MODAL
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
 
-
-    //#region TAB ACTIVITY
-    // Preserve tab state in localStorage
     const [activeTab, setActiveTab] = useState<string>(() => {
         const savedTab = localStorage.getItem('inventoryActiveTab');
         return savedTab || "Grid";
     });
 
-    // Save tab state when it changes
     useEffect(() => {
         localStorage.setItem('inventoryActiveTab', activeTab);
     }, [activeTab]);
-    //#endregion
-
-    //#endregion
-
-    //#region PROJECT SELECTION GET ID
 
     const { projectId } = useProject()
 
-    //#endregion
-
-    //#region MENU PERMISSIONS
     const { canAction, canExport } = useMenuPermissions();
     const { canAction: canBookingAction } = useMenuPermissions('/booking');
-    //#endregion
 
-    //#region INIT
-
-    // Clear all state when project changes
     useEffect(() => {
 
         setActiveTab('Grid');
@@ -225,7 +200,6 @@ const Inventory = () => {
             setSelectedBuilding(inventory[0].InventoryFlatFloorBasementPodiumWingData);
             setSelectedBuildingIndex(0);
 
-            // Try to restore saved wing selection
             const savedWingName = localStorage.getItem(`inventorySelectedWing_${projectId}`);
             if (savedWingName && inventory[0].InventoryFlatFloorBasementPodiumWingData) {
                 const savedWing = inventory[0].InventoryFlatFloorBasementPodiumWingData.find(
@@ -247,8 +221,6 @@ const Inventory = () => {
         }
     }, [projectId, inventory.length]);
 
-    // Update selected building data when inventory changes (for refresh after delete)
-    // Maintains the currently selected wing after any operations
     useEffect(() => {
 
         if (inventory.length > 0 && selectedBuildingIndex !== null && projectId) {
@@ -307,11 +279,6 @@ const Inventory = () => {
     }, [inventory, selectedBuildingIndex, projectId]);
 
 
-
-    //#endregion
-
-    //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-
     const fetchInventory = useCallback(async () => {
         setIsInventoryAvailable(false)
         await runApiWithLoader(
@@ -346,9 +313,6 @@ const Inventory = () => {
         )
     }, [projectId, addToast]);
 
-    //#endregion
-
-    //#region EXPORT EXCEL | PDF
     const handleExportInventory = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -378,21 +342,17 @@ const Inventory = () => {
     const handleExportInventoryExcel = () => handleExportInventory('Excel')
     const handleExportInventoryPdf = () => handleExportInventory('PDF')
 
-    //#endregion
-
-    //#region COUNT INVENTORY FLAT STATUS
-    //#region COUNT INVENTORY FLAT STATUS
 
     const building =
         selectedBuildingIndex !== null && inventory[selectedBuildingIndex]
             ? inventory[selectedBuildingIndex]
             : undefined;
 
-    const availableFlatsCount = useMemo(
-        () =>
-            building
-                ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Available")
-                : 0,
+    const totalFlatsCount = useMemo(() => building ? countFlatsByStatus(inventory, building.InventoryBuildingId, "") : 0,
+        [inventory, building]
+    );
+
+    const availableFlatsCount = useMemo(() => building ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Available") : 0,
         [inventory, building]
     );
 
@@ -428,18 +388,13 @@ const Inventory = () => {
         [inventory, building]
     );
 
-    //#endregion
-    //#endregion
-
-    //#region COUNT WING WISE FLAT STATUS
+    const selectedWingTotalCount = useMemo(() => countWingWiseFlatStatus(selectedWing, ""), [selectedWing]);
     const selectedWingAvailableCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Available"), [selectedWing]);
     const selectedWingBookedCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Booked"), [selectedWing]);
     const selectedWingMemberCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Alloted"), [selectedWing]);
     const selectedWingBlockedCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Blocked"), [selectedWing]);
     const selectedWingHoldCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Hold"), [selectedWing]);
-    //#endregion
 
-    //#region DELETE FLAT
     const handleDeleteFlat = useCallback((flat: InventoryFlatData) => {
         setSelectedFlatToDelete(flat);
         setIsConfirmationDialogOpen(true);
@@ -467,7 +422,9 @@ const Inventory = () => {
 
                     return await inventoryService.apiCallDeleteInventoryFlat(params);
                 },
+
                 undefined,
+
                 (error: any) => {
                     addToast({ type: 'error', title: error?.message });
                 },
@@ -503,10 +460,6 @@ const Inventory = () => {
             setIsDeleting(false);
         }
     }, [selectedFlatToDelete, projectId, addToast, fetchInventory]);
-
-    //#endregion
-
-    //#region IMPORT EXCEL | DOWNLOAD
 
     const downloadExcelSampleInventory = async () => {
         await runApiWithLoader(
@@ -1082,29 +1035,40 @@ const Inventory = () => {
     const handleClearSearch = () => {
         setSearchTerm('');
     };
-
-    // Filter flats based on search term for selected wing
     const getFilteredFloors = useMemo(() => {
+
         if (!selectedWing) {
             return [];
         }
 
-        if (!searchTerm.trim()) {
-            return selectedWing.InventoryFloorData || [];
-        }
+        let floors = selectedWing.InventoryFloorData || [];
 
-        const searchLower = searchTerm.toLowerCase().trim();
+        return floors
+            .map(floor => ({
 
-        return selectedWing.InventoryFloorData.map(floor => ({
-            ...floor,
-            InventoryFlatData: floor.InventoryFlatData?.filter(flat => {
-                const flatNumber = flat.Flat?.toLowerCase() || '';
-                return flatNumber.includes(searchLower);
-            }) || []
-        }));
-    }, [selectedWing, searchTerm]);
+                ...floor,
 
-    // Flatten floors and flats for table view
+                InventoryFlatData:
+                    (floor.InventoryFlatData || []).filter(flat => {
+
+                        const flatNumber = flat.Flat?.toLowerCase() || '';
+
+                        const flatStatus = flat.FlatStatus?.toLowerCase() || '';
+
+                        const searchLower = searchTerm.toLowerCase().trim();
+
+                        const matchesSearch = !searchTerm || flatNumber.includes(searchLower);
+
+                        const matchesStatus = !selectedStatus || flatStatus === selectedStatus.toLowerCase();
+
+                        return matchesSearch && matchesStatus;
+                    })
+
+            }))
+            .filter(floor => floor.InventoryFlatData.length > 0);
+
+    }, [selectedWing, searchTerm, selectedStatus]);
+
     const tableData = useMemo(() => {
 
         if (!selectedWing) {
@@ -1450,6 +1414,7 @@ const Inventory = () => {
                     />
                     <div className="pt-3">
                         <StatusCounters
+                            totalCount={totalFlatsCount}
                             availableCount={availableFlatsCount}
                             holdCount={holdFlatsCount}
                             memberCount={memberFlatsCount}
@@ -1499,11 +1464,14 @@ const Inventory = () => {
 
                         <div className="flex items-center justify-between pt-2">
                             <StatusCounters
+                                totalCount={selectedWingTotalCount}
                                 availableCount={selectedWingAvailableCount}
                                 holdCount={selectedWingHoldCount}
                                 memberCount={selectedWingMemberCount}
                                 bookedCount={selectedWingBookedCount}
                                 blockedCount={selectedWingBlockedCount}
+                                selectedStatus={selectedStatus}
+                                onStatusClick={(status) => setSelectedStatus(status)}
                             />
 
                             {selectedWing?.ApprovalStatus && (

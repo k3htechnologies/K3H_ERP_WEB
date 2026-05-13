@@ -255,12 +255,6 @@ const InventoryDashboard: React.FC = () => {
         sortable: false,
       },
       {
-        key: "ParkingStatus",
-        label: "Status",
-        width: "120px",
-        sortable: false,
-      },
-      {
         key: "IsEVChargingAvailable",
         label: "EV Charging",
         width: "120px",

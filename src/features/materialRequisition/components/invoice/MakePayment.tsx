@@ -1,4 +1,4 @@
-import { MATERIAL_REQUISITION_PAYMENT_TYPE, PAYMENT_MODE, PAYMENT_TYPE } from "@/core/constants/staticData";
+import { MATERIAL_REQUISITION_PAYMENT_TYPE, PAYMENT_MODE } from "@/core/constants/staticData";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
@@ -8,7 +8,7 @@ import { filterIFSC, filterNumbers, hasAnyDocumentFile } from "@/core/utils/file
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { useNavigate, useParams } from "react-router-dom";
+import {useNavigate, useParams } from "react-router-dom";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import useToast from "@/core/hooks/useToast";
 import * as E from "fp-ts/Either";
@@ -56,7 +56,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
 
     const currentMaterialRequisitionId =
         MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
-
+        
     const handleFieldChange = (field: string, value: any) => {
         setFormData(prev => {
             const updated = { ...prev, [field]: value };

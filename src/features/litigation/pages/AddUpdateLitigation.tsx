@@ -15,6 +15,9 @@ import { CASE_TYPE_OPTION, COURT_TYPE_OPTION } from "@/core/constants";
 import { Loader } from "@/core/utils/loader";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import { Modal } from "@/ui/components/Modal/Modal";
+import { Check } from "lucide-react";
+import { getLitigationVerificationSteps } from "../utils/litigationVerificationSteps";
 
 const initialFormState = (): AddUpdateLitigationRequest => ({
     LitigationId: 0,
@@ -40,6 +43,9 @@ export const AddUpdateLitigation: React.FC = () => {
     const [formData, setFormData] = useState<AddUpdateLitigationRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
+    const [isVerifySent, setIsVerifySent] = useState(false);
+    const [isVerified, setIsVerified] = useState(false);
+    const [showVerifySection, setShowVerifySection] = useState(false);
 
     const navigate = useNavigate();
 
@@ -51,9 +57,9 @@ export const AddUpdateLitigation: React.FC = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     const { addToast } = useToast();
-    
+
     const { canAction } = useMenuPermissions('/litigation');
-    
+
     const handleFieldChange = (field: keyof AddUpdateLitigationRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -61,15 +67,13 @@ export const AddUpdateLitigation: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-    
+
     useEffect(() => {
         if (!isAddMode) {
             fetchLitigationDetails();
         }
     }, [litigationId]);
-    //#endregion
 
-    //#region FETCH LITIGATION  DETAILS
     const fetchLitigationDetails = async () => {
 
         await runApiWithLoader(
@@ -170,7 +174,7 @@ export const AddUpdateLitigation: React.FC = () => {
         if (!formData.AssignedRepresentative) {
             newErrors.AssignedRepresentative = 'Assigned Representative is required.';
         }
-        
+
         if (!formData.CaseBrief) {
             newErrors.CaseBrief = 'Case Brief / Petition / Suit is required.';
         }
@@ -183,9 +187,7 @@ export const AddUpdateLitigation: React.FC = () => {
             errors: newErrors
         };
     };
-    //#endregion
 
-    //#region PUSH DATA
     const PushAddUpdateLigitigationData = (): AddUpdateLitigationRequest => {
 
         return {
@@ -222,6 +224,16 @@ export const AddUpdateLitigation: React.FC = () => {
 
             return;
         }
+
+        if (formData.LitigationId === 0 && !isVerified) {
+
+            if (!isVerifySent) {
+                setShowVerifySection(true);
+                setIsVerifySent(true);
+                return;
+            }
+        }
+
         await runApiWithLoader(
 
             setIsLoading,
@@ -252,9 +264,8 @@ export const AddUpdateLitigation: React.FC = () => {
             isAddMode ? 'Add Litigation' : 'Update Litigation'
         );
     };
-    //#endregion
 
-    //#region
+    const selectedProjectName = (LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).find(p => p.ProjectId === formData.ProjectId)?.ProjectName || "";
     return (
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -277,8 +288,9 @@ export const AddUpdateLitigation: React.FC = () => {
                                 <SinglePageSelection
                                     label="Project"
                                     required
+                                    disabled={formData.LitigationId ?? 0 > 0 ? true : false}
                                     isShowClearSelection={false}
-                                    options={( LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).map(opt => ({
+                                    options={(LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).map(opt => ({
                                         label: opt.ProjectName,
                                         value: opt.ProjectId
                                     }))}
@@ -287,7 +299,6 @@ export const AddUpdateLitigation: React.FC = () => {
                                     onChange={(value) => handleFieldChange("ProjectId", value)}
                                     placeholder="Select Project"
                                     error={errors.ProjectId}
-
                                 />
                             </div>
                             <div>
@@ -370,6 +381,7 @@ export const AddUpdateLitigation: React.FC = () => {
                             <div>
                                 <SinglePageSelection
                                     label="Court Type"
+                                    required
                                     placeholder="Select Court Type"
                                     value={formData.CourtType ?? ''}
                                     onChange={(value) => handleFieldChange("CourtType", value)}
@@ -467,6 +479,68 @@ export const AddUpdateLitigation: React.FC = () => {
                 }}
                 isLoading={isLoading}
             />
+
+            <Modal
+                isOpen={showVerifySection && formData.LitigationId === 0}
+                onClose={() => {
+                    setIsVerifySent(false);
+                    setIsVerified(false);
+                    setShowVerifySection(false);
+                }}
+                title="Complete Verification"
+                saveText={formData.LitigationId ? "Update" : "Verify & Add"}
+                size="md"
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    setIsVerified(true);
+
+                    handleAddUpdateLitigation();
+                }}
+            >
+                <div className="bg-white rounded-lg w-full max-w-md">
+
+                    {/* Header */}
+                    <div className="flex justify-between items-start mb-3">
+
+                        <div>
+                            <p className="text-sm text-gray-500">
+                                Verify Details To Continue
+                                {selectedProjectName && (
+                                    <span className="font-semibold text-blue-600">
+                                        {" "}• {selectedProjectName}
+                                    </span>
+                                )}
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <div className="space-y-3 mt-4">
+
+                        {getLitigationVerificationSteps({ formData }).map((step) => (
+                            <div key={step.id} className="flex items-center gap-3">
+
+                                <div className={`w-6 h-6 rounded-md flex items-center justify-center border-2 transition-all duration-200 ${step.completed ? "bg-blue-600 text-white" : "bg-blue-200 text-transparent"}`} >{step.completed && <Check size={14} strokeWidth={3} />}</div>
+
+                                <span className={`text-sm ${step.completed ? "text-gray-900 font-medium" : "text-gray-500"}`} >
+                                    {step.label}
+                                    <span className="mx-1 text-gray-400">
+                                        -
+                                    </span>
+                                    <span className="text-sm font-normal text-gray-500">
+                                        {step.value}
+                                    </span>
+                                </span>
+
+                            </div>
+                        ))}
+
+                    </div>
+
+
+                </div>
+
+            </Modal>
         </div>
     );
 };

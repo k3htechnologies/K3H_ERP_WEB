@@ -95,7 +95,7 @@ type PayTrackReportListStateContextType = {
   updateListState: (updates: Partial<PayTrackReportListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setPayTrackReportContext: (bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackReportData) => void;
+  setPayTrackReportContext: (bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData) => void;
   clearPayTrackReportContext: () => void;
   triggerRefresh: () => void;
 };
@@ -185,7 +185,7 @@ export const PayTrackReportListStateProvider = ({ children }: { children: ReactN
     setListState(defaultState);
   }, []);
 
-  const setPayTrackReportContext = useCallback((bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackReportData) => {
+  const setPayTrackReportContext = useCallback((bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData) => {
     setListState((prev) => ({
       ...prev,
       bookingId,

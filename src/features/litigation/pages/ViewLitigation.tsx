@@ -554,9 +554,7 @@ const ViewLitigation: React.FC = () => {
       "Reopening Case",
     );
   };
-  //#endregion
-
-  //#region FETCH LITIGATION DOCUMENT LIST
+  
   const fetchLitigationDocumentList = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -599,7 +597,7 @@ const ViewLitigation: React.FC = () => {
       <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "}</Loader>
 
       <HeaderActionBar
-        titleText="Litigation : "
+        titleText={`${litigationData?.ProjectName ?? ""} :`}
         subTitleText={litigationData?.Title ?? ""}
         subSubTitleText={litigationData?.Status ?? ""}
         cancelText="Cancel"
@@ -643,6 +641,7 @@ const ViewLitigation: React.FC = () => {
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Case Details</h4>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                  <FieldItem label="Project Name" value={litigationData?.ProjectName} />
                   <FieldItem label="Case Title" value={litigationData?.Title} />
                   <FieldItem
                     label="Date Of Filling"

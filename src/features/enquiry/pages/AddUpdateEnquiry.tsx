@@ -60,6 +60,7 @@ import type { InventoryFlatData } from "@/features/inventory/models/InventoryMas
 import { fetchPaginationProjectWithEmployeeDropdown } from "@/features/projectMaster/projectWiseEmployeeDropdown";
 import { checkDuplicateField } from "@/core/utils/duplicateValidation";
 import { ChannelPartnerService } from "@/features/ChannelPartner/services/ChannelPartnerService";
+import { toUpperCase } from "fp-ts/lib/string";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
   EnquiryId: 0,
@@ -609,7 +610,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       Timeline: formData.Timeline,
 
       FinalStage: formData.FinalStage,
-      FinalStageDetail: formData.FinalStageDetail,
+      FinalStageDetail: toUpperCase(formData.FinalStage ?? "")==="LOST" ? formData.FinalStageDetail :"",
 
       EnquiryDate: formData.EnquiryDate,
       NextFollowUpDate: formData.NextFollowUpDate === "" ? null : formData.NextFollowUpDate,

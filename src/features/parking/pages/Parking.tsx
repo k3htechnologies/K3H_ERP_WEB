@@ -78,7 +78,6 @@ const Parking = () => {
   const [showImportModal, setShowImportModal] = useState(false);
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  // UPDATE PARKING MODAL
   const [isUpdateParkingModalOpen, setIsUpdateParkingModalOpen] = useState(false);
   const [formData, setFormData] = useState<UpdateParkingRequest>({
     ParkingId: null,
@@ -101,8 +100,8 @@ const Parking = () => {
     return savedTab || "Grid";
   });
 
-  // SEARCH STATE
   const [searchTerm, setSearchTerm] = useState<string>("");
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
 
   // APPROVAL LOG MODAL
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
@@ -165,10 +164,6 @@ const Parking = () => {
       }
     }
   }, [projectId, groupedParking.length]);
-
-  //#endregion
-
-  //#region DATA LOADING | FETCH |  LOAD | SEARCH
 
   const groupParkingData = useCallback((data: ParkingData[]): ParkingGroupedByBuilding[] => {
     const grouped: { [key: string]: ParkingGroupedByBuilding } = {};
@@ -241,18 +236,16 @@ const Parking = () => {
     );
   }, [projectId, groupParkingData, addToast]);
 
-  //#endregion
-
-  //#region STATUS COUNTERS
 
   const parkingStatusCounts = useMemo(() => {
-     if (selectedBuildingIndex === null || !groupedParking[selectedBuildingIndex]) {
-        return { available: 0, hold: 0, booked: 0, blocked: 0, member: 0 };
+    if (selectedBuildingIndex === null || !groupedParking[selectedBuildingIndex]) {
+      return { total: 0, available: 0, hold: 0, booked: 0, blocked: 0, member: 0 };
     }
 
     const building = groupedParking[selectedBuildingIndex];
 
     const counts = {
+      total: 0,
       available: 0,
       hold: 0,
       booked: 0,
@@ -260,35 +253,39 @@ const Parking = () => {
       member: 0,
     };
 
-    
-   building.Floors.forEach((floor) => {
-        floor.ParkingData.forEach((parking) => {
 
-            const status = parking.ParkingStatus?.toLowerCase() || "";
+    building.Floors.forEach((floor) => {
+      floor.ParkingData.forEach((parking) => {
 
-            if (status === "available") counts.available++;
-            else if (status === "hold") counts.hold++;
-            else if (status === "booked") counts.booked++;
-            else if (status === "blocked") counts.blocked++;
-            else if (status === "member") counts.member++;
+        const status = parking.ParkingStatus?.toLowerCase() || "";
+        if (status === "available" || status === "hold" || status === "booked" || status === "blocked" || status === "member") {
+          counts.total++;
+        }
 
-        });
+        if (status === "available") counts.available++;
+        else if (status === "hold") counts.hold++;
+        else if (status === "booked") counts.booked++;
+        else if (status === "blocked") counts.blocked++;
+        else if (status === "member") counts.member++;
+
+      });
     });
     return counts;
-    
-  }, [parkingData,selectedBuildingIndex]);
+
+  }, [parkingData, selectedBuildingIndex]);
 
   const selectedFloorParkingCounts = useMemo(() => {
     if (selectedBuildingIndex === null || selectedFloorIndex === null || !groupedParking[selectedBuildingIndex]) {
-      return { available: 0, hold: 0, booked: 0, blocked: 0, member: 0 };
+      return { total: 0, available: 0, hold: 0, booked: 0, blocked: 0, member: 0 };
     }
 
     const floor = groupedParking[selectedBuildingIndex].Floors[selectedFloorIndex];
     if (!floor) {
-      return { available: 0, hold: 0, booked: 0, blocked: 0, member: 0 };
+      return { total: 0, available: 0, hold: 0, booked: 0, blocked: 0, member: 0 };
     }
 
     const counts = {
+      total: 0,
       available: 0,
       hold: 0,
       booked: 0,
@@ -297,7 +294,13 @@ const Parking = () => {
     };
 
     floor.ParkingData.forEach((parking) => {
+
       const status = parking.ParkingStatus?.toLowerCase() || "";
+
+      if (status === "available" || status === "hold" || status === "booked" || status === "blocked" || status === "member") {
+        counts.total++;
+      }
+
       if (status === "available") counts.available++;
       else if (status === "hold") counts.hold++;
       else if (status === "booked") counts.booked++;
@@ -308,9 +311,6 @@ const Parking = () => {
     return counts;
   }, [groupedParking, selectedBuildingIndex, selectedFloorIndex]);
 
-  //#endregion
-
-  //#region SEARCH HANDLERS
 
   const handleSearchChange = (value: string) => {
     setSearchTerm(value);
@@ -320,31 +320,36 @@ const Parking = () => {
     setSearchTerm("");
   };
 
-  // Filter parking data based on search term for selected floor
   const getFilteredParkingData = useMemo(() => {
+
     if (selectedBuildingIndex === null || selectedFloorIndex === null || !groupedParking[selectedBuildingIndex]) {
       return [];
     }
 
     const floor = groupedParking[selectedBuildingIndex].Floors[selectedFloorIndex];
+
     if (!floor) {
       return [];
     }
 
-    if (!searchTerm.trim()) {
-      return floor.ParkingData || [];
-    }
-
-    const searchLower = searchTerm.toLowerCase().trim();
     return floor.ParkingData.filter((parking) => {
+
       const parkingNumber = parking.ParkingNumber?.toLowerCase() || "";
-      return parkingNumber.includes(searchLower);
+
+      const parkingStatus = parking.ParkingStatus?.toLowerCase() || "";
+
+      const searchLower = searchTerm.toLowerCase().trim();
+
+      const matchesSearch = !searchTerm || parkingNumber.includes(searchLower);
+
+      const matchesStatus = !selectedStatus || parkingStatus === selectedStatus.toLowerCase();
+
+      return matchesSearch && matchesStatus;
+
     });
-  }, [groupedParking, selectedBuildingIndex, selectedFloorIndex, searchTerm]);
 
-  //#endregion
+  }, [groupedParking, selectedBuildingIndex, selectedFloorIndex, searchTerm, selectedStatus]);
 
-  //#region UPDATE PARKING HANDLERS
 
   const handleEditParking = (parking: ParkingData) => {
     setFormData({
@@ -455,8 +460,6 @@ const Parking = () => {
     );
   };
 
-  //#endregion
-
   const handleExportParking = async (exportType: "Excel" | "PDF") => {
     await runApiWithLoader(
       setIsLoading,
@@ -548,9 +551,6 @@ const Parking = () => {
     );
   };
 
-  //#region TABLE DATA AND COLUMNS
-
-  // Table columns definition
   const tableColumns: TableColumn[] = useMemo(
     () => [
       {
@@ -644,10 +644,6 @@ const Parking = () => {
     [canAction, handleEditParking],
   );
 
-  //#endregion
-
-  //#region APPROVAL LOG HISTORY
-
   const handleApprovalLog = () => {
     if (selectedBuildingIndex === null || selectedFloorIndex === null) return;
 
@@ -732,8 +728,6 @@ const Parking = () => {
     );
   };
 
-  //#endregion
-
   const approvalStatus = selectedBuildingIndex !== null && selectedFloorIndex !== null ? groupedParking[selectedBuildingIndex]?.Floors[selectedFloorIndex]?.ApprovalStatus : undefined
   const isChange = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" ? false : true;
   const disabled = formData.ParkingStatus === "Member" || formData.ParkingStatus === "Booked" || approvalStatus?.toUpperCase().includes("APPROVED") ? true : false;
@@ -794,6 +788,7 @@ const Parking = () => {
 
         <div className="pt-3">
           <StatusCounters
+            totalCount={parkingStatusCounts.total}
             availableCount={parkingStatusCounts.available}
             holdCount={parkingStatusCounts.hold}
             memberCount={parkingStatusCounts.member}
@@ -810,8 +805,8 @@ const Parking = () => {
               groupedParking[selectedBuildingIndex] &&
               groupedParking[selectedBuildingIndex].Floors.length > 0 && (
                 <div className="flex items-center justify-between gap-3">
-                 <div className="flex-1 min-w-0">
-                     <div className="flex gap-2 overflow-x-auto thin-scroll whitespace-nowrap scrollbar-hide">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex gap-2 overflow-x-auto thin-scroll whitespace-nowrap scrollbar-hide">
                       {groupedParking[selectedBuildingIndex].Floors.map((floor, index) => (
                         <button
                           key={index}
@@ -845,11 +840,14 @@ const Parking = () => {
           {/* FLOOR STATUS */}
           <div className="flex items-center justify-between pt-3">
             <StatusCounters
+              totalCount={selectedFloorParkingCounts.total}
               availableCount={selectedFloorParkingCounts.available}
               holdCount={selectedFloorParkingCounts.hold}
               memberCount={selectedFloorParkingCounts.member}
               bookedCount={selectedFloorParkingCounts.booked}
               blockedCount={selectedFloorParkingCounts.blocked}
+              selectedStatus={selectedStatus}
+              onStatusClick={(status) => setSelectedStatus(status)}
             />
 
             {approvalStatus && (

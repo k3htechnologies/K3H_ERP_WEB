@@ -1377,11 +1377,9 @@ export const AddUpdateChannelPartner: React.FC = () => {
         <CompleteVerificationSection
           steps={getChannelPartnerVerificationSteps({
             formData,
-
             panCardURLFiles,
             aadharCardURLFiles,
             gSTCertificateURLFiles,
-
             panCardURL,
             aadharCardURL,
             gSTCertificateURL,

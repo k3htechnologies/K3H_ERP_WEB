@@ -42,6 +42,7 @@ export interface UpdateModulesWorkflowApprovalRequest {
   IsApproved?: boolean | null;
   Remarks?: string | null;
   ProjectId?: number | 0;
+  Uniquekey?: string | null;
 }
 
 export interface ModulesWorkflowApprovalSummaryRequest {

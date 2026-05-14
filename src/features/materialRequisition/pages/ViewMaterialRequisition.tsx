@@ -25,6 +25,7 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { filterNumbers } from "@/core/utils/fileValidation";
+import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
@@ -47,20 +48,34 @@ export const ViewMaterialRequisition: React.FC = () => {
     const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
 
-    const MaterialRequisitionTabList = [
-        { id: 'Overview', label: 'Overview' },
-        { id: 'Details', label: 'Details' },
-        { id: 'Finalize Vendor', label: 'Finalize Vendor' },
-        { id: 'Purchase Order', label: 'Purchase Order' },
-        { id: 'GRN', label: 'GRN' },
-        { id: 'Invoice', label: 'Invoice' },
-    ];
+    const { canView: canFinalizedVendorView } = useMenuPermissions(ModuleAction.finalizeVendor);
 
-    const [activeTab, setActiveTab] = useState(location.state?.activeTab || MaterialRequisitionTabList[0].id);
+    const { canView: canGeneratePurchaseOrder } = useMenuPermissions(ModuleAction.generatePurchaseOrder);
 
+
+    const { canView: canAddInvoice } = useMenuPermissions(ModuleAction.addInvoice);
+
+
+    const MaterialRequisitionTabList: { id: string; label: string }[] = [
+
+        { id: "Overview", label: "Overview" },
+
+        { id: "Details", label: "Details" },
+
+        canFinalizedVendorView ? { id: "Finalized Vendor", label: "Finalized Vendor" } : null,
+
+        canGeneratePurchaseOrder ? { id: "Purchase Order", label: "Purchase Order" } : null,
+
+        { id: "GRN", label: "GRN" },
+
+        canAddInvoice ? { id: "Invoice", label: "Invoice" } : null
+
+    ].filter(Boolean) as { id: string; label: string }[];
     const handleBackToListMaterialRequisition = () => {
         navigate('/materialRequisition');
     };
+
+    const [activeTab, setActiveTab] = useState<string>(location.state?.activeTab || MaterialRequisitionTabList?.[0]?.id || '');
 
     useEffect(() => {
         if (!projectId || !currentMaterialRequisitionId || currentMaterialRequisitionId === 0) return;
@@ -266,7 +281,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                 />
             )
         },
-         {
+        {
             key: "Remark",
             label: "Remark",
             width: "15",
@@ -389,7 +404,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
             {activeTab === 'Details' && <Details />}
             {activeTab === 'Overview' && <Overview />}
-            {activeTab === 'Finalize Vendor' && <FinalizedVendor />}
+            {activeTab === 'Finalized Vendor' && <FinalizedVendor />}
             {activeTab === 'Invoice' && <Invoice />}
             {activeTab === 'Purchase Order' && <PurchaseOrder />}
             {activeTab === 'GRN' && <GRN />}

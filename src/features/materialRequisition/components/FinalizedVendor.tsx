@@ -248,12 +248,9 @@ export const FinalizedVendor: React.FC = () => {
 
                     setMaterialRequisitionVendorSelectedList(selected)
 
-                    // navigate("/materialRequisition/view", {
-                    //     state: { activeTab: "Finalize Vendor" }
-                    // });
-
                     setQuotationAvailable(false)
                     setSelectedVendorIds([])
+                    await loadSelectedVendor()   
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -267,9 +264,10 @@ export const FinalizedVendor: React.FC = () => {
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
-            'Finalizing Vendors'
+            'Getting Quotation from Vendors'
         )
     };
+
 
     const buildPayload = (
         vendor: any,

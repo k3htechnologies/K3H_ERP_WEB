@@ -14,7 +14,7 @@ import {
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import {useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import useToast from "@/core/hooks/useToast";
 import * as E from "fp-ts/Either";
@@ -31,22 +31,12 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     editData
 }) => {
     const navigate = useNavigate();
-
     const { addToast } = useToast();
-
     const { MaterialRequisitionId, MaterialRequisitionInvoiceId } = useParams();
-
     const { listState } = useMaterialRequisitionListState();
-
     const { projectId } = useProject();
-
-    const currentMaterialRequisitionId =
-        MaterialRequisitionId
-            ? Number(MaterialRequisitionId)
-            : listState.MaterialRequisitionId;
-
+    const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
     const [invoiceAmount, setInvoiceAmount] = useState(totalAmount);
-
     const [remainingInvoiceAmount, setRemainingInvoiceAmount] = useState(totalAmount);
 
     const initialFormState = () => ({
@@ -64,23 +54,16 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     });
 
     const [formData, setFormData] = useState(initialFormState());
-
     const [errors, setErrors] = useState<any>({});
-
     const [dropdownLabels, setDropdownLabels] = useState<{
         bankName?: string;
     }>({});
 
     const [transactionFiles, setTransactionFiles] = useState<(File | string)[]>([]);
-
     const [removedFiles, setRemovedFiles] = useState<string[]>([]);
-
     const [existingURL, setExistingURL] = useState<string>();
-
     const [isLoading, setIsLoading] = useState(false);
-
     const [loadingMessage, setLoadingMessage] = useState("");
-
     const toNumber = (value: any) => Number(value) || 0;
 
     const sanitizeAmount = (value: string) =>

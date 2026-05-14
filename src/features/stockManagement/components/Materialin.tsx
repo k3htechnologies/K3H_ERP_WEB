@@ -40,6 +40,7 @@ export const MaterialIn: React.FC = () => {
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     SubMaterialMasterId: currentSubMaterialMasterId,
+                    type: "INWARD",
                     SortBy: getSortByParam(sort ?? null, MaterialInColumn)
                 };
 
@@ -47,18 +48,12 @@ export const MaterialIn: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    const filteredData = response.right.Data.filter(
-                        (item) => item.InwardOutwardType === "INWARD"
-                    );
-
-                    setMaterialInList(filteredData);
-
+                    setMaterialInList(response.right.Data);
                     setPagination({
                         currentPage: page,
-                        totalRecords: filteredData.length,
-                        totalPages: Math.ceil(filteredData.length / pagination.pageSize),
+                        totalRecords: response.right.TotalNumberOfRecord,
+                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
                     });
-
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     return response;

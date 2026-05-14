@@ -19,7 +19,7 @@ export const MaterialOut: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const { addToast } = useToast();
-    const { projectId } = useProject(); 
+    const { projectId } = useProject();
     const { pagination, setPagination } = usePagination(20);
     const { SubMaterialMasterId } = useParams<{ SubMaterialMasterId?: string }>();
     const { listState } = useStockManagementListState();
@@ -40,6 +40,7 @@ export const MaterialOut: React.FC = () => {
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     SubMaterialMasterId: currentSubMaterialMasterId,
+                    type: "OUTWARD",
                     SortBy: getSortByParam(sort ?? null, MaterialOutColumn)
                 };
 
@@ -47,16 +48,11 @@ export const MaterialOut: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    const filteredData = response.right.Data.filter(
-                        (item) => item.InwardOutwardType === "OUTWARD"
-                    );
-
-                    setMaterialOutList(filteredData);
-
+                    setMaterialOutList(response.right.Data);
                     setPagination({
                         currentPage: page,
-                        totalRecords: filteredData.length,
-                        totalPages: Math.ceil(filteredData.length / pagination.pageSize),
+                        totalRecords: response.right.TotalNumberOfRecord,
+                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
                     });
                 } else {
                     addToast({ type: 'error', title: response.left.message });

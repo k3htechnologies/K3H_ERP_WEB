@@ -16,7 +16,17 @@ export interface StockManagementRequestData {
     SubMaterialMasterId: number | 0
     UomCode: string | null
     TotalMaterialQuantityInStock: number | null
-    AvailableMaterialQuantityInStock:number | null
+    AvailableMaterialQuantityInStock: number | null
+}
+
+export interface AddUpdateStockManagementRequest {
+    SubMaterialMasterId: number | 0
+    ProjectId: number | 0
+    Reason: string | null
+    InwardOutwardType: string | null
+    MaterialQuantityInwardOutward: number | 0
+    SenderName: string | null
+    ReceiverName: string | null
 }
 
 export interface FilterWithPaginationStockManagementHistoryRequest {
@@ -24,6 +34,7 @@ export interface FilterWithPaginationStockManagementHistoryRequest {
     PageNumber: number
     ProjectId?: number
     SubMaterialMasterId?: number
+    type?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -39,16 +50,6 @@ export interface StockManagementRequestHistoryData {
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
-}
-
-export interface AddUpdateStockManagementRequest {
-    SubMaterialMasterId: number | 0
-    ProjectId: number | 0
-    Reason: string | null
-    InwardOutwardType: string | null
-    MaterialQuantityInwardOutward: number | 0
-    SenderName:string | null
-    ReceiverName:string | null
 }
 
 export type StockManagementListResponse = ApiResponse<StockManagementRequestData[]>

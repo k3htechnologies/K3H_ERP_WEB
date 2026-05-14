@@ -18,7 +18,7 @@ import type { FilterWithPaginationMaterialRequisitionInvoice, MaterialRequisitio
 import { materialRequisitionInvoiceService } from "@/features/materialRequisition/services/MaterialRequisitionInvoiceService";
 import type { FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendorData } from "@/features/materialRequisition/models/VendorFinalizeModel";
 import { vendorFinalizationService } from "@/features/materialRequisition/services/VendorFinalizationService";
-import type { MaterialRequisitionQuotationDetailsTermsData } from "@/features/materialRequisition/models/MaterialRequisitionQuotationApi";
+import type { MaterialRequisitionQuotationDetailsTermsData } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel";
 import { computeBaseTotal, computeLinesTotal, computeTaxTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils";
 
 export const Overview: React.FC = () => {
@@ -150,20 +150,14 @@ export const Overview: React.FC = () => {
         );
     };
 
-    const totalInvoiceAmount = MaterialRequisitionInvoiceData.reduce(
-        (sum, item) => sum + Number(item.InvoiceAmount ?? 0),
-        0
-    );
+
+    const firstTerm = materialRequisitionVendorData?.MaterialRequisitionQuotationTermsData?.[0];
+    const Vendoramount = firstTerm?.MaterialRequisitionQuotationData || []
 
     const amountPaid = MaterialRequisitionInvoiceData.reduce(
         (sum, item) => sum + Number(item.InvoiceAmountPaidTillDate ?? 0),
         0
     );
-
-    const PendingAmount = Math.max(0, totalInvoiceAmount - amountPaid);
-
-    const firstTerm = materialRequisitionVendorData?.MaterialRequisitionQuotationTermsData?.[0];
-    const Vendoramount = firstTerm?.MaterialRequisitionQuotationData || []
 
     return (
         <div className="bg-white p-1">
@@ -208,7 +202,7 @@ export const Overview: React.FC = () => {
                                 <FieldItem label="Grand Total" value={`₹ ${computeLinesTotal(Vendoramount).toFixed(2)}`} />
                                 <FieldItem label="Est. Delivery" value={`${materialRequisitionQuotationTermsData[0]?.ExpectedDeliveryInDays ?? 0} days`} />
                                 <FieldItem label="Paid Amount" value={`₹ ${amountPaid.toFixed(2)}`} />
-                                <FieldItem label="Pending Amount" value={`₹ ${PendingAmount.toFixed(2)}`} />
+                                <FieldItem label="Pending Amount" value={`₹ ${(computeLinesTotal(Vendoramount) - amountPaid).toFixed(2)}`} />
                             </div>
                         </section>
                     </div>
@@ -265,7 +259,7 @@ export const Overview: React.FC = () => {
                                         <FieldItem label="Received Quantity" value={item.MaterialReceivedQuantityTillDate ?? ''} />
 
                                         <div className="col-span-1 md:col-span-4 mt-1">
-                                            <FieldItem label="Remark" value={item.Remark} />
+                                            <FieldItem label="Remark" value={<TooltipText text={item.Remark ?? ''} />} />
                                         </div>
                                     </div>
                                 ))}

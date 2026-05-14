@@ -22,8 +22,8 @@ import { DataTableWithHeadColor } from "@/ui/components/DataTable/DataTableWithH
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
-import type { FilterWithPaginationMaterialRequisitionPayment, MaterialRequisitionPaymentData } from "../../models/MaterialRequisitionPaymentModel";
-import { materialRequisitionPaymentService } from "../../services/MaterialRequisitionPaymentService";
+import type { FilterWithPaginationMaterialRequisitionPayment, MaterialRequisitionPaymentData } from "@/features/materialRequisition/models/MaterialRequisitionPaymentModel";
+import { materialRequisitionPaymentService } from "@/features/materialRequisition/services/MaterialRequisitionPaymentService";
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 
@@ -120,12 +120,13 @@ const InvoicePayment: React.FC = () => {
         if (!invoiceData) return;
 
         const payload: UpdateModulesWorkflowApprovalRequest = {
-            ModuleName: "ADD INVOICE",
+            ModuleName: "MATERIAL REQUISITION",
             Id: currentMaterialRequisitionId ?? 0,
             SubId: invoiceData.MaterialRequisitionInvoiceId ?? 0,
             ProjectId: Number(projectId),
             IsApproved: approvalActionType === "approve",
-            Remarks: remark ?? null
+            Remarks: remark ?? null,
+            Uniquekey: invoiceData.Uniquekey ?? null
         };
 
         await runApiWithLoader(
@@ -332,16 +333,27 @@ const InvoicePayment: React.FC = () => {
                                 <span className="border border-green-300 bg-green-100 text-green-600 font-semibold px-4 py-2 rounded-md inline-block">Paid</span>
                             </div>
                         ) : (
-                            <Button
-                                size="mxs"
-                                color="transparent"
-                                onClick={() => handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)}
+                            // <Button
+                            //     size="mxs"
+                            //     color="transparent"
+                            //     onClick={() => handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)}
 
-                                style={{
-                                    color: '#FFFFFF',
-                                    padding: '4px 8px',
-                                    backgroundColor: '#135BEC'
-                                }}                    >
+                            //     style={{
+                            //         color: '#FFFFFF',
+                            //         padding: '4px 8px',
+                            //         backgroundColor: '#135BEC'
+                            //     }}                    >
+                            //     Make Payment
+                            //     </Button>
+
+                            <Button
+                                color="blue"
+                                size="sm"
+
+                                onClick={() => {
+                                    handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)
+                                }}
+                            >
                                 Make Payment
                             </Button>
                         )}

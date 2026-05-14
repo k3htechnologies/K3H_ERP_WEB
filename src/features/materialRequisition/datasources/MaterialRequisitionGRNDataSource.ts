@@ -1,7 +1,7 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 import type { DeleteMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRN, FilterWithPaginationMaterialRequisitionGRNSummary, MaterialRequisitionGRNDeleteResponse, MaterialRequisitionGRNListResponse, MaterialRequisitionGRNSaveResponse, MaterialRequisitionGRNSummaryListResponse } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
-import { MaterialRequisitionGRNApi } from "@/features/materialRequisition/api/MaterialRequisitionGRN";
+import { MaterialRequisitionGRNApi } from "@/features/materialRequisition/api/MaterialRequisitionGRNApi";
 
 export abstract class MaterialRequisitionGRNGRNDatasource {
     abstract pullMaterialRequisitionGRN(params: FilterWithPaginationMaterialRequisitionGRN, signal?: AbortSignal): Promise<MaterialRequisitionGRNListResponse>;

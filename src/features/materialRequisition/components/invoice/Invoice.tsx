@@ -12,8 +12,8 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
-import type { FilterWithPaginationMaterialRequisitionInvoiceSummary, MaterialRequisitionInvoiceSummaryData } from "../../models/MaterialRequisitionInvoiceModel";
-import { materialRequisitionInvoiceService } from "../../services/MaterialRequisitionInvoiceService";
+import type { FilterWithPaginationMaterialRequisitionInvoiceSummary, MaterialRequisitionInvoiceSummaryData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
+import { materialRequisitionInvoiceService } from "@/features/materialRequisition/services/MaterialRequisitionInvoiceService";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 export const Invoice: React.FC = () => {
@@ -38,6 +38,7 @@ export const Invoice: React.FC = () => {
     }, [projectId, currentMaterialRequisitionId])
 
     const loadMaterialRequisitionGRNData = async (page: number, filterParams: FilterInfo,) => {
+        
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,

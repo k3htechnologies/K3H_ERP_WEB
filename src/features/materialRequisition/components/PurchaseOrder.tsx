@@ -11,7 +11,7 @@ import { Loader } from "@/core/utils/loader";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
-import { FileText, Maximize2, Minimize2 } from "lucide-react";
+import { FileText, Maximize2, Minimize2, X } from "lucide-react";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { fetchTncMasterDropdown } from "@/features/tnc/tncDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
@@ -361,12 +361,21 @@ export const PurchaseOrder: React.FC = () => {
                     <div className="w-full h-full bg-white flex flex-col">
                         <div className="flex justify-between items-center p-3 border-b">
                             <h2 className="font-semibold">Purchase Order File</h2>
-                            <button
-                                onClick={() => setIsMaximized(false)}
-                                className="px-2 py-2 hover:bg-gray-100 rounded"
-                            >
-                                <Minimize2 className="h-5 w-5 text-gray-700" />
-                            </button>
+                            <div className="flex justify-end gap-1">
+                                <button
+                                    onClick={() => setIsMaximized(false)}
+                                    className="px-2 py-2 hover:bg-gray-100 rounded"
+                                >
+                                    <Minimize2 className="h-5 w-5 text-gray-700" />
+                                </button>
+
+                                <button
+                                    onClick={() => setIsMaximized(false)}
+                                    className="px-2 py-2 hover:bg-gray-100 rounded"
+                                >
+                                    <X className="h-5 w-5 text-gray-700" />
+                                </button>
+                            </div>
                         </div>
 
                         <div className="flex-1">
@@ -424,6 +433,7 @@ export const PurchaseOrder: React.FC = () => {
                                 dataFetchCallBack={fetchTncByModuleName("Material Requisition")}
                                 onSelected={(item) => handleFieldChange("TermsCondition", item?.value)}
                                 error={errors.TermsCondition}
+                                required
                             />
                         </div>
 
@@ -438,6 +448,7 @@ export const PurchaseOrder: React.FC = () => {
                             </div>
                         )}
                     </div>
+
                 </div>
             </Modal>
 

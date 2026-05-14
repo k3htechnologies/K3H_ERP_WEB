@@ -54,6 +54,7 @@ export class StockManagementDatasourceImpl implements StockManagementDatasource 
 
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
             if (params.SubMaterialMasterId) queryParams.append('SubMaterialMasterId', params.SubMaterialMasterId.toString());
+            if (params.type) queryParams.append('type', params.type);
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

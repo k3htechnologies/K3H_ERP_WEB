@@ -1,7 +1,7 @@
 import baseClient from "@/core/config/baseClient";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 import type { AddVendorForEnquiryRequest } from "@/features/materialRequisition/models/VendorFinalizeModel";
-import type { AddUpdateMaterialRequestQuotation, DeleteMaterialRequisitionQuotation, MaterialRequisitionQuotationListResponse, MaterialRequisitionQuotationSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionQuotationApi";
+import type { AddUpdateMaterialRequestQuotation, DeleteMaterialRequisitionQuotation, MaterialRequisitionQuotationListResponse, MaterialRequisitionQuotationSaveReponse } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel";
 import { MaterialRequisitionQuotationApi } from "@/features/materialRequisition/api/MaterialRequisitionQuotationApi";
 
 export abstract class MaterialRequisitionQuotationDatasource {
@@ -20,7 +20,7 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
         try {
             const queryParams = new URLSearchParams({
                 MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString()
-      
+
             })
 
             if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());
@@ -31,7 +31,7 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
                 `${MaterialRequisitionQuotationApi.PULL}?${queryParams.toString()}`, { signal }
             )
             return response;
-            
+
         } catch (error: any) {
 
             console.error('ERROR: PULL MATERIAL REQUISITION QUOTATION :', error);
@@ -47,7 +47,7 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
 
     async addUpdateMaterialRequisitionQuotation(payload: AddUpdateMaterialRequestQuotation): Promise<MaterialRequisitionQuotationSaveReponse> {
         try {
-            
+
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
                 MaterialRequisitionQuotationApi.ADD,
                 payload
@@ -87,7 +87,7 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.deleteMaterialRequisitionQuotation(params);
+                return await this.deleteMaterialRequisitionQuotation(params);
 
             }
 

@@ -151,6 +151,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             addToast({ type: 'error', title: 'Required Date is required.' });
             return;
         }
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -266,7 +267,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                 />
             )
         },
-         {
+        {
             key: "Remark",
             label: "Remark",
             width: "15",
@@ -287,7 +288,9 @@ export const ViewMaterialRequisition: React.FC = () => {
     ], [])
 
     const handleCloseRequisition = async () => {
+
         if (!selectedMaterialRequisitionItem) return;
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -308,6 +311,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                     navigate("/materialRequisition");
 
                     setIsCloseRequisitionDialogOpen(false);
+                    
                     loadMaterialRequisition();
 
                 } else {
@@ -332,7 +336,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                     subTitleText={systemGeneratedCode ?? "-"}
                     subSubTitleText={materialRequisitionStatus ?? ''}
                     cancelText="Cancel"
-                    EditText="Edit"
                     onCancel={() => handleBackToListMaterialRequisition()}
                 />
 

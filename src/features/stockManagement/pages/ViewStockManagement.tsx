@@ -339,10 +339,9 @@ import { handleExportFile } from "@/core/utils/exportFile";
 import { stockManagementService } from "../services/StockManagementService";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { usePagination } from "@/core/hooks/usePagination";
 import StocksHistory from "../components/StocksHistory";
-import { MaterialIn } from "../components/MaterialIn";
 import { MaterialOut } from "../components/Materialout";
+import MaterialIn from "../components/Materialin";
 
 export const ViewStockManagement: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -355,7 +354,6 @@ export const ViewStockManagement: React.FC = () => {
     const { projectId } = useProject();
     const { SubMaterialMasterId } = useParams<{ SubMaterialMasterId?: string }>();
     const currentSubMaterialMasterId = SubMaterialMasterId ? Number(SubMaterialMasterId) : listState.SubMaterialMasterId;
-    const { pagination, setPagination } = usePagination(20);
     const { canExport } = useMenuPermissions();
 
     const MaterialRequisitionTabList = [
@@ -377,7 +375,7 @@ export const ViewStockManagement: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationStockManagementHistoryRequest = {
                     PageNumber: 1,
-                    PageSize: pagination.totalRecords,
+                    PageSize:1000,
                     ProjectId: Number(projectId),
                     SubMaterialMasterId: currentSubMaterialMasterId,
                     ExportType: exportType,

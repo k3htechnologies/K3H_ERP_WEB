@@ -1,5 +1,5 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
-import type { MaterialRequisitionQuotationDetailsTermsData } from "./MaterialRequisitionQuotationApi"
+import type { MaterialRequisitionQuotationDetailsTermsData } from "./MaterialRequisitionQuotationModel"
 
 export interface FilterWithPaginationVendorForEnquiryRequest {
     MaterialRequisitionId?: number | 0
@@ -10,8 +10,8 @@ export interface FilterWithPaginationVendorForEnquiryRequest {
 export interface FilterWithPaginationVendorForSelectedEnquiryRequest {
     MaterialRequisitionId?: number
     Uniquekey?: string
-    ProjectId: number |0
-    ExportType? : 'VENDOR COMPARISON CHART'
+    ProjectId: number | 0
+    ExportType?: 'VENDOR COMPARISON CHART'
 
 }
 
@@ -57,11 +57,11 @@ export interface SelectedVendorData {
     ProjectName: string;
 }
 //used for material quotation
-export interface AddVendorForEnquiryRequest { 
-    MaterialRequisitionId:number;
-    Uniquekey:string;
+export interface AddVendorForEnquiryRequest {
+    MaterialRequisitionId: number;
+    Uniquekey: string;
     VendorId: string | null;
-    ProjectId:number | 0;
+    ProjectId: number | 0;
 
 }
 export type SelectedVendorListResponse = ApiResponse<SelectedVendorData[]>;

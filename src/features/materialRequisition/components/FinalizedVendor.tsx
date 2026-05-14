@@ -22,7 +22,7 @@ import {
     computeLinesTotal
 } from "@/features/materialRequisition/utils/finalizeVendorUtils"
 import { materialRequisitionQuotationService } from "@/features/materialRequisition/services/MaterialRequisitionQuotationService"
-import type { AddUpdateMaterialRequestQuotation } from "@/features/materialRequisition/models/MaterialRequisitionQuotationApi"
+import type { AddUpdateMaterialRequestQuotation } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel"
 import { Button } from "@/ui/components/forms/Button"
 import { Modal } from "@/ui/components/Modal/Modal"
 import { Input } from "@/ui/components/forms/Input"
@@ -225,7 +225,8 @@ export const FinalizedVendor: React.FC = () => {
         )
     }
 
-    const addSelectedVendors = async () => {
+    const addSelectedVendors = async (e: React.FormEvent) => {
+        e.preventDefault();
 
         await runApiWithLoader(
             setIsLoading,
@@ -236,8 +237,7 @@ export const FinalizedVendor: React.FC = () => {
 
                 const payload = PushVendorForEnquiry(vendorIds)
 
-                const response =
-                    await vendorFinalizationService.apiCallToAddVendorForEnquiry(payload)
+                const response = await vendorFinalizationService.apiCallToAddVendorForEnquiry(payload)
 
                 if (E.isRight(response)) {
 
@@ -254,12 +254,22 @@ export const FinalizedVendor: React.FC = () => {
 
                     setQuotationAvailable(false)
                     setSelectedVendorIds([])
-                }
 
-                return response
-            }
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
+                } else {
+                    addToast({ type: "error", title: response.left?.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Finalizing Vendors'
         )
-    }
+    };
 
     const buildPayload = (
         vendor: any,

@@ -19,7 +19,7 @@ import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import { Input } from "@/ui/components/forms/Input";
 import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-import { materialRequisitionService } from "../services/MaterialRequisitionService";
+import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_tt_mm_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
@@ -128,6 +128,9 @@ export const AddUpdateMaterialRequisition = () => {
 
         if (!materialData.RequiredDate || materialData.RequiredDate === "")
             newErrors.RequiredDate = "Required Date is required";
+        
+         if (!materialData.Remark || materialData.Remark === "")
+            newErrors.Remark = "Remark is required";
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -602,7 +605,9 @@ export const AddUpdateMaterialRequisition = () => {
                                             ...prev,
                                             Remarks: e.target.value
                                         }))
-                                    } placeholder="Enter Remark" error={errors.Remarks} />
+                                    } 
+                                    required
+                                    placeholder="Enter Remark" error={errors.Remarks} />
 
                             </div>
 
@@ -752,6 +757,7 @@ export const AddUpdateMaterialRequisition = () => {
                                 Remark: e.target.value
                             }))
                         }
+                        required
                         placeholder="Enter Remark"
                         error={errors.Remark}
                     />

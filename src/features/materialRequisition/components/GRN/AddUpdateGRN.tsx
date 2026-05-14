@@ -532,6 +532,9 @@ export const AddUpdateGRN = () => {
 
         if (!materialData.TotalReceivedMaterialQuantity)
             newErrors.TotalReceivedMaterialQuantity = "Received Quantity is required";
+        else if (materialData.TotalReceivedMaterialQuantity > materialData.MaterialQuantity) {
+            newErrors.TotalReceivedMaterialQuantity = "Received Quantity cannot be greater than Material Quantity";
+        }
 
         return {
             isValid: Object.keys(newErrors).length === 0,

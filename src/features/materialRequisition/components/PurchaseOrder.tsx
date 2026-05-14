@@ -16,6 +16,7 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { fetchTncMasterDropdown } from "@/features/tnc/tncDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import RichTextEditor from "@/ui/components/forms/RichTextEditor";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormState = (): GenerateMaterialRequisitionPurchaseOrderPdfData => ({
     MaterialRequisitionId: 0,
@@ -53,6 +54,7 @@ export const PurchaseOrder: React.FC = () => {
     const currentUniquekey = listState.Uniquekey
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isMaximized, setIsMaximized] = useState(false);
+    const { canAction } = useMenuPermissions('/generatePurchaseOrder');
 
     useEffect(() => {
         if (!projectId) return
@@ -278,14 +280,16 @@ export const PurchaseOrder: React.FC = () => {
             <div className="flex justify-end gap-2">
                 {!hasPurchaseOrder && (
                     <>
-                        <Button
-                            color="blue"
-                            variant="solid"
-                            colorMode="extraLight"
-                            onClick={handleGeneratepurchaseorder}
-                            leftIcon={<FileText size={14} />}>
-                            Generate PO
-                        </Button>
+                        {canAction && (
+                            <Button
+                                color="blue"
+                                variant="solid"
+                                colorMode="extraLight"
+                                onClick={handleGeneratepurchaseorder}
+                                leftIcon={<FileText size={14} />}>
+                                Generate PO
+                            </Button>
+                        )}
 
                         <input
                             ref={fileInputRef}
@@ -295,17 +299,19 @@ export const PurchaseOrder: React.FC = () => {
                             onChange={handleUploadPurchaseOrder}
                         />
 
-                        <Button
-                            onClick={() => fileInputRef.current?.click()}
-                            color="blue"
-                            size="mxs"
-                            variant="solid"
-                            colorMode="gradient_dark"
-                            defineWidth
-                            style={{ width: '100px' }}
-                        >
-                            Upload PO
-                        </Button>
+                        {canAction && (
+                            <Button
+                                onClick={() => fileInputRef.current?.click()}
+                                color="blue"
+                                size="mxs"
+                                variant="solid"
+                                colorMode="gradient_dark"
+                                defineWidth
+                                style={{ width: '100px' }}
+                            >
+                                Upload PO
+                            </Button>
+                        )}
                     </>
                 )}
             </div>

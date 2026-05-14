@@ -68,7 +68,7 @@ const CreateInvoice: React.FC = () => {
     const [uploadInvoiceURLFiles, setUploadInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removeUploadInvoiceUrls, SetRemoveUploadInvoiceUrls] = useState<string[]>([]);
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
-    const { canAction } = useMenuPermissions('/materialRequisition/view');
+    const { canAction } = useMenuPermissions('/addInvoice');
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
     const systemGeneratedCode = listState.SystemGeneratedCode;

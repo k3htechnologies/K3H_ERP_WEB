@@ -116,7 +116,6 @@ export const MaterialRequisitionListStateProvider = ({ children }: { children: R
     const { projectId: currentProjectId } = useProject();
     const [listState, setListState] = useState<MaterialRequisitionListState>(() => getInitialState(currentProjectId));
     const [detailData, setDetailData] = useState<MaterialRequisitionDetailItem[]>([]);
-    // const allColumns = getMaterialRequisitionTableColumns();
     const allColumns = useMemo<TableColumn[]>(
         () => getMaterialRequisitionTableColumns(),
         []

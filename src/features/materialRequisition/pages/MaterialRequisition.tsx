@@ -32,6 +32,7 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 
 export const MaterialRequisition: React.FC = () => {
+
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
@@ -81,7 +82,6 @@ export const MaterialRequisition: React.FC = () => {
         setDeleteData(row);
         setIsConfirmationDialogBoxOpen(true);
     }, []);
-
 
     const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId ?? 0, MaterialRequisitionStage: row.MaterialRequisitionStage ?? "", MaterialRequisitionStatus: row.MaterialRequisitionStatus ?? "", SystemGeneratedCode: row.SystemGeneratedCode ?? "", Uniquekey: row.Uniquekey ?? "" });
@@ -320,6 +320,7 @@ export const MaterialRequisition: React.FC = () => {
     });
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
+
         updateListState({ sortInfo: sort, page: 1 });
         loadDetailsdata(1, filters, sort, searchTerm || undefined);
     }, [filters, updateListState, searchTerm]);
@@ -343,6 +344,7 @@ export const MaterialRequisition: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
+                
                 const params: FilterWithPaginationMaterialRequisition = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
@@ -383,6 +385,7 @@ export const MaterialRequisition: React.FC = () => {
     };
 
     const clearSearchMaterialRequisition = () => {
+
         debouncedSearch.cancel?.();
         updateListState({ searchTerm: '', filters: {}, page: 1 });
         setTempFilters({});
@@ -568,4 +571,5 @@ export const MaterialRequisition: React.FC = () => {
         </div>
     )
 }
+
 export default MaterialRequisition;

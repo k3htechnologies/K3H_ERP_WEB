@@ -42,7 +42,6 @@ const initialFormState = (): AddUpdateMaterialRequisitionInvoice => ({
     RemoveMeasurementReportURL: null,
     Remarks: '',
     MaterialRequisitionGRNId: 0,
-
 })
 
 const CreateInvoice: React.FC = () => {

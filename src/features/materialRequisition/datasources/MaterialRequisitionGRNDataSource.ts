@@ -69,8 +69,10 @@ export class MaterialRequisitionGRNGRNDatasourceImpl implements MaterialRequisit
     async deleteMaterialRequisitionGRN(params: DeleteMaterialRequisitionGRN): Promise<MaterialRequisitionGRNDeleteResponse> {
         try {
             const queryParams = new URLSearchParams({
+
                 MaterialRequisitionGRNId: (params.MaterialRequisitionGRNId ?? 0).toString(),
                 Uniquekey: params.Uniquekey ?? '',
+
             })
 
             const response = await this.k3hHttpClient.deleteRequestWithAuthentication(

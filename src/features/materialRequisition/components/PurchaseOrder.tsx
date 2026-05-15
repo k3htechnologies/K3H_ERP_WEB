@@ -360,6 +360,7 @@ export const PurchaseOrder: React.FC = () => {
                 <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center">
                     <div className="w-full h-full bg-white flex flex-col">
                         <div className="flex justify-between items-center p-3 border-b">
+                            
                             <h2 className="font-semibold">Purchase Order File</h2>
                             <div className="flex justify-end gap-1">
                                 <button

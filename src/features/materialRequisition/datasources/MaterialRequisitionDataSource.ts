@@ -4,6 +4,7 @@ import type { DeleteMaterialRequisitionRequest, FilterWithPaginationMaterialRequ
 import { MaterialRequisitionApi } from "@/features/materialRequisition/api/MaterialRequisitionApi";
 
 export abstract class MaterialRequisitionDatasource {
+    
     abstract pullMaterialRequisition(params: FilterWithPaginationMaterialRequisition, signal?: AbortSignal): Promise<MaterialRequisitionListResponse>;
     abstract addUpdateMaterialRequisition(data: FormData): Promise<MaterialRequisitionSaveReponse>;
     abstract deleteMaterialRequisition(params: DeleteMaterialRequisitionRequest): Promise<MaterialRequisitionDeleteResponse>;
@@ -74,9 +75,11 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
     async deleteMaterialRequisition(params: DeleteMaterialRequisitionRequest): Promise<MaterialRequisitionDeleteResponse> {
         try {
             const queryParams = new URLSearchParams({
+
                 MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
                 Uniquekey: params.Uniquekey ?? '',
                 ProjectId: (params.ProjectId ?? 0).toString(),
+
             })
 
             const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
@@ -92,9 +95,7 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
             if (error instanceof TokenExpiredException) {
 
                 return  await this.deleteMaterialRequisition(params);
-
             }
-
             throw error
         }
     }

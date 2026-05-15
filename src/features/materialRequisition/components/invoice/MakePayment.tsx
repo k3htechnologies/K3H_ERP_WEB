@@ -434,54 +434,25 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                             <Input
                                 label="IFSC Code"
                                 value={formData.IFSCCode}
-                                onChange={(e) =>
-                                    handleFieldChange(
-                                        "IFSCCode",
-                                        filterIFSC(
-                                            e.target.value
-                                        )
-                                    )
-                                }
+                                onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
                                 error={errors.IFSCCode}
                             />
-
                         )}
 
                     <SinglePageSelection
                         label="Payment Type"
                         required
                         value={formData.PaymentType}
-                        onChange={(e) =>
-                            handleFieldChange(
-                                "PaymentType",
-                                String(e)
-                            )
-                        }
-                        options={
-                            MATERIAL_REQUISITION_PAYMENT_TYPE.map(
-                                opt => ({
-                                    label: opt.name,
-                                    value: opt.id
-                                })
-                            )
-                        }
+                        onChange={(e) => handleFieldChange("PaymentType", String(e))}
+                        options={MATERIAL_REQUISITION_PAYMENT_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
                         error={errors.PaymentType}
                     />
 
                     <Input
                         label="Amount Paid"
                         value={String(formData.AmountPaid)}
-                        disabled={
-                            formData.PaymentType === "Full"
-                        }
-                        onChange={(e) =>
-                            handleFieldChange(
-                                "AmountPaid",
-                                sanitizeAmount(
-                                    e.target.value
-                                )
-                            )
-                        }
+                        disabled={formData.PaymentType === "Full"}
+                        onChange={(e) => handleFieldChange("AmountPaid", sanitizeAmount(e.target.value))}
                         error={errors.AmountPaid}
                     />
 
@@ -494,14 +465,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                     <Input
                         label="TDS Amount"
                         value={String(formData.TDSAmount)}
-                        onChange={(e) =>
-                            handleFieldChange(
-                                "TDSAmount",
-                                sanitizeAmount(
-                                    e.target.value
-                                )
-                            )
-                        }
+                        onChange={(e) => handleFieldChange("TDSAmount", sanitizeAmount(e.target.value))}
                         error={errors.TDSAmount}
                     />
 
@@ -509,9 +473,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         label={getTransactionLabel()}
                         className="sm:col-span-2 lg:col-span-2 xl:col-span-2"
                         value={formData.TransactionNumber}
-                        onChange={(e) => handleFieldChange( "TransactionNumber", e.target.value
-                            )
-                        }
+                        onChange={(e) => handleFieldChange("TransactionNumber", e.target.value)}
                         error={errors.TransactionNumber}
                     />
 
@@ -523,8 +485,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                         maxFiles={1}
                         maxSizeMB={5}
-                        onRemoveExisting={(url) =>
-                            setRemovedFiles(prev => [...prev, url])}
+                        onRemoveExisting={(url) => setRemovedFiles(prev => [...prev, url])}
                         error={errors.TransactionReceiptURL}
                         required
                     />
@@ -536,7 +497,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                             onChange={(e) => handleFieldChange("IsAdvance", e.target.checked)}
                         />
                     </div>
-
                 </form>
 
             </Loader>

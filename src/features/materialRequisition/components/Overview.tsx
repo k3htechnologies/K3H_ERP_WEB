@@ -150,7 +150,6 @@ export const Overview: React.FC = () => {
         );
     };
 
-
     const firstTerm = materialRequisitionVendorData?.MaterialRequisitionQuotationTermsData?.[0];
     const Vendoramount = firstTerm?.MaterialRequisitionQuotationData || []
 
@@ -208,6 +207,7 @@ export const Overview: React.FC = () => {
                     </div>
 
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 h-[120px]">
+
                         <section className="bg-white px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Purchase Order</h4>
                             {matrialRequisitionData?.PurchaseOrderURL.length == 0 ? (
@@ -249,6 +249,7 @@ export const Overview: React.FC = () => {
                 <div className="col-span-6">
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 overflow-y-auto thin-scroll h-[495px]">
                         <div className="overflow-y-auto thin-scroll h-[476px]">
+
                             <section className="bg-white px-4 pt-1 pb-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Material Details</h4>
                                 {matrialRequisitionDetailData.map((item, index) => (
@@ -269,6 +270,7 @@ export const Overview: React.FC = () => {
 
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 overflow-y-auto thin-scroll h-[426px]">
                         <div className="overflow-y-auto thin-scroll h-[400px]">
+                            
                             <section className="bg-white px-4 pt-1 pb-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Invoice Details</h4>
                                 {MaterialRequisitionInvoiceData.length === 0 ? (
@@ -296,4 +298,5 @@ export const Overview: React.FC = () => {
         </div >
     )
 }
+
 export default Overview;

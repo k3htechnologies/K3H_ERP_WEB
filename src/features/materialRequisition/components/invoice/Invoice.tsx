@@ -17,6 +17,7 @@ import { materialRequisitionInvoiceService } from "@/features/materialRequisitio
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 
 export const Invoice: React.FC = () => {
+    
     const [invoiceList, setInvoiceList] = useState<MaterialRequisitionGRNData[]>([]);
     const [invoiceSummaryData, setInvoiceSummaryData] = useState<MaterialRequisitionInvoiceSummaryData | null>(null);
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -240,4 +241,5 @@ export const Invoice: React.FC = () => {
         </div>
     )
 }
+
 export default Invoice;

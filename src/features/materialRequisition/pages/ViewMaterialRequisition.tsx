@@ -50,24 +50,17 @@ export const ViewMaterialRequisition: React.FC = () => {
     const { canView: canFinalizedVendorView } = useMenuPermissions(ModuleAction.finalizeVendor);
     const { canView: canGeneratePurchaseOrder } = useMenuPermissions(ModuleAction.generatePurchaseOrder);
     const { canView: canAddInvoice } = useMenuPermissions(ModuleAction.addInvoice);
-
+    const currentUniquekey = listState.Uniquekey
 
     const MaterialRequisitionTabList: { id: string; label: string }[] = [
-
         { id: "Overview", label: "Overview" },
-
         { id: "Details", label: "Details" },
-
         canFinalizedVendorView ? { id: "Finalized Vendor", label: "Finalized Vendor" } : null,
-
         canGeneratePurchaseOrder ? { id: "Purchase Order", label: "Purchase Order" } : null,
-
         { id: "GRN", label: "GRN" },
-
         canAddInvoice ? { id: "Invoice", label: "Invoice" } : null
-
     ].filter(Boolean) as { id: string; label: string }[];
-    
+
     const handleBackToListMaterialRequisition = () => {
         navigate('/materialRequisition');
     };
@@ -83,11 +76,11 @@ export const ViewMaterialRequisition: React.FC = () => {
         const fd = new FormData();
 
         fd.append("ProjectId", Number(projectId).toString());
-        fd.append("MaterialRequisitionId", "0");
-        fd.append("Uniquekey", matrialRequisitionData?.Uniquekey ?? '');
+        fd.append("MaterialRequisitionId", currentMaterialRequisitionId.toString());
+        fd.append("Uniquekey", currentUniquekey);
         fd.append("Remarks", matrialRequisitionData?.Remarks ?? '');
-        fd.append("IsSplit", "false");
-        fd.append("IsCopy", "true");
+        fd.append("IsCopy", "1");
+        fd.append("IsSplit", "0");
         fd.append(
             "MaterialRequisitionDetailJSON",
             JSON.stringify(
@@ -323,7 +316,7 @@ export const ViewMaterialRequisition: React.FC = () => {
                     navigate("/materialRequisition");
 
                     setIsCloseRequisitionDialogOpen(false);
-                    
+
                     loadMaterialRequisition();
 
                 } else {

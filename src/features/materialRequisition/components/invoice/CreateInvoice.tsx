@@ -58,6 +58,8 @@ const CreateInvoice: React.FC = () => {
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
+    const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
+    const systemGeneratedCode = listState.SystemGeneratedCode;
     const navigate = useNavigate();
     const [performaInvoiceURLFiles, setPerformaInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removePerformaInvoiceUrls, SetRemovePerformaInvoiceUrls] = useState<string[]>([]);
@@ -70,8 +72,7 @@ const CreateInvoice: React.FC = () => {
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
     const { canAction } = useMenuPermissions();
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-    const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
-    const systemGeneratedCode = listState.SystemGeneratedCode;
+
 
     useEffect(() => {
         if (!projectId) return;
@@ -284,6 +285,7 @@ const CreateInvoice: React.FC = () => {
         );
     };
 
+    
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>

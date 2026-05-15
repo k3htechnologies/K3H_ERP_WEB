@@ -34,6 +34,7 @@ export const Details: React.FC = () => {
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
+    const currentUniquekey = listState.Uniquekey;
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -81,11 +82,11 @@ export const Details: React.FC = () => {
         const fd = new FormData();
 
         fd.append("ProjectId", Number(projectId).toString());
-        fd.append("MaterialRequisitionId", "0");
-        fd.append("Uniquekey", matrialRequisitionData?.Uniquekey ?? '');
+        fd.append("MaterialRequisitionId", currentMaterialRequisitionId.toString());
+        fd.append("Uniquekey", currentUniquekey);
         fd.append("Remarks", matrialRequisitionData?.Remarks ?? '');
-        fd.append("IsSplit", "true");
-        fd.append("IsCopy", "false");
+        fd.append("IsSplit", "1");
+        fd.append("IsCopy", "0");
         fd.append("MaterialRequisitionDetailJSON", JSON.stringify(matrialRequisitionDetailData
             .filter(item => selectedIds.includes(item.MaterialRequisitionDetailId))
             .map(item => ({

@@ -63,7 +63,6 @@ export const GRN: React.FC = () => {
     };
 
     const handleGRNEdit = useCallback((row: MaterialRequisitionGRNData) => {
-        debugger
         navigate(`/grn/add/${row.MaterialRequisitionId}/${row.MaterialRequisitionGRNId}`);
     }, [navigate]);
 
@@ -204,8 +203,6 @@ export const GRN: React.FC = () => {
                                     }}
                                     leftIcon={<Edit className="h-4 w-4" />}
                                 />
-
-
                             </>
                         )}
                     </div>
@@ -364,6 +361,7 @@ export const GRN: React.FC = () => {
                             ))}
                         </div>
                     )}
+                    
                 </div>
             </Modal>
         </div>

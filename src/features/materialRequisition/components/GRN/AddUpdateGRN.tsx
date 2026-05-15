@@ -73,13 +73,14 @@ export const AddUpdateGRN = () => {
     const { projectId } = useProject();
     const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
-    const [GRN, SetGRN] = useState<MaterialRequisitionGRNData[]>([]);
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
     const [GRNData, SetGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
+    const [GRN, SetGRN] = useState<MaterialRequisitionGRNData[]>([]);
     const { detailData } = useMaterialRequisitionListState()
     const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
+
     useEffect(() => {
         if (!MaterialRequisitionId) return;
         (async () => {
@@ -88,11 +89,13 @@ export const AddUpdateGRN = () => {
         })
             ();
     }, [MaterialRequisitionId]);
+
     useEffect(() => {
         if (addMaterialPopUp) {
             loadMaterialsSubMaterialMasterUOM();
         }
     }, [addMaterialPopUp]);
+
     useEffect(() => {
 
         const materialdata = [
@@ -109,7 +112,6 @@ export const AddUpdateGRN = () => {
                 value: String(x.MaterialMasterId)
             }))
         );
-
 
     }, [detailData]);
 
@@ -192,13 +194,13 @@ export const AddUpdateGRN = () => {
             "Loading GRN",
         );
     };
+
     const handleAddMaterial = async () => {
 
         setErrors({});
         setAddMaterialPopUp(true);
         setEditIndex(null);
         setMaterialData(initialFormState());
-
     }
 
     const handleEditMaterial = useCallback((row: MaterialRequisitionDetailGRN, index: number) => {
@@ -340,19 +342,6 @@ export const AddUpdateGRN = () => {
         }
 
     ], [canAction, materialList, materialOptions, handleEditMaterial]);
-
-    // const onFieldChange = useCallback((field: keyof MaterialDetail, value: any) => {
-    //     setFormData(prev => ({
-    //         ...prev,
-    //         [field]: value
-    //     }));
-    //     if (errors[field as keyof FormErrors]) {
-    //         setErrors(prev => ({
-    //             ...prev,
-    //             [field]: undefined
-    //         }));
-    //     }
-    // }, [errors]);
 
     const subMaterialOptions = useMemo(() => {
         if (!materialData.MaterialMasterId) return [];
@@ -576,7 +565,7 @@ export const AddUpdateGRN = () => {
     return (
         <>
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-                <Loader loading={isLoading} title={loadingMessage}>   <div />  </Loader>
+                <Loader loading={isLoading} title={loadingMessage}> <div /> </Loader>
 
                 <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
                     <form onSubmit={(e) => { e.preventDefault(); void handleSave(); }}>
@@ -584,6 +573,7 @@ export const AddUpdateGRN = () => {
                         <div className="space-y-6">
                             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">GRN Details </h3>
                             <div className="flex items-center justify-between">
+
                                 <h3 className="text-md font-medium text-gray-500">
                                     Material Details
                                 </h3>
@@ -675,7 +665,6 @@ export const AddUpdateGRN = () => {
                                     error={errors.Remarks}
                                     required
                                 />
-
                             </div>
 
                         </div>
@@ -684,9 +673,7 @@ export const AddUpdateGRN = () => {
 
                 <BottomActionBar
                     cancelText="Cancel"
-                    saveText={
-                        formData.MaterialRequisitionId &&
-                            formData.MaterialRequisitionId > 0 ? "Update" : "Add"
+                    saveText={formData.MaterialRequisitionId && formData.MaterialRequisitionId > 0 ? "Update" : "Add"
                     }
                     onCancel={() => navigate("/materialRequisition/view", {
                         state: { activeTab: "GRN" }
@@ -727,10 +714,8 @@ export const AddUpdateGRN = () => {
                         disabled={editIndex !== null}
                         initialValue={createDropdownInitialValue(
                             materialData.MaterialMasterId,
-                            // materialData.MaterialMasterId ? String(materialData.MaterialMasterId) : null,
                             materialData.MaterialName,
                         )}
-                        // value={materialData.MaterialMasterId}
                         title="Select Material"
                         size="lg"
                         dataFetchCallBack={async () => ({
@@ -751,13 +736,10 @@ export const AddUpdateGRN = () => {
 
                                 MaterialMasterId: selected.MaterialMasterId,
                                 MaterialName: selected.MaterialName,
-
                                 SubMaterialMasterId: selected.SubMaterialMasterId,
                                 SubMaterialName: selected.SubMaterialName,
-
                                 UomCode: selected.UomCode,
                                 UomMasterId: selected.UomMasterId,
-
                                 MaterialQuantity: selected.MaterialQuantity,
                                 RequiredDate: selected.RequiredDate,
                                 MaterialRequisitionDetailId: selected.MaterialRequisitionDetailId

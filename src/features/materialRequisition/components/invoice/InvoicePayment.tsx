@@ -28,6 +28,7 @@ import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/A
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 
 const InvoicePayment: React.FC = () => {
+
     const [materialRequisitionGRNData, setMaterialRequisitionGRNData] = useState<MaterialRequisitionGRNData | null>(null);
     const [matrialRequisitionDetailGRNData, setMaterialRequisitionDetailGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const [invoiceData, setInvoiceData] = useState<MaterialRequisitionInvoiceData | null>(null);
@@ -40,13 +41,13 @@ const InvoicePayment: React.FC = () => {
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
+    const systemGeneratedCode = listState.SystemGeneratedCode;
     const navigate = useNavigate();
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [paymentData, setPaymentData] = useState<MaterialRequisitionPaymentData[]>([]);
-    const systemGeneratedCode = listState.SystemGeneratedCode;
     const [invoiceNumber, setInvoiceNumber] = useState<string | null>("");
 
     useEffect(() => {
@@ -73,6 +74,7 @@ const InvoicePayment: React.FC = () => {
             SubId: row.MaterialRequisitionInvoiceId ?? 0,
             ProjectId: projectId ?? 0,
         };
+
         setInvoiceNumber(row.InvoiceNumber);
         setApprovalLogRequest(request);
         setIsApprovalLogModalOpen(true);
@@ -144,7 +146,6 @@ const InvoicePayment: React.FC = () => {
                     await loadInvoiceData();
 
                 } else {
-
                     addToast({ type: "error", title: response.left.message });
                 }
 
@@ -332,30 +333,20 @@ const InvoicePayment: React.FC = () => {
                                 <span className="border border-green-300 bg-green-100 text-green-600 font-semibold px-4 py-2 rounded-md inline-block">Paid</span>
                             </div>
                         ) : (
-                            // <Button
-                            //     size="mxs"
-                            //     color="transparent"
-                            //     onClick={() => handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)}
-
-                            //     style={{
-                            //         color: '#FFFFFF',
-                            //         padding: '4px 8px',
-                            //         backgroundColor: '#135BEC'
-                            //     }}                    >
-                            //     Make Payment
-                            //     </Button>
-
                             <Button
-                                color="blue"
-                                size="sm"
+                                size="mxs"
+                                color="transparent"
+                                onClick={() => handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)}
 
-                                onClick={() => {
-                                    handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)
-                                }}
-                            >
+                                style={{
+                                    color: '#FFFFFF',
+                                    padding: '4px 8px',
+                                    backgroundColor: '#135BEC'
+                                }}                    >
                                 Make Payment
                             </Button>
                         )}
+
                     </div>
                 </div>
 
@@ -465,4 +456,5 @@ const InvoicePayment: React.FC = () => {
         </div>
     )
 }
+
 export default InvoicePayment;

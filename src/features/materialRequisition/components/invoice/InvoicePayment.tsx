@@ -126,7 +126,6 @@ const InvoicePayment: React.FC = () => {
             ProjectId: Number(projectId),
             IsApproved: approvalActionType === "approve",
             Remarks: remark ?? null,
-            Uniquekey: invoiceData.Uniquekey ?? null
         };
 
         await runApiWithLoader(
@@ -421,7 +420,7 @@ const InvoicePayment: React.FC = () => {
 
                 {paymentData.map((item, index) => (
                     <div className="gap-x-4 rounded-lg border border-gray-200 p-4 mb-4 bg-gray-50">
-                        <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-2 mb-3 ">
+                        <div key={index} className="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2 mb-3 ">
                             <FieldItem label="CreatedBy / Date" value={`${item.CreatedBy} ${formatDate_dd_MonthName_yy(item.CreatedDate ?? '')}`} />
                             <FieldItem label="Account Number" value={item.AccountNumber} />
                             <FieldItem label="Bank Name" value={<TooltipText text={item.BankName ?? ''} />} />

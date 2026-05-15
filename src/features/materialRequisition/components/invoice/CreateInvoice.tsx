@@ -68,7 +68,7 @@ const CreateInvoice: React.FC = () => {
     const [uploadInvoiceURLFiles, setUploadInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removeUploadInvoiceUrls, SetRemoveUploadInvoiceUrls] = useState<string[]>([]);
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
-    const { canAction } = useMenuPermissions('/addInvoice');
+    const { canAction } = useMenuPermissions();
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
     const systemGeneratedCode = listState.SystemGeneratedCode;
@@ -301,7 +301,7 @@ const CreateInvoice: React.FC = () => {
                 />
             </div>
 
-            <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+            <div className="gap-x-4 bg-[#EFF6FF] rounded-lg shadow-sm p-4 mb-4">
                 <div className="lg:col-span-5 pb-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
@@ -321,7 +321,7 @@ const CreateInvoice: React.FC = () => {
                 />
             </div>
 
-            <div className="gap-x-4 bg-white rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
+            <div className="gap-x-4 bg-white  p-4 mb-4">
                 <div className="space-y-4 pb-3">
                     <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Invoice Details</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

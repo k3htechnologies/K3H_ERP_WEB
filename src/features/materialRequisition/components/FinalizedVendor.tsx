@@ -248,9 +248,13 @@ export const FinalizedVendor: React.FC = () => {
 
                     setMaterialRequisitionVendorSelectedList(selected)
 
+                    setMaterialRequisitionVendorFinalizedList(prev =>
+                        prev.filter(v => !selectedVendorIds.includes(v.VendorId))
+                    )
+                    
                     setQuotationAvailable(false)
                     setSelectedVendorIds([])
-                    await loadSelectedVendor()   
+                    await loadSelectedVendor()
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -267,7 +271,6 @@ export const FinalizedVendor: React.FC = () => {
             'Getting Quotation from Vendors'
         )
     };
-
 
     const buildPayload = (
         vendor: any,

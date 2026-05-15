@@ -16,7 +16,6 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { fetchTncMasterDropdown } from "@/features/tnc/tncDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import RichTextEditor from "@/ui/components/forms/RichTextEditor";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormState = (): GenerateMaterialRequisitionPurchaseOrderPdfData => ({
     MaterialRequisitionId: 0,
@@ -54,7 +53,6 @@ export const PurchaseOrder: React.FC = () => {
     const currentUniquekey = listState.Uniquekey
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isMaximized, setIsMaximized] = useState(false);
-    const { canAction } = useMenuPermissions('/generatePurchaseOrder');
 
     useEffect(() => {
         if (!projectId) return
@@ -280,7 +278,6 @@ export const PurchaseOrder: React.FC = () => {
             <div className="flex justify-end gap-2">
                 {!hasPurchaseOrder && (
                     <>
-                        {canAction && (
                             <Button
                                 color="blue"
                                 variant="solid"
@@ -289,7 +286,6 @@ export const PurchaseOrder: React.FC = () => {
                                 leftIcon={<FileText size={14} />}>
                                 Generate PO
                             </Button>
-                        )}
 
                         <input
                             ref={fileInputRef}
@@ -299,7 +295,6 @@ export const PurchaseOrder: React.FC = () => {
                             onChange={handleUploadPurchaseOrder}
                         />
 
-                        {canAction && (
                             <Button
                                 onClick={() => fileInputRef.current?.click()}
                                 color="blue"
@@ -311,7 +306,6 @@ export const PurchaseOrder: React.FC = () => {
                             >
                                 Upload PO
                             </Button>
-                        )}
                     </>
                 )}
             </div>

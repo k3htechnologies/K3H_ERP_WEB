@@ -25,7 +25,6 @@ import { useEffect, useState } from "react";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { Loader } from "@/core/utils/loader";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     totalAmount = 0,
@@ -39,7 +38,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
     const [invoiceAmount, setInvoiceAmount] = useState(totalAmount);
     const [remainingInvoiceAmount, setRemainingInvoiceAmount] = useState(totalAmount);
-    const { canAction } = useMenuPermissions('/makePayment');
 
     const initialFormState = () => ({
         PaymentMode: "",
@@ -696,7 +694,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                 onCancel={() => navigate(-1)}
                 onSave={handleAddPayment}
                 isLoading={isLoading}
-                canAction={canAction}
+                canAction
             />
 
         </div>

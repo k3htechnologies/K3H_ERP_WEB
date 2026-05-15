@@ -15,7 +15,6 @@ import { materialRequisitionGRNService } from "@/features/materialRequisition/se
 import type { FilterWithPaginationMaterialRequisitionInvoiceSummary, MaterialRequisitionInvoiceSummaryData } from "@/features/materialRequisition/models/MaterialRequisitionInvoiceModel";
 import { materialRequisitionInvoiceService } from "@/features/materialRequisition/services/MaterialRequisitionInvoiceService";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 export const Invoice: React.FC = () => {
     const [invoiceList, setInvoiceList] = useState<MaterialRequisitionGRNData[]>([]);
@@ -31,8 +30,6 @@ export const Invoice: React.FC = () => {
     const currentUniquekey = listState.Uniquekey
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const navigate = useNavigate();
-    const { canAction: CreateInvoice } = useMenuPermissions('/addInvoice');
-    const { canAction: MakePayment } = useMenuPermissions('/makePayment');
 
     useEffect(() => {
         if (!projectId) return;
@@ -173,7 +170,7 @@ export const Invoice: React.FC = () => {
             render: (_value, row) => (
                 <div>
                     {
-                        row.IsInvoiceCreated === false && CreateInvoice && (
+                        row.IsInvoiceCreated === false && (
                             <Button
                                 color="blue"
                                 size="sm"
@@ -185,7 +182,7 @@ export const Invoice: React.FC = () => {
                     }
 
                     {
-                        row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === false && MakePayment && (
+                        row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === false && (
                             <Button
                                 color="blue"
                                 size="sm"
@@ -197,7 +194,7 @@ export const Invoice: React.FC = () => {
                     }
 
                     {
-                        row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === true && MakePayment && (
+                        row.IsInvoiceCreated === true && row.IsInvoicePaymentCompleted === true && (
                             <Button
                                 color="blue"
                                 size="sm"

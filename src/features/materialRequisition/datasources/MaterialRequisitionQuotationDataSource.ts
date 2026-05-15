@@ -20,7 +20,6 @@ export class MaterialRequisitionQuotationDatasourceImpl implements MaterialRequi
         try {
             const queryParams = new URLSearchParams({
                 MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString()
-
             })
 
             if (params.MaterialRequisitionId) queryParams.append('MaterialRequisitionId', params.MaterialRequisitionId.toString());

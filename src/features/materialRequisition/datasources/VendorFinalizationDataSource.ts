@@ -11,7 +11,6 @@ export abstract class VendorFinalizationDatasource {
     abstract pullSelectedVendorForEnquiry(params: FilterWithPaginationVendorForSelectedEnquiryRequest,signal?: AbortSignal): Promise<SelectedVendorListResponse>;
     abstract addFinalizedVendor(payload: AddVendorForEnquiryRequest): Promise<VendorListResponse>;
     abstract pullFinalizedVendor(params: FilterWithPaginationVendorForEnquiryRequest, signal?: AbortSignal): Promise<VendorListResponse>;
-
 }
 
 export class VendorFinalizationDatasourceImpl implements VendorFinalizationDatasource {

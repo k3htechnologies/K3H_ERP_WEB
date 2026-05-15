@@ -51,10 +51,7 @@ export interface MaterialRequisitionData {
 }
 
 export interface AddUpdateMaterialRequisitionDetailRequest {
-    // MaterialRequisitionDetailId:number;
-    // Uniquekey:string;
     MaterialMasterId: number;
-    // MaterialCode:string;
     MaterialName: string;
     SubMaterialName: string;
     SubMaterialMasterId: number;
@@ -107,7 +104,6 @@ export interface DeleteMaterialRequisitionRequest {
     Uniquekey: string | null,
     ProjectId: number | 0,
 }
-
 
 export type MaterialRequisitionListResponse = ApiResponse<MaterialRequisitionData[]>;
 export type MaterialRequisitionSaveReponse = ApiResponse<MaterialRequisitionData>;

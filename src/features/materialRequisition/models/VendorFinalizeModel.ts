@@ -12,7 +12,6 @@ export interface FilterWithPaginationVendorForSelectedEnquiryRequest {
     Uniquekey?: string
     ProjectId: number | 0
     ExportType?: 'VENDOR COMPARISON CHART'
-
 }
 
 export interface SelectedVendorData {
@@ -56,13 +55,14 @@ export interface SelectedVendorData {
     SystemGeneratedCode: string;
     ProjectName: string;
 }
+
 //used for material quotation
 export interface AddVendorForEnquiryRequest {
     MaterialRequisitionId: number;
     Uniquekey: string;
     VendorId: string | null;
     ProjectId: number | 0;
-
 }
+
 export type SelectedVendorListResponse = ApiResponse<SelectedVendorData[]>;
 export type AddVendorForEnquiryRequestResponse = ApiResponse<SelectedVendorData>;

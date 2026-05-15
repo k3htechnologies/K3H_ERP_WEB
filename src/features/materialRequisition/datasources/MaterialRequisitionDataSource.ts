@@ -37,6 +37,7 @@ export class MaterialRequisitionDatasourceImpl implements MaterialRequisitionDat
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${MaterialRequisitionApi.PULL}?${queryParams.toString()}`, { signal }
             )
+            
             return response;
         } catch (error: any) {
 

@@ -4,7 +4,7 @@ export const MaterialRequisitionPurchaseOrderApi = {
     ADD_UPDATE: '/MaterialRequisitionPurchaseOrder/AddUpdateMaterialRequisitionPurchaseOrder',
     DELETE: '/MaterialRequisitionPurchaseOrder/DeleteMaterialRequisitionPurchaseOrder',
 
-    GENERATE_MATERIAL_REQUISITION: '/MaterialRequisitionPurchaseOrder/GenerateMaterialRequisitionPurchaseOrderPdf',
+    GENERATE_PURCHASE_ORDER_PDF: '/MaterialRequisitionPurchaseOrder/GenerateMaterialRequisitionPurchaseOrderPdf',
 
 } as const
 

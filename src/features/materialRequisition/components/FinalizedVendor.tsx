@@ -4,7 +4,7 @@ import useToast from "@/core/hooks/useToast"
 import type {
     FilterWithPaginationVendorForEnquiryRequest,
     FilterWithPaginationVendorForSelectedEnquiryRequest,
-} from "../models/VendorFinalizeModel"
+} from "@/features/materialRequisition/models/VendorFinalizeModel"
 import { useParams } from "react-router-dom"
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext"
 import { useProject } from "@/features/projectMaster/context/ProjectContext"

@@ -76,7 +76,7 @@ export class MaterialRequisitionInvoiceDatasourceImpl implements MaterialRequisi
                 MaterialRequisitionInvoiceId: (params.MaterialRequisitionInvoiceId ?? 0).toString(),
                 MaterialRequisitionId: (params.MaterialRequisitionId ?? 0).toString(),
                 ProjectId: (params.ProjectId ?? 0).toString(),
-                Uniquekey: params.Uniquekey ?? '',
+                Uniquekey: (params.Uniquekey ?? ''),
             })
 
             const response = await this.k3hHttpClient.deleteRequestWithAuthentication(

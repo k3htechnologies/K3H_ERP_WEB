@@ -45,7 +45,7 @@ export class MaterialRequisitionPurchaseOrderDatasourceImpl implements MaterialR
             throw error
         }
     }
-    
+
     async addUpdateMaterialRequisitionPurchaseOrder(formData: FormData): Promise<MaterialRequisitionPurchaseOrderSaveResponse> {
         try {
 
@@ -99,7 +99,7 @@ export class MaterialRequisitionPurchaseOrderDatasourceImpl implements MaterialR
         try {
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                MaterialRequisitionPurchaseOrderApi.GENERATE_MATERIAL_REQUISITION,
+                MaterialRequisitionPurchaseOrderApi.GENERATE_PURCHASE_ORDER_PDF,
                 params
             )
             return response

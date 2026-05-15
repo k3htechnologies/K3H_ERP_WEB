@@ -47,8 +47,7 @@ export interface AddUpdateMaterialRequestQuotation {
     Total:number;
     ProjectId:number;
     MaterialRequisitionQuotationJSON:string;
-    // MagicLinkUniquekey:string;
-    // ClientRegistrationId: number;
+
 }
 
 export interface DeleteMaterialRequisitionQuotation{
@@ -57,6 +56,7 @@ export interface DeleteMaterialRequisitionQuotation{
     VendorId: number;
     ProjectId:number;
 }
+
 export type MaterialRequisitionQuotationListResponse = ApiResponse<MaterialRequisitionQuotationDetailsTermsData[]>;
 export type MaterialRequisitionQuotationSaveReponse = ApiResponse<MaterialRequisitionQuotationDetailsTermsData>;
 export type DeletMaterialRequisitionDeleteResponse = ApiResponse<number>;

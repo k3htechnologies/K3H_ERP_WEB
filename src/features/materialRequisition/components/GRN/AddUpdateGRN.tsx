@@ -19,7 +19,7 @@ import { Input } from "@/ui/components/forms/Input";
 import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
+import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
@@ -64,8 +64,7 @@ export const AddUpdateGRN = () => {
     const [uploadChallanURL, setuploadChallanURL] = useState<string>();
     const { canAction } = useMenuPermissions("/materialRequisition");
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-    const [dropdownLabels, setDropdownLabels] = useState({ materialName: "", uom: "" });
-    const [dropdownMaterialResetKey, setDropdownMaterialResetKey] = useState(0);
+    const [dropdownMaterialResetKey] = useState(0);
     const [dropdownSubMaterialResetKey, setDropdownSubMaterialResetKey] = useState(-1);
     const [materialOptions, setMaterialOptions] = useState<any[]>([]);
     const [editIndex, setEditIndex] = useState<number | null>(null);
@@ -73,11 +72,9 @@ export const AddUpdateGRN = () => {
     const { projectId } = useProject();
     const { MaterialRequisitionGRNId } = useParams<{ MaterialRequisitionGRNId?: string }>();
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
-    const [GRN, SetGRN] = useState<MaterialRequisitionGRNData[]>([]);
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
-    const [GRNData, SetGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const { detailData } = useMaterialRequisitionListState()
     const { MaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     useEffect(() => {
@@ -131,9 +128,6 @@ export const AddUpdateGRN = () => {
                 if (E.isRight(response)) {
                     const data = response.right.Data;
                     const e = data?.[0];
-
-                    SetGRNData(e?.MaterialRequisitionDetailGRNData ?? []);
-                    SetGRN(data);
 
                     if (e) {
                         setFormData(prev => ({
@@ -217,11 +211,6 @@ export const AddUpdateGRN = () => {
             MaterialRequisitionDetailId: row.MaterialRequisitionDetailId,
             MaterialQuantity: row.MaterialQuantity
         });
-        setDropdownLabels({
-            materialName: row.MaterialName || "",
-            uom: row.UomCode || "",
-        });
-
         setAddMaterialPopUp(true);
     }, [materialOptions]);
 

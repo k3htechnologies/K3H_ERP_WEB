@@ -38,18 +38,14 @@ const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionRequ
 })
 
 const initialFormState = (): AddUpdateMaterialRequisitionDetailRequest => ({
-    // MaterialRequisitionDetailId: 0,
-    // Uniquekey: "",
+
     MaterialMasterId: 0,
-    // MaterialCode: "",
     MaterialName: "",
-    // SubMaterialName: "",
     SubMaterialMasterId: 0,
     MaterialQuantity: 0,
     UomMasterId: 0,
     SubMaterialName: "",
     UomCode: "",
-    // Uom: "",
     RequiredDate: "",
     Remark: ""
 })
@@ -200,6 +196,7 @@ export const AddUpdateMaterialRequisition = () => {
     const handleAddMaterial = async () => {
 
         setErrors({});
+        setDropdownMaterialResetKey(prev => prev + 1);
         setAddMaterialPopUp(true);
         setEditIndex(null);
         setMaterialData(initialFormState());
@@ -645,8 +642,7 @@ export const AddUpdateMaterialRequisition = () => {
                         key={dropdownMaterialResetKey}
                         initialValue={createDropdownInitialValue(
                             materialData.MaterialMasterId,
-                            // materialData.MaterialMasterId ? String(materialData.MaterialMasterId) : null,
-                            materialData.MaterialName,
+                            dropdownLabels.materialName || materialData.MaterialName,
                         )}
                         // value={materialData.MaterialMasterId}
                         title="Select Material"
@@ -671,6 +667,7 @@ export const AddUpdateMaterialRequisition = () => {
 
                             setDropdownSubMaterialResetKey(p => p + 1);
                         }}
+
                         error={errors.MaterialMasterId}
                     />
 
@@ -756,7 +753,7 @@ export const AddUpdateMaterialRequisition = () => {
                         error={errors.Remark}
                     />
                 </div>
-                
+
             </Modal>
         </>
 

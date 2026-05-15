@@ -1,10 +1,7 @@
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard"
 import { useEffect, useState } from "react"
 import useToast from "@/core/hooks/useToast"
-import type {
-    FilterWithPaginationVendorForEnquiryRequest,
-    FilterWithPaginationVendorForSelectedEnquiryRequest,
-} from "../models/VendorFinalizeModel"
+import type { FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationVendorForSelectedEnquiryRequest } from "../models/VendorFinalizeModel"
 import { useParams } from "react-router-dom"
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext"
 import { useProject } from "@/features/projectMaster/context/ProjectContext"
@@ -16,11 +13,7 @@ import { FieldItem } from "@/ui/components/forms/FieldItem"
 import Checkbox from "@/ui/components/forms/Checkbox"
 import { FinalizedVendorQuotationTable } from "./FinalizedVendorQuotationTable"
 import NoDataView from "@/ui/components/NoDataView/NoDataView"
-import {
-    computeTaxTotal,
-    computeBaseTotal,
-    computeLinesTotal
-} from "@/features/materialRequisition/utils/finalizeVendorUtils"
+import { computeTaxTotal, computeBaseTotal, computeLinesTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils"
 import { materialRequisitionQuotationService } from "@/features/materialRequisition/services/MaterialRequisitionQuotationService"
 import type { AddUpdateMaterialRequestQuotation } from "@/features/materialRequisition/models/MaterialRequisitionQuotationApi"
 import { Button } from "@/ui/components/forms/Button"
@@ -42,28 +35,17 @@ const DEFAULT_LOGISTICS = [
 ]
 
 const resolveLines = (term: any, detailData: any[]): any[] => {
-    const source: any[] =
-        term?.MaterialRequisitionQuotationData?.length
-            ? term.MaterialRequisitionQuotationData
-            : detailData ?? []
-
+    const source: any[] = term?.MaterialRequisitionQuotationData?.length ? term.MaterialRequisitionQuotationData : detailData ?? []
     const hasLogistics = source.some((r: any) => r?.Logistics)
     return hasLogistics ? source : [...source, ...DEFAULT_LOGISTICS]
 }
 
 export const FinalizedVendor: React.FC = () => {
 
-    const { MaterialRequisitionId: listMaterialRequisitionId } =
-        useParams<{ MaterialRequisitionId?: string }>()
-
+    const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>()
     const { listState } = useMaterialRequisitionListState()
-
-    const currentMaterialRequisitionId = listMaterialRequisitionId
-        ? Number(listMaterialRequisitionId)
-        : listState.MaterialRequisitionId
-
+    const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId
     const currentUniquekey = listState.Uniquekey
-
     const { projectId } = useProject()
     const { addToast } = useToast()
     const { detailData } = useMaterialRequisitionListState()
@@ -86,6 +68,7 @@ export const FinalizedVendor: React.FC = () => {
         loadSelectedVendor()
         loadFinalizedVendor()
     }, [projectId])
+
     useEffect(() => {
         const finalized = materialRequisitionVendorSelectedList.find(v => v.IsFinalized)
 
@@ -198,17 +181,12 @@ export const FinalizedVendor: React.FC = () => {
 
                 const payload = PushVendorForEnquiry(vendorId)
 
-                const response =
-                    await vendorFinalizationService.apiCallAddFinalizedVendor(payload)
+                const response = await vendorFinalizationService.apiCallAddFinalizedVendor(payload)
 
                 if (E.isRight(response)) {
 
                     setMaterialRequisitionVendorSelectedList(prev =>
-                        prev.map(v =>
-                            v.VendorId === Number(vendorId)
-                                ? { ...v, IsFinalized: true }
-                                : v
-                        )
+                        prev.map(v => v.VendorId === Number(vendorId) ? { ...v, IsFinalized: true } : v)
                     )
 
                     setCheckedFinalVendor(Number(vendorId))
@@ -236,21 +214,14 @@ export const FinalizedVendor: React.FC = () => {
 
                 const payload = PushVendorForEnquiry(vendorIds)
 
-                const response =
-                    await vendorFinalizationService.apiCallToAddVendorForEnquiry(payload)
+                const response = await vendorFinalizationService.apiCallToAddVendorForEnquiry(payload)
 
                 if (E.isRight(response)) {
 
                     const selected =
-                        materialRequisitionVendorFinalizedList.filter(v =>
-                            selectedVendorIds.includes(v.VendorId)
-                        )
+                        materialRequisitionVendorFinalizedList.filter(v => selectedVendorIds.includes(v.VendorId))
 
                     setMaterialRequisitionVendorSelectedList(selected)
-
-                    // navigate("/materialRequisition/view", {
-                    //     state: { activeTab: "Finalize Vendor" }
-                    // });
 
                     setQuotationAvailable(false)
                     setSelectedVendorIds([])
@@ -280,13 +251,12 @@ export const FinalizedVendor: React.FC = () => {
     const saveData = async (vendor: any, term: any, lines: any[]) => {
         await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
             const payload = buildPayload(vendor, term, lines)
-            const response =
-                await materialRequisitionQuotationService.apiCallToAddMaterialRequisitionQuotation(payload)
+            const response = await materialRequisitionQuotationService.apiCallToAddMaterialRequisitionQuotation(payload)
 
             if (E.isRight(response)) {
-
                 addToast({ type: "success", title: response.right.SuccessMessage[0] })
-            } else {
+            }
+            else {
                 addToast({ type: "error", title: response.left.message })
             }
             return response
@@ -321,11 +291,10 @@ export const FinalizedVendor: React.FC = () => {
         );
     };
 
-    const finalizedVendor =
-        materialRequisitionVendorSelectedList.find(v => v.IsFinalized)
-
+    const finalizedVendor = materialRequisitionVendorSelectedList.find(v => v.IsFinalized)
     const isAnyFinalized = !!finalizedVendor
     const isApprovalAvailable = finalizedVendor?.IsApproval === true
+
     const handleApprovalLog = () => {
         const request: ModulesApprovalStatusRequest = {
             ModuleName: "FINALIZED VENDOR",
@@ -360,9 +329,9 @@ export const FinalizedVendor: React.FC = () => {
 
             <div className="flex justify-end gap-2">
                 {isAnyFinalized && canAction && (
+
                     <ApprovalActions
                         approvalStatus={finalizedVendor?.VendorFinalizationApproval}
-
                         onApprove={() => handleApproveRejectVendor("approve")}
                         onReject={() => handleApproveRejectVendor("reject")}
                         showApproval={isApprovalAvailable}
@@ -372,29 +341,32 @@ export const FinalizedVendor: React.FC = () => {
                     />
                 )}
 
-                {isAnyFinalized && <ApprovalLogModal
-                    isOpen={isApprovalLogModalOpen}
-                    title='Finalized Vendor'
+                {isAnyFinalized &&
+                    <ApprovalLogModal
+                        isOpen={isApprovalLogModalOpen}
+                        title='Finalized Vendor'
+                        onClose={() => setIsApprovalLogModalOpen(false)}
+                        request={approvalLogRequest}
+                    />
+                }
+                {!isAnyFinalized && canAction && (
+                    <Button
+                        size="sm"
+                        style={{
+                            color: '#135BEC',
+                            backgroundColor: '#E8F0FF',
+                            padding: '4px 8px',
+                        }}
+                        hover={{
+                            backgroundColor: '#135BEC',
+                            color: '#ffffff'
+                        }}
+                        leftIcon={<Scale size={20} />}
+                        onClick={() => handleExportCompareVendorExcel()}
 
-                    onClose={() => setIsApprovalLogModalOpen(false)}
-                    request={approvalLogRequest} />}
-                {!isAnyFinalized && canAction && (<Button
-                    size="sm"
-                    style={{
-                        color: '#135BEC',
-                        backgroundColor: '#E8F0FF',
-                        padding: '4px 8px',
-                    }}
-                    hover={{
-                        backgroundColor: '#135BEC',
-                        color: '#ffffff'
-                    }}
-                    leftIcon={<Scale size={20} />}
-                    onClick={() => handleExportCompareVendorExcel()}
-
-                >
-                    Compare
-                </Button>)}
+                    >
+                        Compare
+                    </Button>)}
 
                 {!isAnyFinalized && canAction && (
 
@@ -426,22 +398,23 @@ export const FinalizedVendor: React.FC = () => {
                     onSubmit={handleApprovalSubmit}
                     loading={isLoading}
                 />
-                {!isAnyFinalized && canAction && (<Button
-                    size="sm"
-                    style={{
-                        color: '#d35400',
-                        backgroundColor: '#FDE6D3',
-                        padding: '4px 8px',
-                    }}
-                    hover={{
-                        backgroundColor: '#f39c12',
-                        color: '#ffffff'
-                    }}
-                    leftIcon={<MessageSquareQuote size={20} />}
-                    onClick={() => setQuotationAvailable(true)}
-                >
-                    Get Quotation
-                </Button>)}
+                {!isAnyFinalized && canAction && (
+                    <Button
+                        size="sm"
+                        style={{
+                            color: '#d35400',
+                            backgroundColor: '#FDE6D3',
+                            padding: '4px 8px',
+                        }}
+                        hover={{
+                            backgroundColor: '#f39c12',
+                            color: '#ffffff'
+                        }}
+                        leftIcon={<MessageSquareQuote size={20} />}
+                        onClick={() => setQuotationAvailable(true)}
+                    >
+                        Get Quotation
+                    </Button>)}
 
             </div>
 
@@ -530,9 +503,7 @@ export const FinalizedVendor: React.FC = () => {
                                                 <FinalizedVendorQuotationTable
                                                     data={lines}
                                                     isEditable={false}
-                                                    onSave={(updatedLines) =>
-                                                        saveData(vendor, term, updatedLines)
-                                                    }
+                                                    onSave={(updatedLines) => saveData(vendor, term, updatedLines)}
                                                 />
 
                                                 <div className="flex justify-between text-sm bg-green-100 p-3 rounded">
@@ -564,12 +535,8 @@ export const FinalizedVendor: React.FC = () => {
                 saveText="Add"
                 resetText=""
                 onSubmit={addSelectedVendors}
-                onClose={() => {
-                    setQuotationAvailable(false)
-                }}
-                onCancel={() => {
-                    setQuotationAvailable(false)
-                }}
+                onClose={() => { setQuotationAvailable(false) }}
+                onCancel={() => { setQuotationAvailable(false) }}
                 title={'Vendors Available'}
                 loading={isLoading}
                 size='half-screen'

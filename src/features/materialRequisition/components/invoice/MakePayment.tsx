@@ -4,13 +4,7 @@ import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleS
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { Input } from "@/ui/components/forms/Input";
-import {
-    filterIFSC,
-    filterNumbers,
-    hasAnyDocumentFile,
-    isValidAccount,
-    isValidIFSC
-} from "@/core/utils/fileValidation";
+import { filterIFSC, filterNumbers, hasAnyDocumentFile, isValidAccount, isValidIFSC } from "@/core/utils/fileValidation";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import Checkbox from "@/ui/components/forms/Checkbox";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
@@ -44,8 +38,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
         MaterialRequisitionId
             ? Number(MaterialRequisitionId)
             : listState.MaterialRequisitionId;
-
-    const [invoiceAmount, setInvoiceAmount] = useState(totalAmount);
 
     const [remainingInvoiceAmount, setRemainingInvoiceAmount] = useState(totalAmount);
 
@@ -223,28 +215,12 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
         const fd = new FormData();
 
         fd.append("ProjectId", String(projectId));
-
-        fd.append(
-            "MaterialRequisitionId",
-            String(currentMaterialRequisitionId)
-        );
-
-        fd.append(
-            "MaterialRequisitionInvoiceId",
-            String(MaterialRequisitionInvoiceId ?? 0)
-        );
-
+        fd.append("MaterialRequisitionId", String(currentMaterialRequisitionId));
+        fd.append("MaterialRequisitionInvoiceId", String(MaterialRequisitionInvoiceId ?? 0));
         fd.append("PaymentMode", formData.PaymentMode);
-
         fd.append("PaymentType", formData.PaymentType);
-
-        fd.append(
-            "BankListMasterId",
-            String(formData.BankListMasterId)
-        );
-
+        fd.append("BankListMasterId", String(formData.BankListMasterId));
         fd.append("BankName", formData.BankName);
-
         fd.append("AccountNumber", formData.AccountNumber);
 
         fd.append("IFSCCode", formData.IFSCCode);
@@ -301,28 +277,17 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             setLoadingMessage,
             async () => {
 
-                const response =
-                    await materialRequisitionPaymentService
-                        .apiCallAddUpdateMaterialRequisitionPayment(
-                            pushPaymentData()
-                        );
+                const response = await materialRequisitionPaymentService.apiCallAddUpdateMaterialRequisitionPayment(pushPaymentData());
 
                 if (E.isRight(response)) {
 
-                    addToast({
-                        type: "success",
-                        title: response.right.SuccessMessage[0]
-                    });
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
                     navigate(-1);
 
                 } else {
 
-                    addToast({
-                        type: "error",
-                        title: response.left?.message
-                    });
-
+                    addToast({ type: "error", title: response.left?.message });
                 }
 
                 return response;
@@ -356,13 +321,9 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             PendingAmount: editData.OutstandingAmount
         });
 
-        setDropdownLabels({
-            bankName: editData.BankName
-        });
+        setDropdownLabels({ bankName: editData.BankName });
 
-        setExistingURL(
-            editData.TransactionReceiptURL
-        );
+        setExistingURL(editData.TransactionReceiptURL);
 
     }, [editData]);
 
@@ -385,48 +346,28 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         PageNumber: 1,
                         PageSize: 1,
                         ProjectId: Number(projectId),
-                        MaterialRequisitionId:
-                            currentMaterialRequisitionId,
-                        MaterialRequisitionInvoiceId:
-                            Number(MaterialRequisitionInvoiceId)
+                        MaterialRequisitionId: Number(currentMaterialRequisitionId),
+                        MaterialRequisitionInvoiceId: Number(MaterialRequisitionInvoiceId)
                     };
 
                     const response =
-                        await materialRequisitionInvoiceService
-                            .apiCallPullMaterialRequisitionInvoice(
-                                params
-                            );
+                        await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoice(params);
 
                     if (E.isRight(response)) {
 
                         const data = response.right.Data;
 
-                        const invoice =
-                            Array.isArray(data)
-                                ? data[0]
-                                : data;
+                        const invoice = Array.isArray(data) ? data[0] : data;
 
                         if (invoice) {
 
-                            const invoiceAmt =
-                                toNumber(invoice.InvoiceAmount);
+                            const invoiceAmt = toNumber(invoice.InvoiceAmount);
 
-                            const paidAmt =
-                                toNumber(
-                                    invoice.InvoiceAmountPaidTillDate
-                                );
+                            const paidAmt = toNumber(invoice.InvoiceAmountPaidTillDate);
 
-                            const pendingAmt =
-                                Math.max(
-                                    invoiceAmt - paidAmt,
-                                    0
-                                );
+                            const pendingAmt = Math.max(invoiceAmt - paidAmt, 0);
 
-                            setInvoiceAmount(invoiceAmt);
-
-                            setRemainingInvoiceAmount(
-                                pendingAmt
-                            );
+                            setRemainingInvoiceAmount(pendingAmt);
 
                             setFormData(prev => ({
                                 ...prev,
@@ -436,10 +377,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
 
                     } else {
 
-                        addToast({
-                            type: "error",
-                            title: response.left.message
-                        });
+                        addToast({ type: "error", title: response.left.message });
 
                     }
 
@@ -448,10 +386,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                 undefined,
                 (error: any) => {
 
-                    addToast({
-                        type: "error",
-                        title: error.message
-                    });
+                    addToast({ type: "error", title: error.message });
 
                 },
                 undefined,
@@ -461,11 +396,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
 
         fetchInvoiceData();
 
-    }, [
-        MaterialRequisitionInvoiceId,
-        projectId,
-        currentMaterialRequisitionId
-    ]);
+    }, [MaterialRequisitionInvoiceId, projectId, currentMaterialRequisitionId]);
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-5 lg:p-6">
@@ -491,140 +422,64 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         label="Payment Mode"
                         required
                         value={formData.PaymentMode}
-                        onChange={(e) =>
-                            handleFieldChange(
-                                "PaymentMode",
-                                String(e)
-                            )
-                        }
-                        options={PAYMENT_MODE.map(opt => ({
-                            label: opt.name,
-                            value: opt.id
-                        }))}
+                        onChange={(e) => handleFieldChange("PaymentMode", String(e))}
+                        options={PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
                         error={errors.PaymentMode}
                     />
 
-                    {[
-                        "IMPS",
-                        "NEFT",
-                        "RTGS",
-                        "Online Transfer",
-                        "Cheque",
-                        "Demand Draft"
-                    ].includes(formData.PaymentMode) && (
+                    {["IMPS", "NEFT", "RTGS", "Online Transfer", "Cheque", "Demand Draft"].includes(formData.PaymentMode) && (
 
-                            <SingleSelectDropdownWithPagination
-                                label="Bank Name"
-                                title="Select Bank"
-                                dataFetchCallBack={
-                                    fetchBankListMasterDropdown
-                                }
-                                initialValue={createDropdownInitialValue(
-                                    formData.BankListMasterId,
-                                    dropdownLabels.bankName
-                                )}
-                                onSelected={(item) => {
+                        <SingleSelectDropdownWithPagination
+                            label="Bank Name"
+                            title="Select Bank"
+                            dataFetchCallBack={fetchBankListMasterDropdown}
+                            initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
+                            onSelected={(item) => {
+                                handleFieldChange("BankListMasterId", Number(item?.value || 0));
+                                handleFieldChange("BankName", item?.label || "");
+                                setDropdownLabels({ bankName: item?.label || "" });
+                            }}
+                            error={errors.BankListMasterId}
+                        />
 
-                                    handleFieldChange(
-                                        "BankListMasterId",
-                                        Number(item?.value || 0)
-                                    );
+                    )}
 
-                                    handleFieldChange(
-                                        "BankName",
-                                        item?.label || ""
-                                    );
+                    {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
 
-                                    setDropdownLabels({
-                                        bankName:
-                                            item?.label || ""
-                                    });
-                                }}
-                                error={errors.BankListMasterId}
-                            />
+                        <Input
+                            label="Account Number"
+                            value={formData.AccountNumber}
+                            onChange={(e) => handleFieldChange("AccountNumber", filterNumbers(e.target.value))}
+                            error={errors.AccountNumber}
+                        />
 
-                        )}
+                    )}
 
-                    {[
-                        "IMPS",
-                        "NEFT",
-                        "RTGS",
-                        "Online Transfer"
-                    ].includes(formData.PaymentMode) && (
+                    {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
 
-                            <Input
-                                label="Account Number"
-                                value={formData.AccountNumber}
-                                onChange={(e) =>
-                                    handleFieldChange(
-                                        "AccountNumber",
-                                        filterNumbers(
-                                            e.target.value
-                                        )
-                                    )
-                                }
-                                error={errors.AccountNumber}
-                            />
+                        <Input
+                            label="IFSC Code"
+                            value={formData.IFSCCode}
+                            onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))
+                            }
+                            error={errors.IFSCCode}
+                        />
 
-                        )}
-
-                    {[
-                        "IMPS",
-                        "NEFT",
-                        "RTGS",
-                        "Online Transfer"
-                    ].includes(formData.PaymentMode) && (
-
-                            <Input
-                                label="IFSC Code"
-                                value={formData.IFSCCode}
-                                onChange={(e) =>
-                                    handleFieldChange(
-                                        "IFSCCode",
-                                        filterIFSC(
-                                            e.target.value
-                                        )
-                                    )
-                                }
-                                error={errors.IFSCCode}
-                            />
-
-                        )}
+                    )}
 
                     <SinglePageSelection
-                        label="Payment Type"
-                        required
+                        label="Payment Type" required
                         value={formData.PaymentType}
-                        onChange={(e) =>
-                            handleFieldChange(
-                                "PaymentType",
-                                String(e)
-                            )
-                        }
-                        options={
-                            MATERIAL_REQUISITION_PAYMENT_TYPE.map(
-                                opt => ({
-                                    label: opt.name,
-                                    value: opt.id
-                                })
-                            )
-                        }
+                        onChange={(e) => handleFieldChange("PaymentType", String(e))}
+                        options={MATERIAL_REQUISITION_PAYMENT_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
                         error={errors.PaymentType}
                     />
 
                     <Input
                         label="Amount Paid"
                         value={String(formData.AmountPaid)}
-                        disabled={
-                            formData.PaymentType === "Full"
-                        }
-                        onChange={(e) =>
-                            handleFieldChange(
-                                "AmountPaid",
-                                sanitizeAmount(
-                                    e.target.value
-                                )
-                            )
+                        disabled={formData.PaymentType === "Full"}
+                        onChange={(e) => handleFieldChange("AmountPaid", sanitizeAmount(e.target.value))
                         }
                         error={errors.AmountPaid}
                     />
@@ -638,14 +493,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                     <Input
                         label="TDS Amount"
                         value={String(formData.TDSAmount)}
-                        onChange={(e) =>
-                            handleFieldChange(
-                                "TDSAmount",
-                                sanitizeAmount(
-                                    e.target.value
-                                )
-                            )
-                        }
+                        onChange={(e) => handleFieldChange("TDSAmount", sanitizeAmount(e.target.value))}
                         error={errors.TDSAmount}
                     />
 
@@ -653,12 +501,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         label={getTransactionLabel()}
                         className="sm:col-span-2 lg:col-span-2 xl:col-span-2"
                         value={formData.TransactionNumber}
-                        onChange={(e) =>
-                            handleFieldChange(
-                                "TransactionNumber",
-                                e.target.value
-                            )
-                        }
+                        onChange={(e) => handleFieldChange("TransactionNumber", e.target.value)}
                         error={errors.TransactionNumber}
                     />
 
@@ -666,25 +509,12 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         label="Transaction Receipt"
                         value={transactionFiles}
                         onChange={setTransactionFiles}
-                        availableFilesURL={
-                            existingURL ?? ""
-                        }
-                        allowedTypes={[
-                            "image/jpeg",
-                            "image/png",
-                            "application/pdf"
-                        ]}
+                        availableFilesURL={existingURL ?? ""}
+                        allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                         maxFiles={1}
                         maxSizeMB={5}
-                        onRemoveExisting={(url) =>
-                            setRemovedFiles(prev => [
-                                ...prev,
-                                url
-                            ])
-                        }
-                        error={
-                            errors.TransactionReceiptURL
-                        }
+                        onRemoveExisting={(url) => setRemovedFiles(prev => [...prev, url])}
+                        error={errors.TransactionReceiptURL}
                         required
                     />
 
@@ -692,11 +522,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         <Checkbox
                             label="Advance"
                             checked={formData.IsAdvance}
-                            onChange={(e) =>
-                                handleFieldChange(
-                                    "IsAdvance",
-                                    e.target.checked
-                                )
+                            onChange={(e) => handleFieldChange("IsAdvance", e.target.checked)
                             }
                         />
                     </div>

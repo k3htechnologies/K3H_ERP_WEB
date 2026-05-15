@@ -341,8 +341,9 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { usePagination } from "@/core/hooks/usePagination";
 import StocksHistory from "../components/StocksHistory";
-import { MaterialIn } from "../components/MaterialIn";
 import { MaterialOut } from "../components/Materialout";
+import MaterialIn from "../components/Materialin";
+import { StockSummary } from "../components/StockSummary";
 
 export const ViewStockManagement: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -430,11 +431,11 @@ export const ViewStockManagement: React.FC = () => {
                     onTabChange={(t) => setActiveTab(t.id)}
                 />
             </div>
-
+            {activeTab === 'Summary' && <StockSummary />}
             {activeTab === 'History' && <StocksHistory />}
             {activeTab === 'Material In' && <MaterialIn />}
             {activeTab === 'Material Out' && <MaterialOut />}
-            
+
         </div>
     )
 }

@@ -6,7 +6,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { runApiWithLoader } from "@/core/utils/apiLoaderHelper";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd } from "@/core/utils/dateFormat";
-import { materialRequisitionService } from "../services/MaterialRequisitionService";
+import { materialRequisitionService } from "@/features/materialRequisition/services/MaterialRequisitionService";
 import * as E from "fp-ts/Either";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
@@ -154,7 +154,7 @@ export const MaterialRequisition: React.FC = () => {
     };
 
     const handleMaterialRequisitionEdit = useCallback((row: MaterialRequisitionData) => {
-        
+
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId });
         navigate(`/materialRequisition/add/${row.MaterialRequisitionId}`);
     }, [navigate, updateListState]);

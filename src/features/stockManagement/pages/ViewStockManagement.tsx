@@ -342,6 +342,7 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import StocksHistory from "../components/StocksHistory";
 import { MaterialOut } from "../components/Materialout";
 import MaterialIn from "../components/Materialin";
+// import { StockSummary } from "../components/StockSummary";
 
 export const ViewStockManagement: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -428,11 +429,11 @@ export const ViewStockManagement: React.FC = () => {
                     onTabChange={(t) => setActiveTab(t.id)}
                 />
             </div>
-
+            {/* {activeTab === 'Summary' && <StockSummary />} */}
             {activeTab === 'History' && <StocksHistory />}
             {activeTab === 'Material In' && <MaterialIn />}
             {activeTab === 'Material Out' && <MaterialOut />}
-            
+
         </div>
     )
 }

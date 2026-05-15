@@ -48,7 +48,6 @@ export const MaterialRequisition: React.FC = () => {
     const { canAction, canExport } = useMenuPermissions();
     const { projectId } = useProject();
     const [deleteData, setDeleteData] = useState<MaterialRequisitionData | null>(null)
-    const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
 
     const applyFilters = () => {
         updateListState({ filters: tempFilters, page: 1 });
@@ -154,7 +153,7 @@ export const MaterialRequisition: React.FC = () => {
     };
 
     const handleMaterialRequisitionEdit = useCallback((row: MaterialRequisitionData) => {
-        
+
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId });
         navigate(`/materialRequisition/add/${row.MaterialRequisitionId}`);
     }, [navigate, updateListState]);
@@ -300,6 +299,8 @@ export const MaterialRequisition: React.FC = () => {
         }
     ], [handleNavigateToView, handleMaterialRequisitionEdit, canAction]);
 
+    const requiredMaterialRequisitionColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
+
     const allMaterialRequisitioKeys: string[] = MaterialRequisitionColumns.map(c => c.key);
 
     const [selectedMaterialRequisitionColumnKeys, setSelectedMaterialRequisitionColumnKeys] = useState<string[]>(() => {
@@ -319,6 +320,22 @@ export const MaterialRequisition: React.FC = () => {
         return allMaterialRequisitioKeys;
     });
 
+    useEffect(() => {
+        setSelectedMaterialRequisitionColumnKeys((prev) =>
+            Array.from(new Set([...prev, ...requiredMaterialRequisitionColumnKeys])).filter(
+                (k) => allMaterialRequisitioKeys.includes(k),
+            ),
+        );
+    }, [MaterialRequisitionColumns.length]);
+
+       const visibleMaterialRequisitionColumns = useMemo(
+        () =>
+            MaterialRequisitionColumns.filter((col) =>
+                selectedMaterialRequisitionColumnKeys.includes(col.key),
+            ),
+
+        [MaterialRequisitionColumns, selectedMaterialRequisitionColumnKeys],
+    );
     const handleSortColumn = useCallback((sort: SortInfo) => {
 
         updateListState({ sortInfo: sort, page: 1 });
@@ -344,7 +361,7 @@ export const MaterialRequisition: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-                
+
                 const params: FilterWithPaginationMaterialRequisition = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
@@ -469,7 +486,7 @@ export const MaterialRequisition: React.FC = () => {
 
             <DataTable
                 data={materialRequisitionData}
-                columns={MaterialRequisitionColumns}
+                columns={visibleMaterialRequisitionColumns}
                 pagination={MaterialRequisitionPaginationInfo}
                 emptyMessage="No Material Requisition Off Found"
                 fixedHeight

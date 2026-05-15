@@ -33,7 +33,7 @@ export const GRN: React.FC = () => {
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
     const currentUniquekey = listState.Uniquekey
-    const [GRNData, SetGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
+    const [, SetGRNData] = useState<MaterialRequisitionDetailGRNData[]>([]);
     const [GRN, SetGRN] = useState<MaterialRequisitionGRNData[]>([]);
     const [isViewGRNSummaryModalOpen, setIsViewGRNSummaryModalOpen] = useState(false);
     const { canAction } = useMenuPermissions();

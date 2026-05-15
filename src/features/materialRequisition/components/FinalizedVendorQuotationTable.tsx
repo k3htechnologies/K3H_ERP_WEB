@@ -1,24 +1,21 @@
 import { useMemo, useState, useCallback, useEffect } from "react"
-import {
-    DataTableEditable,
-    type EditableColumnGroup,
-    type EditableTableColumn
-} from "@/ui/components/DataTable/DataTableEditable"
+import { DataTableEditable, type EditableColumnGroup, type EditableTableColumn } from "@/ui/components/DataTable/DataTableEditable"
 import TooltipText from "@/ui/components/Tooltip/TooltipText"
 import { computeAmount, computeGrandTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils"
 
-type Row = {
-    id: string
-    MaterialName: string
-    MaterialQuantity: number
-    MaterialPerUnit: number
-    CGST: number
-    SGST: number
-    UGST: number
-    IGST: number
-    Amount: number
-    Logistics?: string
-}
+type Row =
+    {
+        id: string
+        MaterialName: string
+        MaterialQuantity: number
+        MaterialPerUnit: number
+        CGST: number
+        SGST: number
+        UGST: number
+        IGST: number
+        Amount: number
+        Logistics?: string
+    }
 
 interface Props {
     data: Row[]

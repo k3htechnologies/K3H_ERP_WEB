@@ -29,8 +29,12 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     const { MaterialRequisitionId, MaterialRequisitionInvoiceId } = useParams();
     const { listState } = useMaterialRequisitionListState();
     const { projectId } = useProject();
-    const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
-    const [invoiceAmount, setInvoiceAmount] = useState(totalAmount);
+
+    const currentMaterialRequisitionId =
+        MaterialRequisitionId
+            ? Number(MaterialRequisitionId)
+            : listState.MaterialRequisitionId;
+
     const [remainingInvoiceAmount, setRemainingInvoiceAmount] = useState(totalAmount);
 
     const initialFormState = () => ({
@@ -233,9 +237,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             setLoadingMessage,
             async () => {
 
-                const payload = pushPaymentData();
-
-                const response = await materialRequisitionPaymentService.apiCallAddUpdateMaterialRequisitionPayment(payload);
+                const response = await materialRequisitionPaymentService.apiCallAddUpdateMaterialRequisitionPayment(pushPaymentData());
 
                 if (E.isRight(response)) {
 
@@ -244,8 +246,8 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                     navigate(-1);
 
                 } else {
-                    addToast({ type: "error", title: response.left?.message });
 
+                    addToast({ type: "error", title: response.left?.message });
                 }
 
                 return response;
@@ -279,13 +281,9 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
             PendingAmount: editData.OutstandingAmount
         });
 
-        setDropdownLabels({
-            bankName: editData.BankName
-        });
+        setDropdownLabels({ bankName: editData.BankName });
 
-        setExistingURL(
-            editData.TransactionReceiptURL
-        );
+        setExistingURL(editData.TransactionReceiptURL);
 
     }, [editData]);
 
@@ -305,11 +303,12 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         PageNumber: 1,
                         PageSize: 1,
                         ProjectId: Number(projectId),
-                        MaterialRequisitionId: currentMaterialRequisitionId,
+                        MaterialRequisitionId: Number(currentMaterialRequisitionId),
                         MaterialRequisitionInvoiceId: Number(MaterialRequisitionInvoiceId)
                     };
 
-                    const response = await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoice(params);
+                    const response =
+                        await materialRequisitionInvoiceService.apiCallPullMaterialRequisitionInvoice(params);
 
                     if (E.isRight(response)) {
 
@@ -325,8 +324,6 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
 
                             const pendingAmt = Math.max(invoiceAmt - paidAmt, 0);
 
-                            setInvoiceAmount(invoiceAmt);
-
                             setRemainingInvoiceAmount(pendingAmt);
 
                             setFormData(prev => ({
@@ -338,12 +335,14 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                     } else {
 
                         addToast({ type: "error", title: response.left.message });
+
                     }
 
                     return response;
                 },
                 undefined,
                 (error: any) => {
+
                     addToast({ type: "error", title: error.message });
 
                 },
@@ -377,71 +376,53 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         label="Payment Mode"
                         required
                         value={formData.PaymentMode}
-                        onChange={(e) =>
-                            handleFieldChange("PaymentMode", String(e))}
+                        onChange={(e) => handleFieldChange("PaymentMode", String(e))}
                         options={PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
                         error={errors.PaymentMode}
                     />
 
-                    {[
-                        "IMPS",
-                        "NEFT",
-                        "RTGS",
-                        "Online Transfer",
-                        "Cheque",
-                        "Demand Draft"
-                    ].includes(formData.PaymentMode) && (
+                    {["IMPS", "NEFT", "RTGS", "Online Transfer", "Cheque", "Demand Draft"].includes(formData.PaymentMode) && (
 
-                            <SingleSelectDropdownWithPagination
-                                label="Bank Name"
-                                title="Select Bank"
-                                dataFetchCallBack={fetchBankListMasterDropdown}
-                                initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
-                                onSelected={(item) => {
-                                    handleFieldChange("BankListMasterId", Number(item?.value || 0));
-                                    handleFieldChange("BankName", item?.label || "");
-                                    setDropdownLabels({ bankName: item?.label || "" });
-                                }}
-                                error={errors.BankListMasterId}
-                            />
+                        <SingleSelectDropdownWithPagination
+                            label="Bank Name"
+                            title="Select Bank"
+                            dataFetchCallBack={fetchBankListMasterDropdown}
+                            initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
+                            onSelected={(item) => {
+                                handleFieldChange("BankListMasterId", Number(item?.value || 0));
+                                handleFieldChange("BankName", item?.label || "");
+                                setDropdownLabels({ bankName: item?.label || "" });
+                            }}
+                            error={errors.BankListMasterId}
+                        />
 
-                        )}
+                    )}
 
-                    {[
-                        "IMPS",
-                        "NEFT",
-                        "RTGS",
-                        "Online Transfer"
-                    ].includes(formData.PaymentMode) && (
+                    {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
 
-                            <Input
-                                label="Account Number"
-                                value={formData.AccountNumber}
-                                onChange={(e) =>
-                                    handleFieldChange("AccountNumber", filterNumbers(e.target.value))
-                                }
-                                error={errors.AccountNumber}
-                            />
-                        )}
+                        <Input
+                            label="Account Number"
+                            value={formData.AccountNumber}
+                            onChange={(e) => handleFieldChange("AccountNumber", filterNumbers(e.target.value))}
+                            error={errors.AccountNumber}
+                        />
 
-                    {[
-                        "IMPS",
-                        "NEFT",
-                        "RTGS",
-                        "Online Transfer"
-                    ].includes(formData.PaymentMode) && (
+                    )}
 
-                            <Input
-                                label="IFSC Code"
-                                value={formData.IFSCCode}
-                                onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
-                                error={errors.IFSCCode}
-                            />
-                        )}
+                    {["IMPS", "NEFT", "RTGS", "Online Transfer"].includes(formData.PaymentMode) && (
+
+                        <Input
+                            label="IFSC Code"
+                            value={formData.IFSCCode}
+                            onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))
+                            }
+                            error={errors.IFSCCode}
+                        />
+
+                    )}
 
                     <SinglePageSelection
-                        label="Payment Type"
-                        required
+                        label="Payment Type" required
                         value={formData.PaymentType}
                         onChange={(e) => handleFieldChange("PaymentType", String(e))}
                         options={MATERIAL_REQUISITION_PAYMENT_TYPE.map(opt => ({ label: opt.name, value: opt.id }))}
@@ -452,7 +433,8 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         label="Amount Paid"
                         value={String(formData.AmountPaid)}
                         disabled={formData.PaymentType === "Full"}
-                        onChange={(e) => handleFieldChange("AmountPaid", sanitizeAmount(e.target.value))}
+                        onChange={(e) => handleFieldChange("AmountPaid", sanitizeAmount(e.target.value))
+                        }
                         error={errors.AmountPaid}
                     />
 
@@ -494,7 +476,8 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         <Checkbox
                             label="Advance"
                             checked={formData.IsAdvance}
-                            onChange={(e) => handleFieldChange("IsAdvance", e.target.checked)}
+                            onChange={(e) => handleFieldChange("IsAdvance", e.target.checked)
+                            }
                         />
                     </div>
                 </form>

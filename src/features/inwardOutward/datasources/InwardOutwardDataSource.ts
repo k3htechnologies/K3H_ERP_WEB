@@ -24,6 +24,7 @@ export class InwardAndOutWardDatasourceImpl implements InwardAndOutWardDatasourc
                 pageNumber: (params.PageNumber ?? 1).toString(),
             })
             if (params.InwardOutwardId?.toString()) queryParams.append('InwardOutwardId', params.InwardOutwardId.toString().trim());
+            if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
             if (params.SenderName?.trim()) queryParams.append('SenderName', params.SenderName.trim());
             if (params.ReceiverName?.trim()) queryParams.append('ReceiverName', params.ReceiverName.trim());
             if (params.DocumentType?.trim()) queryParams.append('DocumentType', params.DocumentType.trim());

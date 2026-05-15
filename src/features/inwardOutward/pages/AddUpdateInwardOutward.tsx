@@ -63,7 +63,6 @@ const initialFormState = (): AddUpdateInwardAndOutWardRequest => ({
 
 export const AddUpdateInwardOutward: React.FC = () => {
 
-    //#region STATE MANAGEMENT
     const [formData, setFormData] = useState<AddUpdateInwardAndOutWardRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState("");
@@ -77,27 +76,14 @@ export const AddUpdateInwardOutward: React.FC = () => {
     const [receiversSignatureURL, setReceiversSignatureURL] = useState<string>();
     const [removedReceiversSignatureURLs, setRemovedReceiversSignatureURLs] = useState<string[]>([]);
     const [selectedEmployeeValues, setSelectedEmployeeValues] = useState<string | number | null>(null);
-
-    // NAVIGATE
     const navigate = useNavigate();
-
-    // GET VALUE FROM URL INWARD OUTWARD ID
     const { InwardOutwardId } = useParams<{ InwardOutwardId?: string }>();
     const inwardOutwardId = InwardOutwardId ? Number(InwardOutwardId) : 0;
     const isAddMode = inwardOutwardId === 0;
-
-    // TOASTs
     const { addToast } = useToast();
-
-    //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions("/inwardoutward");
-    //#endregion
-
-    // ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-    //#endregion
 
-    //#region HANDLE FIELD CHANGE EVENT
     const handleFieldChange = (field: keyof AddUpdateInwardAndOutWardRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -105,24 +91,19 @@ export const AddUpdateInwardOutward: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-    //#endregion
 
     const employeeDropdown = useMultiSelectDropdown({
         value: selectedEmployeeValues,
         fetchCallback: fetchEmployeeMasterDropdown,
         autoFetchOptions: true,
     });
-    //#endregion
 
-    //#region INIT
     useEffect(() => {
         if (!isAddMode) {
             fetchInwardOutwardDetails();
         }
     }, [inwardOutwardId])
-    //#endregion
 
-    //#region FETCH INWARD OUTWARD DETAILS
     const fetchInwardOutwardDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -205,9 +186,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
             "Loading Inward Outward Data",
         );
     };
-    //#endregion
 
-    // ============================================================= [VALIDATION FUNCTION] =============================================================================================
     const validateAddUpdateInwardOutwardForm = (): {
 
         isValid: boolean;
@@ -224,9 +203,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
         }
         if (!formData.DocumentDescription) {
             newErrors.DocumentDescription = "Document Description is required";
-        }
-        if (!formData.AcknowledgementRemark) {
-            newErrors.AcknowledgementRemark = "Acknowledgement Remark is required";
         }
         if (!formData.DocumentType) {
             newErrors.DocumentType = "Document Type is required";
@@ -293,9 +269,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
             errors: newErrors,
         };
     };
-    //#endregion
 
-    //#region PUSH INWARD OUTWARD DATA
     const PushInwardOutwardFormData = (): FormData => {
 
         const fd = new FormData();
@@ -353,9 +327,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
         return fd;
     };
-    //#endregion
 
-    //#region HANDLE ADD UPDATE INWARD OUTWARD
     const handleAddUpdateInward = async () => {
 
         setErrors({});
@@ -393,9 +365,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
             isAddMode ? "Adding Inward Outward" : "Updating Inward Outward",
         );
     };
-    //#endregion
 
-    //#region FETCH SENDER RECEIVER DATA BY MOBILE NUMBER
     const fetchSenderReceiverByMobileNoData = async (mobileNumber: string, type: "sender" | "receiver") => {
         await runApiWithLoader(
             setIsLoading,
@@ -439,11 +409,9 @@ export const AddUpdateInwardOutward: React.FC = () => {
             "Loading Data",
         );
     };
-    //#endregion
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            {/* Loader */}
 
             <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
 

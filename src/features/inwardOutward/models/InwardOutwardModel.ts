@@ -5,6 +5,7 @@ export interface FilterWithPaginationInwardAndOutWardRequest {
     PageNumber?: number
     InwardOutwardId?: number
     SenderName?: string
+    SystemGeneratedCode?: string
     ReceiverName?: string
     DocumentType?: string
     SortBy?: string
@@ -48,7 +49,8 @@ export interface InwardAndOutWardData {
     ReceiverEmailId: string | null,
     ReceiverMobileNo: string | null
     ReceiverAddress: string | null
-    RevertDetailsList: InwardOutwardRevertDetail[];
+    InwardOutwardRevertHistory: InwardOutwardRevertHistory[];
+    InwardOutwardDocumentHistory: InwardOutwardDocumentHistory[];
 
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -107,13 +109,18 @@ export interface DeleteInwardAndOutWardRequest {
 
 }
 
-export interface InwardOutwardRevertDetail {
+export interface InwardOutwardRevertHistory {
     InwardOutwardRevertId: number
     InwardOutwardId: number
     UniqueKey: string | null
     RevertDate: string | null
     RevertRemark: string | null
     RevertDocumentURL: string | null
+}
+
+export interface InwardOutwardDocumentHistory {
+    DeliveryStatus: string | null
+    DeliveryDate: string | null
 }
 
 export interface AddRevertInwardOutwardData {

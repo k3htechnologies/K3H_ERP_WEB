@@ -44,42 +44,23 @@ export const InwardOutward: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState('');
     const [inwardOutwardDataList, setInwardOutwardDataList] = useState<InwardAndOutWardData[]>([]);
     const [, setRevertedInwardOutwardDataList] = useState<AddRevertInwardOutwardData[]>([]);
-
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [formData, setFormData] = useState<AddRevertInwardOutwardData>(() => initialFormState());
     const [revertDocumentURLFiles, setRevertDocumentURLFiles] = useState<(File | string)[]>([]);
-
-    //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
-
-    // PAGINATION
     const { pagination, setPagination } = usePagination(20);
-
-    // TOAST
     const { addToast } = useToast();
-
-    //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions();
-    //#endregion
-
     const location = useLocation() as any;
-    //#endregion
-
-    // USE NAVIGATE
     const navigate = useNavigate();
-
-    //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-
-    //DELETE INWARD OUTWARD
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [deleteInwardOutwardData, setDeleteInwardOutwardData] = useState<InwardAndOutWardData | null>(null);
-
-    //CUSTOMIZE COLUMN MODAL
     const [isShowCustomizeInwardOutwardColumnsModal, setIsShowCustomizeInwardOutwardColumnsModal] = useState(false);
+    const { listState, updateListState } = useInwardOutwardListState();
+    const { searchTerm, filters, sortInfo } = listState;
 
-    //#region TAB ACTIVITY
     const InwardOutwardTabList = [
         { id: "All", label: "All" },
         { id: "Inward", label: "Inward" },
@@ -88,35 +69,26 @@ export const InwardOutward: React.FC = () => {
 
     const [activeTab, setActiveTab] = useState<string>(InwardOutwardTabList[0].id);
 
-    // CONTEXT STATE
-    const { listState, updateListState } = useInwardOutwardListState();
-    const { searchTerm, filters, sortInfo } = listState;
-
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchInwardOutward(value)
     }, 350);
 
-    //#region INIT
     useEffect(() => {
         setPagination({ currentPage: listState.page });
 
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
-            loadInwardOutward(listState.page, { Name: String(listState.searchTerm).trim() }, listState.sortInfo);
+            loadInwardOutward(listState.page, { SystemGeneratedCode: String(listState.searchTerm).trim() }, listState.sortInfo);
         } else {
             loadInwardOutward(listState.page, listState.filters, listState.sortInfo);
         }
     }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
-    //#endregion
 
-    //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
     useEffect(() => {
         return () => {
             debouncedSearch.cancel?.()
         }
     }, [debouncedSearch])
-    //#endregion
 
-    //#region FETCH INWARD OUTWARD
     const fetchInwardOutwardList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadInwardOutward(page, filters, sort);
     }
@@ -130,7 +102,11 @@ export const InwardOutward: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     InwardOutwardId: filterParams.InwardOutwardId ? Number(filterParams.InwardOutwardId) : undefined,
-                    DocumentType: searchtext ?? filterParams.DocumentType?.trim() ?? undefined,
+                    SystemGeneratedCode: searchtext ?? filterParams.SystemGeneratedCode?.trim() ?? undefined,
+                    DocumentType:
+                        activeTab === "All"
+                            ? undefined
+                            : activeTab,
                     ReceiverName: filterParams.ReceiverName ?? undefined,
                     SenderName: filterParams.SenderName ?? undefined,
                     SortBy: getSortByParam(sort ?? null, InwardOutwardDataColumns),
@@ -157,7 +133,6 @@ export const InwardOutward: React.FC = () => {
         );
         [pagination.currentPage, pagination.pageSize, addToast, setPagination]
     };
-    //#endregion
 
     const handleFieldChange = (field: keyof AddRevertInwardOutwardData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -165,9 +140,7 @@ export const InwardOutward: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-    //#endregion
 
-    //#region ADD REVERT INWARD OUTWARD
     const handleRevert = (row: InwardAndOutWardData) => {
         setFormData({
             ...initialFormState(),
@@ -176,9 +149,7 @@ export const InwardOutward: React.FC = () => {
         });
         setIsAddUpdateModalOpen(true);
     };
-    //#endregion
 
-    //#region PUSH INWARD OUTWARD REVERT DATA
     const PushInwardOutwardRevertFormData = (): FormData => {
 
         const fd = new FormData();
@@ -195,8 +166,6 @@ export const InwardOutward: React.FC = () => {
         })
         return fd;
     };
-    //#endregion
-    // ============================================================= [VALIDATION FUNCTION] =============================================================================================
 
     const validateUpdateCallLogForm = (): {
         isValid: boolean;
@@ -264,9 +233,7 @@ export const InwardOutward: React.FC = () => {
             'Add Inward Outward Revert'
         )
     };
-    //#endregion
 
-    //#region NAVIGATE TO  VIEW INWARD OUTWARD
     const handleNavigateToView = (row: InwardAndOutWardData) => {
         updateListState({
             InwardOutwardId: row.InwardOutwardId,
@@ -274,9 +241,7 @@ export const InwardOutward: React.FC = () => {
         });
         navigate('/inwardOutward/view');
     };
-    //#endregion
 
-    //#region NAVIGATE TO ADD INWARD OUTWARD
     const handleAddInwardOutward = useCallback(() => {
         navigate('/inwardOutward/add', {
             state: {
@@ -284,16 +249,12 @@ export const InwardOutward: React.FC = () => {
             }
         });
     }, [navigate]);
-    //#endregion
 
-    //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: InwardAndOutWardData) => {
         setDeleteInwardOutwardData(row);
         setIsConfirmationDialogBoxOpen(true);
     }, []);
-    //#endregion
 
-    //#region INWARD OUTWARD TABLE COLUMNS
     const InwardOutwardDataColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'SystemGeneratedCode',
@@ -601,9 +562,7 @@ export const InwardOutward: React.FC = () => {
             }
         },
     ], [handleNavigateToView, handleConfirmationDialogBoxOpen]);
-    //#endregion
 
-    //#region COLUMN CUSTOMIZATION
     const requiredInwardOutwardColumnKeys: string[] = ['SystemGeneratedCode', 'Actions'];
 
     const allInwardOutwardColumnKeys: string[] = InwardOutwardDataColumns.map(c => c.key);
@@ -632,32 +591,24 @@ export const InwardOutward: React.FC = () => {
 
         [InwardOutwardDataColumns, selectedInwardOutwardColumnKeys]
     );
-    //#endregion
 
-    //#region FILTER MODAL HELPERS
     const applyFilters = () => {
         updateListState({ filters: tempFilters, page: 1 });
         loadInwardOutward(1, tempFilters, sortInfo);
         setShowFilterPopup(false);
     };
-    //#endregion
 
-    //#region Clear
     const clearFilters = () => {
         setTempFilters({});
         updateListState({ filters: {}, page: 1, searchTerm: '', sortInfo: undefined });
         loadInwardOutward(1, {}, undefined);
         navigate(location.pathname, { replace: true, state: {} });
     };
-    //#endregion
 
-    //#region HANDLE FILTER CHNAGE
     const handleFilterChange = (key: string, value: string) => {
         setTempFilters(prev => updateFilter(prev, key, value));
     }
-    //#endregion
 
-    //#region SEARCH & CLEAR
     const searchInwardOutward = async (searchValue: string) => {
         updateListState({ searchTerm: searchValue, page: 1 });
 
@@ -669,9 +620,8 @@ export const InwardOutward: React.FC = () => {
         }
         await loadInwardOutward(1, filters, sortInfo, searchValue);
     };
-    //#endregion
 
-    //#region CLEAR INWARD OUTWARD 
+
     const clearSearchInwardOutward = () => {
         debouncedSearch.cancel?.();
         updateListState({ searchTerm: '', filters: {}, page: 1, sortInfo: undefined });
@@ -685,23 +635,20 @@ export const InwardOutward: React.FC = () => {
         } catch {
         }
     };
-    //#endregion
 
-    //#region HANDLE PAGE CHNAGE EVENT
+
     const handlePageChange = useCallback((page: number) => {
 
         updateListState({ page });
         fetchInwardOutwardList(page);
     }, [updateListState]);
-    //#endregion
 
-    //#region TABLE SORT COLUMN
+
     const handleSortColumn = useCallback((sort: SortInfo) => {
 
         updateListState({ sortInfo: sort, page: 1 });
         loadInwardOutward(1, filters, sort, searchTerm || undefined);
     }, [filters, searchTerm, updateListState]);
-    //#endregion
 
     const InwardOutwardDataPaginationInfo: PaginationInfo = useMemo(
         () => ({
@@ -719,9 +666,7 @@ export const InwardOutward: React.FC = () => {
             (item) => item.DocumentType === activeTab
         );
     }, [inwardOutwardDataList, activeTab]);
-    //#endregion
 
-    //#region DELETE INWARD OUTWARD
     const handleDeleteInwardOutward = async () => {
         setIsConfirmationDialogBoxOpen(false);
 
@@ -780,9 +725,8 @@ export const InwardOutward: React.FC = () => {
             "Deleting Inward Outward",
         );
     };
-    //#endregion
 
-    //#region 
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
@@ -821,7 +765,6 @@ export const InwardOutward: React.FC = () => {
                 />
             </div>
 
-            {/* CUSTOMIZE COLUMNS MODAL */}
 
             <CustomizeColumnsModal
                 isOpen={isShowCustomizeInwardOutwardColumnsModal}
@@ -846,7 +789,6 @@ export const InwardOutward: React.FC = () => {
                 title="Customize Table Columns"
             />
 
-            {/* ADD REVERT MODAL */}
 
             <Modal
                 isOpen={isAddUpdateModalOpen}
@@ -908,7 +850,6 @@ export const InwardOutward: React.FC = () => {
                 </div>
             </Modal>
 
-            {/* FILTER INWARD OUTWARD MODAL */}
 
             <Modal
                 isOpen={showFilterPopup}
@@ -951,8 +892,6 @@ export const InwardOutward: React.FC = () => {
                 </div>
             </Modal>
 
-            {/* DATA TABLE */}
-
             <DataTable
                 data={InwardOutwardDataForTable}
                 columns={visibleInwardOutwardColumns}
@@ -964,8 +903,6 @@ export const InwardOutward: React.FC = () => {
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}
             />
-
-            {/* DELETE CONFIRMATION INWARD OUTWARD MODAL */}
 
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData, InwardOutwardRevertDetail, } from "@/features/inwardOutward/models/InwardOutwardModel";
+import type { FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData, InwardOutwardDocumentHistory, InwardOutwardRevertHistory, } from "@/features/inwardOutward/models/InwardOutwardModel";
 import { useNavigate, useParams } from "react-router-dom";
 import { useToast } from "@/core/hooks/useToast";
 import { runApiWithLoader } from "@/core/utils";
@@ -20,20 +20,19 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 
 const ViewInwardOutward: React.FC = () => {
 
-    //#region STATE MANAGEMENT
     const [inwardOutwardData, setInwardOutwardData] = useState<InwardAndOutWardData | null>(null);
     const [trackingList, setTrackingList] = useState<InwardAndOutWardData[]>([]);
-    const [inwardOutwardRevertData, setInwardOutwardRevertData] = useState<InwardOutwardRevertDetail[]>([]);
+    const [inwardOutwardRevertHistory, setInwardOutwardRevertHistory] = useState<InwardOutwardRevertHistory[]>([]);
+    const [inwardOutwardDocumentData, setInwardOutwardDocumentData] = useState<InwardOutwardDocumentHistory[]>([]);
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-
-    // NAVIGATE
     const navigate = useNavigate();
-
-    // TOAST
     const { addToast } = useToast();
+    const { canAction } = useMenuPermissions('/inwardoutward');
+    const { InwardOutwardId } = useParams<{ InwardOutwardId?: string }>();
+    const { listState } = useInwardOutwardListState();
+    const currentInwardOutwardId = InwardOutwardId ? Number(InwardOutwardId) : listState.InwardOutwardId;
 
-    //#region TAB ACTIVITY
     const InwardTabList = [
         { id: "Overview", label: "Overview" },
         { id: "Document", label: "Document" },
@@ -41,15 +40,6 @@ const ViewInwardOutward: React.FC = () => {
 
     const [activeTab, setActiveTab] = useState<string>(InwardTabList[0].id);
 
-    //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/inwardoutward');
-
-    // EDIT INWARD OUTWARD DATA FROM STATE
-    const { InwardOutwardId } = useParams<{ InwardOutwardId?: string }>();
-    const { listState } = useInwardOutwardListState();
-    const currentInwardOutwardId = InwardOutwardId ? Number(InwardOutwardId) : listState.InwardOutwardId;
-
-    //#region DOCUMENT GROUPS
     const inwardDocs = trackingList.filter(d =>
         parseDocumentUrls(d.DocumentURL ?? "").filter(x => x?.trim()?.length).length > 0
     );
@@ -57,18 +47,14 @@ const ViewInwardOutward: React.FC = () => {
     const acknowledgementDocs = trackingList.filter(d =>
         parseDocumentUrls(d.AcknowledgementURL ?? "").filter(x => x?.trim()?.length).length > 0
     );
-    //#endregion
 
-    //#region API CALL
     useEffect(() => {
 
         if (!currentInwardOutwardId || currentInwardOutwardId === 0) return;
 
         fetchInwardOutwardData();
     }, [currentInwardOutwardId])
-    //#endregion
 
-    //#region FETCH INWARD OUTWARD LIST
     const fetchInwardOutwardData = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -91,7 +77,9 @@ const ViewInwardOutward: React.FC = () => {
 
                     setTrackingList(response.right.Data);
 
-                    setInwardOutwardRevertData(firstItem?.RevertDetailsList ?? []);
+                    setInwardOutwardRevertHistory(firstItem?.InwardOutwardRevertHistory ?? []);
+
+                    setInwardOutwardDocumentData(firstItem?.InwardOutwardDocumentHistory ?? []);
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -105,29 +93,20 @@ const ViewInwardOutward: React.FC = () => {
             "Loading Inward Outward",
         );
     };
-    //#endregion
 
-    //#region BACK INWARD OUTWARD PAGE
     const handleBackToInwardList = () => {
         navigate("/inwardoutward");
     };
-    //#endregion
 
-    //#region EDIT INWARD OUTWARD PAGE
     const handleEditInward = (row: InwardAndOutWardData) => {
         if (!row?.InwardOutwardId) return;
         navigate(`/inwardOutward/add/${row.InwardOutwardId}`);
     };
-    //#endregion
 
-    //#region
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
 
-            {/* Loader */}
             <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
-
-            {/* Header Details*/}
 
             <HeaderActionBar
                 subTitleText={inwardOutwardData?.SystemGeneratedCode ?? ""}
@@ -259,54 +238,36 @@ const ViewInwardOutward: React.FC = () => {
                             </h1>
 
                             <div className="overflow-y-auto h-[240px] thin-scroll pr-2">
-                                {(() => {
-                                    const inwardOutwardDate = inwardOutwardData?.InwardOutwardDate?.split(',').map(date => date.trim()).filter(date => date) || [];
-                                    const deliveryStatus = inwardOutwardData?.DeliveryStatus?.split(',').map(status => status.trim()).filter(status => status) || [];
+                                {inwardOutwardDocumentData?.map((item, index) => {
+                                    const { bg, text } = getInwardOutwardStatusColor(item.DeliveryStatus || '');
+                                    const isLast = index === inwardOutwardDocumentData.length - 1;
 
-                                    if (inwardOutwardDate.length === 0) {
-                                        return (
-                                            <div className="text-center text-gray-500 py-10">
-                                                No Document found
+                                    return (
+                                        <div key={index} className="flex items-start gap-3">
+
+                                            <div className="flex flex-col items-center self-stretch">
+                                                <div className="w-3 h-3 rounded-full bg-blue-600 mt-1 shrink-0" />
+                                                {!isLast && (
+                                                    <div className="w-[3px] flex-1 bg-blue-300 mt-1" />
+                                                )}
                                             </div>
-                                        );
-                                    }
 
-                                    return inwardOutwardDate.map((date, index) => {
-                                        const statusValue = deliveryStatus[index] || deliveryStatus[0] || '';
-
-                                        const { bg, text } = getInwardOutwardStatusColor(statusValue);
-
-                                        return (
-                                            <div key={index} className="flex gap-4 relative mb-4">
-
-                                                <div className="flex flex-col items-center">
-
-                                                    {/* DOT */}
-                                                    <div className="h-4 w-4 rounded-full bg-blue-600"></div>
-                                                    <div className="w-[3px] bg-blue-600 flex-1"></div>
-
-                                                    {index !== inwardOutwardDate.length - 1 && (
-                                                        <div className="w-[3px] bg-blue-600 flex-1"></div>
-                                                    )}
-                                                </div>
-
-                                                {/* RIGHT CONTENT */}
-                                                <div className="flex-1 pb-2">
-                                                    <div className="font-semibold text-gray-900">
-                                                        {formatDate_dd_MonthName_yy(date)}
-                                                    </div>
-
-                                                    <span
-                                                        className="inline-block mt-1 px-2 py-1 rounded-full text-xs font-medium"
-                                                        style={{ backgroundColor: bg, color: text }}
-                                                    >
-                                                        {statusValue || "-"}
-                                                    </span>
-                                                </div>
+                                            <div className={`flex-1 ${!isLast ? 'pb-6' : 'pb-1'}`}>
+                                                <p className="text-sm font-semibold text-gray-900 leading-tight">
+                                                    {item.DeliveryDate
+                                                        ? formatDate_dd_MonthName_yy(item.DeliveryDate)
+                                                        : '-'}
+                                                </p>
+                                                <span
+                                                    className="inline-block mt-2 px-3 py-0.5 rounded-full text-xs font-medium"
+                                                    style={{ backgroundColor: bg, color: text }}
+                                                >
+                                                    {item.DeliveryStatus || '-'}
+                                                </span>
                                             </div>
-                                        );
-                                    });
-                                })()}
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 
@@ -366,8 +327,8 @@ const ViewInwardOutward: React.FC = () => {
                             </h1>
 
                             <div className="mt-1 overflow-y-auto h-[420px] thin-scroll pr-2">
-                                {inwardOutwardRevertData.length > 0 ? (
-                                    inwardOutwardRevertData.map((item) => {
+                                {inwardOutwardRevertHistory.length > 0 ? (
+                                    inwardOutwardRevertHistory.map((item) => {
                                         return (
                                             <div
                                                 key={item.InwardOutwardRevertId}

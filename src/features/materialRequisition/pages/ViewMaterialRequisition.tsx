@@ -47,30 +47,19 @@ export const ViewMaterialRequisition: React.FC = () => {
     const location = useLocation();
     const [isCloseRequisitionDialogOpen, setIsCloseRequisitionDialogOpen] = useState(false);
     const [selectedMaterialRequisitionItem, setSelectedMaterialRequisitionItem] = useState<DeleteMaterialRequisitionRequest | null>(null);
-
     const { canView: canFinalizedVendorView } = useMenuPermissions(ModuleAction.finalizeVendor);
-
     const { canView: canGeneratePurchaseOrder } = useMenuPermissions(ModuleAction.generatePurchaseOrder);
-
-
     const { canView: canAddInvoice } = useMenuPermissions(ModuleAction.addInvoice);
 
-
     const MaterialRequisitionTabList: { id: string; label: string }[] = [
-
         { id: "Overview", label: "Overview" },
-
         { id: "Details", label: "Details" },
-
         canFinalizedVendorView ? { id: "Finalized Vendor", label: "Finalized Vendor" } : null,
-
         canGeneratePurchaseOrder ? { id: "Purchase Order", label: "Purchase Order" } : null,
-
         { id: "GRN", label: "GRN" },
-
         canAddInvoice ? { id: "Invoice", label: "Invoice" } : null
-
     ].filter(Boolean) as { id: string; label: string }[];
+
     const handleBackToListMaterialRequisition = () => {
         navigate('/materialRequisition');
     };

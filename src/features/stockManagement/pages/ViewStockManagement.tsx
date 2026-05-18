@@ -376,7 +376,7 @@ export const ViewStockManagement: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationStockManagementHistoryRequest = {
                     PageNumber: 1,
-                    PageSize:1000,
+                    PageSize: 1000,
                     ProjectId: Number(projectId),
                     SubMaterialMasterId: currentSubMaterialMasterId,
                     ExportType: exportType,

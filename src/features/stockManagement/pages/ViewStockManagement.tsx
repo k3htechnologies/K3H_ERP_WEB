@@ -436,7 +436,7 @@ export const ViewStockManagement: React.FC = () => {
             {activeTab === 'Summary' && <StockSummary />}
             {activeTab === 'History' && <StocksHistory />}
             {activeTab === 'Material In' && <MaterialIn />}
-            {activeTab === 'Material Out' && <MaterialOut />}
+            {activeTab === 'Material Issued' && <MaterialOut />}
 
         </div>
     )

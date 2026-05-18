@@ -740,7 +740,7 @@ export const InwardOutward: React.FC = () => {
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
-                searchPlaceholder="Search By Document Type"
+                searchPlaceholder="Search By System Generated Code"
                 onSearchChange={v => {
                     updateListState({ searchTerm: v });
                     debouncedSearch(v);

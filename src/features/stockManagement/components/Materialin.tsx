@@ -86,6 +86,36 @@ export const MaterialIn: React.FC = () => {
                 }
             },
             {
+                key: "VendorName",
+                label: "Vendor Name",
+                width: "20",
+                sortable: false,
+                fixed: "left",
+                align: "left",
+                render: (value) => (
+                    <TooltipText
+                        text={value || "-"}
+                        maxWidth="250px"
+                        tooltipThreshold={25}
+                    />
+                ),
+            },
+            {
+                key: "PoNo",
+                label: 'Po No',
+                width: "20",
+                sortable: false,
+                fixed: "left",
+                align: "left",
+                render: (value) => (
+                    <TooltipText
+                        text={value || "-"}
+                        maxWidth="250px"
+                        tooltipThreshold={25}
+                    />
+                ),
+            },
+            {
                 key: "Reason",
                 label: 'Remark',
                 width: "20",

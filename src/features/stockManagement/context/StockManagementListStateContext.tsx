@@ -10,8 +10,6 @@ export type StockManagementListState = {
   filters: FilterInfo;
   sortInfo: SortInfo | undefined;
   projectId: number | null;
-  MaterialId: number;
-  SubMaterialId: number;
   SubMaterialMasterId: number;
   MaterialName: string;
   SubMaterialName: string,
@@ -28,8 +26,6 @@ const getInitialState = (currentProjectId: number | null): StockManagementListSt
       filters: {},
       sortInfo: undefined,
       projectId: currentProjectId,
-      MaterialId: 0,
-      SubMaterialId: 0,
       SubMaterialMasterId: 0,
       MaterialName: '',
       SubMaterialName: '',
@@ -43,8 +39,6 @@ const getInitialState = (currentProjectId: number | null): StockManagementListSt
       if (parsed.projectId === currentProjectId) {
         return {
           ...parsed.state,
-          MaterialId: parsed.state.MaterialId || 0,
-          SubMaterialId: parsed.state.SubMaterialId || 0,
           SubMaterialMasterId: parsed.state.SubMaterialMasterId || 0,
           MaterialName: parsed.state.MaterialName || "",
           SubMaterialName: parsed.state.SubMaterialName || "",
@@ -63,8 +57,6 @@ const getInitialState = (currentProjectId: number | null): StockManagementListSt
     filters: {},
     sortInfo: undefined,
     projectId: currentProjectId,
-    MaterialId: 0,
-    SubMaterialId: 0,
     SubMaterialMasterId: 0,
     MaterialName: '',
     SubMaterialName: '',
@@ -118,8 +110,6 @@ export const StockManagementListStateProvider = ({ children }: { children: React
       searchTerm: '',
       filters: {},
       sortInfo: undefined,
-      MaterialId: 0,
-      SubMaterialId: 0,
       SubMaterialMasterId: 0,
       MaterialName: '',
       SubMaterialName: '',

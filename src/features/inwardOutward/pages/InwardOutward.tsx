@@ -456,7 +456,7 @@ export const InwardOutward: React.FC = () => {
             render: value => value || '-'
         },
         {
-            key: 'InvoiceDate',
+            key: 'InVoiceDate',
             label: 'Invoice Date',
             width: '15',
             sortable: false,
@@ -464,7 +464,7 @@ export const InwardOutward: React.FC = () => {
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
         },
         {
-            key: 'InvoiceNumber',
+            key: 'InVoiceNumber',
             label: 'Invoice Number',
             width: '15',
             sortable: false,

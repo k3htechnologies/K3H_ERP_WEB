@@ -72,7 +72,6 @@ const CreateInvoice: React.FC = () => {
     const { canAction } = useMenuPermissions();
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-
     useEffect(() => {
         if (!projectId) return;
         loadMaterialRequisitionGRNData();

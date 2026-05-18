@@ -280,7 +280,7 @@ export const Overview: React.FC = () => {
                                 ) : (
                                     <div>
                                         {MaterialRequisitionInvoiceData.map((item, index) => (
-                                            <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 rounded-lg p-2 mt-2 ">
+                                            <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 px-4 rounded-lg p-2 mt-2 ">
                                                 <FieldItem label="Invoice Number" value={item.InvoiceNumber} />
                                                 <FieldItem label="Invoice Amount" value={`₹ ${item.InvoiceAmount ?? ''}`} />
                                                 <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(item.InvoiceDueDate ?? '')} />

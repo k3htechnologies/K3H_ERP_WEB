@@ -122,8 +122,7 @@ const ViewChannelPartner: React.FC = () => {
 
 
     const filteredTeamMembers = channelPartnerTeamMemberData.filter(
-        member =>
-            member.ChannelPartnerId !== editChannelPartnerData?.ChannelPartnerId
+        member => member.ChannelPartnerId !== editChannelPartnerData?.ChannelPartnerId
     );
 
     return (
@@ -188,7 +187,7 @@ const ViewChannelPartner: React.FC = () => {
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 ">
                                 <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(editChannelPartnerData?.DateOfBirth ?? "-")} />
-                                <FieldItem label="Mobile No:" value={editChannelPartnerData?.MobileNumber ? `+91 ${editChannelPartnerData?.MobileNumber}` : '-'} />
+                                <FieldItem label="Mobile No" value={!editChannelPartnerData?.MobileNumber ? "-" :  `${editChannelPartnerData?.MobileNumberCountryCode || "+91"}  ${editChannelPartnerData?.MobileNumber}`} />
                                 <FieldItem label="E-Mail ID" value={editChannelPartnerData?.EmailId} />
                                 <FieldItem label="Alternative Contact No:" value={editChannelPartnerData?.AlternativeMobileNumber ? `+91 ${editChannelPartnerData?.AlternativeMobileNumber}` : '-'} />
                                 <FieldItem label="Speciality" value={editChannelPartnerData?.Speciality} />
@@ -343,7 +342,7 @@ const ViewChannelPartner: React.FC = () => {
 
                                         <p className="text-xs text-gray-600 flex items-center gap-2">
                                             <Phone className="h-4 w-4 text-gray-400 shrink-0" />
-                                            <span>{member.MobileNumber ? `+91 ${member.MobileNumber}` : '-'}</span>
+                                            <span>{member.MobileNumber ? `${member.MobileNumberCountryCode || '+91'} ${member.MobileNumber}` : '-'}</span>
                                         </p>
 
 

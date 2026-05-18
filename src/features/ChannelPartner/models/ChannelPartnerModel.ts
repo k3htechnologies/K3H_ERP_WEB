@@ -7,6 +7,7 @@ export interface FilterWithPaginationChannelPartnerRequest {
     IsCheckPermission?: boolean
     ChannelPartnerId?: number
     ChannelPartnerName?: string
+    MobileNumberCountryCode?: string
     MobileNumber?: string
     CompanyName?: string
     Designation?: string
@@ -20,6 +21,7 @@ export interface FilterWithPaginationChannelPartnerRequest {
     Speciality?: string
     CityName?: string;
     VillageName?: string;
+    SystemGeneratedCode?: string;
     Status?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
@@ -38,6 +40,7 @@ export interface ChannelPartnerData {
     Designation: string
     Type: string
 
+    MobileNumberCountryCode:string
     MobileNumber: string
     EmailId: string
     OfficeAddress: string
@@ -111,6 +114,7 @@ export interface ChannelPartnerTeamData {
     FirmsType: string
     Designation: string
     Type: string
+    MobileNumberCountryCode:string
     MobileNumber: string
     EmailId: string
     OfficeAddress: string
@@ -176,6 +180,7 @@ export interface AddUpdateChannelPartnerRequest {
     Designation: string
     Type: string
     CompanyType: string
+    MobileNumberCountryCode:string
     MobileNumber: string
     AlternativeMobileNumber: string
     EmailId: string

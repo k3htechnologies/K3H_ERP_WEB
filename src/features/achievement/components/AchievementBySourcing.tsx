@@ -252,7 +252,7 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
     )
     const AchievementBySourcingForTable = useMemo(() => sourcingAchievementList, [sourcingAchievementList]);
 
-    const requiredAchievementBySourcingColumnKeys: string[] = ['Name', 'Actions'];
+    const requiredAchievementBySourcingColumnKeys: string[] = ['EmployeeName'];
 
     const allAchievementBySourcingColumnKeys: string[] = AchievementBySourcingColumns.map(c => c.key);
 

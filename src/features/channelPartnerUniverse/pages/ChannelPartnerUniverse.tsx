@@ -183,11 +183,6 @@ export const ChannelPartnerUniverse: React.FC = () => {
 
   const handleNavigateToView = (row: ChannelPartnerUniverseData) => {
 
-    if (!projectId) {
-      addToast({ type: 'error', title: 'Please select a project' });
-      return;
-    }
-
     updateListState({
       channelPartnerId: row.ChannelPartnerId,
       channelPartnerName: row.Name
@@ -296,7 +291,7 @@ export const ChannelPartnerUniverse: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value) => value ? `+91 ${value}` : '-'
+         render: (value, row) => value ? `${row.MobileNumberCountryCode || "+91"} ${value}` : '-'
       },
 
       {

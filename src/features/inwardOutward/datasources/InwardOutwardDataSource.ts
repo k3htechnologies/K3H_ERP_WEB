@@ -27,6 +27,7 @@ export class InwardAndOutWardDatasourceImpl implements InwardAndOutWardDatasourc
             if (params.SenderName?.trim()) queryParams.append('SenderName', params.SenderName.trim());
             if (params.ReceiverName?.trim()) queryParams.append('ReceiverName', params.ReceiverName.trim());
             if (params.DocumentType?.trim()) queryParams.append('DocumentType', params.DocumentType.trim());
+            if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

@@ -101,7 +101,7 @@ export const PaginationCardView: React.FC<Props> = ({
     const endRecord = Math.min(currentPage * pageSize, totalRecords);
 
     return (
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-2 bg-white border-t border-gray-200">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-2 bg-white">
 
         <div className="text-sm text-gray-700">
           Showing {startRecord} to {endRecord} of{" "}
@@ -157,7 +157,9 @@ export const PaginationCardView: React.FC<Props> = ({
       <div className="space-y-4">
 
         {!loading && data.length === 0 ? (
-          <NoDataView message={emptyMessage} />
+          <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+            <NoDataView message={emptyMessage} />
+          </section>
         ) : (
 
           data.map((row, index) => (

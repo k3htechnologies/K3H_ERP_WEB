@@ -65,43 +65,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
   const { projectId } = useProject();
 
-  // //SET CHANNEL PARTNER DETAILS
-  // const [channelPartnerId, setChannelPartnerId] = useState<number>();
-  // const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
-  // const [channelPartnerDOB, setChannelPartnerDOB] = useState<string | null>();
-  // const [channelPartnerWebsiteURL, setChannelPartnerWebsiteURL] = useState<string>();
-  // const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<string>();
-  // const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
-  // const [channelPartnerFirmsType, setChannelPartnerFirmsType] = useState<string>();
-  // const [channelPartnerPanNumber, setChannelPartnerPanNumber] = useState<string>();
-  // const [channelPartnerPanURL, setChannelPartnerPanURL] = useState<string>();
-  // const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] = useState<string>();
-  // const [channelPartnerAadhaarCardURL, setChannelPartnerAadhaarCardURL] = useState<string>();
-  // const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] = useState<string>();
-  // const [channelPartnerSystemGeneratedCode, setChannelPartnerSystemGeneratedCode] = useState<string>();
-  // const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
-  // // Channel Partner – Additional Details
-  // const [channelPartnerType, setChannelPartnerType] = useState<string>();
-  // const [channelPartnerGSTNumber, setChannelPartnerGSTNumber] = useState<string>();
-  // const [channelPartnerGSTURL, setChannelPartnerGSTURL] = useState<string>();
-  // const [channelPartnerOfficeAddress, setChannelPartnerOfficeAddress] = useState<string>();
-
-  // // Location Details
-  // const [channelPartnerCountryName, setChannelPartnerCountryName] = useState<string>();
-  // const [channelPartnerStateName, setChannelPartnerStateName] = useState<string>();
-  // const [channelPartnerDistrictName, setChannelPartnerDistrictName] = useState<string>();
-  // const [channelPartnerCityName, setChannelPartnerCityName] = useState<string>();
-  // const [channelPartnerVillageName, setChannelPartnerVillageName] = useState<string>();
-  // const [channelPartnerPrimaryProjectPortfolio, setChannelPartnerPrimaryProjectPortfolio] = useState<string>();
-  // const [channelPartnerSecondaryProjectPortfolio, setChannelPartnerSecondaryProjectPortfolio] = useState<string>();
-  // const [channelPartnerMicromarketProximity, setChannelPartnerMicromarketProximity] = useState<string>();
-  // const [channelPartnerNoOfIbm, setChannelPartnerNoOfIbm] = useState<number>(0);
-  // const [channelPartnerNoOfObm, setChannelPartnerNoOfObm] = useState<number>(0);
-
-  // // Professional Details
-  // const [channelPartnerSpeciality, setChannelPartnerSpeciality] = useState<string>();
-
-
   useEffect(() => {
     if (listState.channelPartnerId) {
       loadSourcingDetails();
@@ -402,7 +365,8 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                 <FieldItem label="Full Name" value={editChannelPartnerData?.Name || '-'} />
                 <FieldItem label="E-mail Id" value={editChannelPartnerData?.EmailId || '-'} />
                 <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(editChannelPartnerData?.DateOfBirth ?? "-")} />
-                <FieldItem label="Mobile No" value={editChannelPartnerData?.MobileNumber ? `+91 ${editChannelPartnerData.MobileNumber}` : '-'} />
+                <FieldItem label="Mobile No" value={!editChannelPartnerData?.MobileNumber ? "-" :  `${editChannelPartnerData?.MobileNumberCountryCode ?? "+91"}  ${editChannelPartnerData?.MobileNumber}`} />
+                
                 <FieldItem label="Designation" value={editChannelPartnerData?.Designation || '-'} />
                 <FieldItem label="Speciality" value={editChannelPartnerData?.Speciality || '-'} />
                 <FieldItem label="CP Type" value={editChannelPartnerData?.Type || '-'} />

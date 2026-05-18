@@ -29,8 +29,10 @@ export interface ChannelPartnerUniverseData {
     FirmsType: string
     Designation: string
     Type: string
+    MobileNumberCountryCode:string
     MobileNumber: string
     EmailId: string
+    AlternativeMobileNumber: string
     VerifiedNonVerified: string
     VillageName: string
     OfficeAddress: string

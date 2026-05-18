@@ -62,7 +62,7 @@ const ViewLitigation: React.FC = () => {
     ProjectId: Number(projectId),
     HearingDate: "",
     Remark: "",
-    FileName:"",
+    FileName: "",
     HearingAttachementURL: null,
     RemoveHearingAttachementURL: "",
   });
@@ -324,7 +324,7 @@ const ViewLitigation: React.FC = () => {
         ProjectId: Number(projectId),
         HearingDate: item.HearingDate || "",
         Remark: item.Remark || "",
-        FileName:item.FileName ||"",
+        FileName: item.FileName || "",
         HearingAttachementURL: item.HearingAttachementURL || "",
         RemoveHearingAttachementURL: "",
       });
@@ -386,13 +386,24 @@ const ViewLitigation: React.FC = () => {
   } => {
     const newErrors: { [key: string]: string } = {};
 
+    const hasFile = hasAnyDocumentFile(hearingURLFiles, hearingURL, removeHearingAttachementUrls);
+
     if (!hearingFormData.HearingDate?.trim()) {
       newErrors.HearingDate = "Hearing Date is required.";
-    } else if (
-      hearingFormData.LitigationHearingId === 0 &&
-      new Date(hearingFormData.HearingDate) < new Date(litigationData?.DateOfFilling || new Date())
-    ) {
+    } else if (hearingFormData.LitigationHearingId === 0 && new Date(hearingFormData.HearingDate) < new Date(litigationData?.DateOfFilling || new Date())) {
       newErrors.HearingDate = "Hearing Date cannot be in the past.";
+    }
+
+    if (!hearingFormData.Remark?.trim()) {
+      newErrors.Remark = "Remark is required.";
+    }
+
+    if (hasFile && !hearingFormData.FileName?.trim()) {
+      newErrors.FileName = "File Name is required.";
+    }
+
+    if (hearingFormData.FileName?.trim() && !hasFile) {
+      newErrors.HearingAttachementURL = "File is required.";
     }
 
     return {
@@ -554,7 +565,7 @@ const ViewLitigation: React.FC = () => {
       "Reopening Case",
     );
   };
-  
+
   const fetchLitigationDocumentList = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -648,6 +659,10 @@ const ViewLitigation: React.FC = () => {
                     value={litigationData?.DateOfFilling ? formatDate_dd_MonthName_yy(litigationData.DateOfFilling) : ""}
                   />
                   <FieldItem label="Case Type" value={litigationData?.CaseType} />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
+                  
                   <FieldItem label="Case / Petiton / Dispute Number" value={litigationData?.CaseNumber} />
                 </div>
               </section>
@@ -659,6 +674,8 @@ const ViewLitigation: React.FC = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                     <FieldItem label="Court Type" value={litigationData?.CourtType} />
                     <FieldItem label="Court Name" value={litigationData?.CourtName} />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
                     <FieldItem label="Court Location" value={litigationData?.CourtLocation} />
                   </div>
                 </div>
@@ -670,7 +687,7 @@ const ViewLitigation: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3">
                   <div className="lg:col-span-3">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-                      <FieldItem label="Plaintiff" value={litigationData?.Plantiff} />
+                      <FieldItem label="Plaintiff / Complaint / Petitioner" value={litigationData?.Plantiff} />
                       <FieldItem label="Defendant / Opposite Party / Respondent" value={litigationData?.Defendant} />
                     </div>
                   </div>
@@ -901,7 +918,7 @@ const ViewLitigation: React.FC = () => {
 
                         {item.HearingAttachementURL && (
                           <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
-                            <p>{item.FileName}</p>
+                            <p className="break-all whitespace-normal max-w-full"> {item.FileName}</p>
                             <MultiImageViewer
                               images={parseDocumentUrls(item.HearingAttachementURL)}
                               title="Hearing Document"
@@ -910,6 +927,7 @@ const ViewLitigation: React.FC = () => {
                             />
                           </div>
                         )}
+                       
                       </div>
                     );
                   })
@@ -1034,6 +1052,7 @@ const ViewLitigation: React.FC = () => {
                 <div>
                   <TextArea
                     label="Remark"
+                    required
                     className="thin-scroll"
                     value={hearingFormData.Remark ?? ""}
                     placeholder="Enter Remarks"
@@ -1090,7 +1109,7 @@ const ViewLitigation: React.FC = () => {
                 <div className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
                   <div className="flex items-start justify-between p-2 gap-2">
                     <div className="flex flex-col">
-                      <span className="line-clamp-2 break-words font-medium text-gray-900">{d.DocumentName}</span>
+                      <span className="line-clamp-2 break-all font-medium text-gray-900">{d.DocumentName}</span>
                       <span className="text-sm text-gray-500 mt-1">Document Count : {urls.length}</span>
                     </div>
 

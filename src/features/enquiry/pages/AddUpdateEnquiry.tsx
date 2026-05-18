@@ -13,8 +13,8 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { EnquiryService } from "@/features/enquiry/services/EnquiryServices";
-import { filterEmail, filterMobile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
-import { Mail, Phone, Search } from "lucide-react";
+import { filterEmail, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
+import { Mail, Search } from "lucide-react";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import {
   ACCOMODATION_TYPE_OPTIONS,
@@ -45,7 +45,7 @@ import RadioPill from "@/ui/components/forms/RadioPill";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { calculateAge, isDateWithinPastDays, isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { fetchChannelPartnerByMobileNumber, fetchChannelPartnerTeamMemberDropdown } from "@/features/ChannelPartner/channelPartnerDropDown";
+import { fetchChannelPartnerByChannelPartnerCode, fetchChannelPartnerTeamMemberDropdown } from "@/features/ChannelPartner/channelPartnerDropDown";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { fetchVillageDropdown } from "@/features/technical/villageDropDown";
@@ -61,6 +61,7 @@ import { fetchPaginationProjectWithEmployeeDropdown } from "@/features/projectMa
 import { checkDuplicateField } from "@/core/utils/duplicateValidation";
 import { ChannelPartnerService } from "@/features/ChannelPartner/services/ChannelPartnerService";
 import { toUpperCase } from "fp-ts/lib/string";
+import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
   EnquiryId: 0,
@@ -70,6 +71,7 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
   EnquiryTimeOut: "00:00",
 
   Name: "",
+  MobileNumberCountryCode: "+91",
   MobileNumber: "",
   EmailId: "",
   DateOfBirth: "",
@@ -93,8 +95,11 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
   EmployeeReferenceEmployeeId: 0,
 
   ChannelPartnerTeamMemberId: 0,
+
   ChannelPartnerTeamMemberMobileNumber: "",
   ChannelPartnerTeamMemberName: "",
+  ChannelPartnerTeamMemberEmailId: "",
+  ChannelPartnerTeamMemberMobileNumberCountryCode: "+91",
 
   Nationality: "",
   CountryOfResidence: "",
@@ -135,13 +140,13 @@ export const AddUpdateEnquiry: React.FC = () => {
   const [formData, setFormData] = useState<AddUpdateEnquiryRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
-  const [channelPartnerSearchByMobileNumber, setChannelPartnerSearchByMobileNumber] = useState<string>();
+  const [channelPartnerSearchByChannelPartnerCode, setChannelPartnerSearchByChannelPartnerCode] = useState<string>();
   const [channelPartnerId, setChannelPartnerId] = useState<number>();
   const [calculatedAge, setCalculatedAge] = useState<string>();
   const [selectedVillageValues, setSelectedVillageValues] = useState<string | number | null>(null);
 
   //SET CHANNEL PARTNER DETAILS
-
+  const [channelPartnerCode, setChannelPartnerCode] = useState<string>();
   const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
   const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
   const [channelPartnerFirmsType, setChannelPartnerFirmsType] = useState<string>();
@@ -149,6 +154,7 @@ export const AddUpdateEnquiry: React.FC = () => {
   const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] = useState<string>();
   const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] = useState<string>();
   const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<string>();
+  const [channelPartnerMobileNumberCountryCode, setChannelPartnerMobileNumberCountryCode] = useState<string>();
   const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
   const [channelPartnerType, setChannelPartnerType] = useState<string>();
 
@@ -266,6 +272,7 @@ export const AddUpdateEnquiry: React.FC = () => {
               ProjectId: Number(projectId),
               Name: e.Name ?? prev.Name,
               EmailId: e.EmailId ?? prev.EmailId,
+              MobileNumberCountryCode: e.MobileNumberCountryCode ?? prev.MobileNumberCountryCode,
               MobileNumber: e.MobileNumber ?? prev.MobileNumber,
               DateOfBirth: e.DateOfBirth ?? prev.DateOfBirth,
 
@@ -300,6 +307,10 @@ export const AddUpdateEnquiry: React.FC = () => {
               ChannelPartnerTeamMemberMobileNumber: Number(e.ChannelPartnerTeamMemberId) > 0 ? "" : (e.ChannelPartnerTeamMemberMobileNumber ?? prev.ChannelPartnerTeamMemberMobileNumber),
 
               ChannelPartnerTeamMemberName: Number(e.ChannelPartnerTeamMemberId) > 0 ? "" : (e.ChannelPartnerTeamMemberName ?? prev.ChannelPartnerTeamMemberName),
+
+              ChannelPartnerTeamMemberMobileNumberCountryCode: Number(e.ChannelPartnerTeamMemberId) > 0 ? "" : (e.ChannelPartnerTeamMemberMobileNumberCountryCode ?? prev.ChannelPartnerTeamMemberMobileNumberCountryCode),
+
+              ChannelPartnerTeamMemberEmailId: Number(e.ChannelPartnerTeamMemberId) > 0 ? "" : (e.ChannelPartnerTeamMemberEmailId ?? prev.ChannelPartnerTeamMemberEmailId),
 
               FinalStage: e.FinalStage ?? prev.FinalStage,
               FinalStageDetail: e.FinalStageDetail ?? prev.FinalStageDetail,
@@ -365,7 +376,7 @@ export const AddUpdateEnquiry: React.FC = () => {
 
             if (e.Source === "Channel Partner") {
             }
-            setChannelPartnerSearchByMobileNumber(e.ChannelPartnerMobileNumber ? e.ChannelPartnerMobileNumber.toString() : "");
+            setChannelPartnerSearchByChannelPartnerCode(e.ChannelPartnerCode ? e.ChannelPartnerCode.toString() : "");
           }
         } else {
           addToast({ type: "error", title: response.left.message });
@@ -399,14 +410,18 @@ export const AddUpdateEnquiry: React.FC = () => {
 
     if (!formData.MobileNumber) {
       newErrors.MobileNumber = "Mobile Number is required";
-    } else if (!isValidMobile(formData.MobileNumber.trim())) {
-      newErrors.MobileNumber = "Enter a valid 10-Digit Mobile Number";
+    } else if (!isValidMobile(formData.MobileNumber.trim(), formData.MobileNumberCountryCode!)) {
+      newErrors.MobileNumber = "Enter a valid Mobile Number";
     }
 
     if (formData.EmailId !== "") {
       if (!isValidEmail(formData.EmailId!.trim())) {
         newErrors.EmailId = "Enter a Valid E-mail Id";
       }
+    }
+
+    if (formData.MobileNumberCountryCode !== "+91" && formData.EmailId!.trim() === "") {
+      newErrors.EmailId = "E-mail Id is mandatory";
     }
 
     if (!formData.Accommodation) {
@@ -433,7 +448,7 @@ export const AddUpdateEnquiry: React.FC = () => {
 
     if (formData.Source?.toUpperCase() === "CHANNEL PARTNER") {
       if (!channelPartnerId) {
-        newErrors.ChannelPartnerId = "Channel Partner is required";
+        newErrors.ChannelPartnerId = "Channel Partner Code is required";
       }
 
       if (!formData.SubSource) {
@@ -490,16 +505,26 @@ export const AddUpdateEnquiry: React.FC = () => {
     // =====================[CHANNEL PARTNER]=========================
     const name = formData.ChannelPartnerTeamMemberName?.trim() || "";
     const mobile = formData.ChannelPartnerTeamMemberMobileNumber?.trim() || "";
-    if (mobile && !name) {
+    const emailId = formData.ChannelPartnerTeamMemberEmailId?.trim() || "";
+
+    if (mobile && !name && !emailId) {
       newErrors.ChannelPartnerTeamMemberName = "Channel Partner Team Member Name is required";
     }
 
-    if (name && !mobile) {
+    if (name && !mobile && !emailId) {
       newErrors.ChannelPartnerTeamMemberMobileNumber = "Mobile Number is required";
     }
 
-    if (mobile && !isValidMobile(mobile)) {
-      newErrors.ChannelPartnerTeamMemberMobileNumber = "Enter a valid 10-digit mobile number";
+    if (mobile && !isValidMobile(mobile, formData.ChannelPartnerTeamMemberMobileNumberCountryCode!)) {
+      newErrors.ChannelPartnerTeamMemberMobileNumber = "Enter a valid mobile number";
+    }
+
+    if (formData.ChannelPartnerTeamMemberMobileNumberCountryCode !== "+91" &&  (mobile || name) && !emailId) {
+      newErrors.ChannelPartnerTeamMemberEmailId = "E-mail Id is mandatory";
+    }
+
+    if (emailId && !isValidEmail(emailId)) {
+      newErrors.ChannelPartnerTeamMemberEmailId = "Enter a valid E-mail Id";
     }
 
     if (Number(formData.EnquiryDate) === 0 && !formData.EnquiryDate) {
@@ -541,8 +566,6 @@ export const AddUpdateEnquiry: React.FC = () => {
   const PushEnquiryFormData = (): AddUpdateEnquiryRequest => {
     const villageIdsString = villageDropdown.selectedValues.length > 0 ? villageDropdown.selectedValues.join(",") : "";
 
-
-
     // =====================[DIRECT WALKING → REFERENCE]=========================
     const isDirectReference = formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE";
     // =====================[DIRECT WALKING → LOYALTY]=========================
@@ -561,6 +584,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       EnquiryTimeOut: formData.EnquiryTimeOut,
 
       Name: formData.Name,
+      MobileNumberCountryCode: formData.MobileNumberCountryCode,
       MobileNumber: formData.MobileNumber,
       EmailId: formData.EmailId,
       DateOfBirth: formData.DateOfBirth === "" ? null : formData.DateOfBirth,
@@ -589,6 +613,10 @@ export const AddUpdateEnquiry: React.FC = () => {
 
       ChannelPartnerTeamMemberMobileNumber: Number(formData.ChannelPartnerTeamMemberId) > 0 ? "" : formData.ChannelPartnerTeamMemberMobileNumber,
 
+      ChannelPartnerTeamMemberMobileNumberCountryCode: Number(formData.ChannelPartnerTeamMemberId) > 0 ? "" : formData.ChannelPartnerTeamMemberMobileNumberCountryCode,
+
+      ChannelPartnerTeamMemberEmailId: Number(formData.ChannelPartnerTeamMemberId) > 0 ? "" : formData.ChannelPartnerTeamMemberEmailId,
+
       Nationality: isIndian ? "Indian" : formData.Nationality,
       CountryOfResidence: isIndian ? "" : formData.CountryOfResidence,
       CityOfResidence: isIndian ? "" : formData.CityOfResidence,
@@ -610,7 +638,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       Timeline: formData.Timeline,
 
       FinalStage: formData.FinalStage,
-      FinalStageDetail: toUpperCase(formData.FinalStage ?? "")==="LOST" ? formData.FinalStageDetail :"",
+      FinalStageDetail: toUpperCase(formData.FinalStage ?? "") === "LOST" ? formData.FinalStageDetail : "",
 
       EnquiryDate: formData.EnquiryDate,
       NextFollowUpDate: formData.NextFollowUpDate === "" ? null : formData.NextFollowUpDate,
@@ -648,6 +676,10 @@ export const AddUpdateEnquiry: React.FC = () => {
       const isDuplicate = await checkDuplicateField({
         fieldName: "MobileNumber",
         fieldValue: formData.ChannelPartnerTeamMemberMobileNumber || "",
+        extraParams: {
+          MobileNumberCountryCode: formData.ChannelPartnerTeamMemberMobileNumberCountryCode,
+
+        },
         apiCallback: ChannelPartnerService.apiCallPullChannelPartner,
         setIsLoading,
         setLoadingMessage,
@@ -666,13 +698,14 @@ export const AddUpdateEnquiry: React.FC = () => {
       }
     }
 
-    if (formData.EnquiryId === 0 && !isOtpVerified) {
+    if (formData.EnquiryId === 0 && formData.MobileNumberCountryCode!.trim() === "+91" && !isOtpVerified) {
       if (!isOtpSent) {
         const sent = await sendOTP({
+
           mobileNumber: formData.MobileNumber || "",
           module: "ENQUIRY",
           name: formData.Name || "",
-          projectName: dropdownLabels.referelProjectName || "",
+          projectName: (LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).find(p => p.ProjectId === Number(projectId))?.ProjectName || "",
           source: formData.Source || "",
           setIsLoading,
           setLoadingMessage,
@@ -723,10 +756,11 @@ export const AddUpdateEnquiry: React.FC = () => {
   //#region HANDLE SEARCH CHANGE EVENT CHANNEL PARTNER
 
   const handleSearchByChannelPartner = (searchValue: string) => {
-    setChannelPartnerSearchByMobileNumber(searchValue);
+    setChannelPartnerSearchByChannelPartnerCode(searchValue);
   };
 
   const clearChannelPartnerDetails = () => {
+    setChannelPartnerCode("");
     setChannelPartnerFullName("");
     setChannelPartnerCompanyName("");
     setChannelPartnerFirmsType("");
@@ -735,29 +769,30 @@ export const AddUpdateEnquiry: React.FC = () => {
     setChannelPartnerRERANUmber("");
     setChannelPartnerDesignation("");
     setChannelPartnerMobileNumber("");
+    setChannelPartnerMobileNumberCountryCode("");
     setChannelPartnerType("");
     setChannelPartnerId(0);
     handleFieldChange("ChannelPartnerTeamMemberId", 0);
   };
 
   const clearChannelPartnerAll = () => {
-    setChannelPartnerSearchByMobileNumber("");
+    setChannelPartnerSearchByChannelPartnerCode("");
     clearChannelPartnerDetails();
   };
 
   useEffect(() => {
-    const mobile = channelPartnerSearchByMobileNumber?.trim() || "";
+    const channelPartnerCode = channelPartnerSearchByChannelPartnerCode?.trim() || "";
 
-    if (mobile.length !== 10) {
+    if (channelPartnerCode.length !== 18) {
       clearChannelPartnerDetails();
       return;
     }
 
-    fetchChannelPartnerByMobileNumber(mobile).then((channelPartner) => {
+    fetchChannelPartnerByChannelPartnerCode(channelPartnerCode).then((channelPartner) => {
       if (!channelPartner) return;
 
       setChannelPartnerId(Number(channelPartner.ChannelPartnerId));
-
+      setChannelPartnerCode(channelPartner.SystemGeneratedCode ?? "")
       setChannelPartnerFullName(channelPartner.Name ?? "");
       setChannelPartnerFirmsType(channelPartner.FirmsType ?? "");
       setChannelPartnerCompanyName(channelPartner.CompanyName ?? "");
@@ -766,9 +801,10 @@ export const AddUpdateEnquiry: React.FC = () => {
       setChannelPartnerRERANUmber(channelPartner.RERANumber ?? "");
       setChannelPartnerDesignation(channelPartner.Designation ?? "");
       setChannelPartnerMobileNumber(channelPartner.MobileNumber ?? "");
+      setChannelPartnerMobileNumberCountryCode(channelPartner.MobileNumberCountryCode ?? "");
       setChannelPartnerType(channelPartner.Type ?? "");
     });
-  }, [channelPartnerSearchByMobileNumber]);
+  }, [channelPartnerSearchByChannelPartnerCode]);
 
   //#endregion
 
@@ -824,11 +860,8 @@ export const AddUpdateEnquiry: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-      {/* Loader */}
 
-      <Loader loading={isLoading} title={loadingMessage}>
-        {" "}
-        <div></div>{" "}
+      <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}
       </Loader>
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
@@ -847,23 +880,21 @@ export const AddUpdateEnquiry: React.FC = () => {
               </div>
 
               <div>
-                <Input
-                  type="text"
+                <MobileNumberInput
+                  mobileNumber={formData.MobileNumber ?? ""}
+                  countryCode={formData.MobileNumberCountryCode ?? "+91"}
+                  disabled={Number(formData.EnquiryId) > 0}
                   required
-                  label="Mobile Number"
-                  disabled={Number(formData.EnquiryId) > 0 ? true : false}
-                  leftIcon="+91"
-                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                  value={formData.MobileNumber ?? ""}
-                  onChange={(e) => {
-                    const mobile = filterMobile(e.target.value);
-                    handleFieldChange("MobileNumber", mobile);
-                  }}
-                  placeholder="Enter Mobile Number"
-                  maxLength={10}
                   error={errors.MobileNumber}
+                  onMobileChange={(value) =>
+                    handleFieldChange("MobileNumber", value)
+                  }
+                  onCountryCodeChange={(value) =>
+                    handleFieldChange("MobileNumberCountryCode", value)
+                  }
                 />
               </div>
+
               <div>
                 <Input
                   label="E-mail ID"
@@ -936,6 +967,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     name="Nationality"
                     label="Indian"
                     value="Indian"
+                    disabled={Number(formData.EnquiryId) > 0 ? true : false}
                     checked={formData.Nationality === "Indian"}
                     onChange={() => {
                       setNationality("Indian");
@@ -947,6 +979,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     name="Nationality"
                     label="NRI"
                     value="NRI"
+                    disabled={Number(formData.EnquiryId) > 0 ? true : false}
                     checked={formData.Nationality === "NRI"}
                     onChange={() => {
                       setNationality("NRI");
@@ -979,6 +1012,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     required
                     placeholder="Select Source"
                     value={formData.Source ?? ""}
+                    disabled={Number(formData.EnquiryId) > 0 && formData.Source !== "" ? true : false}
                     onChange={(e) => {
                       handleFieldChange("Source", e);
                       handleFieldChange("SubSource", "");
@@ -1007,6 +1041,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                       label="Sub Source"
                       required={formData.Source === "Direct Walking" ? true : false}
                       placeholder="Select Sub Source"
+                      disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                       value={formData.SubSource ?? ""}
                       onChange={(e) => {
                         handleFieldChange("SubSource", e);
@@ -1032,6 +1067,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                       label="Sub Sub Source"
                       required={formData.Source === "Direct Walking" && formData.SubSource === "Advertisement" ? true : false}
                       placeholder="Select Sub Sub Source"
+                      disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                       value={formData.SubSubSource ?? ""}
                       onChange={(value) => handleFieldChange("SubSubSource", String(value))}
                       options={SUB_SUB_SOURCE_TYPE_OPTIONS.map((opt) => ({
@@ -1052,7 +1088,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                         title="Select Project"
                         size="lg"
                         dataFetchCallBack={fetchProjectDropdown}
-
+                        disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                         onSelected={(item) => {
                           if (!item) {
                             handleFieldChange("ReferralProjectId", 0);
@@ -1085,6 +1121,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                           label="Unit Number"
                           required
                           title="Select Unit Number"
+                          disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                           size="lg"
                           dataFetchCallBack={fetchReferralInventoryFlats}
                           onSelected={(item) => {
@@ -1110,6 +1147,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                         label="Project"
                         required
                         title="Select Project"
+                        disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                         size="lg"
                         dataFetchCallBack={fetchProjectDropdown}
                         onSelected={(item) => {
@@ -1141,6 +1179,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                       <SingleSelectDropdownWithPagination
                         key={`unit-${formData.LoyaltyProjectId}`}
                         label="Unit Number"
+                        disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                         required
                         title="Select Unit Number"
                         size="lg"
@@ -1169,6 +1208,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                         label="Employee Reference Name"
                         required
                         title="Select Employee Reference Name"
+                        disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                         size="lg"
                         dataFetchCallBack={fetchEmployeeMasterDropdown}
                         onSelected={(item) => {
@@ -1193,6 +1233,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     <SinglePageSelection
                       label="Sub Source"
                       required={formData.Source === "Channel Partner" ? true : false}
+                      disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                       placeholder="Select Sub Source"
                       value={formData.SubSource ?? ""}
                       onChange={(value) => handleFieldChange("SubSource", String(value))}
@@ -1206,25 +1247,27 @@ export const AddUpdateEnquiry: React.FC = () => {
                       <Input
                         type="text"
                         required
-                        label="Channel Partner"
-                        value={channelPartnerSearchByMobileNumber}
-                        maxLength={10}
+                        label="Channel Partner Code"
+                        disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
+                        value={channelPartnerSearchByChannelPartnerCode}
+                        maxLength={18}
                         onChange={(e) => {
                           handleSearchByChannelPartner(e.target.value);
-                          setChannelPartnerSearchByMobileNumber(e.target.value);
+                          setChannelPartnerSearchByChannelPartnerCode(e.target.value);
                         }}
-                        placeholder="Search By Mobile Number"
+                        placeholder="Search By Channel Partner Code"
                         leftIcon={<Search className="h-4 w-4 text-gray-400" />}
                         error={errors.ChannelPartnerId}
                       />
                     </div>
                     {channelPartnerFullName != "" && (
                       <>
-                        {formData.ChannelPartnerTeamMemberName === "" && formData.ChannelPartnerTeamMemberMobileNumber === "" && (
+                        {formData.ChannelPartnerTeamMemberName === "" && formData.ChannelPartnerTeamMemberMobileNumber === "" && formData.ChannelPartnerTeamMemberEmailId === "" && (
                           <div>
                             <SingleSelectDropdownWithPagination
                               label="Team Member"
                               title="Select Team Member"
+                              disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                               size="lg"
                               initialValue={createDropdownInitialValue(formData.ChannelPartnerTeamMemberId, dropdownLabels.ChannelPartnerTeamMemberName)}
                               dataFetchCallBack={fetchChannelPartnerTeamMember}
@@ -1233,6 +1276,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                   handleFieldChange("ChannelPartnerTeamMemberId", 0);
                                   handleFieldChange("ChannelPartnerTeamMemberName", "");
                                   handleFieldChange("ChannelPartnerTeamMemberMobileNumber", "");
+                                  handleFieldChange("ChannelPartnerTeamMemberEmailId", "");
                                   return;
                                 }
 
@@ -1248,27 +1292,48 @@ export const AddUpdateEnquiry: React.FC = () => {
                             <div>
                               <Input
                                 type="text"
-                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) ? true : false}
+                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0)  || (formData.ChannelPartnerTeamMemberEmailId?.length ?? 0) ? true : false}
                                 label="Team Member Name"
                                 value={formData.ChannelPartnerTeamMemberName ?? ""}
+                                disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                                 onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberName", e.target.value)}
                                 placeholder="Enter Team Member Name"
                                 maxLength={100}
                                 error={errors.ChannelPartnerTeamMemberName} />
                             </div>
-
+                            <div>
+                              <MobileNumberInput
+                                label="Team Member Mobile Number"
+                                mobileNumber={formData.ChannelPartnerTeamMemberMobileNumber ?? ""}
+                                disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
+                                countryCode={formData.ChannelPartnerTeamMemberMobileNumberCountryCode ?? "+91"}
+                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) || (formData.ChannelPartnerTeamMemberEmailId?.length ?? 0) ? true : false}
+                                error={errors.ChannelPartnerTeamMemberMobileNumber}
+                                onMobileChange={(value) =>
+                                  handleFieldChange("ChannelPartnerTeamMemberMobileNumber", value)
+                                }
+                                onCountryCodeChange={(value) =>
+                                  handleFieldChange("ChannelPartnerTeamMemberMobileNumberCountryCode", value)
+                                }
+                              />
+                            </div>
                             <div>
                               <Input
-                                label="Team Member Mobile Number"
-                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) ? true : false}
+                                label="E-mail ID"
                                 type="text"
-                                maxLength={10}
-                                value={formData.ChannelPartnerTeamMemberMobileNumber ?? ""}
-                                leftIcon="+91" rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                                onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberMobileNumber", filterMobile(e.target.value))}
-                                placeholder="Enter Team Member Mobile Number"
-                                error={errors.ChannelPartnerTeamMemberMobileNumber} />
+                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) || (formData.ChannelPartnerTeamMemberEmailId?.length ?? 0) ? true : false}
+                                disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
+                                value={formData.ChannelPartnerTeamMemberEmailId ?? ""}
+                                error={errors.ChannelPartnerTeamMemberEmailId}
+                                rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
+                                onChange={(e) => {
+                                  const emailId = filterEmail(e.target.value);
+                                  handleFieldChange("ChannelPartnerTeamMemberEmailId", emailId);
+                                }}
+                                placeholder="Enter Valid E-mail Id"
+                              />
                             </div>
+
                           </>
                         )}
                       </>
@@ -1277,18 +1342,21 @@ export const AddUpdateEnquiry: React.FC = () => {
                 )}
               </div>
 
-              {formData.Source?.toUpperCase() === "CHANNEL PARTNER" && channelPartnerSearchByMobileNumber?.length === 10 && (
+              {formData.Source?.toUpperCase() === "CHANNEL PARTNER" && channelPartnerSearchByChannelPartnerCode?.length === 18 && (
                 <>
                   {channelPartnerId ? (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                        {channelPartnerCode && <FieldItem label="Channel Partner Code" value={channelPartnerCode} />}
+
                         {channelPartnerFullName && <FieldItem label="Full Name" value={channelPartnerFullName} />}
 
                         {channelPartnerCompanyName && <FieldItem label="Company Name" value={channelPartnerCompanyName} />}
 
                         {channelPartnerFirmsType && <FieldItem label="Firms Type" value={channelPartnerFirmsType} />}
 
-                        {channelPartnerMobileNumber && <FieldItem label="Mobile Number" value={channelPartnerMobileNumber} />}
+                        {channelPartnerMobileNumber && <FieldItem label="Mobile Number" value={`${channelPartnerMobileNumberCountryCode || "+91"} ${channelPartnerMobileNumber}`} />}
 
                         {channelPartnerDesignation && <FieldItem label="Designation" value={channelPartnerDesignation} />}
 
@@ -1607,8 +1675,7 @@ export const AddUpdateEnquiry: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
+          
             <div className="space-y-4 pb-3">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2"> Sales Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1628,7 +1695,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                 <TextArea label="Remarks" className="thin-scroll" value={formData.Remark ?? ""} placeholder="Enter Remarks" onChange={(e) => handleFieldChange("Remark", e.target.value)} error={errors.Remark} />
               </div>
             </div>
-          )}
+          
         </form>
       </div>
 

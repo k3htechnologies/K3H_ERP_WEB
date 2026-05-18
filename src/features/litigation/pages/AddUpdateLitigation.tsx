@@ -46,6 +46,7 @@ export const AddUpdateLitigation: React.FC = () => {
     const [isVerifySent, setIsVerifySent] = useState(false);
     const [isVerified, setIsVerified] = useState(false);
     const [showVerifySection, setShowVerifySection] = useState(false);
+    const [isLitigationDelete, setIsLitigationDelete] = useState<boolean>(false);
 
     const navigate = useNavigate();
 
@@ -115,7 +116,9 @@ export const AddUpdateLitigation: React.FC = () => {
                             Remark: e.Remark ?? prev.Remark,
                             CaseBrief: e.CaseBrief ?? prev.CaseBrief
                         }));
+                        setIsLitigationDelete(e.IsDelete ?? 0)
                     }
+                    
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -309,7 +312,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     value={formData.Title ?? ""}
                                     onChange={(e) => handleFieldChange("Title", e.target.value)}
                                     placeholder="Enter Title "
-                                    maxLength={250}
+                                    maxLength={100}
                                     error={errors.Title}
                                 />
                             </div>
@@ -321,6 +324,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     onChange={(val) => handleFieldChange('DateOfFilling', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                     required
                                     error={errors.DateOfFilling}
+                                    disabled={formData.LitigationId > 0 ? !isLitigationDelete :false}
                                 />
                             </div>
 
@@ -344,7 +348,7 @@ export const AddUpdateLitigation: React.FC = () => {
                                     value={formData.CaseNumber ?? ""}
                                     onChange={(e) => handleFieldChange("CaseNumber", e.target.value)}
                                     placeholder="Enter Case Number"
-                                    maxLength={250}
+                                    maxLength={100}
                                     error={errors.CaseNumber}
                                 />
                             </div>
@@ -489,7 +493,7 @@ export const AddUpdateLitigation: React.FC = () => {
                 }}
                 title="Complete Verification"
                 saveText={formData.LitigationId ? "Update" : "Verify & Add"}
-                size="md"
+                size="xl"
                 onSubmit={(e) => {
                     e.preventDefault();
                     setIsVerified(true);
@@ -518,16 +522,23 @@ export const AddUpdateLitigation: React.FC = () => {
                     <div className="space-y-3 mt-4">
 
                         {getLitigationVerificationSteps({ formData }).map((step) => (
-                            <div key={step.id} className="flex items-center gap-3">
 
-                                <div className={`w-6 h-6 rounded-md flex items-center justify-center border-2 transition-all duration-200 ${step.completed ? "bg-blue-600 text-white" : "bg-blue-200 text-transparent"}`} >{step.completed && <Check size={14} strokeWidth={3} />}</div>
+                            <div key={step.id} className="flex items-start gap-3">
 
-                                <span className={`text-sm ${step.completed ? "text-gray-900 font-medium" : "text-gray-500"}`} >
+                                <div className={`w-6 h-6 flex-shrink-0 rounded-md flex items-center justify-center border-2 transition-all duration-200 
+                                             ${step.completed ? "bg-blue-600 text-white" : "bg-blue-200 text-transparent" }`}>
+                                              {step.completed && <Check size={14} strokeWidth={3} />}
+                                </div>
+
+                                <span className={`text-md break-words whitespace-normal ${step.completed ? "text-gray-900 font-medium" : "text-gray-500" }`} >
+
                                     {step.label}
+
                                     <span className="mx-1 text-gray-400">
                                         -
                                     </span>
-                                    <span className="text-sm font-normal text-gray-500">
+
+                                    <span className="text-sm font-normal text-gray-500 break-all">
                                         {step.value}
                                     </span>
                                 </span>

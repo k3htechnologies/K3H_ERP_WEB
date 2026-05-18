@@ -1,5 +1,8 @@
 // ----------------------------------
 // 🔹 FILTER ONLY NUMBERS
+
+import { countryList } from "@/ui/components/forms/MobileNumberInput";
+
 // ----------------------------------
 export const filterNumbers = (value: string): string =>
   value.replace(/[^0-9]/g, "");
@@ -22,9 +25,27 @@ export const filterAlphaNumeric = (value: string): string =>
 export const filterMobile = (value: string): string =>
   value.replace(/[^0-9]/g, "").slice(0, 10);
 
-export const isValidMobile = (mobile: string): boolean => {
+// export const isValidMobile = (mobile: string): boolean => {
+//   if (!mobile) return false;
+//   const regex = /^[6-9]\d{9}$/;
+//   return regex.test(mobile.trim());
+// };
+
+export const isValidMobile = ( mobile: string, countryCode?: string): boolean => {
+
+  if(!countryCode){
+
+    countryCode = "+91";
+  }
+
   if (!mobile) return false;
-  const regex = /^[6-9]\d{9}$/;
+
+  const country = countryList.find( (x) => x.code === countryCode);
+
+  if (!country) return false;
+  
+  const regex = country.regex || new RegExp( `^\\d{${country.mobileLength}}$`);
+
   return regex.test(mobile.trim());
 };
 

@@ -27,6 +27,7 @@ export const sendOTP = async ({
 }: SendOTPParams): Promise<boolean> => {
 
     if (!mobileNumber || mobileNumber.length !== 10) {
+        
         addToast({
             type: "error",
             title: "Please enter valid mobile number"

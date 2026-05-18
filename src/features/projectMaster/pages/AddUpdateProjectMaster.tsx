@@ -618,7 +618,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             <div>
                                 <Input
                                     label="File Number"
-                                    error={errors.ProjectName}
+                                    error={errors.FileNumber}
                                     type="text"
                                     maxLength={250}
                                     value={formData.FileNumber}

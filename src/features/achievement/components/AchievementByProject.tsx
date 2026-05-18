@@ -260,7 +260,7 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
     )
     const AchievementByProjectForTable = useMemo(() => projectAchievementList, [projectAchievementList]);
 
-    const requiredAchievementByProjectColumnKeys: string[] = ['Name', 'Actions'];
+    const requiredAchievementByProjectColumnKeys: string[] = ['ProjectName'];
 
     const allAchievementByProjectColumnKeys: string[] = AchievementByProjectColumns.map(c => c.key);
 

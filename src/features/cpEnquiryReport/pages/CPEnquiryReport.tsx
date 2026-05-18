@@ -18,6 +18,7 @@ import { cpEnquiryReportService } from "@/features/cpEnquiryReport/services/CPEn
 
 type PivotEnquiryRow = {
     ChannelPartnerName: string;
+    SystemGeneratedCode: string;
     Stage: string;
     [key: string]: number | string;
 };
@@ -35,8 +36,7 @@ const CPEnquiryReport: React.FC = () => {
     const [channelPartnerNameSearch, setChannelPartnerNameSearch] = useState("");
     const { pagination, setPagination } = usePagination(20);
     const [channelPartnerList, setChannelPartnerList] = useState<ChannelPartnerList[]>([]);
-
-    //#region  CLAER 
+ 
     useEffect(() => {
 
         setChannelPartnerList([]);
@@ -48,7 +48,6 @@ const CPEnquiryReport: React.FC = () => {
         });
 
     }, [reportType, year, fromDate, toDate]);
-    //#endregion
 
     const fetchCPEnquiryReport = async (page: number = pagination.currentPage) => {
 
@@ -129,6 +128,8 @@ const CPEnquiryReport: React.FC = () => {
 
                     ChannelPartnerName: index === 0 ? channelPartner.Name || "" : "",
 
+                    SystemGeneratedCode: index === 0 ? channelPartner.SystemGeneratedCode || "" : "",
+
                     Stage: stage
                 };
 
@@ -138,10 +139,7 @@ const CPEnquiryReport: React.FC = () => {
 
                     if (item.Stages === stage) {
 
-                        const key =
-                            reportType?.toUpperCase() === "DATE"
-                                ? formatDate_dd_mm_yyyy(item.Date)
-                                : item.MonthName;
+                        const key = reportType?.toUpperCase() === "DATE" ? formatDate_dd_mm_yyyy(item.Date) : item.MonthName;
 
                         if (key && row.hasOwnProperty(key)) {
                             row[key] = item.StagesCount || 0;
@@ -168,9 +166,9 @@ const CPEnquiryReport: React.FC = () => {
                 label: "Channel Partner Name",
                 fixed: "left",
                 width: "20",
-                render: (value) => (
+                render: (value,row) => (
                     <span className="text-blue-600 font-semibold">
-                        {value}
+                        {row.SystemGeneratedCode || ""}  {value}
                     </span>
                 )
             },

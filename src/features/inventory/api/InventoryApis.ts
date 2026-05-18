@@ -4,7 +4,7 @@ export const InventoryApis = {
     "ADD": "/Inventory/AddInventory",
     "DELETE": "/Inventory/DeleteInventory",
 
-    "UPDATE_Inventory_WING": "/Inventory/Inventory/UpdateInventoryWing",
+    "UPDATE_Inventory_WING": "/Inventory/UpdateInventoryWing",
     "UPDATE_Inventory_FLOOR": "Inventory/UpdateInventoryFloor",
     "UPDATE_Inventory_FLAT": "/Inventory/UpdateInventoryFlat",
 

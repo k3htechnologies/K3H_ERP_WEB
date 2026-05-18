@@ -35,7 +35,7 @@ export const MASTER_DATA = {
 
   companyType: ['Existing Company', 'New Company'],
 
-  projectStatus: ['On-Going', 'Completed', 'On-Hold', 'Cancelled', 'Planning'],
+  projectStatus: ['On-Going','Up-Coming', 'Completed', 'On-Hold', 'Cancelled', 'Planning'],
 
   businessCategory: ['Real Estate', 'Construction', 'Infrastructure', 'Residential', 'Commercial', 'Mixed Use'],
 

@@ -380,7 +380,7 @@ export const Enquiry: React.FC = () => {
             width: '14',
             sortable: false,
             align: 'left',
-            render: value => value ? `+91 ${value}` : '-'
+            render: (value, row) => value ? `${row.MobileNumberCountryCode || "+91"} ${value}` : '-'
 
         },
         {
@@ -565,7 +565,7 @@ export const Enquiry: React.FC = () => {
             width: '14',
             sortable: false,
             align: 'left',
-            render: value => value ? `+91 ${value}` : '-'
+            render: (value, row) => value ? `${row.ChannelPartnerMobileNumberCountryCode || "+91"} ${value}` : '-'
         },
         {
             key: 'CustomerClassification',

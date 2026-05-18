@@ -146,6 +146,7 @@ export interface BookingApplicantData {
     BookingApplicantId: number | null;
     ApplicantType: string | null;
     ApplicantName: string | null;
+    ApplicantMobileNumberCountryCode: string | null;
     ApplicantMobileNumber: string | null;
     ApplicantEmailId: string | null;
     PhotoURL: string | null;
@@ -266,6 +267,7 @@ export interface AddUpdateBookingApplicantRequest {
     BookingApplicantId: number | null;
     ApplicantType: string | null;
     ApplicantName: string | null;
+    ApplicantMobileNumberCountryCode: string | null;
     ApplicantMobileNumber: string | null;
     ApplicantEmailId: string | null;
     PhotoURL?: File[] | null;

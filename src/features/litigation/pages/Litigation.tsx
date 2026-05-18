@@ -275,7 +275,14 @@ export const Litigation: React.FC = () => {
         width: "16",
         sortable: false,
         align: "left",
-        render: (value) => value || "-",
+        render: (value, row) => (
+          <TooltipText
+            text={value || "-"}
+            maxWidth="300px"
+            tooltipThreshold={40}
+            onClick={() => handleViewLitigationDetails(row)}
+          />
+        ),
       },
       {
         key: "CaseType",

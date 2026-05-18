@@ -47,6 +47,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         ,'achievement'
         ,'litigation'
         ,'legalDashboard'
+        ,'inwardOutward'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

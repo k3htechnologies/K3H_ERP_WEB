@@ -323,10 +323,8 @@ export const ChannelPartnerSourcing: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value) => value ? `+91 ${value}` : '-'
+         render: (value, row) => value ? `${row.MobileNumberCountryCode || "+91"} ${value}` : '-'
       },
-
-
 
       {
         key: 'PanNumber',

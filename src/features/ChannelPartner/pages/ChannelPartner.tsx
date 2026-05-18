@@ -15,7 +15,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -25,7 +25,7 @@ import { ChannelPartnerService } from '@/features/ChannelPartner/services/Channe
 import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Copy } from 'lucide-react';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
@@ -33,6 +33,7 @@ import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { useChannelPartnerListState } from '@/features/ChannelPartner/context/ChannelPartnerListStateContext';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { copyToClipboard } from '@/core/utils/comman';
 
 
 export const ChannelPartner: React.FC = () => {
@@ -389,10 +390,33 @@ export const ChannelPartner: React.FC = () => {
               tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
             />
 
-            {row.VerifiedNonVerified!=='Verified' && (
+            {row.VerifiedNonVerified !== 'Verified' && (
               <span title="Channel Partner Profile Incomplete">
                 <AlertTriangle className="w-4 h-4 text-amber-500 cursor-pointer" />
               </span>
+            )}
+
+            {value && (
+              <Button
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const success = await copyToClipboard(value);
+                  if (success) {
+                    addToast({ type: 'success', title: `${value} Copied!` });
+                  }
+                }}
+                color="transparent"
+                size="sm"
+                style={{
+                  padding: '2px 6px',
+                  color: '#6B7280',
+                  cursor: 'pointer'
+                }}
+                title="Copy"
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
             )}
 
           </div>
@@ -494,7 +518,7 @@ export const ChannelPartner: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'left',
-      render: (value) => value ? `+91 ${value}` : '-'
+      render: (value, row) => value ? `${row.MobileNumberCountryCode || "+91"} ${value}` : '-'
     },
     {
       key: 'PanNumber',

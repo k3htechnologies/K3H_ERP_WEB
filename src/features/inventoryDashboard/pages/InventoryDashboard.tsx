@@ -176,7 +176,7 @@ const InventoryDashboard: React.FC = () => {
     {
       key: 'Flat',
       label: 'Unit Number',
-      width: '150px',
+      width: '200px',
       sortable: false,
     },
     {

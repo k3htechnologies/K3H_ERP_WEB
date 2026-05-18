@@ -257,7 +257,7 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
     )
     const AchievementByClosingForTable = useMemo(() => closingAchievementList, [closingAchievementList]);
 
-    const requiredAchievementByClosingColumnKeys: string[] = ['Name', 'Actions'];
+    const requiredAchievementByClosingColumnKeys: string[] = ['EmployeeName'];
 
     const allAchievementByClosingColumnKeys: string[] = AchievementByClosingColumns.map(c => c.key);
 

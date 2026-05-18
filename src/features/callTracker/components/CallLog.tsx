@@ -410,7 +410,13 @@ export const CallLog: React.FC = () => {
             width: '30',
             fixed: 'left',
             align: 'left',
-            render: value => value || '-'
+             render: (value) => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="180px"
+                    tooltipThreshold={18}
+                />
+            )
         },
         {
             key: 'Budget',
@@ -877,7 +883,7 @@ export const CallLog: React.FC = () => {
                                 <SinglePageSelection
                                     label={formData.Requirement === "Residential" ? "Residential Type" : formData.Requirement === "Commercial" ? "Commercial Type" : "Commercial Leasing Type"}
                                     placeholder={`Select ${formData.Requirement === "Residential" ? "Residential Type" : formData.Requirement === "Commercial" ? "Commercial Type" : "Commercial Leasing Type"}`}
-
+                                    required
                                     value={formData.RequirementType ?? ""}
                                     onChange={(value) => handleFieldChange("RequirementType", value)}
                                     options={

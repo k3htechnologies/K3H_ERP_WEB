@@ -368,7 +368,7 @@ export const ViewBooking: React.FC = () => {
 
                                         <FieldItem label="Name" value={editEnquiryData?.Name || '-'} />
 
-                                        <FieldItem label="Mobile No:" value={getSafeString(editEnquiryData?.MobileNumber) ? `+91 ${editEnquiryData?.MobileNumber}` : '-'} />
+                                        <FieldItem label="Mobile No:" value={getSafeString(editEnquiryData?.MobileNumber) ? `${editEnquiryData?.MobileNumberCountryCode || "+91"} ${editEnquiryData?.MobileNumber}` : '-'} />
 
                                         <FieldItem label="Source" value={editEnquiryData?.Source || '-'} />
 
@@ -458,7 +458,8 @@ export const ViewBooking: React.FC = () => {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
                                                     <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                    <FieldItem label="Mobile Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
+                                                    
+                                                    <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
                                                     <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
                                                     <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
                                                     <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
@@ -824,7 +825,7 @@ export const ViewBooking: React.FC = () => {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
                                                     <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                    <FieldItem label="Mobile Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
+                                                    <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
                                                     <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
                                                     <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
                                                     <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />

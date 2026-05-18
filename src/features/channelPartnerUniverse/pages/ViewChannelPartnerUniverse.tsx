@@ -354,8 +354,10 @@ const ViewChannelPartnerUniverse: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FieldItem label="CP Code" value={channelPartnerMasterList?.SystemGeneratedCode || '-'} />
                 <FieldItem label="Full Name" value={channelPartnerMasterList?.Name || '-'} />
+                <FieldItem label="E-Mail ID" value={channelPartnerMasterList?.EmailId} />
+                <FieldItem label="Alternative Contact No:" value={channelPartnerMasterList?.AlternativeMobileNumber ? `+91 ${channelPartnerMasterList?.AlternativeMobileNumber}` : '-'} />
                 <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(channelPartnerMasterList?.DateOfBirth ?? "-")} />
-                <FieldItem label="Mobile No" value={channelPartnerMasterList?.MobileNumber ? `+91 ${channelPartnerMasterList?.MobileNumber}` : '-'} />
+                <FieldItem label="Mobile No" value={!channelPartnerMasterList?.MobileNumber ? "-" :  `${channelPartnerMasterList?.MobileNumberCountryCode ?? "+91"}  ${channelPartnerMasterList?.MobileNumber}`} />
                 <FieldItem label="Designation" value={channelPartnerMasterList?.Designation || '-'} />
                 <FieldItem label="CP Type" value={channelPartnerMasterList?.Type || '-'} />
               </div>

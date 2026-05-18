@@ -111,6 +111,21 @@ export const fetchChannelPartnerByMobileNumber = async (mobileNumber: string) =>
 
 };
 
+export const fetchChannelPartnerByChannelPartnerCode = async (channelPartnerCode: string) => {
+
+    const responseEither = await ChannelPartnerService.apiCallPullChannelPartner({
+        PageSize: 1,
+        PageNumber: 1,
+        IsCheckPermission: false,
+        SystemGeneratedCode: channelPartnerCode.trim()
+    });
+
+    if (E.isLeft(responseEither)) return null;
+
+    return responseEither.right.Data?.[0] || null;
+
+};
+
 export const fetchChannelPartnerById = async (channelPartnerId: number, projectId?: number) => {
 
     const responseEither = await ChannelPartnerService.apiCallPullChannelPartner({

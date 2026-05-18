@@ -888,7 +888,7 @@ export const InventoryParkingOverallReport: React.FC = () => {
         {
             key: 'Flat',
             label: 'Unit Number',
-            width: '150px',
+            width: '200px',
             sortable: false,
         },
         {
@@ -967,12 +967,6 @@ export const InventoryParkingOverallReport: React.FC = () => {
                 sortable: false,
             },
             {
-                key: "ParkingStatus",
-                label: "Status",
-                width: "120px",
-                sortable: false,
-            },
-            {
                 key: "IsEVChargingAvailable",
                 label: "EV Charging",
                 width: "120px",
@@ -1045,6 +1039,7 @@ export const InventoryParkingOverallReport: React.FC = () => {
             />
 
             <PaginationCardView
+                key={searchTerm}
                 data={projectInventoryParkingDetailsList}
                 pagination={ProjectInventoryParkingPaginationInfo}
                 emptyMessage="No Data Found"
@@ -1133,6 +1128,7 @@ export const InventoryParkingOverallReport: React.FC = () => {
                 renderExpanded={(expandedData) => {
 
                     const groupedData = Object.values(
+
                         (expandedData || []).reduce((acc: any, item: any) => {
 
                             const key = item.BuildingNumber || "Unknown";

@@ -83,7 +83,7 @@ const LitigationDashboard: React.FC = () => {
                         value={projectId}
                         onChange={(value) => setProjectId(Number(value) || 0)}
 
-                        placeholder="Select Project"
+                        placeholder="All Project"
                     />
                 </div>
             </div>

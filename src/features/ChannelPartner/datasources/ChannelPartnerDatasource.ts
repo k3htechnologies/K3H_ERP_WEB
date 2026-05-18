@@ -33,6 +33,7 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
             if (params.ChannelPartnerId) queryParams.append('ChannelPartnerId', params.ChannelPartnerId.toString());
             if (params.ChannelPartnerName?.trim()) queryParams.append('ChannelPartnerName', params.ChannelPartnerName.trim());
+            if (params.MobileNumberCountryCode?.trim()) queryParams.append('MobileNumberCountryCode', params.MobileNumberCountryCode.trim());
             if (params.MobileNumber?.trim()) queryParams.append('MobileNumber', params.MobileNumber.trim());
             if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
             if (params.Designation?.trim()) queryParams.append('Designation', params.Designation.trim());
@@ -46,6 +47,8 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
             if (params.Speciality?.trim()) queryParams.append('Speciality', params.Speciality.trim());
             if (params.CityName?.trim()) queryParams.append('CityName', params.CityName.trim());
             if (params.VillageName?.trim()) queryParams.append('VillageName', params.VillageName.trim());
+            if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
+            
             if (params.Status?.trim()) queryParams.append('Status', params.Status.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);

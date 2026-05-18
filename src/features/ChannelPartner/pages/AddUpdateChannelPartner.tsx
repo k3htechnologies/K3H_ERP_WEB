@@ -23,6 +23,7 @@ import {
   filterWebsiteUrl,
   hasAnyDocumentFile,
   isValidAadhaar,
+  isValidEmail,
   isValidGST,
   isValidMobile,
   isValidPAN,
@@ -58,6 +59,7 @@ import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialVa
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { checkDuplicateField } from "@/core/utils/duplicateValidation";
+import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
 
 const initialFormState = (): AddUpdateChannelPartnerRequest => ({
   ChannelPartnerId: 0,
@@ -72,6 +74,7 @@ const initialFormState = (): AddUpdateChannelPartnerRequest => ({
   Type: "",
   CompanyType: "",
 
+  MobileNumberCountryCode: "+91",
   MobileNumber: "",
   AlternativeMobileNumber: "",
   EmailId: "",
@@ -276,6 +279,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
               Type: e.Type ?? prev.Type ?? "",
               Designation: e.Designation ?? prev.Designation ?? "",
               EmailId: e.EmailId ?? prev.EmailId,
+              MobileNumberCountryCode: e.MobileNumberCountryCode ?? prev.MobileNumberCountryCode,
               MobileNumber: e.MobileNumber ?? prev.MobileNumber,
               AlternativeMobileNumber: e.AlternativeMobileNumber ?? prev.AlternativeMobileNumber,
               AadharCardNumber: e.AadharCardNumber ?? prev.AadharCardNumber,
@@ -323,6 +327,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
             setSelectedSecondaryProjectValues(e.SecondaryProjectPortfolioId || "");
           }
+          
         } else {
           addToast({ type: "error", title: response.left.message });
         }
@@ -364,14 +369,23 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     if (!formData.MobileNumber?.trim()) {
       newErrors.MobileNumber = "Mobile Number is required";
-    } else if (!isValidMobile(formData.MobileNumber.trim())) {
-      newErrors.MobileNumber = "Enter a Valid 10-digit mobile number";
+    } else if (!isValidMobile(formData.MobileNumber.trim(), formData.MobileNumberCountryCode!)) {
+      newErrors.MobileNumber = "Enter a Valid mobile number";
+    }
+
+    if (formData.EmailId !== "") {
+      if (!isValidEmail(formData.EmailId!.trim())) {
+        newErrors.EmailId = "Enter a Valid E-mail Id";
+      }
+    }
+
+    if (formData.MobileNumberCountryCode !== "+91" && formData.EmailId.trim() === "") {
+      newErrors.EmailId = "E-mail Id is mandatory";
     }
 
     if (formData.AlternativeMobileNumber?.trim()) {
       if (!isValidMobile(formData.AlternativeMobileNumber.trim())) {
-        newErrors.AlternativeMobileNumber =
-          "Enter a valid 10-digit Alternative Mobile Number";
+        newErrors.AlternativeMobileNumber = "Enter a valid 10-digit Alternative Mobile Number";
       }
     }
 
@@ -386,6 +400,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
     if (!formData.Speciality) {
       newErrors.Speciality = "Speciality is required";
     }
+
     if (!formData.Designation) {
       newErrors.Designation = "Designation is required";
     }
@@ -485,6 +500,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
     fd.append("Type", formData.Type ?? "");
     fd.append("Designation", formData.Designation ?? "");
     fd.append("EmailId", formData.EmailId ?? "");
+    fd.append("MobileNumberCountryCode", formData.MobileNumberCountryCode ?? "");
     fd.append("MobileNumber", formData.MobileNumber ?? "");
     fd.append("AlternativeMobileNumber", formData.AlternativeMobileNumber ?? "");
     fd.append("AadharCardNumber", formData.AadharCardNumber ?? "");
@@ -558,14 +574,14 @@ export const AddUpdateChannelPartner: React.FC = () => {
           ...prev,
           MobileNumber: "Mobile number already exists"
         }));
-        
+
         addToast({ type: "error", title: "Mobile number already exists" });
 
         return;
       }
     }
 
-    if (formData.ChannelPartnerId === 0 && !isOtpVerified) {
+    if (formData.ChannelPartnerId === 0 && formData.MobileNumberCountryCode === "+91" && !isOtpVerified) {
 
       if (!isOtpSent) {
 
@@ -677,9 +693,45 @@ export const AddUpdateChannelPartner: React.FC = () => {
       setRemoveGSTCertificateUrls([]));
   };
 
+  const checkDuplicateMobileNumber = async (mobileNumber: string, countryCode: string) => {
+
+    if (Number(formData.ChannelPartnerId) > 0) {
+      return;
+    }
+
+    if (!isValidMobile(mobileNumber, countryCode)) {
+      return;
+    }
+
+    const isDuplicate = await checkDuplicateField({
+
+      fieldName: "MobileNumber",
+
+      fieldValue: mobileNumber,
+
+      apiCallback: ChannelPartnerService.apiCallPullChannelPartner,
+
+      extraParams: { MobileNumberCountryCode: countryCode }
+    });
+
+    if (isDuplicate) {
+
+      setErrors((prev) => ({
+        ...prev,
+        MobileNumber: "Mobile number already exists"
+      }));
+
+    } else {
+
+      setErrors((prev) => ({
+        ...prev,
+        MobileNumber: ""
+      }));
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-      {/* Loader */}
 
       <Loader loading={isLoading} title={loadingMessage}>
         {" "}
@@ -716,6 +768,25 @@ export const AddUpdateChannelPartner: React.FC = () => {
               </div>
 
               <div>
+                <MobileNumberInput
+                  mobileNumber={formData.MobileNumber ?? ""}
+                  countryCode={formData.MobileNumberCountryCode ?? "+91"}
+                  disabled={Number(formData.ChannelPartnerId) > 0}
+                  required
+                  error={errors.MobileNumber}
+                  onMobileChange={async (value) => {
+
+                    handleFieldChange("MobileNumber", value);
+
+                    await checkDuplicateMobileNumber(value, formData.MobileNumberCountryCode);
+                  }}
+                  onCountryCodeChange={(value) =>
+                    handleFieldChange("MobileNumberCountryCode", value)
+                  }
+                />
+              </div>
+
+              <div>
                 <Input
                   label="E-mail Id"
                   type="text"
@@ -730,27 +801,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <Input
-                  leftIcon="+91"
-                  label=" Mobile Number"
-                  required
-                  maxLength={10}
-                  disabled={
-                    Number(formData.ChannelPartnerId) > 0 ? true : false
-                  }
-                  value={formData.MobileNumber}
-                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                  onChange={(e) =>
-                    handleFieldChange(
-                      "MobileNumber",
-                      filterMobile(e.target.value),
-                    )
-                  }
-                  placeholder="Enter Mobile Number"
-                  error={errors.MobileNumber}
-                />
-              </div>
+              
               <div>
                 <Input
                   leftIcon="+91"

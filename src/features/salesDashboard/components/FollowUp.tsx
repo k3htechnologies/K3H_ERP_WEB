@@ -49,7 +49,7 @@ export default function FollowUp({ enquiryFollowUpData }: Props) {
             key: 'MobileNumber',
             label: 'Mobile Number',
             fixed: 'left',
-           render: (value) => (value ? `+91 ${value}` : "-"),
+            render: (value, row) => value ? `${row.MobileNumberCountryCode || "+91"} ${value}` : '-'
         },
 
         {

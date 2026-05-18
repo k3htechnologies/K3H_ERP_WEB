@@ -14,6 +14,7 @@ export interface FilterWithPaginationCPEnquiryReportRequest {
 export interface ChannelPartnerList {
   ChannelPartnerId?: number;
   Name?: string;
+  SystemGeneratedCode?: string;
   ChannelPartnerEnquiryStagesData?: ChannelPartnerEnquiryStagesData[];
   Message?: string;
   TotalRecords?: number;

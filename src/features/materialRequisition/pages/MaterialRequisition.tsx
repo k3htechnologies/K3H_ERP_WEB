@@ -29,6 +29,8 @@ import { DateInput } from "@/ui/components/forms/DateInput";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { getMaterialRequisitionStatusColor } from "@/features/materialRequisition/utils/materialRequisitionUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
+import { parseDocumentUrls } from "@/core/utils/documentUtils";
 
 
 export const MaterialRequisition: React.FC = () => {
@@ -241,6 +243,36 @@ export const MaterialRequisition: React.FC = () => {
             render: (value) => value || '-'
         },
         {
+            key: 'PurchaseOrderURL',
+            label: 'PO',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: (value: string, row: any) => {
+                const urls = parseDocumentUrls(row.PurchaseOrderURL);
+
+                if (!urls || urls.length === 0) {
+                    return <span>-</span>;
+                }
+
+                return (
+                    <div className="flex items-center justify-between gap-2 w-full">
+                        <MultiImageViewer
+                            images={urls}
+                            title="Document"
+                            triggerLabel={
+                                <TooltipText
+                                    text="View"
+                                    maxWidth="250px"
+                                    tooltipThreshold={25}
+                                />
+                            }
+                        />
+                    </div>
+                );
+            }
+        },
+        {
             key: 'Actions',
             label: 'Actions',
             width: '20',
@@ -328,7 +360,7 @@ export const MaterialRequisition: React.FC = () => {
         );
     }, [MaterialRequisitionColumns.length]);
 
-       const visibleMaterialRequisitionColumns = useMemo(
+    const visibleMaterialRequisitionColumns = useMemo(
         () =>
             MaterialRequisitionColumns.filter((col) =>
                 selectedMaterialRequisitionColumnKeys.includes(col.key),

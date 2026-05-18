@@ -222,7 +222,7 @@ export const StockManagement: React.FC = () => {
                 render: (value) => value || "-"
             },
             {
-                key: "AvailableMaterialQuantityInStock",
+                key: "AvailableMaterial",
                 label: 'Available Quantity',
                 width: "20",
                 sortable: false,

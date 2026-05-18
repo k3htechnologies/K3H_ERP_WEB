@@ -360,6 +360,7 @@ export const ViewStockManagement: React.FC = () => {
     const { canExport } = useMenuPermissions();
 
     const MaterialRequisitionTabList = [
+        { id: 'Summary', label: 'Summary' },
         { id: 'History', label: 'History' },
         { id: 'Material In', label: 'Material In' },
         { id: 'Material Out', label: 'Material Out' },
@@ -431,6 +432,7 @@ export const ViewStockManagement: React.FC = () => {
                     onTabChange={(t) => setActiveTab(t.id)}
                 />
             </div>
+
             {activeTab === 'Summary' && <StockSummary />}
             {activeTab === 'History' && <StocksHistory />}
             {activeTab === 'Material In' && <MaterialIn />}

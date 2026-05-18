@@ -6,6 +6,10 @@ export interface FilterWithPaginationStockManagementRequest {
     ProjectId?: number
     MaterialName?: string
     SubMaterialName?: string
+    MaterialId?: number
+    SubMaterialId?: number
+    SubMaterialMasterId?: number
+    MaterialMasterId?: number
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -13,6 +17,8 @@ export interface FilterWithPaginationStockManagementRequest {
 export interface StockManagementRequestData {
     MaterialName: string | null
     SubMaterialName: string | null
+    MaterialId?: number | 0
+    MaterialMasterId?: number | 0
     SubMaterialMasterId: number | 0
     UomCode: string | null
     TotalMaterialQuantityInStock: number | null
@@ -24,13 +30,17 @@ export interface FilterWithPaginationStockManagementHistoryRequest {
     PageNumber: number
     ProjectId?: number
     SubMaterialMasterId?: number
+    MaterialId?: number
+    SubMaterialId?: number
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
 
 export interface StockManagementRequestHistoryData {
+    MaterialRequisitionGRNStockId: number | 0
     MaterialName: string | null
     SubMaterialName: string | null
+    MaterialMasterId?: number | 0
     SubMaterialMasterId: number | 0
     UomCode: string | null
     MaterialQuantityInwardOutward: number | 0
@@ -40,6 +50,13 @@ export interface StockManagementRequestHistoryData {
     CreatedBy: string | ''
     CreatedDate: string | null
 }
+export interface StockUsageModel {
+    MaterialId: number | 0;
+    SubMaterialMasterId: number | 0;
+    MaterialTotalQuantityInStock: number | 0;
+    MaterialUsedQuantity: number | 0;
+    MaterialUnusedQuantity: number | 0;
+}
 
 export interface AddUpdateStockManagementRequest {
     SubMaterialMasterId: number | 0
@@ -47,10 +64,17 @@ export interface AddUpdateStockManagementRequest {
     Reason: string | null
     InwardOutwardType: string | null
     MaterialQuantityInwardOutward: number | 0
-    SenderName:string | null
-    ReceiverName:string | null
+    PartyName:string | null
+  
 }
 
+export interface AddUpdateStockUsage {
+     ProjectId: number | 0;
+     MaterialRequisitionGRNStockId: number | 0;
+     UsedQuantity: number | 0;
+     UnusedQuantity: number | 0;
+    
+}
 export type StockManagementListResponse = ApiResponse<StockManagementRequestData[]>
 export type StockManagementHistoryListResponse = ApiResponse<StockManagementRequestHistoryData[]>
 export type StockManagementSaveResponse = ApiResponse<AddUpdateStockManagementRequest[]>

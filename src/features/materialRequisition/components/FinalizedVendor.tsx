@@ -250,7 +250,9 @@ export const FinalizedVendor: React.FC = () => {
 
     const saveData = async (vendor: any, term: any, lines: any[]) => {
         await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
+
             const payload = buildPayload(vendor, term, lines)
+
             const response = await materialRequisitionQuotationService.apiCallToAddMaterialRequisitionQuotation(payload)
 
             if (E.isRight(response)) {
@@ -465,10 +467,7 @@ export const FinalizedVendor: React.FC = () => {
                                             size={16}
                                             onClick={() => {
                                                 navigator.clipboard.writeText(vendor.EmailId)
-                                                addToast({
-                                                    type: "success",
-                                                    title: "Email ID copied to clipboard",
-                                                })
+                                                addToast({ type: "success", title: "Email ID copied to clipboard", })
                                             }}
                                         />
 

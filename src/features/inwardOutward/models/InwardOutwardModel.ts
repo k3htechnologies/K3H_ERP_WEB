@@ -33,10 +33,10 @@ export interface InwardAndOutWardData {
     AcknowledgementURL: string,
     AcknowledgementRemark: string | null,
     EmployeeNames: string | null
-    InvoiceDate: string | null,
+    InVoiceDate: string | null,
     DepartmentName: string | null,
     InwardNumber: number | 0,
-    InvoiceNumber: number | 0,
+    InVoiceNumber: number | 0,
     HandOverDate: string | null,
     HandOverTo: string | null,
 

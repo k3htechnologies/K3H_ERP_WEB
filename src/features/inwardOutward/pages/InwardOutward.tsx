@@ -328,8 +328,14 @@ export const InwardOutward: React.FC = () => {
                     ? employees.length - maxVisible
                     : 0;
 
-                const getInitials = (name: string) =>
-                    name.split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
+                const getInitials = (name: string) => {
+                    const words = name.split(" ");
+
+                    const first = words[0]?.charAt(0) || "";
+                    const last = words[words.length - 1]?.charAt(0) || "";
+
+                    return (first + last).toUpperCase();
+                };
 
                 return (
                     <div className="flex items-center -space-x-2">

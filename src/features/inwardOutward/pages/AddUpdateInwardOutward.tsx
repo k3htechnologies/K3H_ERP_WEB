@@ -152,25 +152,25 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             RemoveAcknowledgementURL: '',
                             ReceiversSignature: null,
                             RemoveReceiversSignature: '',
-                            InVoiceDate: e.InvoiceDate ?? prev.InVoiceDate,
-                            InVoiceNumber: e.InvoiceNumber ?? prev.InVoiceNumber,
+                            InVoiceDate: e.InVoiceDate ?? prev.InVoiceDate,
+                            InVoiceNumber: e.InVoiceNumber ?? prev.InVoiceNumber,
                             HandOverDate: e.HandOverDate ?? prev.HandOverDate,
                             HandOverTo: e.HandOverTo ?? prev.HandOverTo,
                             InwardNumber: e.InwardNumber ?? prev.InwardNumber
                         }));
 
                         setSelectedEmployeeValues(e.EmployeeId || null);
+                        setDocumentURLFiles([]);
                         setDocumentURL(e.DocumentURL);
                         setRemovedDocumentURLs([]);
-                        setDocumentURLFiles([]);
 
+                        setAcknowledgementURLFiles([]);
                         setAcknowledgementURL(e.AcknowledgementURL);
                         setRemovedAcknowledgementURLs([]);
-                        setAcknowledgementURLFiles([]);
 
+                        setReceiversSignatureFiles([]);
                         setReceiversSignatureURL(e.ReceiversSignature);
                         setRemovedReceiversSignatureURLs([]);
-                        setReceiversSignatureFiles([]);
                     }
 
                 } else {

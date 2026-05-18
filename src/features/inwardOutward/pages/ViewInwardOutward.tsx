@@ -103,6 +103,14 @@ const ViewInwardOutward: React.FC = () => {
         navigate(`/inwardOutward/add/${row.InwardOutwardId}`);
     };
 
+    const trackingData = [
+        {
+            DeliveryStatus: inwardOutwardData?.DeliveryStatus,
+            DeliveryDate: inwardOutwardData?.CreatedDate,
+        },
+        ...(inwardOutwardDocumentData || []),
+    ].filter(item => item?.DeliveryStatus);
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
 
@@ -156,8 +164,8 @@ const ViewInwardOutward: React.FC = () => {
                                     <FieldItem label="Delivery Type" value={inwardOutwardData?.DeliveryType} />
                                     <FieldItem label="Inward Number" value={inwardOutwardData?.InwardNumber} />
                                     <FieldItem label="Date" value={inwardOutwardData?.InwardOutwardDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InwardOutwardDate) : ""} />
-                                    <FieldItem label="Invoice Number" value={inwardOutwardData?.InvoiceNumber} />
-                                    <FieldItem label="Invoice Date" value={inwardOutwardData?.InvoiceDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InvoiceDate) : ""} />
+                                    <FieldItem label="Invoice Number" value={inwardOutwardData?.InVoiceNumber} />
+                                    <FieldItem label="Invoice Date" value={inwardOutwardData?.InVoiceDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InVoiceDate) : ""} />
 
                                 </div>
                             </section>
@@ -238,15 +246,16 @@ const ViewInwardOutward: React.FC = () => {
                             </h1>
 
                             <div className="overflow-y-auto h-[240px] thin-scroll pr-2">
-                                {inwardOutwardDocumentData?.map((item, index) => {
+                                {trackingData?.map((item, index) => {
                                     const { bg, text } = getInwardOutwardStatusColor(item.DeliveryStatus || '');
-                                    const isLast = index === inwardOutwardDocumentData.length - 1;
+                                    const isLast = index === trackingData.length - 1;
 
                                     return (
                                         <div key={index} className="flex items-start gap-3">
 
                                             <div className="flex flex-col items-center self-stretch">
                                                 <div className="w-3 h-3 rounded-full bg-blue-600 mt-1 shrink-0" />
+
                                                 {!isLast && (
                                                     <div className="w-[3px] flex-1 bg-blue-300 mt-1" />
                                                 )}
@@ -258,6 +267,7 @@ const ViewInwardOutward: React.FC = () => {
                                                         ? formatDate_dd_MonthName_yy(item.DeliveryDate)
                                                         : '-'}
                                                 </p>
+
                                                 <span
                                                     className="inline-block mt-2 px-3 py-0.5 rounded-full text-xs font-medium"
                                                     style={{ backgroundColor: bg, color: text }}

@@ -342,7 +342,6 @@ import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import StocksHistory from "../components/StocksHistory";
 import { MaterialOut } from "../components/Materialout";
 import MaterialIn from "../components/Materialin";
-import StockSummary from "../components/StockSummary";
 // import { StockSummary } from "../components/StockSummary";
 
 export const ViewStockManagement: React.FC = () => {
@@ -359,10 +358,9 @@ export const ViewStockManagement: React.FC = () => {
     const { canExport } = useMenuPermissions();
 
     const MaterialRequisitionTabList = [
-        { id: 'Summary', label: 'Summary' },
         { id: 'History', label: 'History' },
         { id: 'Material In', label: 'Material In' },
-        { id: 'Material Issued', label: 'Material Issued' },
+        { id: 'Material Out', label: 'Material Out' },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(MaterialRequisitionTabList[0].id);
@@ -431,11 +429,10 @@ export const ViewStockManagement: React.FC = () => {
                     onTabChange={(t) => setActiveTab(t.id)}
                 />
             </div>
-
-            {activeTab === 'Summary' && <StockSummary />}
+            {/* {activeTab === 'Summary' && <StockSummary />} */}
             {activeTab === 'History' && <StocksHistory />}
             {activeTab === 'Material In' && <MaterialIn />}
-            {activeTab === 'Material Issued' && <MaterialOut />}
+            {activeTab === 'Material Out' && <MaterialOut />}
 
         </div>
     )

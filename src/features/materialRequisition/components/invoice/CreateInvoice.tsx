@@ -10,7 +10,7 @@ import * as E from "fp-ts/Either";
 import { Loader } from "@/core/utils/loader";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Input } from "@/ui/components/forms";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
@@ -69,7 +69,7 @@ const CreateInvoice: React.FC = () => {
     const [uploadInvoiceURLFiles, setUploadInvoiceURLFiles] = useState<(File | string)[]>([]);
     const [removeUploadInvoiceUrls, SetRemoveUploadInvoiceUrls] = useState<string[]>([]);
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
-    const { canAction } = useMenuPermissions();
+    const { canAction: canAddInvoice } = useMenuPermissions(ModuleAction.addInvoice);
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
     useEffect(() => {
@@ -283,7 +283,7 @@ const CreateInvoice: React.FC = () => {
         );
     };
 
-    
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <Loader loading={isLoading} title={loadingMessage}>{" "} <div></div>{" "}</Loader>
@@ -448,7 +448,7 @@ const CreateInvoice: React.FC = () => {
                 onCancel={() => navigate("/materialRequisition/view", {
                     state: { activeTab: "Invoice" }
                 })}
-                canAction={canAction}
+                canAction={canAddInvoice}
                 onSave={() => {
                     handleAddUpdateInvoice();
                 }}

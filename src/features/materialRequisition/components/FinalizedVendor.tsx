@@ -5,7 +5,7 @@ import type { FilterWithPaginationVendorForEnquiryRequest, FilterWithPaginationV
 import { useParams } from "react-router-dom"
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext"
 import { useProject } from "@/features/projectMaster/context/ProjectContext"
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
+import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions"
 import { runApiWithLoader } from "@/core/utils"
 import * as E from "fp-ts/Either"
 import { vendorFinalizationService } from "@/features/materialRequisition/services/VendorFinalizationService"
@@ -49,7 +49,7 @@ export const FinalizedVendor: React.FC = () => {
     const { projectId } = useProject()
     const { addToast } = useToast()
     const { detailData } = useMaterialRequisitionListState()
-    const { canAction } = useMenuPermissions('/materialRequisition/view')
+    const { canAction } = useMenuPermissions('/materialRequisition')
     const [checkedFinalVendor, setCheckedFinalVendor] = useState<number | null>(null)
     const [isQuotationAvailable, setQuotationAvailable] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
@@ -62,6 +62,9 @@ export const FinalizedVendor: React.FC = () => {
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [materialRequisitionVendorSelectedList, setMaterialRequisitionVendorSelectedList] = useState<any[]>([])
     const [materialRequisitionVendorFinalizedList, setMaterialRequisitionVendorFinalizedList] = useState<any[]>([])
+    const { canAction: cangetCompare } = useMenuPermissions(ModuleAction.getCompare);
+    const { canAction: cangetQuotation } = useMenuPermissions(ModuleAction.getQuotation);
+    const { canAction: canfinalizeVendor } = useMenuPermissions(ModuleAction.finalizeVendor);
 
     useEffect(() => {
         if (!projectId) return
@@ -346,7 +349,7 @@ export const FinalizedVendor: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "} </Loader>
 
             <div className="flex justify-end gap-2">
-                {isAnyFinalized && canAction && (
+                {isAnyFinalized && canfinalizeVendor && (
 
                     <ApprovalActions
                         approvalStatus={finalizedVendor?.VendorFinalizationApproval}
@@ -368,7 +371,7 @@ export const FinalizedVendor: React.FC = () => {
                     />
                 }
 
-                {!isAnyFinalized && canAction && (
+                {!isAnyFinalized && cangetCompare && (
                     <Button
                         size="sm"
                         style={{
@@ -387,7 +390,7 @@ export const FinalizedVendor: React.FC = () => {
                         Compare
                     </Button>)}
 
-                {!isAnyFinalized && canAction && (
+                {!isAnyFinalized && canfinalizeVendor && (
 
                     <Button
                         size="sm"
@@ -418,7 +421,7 @@ export const FinalizedVendor: React.FC = () => {
                     loading={isLoading}
                 />
 
-                {!isAnyFinalized && canAction && (
+                {!isAnyFinalized && cangetQuotation && (
                     <Button
                         size="sm"
                         style={{
@@ -569,7 +572,7 @@ export const FinalizedVendor: React.FC = () => {
                                 checked={selectedVendorIds.length === materialRequisitionVendorFinalizedList.length}
                                 disabled={!canAction}
                                 onChange={() => canAction && toggleVendorSelectAllVisible()} />
-                                
+
                             <Input
                                 type="text"
                                 placeholder="Search Vendor"

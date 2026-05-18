@@ -513,6 +513,8 @@ export const AddUpdateGRN = () => {
         else if (materialData.TotalReceivedMaterialQuantity > materialData.MaterialQuantity) {
             newErrors.TotalReceivedMaterialQuantity = "Received Quantity cannot be greater than Material Quantity";
         }
+        if (!materialData.QualityAnalystRemark)
+            newErrors.QualityAnalystRemark = "Quality Analyst Remark is required"
 
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -824,6 +826,8 @@ export const AddUpdateGRN = () => {
                                 QualityAnalystRemark: e.target.value
                             }))
                         }
+                        required
+                        error={errors.QualityAnalystRemark}
                     />
                 </div>
             </Modal >

@@ -16,6 +16,7 @@ import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { fetchTncMasterDropdown } from "@/features/tnc/tncDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import RichTextEditor from "@/ui/components/forms/RichTextEditor";
+import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormState = (): GenerateMaterialRequisitionPurchaseOrderPdfData => ({
     MaterialRequisitionId: 0,
@@ -53,6 +54,7 @@ export const PurchaseOrder: React.FC = () => {
     const currentUniquekey = listState.Uniquekey
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isMaximized, setIsMaximized] = useState(false);
+    const { canAction: canGeneratePurchaseOrder } = useMenuPermissions(ModuleAction.generatePurchaseOrder);
 
     useEffect(() => {
         if (!projectId) return
@@ -276,16 +278,17 @@ export const PurchaseOrder: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
 
             <div className="flex justify-end gap-2">
-                {!hasPurchaseOrder && (
+                {!hasPurchaseOrder && canGeneratePurchaseOrder && (
                     <>
-                            <Button
-                                color="blue"
-                                variant="solid"
-                                colorMode="extraLight"
-                                onClick={handleGeneratepurchaseorder}
-                                leftIcon={<FileText size={14} />}>
-                                Generate PO
-                            </Button>
+                        <Button
+                            color="blue"
+                            variant="solid"
+                            colorMode="extraLight"
+                            onClick={handleGeneratepurchaseorder}
+                            leftIcon={<FileText size={14} />}
+                        >
+                            Generate PO
+                        </Button>
 
                         <input
                             ref={fileInputRef}
@@ -295,21 +298,21 @@ export const PurchaseOrder: React.FC = () => {
                             onChange={handleUploadPurchaseOrder}
                         />
 
-                            <Button
-                                onClick={() => fileInputRef.current?.click()}
-                                color="blue"
-                                size="mxs"
-                                variant="solid"
-                                colorMode="gradient_dark"
-                                defineWidth
-                                style={{ width: '100px' }}
-                            >
-                                Upload PO
-                            </Button>
+                        <Button
+                            onClick={() => fileInputRef.current?.click()}
+                            color="blue"
+                            size="mxs"
+                            variant="solid"
+                            colorMode="gradient_dark"
+                            defineWidth
+                            style={{ width: '100px' }}
+                        >
+                            Upload PO
+                        </Button>
                     </>
                 )}
             </div>
-
+            
             {hasPurchaseOrder && (
                 <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mt-1 mb-4 ">
                     <div className="flex justify-between">
@@ -360,7 +363,7 @@ export const PurchaseOrder: React.FC = () => {
                 <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center">
                     <div className="w-full h-full bg-white flex flex-col">
                         <div className="flex justify-between items-center p-3 border-b">
-                            
+
                             <h2 className="font-semibold">Purchase Order File</h2>
                             <div className="flex justify-end gap-1">
                                 <button

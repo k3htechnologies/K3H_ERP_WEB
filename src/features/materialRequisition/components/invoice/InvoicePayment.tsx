@@ -318,7 +318,7 @@ const InvoicePayment: React.FC = () => {
                         <span className="text-md text-gray-900"> {invoiceData?.InvoiceNumber}</span>
                     </div>
 
-                    <div className="flex justify-end gap-2 pb-4">
+                    <div className="flex justify-between gap-2 pb-4">
                         <ApprovalActions
                             approvalStatus={invoiceData?.InvoiceStatus}
                             onApprove={() => handleApproveRejectInvoice(invoiceData as MaterialRequisitionInvoiceData, "approve")}

@@ -19,6 +19,7 @@ import { useEffect, useState } from "react";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
 import { Loader } from "@/core/utils/loader";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
+import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     totalAmount = 0,
@@ -29,12 +30,8 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
     const { MaterialRequisitionId, MaterialRequisitionInvoiceId } = useParams();
     const { listState } = useMaterialRequisitionListState();
     const { projectId } = useProject();
-
-    const currentMaterialRequisitionId =
-        MaterialRequisitionId
-            ? Number(MaterialRequisitionId)
-            : listState.MaterialRequisitionId;
-
+    const { canAction: canMakePayments } = useMenuPermissions(ModuleAction.makePayments);
+    const currentMaterialRequisitionId = MaterialRequisitionId ? Number(MaterialRequisitionId) : listState.MaterialRequisitionId;
     const [remainingInvoiceAmount, setRemainingInvoiceAmount] = useState(totalAmount);
 
     const initialFormState = () => ({
@@ -298,8 +295,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                 setLoadingMessage,
                 async () => {
 
-                    const params:
-                        FilterWithPaginationMaterialRequisitionInvoice = {
+                    const params: FilterWithPaginationMaterialRequisitionInvoice = {
                         PageNumber: 1,
                         PageSize: 1,
                         ProjectId: Number(projectId),
@@ -490,7 +486,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                 onCancel={() => navigate(-1)}
                 onSave={handleAddPayment}
                 isLoading={isLoading}
-                canAction
+                canAction={canMakePayments}
             />
 
         </div>

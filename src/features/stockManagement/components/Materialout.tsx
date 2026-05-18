@@ -291,7 +291,7 @@ export const MaterialOut: React.FC = () => {
                 data={MaterialOutForTable}
                 columns={MaterialOutColumn}
                 pagination={MaterialOutPaginationInfo}
-                emptyMessage="No Material Out Data found"
+                emptyMessage="No Material Issued Data found"
                 fixedHeight
                 recordsPerPage={20}
                 className="flex-1"

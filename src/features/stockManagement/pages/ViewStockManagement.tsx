@@ -363,7 +363,7 @@ export const ViewStockManagement: React.FC = () => {
         { id: 'Summary', label: 'Summary' },
         { id: 'History', label: 'History' },
         { id: 'Material In', label: 'Material In' },
-        { id: 'Material Out', label: 'Material Out' },
+        { id: 'Material Issued', label: 'Material Issued' },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(MaterialRequisitionTabList[0].id);

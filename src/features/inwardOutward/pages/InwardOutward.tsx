@@ -285,7 +285,7 @@ export const InwardOutward: React.FC = () => {
             key: 'DocumentTitle',
             label: 'Title',
             width: '15',
-            sortable: false,
+            sortable: true,
             align: 'center',
             render: value => value || '-'
         },

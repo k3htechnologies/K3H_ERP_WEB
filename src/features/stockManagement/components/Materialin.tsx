@@ -164,30 +164,6 @@ export const MaterialIn: React.FC = () => {
         [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
     );
 
-    // const StockManagementHistoryForTable = useMemo(() => {
-    //     if (activeTab === 'History') return MaterialInList;
-
-    //     const typeMap: Record<string, string> = {
-    //         'Material In': 'INWARD',
-    //         'Material Out': 'OUTWARD',
-    //     };
-
-    //     return MaterialInList.filter(
-    //         (item) => item.InwardOutwardType === typeMap[activeTab]
-    //     );
-    // }, [MaterialInList, activeTab]);
-
-    // const StockManagementHistoryPaginationInfo: PaginationInfo = useMemo(
-    //     () => ({
-    //         currentPage: pagination.currentPage,
-    //         totalPages: Math.ceil(StockManagementHistoryForTable.length / pagination.pageSize),
-    //         totalRecords: StockManagementHistoryForTable.length,
-    //         pageSize: pagination.pageSize,
-    //         onPageChange: handlePageChange,
-    //     }),
-    //     [pagination.currentPage, pagination.totalPages, pagination.totalRecords, pagination.pageSize],
-    // );
-
     const MaterialInForTable = useMemo(() => materialInList, [materialInList]);
 
     return (

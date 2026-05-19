@@ -15,6 +15,7 @@ import usePagination from "@/core/hooks/usePagination";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 
 export const MaterialOut: React.FC = () => {
+    
     const [materialOutList, setMaterialOutList] = useState<StockManagementRequestHistoryData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');

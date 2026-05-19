@@ -180,6 +180,7 @@ import MakePayment from '@/features/materialRequisition/components/invoice/MakeP
 import StockManagement from '@/features/stockManagement/pages/StockManagement';
 import { StockManagementListStateProvider } from '@/features/stockManagement/context/StockManagementListStateContext';
 import { StockHistory } from '@/features/stockManagement/components/StocksHistory';
+import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -463,6 +464,9 @@ function App() {
             {/* Stock Management */}
             <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
             <Route path="stock/view" element={<StockManagementListStateProvider><StockHistory /></StockManagementListStateProvider>} />
+
+            {/* Channel Partner Category */}
+            <Route path='channelPartnerCategory' element={<ChannelPartnerCategory />} />
 
           </Route>
 

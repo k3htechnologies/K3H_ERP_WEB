@@ -15,6 +15,7 @@ import usePagination from "@/core/hooks/usePagination";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import { Button } from "@/ui/components/forms/Button";
 import { Modal } from "@/ui/components/Modal/Modal";
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 
 
 interface MaterialUsageForm {
@@ -210,6 +211,7 @@ export const MaterialOut: React.FC = () => {
                         type='button'
                         color='blue'
                         size='sm'
+                        disabled={Number(row.UsedMaterial ?? 0) > 0}
                         onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -301,8 +303,16 @@ export const MaterialOut: React.FC = () => {
                 <Modal
                     isOpen={isUsageModalOpen}
                     onClose={closeUsageModal}
+                    onCancel={closeUsageModal}
                     title="Material Usage"
                     size="sm"
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        handleSaveUsage();
+                    }}
+                    cancelText="Cancel"
+                    saveText="Save"
+                    loading={isSavingUsage}
                 >
                     <div className="space-y-4 p-1">
 
@@ -369,29 +379,8 @@ export const MaterialOut: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="flex justify-end gap-2 border-t border-gray-200 pt-4">
 
-                            <Button
-                                type="button"
-                                color="gray"
-                                onClick={closeUsageModal}
-                                disabled={isSavingUsage}
-                            >
-                                Cancel
-                            </Button>
 
-                            <Button
-                                type="button"
-                                color="blue"
-                                onClick={handleSaveUsage}
-                                disabled={isSavingUsage}
-                            >
-                                {isSavingUsage
-                                    ? "Saving..."
-                                    : "Save"}
-                            </Button>
-
-                        </div>
                     </div>
                 </Modal>
             )}

@@ -178,8 +178,8 @@ import CreateInvoice from '@/features/materialRequisition/components/invoice/Cre
 import InvoicePayment from '@/features/materialRequisition/components/invoice/InvoicePayment';
 import MakePayment from '@/features/materialRequisition/components/invoice/MakePayment';
 import StockManagement from '@/features/stockManagement/pages/StockManagement';
+import ViewStockManagement from '@/features/stockManagement/pages/ViewStockManagement';
 import { StockManagementListStateProvider } from '@/features/stockManagement/context/StockManagementListStateContext';
-import { StockHistory } from '@/features/stockManagement/components/StocksHistory';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -462,7 +462,7 @@ function App() {
 
             {/* Stock Management */}
             <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
-            <Route path="stock/view" element={<StockManagementListStateProvider><StockHistory /></StockManagementListStateProvider>} />
+            <Route path="stock/view" element={<StockManagementListStateProvider><ViewStockManagement /></StockManagementListStateProvider>} />
 
           </Route>
 

@@ -89,7 +89,7 @@ export const StockManagement: React.FC = () => {
     );
 
     const loadStockManagementData = async (page: number = pagination.currentPage, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string,) => {
-        
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -353,11 +353,11 @@ export const StockManagement: React.FC = () => {
         ) {
             newErrors.MaterialQuantityInwardOutward = "You Cannot remove stock more than available stock.";
         }
-        if (formData.InwardOutwardType === "INWARD" && !formData.SenderName?.trim()) {
-            newErrors.SenderName = "Sender Name is required.";
+        if (formData.InwardOutwardType === "INWARD" && !formData.PartyName?.trim()) {
+            newErrors.PartyName = "Party Name is required.";
         }
-        if (formData.InwardOutwardType === "OUTWARD" && !formData.ReceiverName?.trim()) {
-            newErrors.ReceiverName = "Receiver Name is required.";
+        if (formData.InwardOutwardType === "OUTWARD" && !formData.PartyName?.trim()) {
+            newErrors.PartyName = "Party Name is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,

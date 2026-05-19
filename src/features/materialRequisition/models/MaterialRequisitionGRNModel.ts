@@ -70,7 +70,10 @@ export interface MaterialRequisitionDetailGRN{
     QualityAnalystRemark: string;
     MaterialRequisitionDetailGRNId: number | 0
     MaterialRequisitionDetailId: number | 0;
-    TotalReceivedMaterialQuantity:  number
+    TotalReceivedMaterialQuantity: number
+    TotalReceivedQuantityByRequisition?: number
+    IsTolerant?: boolean
+    TolerancePercentage?: number
 }
 
 export interface DeleteMaterialRequisitionGRN {

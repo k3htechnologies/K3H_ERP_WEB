@@ -55,6 +55,7 @@ export const SubMaterialMasterViewModal: React.FC<SubMaterialMasterViewModalProp
         <FieldItem label="Material Name" value={data.MaterialName} isRow withBorder={true} />
         <FieldItem label="Sub Material Name" value={data.SubMaterialName} isRow withBorder={true} className='font-medium text-blue-900 ' />
         <FieldItem label="UOM" value={data.Uom} isRow withBorder={true} />
+        <FieldItem label="Tolerance Allowed" value={data.IsTolerant ? 'Yes' : 'No'} isRow withBorder={true} />
 
         <h4 className="text-lg font-semibold">
           Action Details

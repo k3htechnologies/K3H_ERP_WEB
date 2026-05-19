@@ -343,7 +343,6 @@ import StocksHistory from "../components/StocksHistory";
 import { MaterialOut } from "../components/Materialout";
 import MaterialIn from "../components/Materialin";
 import StockSummary from "../components/StockSummary";
-// import { StockSummary } from "../components/StockSummary";
 
 export const ViewStockManagement: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);

@@ -31,8 +31,7 @@ export interface AddUpdateStockManagementRequest {
     Reason: string | null
     InwardOutwardType: string | null
     MaterialQuantityInwardOutward: number | 0
-    SenderName: string | null
-    ReceiverName: string | null
+    PartyName: string
 }
 
 export interface FilterWithPaginationStockManagementHistoryRequest {
@@ -68,8 +67,7 @@ export interface AddUpdateStockManagementRequest {
     Reason: string | null
     InwardOutwardType: string | null
     MaterialQuantityInwardOutward: number | 0
-    SenderName:string | null
-    ReceiverName:string | null
+    PartyName:string
 }
 
 export type StockManagementListResponse = ApiResponse<StockManagementRequestData[]>

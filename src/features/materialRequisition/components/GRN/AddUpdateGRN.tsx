@@ -48,7 +48,10 @@ const initialFormState = (): MaterialRequisitionDetailGRN => ({
     TotalReceivedMaterialQuantity: 0,
     QualityAnalystRemark: '',
     MaterialRequisitionDetailGRNId: 0,
-    MaterialRequisitionDetailId: 0
+    MaterialRequisitionDetailId: 0,
+    TotalReceivedQuantityByRequisition: 0,
+    IsTolerant: false,
+    TolerancePercentage: 0,
 })
 export const AddUpdateGRN = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -57,7 +60,7 @@ export const AddUpdateGRN = () => {
     const { addToast } = useToast();
     const [materialList, setMaterialList] = useState<MaterialRequisitionDetailGRN[]>([]);
     const [materialData, setMaterialData] = useState<MaterialRequisitionDetailGRN>(() => initialFormState());
-    const [, setMaterialSubMaterialList] = useState<MaterialSubMaterialUOM[]>([]);
+    const [materialSubMaterialList, setMaterialSubMaterialList] = useState<MaterialSubMaterialUOM[]>([]);
     const [formData, setFormData] = useState<AddUpdateMaterialRequisitionGRNRequest>(() => initialFormStateMaterialRequisition())
     const [uploadChallanFiles, setUploadChallanFiles] = useState<(File | string)[]>([]);
     const [removedUploadChallanUrls, setRemovedUploadChallanUrls] = useState<string[]>([]);
@@ -165,6 +168,9 @@ export const AddUpdateGRN = () => {
                                     MaterialQuantity: matched?.MaterialQuantity ?? 0,
                                     TotalReceivedMaterialQuantity: x.TotalReceivedMaterialQuantity,
                                     QualityAnalystRemark: x.QualityAnalystRemark,
+                                    TotalReceivedQuantityByRequisition: matched?.MaterialReceivedQuantityTillDate ?? 0,
+                                    IsTolerant: matched?.IsTolerant ?? false,
+                                    TolerancePercentage: matched?.TolerancePercentage ?? matched?.Tolerance ?? 0,
                                 };
                             })
                         );
@@ -211,7 +217,10 @@ export const AddUpdateGRN = () => {
             QualityAnalystRemark: row.QualityAnalystRemark,
             MaterialRequisitionDetailGRNId: row.MaterialRequisitionDetailGRNId,
             MaterialRequisitionDetailId: row.MaterialRequisitionDetailId,
-            MaterialQuantity: row.MaterialQuantity
+            MaterialQuantity: row.MaterialQuantity,
+            TotalReceivedQuantityByRequisition: row.TotalReceivedQuantityByRequisition ?? 0,
+            IsTolerant: row.IsTolerant ?? false,
+            TolerancePercentage: row.TolerancePercentage ?? 0,
         });
         setAddMaterialPopUp(true);
     }, [materialOptions]);
@@ -348,6 +357,46 @@ export const AddUpdateGRN = () => {
         return { label, value: String(id) };
     };
 
+    const selectedMaterialDetail = detailData.find(x =>
+        x.MaterialMasterId === materialData.MaterialMasterId &&
+        x.SubMaterialMasterId === materialData.SubMaterialMasterId
+    ) as any;
+
+    const selectedMaterialSubMaterial = materialSubMaterialList.find(x =>
+        x.MaterialMasterId === materialData.MaterialMasterId &&
+        x.SubMaterialMasterId === materialData.SubMaterialMasterId
+    );
+
+    const AddedQuantity = materialList
+        .filter(x =>
+            x.MaterialMasterId === materialData.MaterialMasterId &&
+            x.SubMaterialMasterId === materialData.SubMaterialMasterId
+        )
+        .reduce((sum, row) => sum + (row.TotalReceivedMaterialQuantity ?? 0), 0);
+
+    const ReceivedQuantity = materialData.TotalReceivedQuantityByRequisition ?? selectedMaterialDetail?.MaterialReceivedQuantityTillDate ?? 0;
+    const totalReceived = ReceivedQuantity + AddedQuantity;
+
+    const pendingQuantity = Math.max(
+        parseFloat((materialData.MaterialQuantity - totalReceived).toFixed(2)),
+        0
+    );
+
+    const isToleranceAllowed =
+        materialData.IsTolerant ?? selectedMaterialDetail?.IsTolerant ?? selectedMaterialSubMaterial?.IsTolerant ?? false;
+
+    const tolerancePercentage =
+        materialData.TolerancePercentage ?? selectedMaterialDetail?.TolerancePercentage ?? selectedMaterialDetail?.Tolerance ??
+        selectedMaterialSubMaterial?.MaterialTolerant ?? 0;
+
+    const allowedReceivedQuantity = isToleranceAllowed
+        ? pendingQuantity + (pendingQuantity * tolerancePercentage) / 100
+        : pendingQuantity;
+
+    const currentEditedRowQuantity = editIndex !== null ? materialList[editIndex]?.TotalReceivedMaterialQuantity ?? 0 : 0;
+    const effectiveAllowedReceivedQuantity = editIndex !== null
+        ? currentEditedRowQuantity + allowedReceivedQuantity
+        : allowedReceivedQuantity;
 
     const validateMaterialRequisitionGRNForm = (): {
         isValid: boolean
@@ -389,7 +438,8 @@ export const AddUpdateGRN = () => {
             .map(x => ({
                 MaterialRequisitionDetailGRNId: x.MaterialRequisitionDetailGRNId ?? 0,
                 MaterialRequisitionDetailId: x.MaterialRequisitionDetailId,
-                TotalReceivedMaterialQuantity: x.TotalReceivedMaterialQuantity
+                TotalReceivedMaterialQuantity: x.TotalReceivedMaterialQuantity,
+                QualityAnalystRemark: x.QualityAnalystRemark,
             }));
 
         form.append(
@@ -510,8 +560,12 @@ export const AddUpdateGRN = () => {
 
         if (!materialData.TotalReceivedMaterialQuantity)
             newErrors.TotalReceivedMaterialQuantity = "Received Quantity is required";
-        else if (materialData.TotalReceivedMaterialQuantity > materialData.MaterialQuantity) {
-            newErrors.TotalReceivedMaterialQuantity = "Received Quantity cannot be greater than Material Quantity";
+        else if (materialData.TotalReceivedMaterialQuantity > effectiveAllowedReceivedQuantity) {
+            if (isToleranceAllowed) {
+                newErrors.TotalReceivedMaterialQuantity = `Received Quantity cannot be greater than allowed quantity ${effectiveAllowedReceivedQuantity} (${pendingQuantity} + ${tolerancePercentage}% tolerance).`;
+            } else {
+                newErrors.TotalReceivedMaterialQuantity = `Received Quantity cannot be greater than pending quantity ${effectiveAllowedReceivedQuantity}.`;
+            }
         }
         if (!materialData.QualityAnalystRemark)
             newErrors.QualityAnalystRemark = "Quality Analyst Remark is required"
@@ -529,6 +583,26 @@ export const AddUpdateGRN = () => {
 
         if (!validation.isValid) {
             setErrors(validation.errors);
+            return;
+        }
+
+        const otherRowsQuantity = materialList
+            .filter((_, i) => i !== editIndex)
+            .filter(x =>
+                x.MaterialMasterId === materialData.MaterialMasterId &&
+                x.SubMaterialMasterId === materialData.SubMaterialMasterId
+            )
+            .reduce((sum, row) => sum + (row.TotalReceivedMaterialQuantity ?? 0), 0);
+
+        const cumulativeTotal = otherRowsQuantity + materialData.TotalReceivedMaterialQuantity;
+        const maxAllowedTotal = isToleranceAllowed
+            ? materialData.MaterialQuantity + (materialData.MaterialQuantity * tolerancePercentage) / 100
+            : materialData.MaterialQuantity;
+
+        if (cumulativeTotal > maxAllowedTotal) {
+            setErrors({
+                TotalReceivedMaterialQuantity: `Total received (${cumulativeTotal}) cannot exceed ${maxAllowedTotal}. Already added: ${otherRowsQuantity}.`
+            });
             return;
         }
 
@@ -722,6 +796,11 @@ export const AddUpdateGRN = () => {
 
                             if (!selected) return;
 
+                            const selectedUOM = materialSubMaterialList.find(
+                                x => x.MaterialMasterId === selected.MaterialMasterId &&
+                                    x.SubMaterialMasterId === selected.SubMaterialMasterId
+                            );
+
                             setMaterialData(prev => ({
                                 ...prev,
 
@@ -733,8 +812,10 @@ export const AddUpdateGRN = () => {
                                 UomMasterId: selected.UomMasterId,
                                 MaterialQuantity: selected.MaterialQuantity,
                                 RequiredDate: selected.RequiredDate,
-                                MaterialRequisitionDetailId: selected.MaterialRequisitionDetailId
-
+                                MaterialRequisitionDetailId: selected.MaterialRequisitionDetailId,
+                                TotalReceivedQuantityByRequisition: selected.MaterialReceivedQuantityTillDate ?? 0,
+                                IsTolerant: selected.IsTolerant ?? selectedUOM?.IsTolerant ?? false,
+                                TolerancePercentage: selected.TolerancePercentage ?? selected.Tolerance ?? selectedUOM?.MaterialTolerant ?? 0,
                             }));
 
                             setDropdownSubMaterialResetKey(p => p + 1);
@@ -764,13 +845,21 @@ export const AddUpdateGRN = () => {
                                 x => x.SubMaterialMasterId === id
                             );
 
+                            const selectedUOM = materialSubMaterialList.find(
+                                x => x.MaterialMasterId === materialData.MaterialMasterId &&
+                                    x.SubMaterialMasterId === id
+                            );
+
                             setMaterialData(prev => ({
                                 ...prev,
                                 SubMaterialMasterId: id,
                                 SubMaterialName: selected?.SubMaterialName ?? "",
                                 UomCode: selected?.UomCode ?? "",
                                 UomMasterId: selected?.UomMasterId ?? 0,
-                                MaterialRequisitionDetailId: selected?.MaterialRequisitionDetailId ?? 0
+                                MaterialRequisitionDetailId: selected?.MaterialRequisitionDetailId ?? 0,
+                                TotalReceivedQuantityByRequisition: selected?.MaterialReceivedQuantityTillDate ?? prev.TotalReceivedQuantityByRequisition ?? 0,
+                                IsTolerant: selected?.IsTolerant ?? selectedUOM?.IsTolerant ?? prev.IsTolerant ?? false,
+                                TolerancePercentage: selected?.TolerancePercentage ?? selected?.Tolerance ?? selectedUOM?.TolerancePercentage ?? selectedUOM?.Tolerance ?? prev.TolerancePercentage ?? 0,
                             }));
                         }}
                         error={errors.SubMaterialMasterId}
@@ -781,11 +870,11 @@ export const AddUpdateGRN = () => {
                         placeholder="UOM" maxLength={250} error={errors.UomMasterId} />
 
                     <Input
-                        type="number"
-                        label="Quantity"
+                        type="text"
+                        label="Pending Quantity"
                         required
                         disabled
-                        value={materialData.MaterialQuantity}
+                        value={`${pendingQuantity}`}
                         onChange={(e) => {
                             const value = e.target.value;
 
@@ -794,7 +883,7 @@ export const AddUpdateGRN = () => {
                                 MaterialQuantity: value === "" ? 0 : Number(value)
                             }));
                         }}
-                        placeholder="Quantity"
+                        placeholder="Pending Quantity"
                         min={0}
                         error={errors.MaterialQuantity}
                     />
@@ -814,6 +903,8 @@ export const AddUpdateGRN = () => {
                         }}
                         placeholder="Quantity"
                         min={0}
+                        step="0.01"
+
                         error={errors.TotalReceivedMaterialQuantity}
                     />
 

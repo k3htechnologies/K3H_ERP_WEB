@@ -439,6 +439,11 @@ export const getPageInfo = (path: string) => {
                 title: "Performance",
                 description: "Track Team Progress Against Every Target",
             }
+        case 'channelPartnerCategory':
+            return {
+                title: "Channel Partner Category",
+                description: "Profile"
+            }
 
 
 

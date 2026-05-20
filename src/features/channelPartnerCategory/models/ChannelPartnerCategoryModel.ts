@@ -11,8 +11,6 @@ export interface ChannelPartnerCategoryData {
     CategoryName: string | null
     BookingRevenue: number | 0
     NoOfEnquirys: number | 0
-    NoOfBookings: number | 0
-    ChannelPartnerCategoryJSON: string
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

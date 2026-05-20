@@ -1,13 +1,11 @@
 import baseClient from "@/core/config/baseClient";
-import type { AddUpdatechannelPartnerCategoryRequest, ChannelPartnerCategoryListResponse, ChannelPartnerCategorySaveResponse, FilterWithPaginationchannelPartnerCategoryRequest } from "../models/ChannelPartnerCategoryModel";
-import { channelPartnerCategoryApi } from "../api/ChannelPartnerCategoryApi";
+import type { AddUpdatechannelPartnerCategoryRequest, ChannelPartnerCategoryListResponse, ChannelPartnerCategorySaveResponse, FilterWithPaginationchannelPartnerCategoryRequest } from "@/features/channelPartnerCategory/models/ChannelPartnerCategoryModel";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
+import { channelPartnerCategoryApi } from "@/features/channelPartnerCategory/api/ChannelPartnerCategoryApi";
 
 export abstract class ChannelPartnerCategoryDatasource {
-
     abstract pullChannelPartnerCategoryData(params: FilterWithPaginationchannelPartnerCategoryRequest, signal?: AbortSignal): Promise<ChannelPartnerCategoryListResponse>;
     abstract addUpdatechannelPartnerCategory(data: AddUpdatechannelPartnerCategoryRequest): Promise<ChannelPartnerCategorySaveResponse>;
-    
 }
 
 export class ChannelPartnerCategoryImpl implements ChannelPartnerCategoryDatasource {
@@ -47,7 +45,7 @@ export class ChannelPartnerCategoryImpl implements ChannelPartnerCategoryDatasou
                 params
             )
             return response
-            
+
         } catch (error) {
 
             console.error('ERROR : ADD UPDATE CHANNEL PARTNER CATEGORY', error)

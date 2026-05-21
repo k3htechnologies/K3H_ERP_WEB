@@ -176,9 +176,14 @@ import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
 import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
 import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
 import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/BookingBrokerageListStateContext';
-
 // InventoryParkingOverallReport
 import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
+
+// TicketMaster
+import Ticket from '@/features/ticket/pages/Ticket';
+import ViewTicket from '@/features/ticket/pages/ViewTicket';
+import { TicketListStateProvider } from '@/features/ticket/context/TicketListStateContext';
+import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -355,10 +360,12 @@ function App() {
 
             {/* COMMAN */}
             <Route path="event" element={<Event />} />
+            <Route path='ticket' element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
+            <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
+            <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
             <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
-
 
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />
@@ -460,6 +467,8 @@ function App() {
             <Route path="brokerage/brokerageInvoice/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdateBrokerageInvoice /></BookingBrokerageListStateProvider>} />
             <Route path="brokerage/PaidBrokerageBooking/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdatePaidBrokerageBooking /></BookingBrokerageListStateProvider>} />
 
+
+
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
@@ -467,6 +476,9 @@ function App() {
           <Route path='Terms' element={<Terms />} />
           <Route path='Privacy-Policy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
+
+
+
 
         </Routes>
       </Suspense>

@@ -84,6 +84,9 @@ export const LOCAL_STORAGE_KEYS = {
     //MORE
     INWARD_OUTWARD_SELECTED_COLUMNS: 'inwardOutward.selectedColumns',
 
+    //TICKET MASTER
+    TICKET_MASTER_SELECTED_COLUMNS: 'ticket.selectedColumns',
+
 
 
 
@@ -111,5 +114,5 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     PAY_TRACK_BOOKING: 'payTrackBooking.listState',
     INWARD_OUTWARD: 'inwardOutward.listState',
     BOOKING_Brokerage: 'bookingBrokerage.listState',
-
+    TICKET: 'ticket.listState',
 } as const

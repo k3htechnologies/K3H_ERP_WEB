@@ -1,5 +1,6 @@
 import * as E from "fp-ts/Either";
 import { employeeMasterService } from "@/features/employeeMaster/services/EmployeeMasterService";
+import { ticketService } from "@/features/ticket/services/TicketService";
 
 export const fetchEmployeeMasterDropdown = async (pageNumber: number, params?: { value?: string; departmentName?: string }) => {
   try {
@@ -51,5 +52,47 @@ export const fetchEmployeeMasterById = async (employeeId: number) => {
 
   return responseEither.right.Data?.[0] || null;
 };
+
+export const formatEmployeeLabelWithTickets = (d: any) => {
+  const name = d.EmployeeName;
+  const ticketCount = d.ActiveTickets ?? 0;
+
+  return `${name} - ${ticketCount}`;
+};
+
+export const fetchCollaboratorWithTicketsDropdown = async (pageNumber: number, params?: { value?: string, employeeId?: number }) => {
+  try {
+    const responseEither = await ticketService.apiCallPullAssignedActiveTickets({
+      PageSize: 20,
+      PageNumber: pageNumber,
+      EmployeeName: params?.value || "",
+      EmployeeId: params?.employeeId ?? 0,
+      SortBy: "DESC",
+
+    });
+
+    if (E.isLeft(responseEither)) {
+      return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
+    }
+
+    const apiResponse = responseEither.right;
+
+    const itemList = (apiResponse?.Data || []).map((d: any) => ({
+      label: formatEmployeeLabelWithTickets(d),
+      value: String(d.EmployeeId),
+    }));
+
+
+    return {
+      totalNumberOfRecord: apiResponse?.TotalNumberOfRecord ?? itemList.length,
+      itemList,
+    };
+  } catch (err) {
+    console.error("FETCH COLLABORATOR DROPDOWN ERROR", err);
+    return { totalNumberOfRecord: 0, itemList: [] };
+  }
+};
+
+
 
 

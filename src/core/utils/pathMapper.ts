@@ -96,7 +96,10 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/companypolicy': '/companyPolicy',
 
         // InventoryParkingOverallReport
-        '/inventoryparkingoverallreport': '/inventoryParkingOverallReport'
+        '/inventoryparkingoverallreport': '/inventoryParkingOverallReport',
+
+        // Ticket Master Raising
+        '/ticket': '/ticket'
     }
 
 

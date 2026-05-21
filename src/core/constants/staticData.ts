@@ -43,7 +43,7 @@ export const MASTER_DATA = {
 
   bankAccountType: ['Current', 'Overdraft', 'RERA Escrow Current Account', 'Salary', 'Saving'],
 
-  natureOfAccount : [
+  natureOfAccount: [
     "100% Collection Account",
     "100% RERA Account",
     "30% RERA Account",
@@ -313,6 +313,13 @@ export const MASTER_DATA = {
 
   documentType: ['Inward', 'Outward'],
 
+  platform: ['ERP', 'Application', 'Website'],
+
+  module: ['Dashboard', 'Inventory', 'Project Document', 'Legal', 'Marketing', 'Procurement', 'Project', 'Stock Management', 'Channel Partner', 'Sale', 'CRM', 'Setting', 'Payroll', 'Redevelopment', 'Operation'],
+
+  assignStatusType: ['Open', 'Assigned', 'InProgress', 'Resolved', 'Closed', 'ReOpen']
+
+
 } as const
 
 // ============================================================================
@@ -371,7 +378,7 @@ export const ETHNICITY_TYPE_OPTION = toOptions(MASTER_DATA.ethnicity)
 export const POSSESSION_TYPE_OPTIONS = toOptions(MASTER_DATA.possessionType)
 export const NATIONALITY_TYPE_OPTION = toOptions(MASTER_DATA.nationality)
 export const BANK_ACCOUNT_TYPE = toOptions(MASTER_DATA.bankAccountType)
-export const NATURE_OF_ACCOUNT=toOptions(MASTER_DATA.natureOfAccount)
+export const NATURE_OF_ACCOUNT = toOptions(MASTER_DATA.natureOfAccount)
 export const LAND_OWNERSHIP_TYPE = toOptions(MASTER_DATA.landOwnershipType)
 export const FLAT_UNIT_TYPE = toOptions(MASTER_DATA.flat_unit_Type)
 export const RESIDENTIAL_FLAT_CONFIGURATION = toOptions(MASTER_DATA.residential_flat_configuration_Type)
@@ -435,6 +442,10 @@ export const DELIVERY_STATUS = toOptions(MASTER_DATA.deliveryStatus);
 export const DELIVERY_MODE = toOptions(MASTER_DATA.deliveryMode);
 export const DOCUMENT_TYPE = toOptions(MASTER_DATA.documentType);
 export const REFUNDED_DETAILS_AMOUNT_TYPE_OPTIONS = toOptions(MASTER_DATA.refundedDetaisAmountType);
+export const PLATFORM_OPTIONS = toOptions(MASTER_DATA.platform);
+export const MODULE_OPTIONS = toOptions(MASTER_DATA.module);
+export const ASSIGN_STATUS_TYPE_OPTIONS = toOptions(MASTER_DATA.assignStatusType);
+
 
 
 // ============================================================================

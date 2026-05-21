@@ -36,7 +36,7 @@ const CPEnquiryReport: React.FC = () => {
     const [channelPartnerNameSearch, setChannelPartnerNameSearch] = useState("");
     const { pagination, setPagination } = usePagination(20);
     const [channelPartnerList, setChannelPartnerList] = useState<ChannelPartnerList[]>([]);
- 
+
     useEffect(() => {
 
         setChannelPartnerList([]);
@@ -166,10 +166,11 @@ const CPEnquiryReport: React.FC = () => {
                 label: "Channel Partner Name",
                 fixed: "left",
                 width: "20",
-                render: (value,row) => (
-                    <span className="text-blue-600 font-semibold">
-                        {row.SystemGeneratedCode || ""}  {value}
-                    </span>
+                render: (value, row) => (
+                    <div className="text-blue-600 font-semibold">
+                        <div>{row.SystemGeneratedCode || ""}</div>
+                        <div>{value}</div>
+                    </div>
                 )
             },
             {

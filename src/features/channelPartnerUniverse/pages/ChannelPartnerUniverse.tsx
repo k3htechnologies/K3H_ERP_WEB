@@ -13,7 +13,6 @@ import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { useChannelPartnerUniverseListState } from '@/features/channelPartnerUniverse/context/ChannelPartnerUniverseListStateContext';
 import { useNavigate } from 'react-router-dom';
 import { channelPartnerUniverseService } from '@/features/channelPartnerUniverse/services/ChannelPartneUniverseService';
-import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { AlertTriangle } from 'lucide-react';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import type { ChannelPartnerUniverseData, FilterWithPaginationChannelPartnerUniverseRequest } from '@/features/channelPartnerUniverse/models/ChannelPartnerUniverseModel';
@@ -51,8 +50,6 @@ export const ChannelPartnerUniverse: React.FC = () => {
 
   const navigate = useNavigate();
 
-  const { projectId } = useProject();
-
   useEffect(() => {
 
     setPagination({ currentPage: listState.page });
@@ -66,7 +63,7 @@ export const ChannelPartnerUniverse: React.FC = () => {
       loadChannelPartner(listState.page, listState.filters, listState.sortInfo);
 
     }
-  }, [projectId, listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   useEffect(() => {
 

@@ -106,7 +106,7 @@ export const InwardOutward: React.FC = () => {
     const fetchInwardOutwardList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadInwardOutward(page, filters, sort);
     }
-    const loadInwardOutward = async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchtext?: string) => {
+    const loadInwardOutward = async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchtext?: string, DocumentType?: string) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -119,7 +119,7 @@ export const InwardOutward: React.FC = () => {
                     SystemGeneratedCode: searchtext ?? filterParams.SystemGeneratedCode?.trim() ?? undefined,
                     ReceiverName: filterParams.ReceiverName ?? undefined,
                     SenderName: filterParams.SenderName ?? undefined,
-                    DocumentType: filterParams.DocumentType ?? undefined,
+                    DocumentType: DocumentType ?? filterParams.DocumentType?.trim() ?? undefined,
                     SortBy: getSortByParam(sort ?? null, InwardOutwardDataColumns),
                 }
 
@@ -540,7 +540,8 @@ export const InwardOutward: React.FC = () => {
             align: 'center',
             fixed: 'right',
             render: (_value, row) => {
-                if (!canAction) return null;
+
+                const showDelete = (row.DeliveryStatus || "") === "" ? true : false;
 
                 return (
                     <div className="flex justify-between">
@@ -548,14 +549,17 @@ export const InwardOutward: React.FC = () => {
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                if (!showDelete) return;
                                 handleConfirmationDialogBoxOpen(row);
                             }}
                             color="transparent"
                             isborderRadius
+                            disabled={!showDelete}
                             size="sm"
                             style={{
-                                color: "red",
-                                padding: "4px 8px",
+                                color: showDelete ? 'red' : '#9CA3AF',
+                                cursor: showDelete ? 'pointer' : 'not-allowed',
+                                opacity: showDelete ? 1 : 0.5
                             }}
                             title="Delete Inward Outward"
                         >
@@ -565,13 +569,18 @@ export const InwardOutward: React.FC = () => {
                         <Button
                             color="transparent"
                             size="sm"
+                            disabled={!showDelete}
+
                             style={{
-                                color: 'green',
-                                padding: '0px 8px'
+                                color: showDelete ? 'green' : '#9CA3AF',
+                                cursor: showDelete ? 'pointer' : 'not-allowed',
+                                opacity: showDelete ? 1 : 0.5
                             }}
+                            
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
+                                if (!showDelete) return;
                                 handleRevert(row)
                             }}
                             leftIcon={<RotateCw className="h-4 w-4" />}
@@ -782,7 +791,7 @@ export const InwardOutward: React.FC = () => {
                     onTabChange={(t) => {
                         setActiveTab(t.id);
 
-                        loadInwardOutward(1, {}, sortInfo, toUpperCase(t.label) === "ALL" ? "" : t.label);
+                        loadInwardOutward(1, {}, sortInfo, searchTerm, toUpperCase(t.label) === "ALL" ? "" : t.label);
                     }}
                 />
 
@@ -885,10 +894,9 @@ export const InwardOutward: React.FC = () => {
                 saveText="Apply "
                 cancelText="Clear"
                 onCancel={() => clearFilters()}
-
                 size="small-half">
                 <div className="space-y-6">
-                     <div>
+                    <div>
                         <Input type="text"
                             label='Document Id'
                             value={tempFilters?.SystemGeneratedCode ?? ''}

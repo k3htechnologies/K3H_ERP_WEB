@@ -66,7 +66,7 @@ export const MASTER_DATA = {
 
   commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
-  flat_unit_facing: ['BACK', 'EAST', 'FRONT', 'GARDEN', 'NORTH', 'PARK', 'ROAD', 'SOUTH', 'WEST'],
+  flat_unit_facing: ['City View', 'Forest / Mangrove View', 'Building View','Internal Amenity View', 'Garden View', 'Club - House View', 'Sea View', 'Open View – No Obstruction', 'Others'],
 
   applicant_type: ['Applicant', 'Co - Applicant'],
 
@@ -332,6 +332,12 @@ export const MASTER_DATA = {
 
   refundedDetaisAmountType: ['Agreement Amount'],
 
+  platform: ['ERP', 'Application', 'Website'],
+
+  module: ['Dashboard', 'Inventory', 'Project Document', 'Legal', 'Marketing', 'Procurement', 'Project', 'Stock Management', 'Channel Partner', 'Sale', 'CRM', 'Setting', 'Payroll', 'Redevelopment', 'Operation'],
+
+  assignStatusType: ['Open', 'Assigned', 'InProgress', 'Resolved', 'Closed', 'ReOpen']
+
 } as const
 
 // ============================================================================
@@ -455,6 +461,9 @@ export const DELIVERY_MODE = toOptions(MASTER_DATA.deliveryMode);
 export const DOCUMENT_TYPE = toOptions(MASTER_DATA.documentType);
 export const REASON_FOR_INAACTIVITY = toOptions(MASTER_DATA.reasonForInactivity);
 export const REFUNDED_DETAILS_AMOUNT_TYPE_OPTIONS = toOptions(MASTER_DATA.refundedDetaisAmountType);
+export const PLATFORM_OPTIONS = toOptions(MASTER_DATA.platform);
+export const MODULE_OPTIONS = toOptions(MASTER_DATA.module);
+export const ASSIGN_STATUS_TYPE_OPTIONS = toOptions(MASTER_DATA.assignStatusType);
 
 
 // ============================================================================

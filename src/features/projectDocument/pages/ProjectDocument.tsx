@@ -797,9 +797,7 @@ const ProjectDocument: React.FC = () => {
     }
 
     if (
-      formData.ProjectDocumentStatus?.toUpperCase() === "ISSUED" &&
-      !hasAnyDocumentFile(projectDocumentFiles, projectDocumentURL, RemoveProjectDocumentUrls)
-    ) {
+      formData.ProjectDocumentStatus?.toUpperCase() === "ISSUED" && !hasAnyDocumentFile(projectDocumentFiles, projectDocumentURL, RemoveProjectDocumentUrls)) {
       newErrors.ProjectDocumentURL = "File is required.";
     }
 

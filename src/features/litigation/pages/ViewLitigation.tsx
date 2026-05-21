@@ -155,6 +155,7 @@ const ViewLitigation: React.FC = () => {
 
   const handleopenClosureModal = (item?: LitigationClosureData) => {
     setErrors({});
+
     setClosureURLFiles([]);
     SetRemoveClosureAttachementUrls([]);
 
@@ -171,6 +172,17 @@ const ViewLitigation: React.FC = () => {
         RemoveClosureAttachementURL: "",
       });
       setClosureURL(item.ClosureAttachementURL || "");
+    }
+    else {
+      setClosureURL("");
+
+      setClosureURLFiles([]);
+
+      SetRemoveClosureAttachementUrls([]);
+
+      setErrors({});
+
+      setClosureFormData(initialClosureFormData);
     }
     setIsClosureModalOpen(true);
   };
@@ -291,11 +303,13 @@ const ViewLitigation: React.FC = () => {
             type: "success",
             title: response.right.SuccessMessage[0],
           });
+          setClosureFormData(initialClosureFormData);
           setIsClosureModalOpen(false);
           setClosureURL("");
           SetRemoveClosureAttachementUrls([]);
           fetchLitigationDetails();
           fetchClouserDetails();
+
         } else {
           addToast({ type: "error", title: response.left?.message });
         }
@@ -329,6 +343,17 @@ const ViewLitigation: React.FC = () => {
         RemoveHearingAttachementURL: "",
       });
       setHearingURL(item.HearingAttachementURL || "");
+    }
+    else {
+      setHearingURL("");
+
+      setHearingURLFiles([]);
+
+      SetRemoveHearingAttachementUrls([]);
+
+      setErrors({});
+
+      setHearingFormData(initialHearingFormData);
     }
     setIsHearingModalOpen(true);
   };
@@ -662,8 +687,8 @@ const ViewLitigation: React.FC = () => {
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
-                  
-                  <FieldItem label="Case / Petiton / Dispute Number" value={litigationData?.CaseNumber} />
+
+                  <FieldItem label="Case / Petition / Dispute Number" value={litigationData?.CaseNumber} />
                 </div>
               </section>
 
@@ -705,7 +730,7 @@ const ViewLitigation: React.FC = () => {
             {/* ================= CLOSURE DETAILS ================= */}
 
             {(litigationStatus === "Closed" || litigationStatus === "Reopen") && (
-              <div className="col-span-7">
+              <div className="col-span-7 pt-3">
                 <div className="bg-white rounded-lg border border-[#135bec2e] shadow-sm p-4 mt-2">
                   <section>
                     <h4 className="text-lg font-semibold text-gray-900 pb-2">Closure Details</h4>
@@ -927,7 +952,7 @@ const ViewLitigation: React.FC = () => {
                             />
                           </div>
                         )}
-                       
+
                       </div>
                     );
                   })

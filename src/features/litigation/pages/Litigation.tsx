@@ -275,12 +275,11 @@ export const Litigation: React.FC = () => {
         width: "16",
         sortable: false,
         align: "left",
-        render: (value, row) => (
+         render: (value) => (
           <TooltipText
             text={value || "-"}
-            maxWidth="300px"
-            tooltipThreshold={40}
-            onClick={() => handleViewLitigationDetails(row)}
+            maxWidth="250px"
+            tooltipThreshold={25}
           />
         ),
       },
@@ -290,7 +289,13 @@ export const Litigation: React.FC = () => {
         width: "15",
         sortable: true,
         align: "left",
-        render: (value) => value || "-",
+         render: (value) => (
+          <TooltipText
+            text={value || "-"}
+            maxWidth="250px"
+            tooltipThreshold={25}
+          />
+        ),
       },
       {
         key: "HearingDate",
@@ -347,7 +352,13 @@ export const Litigation: React.FC = () => {
         width: "15",
         sortable: true,
         align: "left",
-        render: (value) => value || "-",
+         render: (value) => (
+          <TooltipText
+            text={value || "-"}
+            maxWidth="250px"
+            tooltipThreshold={25}
+          />
+        ),
       },
       {
         key: "CourtLocation",
@@ -355,7 +366,13 @@ export const Litigation: React.FC = () => {
         width: "15",
         sortable: false,
         align: "left",
-        render: (value) => value || "-",
+         render: (value) => (
+          <TooltipText
+            text={value || "-"}
+            maxWidth="250px"
+            tooltipThreshold={25}
+          />
+        ),
       },
       {
         key: "CourtType",
@@ -363,7 +380,13 @@ export const Litigation: React.FC = () => {
         width: "16",
         sortable: false,
         align: "left",
-        render: (value) => value || "-",
+        render: (value) => (
+          <TooltipText
+            text={value || "-"}
+            maxWidth="250px"
+            tooltipThreshold={25}
+          />
+        ),
       },
       {
         key: "Plantiff",

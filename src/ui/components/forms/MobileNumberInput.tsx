@@ -1,5 +1,5 @@
 import React from "react";
-import { Phone, ChevronDown, InfoIcon } from "lucide-react";
+import { Phone, InfoIcon } from "lucide-react";
 import ReactCountryFlag from "react-country-flag";
 import { Input } from "./Input";
 import { SinglePageSelection } from "../DropDown/SinglePageSelection";
@@ -212,19 +212,6 @@ const MobileNumberInput: React.FC<MobileNumberInputProps> = ({
 
                             value: country.code,
                         }))}
-                    />
-
-                    {/* Arrow */}
-                    <ChevronDown
-                        size={16}
-                        style={{
-                            position: "absolute",
-                            right: "10px",
-                            top: "50%",
-                            transform: "translateY(-50%)",
-                            pointerEvents: "none",
-                            color: "#6b7280",
-                        }}
                     />
                 </div>
 

@@ -16,6 +16,8 @@ import ApprovalActions from "@/features/modulesWorkflowApproval/components/Appro
 import type { ModulesApprovalStatusRequest } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import type { PayTrackBookingData } from "@/features/crmPayTrack/models/PayTrackBookingModel";
+import SnagChecklist from "@/features/crmPayTrack/components/SnagChecklist";
+import FlatHandoverChecklist from "@/features/crmPayTrack/components/FlatHandoverCheckList";
 export const ViewPayTrack: React.FC = () => {
 
   const navigate = useNavigate();
@@ -35,6 +37,8 @@ export const ViewPayTrack: React.FC = () => {
     { id: 'BankLoans', label: 'Bank Loans' },
     { id: 'Account', label: 'Account' },
     { id: 'ModifiedRequest', label: 'Modified Request' },
+    { id: 'SnagChecklist', label: 'Snag Checklist' },
+    { id: 'FlatHandoverChecklist', label: 'Flat Handover Checklist' },
     { id: 'FlatHandover', label: 'Flat Handover' },
     { id: 'Files', label: 'Files' },
     { id: 'Call Log', label: 'Call Logs' },
@@ -122,6 +126,8 @@ export const ViewPayTrack: React.FC = () => {
       {activeTab === "BankLoans" && <BankLoans />}
       {activeTab === "Account" && <Account />}
       {activeTab === "ModifiedRequest" && <ModifiedRequest />}
+      {activeTab === "SnagChecklist" && <SnagChecklist />}
+      {activeTab === "FlatHandoverChecklist" && <FlatHandoverChecklist />}
       {activeTab === "FlatHandover" && <BookingFlatHandoverFile fileType="FLAT HANDOVER" pageName="Flat Handover" />}
       {activeTab === "Files" && <BookingFlatHandoverFile fileType="FILES" pageName="Files" />}
       {activeTab === "Call Log" && <CallLog />}

@@ -333,6 +333,12 @@ export const getPageInfo = (path: string) => {
                 description: 'Inward Outward',
             }
 
+        case 'ticket':
+            return {
+                title: 'Ticket',
+                description: 'Ticket',
+            }
+
             {/* INVENTORY */ }
 
         case 'inventoryDashboard':
@@ -350,12 +356,12 @@ export const getPageInfo = (path: string) => {
                 title: "Parking Management",
                 description: "Track parking availability across buildings and projects",
             }
-            case 'inventoryParkingOverallReport':
+        case 'inventoryParkingOverallReport':
             return {
                 title: "Inventory and Parking Overall Report",
                 description: "Comprehensive report for inventory and parking management with real-time insights and actionable data",
             }
-            
+
 
             {/* SALES */ }
         case 'saleDashboard':
@@ -456,6 +462,11 @@ export const getPageInfo = (path: string) => {
                 title: "Achievement",
                 description: "Recognize and Reward Top Performers",
             }
+        case 'channelPartnerCategory':
+            return {
+                title: "Channel Partner Category",
+                description: "Channel Partner Category",
+            }
 
 
 
@@ -485,8 +496,8 @@ export const getPageInfo = (path: string) => {
             }
 
         //CRM  
-        
-         case 'crmDashboard':
+
+        case 'crmDashboard':
             return {
                 title: "CRM Dashboard",
                 description: "Secure your unit by completing the booking process",
@@ -498,13 +509,13 @@ export const getPageInfo = (path: string) => {
                 description: "Secure your unit by completing the booking process",
             }
 
-            case 'payTrackreport':
+        case 'payTrackreport':
             return {
                 title: "Pay Track Report",
                 description: "Secure your unit by completing the booking process",
             }
 
-            
+
 
         case 'brokerage':
             return {

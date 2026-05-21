@@ -433,11 +433,13 @@ export const ViewBooking: React.FC = () => {
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg shadow-sm border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
 
-                                            <FieldItem label="Channel Partner" value={editEnquiryData?.ChannelPartnerName || '-'} />
-                                            <FieldItem label="CP Mobile" value={editEnquiryData?.ChannelPartnerMobileNumber ? `+91 ${editEnquiryData?.ChannelPartnerMobileNumber}` : '-'} />
-                                            <FieldItem label="CP Team Member" value={editEnquiryData?.ChannelPartnerTeamMemberName || '-'} />
-                                            <FieldItem label="CP Team Mobile" value={editEnquiryData?.ChannelPartnerTeamMemberMobileNumber || '-'} />
-
+                                            <FieldItem label="CP Code" value={editEnquiryData?.ChannelPartnerCode || '-'} />
+                                            <FieldItem label="CP Name" value={editEnquiryData?.ChannelPartnerName || '-'} />
+                                            <FieldItem label="CP Mobile Number" value={editEnquiryData?.ChannelPartnerMobileNumber ? `${editEnquiryData?.ChannelPartnerMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerMobileNumber}` : '-'} />
+                                            <FieldItem label="CP E-Mail ID" value={editEnquiryData?.EmailId || '-'} />
+                                            <FieldItem label="CP Team Member Name" value={editEnquiryData?.ChannelPartnerTeamMemberName || '-'} />
+                                            <FieldItem label="CP Team Mobile Number" value={editEnquiryData?.ChannelPartnerTeamMemberMobileNumber ? `${editEnquiryData?.ChannelPartnerTeamMemberMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerTeamMemberMobileNumber}` : '-'} />
+                                            
                                         </div>
                                     </div>
                                 )}

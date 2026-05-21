@@ -40,7 +40,7 @@ export default function CourtDistribution({ courtData = [] }: Props) {
                                 const openPct = (item.OpenCases / maxValue) * 100;
 
                                 return (
-                                    <div key={index} className="flex flex-col gap-0">
+                                    <div key={index} className="flex flex-col gap-0 pb-2">
 
                                         <div className="text-xs font-gray-900 text-gray-500 truncate">
                                             {item.CourtType}

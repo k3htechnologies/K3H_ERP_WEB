@@ -432,9 +432,6 @@ export const AddUpdateEnquiry: React.FC = () => {
       newErrors.OccupationType = "Occupation Type is required";
     }
 
-    if (!formData.Source) {
-      newErrors.Source = "Source is required";
-    }
 
     if (formData.Nationality === "NRI") {
       if (!formData.CountryOfResidence) {
@@ -446,19 +443,28 @@ export const AddUpdateEnquiry: React.FC = () => {
       }
     }
 
+    if (!formData.Source) {
+      newErrors.Source = "Source is required";
+    }
+
     if (formData.Source?.toUpperCase() === "CHANNEL PARTNER") {
       if (!channelPartnerId) {
         newErrors.ChannelPartnerId = "Channel Partner Code is required";
       }
 
-      if (!formData.SubSource) {
+      if (!formData.SubSource?.trim()) {
         newErrors.SubSource = "Sub Source is required";
       }
+      
     }
 
-    if (formData.Source?.toUpperCase() === "ADVERTISEMENT") {
-      if (!formData.SubSource) {
+    if (!formData.SubSource?.trim()) {
         newErrors.SubSource = "Sub Source is required";
+      }
+
+    if (formData.SubSource?.toUpperCase() === "ADVERTISEMENT") {
+      if (!formData.SubSubSource) {
+        newErrors.SubSubSource = "Sub Source is required";
       }
     }
 

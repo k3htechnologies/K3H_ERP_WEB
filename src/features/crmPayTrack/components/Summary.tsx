@@ -132,7 +132,7 @@ export const Summary: React.FC = () => {
         if (!addUpdateInitialAmountRefundRequest.TotalAmountRefundedAgainstBooking) {
             errors.TotalAmountRefundedAgainstBooking = "Refund Amount is required";
         }
-        else if (addUpdateInitialAmountRefundRequest.TotalAmountRefundedAgainstBooking > (bookingData?.BookingAmount ?? 0)) {
+        else if (addUpdateInitialAmountRefundRequest.TotalAmountRefundedAgainstBooking > (bookingData?.AgreementValue ?? 0)) {
             errors.TotalAmountRefundedAgainstBooking = "Refund Amount cannot be greater than Booking Amount";
         }
 

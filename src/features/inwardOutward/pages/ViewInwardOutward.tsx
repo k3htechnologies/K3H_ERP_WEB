@@ -11,7 +11,6 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
 import { useInwardOutwardListState } from "@/features/inwardOutward/context/InwardOutwardListStateContext";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { getInwardOutwardStatusColor } from "@/features/inwardOutward/utils/Status";
 import { inwardOutwardService } from "@/features/inwardOutward/services/InwardOutwardService";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
@@ -29,7 +28,6 @@ const ViewInwardOutward: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const { addToast } = useToast();
-    const { canAction } = useMenuPermissions('/inwardoutward');
     const { InwardOutwardId } = useParams<{ InwardOutwardId?: string }>();
     const { listState } = useInwardOutwardListState();
     const currentInwardOutwardId = InwardOutwardId ? Number(InwardOutwardId) : listState.InwardOutwardId;
@@ -123,7 +121,7 @@ const ViewInwardOutward: React.FC = () => {
                 cancelText="Cancel"
                 onCancel={() => handleBackToInwardList()}
                 EditText="Edit"
-                canAction={canAction}
+                canAction={(inwardOutwardData?.DeliveryStatus || "") === "" ? true : false}
                 onEdit={() => {
                     if (inwardOutwardData) {
                         handleEditInward(inwardOutwardData);
@@ -298,7 +296,7 @@ const ViewInwardOutward: React.FC = () => {
                                 Assigned Employees
                             </h1>
 
-                            <div className="mt-1 overflow-y-auto h-[280px] thin-scroll pr-2 pt-2">
+                            <div className="mt-1 overflow-y-auto h-[350px] thin-scroll pr-2 pt-2">
                                 {(() => {
                                     const employeeNames = inwardOutwardData?.EmployeeNames?.split(',').map(name => name.trim()).filter(name => name) || [];
                                     const departmentNames = inwardOutwardData?.DepartmentName?.split(',').map(dept => dept.trim()).filter(dept => dept) || [];

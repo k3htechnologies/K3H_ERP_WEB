@@ -38,6 +38,7 @@ import { useBookingListState } from "@/features/booking/context/BookingListState
 import TooltipText from "@/ui/components/Tooltip/TooltipText"
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton"
 import { getStatusColor } from "@/features/modulesWorkflowApproval/utils/Status"
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper"
 
 const Inventory = () => {
 
@@ -350,7 +351,9 @@ const Inventory = () => {
 
                 const response = await inventoryService.apiCallpullInventory(params);
 
-                handleExportFile(response, exportType, 'Inventory', addToast)
+                const projectName=(LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).find(p => p.ProjectId === Number(projectId))?.ProjectName || "";
+
+                handleExportFile(response, exportType, 'Inventory '+projectName, addToast)
 
                 return response;
             },

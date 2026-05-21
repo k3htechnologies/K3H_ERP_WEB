@@ -97,7 +97,7 @@ const LitigationDashboard: React.FC = () => {
                     <CourtDistribution courtData={courtDistributionData} />
                 </div>
 
-                <div className="grid grid-cols-12 gap-4">
+                <div className="grid grid-cols-1 xl:grid-cols-12 gap-4">
 
                     <div className="col-span-12 lg:col-span-7">
                         

@@ -15,7 +15,7 @@ export default function OverviewCards({ overViewData = [] }: Props) {
       type: "primary",
     },
     {
-      title: "Booking Active CP",
+      title: "Enquiry By CP",
       value: data.ActiveChannelPartner ?? 0,
       type: "month",
     },

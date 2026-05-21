@@ -183,6 +183,12 @@ import InventoryParkingOverallReport from '@/features/inventoryParkingOverallRep
 import AchievementReport from '@/features/achievement/pages/AchievementReport';
 import { PayTrackReportListStateProvider } from '@/features/crmPayTrackReport/context/PayTrackReportListStateContext';
 import PayTrackReport from '@/features/crmPayTrackReport/pages/PayTrackReport';
+import AddRefundDetails from '@/features/crmPayTrack/pages/AddRefundDetails';
+import Ticket from '@/features/ticket/pages/Ticket';
+import ViewTicket from '@/features/ticket/pages/ViewTicket';
+import { TicketListStateProvider } from '@/features/ticket/context/TicketListStateContext';
+import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
+import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -361,6 +367,9 @@ function App() {
             <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
 
+            <Route path='ticket' element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
+            <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
+            <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
 
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />
@@ -401,6 +410,8 @@ function App() {
 
             <Route path="performance" element={<PerformanceReport />} />
             <Route path="achievement" element={<AchievementReport />} />
+
+            <Route path='channelPartnerCategory' element={<ChannelPartnerCategory />} />
 
 
             {/* REDEVELOPMENT */}
@@ -457,7 +468,7 @@ function App() {
             <Route path="crmDashboard" element={<CrmDashboard />} />
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
-
+            <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
             <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
             {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
 

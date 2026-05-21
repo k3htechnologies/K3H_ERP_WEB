@@ -22,30 +22,45 @@ export default function UpComingHearing({ upComingHearingData }: Props) {
         ) : (
           <div className="flex-1 overflow-y-auto thin-scroll space-y-3 pr-1">
             {upComingHearingData.map((item, index) => (
-              <div key={index} className="border border-purple-300 bg-purple-50 rounded-lg p-4 flex justify-between items-center">
+              <div
+                key={index}
+                className="border border-purple-300 bg-purple-50 rounded-lg p-4 flex flex-wrap justify-between gap-3 overflow-hidden"
+              >
 
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">  Project Name: {item.ProjectName ?? '-'}</p>
+                {/* Left Content */}
+                <div className="flex-1 min-w-0">
 
-                  <p className="text-sm text-gray-900 mt-2"> Case No: {item.CaseNumber ?? '-'}</p>
-
-                  <p className="text-xs text-gray-600 mt-2"> {item.CaseType ?? '-'}</p>
-
-                  <p className="text-xs text-gray-600 mt-2"> {item.CourtType ?? '-'}</p>
-
-                </div>
-
-                <div className="flex flex-col items-end space-y-2">
-
-                  <p className="text-sm font-medium text-gray-700">
-                    {formatDate_dd_MonthName_yy(item.HearingDate ?? '')}
+                  <p className="text-sm font-semibold text-gray-900 break-words">
+                    Project Name: {item.ProjectName ?? "-"}
                   </p>
 
-                  <span className="bg-purple-800 text-white px-2 py-1 mt-3 rounded">
-                    {item.DaysRemaining === 0 ? "Today" : `in ${item.DaysRemaining} days`}
-                  </span>
+                  <p className="text-sm text-gray-900 mt-2 break-words">
+                    Case No: {item.CaseNumber ?? "-"}
+                  </p>
+
+                  <p className="text-xs text-gray-600 mt-2 break-words">
+                    {item.CaseType ?? "-"}
+                  </p>
+
+                  <p className="text-xs text-gray-600 mt-2 break-words">
+                    {item.CourtType ?? "-"}
+                  </p>
+
                 </div>
 
+                <div className="flex flex-col items-end min-w-fit">
+
+                  <p className="text-sm font-medium text-gray-700 whitespace-nowrap">
+                    {formatDate_dd_MonthName_yy(item.HearingDate ?? "")}
+                  </p>
+
+                  <span className="bg-purple-800 text-white px-2 py-1 mt-3 rounded whitespace-nowrap">
+                    {item.DaysRemaining === 0
+                      ? "Today"
+                      : `in ${item.DaysRemaining} days`}
+                  </span>
+
+                </div>
               </div>
             ))}
           </div>

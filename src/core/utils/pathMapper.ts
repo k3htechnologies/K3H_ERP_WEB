@@ -90,6 +90,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/incentivereport': '/incentiveReport',
         '/paymentschedulereport': '/paymentScheduleReport',
         '/paymentschedule': '/paymentSchedule',
+        '/channelpartnercategory' :'/channelPartnerCategory',
 
 
         // INVENTORY
@@ -111,6 +112,7 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //MORE
         '/inwardoutward': '/inwardOutward',
+        '/ticket': '/ticket',
 
         //SETTING EXTRA
         '/companypolicy': '/companyPolicy',

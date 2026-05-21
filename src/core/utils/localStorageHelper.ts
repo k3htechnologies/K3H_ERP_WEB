@@ -1233,7 +1233,20 @@ export const LocalStorageHelper = {
     return null
   },
   
-  
+   getTicketMasterTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading  Ticket Master Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+
+  },
+
 
   //#region CLEAR LOCAL STORAGE
   clearLocalStorageData: (): void => {
@@ -1307,6 +1320,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.PAY_TRACK_BOOKING);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.INWARD_OUTWARD);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING_Brokerage);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TICKET);
       
 
     } catch (error) {

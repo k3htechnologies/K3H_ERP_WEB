@@ -85,7 +85,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
     const { addToast } = useToast();
 
-    const { canAction } = useMenuPermissions("/inwardOutward");
+    const { canAction } = useMenuPermissions("/inwardOutwardAcknowledgement");
 
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
@@ -756,6 +756,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <SinglePageSelection
                             label="Delivery Mode"
                             placeholder='Select Delivery Mode'
+                            disabled={!canAction}
                             value={formData.DeliveryMode || ''}
                             onChange={(e) => handleFieldChange('DeliveryMode', String(e))}
                             options={DELIVERY_MODE.map((opt) => ({ label: opt.name, value: opt.id }))}
@@ -765,6 +766,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <SinglePageSelection
                             label="Delivery Status"
+                            disabled={!canAction}
                             placeholder='Select Delivery Status'
                             value={formData.DeliveryStatus || ''}
                             onChange={(e) => handleFieldChange('DeliveryStatus', String(e))}
@@ -779,6 +781,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <Input
                             label="Received By"
+                            disabled={!canAction}
                             value={formData.ReceivedBy ?? ''}
                             onChange={e => handleFieldChange("ReceivedBy", e.target.value)}
                             maxLength={50}
@@ -790,6 +793,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <MultiFilePicker
                             label="Receiver’s Signature"
                             placeholder="select file"
+                            disabled={!canAction}
                             value={receiversSignatureFiles}
                             onChange={setReceiversSignatureFiles}
                             availableFilesURL={receiversSignatureURL ?? ''}
@@ -805,6 +809,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <MultiFilePicker
                             label="Upload Document"
                             placeholder="select file"
+                            disabled={!canAction}
                             value={acknowledgementURLFiles}
                             onChange={setAcknowledgementURLFiles}
                             availableFilesURL={acknowledgementURL ?? ''}
@@ -822,6 +827,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <Input
                             label="Handover To"
+                            disabled={!canAction}
                             value={formData.HandOverTo ?? ''}
                             onChange={e => handleFieldChange("HandOverTo", e.target.value)}
                             maxLength={50}
@@ -832,6 +838,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <DatePickerInput
                             label="Handover Date"
+                            disabled={!canAction}
                             value={formatDate_dd_mm_yyyy(formData.HandOverDate ?? '')}
                             onChange={(val) => handleFieldChange('HandOverDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                         />
@@ -842,6 +849,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <TextArea
                             label="Remark"
+                            disabled={!canAction}
                             value={formData.AcknowledgementRemark ?? ''}
                             onChange={e => handleFieldChange("AcknowledgementRemark", e.target.value)}
                             maxLength={50}
@@ -855,7 +863,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                 cancelText="Cancel"
                 saveText={formData.InwardOutwardId ? "Update" : "Add"}
                 onCancel={() => navigate(-1)}
-                canAction={canAction}
+                canAction={(formData.DeliveryStatus || "") === "" ? true : false}
                 onSave={() => {
                     handleAddUpdateInward();
                 }}

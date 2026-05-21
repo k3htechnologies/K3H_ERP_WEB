@@ -91,6 +91,7 @@ export const ParkingSwapSection: React.FC = () => {
                     PageSize: 100,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
+                    
                 };
 
                 const response = await parkingModificationService.apiCallPullParkingModificationDetails(params);

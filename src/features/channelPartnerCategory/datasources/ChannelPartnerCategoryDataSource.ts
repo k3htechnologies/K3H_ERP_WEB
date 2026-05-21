@@ -1,7 +1,7 @@
 import baseClient from "@/core/config/baseClient";
 import type { AddUpdatechannelPartnerCategoryRequest, ChannelPartnerCategoryListResponse, ChannelPartnerCategorySaveResponse, FilterWithPaginationchannelPartnerCategoryRequest } from "@/features/channelPartnerCategory/models/ChannelPartnerCategoryModel";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
-import { channelPartnerCategoryApi } from "@/features/channelPartnerCategory/api/ChannelPartnerCategoryApi";
+import { ChannelPartnerCategoryApi } from "@/features/channelPartnerCategory/api/ChannelPartnerCategoryApi";
 
 export abstract class ChannelPartnerCategoryDatasource {
     abstract pullChannelPartnerCategoryData(params: FilterWithPaginationchannelPartnerCategoryRequest, signal?: AbortSignal): Promise<ChannelPartnerCategoryListResponse>;
@@ -21,7 +21,7 @@ export class ChannelPartnerCategoryImpl implements ChannelPartnerCategoryDatasou
             });
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${channelPartnerCategoryApi.PULL}?${queryParams.toString()}`, { signal }
+                `${ChannelPartnerCategoryApi.PULL}?${queryParams.toString()}`, { signal }
             )
             return response
 
@@ -41,7 +41,7 @@ export class ChannelPartnerCategoryImpl implements ChannelPartnerCategoryDatasou
         try {
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                channelPartnerCategoryApi.ADD_UPDATE,
+                ChannelPartnerCategoryApi.ADD_UPDATE,
                 params
             )
             return response

@@ -10,15 +10,16 @@ import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { Button, Input } from "@/ui/components/forms";
 import { DataTableEditable, type EditableTableColumn } from "@/ui/components/DataTable/DataTableEditable";
 import { filterNumbers } from "@/core/utils/fileValidation";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 export const ChannelPartnerCategory: React.FC = () => {
-
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const { projectId } = useProject();
     const { addToast } = useToast();
     const [channelPartnerCategoryData, setChannelPartnerCategoryData] = useState<ChannelPartnerCategoryData[]>([]);
     const [editchannelPartnerCategoryData, setEditchannelPartnerCategoryData] = useState<ChannelPartnerCategoryData[]>([])
+    const { canAction } = useMenuPermissions();
 
     useEffect(() => {
         if (!projectId) return
@@ -31,7 +32,6 @@ export const ChannelPartnerCategory: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: FilterWithPaginationchannelPartnerCategoryRequest = {
                     ProjectId: Number(projectId),
                 }
@@ -40,7 +40,9 @@ export const ChannelPartnerCategory: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    setChannelPartnerCategoryData(response.right.Data)
+                    setChannelPartnerCategoryData(response.right.Data);
+
+                    setEditchannelPartnerCategoryData(response.right.Data)
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -55,14 +57,19 @@ export const ChannelPartnerCategory: React.FC = () => {
     }, [projectId])
 
     const PushChannelPartnerCategoryFormData = (): AddUpdatechannelPartnerCategoryRequest => {
+
+        const Data = editchannelPartnerCategoryData.length > 0
+            ? editchannelPartnerCategoryData
+            : channelPartnerCategoryData;
+
         return {
             ProjectId: Number(projectId),
             ChannelPartnerCategoryJSON: JSON.stringify(
-                editchannelPartnerCategoryData.map((item) => ({
+                Data.map((item) => ({
                     ChannelPartnerCategoryId: item.ChannelPartnerCategoryId,
                     CategoryName: item.CategoryName,
-                    BookingRevenue: Number(item.BookingRevenue),
-                    NoOfEnquirys: Number(item.NoOfEnquirys),
+                    BookingRevenue: item.BookingRevenue,
+                    NoOfEnquirys: item.NoOfEnquirys,
                 }))
             )
         };
@@ -109,7 +116,7 @@ export const ChannelPartnerCategory: React.FC = () => {
             sortable: false,
             fixed: 'left',
             align: 'left',
-            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-black tracking-[1px]",
             render: (value) => (
                 <TooltipText
                     text={value || '-'}
@@ -124,7 +131,7 @@ export const ChannelPartnerCategory: React.FC = () => {
             width: '20',
             sortable: false,
             align: 'left',
-            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-black tracking-[1px]",
             render: value => value || '-',
             renderEditor: (value?: string, onChange?: any) => (
                 <Input
@@ -140,7 +147,7 @@ export const ChannelPartnerCategory: React.FC = () => {
             width: '20',
             sortable: false,
             align: 'left',
-            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-black tracking-[1px]",
             render: value => value || '-',
             renderEditor: (value?: string, onChange?: any) => (
                 <Input
@@ -157,7 +164,6 @@ export const ChannelPartnerCategory: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
 
             <div className="space-y-4 bg-white rounded-xll shadow-sm border border-gray-200">
-
                 <DataTableEditable
                     columns={columns}
                     data={channelPartnerCategoryData}
@@ -166,13 +172,15 @@ export const ChannelPartnerCategory: React.FC = () => {
                 />
             </div>
 
-            <div className="flex justify-end pt-3">
-                <Button
-                    onClick={handleAddUpdateChannelPartnerCategory}
-                >
-                    Save
-                </Button>
-            </div>
+            {canAction && (
+                <div className="flex justify-end pt-3">
+                    <Button
+                        onClick={handleAddUpdateChannelPartnerCategory}
+                    >
+                        Save
+                    </Button>
+                </div>
+            )}
 
         </div>
     )

@@ -164,13 +164,13 @@ import Brokerage from '@/features/brokerage/pages/Brokerage';
 import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoice';
 import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
-import PrivacyPolicy from '@/features/PrivacyPolicy/pages/PrivacyPolicy';
 import Terms from '@/features/Terms/pages/TermsAndCondition';
 import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
 import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
 import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
 import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
+import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (

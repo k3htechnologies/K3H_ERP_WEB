@@ -61,7 +61,7 @@ export const ChannelPartnerCategory: React.FC = () => {
         const Data = editchannelPartnerCategoryData.length > 0
             ? editchannelPartnerCategoryData
             : channelPartnerCategoryData;
-
+            
         return {
             ProjectId: Number(projectId),
             ChannelPartnerCategoryJSON: JSON.stringify(

@@ -161,7 +161,7 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
                 return (
                     <div className="flex items-center justify-between w-full gap-2">
 
-                        <span className="text-blue-600 font-semibold truncate">
+                        <span className="text-black-600 font-semibold truncate">
                             {value}
                         </span>
 
@@ -179,7 +179,7 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
                             <Button
                                 type="button"
                                 size="sm"
-                                color="cancel"
+                                color="primaryLight"
                                 variant="solid"
                                 onClick={() => handleSMClick(row)}
                             >

@@ -38,7 +38,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'dark' | 'transparent_border' | 'light' |'transparent_border_background'
   colorMode?: string
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'mxs' |'xss'
-  color?: | 'primary'
+  color?: | 'primary' | 'primaryLight'
   | 'secondary'
   | 'success'
   | 'error'

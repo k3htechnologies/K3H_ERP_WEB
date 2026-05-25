@@ -1,10 +1,11 @@
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import {  LineChart, ResponsiveContainer, Legend, Tooltip, Line, XAxis, YAxis} from "recharts";
+import { LineChart, ResponsiveContainer, Legend, Tooltip, Line, XAxis, YAxis } from "recharts";
 import type { Table6 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 interface Props {
     CaseAnalysisData: Table6[];
 }
+
 
 export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
     return (
@@ -24,12 +25,12 @@ export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {
                             <LineChart
                                 data={CaseAnalysisData}
                             >
-                                
+
                                 <XAxis dataKey="MonthName" />
                                 <YAxis
                                     type="number"
-                                    domain={[0, 10]}
-                                    ticks={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}
+                                    domain={[0, 500]}
+                                    ticks={[0, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500]}
                                     interval={0}
                                     style={{ outline: "none" }}
                                 />

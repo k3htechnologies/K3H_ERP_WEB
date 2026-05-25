@@ -31,6 +31,7 @@ import ApprovalActions from '@/features/modulesWorkflowApproval/components/Appro
 import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService';
 import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/ApprovalLogModal';
 import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
+import { filterNumbersWithDecimal } from '@/core/utils/fileValidation';
 
 export const Booking: React.FC = () => {
     //#region STATE
@@ -736,7 +737,12 @@ export const Booking: React.FC = () => {
                             <Input
                                 label='Agreement Value'
                                 value={tempFilters.AgreementValue || ''}
-                                onChange={e => handleFilterChange('AgreementValue', e.target.value)}
+                                onChange={(e) => {
+                                    const value = filterNumbersWithDecimal(e.target.value);
+                                    handleFilterChange('AgreementValue', value)
+                                }
+                                }
+
                                 placeholder="Enter Agreement Value"
                                 maxLength={9}
                             />

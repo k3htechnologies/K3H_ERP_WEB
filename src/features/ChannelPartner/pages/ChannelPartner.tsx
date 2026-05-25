@@ -43,16 +43,12 @@ export const ChannelPartner: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
-  // USE NAVIGATE
   const navigate = useNavigate();
 
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
-  // TOAST
   const { addToast } = useToast();
 
-  // CONTEXT STATE
   const { listState, updateListState } = useChannelPartnerListState();
   const { searchTerm, filters, sortInfo } = listState;
 
@@ -60,34 +56,24 @@ export const ChannelPartner: React.FC = () => {
     searchChannelPartner(value)
   }, 350);
 
-  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  //DELETE ChannelPartner MASTER
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
   const [deleteChannelPartnerDetailsData, setDeleteChannelPartnerDetailsData] = useState<ChannelPartnerData | null>(null)
 
-  //EXCEL IMPORT 
   const [showImportModal, setShowImportModal] = useState(false);
 
-
-  //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeChannelPartnerColumnsModal, setIsShowCustomizeChannelPartnerColumnsModal] = useState(false);
 
-  //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
-  //#endregion
-
+  
   const location = useLocation() as any;
-  //#endregion
-
-  //#region INIT
+  
   useEffect(() => {
-    // Sync pagination with context state
+   
     setPagination({ currentPage: listState.page });
 
-    // Load channel partners with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
       loadChannelPartner(listState.page, { Name: String(listState.searchTerm).trim() }, listState.sortInfo);
     } else {
@@ -95,16 +81,13 @@ export const ChannelPartner: React.FC = () => {
     }
   }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
-  //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+  
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
-  //#endregion
-
-  //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-
+ 
   const fetchChannelPartnerList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadChannelPartner(page, filters, sort);
   }

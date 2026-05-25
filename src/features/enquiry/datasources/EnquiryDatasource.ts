@@ -35,6 +35,7 @@ export class EnquiryDatasourceImpl implements EnquiryDatasource {
             if (params.EnquiryId) queryParams.append('EnquiryId', params.EnquiryId.toString());
             if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
             if (params.Name?.trim()) queryParams.append('Name', params.Name.trim());
+            if (params.MobileNumberCountryCode) queryParams.append('MobileNumberCountryCode', params.MobileNumberCountryCode);
             if (params.MobileNumber) queryParams.append('MobileNumber', params.MobileNumber);
             if (params.Budget?.trim()) queryParams.append('Budget', params.Budget.trim());
             if (params.RequirementType) queryParams.append('RequirementType', params.RequirementType);
@@ -61,6 +62,7 @@ export class EnquiryDatasourceImpl implements EnquiryDatasource {
             if (params.TimeDimension) queryParams.append('TimeDimension', params.TimeDimension);
             if (params.EnquiryFollowUpDays) queryParams.append('EnquiryFollowUpDays', params.EnquiryFollowUpDays);
             if (params.FinalStage?.trim()) queryParams.append('FinalStage', params.FinalStage.trim());
+            if (params.NotCheckFinalStage?.trim()) queryParams.append('NotCheckFinalStage', params.NotCheckFinalStage.trim());
 
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);

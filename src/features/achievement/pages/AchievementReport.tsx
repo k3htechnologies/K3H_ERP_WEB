@@ -13,8 +13,8 @@ export const AchievementReport: React.FC = () => {
 
     const AchievementTabList = [
         { id: 'Project', label: 'Project' },
-        { id: 'Sourcing', label: 'Sourcing' },
         { id: 'Closing', label: 'Closing' },
+        { id: 'Sourcing', label: 'Sourcing' },
     ];
     const [achievementActiveTab, setAchievementActiveTab] = useState(AchievementTabList[0].id);
     const shouldLoadData = filterType !== "DATEWISE" || (fromDate && toDate);

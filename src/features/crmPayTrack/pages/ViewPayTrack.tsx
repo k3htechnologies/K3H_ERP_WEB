@@ -17,7 +17,7 @@ import type { ModulesApprovalStatusRequest } from '@/features/modulesWorkflowApp
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import type { PayTrackBookingData } from "@/features/crmPayTrack/models/PayTrackBookingModel";
 import SnagChecklist from "@/features/crmPayTrack/components/SnagChecklist";
-import FlatHandoverChecklist from "@/features/crmPayTrack/components/FlatHandoverCheckList";
+import FlatHandoverChecklist from "@/features/crmPayTrack/components/FlatHandoverChecklist";
 export const ViewPayTrack: React.FC = () => {
 
   const navigate = useNavigate();

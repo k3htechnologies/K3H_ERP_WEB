@@ -63,6 +63,8 @@ export interface BookingData {
     EnquiryId: number | null;
     SystemGeneratedCode: string | null;
     ApplicantName: string | null;
+    ApplicantMobileNumberCountryCode: string | null;
+    ApplicantMobileNumber: string | null;
     BookingType: string | null;
     Flat: string | null;
     ParkingData?: ParkingData[] | null;
@@ -79,6 +81,7 @@ export interface BookingData {
     BookingApplicantData?: BookingApplicantData[] | null;
     PermanentAddress: string | null;
     CommunicationAddress: string | null;
+    Source: string | null;
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
 

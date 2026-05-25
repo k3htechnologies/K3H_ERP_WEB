@@ -368,6 +368,8 @@ export const ViewBooking: React.FC = () => {
 
                                         <FieldItem label="Name" value={editEnquiryData?.Name || '-'} />
 
+                                        <FieldItem label="E-Mail ID" value={editEnquiryData?.EmailId || '-'} />
+
                                         <FieldItem label="Mobile No:" value={getSafeString(editEnquiryData?.MobileNumber) ? `${editEnquiryData?.MobileNumberCountryCode || "+91"} ${editEnquiryData?.MobileNumber}` : '-'} />
 
                                         <FieldItem label="Source" value={editEnquiryData?.Source || '-'} />
@@ -436,10 +438,10 @@ export const ViewBooking: React.FC = () => {
                                             <FieldItem label="CP Code" value={editEnquiryData?.ChannelPartnerCode || '-'} />
                                             <FieldItem label="CP Name" value={editEnquiryData?.ChannelPartnerName || '-'} />
                                             <FieldItem label="CP Mobile Number" value={editEnquiryData?.ChannelPartnerMobileNumber ? `${editEnquiryData?.ChannelPartnerMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerMobileNumber}` : '-'} />
-                                            <FieldItem label="CP E-Mail ID" value={editEnquiryData?.EmailId || '-'} />
+                                            <FieldItem label="CP E-Mail ID" value={editEnquiryData?.ChannelPartnerEmailId || '-'} />
                                             <FieldItem label="CP Team Member Name" value={editEnquiryData?.ChannelPartnerTeamMemberName || '-'} />
                                             <FieldItem label="CP Team Mobile Number" value={editEnquiryData?.ChannelPartnerTeamMemberMobileNumber ? `${editEnquiryData?.ChannelPartnerTeamMemberMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerTeamMemberMobileNumber}` : '-'} />
-                                            
+                                            <FieldItem label="CP  Team E-Mail ID" value={editEnquiryData?.ChannelPartnerTeamMemberEmailId || '-'} />
                                         </div>
                                     </div>
                                 )}

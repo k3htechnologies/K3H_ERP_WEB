@@ -145,7 +145,6 @@ export const AddUpdateEnquiry: React.FC = () => {
   const [calculatedAge, setCalculatedAge] = useState<string>();
   const [selectedVillageValues, setSelectedVillageValues] = useState<string | number | null>(null);
 
-  //SET CHANNEL PARTNER DETAILS
   const [channelPartnerCode, setChannelPartnerCode] = useState<string>();
   const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
   const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
@@ -157,22 +156,18 @@ export const AddUpdateEnquiry: React.FC = () => {
   const [channelPartnerMobileNumberCountryCode, setChannelPartnerMobileNumberCountryCode] = useState<string>();
   const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
   const [channelPartnerType, setChannelPartnerType] = useState<string>();
+  const [channelPartnerEmailId, setChannelPartnerEmailId] = useState<string>();
 
-  //SET EMPLOYEE MASTER DETAILS
   const [employeeDetails, setEmployeeDetails] = useState<EmployeeMasterData | null>(null);
 
-  //SET EMPLOYEE MASTER DETAILS
   const [referelInventoryFlatData, setReferralInventoryFlatData] = useState<InventoryFlatData | null>(null);
   const [loyaltyInventoryFlatData, setLoyaltyInventoryFlatData] = useState<InventoryFlatData | null>(null);
-
-  //COMPLETE VERIFICATION
 
   const [otp, setOtp] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [showOtpSection, setShowOtpSection] = useState(false);
 
-  // NAVIGATE
   const navigate = useNavigate();
 
   const { EnquiryId } = useParams<{ EnquiryId?: string }>();
@@ -188,7 +183,6 @@ export const AddUpdateEnquiry: React.FC = () => {
   const { canAction } = useMenuPermissions("/enquiry");
 
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  //#endregion
 
   const [dropdownLabels, setDropdownLabels] = useState<{
     channelPartnerName?: string;
@@ -204,7 +198,6 @@ export const AddUpdateEnquiry: React.FC = () => {
     employeeReferenceEmployeeName?: string;
   }>({});
 
-  //#region HANDLE FIELD CHANGE EVENT
   const handleFieldChange = (field: keyof AddUpdateEnquiryRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -212,9 +205,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
-  //#endregion
 
-  //#region FETCH EMPLOYEE DROPDOWN WITH DEPARTMENT
   const fetchEmployeeDropdown = useCallback(
     async (pageNumber: number, params?: { value?: string }) => {
       return fetchPaginationProjectWithEmployeeDropdown(pageNumber, {
@@ -225,9 +216,7 @@ export const AddUpdateEnquiry: React.FC = () => {
     },
     [projectId]
   );
-  //#endregion
 
-  //#region INITIALIZATION
   useEffect(() => {
     if (!isAddMode) {
       fetchEnquiryDetails();
@@ -241,9 +230,6 @@ export const AddUpdateEnquiry: React.FC = () => {
     }
   }, []);
 
-  //#endregion
-
-  //#region FETCH ENQUIRY  MASTER DETAILS
   const fetchEnquiryDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -395,6 +381,55 @@ export const AddUpdateEnquiry: React.FC = () => {
   //#endregion
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const checkDuplicateMobileNumber = async (mobileNumber: string, countryCode: string, showToast: boolean = false): Promise<boolean> => {
+
+    if (Number(formData.EnquiryId) > 0) {
+      return false;
+    }
+
+    if (!isValidMobile(mobileNumber, countryCode)) {
+
+      setErrors((prev) => ({
+        ...prev,
+        MobileNumber: ""
+      }));
+
+      return false;
+    }
+
+    const isDuplicate = await checkDuplicateField({
+      fieldName: "MobileNumber",
+      fieldValue: mobileNumber,
+      apiCallback: EnquiryService.apiCallPullEnquiry,
+      extraParams: {
+        MobileNumberCountryCode: countryCode || "+91",
+        ProjectId: Number(projectId),
+        NotCheckFinalStage: 'LOST,BOOKING DONE'
+      }
+    });
+
+    if (isDuplicate) {
+
+      setErrors((prev) => ({
+        ...prev,
+        MobileNumber: "Mobile number already exists"
+      }));
+
+      if (showToast) {
+        addToast({ type: "error", title: "Mobile number already exists" });
+      }
+
+      return true;
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      MobileNumber: ""
+    }));
+
+    return false;
+  };
+
   const validateAddEnquiryForm = (): {
     isValid: boolean;
 
@@ -455,12 +490,12 @@ export const AddUpdateEnquiry: React.FC = () => {
       if (!formData.SubSource?.trim()) {
         newErrors.SubSource = "Sub Source is required";
       }
-      
+
     }
 
     if (!formData.SubSource?.trim()) {
-        newErrors.SubSource = "Sub Source is required";
-      }
+      newErrors.SubSource = "Sub Source is required";
+    }
 
     if (formData.SubSource?.toUpperCase() === "ADVERTISEMENT") {
       if (!formData.SubSubSource) {
@@ -525,7 +560,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       newErrors.ChannelPartnerTeamMemberMobileNumber = "Enter a valid mobile number";
     }
 
-    if (formData.ChannelPartnerTeamMemberMobileNumberCountryCode !== "+91" &&  (mobile || name) && !emailId) {
+    if (formData.ChannelPartnerTeamMemberMobileNumberCountryCode !== "+91" && (mobile || name) && !emailId) {
       newErrors.ChannelPartnerTeamMemberEmailId = "E-mail Id is mandatory";
     }
 
@@ -660,9 +695,6 @@ export const AddUpdateEnquiry: React.FC = () => {
     };
   };
 
-  //#endregion
-
-  //#region HANDLE ADD AND UPDATE Enquiry  MASTER
   const handleAddUpdateEnquiry = async () => {
     setErrors({});
 
@@ -674,6 +706,11 @@ export const AddUpdateEnquiry: React.FC = () => {
 
       addToast({ type: "error", title: "Please fill the required filed" });
 
+      return;
+    }
+
+    const isDuplicate = await checkDuplicateMobileNumber(formData.MobileNumber!, formData.MobileNumberCountryCode!, true);
+    if (isDuplicate) {
       return;
     }
 
@@ -777,6 +814,7 @@ export const AddUpdateEnquiry: React.FC = () => {
     setChannelPartnerMobileNumber("");
     setChannelPartnerMobileNumberCountryCode("");
     setChannelPartnerType("");
+    setChannelPartnerEmailId("");
     setChannelPartnerId(0);
     handleFieldChange("ChannelPartnerTeamMemberId", 0);
   };
@@ -809,6 +847,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       setChannelPartnerMobileNumber(channelPartner.MobileNumber ?? "");
       setChannelPartnerMobileNumberCountryCode(channelPartner.MobileNumberCountryCode ?? "");
       setChannelPartnerType(channelPartner.Type ?? "");
+      setChannelPartnerEmailId(channelPartner.EmailId ?? "");
     });
   }, [channelPartnerSearchByChannelPartnerCode]);
 
@@ -892,12 +931,14 @@ export const AddUpdateEnquiry: React.FC = () => {
                   disabled={Number(formData.EnquiryId) > 0}
                   required
                   error={errors.MobileNumber}
-                  onMobileChange={(value) =>
-                    handleFieldChange("MobileNumber", value)
-                  }
-                  onCountryCodeChange={(value) =>
+                  onMobileChange={async (value) => {
+                    handleFieldChange("MobileNumber", value);
+                    await checkDuplicateMobileNumber(value, formData.MobileNumberCountryCode || "+91");
+                  }}
+                  onCountryCodeChange={async (value) => {
                     handleFieldChange("MobileNumberCountryCode", value)
-                  }
+                    await checkDuplicateMobileNumber(formData.MobileNumber!, value || "+91");
+                  }}
                 />
               </div>
 
@@ -1298,7 +1339,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             <div>
                               <Input
                                 type="text"
-                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0)  || (formData.ChannelPartnerTeamMemberEmailId?.length ?? 0) ? true : false}
+                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) || (formData.ChannelPartnerTeamMemberEmailId?.length ?? 0) ? true : false}
                                 label="Team Member Name"
                                 value={formData.ChannelPartnerTeamMemberName ?? ""}
                                 disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
@@ -1357,6 +1398,8 @@ export const AddUpdateEnquiry: React.FC = () => {
                         {channelPartnerCode && <FieldItem label="Channel Partner Code" value={channelPartnerCode} />}
 
                         {channelPartnerFullName && <FieldItem label="Full Name" value={channelPartnerFullName} />}
+
+                        {channelPartnerEmailId && <FieldItem label="E-mail ID" value={channelPartnerEmailId} />}
 
                         {channelPartnerCompanyName && <FieldItem label="Company Name" value={channelPartnerCompanyName} />}
 
@@ -1665,7 +1708,15 @@ export const AddUpdateEnquiry: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Follow Up Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
                 <div>
-                  <DatePickerInput label="Enquiry Date" required isDisplayCurrentDate={true} value={formatDate_dd_mm_yyyy(formData.EnquiryDate)} onChange={(val) => handleFieldChange("EnquiryDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} error={errors.EnquiryDate} disabled={Number(formData.EnquiryId) > 0 ? true : false} />
+                  <DatePickerInput
+                    label="Enquiry Date"
+                    required
+                    isDisplayCurrentDate={true}
+                    value={formatDate_dd_mm_yyyy(formData.EnquiryDate)}
+                    onChange={(val) => handleFieldChange("EnquiryDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                    error={errors.EnquiryDate}
+                    minDate={new Date(new Date().setDate(new Date().getDate() - 2))}
+                    disabled={Number(formData.EnquiryId) > 0 ? true : false} />
                 </div>
 
                 {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
@@ -1681,27 +1732,27 @@ export const AddUpdateEnquiry: React.FC = () => {
               </div>
             </div>
           </div>
-          
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2"> Sales Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <SingleSelectDropdownWithPagination label="Sales Advisor" title="Select Advisor" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.SalesAdvisor)} error={errors.SalesAdvisorId} />
-                </div>
 
-                <div>
-                  <SingleSelectDropdownWithPagination label="Sourcing Manager" title="Select Sourcing Manager" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.SourcingManager)} error={errors.SourcingManagerId} />
-                </div>
-                <div>
-                  <TimePicker label="Customer Time Out" size="md" format={24} value={formData.EnquiryTimeOut || ""} onChange={(val) => handleFieldChange("EnquiryTimeOut", val)} error={errors.EnquiryTimeOut} />
-                </div>
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2"> Sales Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <SingleSelectDropdownWithPagination label="Sales Advisor" title="Select Advisor" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.SalesAdvisor)} error={errors.SalesAdvisorId} />
               </div>
 
               <div>
-                <TextArea label="Remarks" className="thin-scroll" value={formData.Remark ?? ""} placeholder="Enter Remarks" onChange={(e) => handleFieldChange("Remark", e.target.value)} error={errors.Remark} />
+                <SingleSelectDropdownWithPagination label="Sourcing Manager" title="Select Sourcing Manager" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.SourcingManager)} error={errors.SourcingManagerId} />
+              </div>
+              <div>
+                <TimePicker label="Customer Time Out" size="md" format={24} value={formData.EnquiryTimeOut || ""} onChange={(val) => handleFieldChange("EnquiryTimeOut", val)} error={errors.EnquiryTimeOut} />
               </div>
             </div>
-          
+
+            <div>
+              <TextArea label="Remarks" className="thin-scroll" value={formData.Remark ?? ""} placeholder="Enter Remarks" onChange={(e) => handleFieldChange("Remark", e.target.value)} error={errors.Remark} />
+            </div>
+          </div>
+
         </form>
       </div>
 

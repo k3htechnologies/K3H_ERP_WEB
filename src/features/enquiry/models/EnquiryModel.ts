@@ -8,6 +8,7 @@ export interface FilterWithPaginationEnquiryRequest {
     EnquiryId?: number;
     SystemGeneratedCode?: string;
     Name?: string;
+    MobileNumberCountryCode?: string;
     MobileNumber?: string;
     Budget?: string;
     RequirementType?: string;
@@ -29,6 +30,7 @@ export interface FilterWithPaginationEnquiryRequest {
     TimeDimension?: string;
     EnquiryFollowUpDays?: string;
     FinalStage?: string;
+    NotCheckFinalStage?: string;
     SortBy?: string;
     ExportType?: "Excel" | "PDF";
 }
@@ -89,6 +91,7 @@ export interface EnquiryData {
     ChannelPartnerId: number | null;
     ChannelPartnerCode: number | null;
     ChannelPartnerName: string | null;
+    ChannelPartnerEmailId: string | null;
     ChannelPartnerMobileNumberCountryCode: string | null;
     ChannelPartnerMobileNumber: number | null;
     ChannelPartnerCompany: string | null;

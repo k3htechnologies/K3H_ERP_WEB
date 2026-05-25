@@ -28,6 +28,8 @@ export interface ProjectAchievementData {
     BookingDirect: number | null
     TotalBooking: number | null
     TotalRevenue: number | null
+    TotalIBM: number | null
+    TotalOBM :number | null
 }
 
 export interface ProjectAchievementData {

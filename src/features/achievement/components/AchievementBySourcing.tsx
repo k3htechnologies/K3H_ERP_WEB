@@ -19,9 +19,10 @@ interface Props {
     filterType: string;
     fromDate: string | null;
     toDate: string | null;
+    projectId?: number;
 }
 
-export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, toDate }) => {
+export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, toDate ,projectId}) => {
 
     const [sourcingAchievementList, setSourcingAchievementList] = useState<AchievementSourcingData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +43,7 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
                 const params: FilterWithPaginationAchievementRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
-                    ProjectId: filterParams.ProjectId ? Number(filterParams.ProjectId) : undefined,
+                    ProjectId: Number(projectId) || 0,
                     EmployeeName: searchText?.trim() || undefined,
                     ProjectName: filterParams.EmployeeName || undefined,
                     FilterType: filterType.trim() || undefined,
@@ -207,7 +208,7 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
         },
         {
             key: 'TotalOBMFreshVisits',
-            label: 'Total OBM (Fresh Visits)',
+            label: 'OBM (Fresh Visits)',
             width: '15',
             sortable: false,
             align: 'center',
@@ -215,7 +216,7 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
         },
         {
             key: 'TotalOBMRevisits',
-            label: 'Total OBM (Revisits)',
+            label: 'OBM (Revisits)',
             width: '15',
             sortable: false,
             align: 'center',
@@ -231,7 +232,7 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
         },
         {
             key: 'TotalIBM',
-            label: 'Total IBM',
+            label: 'IBM',
             width: '15',
             sortable: false,
             align: 'center',

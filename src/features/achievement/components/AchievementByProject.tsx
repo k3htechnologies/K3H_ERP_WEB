@@ -16,6 +16,8 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import AchievementByClosing from "./AchievementByClosing";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
+import AchievementBySourcing from "./AchievementBySourcing";
+import { Button } from "@/ui/components/forms";
 
 interface Props {
     filterType: string;
@@ -33,7 +35,8 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
     const { canExport } = useMenuPermissions();
     const { addToast } = useToast();
     const { pagination, setPagination } = usePagination(20);
-    const [selectedCell, setSelectedcell] = useState<any>(null);
+    const [selectedCellClosing, setSelectedcellClosing] = useState<any>(null);
+    const [selectedCellSourcing, setSelectedcellSourcing] = useState<any>(null);
     const [isShowCustomizeAchievementByProjectColumnsModal, setIsShowCustomizeAchievementByProjectColumnsModal] = useState(false);
 
     const loadAchievementByProjectData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
@@ -145,6 +148,7 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
     const handleExportAchievementByProjectPdf = () => handleExportAchievementByProject('PDF');
 
     const AchievementByProjectColumns = useMemo<TableColumn[]>(() => [
+
         {
             key: 'ProjectName',
             label: 'Project Name',
@@ -155,19 +159,38 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
             render: (value, row) => {
 
                 return (
-                    <span
-                        className="cursor-pointer text-blue-600 font-semibold hover:underline"
+                    <div className="flex items-center justify-between w-full gap-2">
 
-                        onClick={() => {
-                            handleOpenModal(row)
-                        }}
-                    >
-                        {value}
-                    </span>
+                        <span className="text-blue-600 font-semibold truncate">
+                            {value}
+                        </span>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                            <Button
+                                type="button"
+                                size="sm"
+                                color="blue"
+                                variant="solid"
+                                colorMode="extraLight"
+                                onClick={() => handleCMClick(row)}
+                            >
+                                CM
+                            </Button>
+                            <Button
+                                type="button"
+                                size="sm"
+                                color="cancel"
+                                variant="solid"
+                                onClick={() => handleSMClick(row)}
+                            >
+                                SM
+                            </Button>
+
+                        </div>
+
+                    </div>
                 );
             }
-
-
         },
         {
             key: 'WalkinsByCP',
@@ -194,17 +217,18 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
             render: value => value || '0'
         },
 
+
         {
-            key: 'Revisits',
-            label: 'Revisits',
+            key: 'TotalFreshVisits',
+            label: 'Fresh Visits',
             width: '15',
             sortable: false,
             align: 'center',
             render: value => value || '0'
         },
         {
-            key: 'TotalFreshVisits',
-            label: 'Total Fresh Visits',
+            key: 'Revisits',
+            label: 'Revisits',
             width: '15',
             sortable: false,
             align: 'center',
@@ -243,6 +267,34 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
             align: 'center',
             render: value => value || '0'
         },
+        {
+            key: 'TotalIBM',
+            label: 'IBM',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '0'
+        },
+
+        {
+            key: 'TotalOBM',
+            label: 'OBM',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: value => value || '0'
+        },
+        {
+            key: 'TotalIBMOBM',
+            label: 'IBM + OBM',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: (_, row) =>
+            (Number(row.TotalIBM || 0) +
+                Number(row.TotalOBM || 0))
+        }
+
 
 
     ], []);
@@ -290,9 +342,15 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
         [AchievementByProjectColumns, selectedAchievementByProjectColumnKeys]
     );
 
-    const handleOpenModal = (row: ProjectAchievementData) => {
+    const handleCMClick = (row: ProjectAchievementData) => {
+        setSelectedcellClosing({
+            projectId: row.ProjectId,
+            project: row.ProjectName
+        });
+    };
 
-        setSelectedcell({
+    const handleSMClick = (row: ProjectAchievementData) => {
+        setSelectedcellSourcing({
             projectId: row.ProjectId,
             project: row.ProjectName
         });
@@ -356,22 +414,41 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
                 title="Customize Table Columns"
             />
 
-            {selectedCell && (
+            {selectedCellClosing && (
                 <Modal
-                    isOpen={!!selectedCell}
-                    onClose={() => setSelectedcell(null)}
+                    isOpen={!!selectedCellClosing}
+                    onClose={() => setSelectedcellClosing(null)}
                     title={
                         <div className="flex flex-col">
 
                             <span className="font-semibold text-base">
-                                {selectedCell.project || ""}
+                                {selectedCellClosing.project || ""}
                             </span>
 
                         </div>
                     }
                     size="large-half"
                 >
-                    <AchievementByClosing filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={selectedCell?.projectId} />
+                    <AchievementByClosing filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={selectedCellClosing?.projectId} />
+                </Modal>
+            )}
+
+            {selectedCellSourcing && (
+                <Modal
+                    isOpen={!!selectedCellSourcing}
+                    onClose={() => setSelectedcellSourcing(null)}
+                    title={
+                        <div className="flex flex-col">
+
+                            <span className="font-semibold text-base">
+                                {selectedCellSourcing.project || ""}
+                            </span>
+
+                        </div>
+                    }
+                    size="large-half"
+                >
+                    <AchievementBySourcing filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={selectedCellSourcing?.projectId} />
                 </Modal>
             )}
 

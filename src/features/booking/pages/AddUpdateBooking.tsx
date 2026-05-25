@@ -1216,17 +1216,14 @@ export const AddUpdateBooking: React.FC = () => {
     if (!formData.AgreementValue || formData.AgreementValue === 0) {
       newErrors.AgreementValue = "Agreement Value is required";
     }
-    if (!formData.AgreementValueGSTPercentage) {
+    
+    if (!formData.AgreementValueGSTPercentage === null || formData.AgreementValueGSTPercentage === undefined) {
       newErrors.AgreementValueGSTPercentage = "Agreement GST (%) is required";
-    } else if (formData.AgreementValueGSTPercentage === 0) {
-      newErrors.AgreementValueGSTPercentage = "Agreement GST (%) is required";
-    }
+    } 
 
-    if (!formData.StampDutyPercentage) {
+    if (!formData.StampDutyPercentage=== null || formData.StampDutyPercentage === undefined) {
       newErrors.StampDutyPercentage = "Stamp Duty (%) is required";
-    } else if (formData.StampDutyPercentage === 0) {
-      newErrors.StampDutyPercentage = "Stamp Duty (%) is required";
-    }
+    } 
 
     if (!formData.HandoverType) {
       newErrors.HandoverType = "Handover Type is required";
@@ -2023,6 +2020,7 @@ export const AddUpdateBooking: React.FC = () => {
                   <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
                       <FieldItem label="Enquiry Code" value={enquiryUniqueCode || "-"} />
+                      <FieldItem label="E-Mail ID" value={enquiryList?.EmailId || '-'} />
                       <FieldItem label="Name" value={enquiryList?.Name || "-"} />
                       <FieldItem label="Nationality" value={enquiryList?.Nationality || "-"} />
                       <FieldItem label="Mobile No" value={!enquiryList?.MobileNumber ? "-" : `${enquiryList?.MobileNumberCountryCode ?? "+91"}  ${enquiryList?.MobileNumber}`} />
@@ -2077,11 +2075,14 @@ export const AddUpdateBooking: React.FC = () => {
                   {enquiryList?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                        <FieldItem label="Channel Partner Code" value={enquiryList?.ChannelPartnerCode || "-"} />
-                        <FieldItem label="Channel Partner" value={enquiryList?.ChannelPartnerName || "-"} />
-                        <FieldItem label="CP Mobile" value={enquiryList?.ChannelPartnerMobileNumber ? `${enquiryList?.ChannelPartnerMobileNumberCountryCode} ${enquiryList?.ChannelPartnerMobileNumber}` : "-"} />
+                        <FieldItem label="CP Code" value={enquiryList?.ChannelPartnerCode || "-"} />
+                        <FieldItem label="CP Name" value={enquiryList?.ChannelPartnerName || "-"} />
+                        <FieldItem label="CP Mobile Number" value={enquiryList?.ChannelPartnerMobileNumber ? `${enquiryList?.ChannelPartnerMobileNumberCountryCode} ${enquiryList?.ChannelPartnerMobileNumber}` : "-"} />
+                        <FieldItem label="CP E-Mail ID" value={enquiryList?.ChannelPartnerEmailId || '-'} />
+                        
                         <FieldItem label="CP Team Member" value={enquiryList?.ChannelPartnerTeamMemberName || "-"} />
-                        <FieldItem label="CP Team Mobile" value={enquiryList?.ChannelPartnerMobileNumber ? `${enquiryList?.ChannelPartnerTeamMemberMobileNumberCountryCode} ${enquiryList?.ChannelPartnerTeamMemberMobileNumber}` : "-"} />
+                        <FieldItem label="CP Team Mobile Number" value={enquiryList?.ChannelPartnerMobileNumber ? `${enquiryList?.ChannelPartnerTeamMemberMobileNumberCountryCode} ${enquiryList?.ChannelPartnerTeamMemberMobileNumber}` : "-"} />
+                        <FieldItem label="CP Team E-Mail ID" value={enquiryList?.ChannelPartnerTeamMemberEmailId || '-'} />
                       </div>
                     </div>
                   )}

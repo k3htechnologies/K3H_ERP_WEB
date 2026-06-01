@@ -22,16 +22,35 @@ import * as E from 'fp-ts/Either';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { Input } from "@/ui/components/forms";
-
+import type { AddUpdateCallingDataRequest } from "@/features/callTracker/models/CallingDataModel";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
+import { TextArea } from "@/ui/components/forms/Textarea";
+import { Mail, Phone } from "lucide-react";
+import { filterEmail, filterMobile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
 
 export const CallingData: React.FC = () => {
 
+    const initialFormStateForCallingData = (): AddUpdateCallingDataRequest => ({
+        ProjectId: 0,
+        CallingDataId: 0,
+        Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        Name: '',
+        MobileNumber: '',
+        EmailId: '',
+        Address: '',
+        Source: ''
+    })
+
     // STATE
     const [callingDataList, setCallingDataList] = useState<CallingDataData[]>([]);
+    const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [searchTerm, setSearchTerm] = useState('');
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
+    const [isAddUpdateCallingDataModalOpen, setIsAddUpdateCallingDataModalOpen] = useState(false);
+    const [formData, setFormData] = useState<AddUpdateCallingDataRequest>(() => initialFormStateForCallingData());
 
     //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
@@ -55,7 +74,6 @@ export const CallingData: React.FC = () => {
     // TOAST
     const { addToast } = useToast();
 
-
     //CUSTOMIZE COLUMN MODAL
     const [isShowCustomizeCallingDataColumnsModal, setIsShowCustomizeCallingDataColumnsModal] = useState(false);
 
@@ -63,6 +81,105 @@ export const CallingData: React.FC = () => {
     const fetchCallingData = async (page: number = pagination.currentPage) => {
         return await loadCallingData(page, filters);
     };
+
+    const PushCallingDataRequest = (): AddUpdateCallingDataRequest => {
+        return {
+            CallingDataId: formData.CallingDataId,
+            ProjectId: projectId || 0,
+            Uniquekey: formData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            Name: formData.Name,
+            MobileNumber: formData.MobileNumber,
+            EmailId: formData.EmailId,
+            Address: formData.Address,
+            Source: formData.Source
+        };
+    };
+
+    const validationAddUpdateCallingData = (): {
+        isValid: boolean
+        errors: { [key: string]: string }
+    } => {
+        const newErrors: { [key: string]: string } = {}
+
+        if (!formData.Name || formData.Name.trim() === "") {
+            newErrors.Name = "Name is required";
+        }
+
+        if (!formData.MobileNumber) {
+            newErrors.MobileNumber = "Mobile Number is required";
+        } else if (!isValidMobile(formData.MobileNumber)) {
+            newErrors.MobileNumber = "Enter a valid 10-digit mobile number";
+        }
+
+        if (formData.EmailId !== "" && !isValidEmail(formData.EmailId!.trim())) {
+            newErrors.EmailId = "Enter a Valid E-mail Id";
+        }
+
+        if (!formData.Source || formData.Source.trim() === "") {
+            newErrors.Source = "Source is required";
+        }
+
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors
+        }
+    }
+
+    const handleAddCallingData = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErrors({})
+
+        const validation = validationAddUpdateCallingData();
+
+        if (!validation.isValid) {
+            setErrors(validation.errors)
+            return
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const payload = PushCallingDataRequest();
+
+                const response = await callingDataService.apiCallAddUpdateCallingData(payload);
+
+                if (E.isRight(response)) {
+
+                    setIsAddUpdateCallingDataModalOpen(false);
+
+                    const isAdd = formData.CallingDataId === 0;
+
+                    if (isAdd) {
+
+                        const newRecord = response.right.Data?.[0] as CallingDataData
+                        setCallingDataList(prevData => [newRecord, ...prevData]);
+
+                        setPagination({
+                            currentPage: pagination.currentPage,
+                            totalRecords: pagination.totalRecords + 1,
+                            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+                        });
+                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
+                    }
+                    setFormData(initialFormStateForCallingData())
+                } else {
+
+                    addToast({ type: "error", title: response.left?.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Calling Data Added Successfully'
+        )
+    }
 
     const loadCallingData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
 
@@ -78,6 +195,7 @@ export const CallingData: React.FC = () => {
                     FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
                     ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
                     MobileNumber: filterParams.MobileNumber ?? undefined,
+                    Source: filterParams.Source ?? undefined,
                     SortBy: getSortByParam(sort ?? null, CallingDataColumns),
                 };
 
@@ -142,6 +260,14 @@ export const CallingData: React.FC = () => {
         loadCallingData(1, filters, sort, searchTerm);
 
     }, [searchTerm]);
+
+
+    const handleFieldChange = (field: keyof AddUpdateCallingDataRequest, value: any) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
 
     //#endregion
 
@@ -264,7 +390,7 @@ export const CallingData: React.FC = () => {
         },
         {
             key: 'EmailId',
-            label: 'E-mail ID',
+            label: 'E-mail Id',
             width: '15',
             sortable: false,
             align: 'left',
@@ -281,6 +407,22 @@ export const CallingData: React.FC = () => {
         {
             key: 'Address',
             label: 'Address',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'Source',
+            label: 'Source',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'NoOfTimeCalling',
+            label: 'No. of Time Calling',
             width: '15',
             sortable: false,
             align: 'left',
@@ -346,6 +488,13 @@ export const CallingData: React.FC = () => {
     }
     //#endregion
 
+    //#region HANDLE ADD
+    const handleAddCallingDataModal = () => {
+        setIsAddUpdateCallingDataModalOpen(true);
+        setFormData(initialFormStateForCallingData());
+    }
+    //#endregion
+
     //#region CALLING DATA TABLE PAGINATION INFO
     const CallingDataPaginationInfo: PaginationInfo = useMemo(
         () => ({
@@ -379,6 +528,10 @@ export const CallingData: React.FC = () => {
                     setTempFilters(filters);
                     setShowFilterPopup(true);
                 }}
+
+                isShowAddButton={canAction}
+                addTitle="Add"
+                onAdd={handleAddCallingDataModal}
 
                 isShowCustomizeButton
                 onCustomize={() => {
@@ -487,6 +640,16 @@ export const CallingData: React.FC = () => {
                         />
                     </div>
 
+                    <div>
+                        <Input
+                            type="text"
+                            label='Source'
+                            value={tempFilters.Source || ''}
+                            onChange={e => handleFilterChange('Source', e.target.value)}
+                            placeholder="Enter Source"
+                        />
+                    </div>
+
                 </div>
             </Modal>
 
@@ -498,6 +661,92 @@ export const CallingData: React.FC = () => {
                     uploadExcel(file, mergeExisting);
                 }}
             />
+
+            {/* ADD MODAL FOR CALLING DATA */}
+            <Modal
+                isOpen={isAddUpdateCallingDataModalOpen}
+                onClose={() => {
+                    setIsAddUpdateCallingDataModalOpen(false);
+                    setFormData(initialFormStateForCallingData());
+                    setErrors({});
+                }}
+                onCancel={() => {
+                    setIsAddUpdateCallingDataModalOpen(false);
+                    setFormData(initialFormStateForCallingData());
+                    setErrors({});
+                }}
+                title="Add Calling Data"
+                saveText="Add"
+                onSubmit={handleAddCallingData}
+                size='xl'
+            >
+                <div className="space-y-4 p-6 bg-blue-100">
+                    <div>
+                        <Input
+                            type="text"
+                            label='Name'
+                            value={formData.Name || ''}
+                            onChange={e => handleFieldChange("Name", e.target.value)}
+                            placeholder="Enter Name"
+                            required
+                            error={errors.Name}
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            type="text"
+                            label='Mobile Number'
+                            value={formData.MobileNumber || ''}
+                            onChange={(e) => {
+                                const mobile = filterMobile(e.target.value);
+                                handleFieldChange("MobileNumber", mobile);
+                            }}
+                            placeholder="Enter Mobile Number"
+                            required
+                            leftIcon="+91"
+                            rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                            error={errors.MobileNumber}
+                            maxLength={10}
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            type="text"
+                            label='Email Id'
+                            value={formData.EmailId || ''}
+                            error={errors.EmailId}
+                            rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
+                            onChange={(e) => {
+                                const emailId = filterEmail(e.target.value);
+                                handleFieldChange("EmailId", emailId);
+                            }}
+                            placeholder="Enter Valid E-mail Id"
+                        />
+                    </div>
+                    <div>
+                        <TextArea
+                            label='Address'
+                            value={formData.Address || ''}
+                            onChange={e => handleFieldChange("Address", e.target.value)}
+                            placeholder="Enter Address"
+                        />
+                    </div>
+
+                    <div>
+                        <SinglePageSelection
+                            label="Source"
+                            required
+                            placeholder='Select Source'
+                            value={formData.Source || ''}
+                            onChange={(e) => {
+                                handleFieldChange('Source', String(e));
+                            }}
+                            options={SUBSOURCE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                            error={errors.Source}
+                        />
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

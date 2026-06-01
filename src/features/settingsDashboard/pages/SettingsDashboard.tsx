@@ -41,7 +41,6 @@ const SettingsDashboard: React.FC = () => {
       async () => {
 
         const response = await settingsDashboardService.apiCallPullSettingsDashboard();
-
         if (E.isRight(response)) {
 
           const e = response.right.Data;

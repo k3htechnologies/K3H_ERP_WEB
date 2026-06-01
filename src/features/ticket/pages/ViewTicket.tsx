@@ -44,6 +44,7 @@ export const ViewTicket: React.FC = () => {
                 }
 
                 const response = await ticketService.apiCallPullTicket(params);
+                console.log('Response from apiCallPullTicket:', response);
 
                 if (E.isRight(response)) {
 

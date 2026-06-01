@@ -19,13 +19,13 @@ const SalesDashboard: React.FC = () => {
     const [enquiryFollowUpData, setEnquiryFollowUpData] = useState<Table1[]>([]);
     const [performanceReportClosingData, setPerformanceReportClosingData] = useState<Table2[]>([]);
     const [performanceReportSourcingData, setPerformanceReportSourcingData] = useState<Table3[]>([]);
-    
+
 
     const { addToast } = useToast();
     const { projectId } = useProject();
 
     useEffect(() => {
-        
+
         loadSalesDashboardData();
     }, [projectId]);
 
@@ -35,6 +35,7 @@ const SalesDashboard: React.FC = () => {
             setLoadingMessage,
             async () => {
                 const response = await salesDashboardService.apiCallPullSalesDashboard(Number(projectId));
+
                 if (E.isRight(response)) {
 
                     const e = response.right.Data;

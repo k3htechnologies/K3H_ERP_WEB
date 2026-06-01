@@ -4,7 +4,7 @@ import { LocalStorageHelper } from '@/core/utils/localStorageHelper'
 import { Modal } from '@/ui/components/Modal/Modal'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { FieldItem } from '@/ui/components/forms/FieldItem'
-import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat'
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat'
 import usePagination from '@/core/hooks/usePagination'
 import { runApiWithLoader } from '@/core/utils'
 import type { FilterWithPaginationNotificationRequest, NotificationData } from '@/features/technical/models/TechnicalModel'
@@ -18,8 +18,8 @@ import { shouldShowProjectSelection } from '@/core/utils/projectSelectionVisibil
 import { isSubSubRoute } from '@/core/utils/fileValidation'
 import { projectMasterService } from '@/features/projectMaster/services/ProjectMasterService'
 import type { FilterWithPaginationProjectMasterRequest, ProjectMasterData } from '@/features/projectMaster/models/ProjectMasterModel'
-import NoDataView from '../components/NoDataView/NoDataView'
-import TableActionToolbar from '../components/TableAction/TableActionToolbar'
+// import NoDataView from '../components/NoDataView/NoDataView'
+// import TableActionToolbar from '../components/TableAction/TableActionToolbar'
 import type { EmployeeMasterData, SetEmployeeMPINRequest } from '@/features/employeeMaster/models/EmployeeMasterModel'
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback'
 import Tabs from '../components/Tab/Tab'
@@ -27,7 +27,11 @@ import { Input } from '../components/forms'
 import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService'
 import { Loader } from '@/core/utils/loader'
 import { getNameInitials } from '@/core/utils/getNameInitials'
-import { formatCurrency } from '@/core/utils/comman'
+// import { formatCurrency } from '@/core/utils/comman'
+import Overview from '@/features/inventory/components/Overview/Overview'
+import SiteFaq from '@/features/inventory/components/SiteFaq/SiteFaq'
+import EmployeeList from '@/features/inventory/components/EmployeeList/EmployeeList'
+
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -71,6 +75,7 @@ export const Header: React.FC<HeaderProps> = ({
     const TabList = [
         { id: "Project Overview", label: 'Overview' },
         { id: "Employee", label: 'Employee' },
+        { id: "Site FAQ", label: 'Site FAQ' }
     ];
 
     const [activeTab, setActiveTab] = useState<string>(TabList[0].id);
@@ -125,6 +130,10 @@ export const Header: React.FC<HeaderProps> = ({
 
         else if (activeTab === 'Employee') {
 
+            loadProjectMasterWithEmployee();
+        }
+
+        else if (activeTab === 'Site FAQ') {
             loadProjectMasterWithEmployee();
         }
 
@@ -562,348 +571,18 @@ export const Header: React.FC<HeaderProps> = ({
 
                         }}
                     />
-                    {activeTab === 'Project Overview' && (
-
-                        <div className="lg:col-span-2 space-y-6">
-
-                            {/* ================= BASIC PROJECT DETAILS ================= */}
-                            <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Basic Project Details
-                                </h4>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
-
-                                    <FieldItem label="Redevelopment" value={projectMasterList[0]?.IsRedevelopment === true ? 'YES' : 'NO'} />
-                                    <FieldItem label="Project Name" value={projectMasterList[0]?.ProjectName ?? '-'} />
-                                    <FieldItem label="Business Category" value={projectMasterList[0]?.BussinessCategory ?? '-'} />
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5 pb-4 border-b border-[#135bec2e]">
-                                    <FieldItem label="File Number" value={projectMasterList[0]?.FileNumber ?? '-'} />
-
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5 pb-4 border-b border-[#135bec2e]">
-                                    <FieldItem label="CTS Number" value={projectMasterList[0]?.CTSNumber ?? '-'} />
-                                </div>
-                                {projectMasterList[0]?.Category.toUpperCase() !== "TENDER" && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5 pb-4 border-b border-[#135bec2e]">
-                                        <FieldItem label="Category" value={projectMasterList[0]?.Category ?? '-'} />
-                                    </div>
-                                )}
-
-                                {projectMasterList[0]?.Category.toUpperCase() === "TENDER" && (
-                                    <>
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
-                                            Project Category
-                                        </h4>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
-                                            <FieldItem label="Category" value={projectMasterList[0]?.Category ?? '-'} />
-
-                                            <FieldItem label="Amount" value={formatCurrency(projectMasterList[0]?.TenderAmount)} />
-                                            <FieldItem label="EMD Amount" value={formatCurrency(projectMasterList[0]?.TenderEMDAmount)} />
-
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
-                                            <FieldItem
-                                                label="Purchase Start Date"
-                                                value={
-                                                    projectMasterList[0]?.TenderPurchaseStartDate
-                                                        ? formatDate_dd_MonthName_yy(projectMasterList[0].TenderPurchaseStartDate)
-                                                        : '-'
-                                                }
-                                            />
-
-                                            <FieldItem
-                                                label="Purchase End Date"
-                                                value={
-                                                    projectMasterList[0]?.TenderPurchaseEndDate
-                                                        ? formatDate_dd_MonthName_yy(projectMasterList[0].TenderPurchaseEndDate)
-                                                        : '-'
-                                                }
-                                            />
-                                            <FieldItem label="Cheque Number" value={projectMasterList[0]?.TenderChequeNumber ?? '-'} urls={projectMasterList[0]?.TenderChequeNumberURL ?? '-'} isIcon />
-
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
-
-                                            <FieldItem
-                                                label="Submission Date"
-                                                value={
-                                                    projectMasterList[0]?.TenderSubmissionDate
-                                                        ? formatDate_dd_MonthName_yy(projectMasterList[0].TenderSubmissionDate)
-                                                        : '-'
-                                                }
-                                            />
-
-                                            <FieldItem
-                                                label="Issue Date"
-                                                value={
-                                                    projectMasterList[0]?.TenderIssueDate
-                                                        ? formatDate_dd_MonthName_yy(projectMasterList[0].TenderIssueDate)
-                                                        : '-'
-                                                }
-                                            />
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
-
-                                            <FieldItem label="Payorder Remark" value={projectMasterList[0]?.TenderPayorderRemark ?? '-'} />
-                                        </div>
-
-                                    </>
-
-                                )}
-
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
-                                    Liasoning Architect
-                                </h4>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
-                                    <FieldItem label="Name" value={projectMasterList[0]?.LiasoningArchitectName ?? '-'} />
-                                    <FieldItem label="Mobile Number" value={projectMasterList[0]?.LiasoningArchitectMobileNumber
-                                        ? `+91 ${projectMasterList[0]?.LiasoningArchitectMobileNumber}`
-                                        : '-'}
-                                    />
-                                </div>
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
-                                    Designing Architect
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
-                                    <FieldItem label="Name" value={projectMasterList[0]?.DesigningArchitectName ?? '-'} />
-                                    <FieldItem label="Mobile Number" value={projectMasterList[0]?.DesigningArchitectMobileNumber
-                                        ? `+91 ${projectMasterList[0]?.DesigningArchitectMobileNumber}`
-                                        : '-'}
-                                    />
-
-                                </div>
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
-                                    RCC Consultant
-                                </h4>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-5 border-b border-[#135bec2e]">
-
-                                    <FieldItem label="Name" value={projectMasterList[0]?.RCCConsultantName ?? '-'} />
-                                    <FieldItem label="Mobile Number" value={projectMasterList[0]?.RCCConsultantMobileNumber
-                                        ? `+91 ${projectMasterList[0]?.RCCConsultantMobileNumber}`
-                                        : '-'}
-                                    />
-
-                                </div>
-
-
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
-                                    Location Details
-                                </h4>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pb-4 border-b border-[#135bec2e]">
-
-                                    <FieldItem label="Project Location" value={projectMasterList[0]?.ProjectLocation ?? '-'} />
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pt-4  pb-4  border-b border-[#135bec2e]">
-                                    <div className="text-sm font-medium text-[#1D1D1D80] truncate">
-                                        Google Location
-                                    </div>
-                                    {projectMasterList[0]?.GoogleLocation !== "" ?
-                                        <span className="text-blue-600 underline cursor-pointer  break-all whitespace-normal"
-                                            onClick={() => window.open(projectMasterList[0]?.GoogleLocation, "_blank")}>
-                                            {projectMasterList[0]?.GoogleLocation}
-                                        </span> : "-"}
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
-                                    <FieldItem label="Country" value={projectMasterList[0]?.CountryName ?? '-'} />
-                                    <FieldItem label="State" value={projectMasterList[0]?.StateName ?? '-'} />
-                                    <FieldItem label="District" value={projectMasterList[0]?.DistrictName ?? '-'} />
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 pt-4 border-b border-[#135bec2e]">
-
-                                    <FieldItem label="City" value={projectMasterList[0]?.CityName ?? '-'} />
-                                    <FieldItem label="Village" value={projectMasterList[0]?.VillageName ?? '-'} />
-                                    <FieldItem label="PIN Code" value={projectMasterList[0]?.ZipCode ?? '-'} />
-                                </div>
-
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">
-                                    Scheme & Scope Details
-                                </h4>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
-
-                                    <FieldItem label="Project Scope" value={projectMasterList[0]?.ProjectScope ?? '-'} />
-                                    <FieldItem label="Project Scheme" value={projectMasterList[0]?.ProjectScheme ?? '-'} />
-                                    <FieldItem label="Project Sub Scheme" value={projectMasterList[0]?.ProjectSubScheme ?? '-'} />
-                                </div>
-
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">
-                                    Project Documentation
-                                </h4>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
-
-                                    <FieldItem label="RERA Number" value={projectMasterList[0]?.RERANumber ?? '-'} />
-
-                                    <FieldItem
-                                        label="RERA Certificate Date"
-                                        value={
-                                            projectMasterList[0]?.RERACertificateDate
-                                                ? formatDate_dd_MonthName_yy(projectMasterList[0]?.RERACertificateDate)
-                                                : '-'
-                                        }
-                                    />
-                                    <FieldItem
-                                        label="RERA Completion Date"
-                                        value={
-                                            projectMasterList[0]?.RERAComplitionDate
-                                                ? formatDate_dd_MonthName_yy(projectMasterList[0]?.RERAComplitionDate)
-                                                : '-'
-                                        }
-                                    />
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
-                                    <FieldItem label="APF Number" value={projectMasterList[0]?.APFNumber ?? '-'} />
-
-                                </div>
-
-
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5 ">
-                                    Project Timeline
-                                </h4>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
-                                    <FieldItem
-                                        label="Survey Date"
-                                        value={
-                                            projectMasterList[0]?.SurveyDate
-                                                ? formatDate_dd_MonthName_yy(projectMasterList[0]?.SurveyDate)
-                                                : '-'
-                                        }
-                                    />
-                                    <FieldItem
-                                        label="Expected Start Date"
-                                        value={
-                                            projectMasterList[0]?.ExpectedStartDate
-                                                ? formatDate_dd_MonthName_yy(projectMasterList[0]?.ExpectedStartDate)
-                                                : '-'
-                                        }
-                                    />
-                                    <FieldItem
-                                        label="Execution Start Date"
-                                        value={
-                                            projectMasterList[0]?.ExecutionStartDate
-                                                ? formatDate_dd_MonthName_yy(projectMasterList[0]?.ExecutionStartDate)
-                                                : '-'
-                                        }
-                                    />
-
-                                </div>
-
-
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-5">
-                                    Contact Information
-                                </h4>
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <FieldItem
-                                        label="Site Contact Name"
-                                        value={projectMasterList[0]?.SiteContactName ?? '-'}
-                                    />
-                                    <FieldItem
-                                        label="Site Contact Mobile Number"
-                                        value={projectMasterList[0]?.SiteContactMobileNumber ?? '-'}
-                                    />
-
-                                    <FieldItem
-                                        label="Project Status"
-                                        value={projectMasterList[0]?.ProjectStatus ?? '-'}
-                                    />
-                                </div>
-                            </section>
-
-                        </div>
-
-                    )}
-                    {activeTab === 'Employee' && (
-                        <>
-                            {/* ================= RIGHT SIDE (1/3 WIDTH) ================= */}
-                            <div className="lg:col-span-1 space-y-6">
-
-                                {/* ================= PROJECT IMAGE ================= */}
-                                <section className="bg-white rounded-xl ">
-                                    <TableActionToolbar
-                                        isShowSearchBar
-                                        searchTerm={searchTermForEmployee}
-                                        searchPlaceholder="Search By Employee Name"
-                                        onSearchChange={(v) => {
-                                            setSearchTermForEmployeeName(v)
-                                            debouncedSearchForEmployeeName(v)
-                                        }}
-                                        onClearSearch={clearsearchForEmployeeName}
-                                        isShowFilterButton={false}
-                                        exportLoading={false}
-                                    />
-
-                                    {employeeMasterList?.length ? (
-                                        employeeMasterList.map(emp => {
-
-                                            const fullName = (emp?.FullName ?? '').trim();
-
-                                            const initials = fullName
-                                                ? fullName.split(/\s+/).map(w => w[0]).join('').toUpperCase().slice(0, 2)
-                                                : 'NA';
-
-                                            return (
-                                                <section
-                                                    key={emp.EmployeeCode}
-                                                    className="bg-white p-2 border-b border-[#3333334f] mb-2"
-                                                >
-                                                    <div className="flex items-start gap-4">
-
-                                                        {/* Avatar */}
-                                                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-800 
-                                                                    flex items-center justify-center text-xs font-semibold 
-                                                                    border border-blue-300 shadow-sm">
-                                                            {initials}
-                                                        </div>
-
-                                                        {/* Right side */}
-                                                        <div className="flex flex-col gap-1 w-full">
-
-                                                            {/* NAME + MOBILE SAME LINE */}
-                                                            <div className="flex flex-wrap items-center gap-2">
-                                                                <h4 className="text-md font-medium text-gray-900 leading-tight">
-                                                                    {emp.FullName || '-'}
-                                                                </h4>
-
-                                                                <span className="text-sm text-gray-500">
-                                                                    ({emp.PersonalMobileNumber || '-'})
-                                                                </span>
-                                                                <span>{emp.Department || '-'}</span>
-
-                                                                <span className="text-gray-400"> | </span>
-
-                                                                <span>{emp.Designation || '-'}</span>
-
-                                                            </div>
-
-
-
-                                                        </div>
-                                                    </div>
-                                                </section>
-                                            )
-                                        })
-                                    ) : (
-                                        <p className="text-center text-gray-500 py-6">
-                                            <NoDataView />
-                                        </p>
-                                    )}
-
-
-
-                                </section>
-
-                            </div>
-                        </>
-                    )}
+                    {activeTab === 'Project Overview' && <Overview projectData={projectMasterList[0]} />}
+                    {activeTab === 'Employee' && <EmployeeList
+                        employees={employeeMasterList}
+                        searchTerm={searchTermForEmployee}
+                        onSearchChange={(v) => {
+                            setSearchTermForEmployeeName(v);
+                            debouncedSearchForEmployeeName(v);
+                        }}
+                        onClearSearch={clearsearchForEmployeeName}
+                    />
+                    }
+                    {activeTab === 'Site FAQ' && <SiteFaq />}
                 </Modal>
 
                 <Modal

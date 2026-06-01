@@ -1219,7 +1219,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             <div>
                               <Input
                                 type="text"
-                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) ? true :false}
+                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) ? true : false}
                                 label="Team Member Name"
                                 value={formData.ChannelPartnerTeamMemberName ?? ""}
                                 onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberName", e.target.value)}
@@ -1231,7 +1231,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                             <div>
                               <Input
                                 label="Team Member Mobile Number"
-                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) ? true :false}
+                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) ? true : false}
                                 type="text"
                                 maxLength={10}
                                 value={formData.ChannelPartnerTeamMemberMobileNumber ?? ""}

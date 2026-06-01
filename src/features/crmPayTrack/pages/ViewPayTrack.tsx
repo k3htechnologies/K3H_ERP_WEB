@@ -23,7 +23,7 @@ export const ViewPayTrack: React.FC = () => {
   const navigate = useNavigate();
   
   const { listState, updateListState } = usePayTrackBookingListState();
-  const { bookingName, bookingType, flat,bookingData } = listState;
+  const { bookingName, bookingType, flat,bookingData,bookingApprovalStatus } = listState;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [welcome, setWelcome] = useState<string>("");
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
@@ -76,9 +76,10 @@ export const ViewPayTrack: React.FC = () => {
             titleText={`Booking Details : ${bookingName}`}
             subTitleText={bookingType ?? ""}
             subSubTitleText={flat ?? ""}
+            subSubSubTitleText={bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? "" : bookingApprovalStatus}
             cancelText="Back"
             EditText="Edit"
-            canAction={activeTab === "BookingForm" ? true : false}
+            canAction={activeTab === "BookingForm"  && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
             onEdit={() => {
               setIsModalOpen(true);
             }}
@@ -90,11 +91,11 @@ export const ViewPayTrack: React.FC = () => {
             ExtraButtontitleTextIcon={Mail}
             ExtraButtonText="Message"
             onExtraButton={() => setWelcome('Message')}
-            canActionExtraButtonText={activeTab === "BookingForm" ? true : false}
+            canActionExtraButtonText={activeTab === "BookingForm" && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
 
             ExtraExtraButtonText="Send E-Mail"
             onExtraExtraButton={() => setWelcome('E-Mail')}
-            canActionExtraExtraButton={activeTab === "BookingForm" ? true : false}
+            canActionExtraExtraButton={activeTab === "BookingForm" && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
           />
         </div>
 

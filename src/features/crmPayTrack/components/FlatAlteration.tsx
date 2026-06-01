@@ -63,7 +63,7 @@ export const FlatAlteration: React.FC = () => {
     const { addToast } = useToast();
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
-    const { bookingId, bookingData } = listState;
+    const { bookingId, bookingData,bookingApprovalStatus } = listState;
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
     useEffect(() => {
@@ -318,7 +318,7 @@ export const FlatAlteration: React.FC = () => {
                         Flat Alteration Remark
                     </h4>
 
-                    {canAction && (
+                    {canAction &&  bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
                         <Button
                             onClick={handleCreateRequestFlatSpecificationModal}
                             color="blue"

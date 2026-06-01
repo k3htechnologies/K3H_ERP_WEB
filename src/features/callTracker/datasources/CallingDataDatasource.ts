@@ -3,12 +3,15 @@ import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 import { CallingDataApi } from "@/features/callTracker/api/CallingDataApi";
 import type {
     CallingDataListResponse,
-    FilterWithPaginationCallingDataRequest
+    FilterWithPaginationCallingDataRequest,
+    CallingDataSaveResponse,
+    AddUpdateCallingDataRequest,
 } from "@/features/callTracker/models/CallingDataModel";
 
 export abstract class CallingDataDatasource {
 
     abstract pullCallingData(params: FilterWithPaginationCallingDataRequest, signal?: AbortSignal): Promise<CallingDataListResponse>;
+    abstract addUpdateCallingData(params: AddUpdateCallingDataRequest): Promise<CallingDataSaveResponse>;
 }
 
 export class CallingDataDatasourceImpl implements CallingDataDatasource {
@@ -29,6 +32,7 @@ export class CallingDataDatasourceImpl implements CallingDataDatasource {
             if (params.FromDate) queryParams.append('FromDate', params.FromDate.toString());
             if (params.ToDate) queryParams.append('ToDate', params.ToDate.toString());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
+            if (params.Source) queryParams.append("Source", params.Source.toString());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
@@ -42,10 +46,31 @@ export class CallingDataDatasourceImpl implements CallingDataDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return   await this.pullCallingData(params);
+                return await this.pullCallingData(params);
             }
             throw error;
         }
     }
 
+    async addUpdateCallingData(params: AddUpdateCallingDataRequest): Promise<CallingDataSaveResponse> {
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                CallingDataApi.ADD_UPDATE,
+                params
+            )
+
+            return response
+
+        } catch (error: any) {
+
+            console.error('ERROR: ADD UPDATE CALLING DATA :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateCallingData(params);
+            }
+            throw error
+        }
+    }
 }

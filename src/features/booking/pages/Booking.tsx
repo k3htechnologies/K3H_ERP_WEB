@@ -16,7 +16,7 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useNavigate } from 'react-router-dom';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
@@ -32,6 +32,8 @@ import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApprov
 import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/ApprovalLogModal';
 import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
 import { filterNumbersWithDecimal } from '@/core/utils/fileValidation';
+import { copyToClipboard } from '@/core/utils/comman';
+import { Copy } from 'lucide-react';
 
 export const Booking: React.FC = () => {
     //#region STATE
@@ -304,14 +306,42 @@ export const Booking: React.FC = () => {
                 sortable: false,
                 fixed: 'left',
                 align: 'left',
-                render: value => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="150px"
-                        tooltipThreshold={20}
-                        tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                    />
-                )
+                render: (value) => {
+                    return (
+                        <div className="flex items-center gap-2">
+
+                            <TooltipText
+                                text={value || '-'}
+                                maxWidth="150px"
+                                tooltipThreshold={20}
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+
+                            {value && (
+                                <Button
+                                    onClick={async (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const success = await copyToClipboard(value);
+                                        if (success) {
+                                            addToast({ type: 'success', title: `${value} Copied!` });
+                                        }
+                                    }}
+                                    color="transparent"
+                                    size="sm"
+                                    style={{
+                                        padding: '2px 6px',
+                                        color: '#6B7280',
+                                        cursor: 'pointer'
+                                    }}
+                                    title="Copy"
+                                >
+                                    <Copy className="h-3.5 w-3.5" />
+                                </Button>
+                            )}
+                        </div>
+                    );
+                }
             },
             {
                 key: 'ApplicantName',

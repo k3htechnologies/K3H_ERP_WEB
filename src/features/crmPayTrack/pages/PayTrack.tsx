@@ -240,6 +240,7 @@ const PayTrack: React.FC = () => {
             bookingName: row.ApplicantName ?? '',
             bookingType: row.BookingType ?? '',
             flat: row.Flat ?? '',
+            bookingApprovalStatus:row.BookingApprovalStatus ?? "",
             bookingOtherChargesData: row.BookingOtherChargesData ?? [],
             bookingData: row ?? [],
             totalUnitCost:
@@ -346,6 +347,7 @@ const PayTrack: React.FC = () => {
                 align: 'left',
                 render: value => value || '-'
             },
+
             {
                 key: 'RegistrationDate',
                 label: 'Expected Registration Date ',
@@ -365,6 +367,13 @@ const PayTrack: React.FC = () => {
                 label: "Approval Details",
                 align: "center",
                 children: [
+                    {
+                        key: 'BookingApprovalStatus',
+                        label: 'Status',
+                        width: '14',
+                        align: 'left',
+                        render: value => value || '-'
+                    },
                     {
                         key: 'PendingLedgerApprovalCount',
                         label: 'Pending Ledger',

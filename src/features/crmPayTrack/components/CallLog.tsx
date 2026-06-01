@@ -73,7 +73,7 @@ export const CallLog: React.FC = () => {
     const { projectId } = useProject();
 
     const { listState } = usePayTrackBookingListState();
-    const { bookingId } = listState;
+    const { bookingId, bookingApprovalStatus } = listState;
 
     const { addToast } = useToast();
 
@@ -390,7 +390,7 @@ export const CallLog: React.FC = () => {
             width: '20',
             sortable: true,
             align: 'left',
-            render: (value,row) => (
+            render: (value, row) => (
                 <TooltipText
                     text={value || '-'}
                     maxWidth="250px"
@@ -461,7 +461,7 @@ export const CallLog: React.FC = () => {
             align: 'center',
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
         },
-        
+
         {
             key: 'RegistrationDate',
             label: 'Registration Date',
@@ -470,7 +470,7 @@ export const CallLog: React.FC = () => {
             align: 'center',
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
         },
-        
+
         {
             key: 'PromiseAmount',
             label: 'Promise Amount',
@@ -503,24 +503,28 @@ export const CallLog: React.FC = () => {
 
                 const isLocked = !canAction || !!row.RescheduleDate || !!row.Remark;
 
+                const isDisabled =
+                    isLocked ||
+                    bookingApprovalStatus?.toUpperCase() !== 'APPROVED';
+
                 return (
                     <div className="flex items-center justify-center">
 
                         <Button
                             color="transparent"
                             size="sm"
-                            disabled={isLocked}
+                            disabled={isDisabled}
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
-                                if (isLocked) return;
+                                if (isDisabled) return;
                                 handleEditCallLog(row)
                             }}
                             style={{
-                                color: isLocked ? '#9CA3AF' : '',
+                                color: isDisabled ? '#9CA3AF' : '',
                                 padding: '4px 8px',
-                                cursor: isLocked ? 'not-allowed' : 'pointer',
-                                opacity: isLocked ? 0.5 : 1
+                                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                opacity: isDisabled ? 0.5 : 1
                             }}
                             leftIcon={<Edit className="h-4 w-4" />}
                         />
@@ -528,17 +532,17 @@ export const CallLog: React.FC = () => {
                         <Button
                             color="transparent"
                             size="sm"
-                            disabled={isLocked}
+                            disabled={isDisabled}
                             style={{
-                                color: isLocked ? '#9CA3AF' : 'red',
+                                color: isDisabled ? '#9CA3AF' : 'red',
                                 padding: '4px 8px',
-                                cursor: isLocked ? 'not-allowed' : 'pointer',
-                                opacity: isLocked ? 0.5 : 1
+                                cursor: isDisabled ? 'not-allowed' : 'pointer',
+                                opacity: isDisabled ? 0.5 : 1
                             }}
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
-                                if (isLocked) return;
+                                if (isDisabled) return;
                                 handleConfirmationDialogBoxOpen(row)
                             }}
                             leftIcon={<Trash2 className="h-4 w-4" />}
@@ -828,7 +832,7 @@ export const CallLog: React.FC = () => {
                 }}
                 title={editingCallLogData ? 'Update Call Log' : 'Add Call Log'}
                 onSubmit={handleAddEditCallLog}
-                saveText={editingCallLogData ? 'Update ' : 'Add '}
+                saveText={bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? editingCallLogData ? 'Update ' : 'Add ' : ""}
                 loading={isLoading}
                 size="xl"
             >

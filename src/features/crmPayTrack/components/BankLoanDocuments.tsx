@@ -68,7 +68,7 @@ export const BankLoanDocuments: React.FC = () => {
     const { canAction } = useMenuPermissions("/bankLoan");
 
     const { listState } = usePayTrackBookingListState();
-    const { bookingId } = listState;
+    const { bookingId,bookingApprovalStatus } = listState;
 
     const { projectId } = useProject();
 
@@ -218,7 +218,7 @@ export const BankLoanDocuments: React.FC = () => {
                 align: "center",
                 render: (_value, row) => {
 
-                    const showEdit = canAction ? (row.BankStatusClosedActive) === "Active" : false;
+                    const showEdit = canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED'  ? (row.BankStatusClosedActive) === "Active" : false;
 
                     return (
                         <div>
@@ -295,7 +295,7 @@ export const BankLoanDocuments: React.FC = () => {
                 fixed: "right",
                 render: (_value, row) => {
 
-                    const showEdit = canAction ? (row.BankStatusClosedActive) === "Active" : false;
+                    const showEdit = canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED'  ? (row.BankStatusClosedActive) === "Active" : false;
 
                     return (
                         <div className="flex items-center justify-end ml-2 gap-1">

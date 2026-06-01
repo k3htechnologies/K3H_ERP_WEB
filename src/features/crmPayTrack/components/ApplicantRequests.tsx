@@ -154,7 +154,7 @@ export const ApplicantRequests: React.FC = () => {
     const { addToast } = useToast();
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
-    const { bookingId, bookingData } = listState;
+    const { bookingId, bookingData,bookingApprovalStatus } = listState;
 
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
@@ -959,7 +959,7 @@ export const ApplicantRequests: React.FC = () => {
                         Applicant Details
                     </h4>
 
-                    {canAction && (
+                    {canAction &&  bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
                         <Button
                             onClick={() => { setIsAddUpdateApplicantDetailsModalOpen(true); }}
                             color="blue"

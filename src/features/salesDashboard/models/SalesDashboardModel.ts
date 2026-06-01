@@ -34,6 +34,7 @@ export interface Table1 {
     SalesAdvisor: string | null
     SourcingManager: string | null
     CreatedDate: string | null
+    IsAction:boolean |false
 }
 
 export interface Table2 {

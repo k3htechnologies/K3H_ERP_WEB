@@ -116,7 +116,7 @@ export const MASTER_DATA = {
 
   subSubsource_channelPartner: ['Channel Partner Data Calling', 'Channel Partner Walked IN', 'Digital Activity'],
 
-  finalStage: ['Site Visit', 'Re - Visit Proposed', 'Re - Visit Scheduled', 'Negotiation', 'Unit Selection / Blocked', 'Booking Done', 'Blocked', 'Cancelled', 'Retention', 'Lost'],
+  finalStage: ['Follow - UP','Site Visit', 'Re - Visit Proposed', 'Re - Visit Scheduled','Re - Visit', 'Negotiation', 'Unit Selection / Blocked', 'Booking Done', 'Blocked', 'Cancelled', 'Retention', 'Lost'],
 
   finalStageDetail: ['Purchased with competition', 'Purchased somewhere else', 'Not connected calls >7', 'Low Budget', 'Ready Posession', 'Location', 'Product Issue', 'Pricing Issue', 'Payment Issue', 'Loan Issue', 'Inventory Issue', 'General Enquiry', 'Wrong Number', 'Dropped The Idea Of Buying', 'Booked Somewhere Else'],
 
@@ -312,7 +312,7 @@ export const MASTER_DATA = {
 
   activeInactive: ['Active', 'Inactive'],
 
-  paymentFor: ['Agreement Value', 'Agreement Value GST', 'Agreement Value TDS', 'Other Charges Value', 'Other Charges GST', 'Registration Fees', 'Stamp Duty',],
+  paymentFor: ['Agreement Value (Without TDS)', 'Agreement Value GST', 'Agreement Value TDS', 'Other Charges Value', 'Other Charges GST', 'Registration Fees', 'Stamp Duty',],
 
   paymentReceivedFrom: ['Bank', 'Owner'],
 
@@ -336,7 +336,10 @@ export const MASTER_DATA = {
 
   module: ['Dashboard', 'Inventory', 'Project Document', 'Legal', 'Marketing', 'Procurement', 'Project', 'Stock Management', 'Channel Partner', 'Sale', 'CRM', 'Setting', 'Payroll', 'Redevelopment', 'Operation'],
 
-  assignStatusType: ['Open', 'Assigned', 'InProgress', 'Resolved', 'Closed', 'ReOpen']
+  assignStatusType: ['Open', 'Assigned', 'InProgress', 'Resolved', 'Closed', 'ReOpen'],
+
+  handOverStatus: ['Yes', 'No', 'Pending', 'N/A'],
+
 
 } as const
 
@@ -464,6 +467,8 @@ export const REFUNDED_DETAILS_AMOUNT_TYPE_OPTIONS = toOptions(MASTER_DATA.refund
 export const PLATFORM_OPTIONS = toOptions(MASTER_DATA.platform);
 export const MODULE_OPTIONS = toOptions(MASTER_DATA.module);
 export const ASSIGN_STATUS_TYPE_OPTIONS = toOptions(MASTER_DATA.assignStatusType);
+export const HANDOVER_STATUS = toOptions(MASTER_DATA.handOverStatus);
+
 
 
 // ============================================================================

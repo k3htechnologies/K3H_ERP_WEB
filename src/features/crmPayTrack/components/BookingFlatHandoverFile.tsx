@@ -72,7 +72,7 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
     const { canAction } = useMenuPermissions(fileType==="FLAT HANDOVER" ? "/flatHandover" : "/files");
 
     const { listState } = usePayTrackBookingListState();
-    const { bookingId } = listState;
+    const { bookingId ,bookingApprovalStatus} = listState;
 
     const { projectId } = useProject();
 
@@ -259,8 +259,8 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                 fixed: "right",
                 render: (_value, row) => {
 
-                    const showEdit = canAction;
-                    const showDelete = canAction && pageName!="Flat Handover" ? true :false;
+                    const showEdit = canAction &&  bookingApprovalStatus?.toUpperCase() === 'APPROVED';
+                    const showDelete = canAction  &&  bookingApprovalStatus?.toUpperCase() === 'APPROVED' && pageName!="Flat Handover" ? true :false;
 
                     return (
                         <div className="flex items-center justify-end ml-2 gap-1">
@@ -538,7 +538,7 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                 isShowFilterButton={false}
                 isShowCustomizeButton={false}
                 // Add
-                isShowAddButton={canAction && pageName!="Flat Handover" ? true :false}
+                isShowAddButton={canAction &&  bookingApprovalStatus?.toUpperCase() === 'APPROVED' && pageName!="Flat Handover" ? true :false}
                 addTitle="Add"
                 onAdd={handleBankDocumentsModal}
             />

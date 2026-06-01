@@ -742,7 +742,11 @@ export const LitigationDocument: React.FC = () => {
                 value={documentFiles}
                 onChange={setDocumentFiles}
                 availableFilesURL={documentURL ?? ""}
-                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                allowedTypes={["image/jpeg", 
+                              "image/png", 
+                              "application/pdf",
+                              "application/vnd.ms-excel",
+                              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
                 maxFiles={5}
                 onRemoveExisting={(url) => {
                   setRemovedDocumentURLs((prev) => [...prev, url]);

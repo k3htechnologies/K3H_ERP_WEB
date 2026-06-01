@@ -29,7 +29,7 @@ export const PaymentSchedule: React.FC = () => {
     const { projectId } = useProject();
 
     const { listState } = usePayTrackBookingListState();
-    const { bookingId } = listState;
+    const { bookingId, bookingApprovalStatus } = listState;
 
     useEffect(() => {
         if (projectId && bookingId) {
@@ -358,8 +358,14 @@ export const PaymentSchedule: React.FC = () => {
                 align: 'center',
                 render: (_value, row) => {
 
-                    const isLocked = !(row?.BookingPaymentScheduleId > 0) || !row?.DemandType?.trim();
+                    const isLocked =
+                        !(row?.BookingPaymentScheduleId > 0) ||
+                        !row?.DemandType?.trim();
 
+                    const isDisabled =
+                        isLocked ||
+                        bookingApprovalStatus?.toUpperCase() !== 'APPROVED';
+                        
                     if (isLocked) return null;
 
                     return (
@@ -367,12 +373,12 @@ export const PaymentSchedule: React.FC = () => {
 
                             <Button
                                 size="sm"
-                                disabled={isLocked}
+                                disabled={isDisabled}
                                 color="blue"
                                 onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
-                                    if (isLocked) return;
+                                    if (isDisabled) return;
                                     handleGenerateDemand(row)
                                 }}>
                                 {row.DemandType}

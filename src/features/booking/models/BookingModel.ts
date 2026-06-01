@@ -143,6 +143,7 @@ export interface BookingData {
     TransferFlat: string | null;
     TenantId: number | null;
     LedgerCount: number | null;
+    IsApplicableOtherCharge:boolean | null;
 }
 
 export interface BookingApplicantData {
@@ -254,6 +255,7 @@ export interface AddUpdateBookingRequest {
     OtherRemark: string | null;
     TermsAndConditionsDescription: string | null;
     BookingType: string | null;
+    IsApplicableOtherCharge:boolean | null;
     OtherChargesDetailJSON: string | null;
     PaymentScheduleSchemeMasterId: number | null;
     PaymentScheduleDetailJSON: string | null;

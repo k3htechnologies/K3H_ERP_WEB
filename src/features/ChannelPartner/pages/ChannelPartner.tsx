@@ -425,7 +425,7 @@ export const ChannelPartner: React.FC = () => {
       key: 'NoOfIbm',
       label: 'No of IBM',
       width: '15',
-      sortable: false,
+      sortable: true,
       align: 'left',
       render: (value) => value || '0'
     },
@@ -433,7 +433,7 @@ export const ChannelPartner: React.FC = () => {
       key: 'NoOfObm',
       label: 'No of OBM',
       width: '15',
-      sortable: false,
+      sortable: true,
       align: 'left',
       render: (value) => value || '0'
     },

@@ -51,7 +51,7 @@ export const BankDetails: React.FC = () => {
     const { canAction } = useMenuPermissions("/bankLoan");
 
     const { listState } = usePayTrackBookingListState();
-    const { bookingId, totalUnitCost } = listState;
+    const { bookingId, totalUnitCost,bookingApprovalStatus } = listState;
 
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -376,9 +376,9 @@ export const BankDetails: React.FC = () => {
 
     const activeLoans = bookingLoanDetailsList.filter((x) => x.BankStatusClosedActive !== "Closed");
 
-    const canDeleteActiveBank = canAction && !activeLoans[0]?.NoOfBankDocument && activeLoans[0]?.BankStatusClosedActive !== "Closed";
+    const canDeleteActiveBank = canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !activeLoans[0]?.NoOfBankDocument && activeLoans[0]?.BankStatusClosedActive !== "Closed";
 
-    const canClosedBank = canAction && activeLoans[0]?.NoOfBankDocument > 0 && activeLoans[0]?.BankStatusClosedActive !== "Closed";
+    const canClosedBank = canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED'  && activeLoans[0]?.NoOfBankDocument > 0 && activeLoans[0]?.BankStatusClosedActive !== "Closed";
 
     const closedLoans = bookingLoanDetailsList.filter((x) => x.BankStatusClosedActive === "Closed");
 
@@ -400,7 +400,7 @@ export const BankDetails: React.FC = () => {
                                         No Active Bank
                                     </h4>
                                     
-                                    {canAction && (
+                                    {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
                                         <Button
                                             color="primary"
                                             size="sm"

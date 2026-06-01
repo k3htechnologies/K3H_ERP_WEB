@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react";
 
 export interface ExpandableCardProps {
   title?: React.ReactNode;
+  subTitle?: React.ReactNode;
   item?: any;
   showline: boolean;
   height?: number;
@@ -15,6 +16,7 @@ export interface ExpandableCardProps {
 
 export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   title,
+  subTitle,
   showline,
   customizedIcon,
   child,
@@ -38,8 +40,16 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
         }}
 
         style={{ height: height }} >
-          
-        <span className="font-medium text-gray-800">{title}</span>
+
+        <div className="flex flex-col">
+
+          <span className="font-medium text-gray-800"> {title} </span>
+
+          {subTitle && (
+            <span className="text-xs text-gray-500 mt-1"> Total Unit : {subTitle}</span>
+          )}
+
+        </div>
 
         <div className="flex items-center gap-2">
 

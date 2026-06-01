@@ -101,7 +101,7 @@ export const PaymentLedger: React.FC = () => {
   const { projectId } = useProject();
 
   const { listState } = usePayTrackBookingListState();
-  const { bookingId, bookingName, flat, bookingOtherChargesData } = listState;
+  const { bookingId, bookingName, flat, bookingOtherChargesData,bookingApprovalStatus } = listState;
 
   const { addToast } = useToast();
 
@@ -302,9 +302,6 @@ export const PaymentLedger: React.FC = () => {
 
   const payTrackPaymentLedgerColumns = useMemo<TableColumn[]>(() => {
     const boldIfTotal = (row: any) => (row.isTotal ? "font-bold text-gray-500" : "");
-
-    const formatCurrency = (value: number) => `₹ ${Number(value || 0).toLocaleString()}`;
-
     return [
       {
         key: "PaymentFor",
@@ -788,7 +785,7 @@ export const PaymentLedger: React.FC = () => {
         onExportExcel={handleExportPayTrackPaymentLedgerExcelFile}
         onExportPdf={handleExportPayTrackPaymentLedgerPdfFile}
         exportLoading={isLoading}
-        isShowAddButton={canAction}
+        isShowAddButton={canAction  && bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
         addTitle="Add"
         onAdd={handlePaymentLedgerCrmModal} />
 
@@ -848,7 +845,7 @@ export const PaymentLedger: React.FC = () => {
             return (
               <div className="space-y-4">
                 {details.map((row, index) => {
-                  const showEdit = canAction && !row.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
+                  const showEdit = canAction  && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !row.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
                   return (
                     <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                       <div className="flex justify-between items-center">
@@ -867,7 +864,7 @@ export const PaymentLedger: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <ApprovalActions
                             approvalStatus={row.ApprovalStatus || "-"}
-                            showApproval={row.IsApproval}
+                            showApproval={row.IsApproval && bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
                             isIcons={true}
                             onHistory={() => handleApprovalLog(row)}
                             onApprove={() => handleApproveRejectDocument(row, "approve")}

@@ -64,7 +64,7 @@ export const ParkingSwapSection: React.FC = () => {
     const { addToast } = useToast();
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
-    const { bookingId, bookingData } = listState;
+    const { bookingId, bookingData,bookingApprovalStatus } = listState;
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
     const isParkingDetailsEmpty = !bookingData?.ParkingNumber || bookingData.ParkingNumber === "-";
@@ -389,7 +389,7 @@ export const ParkingSwapSection: React.FC = () => {
                         Parking Details
                     </h4>
                     <div className="">
-                        {canAction && (
+                        {canAction &&  bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
                             <div className="flex justify-end pb-2">
                                 <Button
                                     onClick={() => {

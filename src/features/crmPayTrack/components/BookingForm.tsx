@@ -199,12 +199,12 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
                     IsCheckPermission: false,
-                    ExportType: welcome==="E-Mail" ?'WELCOME MESSAGE ON MAIL' :'WELCOME MESSAGE'
+                    ExportType: welcome === "E-Mail" ? 'WELCOME MESSAGE ON MAIL' : 'WELCOME MESSAGE'
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);
 
-                addToast({ type: 'success', title: `${welcome} sent successfully`})
+                addToast({ type: 'success', title: `${welcome} sent successfully` })
 
                 setWelcome("");
 
@@ -332,7 +332,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
             },
             {
                 key: "PaymentScheduleAmount",
-                label: "Amount (₹)",
+                label: "Amount Without TDS (₹)",
                 width: "20",
                 align: "right",
                 render: (value, row) => (
@@ -363,11 +363,28 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                     </span>
                 ),
             },
+
+            {
+                key: "PaymentScheduleTotalAmount",
+                label: "Total Amount With TDS (₹)",
+                sortable: false,
+                width: "20",
+                align: "right",
+                render: (_, row) =>
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(
+                            (row?.PaymentScheduleAmount || 0) +
+                            (row?.PaymentScheduleTDSAmount || 0)
+                        ) || "0"}
+                    </span>
+            },
         ];
     }, []);
 
     const otherChargesDataWithTotal = useMemo(() => {
         const data = bookingData?.BookingOtherChargesData || [];
+
+        if (data.length === 0) return [];
 
         const totals = data.reduce(
             (acc, row) => {

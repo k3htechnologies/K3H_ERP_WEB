@@ -1,9 +1,15 @@
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
-import { getStatusColor } from '@/features/enquiry/pages/Status';
+import { getFollowUpColor, getStatusColor } from '@/features/enquiry/pages/Status';
 import { DataTableWithOutBorder, type TableColumn } from '@/ui/components/DataTable/DataTableWithoutBorder';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Table1 } from '@/features/salesDashboard/models/SalesDashboardModel';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { Button } from '@/ui/components/forms';
+import { copyToClipboard } from '@/core/utils/comman';
+import { Copy } from 'lucide-react';
+import useToast from '@/core/hooks/useToast';
+import { useNavigate } from 'react-router-dom';
+import { useProject } from '@/features/projectMaster/context/ProjectContext';
 
 interface Props {
     enquiryFollowUpData: Table1[];
@@ -12,11 +18,22 @@ interface Props {
 export default function FollowUp({ enquiryFollowUpData }: Props) {
 
     const [tableData, setTableData] = useState<any[]>([]);
+    const { addToast } = useToast();
+    const navigate = useNavigate();
+    const { setProjectId } = useProject();
 
     useEffect(() => {
         setTableData(enquiryFollowUpData || []);
     }, [enquiryFollowUpData]);
-    //#endregion
+
+
+    const handleNavigateToView = useCallback((row: any) => {
+
+        setProjectId(row.ProjectId);
+
+        navigate(`/enquiry?search=${encodeURIComponent(row.Name)}`);
+
+    }, [navigate, setProjectId]);
 
     //#region
     const columns: TableColumn[] = [
@@ -29,21 +46,70 @@ export default function FollowUp({ enquiryFollowUpData }: Props) {
         {
             key: 'SystemGeneratedCode',
             label: 'Enquiry Code',
+            sortable: false,
+            fixed: 'left',
             align: 'left',
-            render: value => (
-                <TooltipText
-                    text={value || '-'}
-                    maxWidth="150px"
-                    tooltipThreshold={20}
-                    tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                />
-            )
+            render: (value) => {
+                return (
+                    <div className="flex items-center gap-2">
+
+                        <TooltipText
+                            text={value || '-'}
+                            maxWidth="150px"
+                            tooltipThreshold={20}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                        />
+
+                        {value && (
+                            <Button
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const success = await copyToClipboard(value);
+                                    if (success) {
+                                        addToast({ type: 'success', title: `${value} Copied!` });
+                                    }
+                                }}
+                                color="transparent"
+                                size="sm"
+                                style={{
+                                    padding: '2px 6px',
+                                    color: '#6B7280',
+                                    cursor: 'pointer'
+                                }}
+                                title="Copy"
+                            >
+                                <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                        )}
+                    </div>
+                );
+            }
         },
         {
             key: 'Name',
             label: 'Client Name',
-            fixed: 'left',
-            render: (value) => value || "-",
+            sortable: false,
+            align: 'left',
+            render: (value, row) => {
+                
+                if (row?.IsAction) {
+                    return (
+                        <TooltipText
+                            text={value || '-'}
+                            maxWidth="250px"
+                            tooltipThreshold={25}
+                            onClick={() => handleNavigateToView(row)}
+                        />
+                    );
+                }
+
+                return (
+                    <span>
+                        {value || '-'}
+                    </span>
+                );
+            }
         },
         {
             key: 'MobileNumber',
@@ -56,7 +122,20 @@ export default function FollowUp({ enquiryFollowUpData }: Props) {
             key: 'EnquiryFollowUpDays',
             label: 'Due Day',
             align: 'center',
-            render: (value) => value || "-",
+            render: (value) => {
+                const { text } = getFollowUpColor(value);
+
+                return (
+                    <span
+                        className="inline-block px-2 py-1 rounded-full whitespace-nowrap"
+                        style={{
+                            color: text
+                        }}
+                    >
+                        {value || "-"}
+                    </span>
+                );
+            }
         },
         {
             key: 'NextFollowUpDate',
@@ -114,7 +193,7 @@ export default function FollowUp({ enquiryFollowUpData }: Props) {
             <h2 className="text-lg font-semibold text-gray-800">Follow Up</h2>
 
             <div className="flex-1 bg-white rounded-xl p-5 h-[310px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
-                
+
                 <DataTableWithOutBorder
                     columns={columns}
                     data={tableData}

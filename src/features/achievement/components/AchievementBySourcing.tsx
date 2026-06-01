@@ -119,7 +119,8 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
                 const params: FilterWithPaginationAchievementRequest = {
 
                     PageNumber: 1,
-                    PageSize: pagination.pageSize,
+                    PageSize: pagination.totalRecords,
+                    ProjectId: Number(projectId) || 0,
                     ProjectName: searchTerm?.trim() || undefined,
                     FilterType: filterType.trim() || undefined,
                     FromDate: fromDate ? fromDate || undefined : undefined,

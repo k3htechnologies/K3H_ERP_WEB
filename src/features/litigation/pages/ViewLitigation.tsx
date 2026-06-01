@@ -990,7 +990,12 @@ const ViewLitigation: React.FC = () => {
                   value={closureURLFiles}
                   onChange={setClosureURLFiles}
                   availableFilesURL={closureURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                  allowedTypes={["image/jpeg", 
+                                 "image/png",
+                                 "image/jpg",
+                                 "application/pdf",
+                                 "application/vnd.ms-excel",
+                                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
                   onRemoveExisting={(url) => {
                     SetRemoveClosureAttachementUrls((prev) => [...prev, url]);
                   }}
@@ -1062,7 +1067,12 @@ const ViewLitigation: React.FC = () => {
                   value={hearingURLFiles}
                   onChange={setHearingURLFiles}
                   availableFilesURL={hearingURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
+                  allowedTypes={["image/jpeg", 
+                                 "image/png",
+                                 "image/jpg",
+                                 "application/pdf",
+                                 "application/vnd.ms-excel",
+                                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
                   onRemoveExisting={(url) => {
                     SetRemoveHearingAttachementUrls((prev) => [...prev, url]);
                   }}

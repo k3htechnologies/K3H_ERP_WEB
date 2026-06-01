@@ -45,10 +45,11 @@ export const ViewBooking: React.FC = () => {
         { id: 'Applicants', label: 'Applicants' },
         { id: 'Charges', label: 'Other Charges' },
         { id: 'Payment', label: 'Payment Schedule' },
+        { id: 'Terms & Condition', label: 'Terms & Condition' },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(bookingTabList[0].id);
-    
+
     useEffect(() => {
         if (!projectId || !bookingId) return;
 
@@ -180,15 +181,56 @@ export const ViewBooking: React.FC = () => {
 
     //#endregion
 
-    const paymentScheduleColumns = useMemo<TableColumn[]>(
-        () => [
+    const paymentScheduleDataWithTotal = useMemo(() => {
+        const data = bookingData?.BookingPaymentScheduleData || [];
+
+        const totals = data.reduce(
+            (acc, row) => {
+                acc.PaymentScheduleAmount += row.PaymentScheduleAmount || 0;
+                acc.PaymentScheduleGSTAmount += row.PaymentScheduleGSTAmount || 0;
+                acc.PaymentSchedulePercentage += row.PaymentSchedulePercentage || 0;
+                acc.PaymentScheduleTDSAmount += row.PaymentScheduleTDSAmount || 0;
+                return acc;
+            },
+            {
+                PaymentScheduleAmount: 0,
+                PaymentScheduleGSTAmount: 0,
+                PaymentSchedulePercentage: 0,
+                PaymentScheduleTDSAmount: 0,
+            }
+        );
+
+        return [
+            ...data,
+            {
+                Name: "TOTAL",
+                Type: "Stage",
+                PaymentSchedulePercentage: totals.PaymentSchedulePercentage,
+                PaymentScheduleAmount: totals.PaymentScheduleAmount,
+                PaymentScheduleGSTAmount: totals.PaymentScheduleGSTAmount,
+                PaymentScheduleTDSAmount: totals.PaymentScheduleTDSAmount,
+                isTotal: true,
+            },
+        ];
+    }, [bookingData]);
+
+
+    const paymentScheduleColumns = useMemo<TableColumn[]>(() => {
+
+        const boldIfTotal = (row: any) => row.isTotal ? "font-bold text-gray-500" : "";
+
+        return [
             {
                 key: "Type",
                 label: "Type",
                 sortable: false,
                 width: "20",
                 align: "left",
-                render: (value) => value || "-",
+                render: (value, row) => {
+                    if (row.isTotal) return <span className={boldIfTotal(row)}></span>;
+
+                    return value || "-";
+                },
             },
             {
                 key: "Date",
@@ -198,7 +240,7 @@ export const ViewBooking: React.FC = () => {
                 width: "30",
                 align: "center",
                 render: (_value, row) => {
-
+                    if (row.isTotal) return <span className={boldIfTotal(row)}>TOTAL</span>;
                     if (row.Type === "Date" && row.Date) {
 
                         return formatDate_dd_MonthName_yy(row.Date);
@@ -217,16 +259,24 @@ export const ViewBooking: React.FC = () => {
 
                 width: "20",
                 align: "right",
-                render: (value) => `${value || 0}%`,
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {value || "-"}
+                    </span>
+                ),
             },
             {
                 key: "PaymentScheduleAmount",
-                label: "Amount (₹)",
+                label: "Amount  Without TDS (₹)",
                 sortable: false,
 
                 width: "20",
                 align: "right",
-                render: (value) => formatCurrency(value) || "0",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                ),
             },
             {
                 key: "PaymentScheduleGSTAmount",
@@ -235,63 +285,142 @@ export const ViewBooking: React.FC = () => {
                 width: "20",
                 sortable: false,
                 align: "right",
-                render: (value) => formatCurrency(value) || "0",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                ),
             },
             {
                 key: "PaymentScheduleTDSAmount",
                 label: "TDS Amount (₹)",
-
                 width: "20",
                 sortable: false,
                 align: "right",
-                render: (value) => formatCurrency(value) || "0",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                ),
             },
 
-        ],
-        [],
-    );
+            {
+                key: "PaymentScheduleTotalAmount",
+                label: "Total Amount With TDS (₹)",
+                sortable: false,
+                width: "20",
+                align: "right",
+                render: (_, row) =>
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(
+                            (row?.PaymentScheduleAmount || 0) +
+                            (row?.PaymentScheduleTDSAmount || 0)
+                        ) || "0"}
+                    </span>
+            },
+        ];
+    }, []);
 
-    const otherChargesColumns = useMemo<TableColumn[]>(
-        () => [
+    const otherChargesDataWithTotal = useMemo(() => {
+
+        const data = bookingData?.BookingOtherChargesData || [];
+
+        if (data.length === 0) return [];
+
+        const totals = data.reduce(
+            (acc, row) => {
+
+                acc.Value += row.Value || 0;
+                acc.GSTPercentage += row.GSTPercentage || 0;
+                acc.GSTValue += row.GSTValue || 0;
+                return acc;
+
+            },
+            {
+                Value: 0,
+                GSTPercentage: 0,
+                GSTValue: 0,
+            }
+        );
+
+        return [
+            ...data,
+            {
+                ChargeName: "TOTAL",
+                CalculatedOn: "",
+                Value: totals.Value,
+                GSTPercentage: totals.GSTPercentage || 0,
+                GSTValue: totals.GSTValue,
+                isTotal: true,
+            },
+        ];
+    }, [bookingData]);
+
+
+    const otherChargesColumns = useMemo<TableColumn[]>(() => {
+
+        const boldIfTotal = (row: any) =>
+            row.isTotal ? "font-bold text-gray-500" : "";
+
+        return [
             {
                 key: "ChargeName",
                 label: "Charges",
                 sortable: false,
                 align: "left",
                 fixed: "left",
-                render: (value) => value || "-",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {row.isTotal ? "" : value || "-"}
+                    </span>
+                ),
             },
             {
                 key: "CalculatedOn",
                 label: "Calculated On",
                 sortable: false,
                 align: "left",
-                render: (value) => value || "-",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {row.isTotal ? "TOTAL" : value || "-"}
+                    </span>
+                ),
             },
             {
                 key: "Value",
                 label: "Value (₹)",
                 sortable: false,
                 align: "right",
-                render: (value) => formatCurrency(value) || "0",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                ),
             },
             {
                 key: "GSTPercentage",
                 label: "GST (%)",
                 sortable: false,
                 align: "right",
-                render: (value) => `${value || 0}%`,
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                         {`${value || 0} %`}
+                    </span>
+                ),
             },
             {
                 key: "GSTValue",
                 label: "GST Value (₹)",
                 sortable: false,
                 align: "right",
-                render: (value) => formatCurrency(value) || "0",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                ),
             },
-        ],
-        [],
-    );
+        ];
+    }, []);
 
     if (!bookingData) {
         return (
@@ -313,6 +442,7 @@ export const ViewBooking: React.FC = () => {
                 titleText={`Booking Details : ${bookingData.ApplicantName ?? bookingName}`}
                 subTitleText={bookingData.BookingType ?? ""}
                 subSubTitleText={bookingData.Flat ?? ""}
+                subSubSubTitleText={bookingData.ApprovalStatus ?? ""}
                 cancelText="Back"
                 EditText="Edit"
                 onCancel={() => {
@@ -325,7 +455,7 @@ export const ViewBooking: React.FC = () => {
                         navigate('/booking');
                     }
                 }}
-                canAction={canAction && !bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") && sourcePage === 'booking' ? true : false}
+                canAction={canAction && bookingData.ApprovalStatus?.toUpperCase().includes("PENDING") && sourcePage === 'booking' ? true : false}
                 onEdit={() => navigate('/booking/add')}
 
                 ExtraButtontitleText="PDF"
@@ -462,7 +592,7 @@ export const ViewBooking: React.FC = () => {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
                                                     <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                    
+
                                                     <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
                                                     <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
                                                     <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
@@ -698,7 +828,7 @@ export const ViewBooking: React.FC = () => {
                                 Other Charges
                             </h4>
                             <DataTable
-                                data={bookingData?.BookingOtherChargesData || []}
+                                data={otherChargesDataWithTotal || []}
                                 columns={otherChargesColumns}
                                 emptyMessage="No Other Charges Found"
                                 fixedHeight={false}
@@ -717,7 +847,7 @@ export const ViewBooking: React.FC = () => {
                             </h4>
 
                             <DataTable
-                                data={bookingData.BookingPaymentScheduleData || []}
+                                data={paymentScheduleDataWithTotal || []}
                                 columns={paymentScheduleColumns}
                                 emptyMessage="No Payment Schedule Found"
                                 fixedHeight={false}
@@ -727,40 +857,40 @@ export const ViewBooking: React.FC = () => {
 
                         </section>
 
-                        {bookingData.FlatAlterationRemark && (
-                            <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Flat Alteration Remarks
-                                </h4>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={getSafeString(bookingData.FlatAlterationRemark)} />
-                                </div>
-                            </section>
-                        )}
+
+                        <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Flat Alteration Remarks
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <FieldItem label="Remarks" value={getSafeString(bookingData.FlatAlterationRemark)} />
+                            </div>
+                        </section>
 
 
-                        {bookingData.PaymentRemark && (
-                            <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Payment Remarks
-                                </h4>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={getSafeString(bookingData.PaymentRemark)} />
-                                </div>
-                            </section>
-                        )}
 
 
-                        {bookingData.OtherRemark && (
-                            <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Other Remarks
-                                </h4>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={getSafeString(bookingData.OtherRemark)} />
-                                </div>
-                            </section>
-                        )}
+                        <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Payment Remarks
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <FieldItem label="Remarks" value={getSafeString(bookingData.PaymentRemark)} />
+                            </div>
+                        </section>
+
+
+
+
+                        <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Other Remarks
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <FieldItem label="Remarks" value={getSafeString(bookingData.OtherRemark)} />
+                            </div>
+                        </section>
+
 
 
                         {bookingData.TermsAndConditionsDescription && (
@@ -862,7 +992,7 @@ export const ViewBooking: React.FC = () => {
                     activeTab === 'Charges' && (
                         <div className="space-y-4">
                             <DataTable
-                                data={bookingData.BookingOtherChargesData || []}
+                                data={otherChargesDataWithTotal || []}
                                 columns={otherChargesColumns}
                                 emptyMessage="No Other Charges Found"
                                 fixedHeight={false}
@@ -872,20 +1002,33 @@ export const ViewBooking: React.FC = () => {
                     )
                 }
 
-                {
-                    activeTab === 'Payment' && (
-                        <div className="space-y-4">
-                            <DataTable
-                                data={bookingData.BookingPaymentScheduleData || []}
-                                columns={paymentScheduleColumns}
-                                emptyMessage="No Payment Schedule Found"
-                                fixedHeight={false}
-                                recordsPerPage={20}
-                                className="min-w-full" />
+                {activeTab === 'Payment' && (
+                    <div className="space-y-4">
+                        <DataTable
+                            data={paymentScheduleDataWithTotal || []}
+                            columns={paymentScheduleColumns}
+                            emptyMessage="No Payment Schedule Found"
+                            fixedHeight={false}
+                            recordsPerPage={20}
+                            className="min-w-full" />
+
+                    </div>
+                )
+                }
+                {activeTab === 'Terms & Condition' && (
+
+                    <section className="rounded-xl">
+                        
+                        <div className="grid grid-cols-1 gap-4">
+                            <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
 
                         </div>
-                    )
+                    </section>
+
+                )
                 }
+
+
 
 
             </div >

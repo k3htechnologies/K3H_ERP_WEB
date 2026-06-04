@@ -14,6 +14,9 @@ import useToast from "@/core/hooks/useToast";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { CustomizeColumnsModal } from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
+import { Modal } from "@/ui/components/Modal/Modal";
+import AchievementWalkinsRevisitReport from "@/features/achievement/components/AchievementWalkinsRevisitReport";
+import { AchievementBookingReport } from "@/features/achievement/components/AchievementBookingReport";
 
 interface Props {
     filterType: string;
@@ -33,6 +36,9 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
     const { addToast } = useToast();
     const { pagination, setPagination } = usePagination(20);
     const [isShowCustomizeAchievementByClosingColumnsModal, setIsShowCustomizeAchievementByClosingColumnsModal] = useState(false);
+
+    const [selectedColumnClickWalkingRevisit, setSelectedColumnClickWalkingRevisit] = useState<any>(null);
+    const [selectedColumnClickBooking, setSelectedColumnClickBooking] = useState<any>(null);
 
     const loadAchievementByClosingData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
 
@@ -143,6 +149,24 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
     const handleExportAchievementByClosingExcel = () => handleExportAchievementByClosing('Excel');
     const handleExportAchievementByClosingPdf = () => handleExportAchievementByClosing('PDF');
 
+    const handleColumnClickWalkingRevisit = (row: AchievementClosingData, tabName: string, columnKey: string,) => {
+        setSelectedColumnClickWalkingRevisit({
+            employeeId: row.EmployeeId,
+            employeeName: row.EmployeeName,
+            tabName: tabName,
+            columnKey: columnKey
+        });
+    };
+
+    const handleColumnClickBooking = (row: AchievementClosingData, tabName: string, columnKey: string,) => {
+        setSelectedColumnClickBooking({
+            employeeId: row.EmployeeId,
+            employeeName: row.EmployeeName,
+            tabName: tabName,
+            columnKey: columnKey
+        });
+    };
+
     const AchievementByClosingColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'EmployeeName',
@@ -152,7 +176,7 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
             fixed: 'left',
             align: 'left',
             render: (value) => (
-                <span className="text-blue-600 font-semibold">
+                <span className="text-black-600">
                     {value}
                 </span>
             )
@@ -172,7 +196,33 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+             theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'CLOSING', 'WALKINS BY CP')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'WalkinsDirect',
@@ -180,7 +230,34 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+             theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'CLOSING', 'WALKINS DIRECT')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
+
         },
         {
             key: 'TotalWalkins',
@@ -188,7 +265,33 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+             theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'CLOSING', 'TOTAL WALKINS')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
 
 
@@ -198,7 +301,33 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+             theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'CLOSING', 'REVISITS')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'TotalFreshVisits',
@@ -206,7 +335,33 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+             theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'CLOSING', 'FRESH VISITS')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'BookingByCP',
@@ -214,7 +369,33 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#FBF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickBooking(row, 'CLOSING', 'BOOKING BY CP')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'BookingDirect',
@@ -222,7 +403,33 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#FBF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickBooking(row, 'CLOSING', 'BOOKING DIRECT')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'TotalBooking',
@@ -230,7 +437,33 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#FBF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickBooking(row, 'CLOSING', 'TOTAL BOOKING')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
 
         {
@@ -239,11 +472,37 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#FBF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickBooking(row, 'CLOSING', 'TOTAL REVENUE')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
 
 
-    ], []);
+    ], [handleColumnClickWalkingRevisit, handleColumnClickBooking]);
 
 
     const AchievementByClosingPaginationInfo: PaginationInfo = useMemo(
@@ -344,6 +603,51 @@ export const AchievementByClosing: React.FC<Props> = ({ filterType, fromDate, to
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}
             />
+            {selectedColumnClickWalkingRevisit && (
+                <Modal
+                    isOpen={!!selectedColumnClickWalkingRevisit}
+                    onClose={() => setSelectedColumnClickWalkingRevisit(null)}
+                    title={
+                        <div className="flex flex-col">
+
+                            <span className="font-semibold text-base">
+                                {selectedColumnClickWalkingRevisit.employeeName || ""}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                {selectedColumnClickWalkingRevisit.tabName ? `  Tab: ${selectedColumnClickWalkingRevisit.tabName}` : ""}
+                                {selectedColumnClickWalkingRevisit.columnKey ? ` | Column: ${selectedColumnClickWalkingRevisit.columnKey}` : ""}
+                            </span>
+
+                        </div>
+                    }
+                    size="large-half"
+                >
+                    <AchievementWalkinsRevisitReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={0} employeeId={selectedColumnClickWalkingRevisit?.employeeId} tabName={selectedColumnClickWalkingRevisit?.tabName} columnKey={selectedColumnClickWalkingRevisit?.columnKey} />
+                </Modal>
+            )}
+
+            {selectedColumnClickBooking && (
+                <Modal
+                    isOpen={!!selectedColumnClickBooking}
+                    onClose={() => setSelectedColumnClickBooking(null)}
+                    title={
+                        <div className="flex flex-col">
+
+                            <span className="font-semibold text-base">
+                                {selectedColumnClickBooking.employeeName || ""}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                {selectedColumnClickBooking.tabName ? `  Tab: ${selectedColumnClickBooking.tabName}` : ""}
+                                {selectedColumnClickBooking.columnKey ? ` | Column: ${selectedColumnClickBooking.columnKey}` : ""}
+                            </span>
+
+                        </div>
+                    }
+                    size="large-half"
+                >
+                    <AchievementBookingReport filterType={filterType} fromDate={fromDate} toDate={toDate} employeeId={selectedColumnClickBooking?.employeeId} tabName={selectedColumnClickBooking?.tabName} columnKey={selectedColumnClickBooking?.columnKey} />
+                </Modal>
+            )}
 
 
 

@@ -646,7 +646,7 @@ export const ChannelPartnerUniverse: React.FC = () => {
             <Input type="text"
               label='Mobile Number'
               value={tempFilters?.MobileNumber ?? ''}
-              onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+              onChange={e => handleFilterChange('MobileNumber', filterNumbers(e.target.value))}
               placeholder="Enter Mobile Number" />
           </div>
           <div>

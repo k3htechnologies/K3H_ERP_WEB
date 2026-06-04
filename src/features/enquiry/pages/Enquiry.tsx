@@ -35,6 +35,7 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS, SUB_SUB_SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants/staticData";
 import { copyToClipboard } from "@/core/utils/comman";
+import { filterNumbers } from "@/core/utils/fileValidation";
 
 export const Enquiry: React.FC = () => {
 
@@ -662,7 +663,7 @@ export const Enquiry: React.FC = () => {
             align: 'center',
             render: (_value, row) => {
 
-                const canDelete = canAction && row?.FinalStage?.toUpperCase() == "";
+                const canDelete = canAction && !row?.NextFollowUpDate  && row?.FinalStage?.toUpperCase() == "";
 
                 return (
                     <div className="flex items-center justify-center gap-2">
@@ -899,7 +900,7 @@ export const Enquiry: React.FC = () => {
                     </div>
 
                     <div>
-                        <Input type="text" label="Mobile Number" value={tempFilters?.MobileNumber ?? ''} onChange={e => handleFilterChange('MobileNumber', e.target.value)} placeholder="Enter Mobile Number" />
+                        <Input type="text" label="Mobile Number" value={tempFilters?.MobileNumber ?? ''} onChange={e => handleFilterChange('MobileNumber', filterNumbers(e.target.value))} placeholder="Enter Mobile Number" />
                     </div>
 
                     <div>

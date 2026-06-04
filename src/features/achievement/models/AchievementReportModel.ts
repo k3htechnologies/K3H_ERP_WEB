@@ -1,4 +1,6 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
+import type { BookingData } from "@/features/booking/models/BookingModel"
+import type { EnquiryData } from "@/features/enquiry/models/EnquiryModel"
 
 export interface FilterWithPaginationAchievementRequest {
     PageSize: number
@@ -6,6 +8,21 @@ export interface FilterWithPaginationAchievementRequest {
     ProjectId?: number
     ProjectName?: string
     EmployeeName?: string
+    FilterType?: string
+    FromDate?: string | null
+    ToDate?: string | null
+    SortBy?: string
+    ExportType?: 'Excel' | 'PDF'
+}
+
+export interface FilterWithPaginationClickAchievementRequest {
+    PageSize: number
+    PageNumber: number
+    ProjectId?: number
+    EmployeeId?: number
+    ProjectName?: string
+    TabName?: string
+    ColumnName?: string
     FilterType?: string
     FromDate?: string | null
     ToDate?: string | null
@@ -85,7 +102,30 @@ export interface AchievementSourcingData {
     TotalIBM: number | null
 }
 
+export interface IBMOBMReportData {
+    ProjectName: string | null
+    SystemGeneratedCode: string | null
+    Name: string | null
+    FirmsType: string | null
+    Type:string | null
+    Designation: string | null
+    RERANumber: string | null
+    GSTNumber: string | null
+    Speciality: string | null
+    OfficeAddress: string | null
+    IBM_OBM: string | null
+    SourcingRemark: string | null
+    Support: string | null
+    CreatedBy: string | null
+    CreatedDate: string | null
+    ModifiedBy: string | null
+    ModifiedDate: string | null
+}
 
 export type ProjectAchievementListResponse = ApiResponse<ProjectAchievementData[]>;
 export type AchievementClosingListResponse = ApiResponse<AchievementClosingData[]>;
 export type AchievementSourcingListResponse = ApiResponse<AchievementSourcingData[]>;
+
+export type WalkinsRevisitReportListResponse = ApiResponse<EnquiryData[]>;
+export type BookingReportListResponse = ApiResponse<BookingData[]>;
+export type IBMOBMReportListResponse = ApiResponse<IBMOBMReportData[]>;

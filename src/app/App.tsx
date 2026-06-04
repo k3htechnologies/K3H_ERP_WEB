@@ -189,6 +189,7 @@ import ViewTicket from '@/features/ticket/pages/ViewTicket';
 import { TicketListStateProvider } from '@/features/ticket/context/TicketListStateContext';
 import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
 import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
+import CollectionReport from '@/features/collectionReport/pages/CollectionReport';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -471,6 +472,8 @@ function App() {
             <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
             <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
             {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
+            <Route path="collectionReport" element={<CollectionReport />} />
+            
 
             <Route path="brokerage" element={<BookingBrokerageListStateProvider><Brokerage /></BookingBrokerageListStateProvider>} />
             <Route path="brokerage/brokerageInvoice/view" element={<BookingBrokerageListStateProvider><ViewBrokerageInvoice /></BookingBrokerageListStateProvider>} />

@@ -21,12 +21,12 @@ import { callingDataService } from "@/features/callTracker/services/CallingDataS
 import * as E from 'fp-ts/Either';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import { Input } from "@/ui/components/forms";
+import { Button, Input } from "@/ui/components/forms";
 import type { AddUpdateCallingDataRequest } from "@/features/callTracker/models/CallingDataModel";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
 import { TextArea } from "@/ui/components/forms/Textarea";
-import { Mail, Phone } from "lucide-react";
+import { Edit, Mail, Phone } from "lucide-react";
 import { filterEmail, filterMobile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
 
 export const CallingData: React.FC = () => {
@@ -51,36 +51,141 @@ export const CallingData: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isAddUpdateCallingDataModalOpen, setIsAddUpdateCallingDataModalOpen] = useState(false);
     const [formData, setFormData] = useState<AddUpdateCallingDataRequest>(() => initialFormStateForCallingData());
+    const [editingCallingData, setEditingCallingData] = useState<CallingDataData | null>(null);
 
-    //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [filters, setFilters] = useState<FilterInfo>({});
 
-    //#region MENU PERMISSIONS
     const { canExport, canAction } = useMenuPermissions();
-    //#endregion
 
-    //EXCEL IMPORT 
     const [showImportModal, setShowImportModal] = useState(false);
 
-    // PAGINATION
     const { pagination, setPagination } = usePagination(20);
 
-    //#region PROJECT SELECTION GET ID
     const { projectId } = useProject();
-    //#endregion
 
-    // TOAST
     const { addToast } = useToast();
 
-    //CUSTOMIZE COLUMN MODAL
     const [isShowCustomizeCallingDataColumnsModal, setIsShowCustomizeCallingDataColumnsModal] = useState(false);
 
-    //#region DATA LOADING | FETCH |  LOAD | SEARCH
+
     const fetchCallingData = async (page: number = pagination.currentPage) => {
         return await loadCallingData(page, filters);
     };
+
+    const loadCallingData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationCallingDataRequest = {
+                    PageNumber: page,
+                    PageSize: pagination.pageSize,
+                    ProjectId: Number(projectId),
+                    Name: searchText ?? filterParams.Name?.trim() ?? undefined,
+                    FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
+                    ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
+                    MobileNumber: filterParams.MobileNumber ?? undefined,
+                    Source: filterParams.Source ?? undefined,
+                    SortBy: getSortByParam(sort ?? null, CallingDataColumns),
+                };
+
+                const response = await callingDataService.apiCallPullCallingData(params);
+
+                if (E.isRight(response)) {
+                    setCallingDataList(response.right.Data);
+                    setPagination({
+                        currentPage: page,
+                        totalRecords: response.right.TotalNumberOfRecord,
+                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+                    });
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+            },
+            undefined,
+            (error: any) =>
+                addToast({ type: 'error', title: error.message }),
+            undefined,
+            'Loading Calling Data'
+        );
+    },
+        [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination,]);
+    //#endregion
+
+    //#region INIT
+    useEffect(() => {
+        if (!projectId) return;
+
+        setPagination({ currentPage: 1 });
+        loadCallingData(1, filters, sortInfo, searchTerm);
+    }, [projectId]);
+
+    const handleSearchChange = (value: string) => {
+        setSearchTerm(value);
+        setPagination({ currentPage: 1 });
+        loadCallingData(1, filters, sortInfo, value);
+    };
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+        setPagination({ currentPage: 1 });
+        loadCallingData(1, filters, sortInfo, '');
+    };
+
+
+    const handlePageChange = (page: number) => {
+        setPagination({ currentPage: page });
+        loadCallingData(page, filters, sortInfo, searchTerm);
+    };
+
+    const handleSortColumn = useCallback((sort: SortInfo) => {
+
+        setSortInfo(sort);
+        setPagination({ currentPage: 1 });
+        loadCallingData(1, filters, sort, searchTerm);
+
+    }, [searchTerm]);
+
+
+    const handleFieldChange = (field: keyof AddUpdateCallingDataRequest, value: any) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
+
+    const handleEditCallingData = useCallback((row: CallingDataData) => {
+        setEditingCallingData({
+            ...row,
+            Name: row.Name
+        })
+        setIsAddUpdateCallingDataModalOpen(true);
+    }, [])
+
+
+    useEffect(() => {
+        if (isAddUpdateCallingDataModalOpen) {
+            if (editingCallingData) {
+                setFormData({
+                    CallingDataId: editingCallingData.CallingDataId ?? 0,
+                    Uniquekey: editingCallingData.Uniquekey ?? initialFormStateForCallingData().Uniquekey,
+                    Name: editingCallingData.Name ?? '',
+                    MobileNumber: editingCallingData.MobileNumber ?? '',
+                    EmailId: editingCallingData.EmailId ?? '',
+                    Address: editingCallingData.Address ?? '',
+                    Source: editingCallingData.Source ?? '',
+                    ProjectId: Number(projectId) || 0
+                });
+
+            } else {
+                setFormData(initialFormStateForCallingData());
+            }
+            setErrors({});
+        }
+    }, [isAddUpdateCallingDataModalOpen, editingCallingData, projectId]);
 
     const PushCallingDataRequest = (): AddUpdateCallingDataRequest => {
         return {
@@ -165,7 +270,20 @@ export const CallingData: React.FC = () => {
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
                     }
+                    else {
+                        const updatedRecord = response.right.Data[0] as CallingDataData;
+
+                        setCallingDataList(prevData =>
+                            prevData.map(item =>
+                                item.CallingDataId === formData.CallingDataId
+                                    ? updatedRecord
+                                    : item
+                            )
+                        )
+                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+                    }
                     setFormData(initialFormStateForCallingData())
+                    setEditingCallingData(null);
                 } else {
 
                     addToast({ type: "error", title: response.left?.message });
@@ -182,97 +300,6 @@ export const CallingData: React.FC = () => {
         )
     }
 
-    const loadCallingData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationCallingDataRequest = {
-                    PageNumber: page,
-                    PageSize: pagination.pageSize,
-                    ProjectId: Number(projectId),
-                    Name: searchText ?? filterParams.Name?.trim() ?? undefined,
-                    FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
-                    ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
-                    MobileNumber: filterParams.MobileNumber ?? undefined,
-                    Source: filterParams.Source ?? undefined,
-                    SortBy: getSortByParam(sort ?? null, CallingDataColumns),
-                };
-
-                const response = await callingDataService.apiCallPullCallingData(params);
-
-                if (E.isRight(response)) {
-                    setCallingDataList(response.right.Data);
-                    setPagination({
-                        currentPage: page,
-                        totalRecords: response.right.TotalNumberOfRecord,
-                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
-                    });
-                } else {
-                    addToast({ type: 'error', title: response.left.message });
-                }
-            },
-            undefined,
-            (error: any) =>
-                addToast({ type: 'error', title: error.message }),
-            undefined,
-            'Loading Calling Data'
-        );
-    },
-        [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination,]);
-    //#endregion
-
-    //#region INIT
-    useEffect(() => {
-        if (!projectId) return;
-
-        setPagination({ currentPage: 1 });
-        loadCallingData(1, filters, sortInfo, searchTerm);
-    }, [projectId]);
-    //#endregion
-
-    //#region SEARCH HANDLERS
-    const handleSearchChange = (value: string) => {
-        setSearchTerm(value);
-        setPagination({ currentPage: 1 });
-        loadCallingData(1, filters, sortInfo, value);
-    };
-
-    //#region CLEAR HANDLERS
-    const handleClearSearch = () => {
-        setSearchTerm('');
-        setPagination({ currentPage: 1 });
-        loadCallingData(1, filters, sortInfo, '');
-    };
-    //#endregion
-
-    const handlePageChange = (page: number) => {
-        setPagination({ currentPage: page });
-        loadCallingData(page, filters, sortInfo, searchTerm);
-    };
-    //#endregion
-
-    //#region TABLE SORT COLUMN
-    const handleSortColumn = useCallback((sort: SortInfo) => {
-
-        setSortInfo(sort);
-        setPagination({ currentPage: 1 });
-        loadCallingData(1, filters, sort, searchTerm);
-
-    }, [searchTerm]);
-
-
-    const handleFieldChange = (field: keyof AddUpdateCallingDataRequest, value: any) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-        if (errors[field]) {
-            setErrors((prev) => ({ ...prev, [field]: "" }));
-        }
-    };
-
-    //#endregion
-
-    //#region EXPORT / IMPORT EXCEL AND PDF
     const handleExportCallingData = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -303,9 +330,7 @@ export const CallingData: React.FC = () => {
 
     const handleExportCallingDataExcel = () => handleExportCallingData('Excel')
     const handleExportCallingDataPdf = () => handleExportCallingData('PDF')
-    //#endregion
 
-    //#region IMPORT EXCEL | DOWNLOAD
     const uploadExcel = async (file: File, mergeExisting: string) => {
 
         await runApiWithLoader(
@@ -366,9 +391,7 @@ export const CallingData: React.FC = () => {
         )
     }
     const handleDownloadExcelSampleCallingData = () => downloadExcelSampleCallingData()
-    //#endregion
 
-    //#region CALLIING DATA TABLE COLUMNS
     const CallingDataColumns = useMemo<TableColumn[]>(() => [
 
         {
@@ -398,20 +421,13 @@ export const CallingData: React.FC = () => {
             render: value => value || '-'
         },
         {
-            key: 'CreatedDate',
-            label: 'Last Modified Date',
-            width: '33',
+            key: "ModifiedDate",
+            label: "Last Modified Date",
+            width: "33",
             sortable: false,
-            align: 'center',
-            render: (value, row) => value ? formatDate_dd_MonthName_yy(row.CreatedDate) : '-'
-        },
-        {
-            key: 'Address',
-            label: 'Address',
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
+            align: "left",
+            render: (value, row) =>
+                value ? formatDate_dd_MonthName_yy(value) : row.CreatedDate ? formatDate_dd_MonthName_yy(row.CreatedDate) : "-",
         },
         {
             key: 'Source',
@@ -429,11 +445,55 @@ export const CallingData: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
-    ], []);
-    //#endregion
+        {
+            key: 'Address',
+            label: 'Address',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'Actions',
+            label: 'Actions',
+            width: '12',
+            fixed: 'right',
+            align: 'center',
+            render: (_value, row) => {
 
-    //#region CALLING DATA COLUMN CUSTOMIZATION
-    const requiredCallingDataColumnKeys: string[] = ['Name'];
+                const isLocked = canAction && Number(row.NoOfTimeCalling) === 0;
+
+
+                return (
+                    <div className="flex items-center justify-center">
+
+                        <Button
+                            color="transparent"
+                            size="sm"
+                            disabled={!isLocked}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                if (!isLocked) return;
+                                handleEditCallingData(row)
+                            }}
+                            style={{
+                                color: !isLocked ? '#9CA3AF' : '',
+                                padding: '4px 8px',
+                                cursor: !isLocked ? 'not-allowed' : 'pointer',
+                                opacity: !isLocked ? 0.5 : 1
+                            }}
+                            leftIcon={<Edit className="h-4 w-4" />}
+                        />
+
+
+                    </div>
+                )
+            }
+        },
+    ], [handleEditCallingData]);
+
+    const requiredCallingDataColumnKeys: string[] = ['Name', 'Actions'];
 
     const allCallingDataColumnKeys: string[] = CallingDataColumns.map(c => c.key);
 
@@ -530,7 +590,7 @@ export const CallingData: React.FC = () => {
                     setShowFilterPopup(true);
                 }}
 
-                isShowAddButton={canAction}
+                isShowAddButton={canAction && Number(projectId) > 0 ? true : false}
                 addTitle="Add"
                 onAdd={handleAddCallingDataModal}
 
@@ -613,6 +673,7 @@ export const CallingData: React.FC = () => {
                             value={tempFilters.Name || ''}
                             onChange={e => handleFilterChange('Name', e.target.value)}
                             placeholder="Enter Name"
+                            maxLength={100}
                         />
                     </div>
                     <div>
@@ -668,6 +729,7 @@ export const CallingData: React.FC = () => {
                 isOpen={isAddUpdateCallingDataModalOpen}
                 onClose={() => {
                     setIsAddUpdateCallingDataModalOpen(false);
+                    setEditingCallingData(null);
                     setFormData(initialFormStateForCallingData());
                     setErrors({});
                 }}
@@ -689,6 +751,7 @@ export const CallingData: React.FC = () => {
                             value={formData.Name || ''}
                             onChange={e => handleFieldChange("Name", e.target.value)}
                             placeholder="Enter Name"
+                            maxLength={70}
                             required
                             error={errors.Name}
                         />
@@ -716,6 +779,7 @@ export const CallingData: React.FC = () => {
                             label='Email Id'
                             value={formData.EmailId || ''}
                             error={errors.EmailId}
+                            maxLength={250}
                             rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
                             onChange={(e) => {
                                 const emailId = filterEmail(e.target.value);

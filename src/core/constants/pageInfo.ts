@@ -515,7 +515,11 @@ export const getPageInfo = (path: string) => {
                 description: "Secure your unit by completing the booking process",
             }
 
-
+           case 'collectionReport':
+            return {
+                title: "Collection Report",
+                description: "Comprehensive report for collection management with real-time insights and actionable data",
+            }
 
         case 'brokerage':
             return {

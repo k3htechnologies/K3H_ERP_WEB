@@ -23,6 +23,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { copyToClipboard } from '@/core/utils/comman';
+import { filterNumbers } from '@/core/utils/fileValidation';
 
 export const ChannelPartnerSourcing: React.FC = () => {
 
@@ -564,7 +565,7 @@ const handleNavigateToView = (row: ChannelPartnerData, ProjectId: number | undef
             <Input type="text"
               label='Mobile Number'
               value={tempFilters?.MobileNumber ?? ''}
-              onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+              onChange={e => handleFilterChange('MobileNumber', filterNumbers(e.target.value))}
               placeholder="Enter Mobile Number" />
           </div>
           <div>

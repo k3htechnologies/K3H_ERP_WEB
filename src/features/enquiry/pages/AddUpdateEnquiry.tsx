@@ -668,7 +668,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       PossessionType: formData.PossessionType,
       AreaPreferred: formData.AreaPreferred,
       DesiredFloorBand: formData.DesiredFloorBand,
-      Budget: formData.Budget === "" ? "<1" : formData.Budget,
+      Budget: formData.Budget,
 
       Requirement: formData.Requirement,
       RequirementType: formData.RequirementType || null,

@@ -104,7 +104,7 @@ const initialFormState = (): AddUpdateBookingRequest => ({
   TransferBookingId: 0,
   TenantId: 0,
   OTP: "",
-  IsApplicableOtherCharge: true,
+  IsApplicableOtherCharge: false,
 });
 
 const initialFormStateApplicantDetails = (): AddUpdateBookingApplicantRequest => ({
@@ -1257,6 +1257,18 @@ export const AddUpdateBooking: React.FC = () => {
       newErrors.RegistrationDate = "Registration Date is required";
     }
 
+    if (!formData.FlatAlterationRemark?.trim()) {
+      newErrors.FlatAlterationRemark = "Unit / Modulation / Customization Remark is required";
+    }
+
+    if (!formData.PaymentRemark?.trim()) {
+      newErrors.PaymentRemark = "Payment Related Remark is required";
+    }
+
+    if (!formData.TermsAndConditionsDescription?.trim()) {
+      newErrors.TermsAndConditionsDescription = "Terms and Conditions Description is required";
+    }
+
     if (applicantList.length === 0) {
       addToast({ type: "error", title: "At least one applicant is required" });
       return { isValid: false, errors: newErrors };
@@ -1267,13 +1279,7 @@ export const AddUpdateBooking: React.FC = () => {
       return { isValid: false, errors: newErrors };
     }
 
-    if (!formData.FlatAlterationRemark?.trim()) {
-      newErrors.FlatAlterationRemark = "Unit / Modulation / Customization Remark is required";
-    }
-
-    if (!formData.PaymentRemark?.trim()) {
-      newErrors.PaymentRemark = "Payment Related Remark is required";
-    }
+    
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -1627,9 +1633,17 @@ export const AddUpdateBooking: React.FC = () => {
       addToast({ type: 'error', title: "Atleast one applicant is required" });
       return
     }
+
     else if (countPrimaryApplicants() === 0) {
 
       addToast({ type: 'error', title: "In Applicant List - One Applicant is required" });
+      return
+
+    }
+
+    else if (countPrimaryApplicants() > 1) {
+
+      addToast({ type: 'error', title: "In Applicant List - Only One Applicant is required" });
       return
 
     }
@@ -2198,7 +2212,7 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)}
                 placeholder="Enter Communication Address"
                 error={errors.CommunicationAddress} />
-                
+
             </div>
           </div>
 
@@ -2799,7 +2813,14 @@ export const AddUpdateBooking: React.FC = () => {
                 <TextArea className='thin-scroll' label="Other Remark" value={formData.OtherRemark ?? ""} onChange={(e) => handleFieldChange("OtherRemark", e.target.value)} placeholder="Enter Other Remark" error={errors.OtherRemark} />
               </div>
               <div>
-                <SingleSelectDropdownWithPagination label="Term & Condition" title="Term & Condition" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)} />
+                <SingleSelectDropdownWithPagination
+                  label="Term & Condition"
+                  title="Term & Condition"
+                  required
+                  size="lg"
+                  dataFetchCallBack={fetchTncByModuleName("Booking")}
+                  onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)}
+                  error={errors.TermsAndConditionsDescription} />
               </div>
               <div>
                 <RichTextEditor value={formData.TermsAndConditionsDescription ?? ""} onChange={(html) => handleFieldChange("TermsAndConditionsDescription", html)} readOnly />

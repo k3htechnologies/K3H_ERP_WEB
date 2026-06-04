@@ -66,7 +66,7 @@ export const MASTER_DATA = {
 
   commercial_flat_configuration_Type: ['OFFICE', 'SHOP'],
 
-  flat_unit_facing: ['City View', 'Forest / Mangrove View', 'Building View','Internal Amenity View', 'Garden View', 'Club - House View', 'Sea View', 'Open View – No Obstruction', 'Others'],
+  flat_unit_facing: ['City View', 'Forest / Mangrove View', 'Building View','Internal Amenity View', 'Garden View', 'Club - House View', 'Sea View', 'Open View', 'Others'],
 
   applicant_type: ['Applicant', 'Co - Applicant'],
 

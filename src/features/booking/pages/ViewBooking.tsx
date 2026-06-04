@@ -404,7 +404,7 @@ export const ViewBooking: React.FC = () => {
                 align: "right",
                 render: (value, row) => (
                     <span className={boldIfTotal(row)}>
-                         {`${value || 0} %`}
+                        {`${value || 0} %`}
                     </span>
                 ),
             },
@@ -893,17 +893,19 @@ export const ViewBooking: React.FC = () => {
 
 
 
-                        {bookingData.TermsAndConditionsDescription && (
-                            <section className="rounded-xl pt-5">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Terms & Conditions
-                                </h4>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
+                       <section className={`rounded-xl pt-5 ${!bookingData.TermsAndConditionsDescription ? 'bg-white shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-5' : ''}`}>
+    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+        Terms & Conditions
+    </h4>
 
-                                </div>
-                            </section>
-                        )}
+    <div className="grid grid-cols-1 gap-4">
+        {bookingData.TermsAndConditionsDescription ? (
+            <RichTextEditor  value={bookingData.TermsAndConditionsDescription} onChange={() => {}}  readOnly  />
+        ) : (
+            <FieldItem label="Terms & Conditions" value={getSafeString(bookingData.TermsAndConditionsDescription)} />
+        )}
+    </div>
+</section>
 
                         <div className='pt-5'>
                             <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
@@ -1018,7 +1020,7 @@ export const ViewBooking: React.FC = () => {
                 {activeTab === 'Terms & Condition' && (
 
                     <section className="rounded-xl">
-                        
+
                         <div className="grid grid-cols-1 gap-4">
                             <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
 

@@ -80,6 +80,9 @@ export const LOCAL_STORAGE_KEYS = {
     ACHIEVEMENT_BY_PROJECT_COLUMNS: 'achievementByProject.selectedColumns',
     ACHIEVEMENT_BY_CLOSING_COLUMNS: 'achievementByClosing.selectedColumns',
     ACHIEVEMENT_BY_SOURCING_COLUMNS: 'achievementBySourcing.selectedColumns',
+    ACHIEVEMENT_BY_WALKINS_REVISIT_COLUMNS: 'achievementByWalkinsRevisit.selectedColumns',
+    ACHIEVEMENT_BY_BOOKING_COLUMNS: 'achievementByBooking.selectedColumns',
+    ACHIEVEMENT_BY_IBMOBM_COLUMNS: 'achievementByIbmObm.selectedColumns',
 
 
     //CRM

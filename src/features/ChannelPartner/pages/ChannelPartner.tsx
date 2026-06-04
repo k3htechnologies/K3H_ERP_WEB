@@ -34,6 +34,7 @@ import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { useChannelPartnerListState } from '@/features/ChannelPartner/context/ChannelPartnerListStateContext';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { copyToClipboard } from '@/core/utils/comman';
+import { filterNumbers } from '@/core/utils/fileValidation';
 
 
 export const ChannelPartner: React.FC = () => {
@@ -868,7 +869,7 @@ export const ChannelPartner: React.FC = () => {
             <Input type="text"
               label='Mobile Number'
               value={tempFilters?.MobileNumber ?? ''}
-              onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+              onChange={e => handleFilterChange('MobileNumber',filterNumbers(e.target.value))}
               placeholder="Enter Mobile Number" />
           </div>
           <div>

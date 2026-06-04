@@ -109,6 +109,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/paytrack': '/payTrack',
         '/paytrackreport': '/payTrackReport',
         '/brokerage': '/brokerage',
+        '/collectionreport': '/collectionReport',
 
         //MORE
         '/inwardoutward': '/inwardOutward',

@@ -138,6 +138,7 @@ export const CustomTable: React.FC<Props> = ({
         <div className="flex items-center space-x-2">
 
           <button
+            type="button"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
             className="p-2 border border-gray-200 rounded"
@@ -160,6 +161,7 @@ export const CustomTable: React.FC<Props> = ({
           ))}
 
           <button
+            type="button"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
             className="p-2 border border-gray-200 rounded"

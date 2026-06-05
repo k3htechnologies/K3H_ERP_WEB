@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import useToast from "@/core/hooks/useToast";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -8,14 +8,14 @@ import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { Loader } from "@/core/utils/loader";
-import type { AddUpdatePaidBrokerageBookingRequest, FilterWithPaginationPaidBrokerageBookingRequest } from "../models/PaidBrokerageBookingModel";
-import { PaidBrokerageBookingService } from "../services/PaidBrokerageBookingService";
+import type { AddUpdatePaidBrokerageBookingRequest } from "@/features/brokerage/models/PaidBrokerageBookingModel";
+import { PaidBrokerageBookingService } from "@/features/brokerage/services/PaidBrokerageBookingService";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { PAYMENT_MODE, PAYMENT_TYPE } from "@/core/constants";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { useBookingBrokerageListState } from "@/features/brokerage/context/BookingBrokerageListStateContext";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 const initialFormState = (): AddUpdatePaidBrokerageBookingRequest => ({
@@ -44,18 +44,17 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
 
     const [transactionReceiptURLFiles, setTransactionReceiptURLFiles] = useState<(File | string)[]>([]);
     const [removeTransactionReceiptURLUrls, SetRemoveTransactionReceiptURLUrls] = useState<string[]>([]);
-    const [transactionReceiptURL, setTransactionReceiptURL] = useState<string>();
+    const [transactionReceiptURL, ] = useState<string>();
 
-    // NAVIGATE
     const navigate = useNavigate();
 
-    // GET BROKERAGE INVOICE ID
-    const { BookingId, BrokerageInvoiceId } = useParams<{
-        BookingId?: string;
+    const { BrokerageInvoiceId } = useParams<{
         BrokerageInvoiceId?: string;
     }>();
 
-    const currentBookingId = BookingId ? Number(BookingId) : 0;
+    const { listState } = useBookingBrokerageListState();
+
+    const currentBookingId = listState.bookingId || 0;
     const currentBrokerageInvoiceId = BrokerageInvoiceId ? Number(BrokerageInvoiceId) : 0;
 
     // ERROR SET UP
@@ -68,7 +67,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     //#endregion
 
     //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/brokerage');
+    const { canAction } = useMenuPermissions('/makePayment');
     //#endregion
 
     //#region HANDLE FIELD CHANGE EVENT
@@ -81,87 +80,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
     };
     //#endregion
 
-    //SET DROP DOWN 
-    const [dropdownLabels, setDropdownLabels] = useState<{
-        bankName?: string;
-        paymentMode?: string
-        paymentType?: string
-    }>({});
-    //#endregion
-
-    //#region INITIALIZATION
-    useEffect(() => {
-        if (!projectId) return;
-
-        setFormData(prev => ({
-            ...prev,
-            BookingId: currentBookingId,
-            BrokerageInvoiceId: currentBrokerageInvoiceId,
-            ProjectId: Number(projectId)
-        }));
-
-        fetchPaidBrokerageBookingDetails();
-        
-    }, [currentBookingId, currentBrokerageInvoiceId, projectId]);
-    //#endregion
-
-    //#region FETCH PAID BROKERAGE BOOKING DETAILS
-    const fetchPaidBrokerageBookingDetails = async () => {
-
-        await runApiWithLoader(
-
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const params: FilterWithPaginationPaidBrokerageBookingRequest = {
-                    PageNumber: 1,
-                    PageSize: 20,
-                    BookingId: currentBookingId,
-                    ProjectId: Number(projectId),
-                    BrokerageInvoiceId: currentBrokerageInvoiceId
-                };
-
-                const response = await PaidBrokerageBookingService.apiCallPullPaidBrokerageBooking(params);
-
-                if (E.isRight(response)) {
-
-                    const e = response.right.Data?.[0];
-
-                    if (e) {
-                        setFormData(prev => ({
-                            ...prev,
-                            PaidBrokerageBookingId: e.PaidBrokerageBookingId ?? prev.PaidBrokerageBookingId,
-                            Uniquekey: e.Uniquekey ?? prev.Uniquekey,
-                            ProjectId: e.ProjectId ?? prev.ProjectId,
-                            PaymentMode: e.PaymentMode ?? prev.PaymentMode,
-                            BrokerageInvoiceId: e.BrokerageInvoiceId,
-                            BookingId: e.BookingId,
-                        }));
-                    }
-                    setDropdownLabels({
-                        bankName: formData.BankName || "",
-                        paymentMode: formData.PaymentMode || "",
-                        paymentType: formData.PaymentType || "",
-                    });
-                    setTransactionReceiptURL('')
-                    setTransactionReceiptURLFiles([])
-                    SetRemoveTransactionReceiptURLUrls([])
-                } else {
-                    addToast({ type: 'error', title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message });
-            },
-            undefined,
-            'Loading Paid Amount '
-        );
-    };
-    //#endregion
-
+   
     // ============================================================= [VALIDATION FUNCTION] =============================================================================================
     const validateAddPaidBrokerageForm = (): {
 
@@ -176,25 +95,31 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         if (!formData.PaymentMode) {
             newErrors.PaymentMode = 'Payment Mode is required.';
         }
+        if (!formData.BankListMasterId) {
+            newErrors.BankListMasterId = "Bank Name is required";
+        }
         if (!formData.PaymentType) {
             newErrors.PaymentType = 'Payment Type is required.';
         }
+
+        if (!formData.AmountPaid) {
+            newErrors.AmountPaid = "Amount is required";
+        } else if (formData.AmountPaid <= 0) {
+            newErrors.AmountPaid = "Amount cannot be zero or negative";
+        }
+
         if (!formData.TransactionNumber) {
             newErrors.TransactionNumber = 'Transaction Number is required.';
         }
-        if ((Number(formData.TDSAmount) || 0) >= (Number(formData.AmountPaid) || 0)) {
+
+        if (Number(formData.TDSAmount) != 0 && (Number(formData.TDSAmount) || 0) >= (Number(formData.AmountPaid) || 0)) {
             newErrors.TDSAmount = 'TDS amount cannot be greater than Paid Amount.';
         }
 
-        if (!formData.BankListMasterId) {
-            newErrors.BankListMasterId = 'Bank Name is required.';
+        if (!hasAnyDocumentFile(transactionReceiptURLFiles, transactionReceiptURL, removeTransactionReceiptURLUrls)) {
+            newErrors.TransactionReceiptURL = "Transaction Receipt is required";
         }
-        if (!formData.AmountPaid) {
-            newErrors.AmountPaid = 'Amount is required.';
-        }
-         if (!hasAnyDocumentFile(transactionReceiptURLFiles, transactionReceiptURL, removeTransactionReceiptURLUrls)) {
-            newErrors.TransactionReceiptURL = "File is required.";
-        }
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -208,9 +133,9 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
         fd.append("PaidBrokerageBookingId", formData.PaidBrokerageBookingId.toString());
         fd.append("Uniquekey", formData.Uniquekey ?? "");
         fd.append("ProjectId", projectId!.toString());
-        fd.append("BookingId", formData.BookingId.toString());
+        fd.append("BookingId", currentBookingId.toString());
         fd.append("BankListMasterId", formData.BankListMasterId.toString());
-        fd.append("BrokerageInvoiceId", formData.BrokerageInvoiceId.toString());
+        fd.append("BrokerageInvoiceId", currentBrokerageInvoiceId.toString());
         fd.append("PaymentMode", formData.PaymentMode ?? "");
         fd.append("PaymentType", formData.PaymentType ?? "");
         fd.append("TDSAmount", formData.TDSAmount.toString());
@@ -252,7 +177,7 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
 
-                    navigate(`/brokerageInvoice/view/${currentBookingId}`);
+                    navigate("/brokerage/brokerageInvoice/view");
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -315,7 +240,6 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
 
                                         handleFieldChange("BankListMasterId", Number(item.value));
                                     }}
-                                    initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
                                     error={errors.BankListMasterId}
                                 />
                             </div>
@@ -338,8 +262,10 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                             <div>
                                 <Input
                                     label='Amount (₹)'
+                                    required
                                     type="text"
-                                    value={formData.AmountPaid ?? ''}
+                                    value={formData.AmountPaid}
+                                    placeholder="Enter Amount"
                                     maxLength={15}
                                     onChange={(e) => {
                                         const digits = e.target.value.replace(/\D/g, '');
@@ -353,7 +279,8 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                                 <Input
                                     label='TDS Amount (₹)'
                                     type="text"
-                                    value={formData.TDSAmount ?? ''}
+                                    value={formData.TDSAmount}
+                                    placeholder="Enter TDS Amount"
                                     maxLength={15}
                                     onChange={(e) => {
                                         const digits = e.target.value.replace(/\D/g, '');
@@ -379,13 +306,13 @@ export const AddUpdatePaidBrokerageBooking: React.FC = () => {
                             <div>
                                 <MultiFilePicker
                                     label="Transaction / Cheque Receipt"
+                                    placeholder="Select Transaction / Cheque Receipt"
                                     required
                                     value={transactionReceiptURLFiles}
                                     onChange={setTransactionReceiptURLFiles}
                                     availableFilesURL={transactionReceiptURL ?? ""}
                                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                     maxFiles={1}
-                                    maxSizeMB={10}
                                     error={errors.TransactionReceiptURL}
                                     onRemoveExisting={(url) => {
                                         SetRemoveTransactionReceiptURLUrls((prev) => [...prev, url])

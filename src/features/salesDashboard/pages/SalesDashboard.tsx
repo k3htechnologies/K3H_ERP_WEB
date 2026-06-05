@@ -25,7 +25,7 @@ const SalesDashboard: React.FC = () => {
     const { projectId } = useProject();
 
     useEffect(() => {
-        if (!projectId) return;
+        
         loadSalesDashboardData();
     }, [projectId]);
 

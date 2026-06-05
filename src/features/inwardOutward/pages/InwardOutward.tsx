@@ -28,6 +28,8 @@ import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
+import { formatCurrency } from "@/core/utils/comman";
+import { toUpperCase } from "fp-ts/lib/string";
 
 const initialFormState = (): AddRevertInwardOutwardData => ({
     InwardOutwardRevertId: 0,
@@ -44,22 +46,31 @@ export const InwardOutward: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState('');
     const [inwardOutwardDataList, setInwardOutwardDataList] = useState<InwardAndOutWardData[]>([]);
     const [, setRevertedInwardOutwardDataList] = useState<AddRevertInwardOutwardData[]>([]);
+
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [formData, setFormData] = useState<AddRevertInwardOutwardData>(() => initialFormState());
     const [revertDocumentURLFiles, setRevertDocumentURLFiles] = useState<(File | string)[]>([]);
+
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
     const { pagination, setPagination } = usePagination(20);
+
     const { addToast } = useToast();
+
     const { canAction } = useMenuPermissions();
+
     const location = useLocation() as any;
+
     const navigate = useNavigate();
+
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+
     const [deleteInwardOutwardData, setDeleteInwardOutwardData] = useState<InwardAndOutWardData | null>(null);
+
     const [isShowCustomizeInwardOutwardColumnsModal, setIsShowCustomizeInwardOutwardColumnsModal] = useState(false);
-    const { listState, updateListState } = useInwardOutwardListState();
-    const { searchTerm, filters, sortInfo } = listState;
 
     const InwardOutwardTabList = [
         { id: "All", label: "All" },
@@ -69,6 +80,9 @@ export const InwardOutward: React.FC = () => {
 
     const [activeTab, setActiveTab] = useState<string>(InwardOutwardTabList[0].id);
 
+    const { listState, updateListState } = useInwardOutwardListState();
+    const { searchTerm, filters, sortInfo } = listState;
+
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchInwardOutward(value)
     }, 350);
@@ -77,7 +91,7 @@ export const InwardOutward: React.FC = () => {
         setPagination({ currentPage: listState.page });
 
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
-            loadInwardOutward(listState.page, { SystemGeneratedCode: String(listState.searchTerm).trim() }, listState.sortInfo);
+            loadInwardOutward(listState.page, { Name: String(listState.searchTerm).trim() }, listState.sortInfo);
         } else {
             loadInwardOutward(listState.page, listState.filters, listState.sortInfo);
         }
@@ -92,7 +106,7 @@ export const InwardOutward: React.FC = () => {
     const fetchInwardOutwardList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadInwardOutward(page, filters, sort);
     }
-    const loadInwardOutward = async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchtext?: string) => {
+    const loadInwardOutward = async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchtext?: string, DocumentType?: string) => {
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -103,12 +117,9 @@ export const InwardOutward: React.FC = () => {
                     PageSize: pagination.pageSize,
                     InwardOutwardId: filterParams.InwardOutwardId ? Number(filterParams.InwardOutwardId) : undefined,
                     SystemGeneratedCode: searchtext ?? filterParams.SystemGeneratedCode?.trim() ?? undefined,
-                    DocumentType:
-                        activeTab === "All"
-                            ? undefined
-                            : activeTab,
                     ReceiverName: filterParams.ReceiverName ?? undefined,
                     SenderName: filterParams.SenderName ?? undefined,
+                    DocumentType: DocumentType ?? filterParams.DocumentType?.trim() ?? undefined,
                     SortBy: getSortByParam(sort ?? null, InwardOutwardDataColumns),
                 }
 
@@ -166,6 +177,8 @@ export const InwardOutward: React.FC = () => {
         })
         return fd;
     };
+    //#endregion
+    // ============================================================= [VALIDATION FUNCTION] =============================================================================================
 
     const validateUpdateCallLogForm = (): {
         isValid: boolean;
@@ -217,7 +230,7 @@ export const InwardOutward: React.FC = () => {
                     const newRecord = response.right.Data[0] as AddRevertInwardOutwardData;
 
                     setRevertedInwardOutwardDataList(prev => [newRecord, ...prev]);
-                    setRevertDocumentURLFiles([])
+
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
                 } else {
@@ -258,9 +271,9 @@ export const InwardOutward: React.FC = () => {
     const InwardOutwardDataColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'SystemGeneratedCode',
-            label: 'Document ID',
+            label: 'Document Id',
             width: '15',
-            sortable: false,
+            sortable: true,
             align: 'left',
             fixed: 'left',
             render: (value, row) => (
@@ -277,7 +290,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Type',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
 
         },
@@ -285,8 +298,8 @@ export const InwardOutward: React.FC = () => {
             key: 'DocumentTitle',
             label: 'Title',
             width: '15',
-            sortable: true,
-            align: 'center',
+            sortable: false,
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -366,7 +379,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Department',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: (value) => (
                 <TooltipText
                     text={value || '-'}
@@ -380,7 +393,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Sender Name',
             width: '15',
             sortable: true,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -388,7 +401,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Sender Email Id',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -396,7 +409,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Sender Mobile No',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value ? `+91 ${value}` : '-'
         },
         {
@@ -404,7 +417,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Sender Address',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -412,7 +425,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Receiver Name',
             width: '15',
             sortable: true,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -420,7 +433,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Receiver Email Id',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -428,7 +441,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Receiver Mobile No',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value ? `+91 ${value}` : '-'
         },
         {
@@ -436,7 +449,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Receiver Address',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -452,7 +465,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Inward Number',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -468,7 +481,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Invoice Number',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -476,15 +489,15 @@ export const InwardOutward: React.FC = () => {
             label: 'Amount',
             width: '15',
             sortable: false,
-            align: 'center',
-            render: value => value ? `₹ ${value}` : '-'
+            align: 'right',
+            render: value => value ? formatCurrency(value) : '0'
         },
         {
             key: 'DeliveryMode',
             label: 'DeliveryMode',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -492,7 +505,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Delivery Type',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -500,7 +513,7 @@ export const InwardOutward: React.FC = () => {
             label: 'Received By',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -508,7 +521,7 @@ export const InwardOutward: React.FC = () => {
             label: 'HandOver To',
             width: '15',
             sortable: false,
-            align: 'center',
+            align: 'left',
             render: value => value || '-'
         },
         {
@@ -527,7 +540,8 @@ export const InwardOutward: React.FC = () => {
             align: 'center',
             fixed: 'right',
             render: (_value, row) => {
-                if (!canAction) return null;
+
+                const showDelete = (row.DeliveryStatus || "") === "" ? true : false;
 
                 return (
                     <div className="flex justify-between">
@@ -535,14 +549,17 @@ export const InwardOutward: React.FC = () => {
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                if (!showDelete) return;
                                 handleConfirmationDialogBoxOpen(row);
                             }}
                             color="transparent"
                             isborderRadius
+                            disabled={!showDelete}
                             size="sm"
                             style={{
-                                color: "red",
-                                padding: "4px 8px",
+                                color: showDelete ? 'red' : '#9CA3AF',
+                                cursor: showDelete ? 'pointer' : 'not-allowed',
+                                opacity: showDelete ? 1 : 0.5
                             }}
                             title="Delete Inward Outward"
                         >
@@ -552,13 +569,18 @@ export const InwardOutward: React.FC = () => {
                         <Button
                             color="transparent"
                             size="sm"
+                            disabled={!showDelete}
+
                             style={{
-                                color: 'green',
-                                padding: '0px 8px'
+                                color: showDelete ? 'green' : '#9CA3AF',
+                                cursor: showDelete ? 'pointer' : 'not-allowed',
+                                opacity: showDelete ? 1 : 0.5
                             }}
+                            
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
+                                if (!showDelete) return;
                                 handleRevert(row)
                             }}
                             leftIcon={<RotateCw className="h-4 w-4" />}
@@ -627,7 +649,6 @@ export const InwardOutward: React.FC = () => {
         await loadInwardOutward(1, filters, sortInfo, searchValue);
     };
 
-
     const clearSearchInwardOutward = () => {
         debouncedSearch.cancel?.();
         updateListState({ searchTerm: '', filters: {}, page: 1, sortInfo: undefined });
@@ -642,13 +663,11 @@ export const InwardOutward: React.FC = () => {
         }
     };
 
-
     const handlePageChange = useCallback((page: number) => {
 
         updateListState({ page });
         fetchInwardOutwardList(page);
     }, [updateListState]);
-
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
 
@@ -667,10 +686,14 @@ export const InwardOutward: React.FC = () => {
         [pagination, handlePageChange]
     )
     const InwardOutwardDataForTable = useMemo(() => {
-        if (activeTab === 'All') return inwardOutwardDataList;
+        if (activeTab === 'All')
+
+            return inwardOutwardDataList;
+
         return inwardOutwardDataList.filter(
             (item) => item.DocumentType === activeTab
         );
+
     }, [inwardOutwardDataList, activeTab]);
 
     const handleDeleteInwardOutward = async () => {
@@ -732,7 +755,6 @@ export const InwardOutward: React.FC = () => {
         );
     };
 
-
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
@@ -740,7 +762,7 @@ export const InwardOutward: React.FC = () => {
             <TableActionToolbar
                 isShowSearchBar
                 searchTerm={searchTerm}
-                searchPlaceholder="Search By System Generated Code"
+                searchPlaceholder="Search By Document Id"
                 onSearchChange={v => {
                     updateListState({ searchTerm: v });
                     debouncedSearch(v);
@@ -760,17 +782,20 @@ export const InwardOutward: React.FC = () => {
                 onAdd={handleAddInwardOutward}
             />
 
-            <div className="p-2">
+            <div className="pt-1">
+
                 <Tabs
                     tabs={InwardOutwardTabList}
                     defaultActive={activeTab}
                     islarge={true}
                     onTabChange={(t) => {
                         setActiveTab(t.id);
+
+                        loadInwardOutward(1, {}, sortInfo, searchTerm, toUpperCase(t.label) === "ALL" ? "" : t.label);
                     }}
                 />
-            </div>
 
+            </div>
 
             <CustomizeColumnsModal
                 isOpen={isShowCustomizeInwardOutwardColumnsModal}
@@ -795,6 +820,7 @@ export const InwardOutward: React.FC = () => {
                 title="Customize Table Columns"
             />
 
+            {/* ADD REVERT MODAL */}
 
             <Modal
                 isOpen={isAddUpdateModalOpen}
@@ -836,7 +862,6 @@ export const InwardOutward: React.FC = () => {
                                 onChange={setRevertDocumentURLFiles}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                 maxFiles={5}
-                                maxSizeMB={10}
                                 error={errors.RevertDocumentURL}
                             />
                         </div>
@@ -856,6 +881,7 @@ export const InwardOutward: React.FC = () => {
                 </div>
             </Modal>
 
+            {/* FILTER INWARD OUTWARD MODAL */}
 
             <Modal
                 isOpen={showFilterPopup}
@@ -868,9 +894,15 @@ export const InwardOutward: React.FC = () => {
                 saveText="Apply "
                 cancelText="Clear"
                 onCancel={() => clearFilters()}
-
                 size="small-half">
                 <div className="space-y-6">
+                    <div>
+                        <Input type="text"
+                            label='Document Id'
+                            value={tempFilters?.SystemGeneratedCode ?? ''}
+                            onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
+                            placeholder="Enter Document Id" />
+                    </div>
                     <div>
                         <Input type="text"
                             label='Sender Name'
@@ -898,17 +930,22 @@ export const InwardOutward: React.FC = () => {
                 </div>
             </Modal>
 
-            <DataTable
-                data={InwardOutwardDataForTable}
-                columns={visibleInwardOutwardColumns}
-                pagination={InwardOutwardDataPaginationInfo}
-                emptyMessage="No Inward Outward Data Found"
-                fixedHeight={true}
-                recordsPerPage={20}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-            />
+            {/* DATA TABLE */}
+            <div className="pt-5">
+                <DataTable
+                    data={InwardOutwardDataForTable}
+                    columns={visibleInwardOutwardColumns}
+                    pagination={InwardOutwardDataPaginationInfo}
+                    emptyMessage="No Inward Outward Data Found"
+                    fixedHeight={true}
+                    recordsPerPage={20}
+                    className="flex-1"
+                    sortInfo={sortInfo}
+                    onSort={handleSortColumn}
+                />
+            </div>
+
+            {/* DELETE CONFIRMATION INWARD OUTWARD MODAL */}
 
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}

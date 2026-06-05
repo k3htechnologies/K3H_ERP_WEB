@@ -268,7 +268,7 @@ export const Enquiry: React.FC = () => {
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((newPage: number) => {
         updateListState({ page: newPage });
-    }, [updateListState]);
+    }, [sortInfo,updateListState]);
 
     //#region TABLE SORT COLUMN
 
@@ -380,7 +380,7 @@ export const Enquiry: React.FC = () => {
             width: '14',
             sortable: false,
             align: 'left',
-            render: value => value ? `+91 ${value}` : '-'
+            render: (value, row) => value ? `${row.MobileNumberCountryCode || "+91"} ${value}` : '-'
 
         },
         {
@@ -391,6 +391,15 @@ export const Enquiry: React.FC = () => {
             align: 'center',
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
         },
+         {
+            key: 'EnquiryTimeIn',
+            label: 'Enquiry Time',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: (value, row) => value +' - '+row.EnquiryTimeOut || '-'
+        },
+        
         {
             key: 'EnquiryFollowUpDays',
             label: 'Enquiry Follow Up Days',
@@ -496,7 +505,7 @@ export const Enquiry: React.FC = () => {
         },
         {
             key: 'Timeline',
-            label: 'Timeline',
+            label: 'Timeline Of Purchase',
             width: '14',
             sortable: false,
             align: 'left',
@@ -556,7 +565,7 @@ export const Enquiry: React.FC = () => {
             width: '14',
             sortable: false,
             align: 'left',
-            render: value => value ? `+91 ${value}` : '-'
+            render: (value, row) => value ? `${row.ChannelPartnerMobileNumberCountryCode || "+91"} ${value}` : '-'
         },
         {
             key: 'CustomerClassification',

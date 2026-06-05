@@ -7,7 +7,6 @@ import type { EnquiryOutTimeData, Table0, UpdateEnquiryOutTimeRequest } from '@/
 import { runApiWithLoader } from '@/core/utils';
 import { salesDashboardService } from '@/features/salesDashboard/services/SalesDashboardServices';
 import useToast from '@/core/hooks/useToast';
-import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import * as E from "fp-ts/Either";
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 
@@ -26,10 +25,6 @@ export default function Enquiries({ enquiryData }: Props) {
     // TOAST
     const { addToast } = useToast();
 
-    //#region PROJECT SELECTION GET ID
-    const { projectId } = useProject();
-    //#endregion
-
     useEffect(() => {
         setEnquiryList(enquiryData || []);
     }, [enquiryData]);
@@ -40,11 +35,14 @@ export default function Enquiries({ enquiryData }: Props) {
         await runApiWithLoader(setIsLoading,
             setLoadingMessage,
             async () => {
-                const response = await salesDashboardService.apiCallPullSalesDashboard(Number(projectId));
+                const response = await salesDashboardService.apiCallPullSalesDashboard(0);
+                
                 if (E.isRight(response)) {
 
                     const e = response.right.Data;
+
                     setEnquiryList(e.Table0 || []);
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
@@ -57,7 +55,7 @@ export default function Enquiries({ enquiryData }: Props) {
             undefined,
             "Loading Data"
         );
-    }, [projectId, addToast]);
+    }, [addToast]);
 
     //#region HANDLE MARK TIME OUT
     const handleMarkTimeOut = async () => {
@@ -67,16 +65,21 @@ export default function Enquiries({ enquiryData }: Props) {
             setIsLoading,
             setLoadingMessage,
             async () => {
+
                 const payload: UpdateEnquiryOutTimeRequest = {
                     EnquiryId: selectedMarkTimeOutItem.EnquiryId,
-                    ProjectId: Number(projectId),
+                    ProjectId: Number(selectedMarkTimeOutItem.ProjectId),
                 };
+
                 const response = await salesDashboardService.apiCallUpdateEnquiryOutTime(payload);
 
                 if (E.isRight(response)) {
+
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
-                    loadSalesDashboardData()
+                    loadSalesDashboardData();
+
                 } else {
+                    
                     addToast({ type: "error", title: response.left.message });
                 }
                 setIsConfirmationDialogBoxOpen(false);
@@ -121,7 +124,7 @@ export default function Enquiries({ enquiryData }: Props) {
             key: 'MobileNumber',
             label: 'Mobile Number',
             fixed: 'left',
-            render: (value) => (value ? `+91 ${value}` : "-"),
+            render: (value, row) => value ? `${row.MobileNumberCountryCode || "+91"} ${value}` : '-'
         },
         {
             key: 'EnquiryDate',
@@ -156,7 +159,6 @@ export default function Enquiries({ enquiryData }: Props) {
             fixed: 'right',
             render: (_value, row) => {
                 
-                if (!projectId || row.CanTimeOut === 0) return null;
                 return (
                     <Button
                         onClick={() => {
@@ -180,7 +182,10 @@ export default function Enquiries({ enquiryData }: Props) {
         <div className="space-y-3 pt-4">
 
             <h2 className="text-lg font-semibold text-gray-800">
-                Enquiries (Todays)
+               Enquiries{" "}
+                <span className="text-sm font-normal text-gray-500">
+                    (Todays)
+                </span>
             </h2>
 
             <div className="flex-1 bg-white rounded-xl p-5 h-[310px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
@@ -205,6 +210,7 @@ export default function Enquiries({ enquiryData }: Props) {
                 confirmText="Mark Time Out"
                 cancelText="Cancel"
                 loading={isLoading}
+                variant='logout'
             />
 
         </div>

@@ -862,7 +862,6 @@ const Event: React.FC = () => {
                 availableFilesURL={documentURL ?? ""}
                 allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                 maxFiles={5}
-                maxSizeMB={10}
                 onRemoveExisting={(url) => {
                   setRemovedDocumentUrls((prev) => [...prev, url])
                 }}

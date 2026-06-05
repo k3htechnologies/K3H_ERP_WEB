@@ -27,6 +27,7 @@ import { Input } from '../components/forms'
 import { employeeMasterService } from '@/features/employeeMaster/services/EmployeeMasterService'
 import { Loader } from '@/core/utils/loader'
 import { getNameInitials } from '@/core/utils/getNameInitials'
+import { formatCurrency } from '@/core/utils/comman'
 
 interface HeaderProps {
     isSidebarOpen: boolean
@@ -498,7 +499,7 @@ export const Header: React.FC<HeaderProps> = ({
                                     />
                                 ) : (
                                     <div className="w-14 h-14 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center text-gray-700 font-bold text-lg border border-gray-300">
-                                       {getNameInitials(fullName!.trim())}
+                                        {getNameInitials(fullName!.trim())}
                                     </div>
                                 )}
 
@@ -579,16 +580,117 @@ export const Header: React.FC<HeaderProps> = ({
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5 pb-4 border-b border-[#135bec2e]">
                                     <FieldItem label="File Number" value={projectMasterList[0]?.FileNumber ?? '-'} />
-                                    <FieldItem label="Architect Name" value={projectMasterList[0]?.ArchitectName ?? '-'} />
-                                    <FieldItem label="Architect Mobile Number" value={projectMasterList[0]?.ArchitectMobileNumber
-                                        ? `+91 ${projectMasterList[0]?.ArchitectMobileNumber}`
-                                        : '-'}
-                                    />
 
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5 pb-4 border-b border-[#135bec2e]">
                                     <FieldItem label="CTS Number" value={projectMasterList[0]?.CTSNumber ?? '-'} />
                                 </div>
+                                {projectMasterList[0]?.Category.toUpperCase() !== "TENDER" && (
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5 pb-4 border-b border-[#135bec2e]">
+                                        <FieldItem label="Category" value={projectMasterList[0]?.Category ?? '-'} />
+                                    </div>
+                                )}
+
+                                {projectMasterList[0]?.Category.toUpperCase() === "TENDER" && (
+                                    <>
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
+                                            Project Category
+                                        </h4>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                            <FieldItem label="Category" value={projectMasterList[0]?.Category ?? '-'} />
+
+                                            <FieldItem label="Amount" value={formatCurrency(projectMasterList[0]?.TenderAmount)} />
+                                            <FieldItem label="EMD Amount" value={formatCurrency(projectMasterList[0]?.TenderEMDAmount)} />
+
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
+                                            <FieldItem
+                                                label="Purchase Start Date"
+                                                value={
+                                                    projectMasterList[0]?.TenderPurchaseStartDate
+                                                        ? formatDate_dd_MonthName_yy(projectMasterList[0].TenderPurchaseStartDate)
+                                                        : '-'
+                                                }
+                                            />
+
+                                            <FieldItem
+                                                label="Purchase End Date"
+                                                value={
+                                                    projectMasterList[0]?.TenderPurchaseEndDate
+                                                        ? formatDate_dd_MonthName_yy(projectMasterList[0].TenderPurchaseEndDate)
+                                                        : '-'
+                                                }
+                                            />
+                                            <FieldItem label="Cheque Number" value={projectMasterList[0]?.TenderChequeNumber ?? '-'} urls={projectMasterList[0]?.TenderChequeNumberURL ?? '-'} isIcon />
+
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
+
+                                            <FieldItem
+                                                label="Submission Date"
+                                                value={
+                                                    projectMasterList[0]?.TenderSubmissionDate
+                                                        ? formatDate_dd_MonthName_yy(projectMasterList[0].TenderSubmissionDate)
+                                                        : '-'
+                                                }
+                                            />
+
+                                            <FieldItem
+                                                label="Issue Date"
+                                                value={
+                                                    projectMasterList[0]?.TenderIssueDate
+                                                        ? formatDate_dd_MonthName_yy(projectMasterList[0].TenderIssueDate)
+                                                        : '-'
+                                                }
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
+
+                                            <FieldItem label="Payorder Remark" value={projectMasterList[0]?.TenderPayorderRemark ?? '-'} />
+                                        </div>
+
+                                    </>
+
+                                )}
+
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
+                                    Liasoning Architect
+                                </h4>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
+                                    <FieldItem label="Name" value={projectMasterList[0]?.LiasoningArchitectName ?? '-'} />
+                                    <FieldItem label="Mobile Number" value={projectMasterList[0]?.LiasoningArchitectMobileNumber
+                                        ? `+91 ${projectMasterList[0]?.LiasoningArchitectMobileNumber}`
+                                        : '-'}
+                                    />
+                                </div>
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
+                                    Designing Architect
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4 border-b border-[#135bec2e]">
+                                    <FieldItem label="Name" value={projectMasterList[0]?.DesigningArchitectName ?? '-'} />
+                                    <FieldItem label="Mobile Number" value={projectMasterList[0]?.DesigningArchitectMobileNumber
+                                        ? `+91 ${projectMasterList[0]?.DesigningArchitectMobileNumber}`
+                                        : '-'}
+                                    />
+
+                                </div>
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
+                                    RCC Consultant
+                                </h4>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-5 border-b border-[#135bec2e]">
+
+                                    <FieldItem label="Name" value={projectMasterList[0]?.RCCConsultantName ?? '-'} />
+                                    <FieldItem label="Mobile Number" value={projectMasterList[0]?.RCCConsultantMobileNumber
+                                        ? `+91 ${projectMasterList[0]?.RCCConsultantMobileNumber}`
+                                        : '-'}
+                                    />
+
+                                </div>
+
 
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4 pt-2">
                                     Location Details
@@ -655,6 +757,10 @@ export const Header: React.FC<HeaderProps> = ({
                                                 : '-'
                                         }
                                     />
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
+                                    <FieldItem label="APF Number" value={projectMasterList[0]?.APFNumber ?? '-'} />
+
                                 </div>
 
 

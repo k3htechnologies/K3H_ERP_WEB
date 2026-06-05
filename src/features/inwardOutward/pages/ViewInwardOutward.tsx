@@ -11,12 +11,12 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
 import { useInwardOutwardListState } from "@/features/inwardOutward/context/InwardOutwardListStateContext";
-import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { getInwardOutwardStatusColor } from "@/features/inwardOutward/utils/Status";
 import { inwardOutwardService } from "@/features/inwardOutward/services/InwardOutwardService";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
+import { formatCurrency } from "@/core/utils/comman";
 
 const ViewInwardOutward: React.FC = () => {
 
@@ -28,7 +28,6 @@ const ViewInwardOutward: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const { addToast } = useToast();
-    const { canAction } = useMenuPermissions('/inwardoutward');
     const { InwardOutwardId } = useParams<{ InwardOutwardId?: string }>();
     const { listState } = useInwardOutwardListState();
     const currentInwardOutwardId = InwardOutwardId ? Number(InwardOutwardId) : listState.InwardOutwardId;
@@ -95,7 +94,7 @@ const ViewInwardOutward: React.FC = () => {
     };
 
     const handleBackToInwardList = () => {
-        navigate("/inwardoutward");
+        navigate("/inwardOutward");
     };
 
     const handleEditInward = (row: InwardAndOutWardData) => {
@@ -122,7 +121,7 @@ const ViewInwardOutward: React.FC = () => {
                 cancelText="Cancel"
                 onCancel={() => handleBackToInwardList()}
                 EditText="Edit"
-                canAction={canAction}
+                canAction={(inwardOutwardData?.DeliveryStatus || "") === "" ? true : false}
                 onEdit={() => {
                     if (inwardOutwardData) {
                         handleEditInward(inwardOutwardData);
@@ -131,7 +130,7 @@ const ViewInwardOutward: React.FC = () => {
                 isLoading={false}
             />
 
-            <div className="pt-2 ">
+            <div className="pt-5 ">
                 <Tabs
                     tabs={InwardTabList}
                     defaultActive={activeTab}
@@ -204,7 +203,7 @@ const ViewInwardOutward: React.FC = () => {
                                 <div className="lg:col-span-3 pb-1">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                         <FieldItem label="Cheque No." value={inwardOutwardData?.ChequeNo} />
-                                        <FieldItem label="Amount" value={`₹${inwardOutwardData?.Amount.toFixed(2)}`} />
+                                        <FieldItem label="Amount" value={formatCurrency(inwardOutwardData?.Amount)}/>
                                         <FieldItem label="Document Description" value={inwardOutwardData?.DocumentDescription ?? ''} />
                                     </div>
                                 </div>
@@ -223,7 +222,7 @@ const ViewInwardOutward: React.FC = () => {
                             </section>
 
                             {/* ================= ACKNOWLEDGEMENT DETAILS ================= */}
-                            <section className="bg-white  p-4">
+                            <section className="bg-white  border-b border-[#135bec2e]  p-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Acknowledgement Details</h4>
                                 <div className="lg:col-span-3 pb-1">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
@@ -234,18 +233,31 @@ const ViewInwardOutward: React.FC = () => {
                                     </div>
                                 </div>
                             </section>
+
+                            <section className="bg-white  p-4">
+                                <h4 className="text-lg font-semibold text-gray-900 mb-4">Action Details</h4>
+                                <div className="lg:col-span-3 pb-1">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Created By" value={inwardOutwardData?.CreatedBy} />
+                                        <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.CreatedDate ?? '')} />
+                                        <FieldItem label="Modified By" value={inwardOutwardData?.ModifiedBy} />
+                                        <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.ModifiedDate ?? '')} />
+
+                                    </div>
+                                </div>
+                            </section>
                         </div>
                     </div>
 
 
                     {/* RIGHT SIDE */}
                     <div className="col-span-5">
-                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-[310px]">
-                            <h1 className="text-lg font-semibold text-black mb-3 border-b border-gray-400 pb-1">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-[420px]">
+                            <h1 className="text-lg font-semibold text-black mb-3 border-b border-gray-400 pb-2">
                                 Document Tracking
                             </h1>
 
-                            <div className="overflow-y-auto h-[240px] thin-scroll pr-2">
+                            <div className="overflow-y-auto h-[240px] thin-scroll pr-2 pt-2">
                                 {trackingData?.map((item, index) => {
                                     const { bg, text } = getInwardOutwardStatusColor(item.DeliveryStatus || '');
                                     const isLast = index === trackingData.length - 1;
@@ -254,18 +266,16 @@ const ViewInwardOutward: React.FC = () => {
                                         <div key={index} className="flex items-start gap-3">
 
                                             <div className="flex flex-col items-center self-stretch">
-                                                <div className="w-3 h-3 rounded-full bg-blue-600 mt-1 shrink-0" />
+                                                <div className="w-3 h-3 rounded-full bg-blue-600 shrink-0" />
 
                                                 {!isLast && (
-                                                    <div className="w-[3px] flex-1 bg-blue-300 mt-1" />
+                                                    <div className="w-[3px] flex-1 bg-blue-300" />
                                                 )}
                                             </div>
 
                                             <div className={`flex-1 ${!isLast ? 'pb-6' : 'pb-1'}`}>
                                                 <p className="text-sm font-semibold text-gray-900 leading-tight">
-                                                    {item.DeliveryDate
-                                                        ? formatDate_dd_MonthName_yy(item.DeliveryDate)
-                                                        : '-'}
+                                                    {item.DeliveryDate ? formatDate_dd_MonthName_yy(item.DeliveryDate): '-'}
                                                 </p>
 
                                                 <span
@@ -281,12 +291,12 @@ const ViewInwardOutward: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-4 h-[350px]">
-                            <h1 className="text-lg font-semibold text-black border-b border-gray-400 pb-1">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-4 h-[420px]">
+                            <h1 className="text-lg font-semibold text-black border-b border-gray-400 pb-2">
                                 Assigned Employees
                             </h1>
 
-                            <div className="mt-1 overflow-y-auto h-[280px] thin-scroll pr-2">
+                            <div className="mt-1 overflow-y-auto h-[350px] thin-scroll pr-2 pt-2">
                                 {(() => {
                                     const employeeNames = inwardOutwardData?.EmployeeNames?.split(',').map(name => name.trim()).filter(name => name) || [];
                                     const departmentNames = inwardOutwardData?.DepartmentName?.split(',').map(dept => dept.trim()).filter(dept => dept) || [];
@@ -300,7 +310,7 @@ const ViewInwardOutward: React.FC = () => {
                                     }
 
                                     return employeeNames.map((employeeName, index) => (
-                                        <div key={index} className="flex gap-4 relative mb-4">
+                                        <div key={index} className="flex gap-4 relative">
 
                                             <div className="flex flex-col items-center">
 
@@ -309,13 +319,13 @@ const ViewInwardOutward: React.FC = () => {
                                                 </div>
 
                                                 {index !== employeeNames.length - 1 && (
-                                                    <div className="w-px bg-blue-500 flex-1 mt-1"></div>
+                                                    <div className="w-px bg-blue-500 flex-1"></div>
                                                 )}
 
                                             </div>
 
                                             {/* Content */}
-                                            <div className="flex-1 pb-4">
+                                            <div className="flex-1 pb-6">
                                                 <div className="font-semibold text-gray-900">
                                                     {employeeName}
 
@@ -331,12 +341,12 @@ const ViewInwardOutward: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-4 h-[492px]">
-                            <h1 className="text-lg font-semibold text-black border-b border-gray-400 pb-1">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-4 h-[499px]">
+                            <h1 className="text-lg font-semibold text-black border-b border-gray-400 pb-2">
                                 Revert
                             </h1>
 
-                            <div className="mt-1 overflow-y-auto h-[420px] thin-scroll pr-2">
+                            <div className="mt-1 overflow-y-auto h-[420px] thin-scroll pr-2 pt-2">
                                 {inwardOutwardRevertHistory.length > 0 ? (
                                     inwardOutwardRevertHistory.map((item) => {
                                         return (
@@ -380,7 +390,7 @@ const ViewInwardOutward: React.FC = () => {
             )}
 
             {activeTab === "Document" && (
-                <div className="pt-2 space-y-4">
+                <div className="pt-5 space-y-4">
                     {inwardDocs.length === 0 && acknowledgementDocs.length === 0 && (
                         <section className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
                             <NoDataView message="No Documents Found" />
@@ -390,6 +400,7 @@ const ViewInwardOutward: React.FC = () => {
                     {inwardDocs.length > 0 && (
                         <ExpandableCard
                             showline={false}
+                            defaultOpen={true}
                             title={
                                 <div className="flex items-center gap-2 w-full pt-3 p-2">
                                     <span className="text-base font-semibold text-gray-900">Inward Document</span>
@@ -438,6 +449,7 @@ const ViewInwardOutward: React.FC = () => {
                     {acknowledgementDocs.length > 0 && (
                         <ExpandableCard
                             showline={false}
+                            defaultOpen={true}
                             title={
                                 <div className="flex items-center gap-2 w-full pt-3 p-2">
                                     <span className="text-base font-semibold text-gray-900">Acknowledgement</span>

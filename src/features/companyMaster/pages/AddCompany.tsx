@@ -1988,7 +1988,6 @@ const AddCompany: React.FC = () => {
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
               ]}
               maxFiles={1}
-              maxSizeMB={10}
               onRemoveExisting={(url) => {
                 setRemovedCompanyPartnerPhotoURLs((prev) => [...prev, url])
               }}

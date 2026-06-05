@@ -253,9 +253,7 @@ export const cleanHtml = (html: string) => {
   return doc.body.innerHTML.trim()
 }
 
-export const copyToClipboard = async (
-  text?: string,
-): Promise<boolean> => {
+export const copyToClipboard = async (text?: string): Promise<boolean> => {
   if (!text) {
     return false;
   }
@@ -263,7 +261,6 @@ export const copyToClipboard = async (
     await navigator.clipboard.writeText(text);
     return true;
   } catch (error) {
-    console.error("Copy failed:", error);
     return false;
   }
 };

@@ -1250,7 +1250,6 @@ const ProjectRERADocument: React.FC = () => {
               availableFilesURL={projectRERADocumentURL ?? ""}
               allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
               maxFiles={5}
-              maxSizeMB={10}
               error={errors.ProjectRERADocumentURL}
               onRemoveExisting={(url) => {
                 setRemoveProjectRERADocumentUrls((prev) => [...prev, url])
@@ -1266,7 +1265,6 @@ const ProjectRERADocument: React.FC = () => {
               availableFilesURL={rERAPortalScreenShotURL ?? ""}
               allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
               maxFiles={5}
-              maxSizeMB={10}
               onRemoveExisting={(url) => {
                 setRemoveRERAPortalScreenShotUrls((prev) => [...prev, url])
               }}

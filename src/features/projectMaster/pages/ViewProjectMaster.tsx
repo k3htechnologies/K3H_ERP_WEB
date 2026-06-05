@@ -21,15 +21,15 @@ import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService';
 import type { FilterModulesWorkflowApprovalRequest, ModulesWorkflowApprovalData } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
 import { Mail, Phone } from 'lucide-react';
+import { formatCurrency } from '@/core/utils/comman';
 
 
 export const ViewProjectMaster: React.FC = () => {
 
-    //#region STATE MANAGEMENT
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [employeeMasterList, setEmployeeMasterList] = useState<EmployeeMasterData[]>([]);
-    // SINGLE SEARCH TEXT BOX
+
     const [searchTermForEmployee, setSearchTermForEmployeeName] = useState('')
     const debouncedSearchForEmployeeName = useDebouncedCallback((value: string) => {
         searchEmployeeName(value)
@@ -46,37 +46,43 @@ export const ViewProjectMaster: React.FC = () => {
 
     const [activeTabForModulesWorkflowApproval, setActiveTabForModulesWorkflowApproval] = useState<TabItem[]>([]);
 
-    // TOAST
     const { addToast } = useToast()
 
-    //LOCATION
     const navigate = useNavigate();
+
     const { listState } = useProjectMasterListState();
 
-    //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/projectMaster');
-    //#endregion
+    const { canView: canProjectView, canAction: canProjectAction } = useMenuPermissions('/projectDetails');
 
-    //#region Get PROJECT MASTER DATA - Will be loaded from API if needed
+    const { canView: canApprovalView, canAction: canApprovalAction } = useMenuPermissions('/projectMasterApprovalSetup');
+
+    const { canView: canBankView, canAction: canBankAction } = useMenuPermissions('/projectMasterBankDetails');
+
+    const { canView: canCompanyView, canAction: canCompanyAction } = useMenuPermissions('/projectMasterSetCompany');
+
+    const { canView: canAssignEmployeeView, canAction: canAssignEmployeeAction } = useMenuPermissions('/projectMasterAssignEmployee');
+
     const [editProjectData, setEditProjectData] = useState<ProjectMasterData | null>(null);
-    //#endregion
 
-    //#region TAB ACTIVITY
-    const TabList = [
-        { id: "Project Overview", label: 'Project Overview' },
-        { id: "Employee", label: 'Employee' },
-        { id: "Bank Details", label: 'Bank Details' },
-        { id: "Company", label: 'Company' },
-        { id: "Approval", label: 'Approval' }
-    ];
+    const TabList: { id: string; label: string }[] = [
 
+        canProjectView  ? { id: "Project Overview", label: "Project Overview" } : null,
 
-    const [activeTab, setActiveTab] = useState<string>(TabList[0].id);
-    //#endregion
+        canAssignEmployeeView ? { id: "Employee", label: "Employee" } : null,
 
-    //#region INIT
+        canBankView ? { id: "Bank Details", label: "Bank Details" } : null,
+
+        canCompanyView  ? { id: "Company", label: "Company" } : null,
+
+        canApprovalView  ? { id: "Approval", label: "Approval" } : null
+
+    ].filter(Boolean) as { id: string; label: string }[];
+
+    const [activeTab, setActiveTab] = useState<string>(TabList?.[0]?.id ?? '');
+
     useEffect(() => {
         if (listState.projectId) {
+
             loadProjectData();
         }
     }, [listState.projectId]);
@@ -128,10 +134,6 @@ export const ViewProjectMaster: React.FC = () => {
         );
     };
 
-    //#endregion
-
-    //#region DATA LOAD PROJECT WITH EMPLOYEE | COMPANY | BANK DETAILS
-
     const loadProjectMasterWithEmployee = async (ProjectId: number, searchText = "") => {
         await runApiWithLoader(
             setIsLoading,
@@ -160,23 +162,18 @@ export const ViewProjectMaster: React.FC = () => {
         );
     };
 
-    //#region SERACH EMPLOYEE NAME 
     const searchEmployeeName = async (searchValue: string) => {
 
         setSearchTermForEmployeeName(searchValue);
         await loadProjectMasterWithEmployee(editProjectData!.ProjectId, searchValue);
 
     }
-    //#endregion
-
-    //#region CLEAR SERACH DEPARTMENT 
+    
     const clearsearchForEmployeeName = async () => {
         setSearchTermForEmployeeName('');
         debouncedSearchForEmployeeName.cancel?.();
         await loadProjectMasterWithEmployee(editProjectData!.ProjectId);
     }
-
-    //#endregion
 
     const loadProjectMasterWithCompany = async (ProjectId: number) => {
         await runApiWithLoader(
@@ -279,51 +276,35 @@ export const ViewProjectMaster: React.FC = () => {
     };
 
 
-    //#endregion 
-
-    //#region BACK VIEW PROJECT PAGE TO TABLE PROJECT MASTER
     const handleBackToListProjectMaster = () => {
         navigate('/projectMaster');
     };
-    //#endregion
-
-    //#region EDIT PROJECT
+    
     const handleEditProjectMaster = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate(`/projectMaster/add/${row.ProjectId}`);
     };
-    //#endregion
-
-    //#region EDIT PROJECT WITH EMPLOYEE
+    
     const handleEditProjectMasterWithEmployee = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/employee');
     };
-    //#endregion
-
-    //#region EDIT PROJECT WITH COMPANY
+    
     const handleEditProjectMasterWithCompany = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/company');
     };
-    //#endregion
-
-    //#endregion
-    //#region EDIT PROJECT WITH BANK
+    
     const handleEditProjectMasterWithBank = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/bank');
     };
-    //#endregion
-
-    //#region EDIT PROJECT WITH EMPLOYEE
+    
     const handleEditApproval = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/approval');
     };
-    //#endregion
-
-    //#endregion
+    
 
     useEffect(() => {
         if (activeTabForModulesWorkflowApproval.length > 0 && !activeModuleTab) {
@@ -348,7 +329,11 @@ export const ViewProjectMaster: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListProjectMaster()}
-                canAction={canAction}
+                canAction={activeTab === "Project Overview" ? canProjectAction 
+                         : activeTab === 'Employee' ? canAssignEmployeeAction 
+                         : activeTab === 'Bank Details' ? canBankAction 
+                         : activeTab === 'Company' ? canCompanyAction 
+                         : canApprovalAction}
                 onEdit={() => {
 
                     if (activeTab === "Project Overview") {
@@ -404,22 +389,137 @@ export const ViewProjectMaster: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
                                         <FieldItem label="Redevelopment" value={editProjectData?.IsRedevelopment === true ? 'YES' : 'NO'} />
                                         <FieldItem label="Project Name" value={editProjectData?.ProjectName ?? '-'} />
-
                                         <FieldItem label="Business Category" value={editProjectData?.BussinessCategory ?? '-'} />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
                                         <FieldItem label="File Number" value={editProjectData?.FileNumber ?? '-'} />
-                                        <FieldItem label="Architect Name" value={editProjectData?.ArchitectName ?? '-'} />
-                                        <FieldItem label="Architect Mobile Number" value={editProjectData?.ArchitectMobileNumber
-                                            ? `+91 ${editProjectData?.ArchitectMobileNumber}`
-                                            : '-'}
-                                        />
+
 
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
 
                                         <FieldItem label="CTS Number" value={editProjectData?.CTSNumber ?? '-'} />
                                     </div>
+
+
+                                </section>
+                                {editProjectData?.Category.toUpperCase() !== "TENDER" && (
+                                    <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                            Project Category
+                                        </h4>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Category" value={editProjectData?.Category ?? '-'} />
+
+                                        </div>
+
+
+                                    </section>
+                                )}
+                                {editProjectData?.Category.toUpperCase() === "TENDER" && (
+                                    <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                            Project Category
+                                        </h4>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                            <FieldItem label="Category" value={editProjectData?.Category ?? '-'} />
+
+                                            <FieldItem label="Amount" value={formatCurrency(editProjectData?.TenderAmount)} />
+                                            <FieldItem label="EMD Amount" value={formatCurrency(editProjectData?.TenderEMDAmount)} />
+
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
+                                            <FieldItem
+                                                label="Purchase Start Date"
+                                                value={
+                                                    editProjectData?.TenderPurchaseStartDate
+                                                        ? formatDate_dd_MonthName_yy(editProjectData.TenderPurchaseStartDate)
+                                                        : '-'
+                                                }
+                                            />
+
+                                            <FieldItem
+                                                label="Purchase End Date"
+                                                value={
+                                                    editProjectData?.TenderPurchaseEndDate
+                                                        ? formatDate_dd_MonthName_yy(editProjectData.TenderPurchaseEndDate)
+                                                        : '-'
+                                                }
+                                            />
+                                            <FieldItem label="Cheque Number" value={editProjectData?.TenderChequeNumber ?? '-'} urls={editProjectData?.TenderChequeNumberURL ?? '-'} isIcon />
+
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
+
+                                            <FieldItem
+                                                label="Submission Date"
+                                                value={
+                                                    editProjectData?.TenderSubmissionDate
+                                                        ? formatDate_dd_MonthName_yy(editProjectData.TenderSubmissionDate)
+                                                        : '-'
+                                                }
+                                            />
+
+                                            <FieldItem
+                                                label="Issue Date"
+                                                value={
+                                                    editProjectData?.TenderIssueDate
+                                                        ? formatDate_dd_MonthName_yy(editProjectData.TenderIssueDate)
+                                                        : '-'
+                                                }
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
+
+                                            <FieldItem label="Payorder Remark" value={editProjectData?.TenderPayorderRemark ?? '-'} />
+                                        </div>
+
+
+                                    </section>
+                                )}
+
+                                <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        Liasoning Architect
+                                    </h4>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
+                                        <FieldItem label="Name" value={editProjectData?.LiasoningArchitectName ?? '-'} />
+                                        <FieldItem label="Mobile Number" value={editProjectData?.LiasoningArchitectMobileNumber
+                                            ? `+91 ${editProjectData?.LiasoningArchitectMobileNumber}`
+                                            : '-'}
+                                        />
+                                    </div>
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        Designing Architect
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-4">
+                                        <FieldItem label="Name" value={editProjectData?.DesigningArchitectName ?? '-'} />
+                                        <FieldItem label="Mobile Number" value={editProjectData?.DesigningArchitectMobileNumber
+                                            ? `+91 ${editProjectData?.DesigningArchitectMobileNumber}`
+                                            : '-'}
+                                        />
+
+
+                                    </div>
+
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        RCC Consultant
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                        <FieldItem label="Name" value={editProjectData?.RCCConsultantName ?? '-'} />
+                                        <FieldItem label="Mobile Number" value={editProjectData?.RCCConsultantMobileNumber
+                                            ? `+91 ${editProjectData?.RCCConsultantMobileNumber}`
+                                            : '-'}
+                                        />
+
+                                    </div>
+
 
                                 </section>
 
@@ -474,7 +574,7 @@ export const ViewProjectMaster: React.FC = () => {
                                         Project Documentation
                                     </h4>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 border-b border-[#135bec2e] pb-4 gap-4">
                                         <FieldItem label="RERA Number" value={editProjectData?.RERANumber ?? '-'} />
 
                                         <FieldItem
@@ -495,6 +595,10 @@ export const ViewProjectMaster: React.FC = () => {
                                             }
                                         />
                                     </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4  pt-5">
+                                        <FieldItem label="APF Number" value={editProjectData?.APFNumber ?? '-'} />
+                                    </div>
                                 </section>
 
                                 {/* ================= FINANCIAL DETAILS ================= */}
@@ -503,7 +607,7 @@ export const ViewProjectMaster: React.FC = () => {
                                         Project Financials
                                     </h4>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  border-b border-[#135bec2e] pb-4 gap-4">
                                         <FieldItem
                                             label="Project Estimate Cost"
                                             value={editProjectData?.ProjectEstimateCost?.toString() ?? '-'}
@@ -516,6 +620,9 @@ export const ViewProjectMaster: React.FC = () => {
                                             label="Project Area (Sq.ft)"
                                             value={editProjectData?.ProjectAreaInSqft?.toString() ?? '-'}
                                         />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4  pt-5">
+                                        <FieldItem label="Project Area (Sq.mt)" value={editProjectData?.ProjectAreaInSqmt?.toString() ?? '-'} />
                                     </div>
                                 </section>
 
@@ -582,9 +689,15 @@ export const ViewProjectMaster: React.FC = () => {
 
                                 {/* ================= PROJECT IMAGE ================= */}
                                 <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                                    <h4 className="text-lg font-semibold text-gray-900 border-b border-[#135bec2e] pb-2 mb-4">
-                                        Project Images
-                                    </h4>
+                                    <div className="flex items-center justify-between border-b border-[#135bec2e] pb-2 mb-4">
+
+
+                                        <h4 className="text-lg font-semibold text-gray-900">
+                                            Project Images
+                                        </h4>
+                                        <FieldItem label="" urls={editProjectData?.ProjectPhotoURL} isIcon isSetValue={false} />
+
+                                    </div>
 
                                     <div className="flex justify-center">
                                         <div className="w-full max-w-[300px] rounded-md overflow-hidden">
@@ -611,10 +724,7 @@ export const ViewProjectMaster: React.FC = () => {
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-5">
                                         <FieldItem label="Modified By" value={editProjectData?.ModifiedBy ?? '-'} />
-                                        <FieldItem
-                                            label="Modified Date"
-                                            value={formatDate_dd_MonthName_yy_hh_mm(editProjectData?.ModifiedDate ?? '-')}
-                                        />
+                                        <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(editProjectData?.ModifiedDate ?? '-')} />
                                     </div>
                                 </section>
 
@@ -652,7 +762,7 @@ export const ViewProjectMaster: React.FC = () => {
                                     <section
                                         key={emp.EmployeeCode}
                                         className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                                            
+
                                         <div className="flex items-center gap-3 mb-4">
                                             <div className="w-8 h-8 rounded-full bg-blue-200 text-gray-800 flex items-center justify-center text-xs font-medium border border-gray-300">
                                                 {initials}
@@ -698,11 +808,12 @@ export const ViewProjectMaster: React.FC = () => {
                                     </h4>
 
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Account Number" value={b.AccountNumber ?? "-"} />
+                                        <FieldItem label="Nature Of Account" value={b.NatureOfAccount ?? "-"} />
                                         <FieldItem label="Bank Name" value={b.BankName ?? "-"} />
-                                        <FieldItem label="Branch" value={b.Branch ?? "-"} />
                                         <FieldItem label="Account Type" value={b.AcType ?? "-"} />
+                                        <FieldItem label="Account Number" value={b.AccountNumber ?? "-"} />
                                         <FieldItem label="IFSC Code" value={b.IFSCCode ?? "-"} />
+                                        <FieldItem label="Branch" value={b.Branch ?? "-"} />
                                     </div>
                                 </section>
                             ))

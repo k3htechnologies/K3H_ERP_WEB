@@ -7,6 +7,7 @@ export interface FilterWithPaginationPaidBrokerageBookingRequest {
     BookingId?: number
     BrokerageInvoiceId?: number
     PaidBrokerageBookingId?: number
+    InvoiceNumber?:string| null
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -17,6 +18,8 @@ export interface PaidBrokerageBookingData {
     BookingId: number | 0
     PaidBrokerageBookingId: number | 0
     BrokerageInvoiceId: number | 0
+    InvoiceNumber: string | ''
+    InvoiceAmount: number | 0
     PaymentMode: string | null
     BankListMasterId: number | 0
     BankName: string | null
@@ -28,7 +31,6 @@ export interface PaidBrokerageBookingData {
     TDSAmount: number | 0
     TransactionNumber: string | null
     TransactionReceiptURL: string | null
-    RemoveTransactionReceiptURL: string | ''
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -58,10 +60,10 @@ export interface AddUpdatePaidBrokerageBookingRequest {
 
 export interface DeletePaidBrokerageBookingRequest {
     PaidBrokerageBookingId: number
-    BookingId: number
-    BrokerageInvoiceId: number
     Uniquekey: string
+    BookingId: number
     ProjectId: number
+    BrokerageInvoiceId: number
 }
 
 export type PaidBrokerageBookingListResponse = ApiResponse<PaidBrokerageBookingData[]>;

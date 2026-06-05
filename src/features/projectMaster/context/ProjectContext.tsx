@@ -6,9 +6,10 @@ interface ProjectContextType {
   setProjectId: (id: number) => void
 }
 
-const ProjectContext = createContext<ProjectContextType | undefined>(undefined)
+const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 
 export const ProjectProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  
   const emp = LocalStorageHelper.getStoredEmployeeData?.()
 
   const [projectId, setProjectIdState] = useState<number | null>(() => {

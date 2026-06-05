@@ -283,7 +283,8 @@ export const DateRangePickerModal: React.FC<DateRangePickerModalProps> = ({
   }
 
   const isDateAllowed = (date: Date): boolean => {
-if (!allowedDates || allowedDates.length === 0) return false
+    if (allowedDates=== undefined) return true;
+    if (allowedDates.length===0) return false;
 
     const dateStr = formatYyyyMmDd(date)
 

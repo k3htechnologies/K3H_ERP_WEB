@@ -1,11 +1,9 @@
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import {
-    LineChart, ResponsiveContainer, Legend, Tooltip, Line, XAxis, YAxis
-} from "recharts";
-import type { Table7 } from "@/features/litigationDashboard/models/litigationDashboardModel";
+import {  LineChart, ResponsiveContainer, Legend, Tooltip, Line, XAxis, YAxis} from "recharts";
+import type { Table6 } from "@/features/litigationDashboard/models/litigationDashboardModel";
 
 interface Props {
-    CaseAnalysisData: Table7[];
+    CaseAnalysisData: Table6[];
 }
 
 export default function CaseAnalysis({ CaseAnalysisData = [] }: Props) {

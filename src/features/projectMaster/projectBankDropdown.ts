@@ -13,7 +13,7 @@ export interface ProjectBankDropdownItem {
   AcType: string;
 }
 
-export const fetchProjectBankDropdown = async (_pageNumber: number,params?: { projectId?: number }): Promise<{totalNumberOfRecord: number;itemList: ProjectBankDropdownItem[];}> => {
+export const fetchProjectBankDropdown = async (_pageNumber: number, params?: { projectId?: number }): Promise<{ totalNumberOfRecord: number; itemList: ProjectBankDropdownItem[]; }> => {
   try {
     const responseEither =
       await projectMasterService.apiCallPullProjectMasterWithBankDetails(
@@ -55,3 +55,13 @@ export const fetchProjectBankDropdown = async (_pageNumber: number,params?: { pr
     };
   }
 };
+
+export const fetchProjectBankDropdownById = async (projectId: number) => {
+
+  const responseEither = await projectMasterService.apiCallPullProjectMasterWithBankDetails( projectId);
+
+  if (E.isLeft(responseEither)) return null;
+
+  return responseEither.right.Data?.[0] || null;
+};
+

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
+import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
 
 export type BookingListState = {
   page: number;
@@ -12,7 +13,7 @@ export type BookingListState = {
   bookingName: string;
 };
 
-const STORAGE_KEY = 'booking.listState';
+const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING;
 
 const getInitialState = (projectId: number | null): BookingListState => {
   if (!projectId) {

@@ -19,6 +19,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
     className = '',
     style,
     required,
+    isBorderRadius=true,
     ...props
   }, ref) => {
     const theme = THEME
@@ -57,9 +58,8 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             currentSize.padding,
         fontSize: currentSize.fontSize,
         fontWeight: theme.fontWeight.normal,
-        borderRadius: theme.borderRadius.lg,
-        border: `0.5px solid ${error ? theme.colors.error : theme.colors.border}`,
-        
+        borderRadius: isBorderRadius ? theme.borderRadius.lg : "0px",
+        border: isBorderRadius ?  `0.5px solid ${error ? theme.colors.error : theme.colors.border}` : "0px",
         outline: 'none',
         transition: theme.transitions.normal,
         boxSizing: 'border-box' as const,

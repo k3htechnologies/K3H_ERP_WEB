@@ -36,6 +36,7 @@ export class LitigationDatasourceImpl implements LitigationDatasource {
             if (params.CaseNumber?.trim()) queryParams.append('CaseNumber', params.CaseNumber.trim());
             if (params.Title?.trim()) queryParams.append('Title', params.Title.trim());
             if (params.CourtName?.trim()) queryParams.append('CourtName', params.CourtName.trim());
+            if (params.ProjectName?.trim()) queryParams.append('ProjectName', params.ProjectName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

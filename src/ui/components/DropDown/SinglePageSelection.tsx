@@ -37,7 +37,8 @@ export const SinglePageSelection = forwardRef<
       selectedTextColor,
       leftIcon,
       leftIconClick,
-      isShowClearSelection = true
+      isShowClearSelection = true,
+      isBorderRadius=true,
     },
     ref
   ) => {
@@ -283,7 +284,7 @@ export const SinglePageSelection = forwardRef<
             fontSize: currentSize.fontSize,
             padding: currentSize.padding,
             paddingLeft: leftIcon ? "38px" : currentSize.padding.split(" ")[1],
-            borderRadius: "6px",
+            borderRadius: isBorderRadius ? "6px" :"0px",
             backgroundColor: disabled ? theme.colors.backgroundSecondary : theme.colors.backgroundSecondary,
             color: disabled ? theme.colors.textLight : theme.colors.text,
             cursor: disabled ? "not-allowed" : "pointer",

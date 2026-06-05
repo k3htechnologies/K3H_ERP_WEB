@@ -84,6 +84,7 @@ export class ParkingDatasourceImpl implements ParkingDatasource {
                 PageSize: (params.PageSize ?? 10).toString(),
                 PageNumber: (params.PageNumber ?? 1).toString(),
                 ProjectId: (params.ProjectId ?? 0).toString(),
+                IsAcessOnlyApprovedParking: (params.IsAcessOnlyApprovedParking ?? true).toString(),
             })
 
             if (params.Building) queryParams.append('Building', params.Building.toString());
@@ -95,6 +96,7 @@ export class ParkingDatasourceImpl implements ParkingDatasource {
             if (params.ParkingSubType?.trim()) queryParams.append('ParkingSubType', params.ParkingSubType.trim());
             if (params.Dimensions?.trim()) queryParams.append('Dimensions', params.Dimensions.trim());
             if (params.DisplayParkingId?.trim()) queryParams.append('DisplayParkingId', params.DisplayParkingId.trim());
+            if (params.ParkingStatus?.trim()) queryParams.append('ParkingStatus', params.ParkingStatus.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

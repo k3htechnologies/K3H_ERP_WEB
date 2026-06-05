@@ -226,13 +226,14 @@ export const DateInput = forwardRef<HTMLDivElement, DateInputProps>(
     }
     
     const isDateAllowed = (date: Date): boolean => {
-      if (!allowedDates || allowedDates.length === 0) return true
+      if (allowedDates=== undefined) return true;
+      if (allowedDates.length===0) return false;
       const dateStr = formatYyyyMmDd(date)
       return allowedDates.includes(dateStr)
     }
     
     const isDateHighlighted = (date: Date): boolean => {
-      if (!allowedDates || allowedDates.length === 0) return false
+      if (allowedDates===undefined || allowedDates.length===0) return false
       return isDateAllowed(date)
     }
 

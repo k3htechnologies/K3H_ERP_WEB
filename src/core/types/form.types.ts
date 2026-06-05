@@ -16,6 +16,7 @@ export interface InputProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 
   style?: CSSProperties
   autoResize?: boolean
   required?: boolean
+  isBorderRadius?: boolean
 }
 export interface TextAreaProps extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
   label?: string
@@ -50,6 +51,7 @@ export interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement
   | 'indigo'
   | 'orange'
   | 'red'
+  | 'red_light'
   | 'pink'
   | 'teal'
   | 'lime'

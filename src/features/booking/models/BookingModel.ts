@@ -23,7 +23,7 @@ export interface FilterWithPaginationBookingRequest {
     AgreementValue?: number;
     BookingType?: string;
     SortBy?: string;
-    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF' | 'BOOKING FORM PDF ON MAIL';
+    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF' | 'BOOKING FORM PDF ON MAIL' | "" | "WELCOME MESSAGE ON MAIL" | "WELCOME MESSAGE";
 }
 
 export interface FilterWithPaginationChannelPartnerBookingRequest {
@@ -92,6 +92,8 @@ export interface BookingData {
     EmployeeReferenceAmount: number | null;
 
     RegistrationDate: string | null;
+    FinalRegistrationDate: string | null;
+    
     AgreementValue: number | null;
     AgreementValueTDS: number | null;
     AgreementValueGSTPercentage: number | null;
@@ -137,12 +139,14 @@ export interface BookingData {
     TransferBookingId: number | null;
     TransferFlat: string | null;
     TenantId: number | null;
+    LedgerCount: number | null;
 }
 
 export interface BookingApplicantData {
     BookingApplicantId: number | null;
     ApplicantType: string | null;
     ApplicantName: string | null;
+    ApplicantMobileNumberCountryCode: string | null;
     ApplicantMobileNumber: string | null;
     ApplicantEmailId: string | null;
     PhotoURL: string | null;
@@ -263,6 +267,7 @@ export interface AddUpdateBookingApplicantRequest {
     BookingApplicantId: number | null;
     ApplicantType: string | null;
     ApplicantName: string | null;
+    ApplicantMobileNumberCountryCode: string | null;
     ApplicantMobileNumber: string | null;
     ApplicantEmailId: string | null;
     PhotoURL?: File[] | null;
@@ -347,6 +352,14 @@ export interface PaymentScheduleStagesData {
     TotalRecords?: number | null;
 }
 
+export interface UpdatePayTrackBookingRegistrationDateParking {
+    BookingId: number | null;
+    Uniquekey: string | null;
+    ProjectId: number | null;
+    FinalRegistrationDate: string | null;
+    ParkingId: string | null;
+}
+
 //=============================================================
 // [ API RESPONSE TYPES ]
 //=============================================================
@@ -354,4 +367,5 @@ export type BookingListResponse = ApiResponse<BookingData[]>;
 export type BookingSaveResponse = ApiResponse<BookingData[]>;
 export type BookingDeleteResponse = ApiResponse<number>;
 export type PaymentScheduleStagesResponse = ApiResponse<PaymentScheduleStagesData[]>;
+export type BookingUpdateegistrationDateParkingResponse = ApiResponse<BookingData[]>;
 

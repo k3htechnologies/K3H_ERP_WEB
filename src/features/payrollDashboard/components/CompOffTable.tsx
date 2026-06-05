@@ -86,23 +86,14 @@ export default function CompOffTable({ compOffData }: Props) {
       </h2>
       <div className="bg-white rounded-xl p-4 h-[300px] border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
-
-        {compOffData?.length > 0 ? (
           <DataTableWithOutBorder
             columns={columns}
             data={compOffData.slice(0, 4)}
-            emptyMessage="No records Found"
+            emptyMessage="No Data Available"
             fixedHeight={true}
+            className="flex-1"
           />
-        ) : (
-          <div>
-            <DataTableWithOutBorder
-              columns={columns}
-              data={[]}
-              emptyMessage="No Data Available"
-            />
-          </div>
-        )}
+       
       </div>
     </div>
   );

@@ -20,7 +20,8 @@ export const COLORS = {
   hover: '#E6FOFF',
   menu_toggleColor: '#DBEAFE',
   primary1: '#135BEC',
-  green: '#8d99ba1f'
+  green: '#8d99ba1f',
+  red_light: '#FAD1D1',
 } as const
 
 export type ColorType = keyof typeof COLORS
@@ -279,6 +280,23 @@ export const COLOR_MAP = {
         hover: { backgroundColor: '#991b1b' },
       },
 
+    },
+  },
+
+  red_light: {
+    solid: {
+      light: {
+        backgroundColor: '#FAD1D1',
+        color: '#ef4444',
+        border: '1px solid #991b1b',
+        hover: { backgroundColor: '#fbb6b6' },
+      },
+      dark: {
+        backgroundColor: '#FAD1D1',
+        color: '#ef4444',
+        border: '1px solid #991b1b',
+        hover: { backgroundColor: '#fbb6b6' },
+      },
     },
   },
 

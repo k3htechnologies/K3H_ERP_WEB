@@ -654,7 +654,6 @@ export const MarketingContent: React.FC = () => {
                                 error={errors.MarketingContentURL}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                 maxFiles={5}
-                                maxSizeMB={10}
                                 onRemoveExisting={(url) => {
                                     setRemoveMarketingContentUrls((prev) => [...prev, url])
                                 }}

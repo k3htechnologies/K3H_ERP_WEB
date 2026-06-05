@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo, useCallback } from "react"
-import { type FilterInventoryRequest, type InventoryData, type InventoryFlatFloorBasementPodiumWingData, type InventoryFlatData, type DeleteInventoryFlatRequest, type AddInventoryRequest, type AddInventoryWingRequest, type AddInventoryFloorRequest, type DeleteInventoryWingRequest, type DeleteInventoryBuildingRequest, type DeleteInventoryFloorRequest, type InventoryFloorData } from "../models/InventoryMasterModel"
+import { useEffect, useState, useMemo, useCallback, useLayoutEffect } from "react"
+import { type FilterInventoryRequest, type InventoryData, type InventoryFlatFloorBasementPodiumWingData, type InventoryFlatData, type DeleteInventoryFlatRequest, type AddInventoryRequest, type AddInventoryWingRequest, type AddInventoryFloorRequest, type DeleteInventoryWingRequest, type DeleteInventoryBuildingRequest, type DeleteInventoryFloorRequest, type InventoryFloorData, type UpdateInventoryWingRequest } from "../models/InventoryMasterModel"
 
 import * as E from 'fp-ts/Either'
 import useToast from "@/core/hooks/useToast"
@@ -38,6 +38,7 @@ import { useBookingListState } from "@/features/booking/context/BookingListState
 import TooltipText from "@/ui/components/Tooltip/TooltipText"
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton"
 import { getStatusColor } from "@/features/modulesWorkflowApproval/utils/Status"
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper"
 
 const Inventory = () => {
 
@@ -55,27 +56,21 @@ const Inventory = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
-    //EXCEL IMPORT 
     const [showImportModal, setShowImportModal] = useState(false);
 
-    // DELETE CONFIRMATION DIALOG
     const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] = useState(false);
     const [selectedFlatToDelete, setSelectedFlatToDelete] = useState<InventoryFlatData | null>(null);
     const [, setIsDeleting] = useState(false);
 
-    // DELETE WING CONFIRMATION DIALOG
     const [isDeleteWingDialogOpen, setIsDeleteWingDialogOpen] = useState(false);
     const [wingToDelete, setWingToDelete] = useState<InventoryFlatFloorBasementPodiumWingData | null>(null);
 
-    // DELETE BUILDING CONFIRMATION DIALOG
     const [isDeleteBuildingDialogOpen, setIsDeleteBuildingDialogOpen] = useState(false);
     const [buildingToDelete, setBuildingToDelete] = useState<InventoryData | null>(null);
 
-    // DELETE FLOOR CONFIRMATION DIALOG
     const [isDeleteFloorDialogOpen, setIsDeleteFloorDialogOpen] = useState(false);
     const [floorToDelete, setFloorToDelete] = useState<{ floor: import("@/features/inventory/models/InventoryMasterModel").InventoryFloorData; wing: InventoryFlatFloorBasementPodiumWingData; building: InventoryData } | null>(null);
 
-    // ADD BUILDING MODAL
     const [isAddBuildingModalOpen, setIsAddBuildingModalOpen] = useState(false);
     const [buildingNumber, setBuildingNumber] = useState<string>('');
     const [noOfBasement, setNoOfBasement] = useState<string>('');
@@ -83,54 +78,40 @@ const Inventory = () => {
     const [noOfWings, setNoOfWings] = useState<string>('');
     const [wingData, setWingData] = useState<Array<{ Wing: string; MaxNoOfFlatPerFloor: string; NoOfFloorExcludingPodium: string }>>([]);
 
-    // ADD WING MODAL
+    const [isEditWingModalOpen, setIsEditWingModalOpen] = useState(false);
+    const [wingToEdit, setWingToEdit] = useState<InventoryFlatFloorBasementPodiumWingData | null>(null);
+    const [newWingName, setNewWingName] = useState<string>('');
+    const [errorNewWingNameEmpty, setErrorNewWingNameEmpty] = useState<string>('');
+
     const [isAddWingModalOpen, setIsAddWingModalOpen] = useState(false);
     const [wingNoOfFloor, setWingNoOfFloor] = useState<string>('');
     const [wingMaxNoOfFlatsPerFloor, setWingMaxNoOfFlatsPerFloor] = useState<string>('');
 
-    // SEARCH STATE
     const [searchTerm, setSearchTerm] = useState<string>('');
+    const [selectedStatus, setSelectedStatus] = useState<string>('');
 
-    // APPROVAL LOG MODAL
     const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
     const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
     const [buildingName, setBuildingName] = useState<string | null>("");
     const [wingName, setWingName] = useState<string | null>("");
 
-    // APPROVAL ACTION MODAL
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
 
-
-    //#region TAB ACTIVITY
-    // Preserve tab state in localStorage
     const [activeTab, setActiveTab] = useState<string>(() => {
         const savedTab = localStorage.getItem('inventoryActiveTab');
         return savedTab || "Grid";
     });
 
-    // Save tab state when it changes
     useEffect(() => {
         localStorage.setItem('inventoryActiveTab', activeTab);
     }, [activeTab]);
-    //#endregion
-
-    //#endregion
-
-    //#region PROJECT SELECTION GET ID
 
     const { projectId } = useProject()
 
-    //#endregion
-
-    //#region MENU PERMISSIONS
     const { canAction, canExport } = useMenuPermissions();
     const { canAction: canBookingAction } = useMenuPermissions('/booking');
-    //#endregion
 
-    //#region INIT
-
-    // Clear all state when project changes
     useEffect(() => {
 
         setActiveTab('Grid');
@@ -147,6 +128,7 @@ const Inventory = () => {
             // Close all modals and dialogs
             setIsAddBuildingModalOpen(false);
             setIsAddWingModalOpen(false);
+            setIsEditWingModalOpen(false);
             setIsConfirmationDialogOpen(false);
             setIsDeleteWingDialogOpen(false);
             setIsDeleteBuildingDialogOpen(false);
@@ -169,6 +151,8 @@ const Inventory = () => {
 
             // Clear search
             setSearchTerm('');
+            setSelectedStatus('');
+            setErrorNewWingNameEmpty('');
             setActiveTab('Grid');
             localStorage.removeItem('inventoryActiveTab');
             return;
@@ -184,6 +168,7 @@ const Inventory = () => {
         // Close all modals and dialogs
         setIsAddBuildingModalOpen(false);
         setIsAddWingModalOpen(false);
+        setIsEditWingModalOpen(false);
         setIsConfirmationDialogOpen(false);
         setIsDeleteWingDialogOpen(false);
         setIsDeleteBuildingDialogOpen(false);
@@ -206,6 +191,8 @@ const Inventory = () => {
 
         // Clear search
         setSearchTerm('');
+        setSelectedStatus('');
+        setErrorNewWingNameEmpty('');
 
     }, [projectId])
 
@@ -218,27 +205,39 @@ const Inventory = () => {
     }, [projectId,])
 
     useEffect(() => {
+
         if (!projectId) return;
+
+        const savedBuildingId = sessionStorage.getItem("selectedBuildingId");
 
         if (inventory.length > 0 && selectedBuildingIndex === null) {
 
-            setSelectedBuilding(inventory[0].InventoryFlatFloorBasementPodiumWingData);
-            setSelectedBuildingIndex(0);
+            const foundIndex = inventory.findIndex(b => b.InventoryBuildingId === Number(savedBuildingId));
 
-            // Try to restore saved wing selection
+            const buildingIndex = foundIndex >= 0 ? foundIndex : 0;
+
+            setSelectedBuilding(inventory[buildingIndex].InventoryFlatFloorBasementPodiumWingData);
+
+            setSelectedBuildingIndex(buildingIndex ?? 0);
+
             const savedWingName = localStorage.getItem(`inventorySelectedWing_${projectId}`);
+
             if (savedWingName && inventory[0].InventoryFlatFloorBasementPodiumWingData) {
-                const savedWing = inventory[0].InventoryFlatFloorBasementPodiumWingData.find(
-                    w => w.Wing === savedWingName
-                );
+
+                const savedWing = inventory[0].InventoryFlatFloorBasementPodiumWingData.find(w => w.Wing === savedWingName);
+
                 if (savedWing) {
-                    const wingIndex = inventory[0].InventoryFlatFloorBasementPodiumWingData.findIndex(
-                        w => w.Wing === savedWingName
-                    );
+
+                    const wingIndex = inventory[0].InventoryFlatFloorBasementPodiumWingData.findIndex(w => w.Wing === savedWingName);
+
                     setSelectedWing(savedWing);
+
                     setActiveWingTab(String(wingIndex));
+
                 } else {
+
                     setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0]);
+
                 }
             } else {
                 setSelectedWing(inventory[0].InventoryFlatFloorBasementPodiumWingData[0]);
@@ -247,8 +246,6 @@ const Inventory = () => {
         }
     }, [projectId, inventory.length]);
 
-    // Update selected building data when inventory changes (for refresh after delete)
-    // Maintains the currently selected wing after any operations
     useEffect(() => {
 
         if (inventory.length > 0 && selectedBuildingIndex !== null && projectId) {
@@ -307,11 +304,6 @@ const Inventory = () => {
     }, [inventory, selectedBuildingIndex, projectId]);
 
 
-
-    //#endregion
-
-    //#region DATA LOADING | FETCH |  LOAD | SEARCH 
-
     const fetchInventory = useCallback(async () => {
         setIsInventoryAvailable(false)
         await runApiWithLoader(
@@ -346,9 +338,6 @@ const Inventory = () => {
         )
     }, [projectId, addToast]);
 
-    //#endregion
-
-    //#region EXPORT EXCEL | PDF
     const handleExportInventory = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -362,7 +351,9 @@ const Inventory = () => {
 
                 const response = await inventoryService.apiCallpullInventory(params);
 
-                handleExportFile(response, exportType, 'Inventory', addToast)
+                const projectName=(LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).find(p => p.ProjectId === Number(projectId))?.ProjectName || "";
+
+                handleExportFile(response, exportType, 'Inventory '+projectName, addToast)
 
                 return response;
             },
@@ -378,21 +369,17 @@ const Inventory = () => {
     const handleExportInventoryExcel = () => handleExportInventory('Excel')
     const handleExportInventoryPdf = () => handleExportInventory('PDF')
 
-    //#endregion
-
-    //#region COUNT INVENTORY FLAT STATUS
-    //#region COUNT INVENTORY FLAT STATUS
 
     const building =
         selectedBuildingIndex !== null && inventory[selectedBuildingIndex]
             ? inventory[selectedBuildingIndex]
             : undefined;
 
-    const availableFlatsCount = useMemo(
-        () =>
-            building
-                ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Available")
-                : 0,
+    const totalFlatsCount = useMemo(() => building ? countFlatsByStatus(inventory, building.InventoryBuildingId, "") : 0,
+        [inventory, building]
+    );
+
+    const availableFlatsCount = useMemo(() => building ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Available") : 0,
         [inventory, building]
     );
 
@@ -407,7 +394,7 @@ const Inventory = () => {
     const memberFlatsCount = useMemo(
         () =>
             building
-                ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Member")
+                ? countFlatsByStatus(inventory, building.InventoryBuildingId, "Alloted")
                 : 0,
         [inventory, building]
     );
@@ -428,18 +415,13 @@ const Inventory = () => {
         [inventory, building]
     );
 
-    //#endregion
-    //#endregion
-
-    //#region COUNT WING WISE FLAT STATUS
+    const selectedWingTotalCount = useMemo(() => countWingWiseFlatStatus(selectedWing, ""), [selectedWing]);
     const selectedWingAvailableCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Available"), [selectedWing]);
     const selectedWingBookedCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Booked"), [selectedWing]);
-    const selectedWingMemberCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Member"), [selectedWing]);
+    const selectedWingMemberCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Alloted"), [selectedWing]);
     const selectedWingBlockedCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Blocked"), [selectedWing]);
     const selectedWingHoldCount = useMemo(() => countWingWiseFlatStatus(selectedWing, "Hold"), [selectedWing]);
-    //#endregion
 
-    //#region DELETE FLAT
     const handleDeleteFlat = useCallback((flat: InventoryFlatData) => {
         setSelectedFlatToDelete(flat);
         setIsConfirmationDialogOpen(true);
@@ -467,7 +449,9 @@ const Inventory = () => {
 
                     return await inventoryService.apiCallDeleteInventoryFlat(params);
                 },
+
                 undefined,
+
                 (error: any) => {
                     addToast({ type: 'error', title: error?.message });
                 },
@@ -503,10 +487,6 @@ const Inventory = () => {
             setIsDeleting(false);
         }
     }, [selectedFlatToDelete, projectId, addToast, fetchInventory]);
-
-    //#endregion
-
-    //#region IMPORT EXCEL | DOWNLOAD
 
     const downloadExcelSampleInventory = async () => {
         await runApiWithLoader(
@@ -637,10 +617,8 @@ const Inventory = () => {
         const numWings = parseInt(value, 10) || 0;
 
         if (numWings > 0) {
-            // Get the starting letter for this building
             const startCharCode = getNextAvailableWingLetter();
 
-            // Generate wing letters starting from the next available letter
             const wings = Array.from({ length: numWings }, (_, i) => {
                 const wingLetter = String.fromCharCode(startCharCode + i);
                 return {
@@ -737,7 +715,7 @@ const Inventory = () => {
 
                     setIsAddBuildingModalOpen(false);
 
-                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+                    addToast({ type: 'success', title: "Building Data added successfully"});
 
                     await fetchInventory();
 
@@ -757,36 +735,53 @@ const Inventory = () => {
         );
     };
 
-    //#endregion
-
-    //#region ADD WING HANDLERS
-
     const getNextAvailableWingLetterForBuilding = useCallback((buildingId: number) => {
-        // Find the selected building
-        const building = inventory.find(b => b.InventoryBuildingId === buildingId);
-        if (!building) {
-            return 'A'; // Default to A if building not found
+
+        const existingWingLetters = new Set<string>();
+
+        if (buildingId === 0) {
+
+            inventory.forEach(building => {
+
+                building.InventoryFlatFloorBasementPodiumWingData?.forEach(wing => {
+
+                    if (wing.Wing && wing.Wing.length === 1) {
+
+                        existingWingLetters.add(wing.Wing.toUpperCase());
+                    }
+                });
+            });
+
+        } else {
+
+            const building = inventory.find(b => b.InventoryBuildingId === buildingId);
+
+            if (!building) {
+                return 'A';
+            }
+
+            building.InventoryFlatFloorBasementPodiumWingData?.forEach(wing => {
+
+                if (wing.Wing && wing.Wing.length === 1) {
+
+                    existingWingLetters.add(wing.Wing.toUpperCase());
+                }
+            });
         }
 
-        // Get all existing wing letters for this building
-        const existingWingLetters = new Set<string>();
-        building.InventoryFlatFloorBasementPodiumWingData?.forEach(wing => {
-            if (wing.Wing && wing.Wing.length === 1) {
-                existingWingLetters.add(wing.Wing.toUpperCase());
-            }
-        });
+        let maxCharCode = 64;
 
-        // Find the highest wing letter for this building
-        let maxCharCode = 64; // Start before 'A' (65)
         existingWingLetters.forEach(letter => {
+
             const charCode = letter.charCodeAt(0);
+
             if (charCode > maxCharCode) {
                 maxCharCode = charCode;
             }
         });
 
-        // Return the next available letter for this building
         return String.fromCharCode(maxCharCode + 1);
+
     }, [inventory]);
 
     const handleOpenAddWingModal = () => {
@@ -830,7 +825,7 @@ const Inventory = () => {
         }
 
         const selectedBuildingData = inventory[selectedBuildingIndex];
-        const nextWingLetter = getNextAvailableWingLetterForBuilding(selectedBuildingData.InventoryBuildingId);
+        const nextWingLetter = getNextAvailableWingLetterForBuilding(0);
 
         const params: AddInventoryWingRequest = {
             ProjectId: projectId,
@@ -924,9 +919,62 @@ const Inventory = () => {
         );
     };
 
-    //#endregion
+    const handleEditWing = (wing: InventoryFlatFloorBasementPodiumWingData) => {
+        setWingToEdit(wing);
+        setNewWingName("");
+        setErrorNewWingNameEmpty('');
+        setIsEditWingModalOpen(true);
+    };
 
-    //#region DELETE HANDLERS
+    const handleUpdateWing = async (e?: React.FormEvent) => {
+
+        e?.preventDefault();
+
+        if (!wingToEdit || !projectId) {
+            return;
+        }
+        if (!newWingName.trim()) {
+
+            setErrorNewWingNameEmpty('New Wing Name is required');
+
+            return;
+        }
+
+        const params: UpdateInventoryWingRequest = {
+            ProjectId: projectId,
+            InventoryBuildingId: wingToEdit.InventoryBuildingId,
+            InventoryFlatFloorBasementPodiumWingId: wingToEdit.InventoryFlatFloorBasementPodiumWingId,
+            Wing: newWingName ?? "",
+            OldWing: wingToEdit.Wing
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const response = await inventoryService.apiCallUpdateInventoryWing(params);
+
+                if (E.isRight(response)) {
+
+                    setIsEditWingModalOpen(false);
+                    setWingToEdit(null);
+                    addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
+                    await fetchInventory();
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error?.message });
+            },
+            undefined,
+            'Rename Wing Name'
+        );
+    };
 
     const handleDeleteWing = (wing: InventoryFlatFloorBasementPodiumWingData) => {
         setWingToDelete(wing);
@@ -1004,7 +1052,7 @@ const Inventory = () => {
                     setSelectedBuildingIndex(null);
 
                     setSelectedBuilding(undefined);
-                    
+
                     setSelectedWing(undefined);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage?.[0] });
@@ -1071,9 +1119,6 @@ const Inventory = () => {
         );
     };
 
-    //#endregion
-
-    //#region SEARCH HANDLERS
 
     const handleSearchChange = (value: string) => {
         setSearchTerm(value);
@@ -1083,28 +1128,44 @@ const Inventory = () => {
         setSearchTerm('');
     };
 
-    // Filter flats based on search term for selected wing
     const getFilteredFloors = useMemo(() => {
+
         if (!selectedWing) {
             return [];
         }
 
-        if (!searchTerm.trim()) {
+        if (!searchTerm.trim() && !selectedStatus.trim()) {
             return selectedWing.InventoryFloorData || [];
         }
 
-        const searchLower = searchTerm.toLowerCase().trim();
+        let floors = selectedWing.InventoryFloorData || [];
 
-        return selectedWing.InventoryFloorData.map(floor => ({
-            ...floor,
-            InventoryFlatData: floor.InventoryFlatData?.filter(flat => {
-                const flatNumber = flat.Flat?.toLowerCase() || '';
-                return flatNumber.includes(searchLower);
-            }) || []
-        }));
-    }, [selectedWing, searchTerm]);
+        return floors
+            .map(floor => ({
 
-    // Flatten floors and flats for table view
+                ...floor,
+
+                InventoryFlatData:
+                    (floor.InventoryFlatData || []).filter(flat => {
+
+                        const flatNumber = flat.Flat?.toLowerCase() || '';
+
+                        const flatStatus = flat.FlatStatus?.toLowerCase() || '';
+
+                        const searchLower = searchTerm.toLowerCase().trim();
+
+                        const matchesSearch = !searchTerm || flatNumber.includes(searchLower);
+
+                        const matchesStatus = !selectedStatus || flatStatus === selectedStatus.toLowerCase();
+
+                        return matchesSearch && matchesStatus;
+                    })
+
+            }))
+            .filter(floor => floor.InventoryFlatData.length > 0);
+
+    }, [selectedWing, searchTerm, selectedStatus]);
+
     const tableData = useMemo(() => {
 
         if (!selectedWing) {
@@ -1155,7 +1216,7 @@ const Inventory = () => {
         {
             key: 'Flat',
             label: 'Unit Number',
-            width: '150px',
+            width: '200px',
             sortable: false,
         },
         {
@@ -1285,12 +1346,6 @@ const Inventory = () => {
         },
     ], [inventory, navigate, handleDeleteFlat, selectedWing, canAction]);
 
-    //#endregion
-
-
-    //#endregion
-
-    //#region APPROVAL LOG HISTORY
     const handleApprovalLog = () => {
 
         if (selectedBuildingIndex === null || !selectedWing) return;
@@ -1377,7 +1432,37 @@ const Inventory = () => {
                 : "Rejecting Inventory"
         );
     };
-    //#endregion
+
+    useLayoutEffect(() => {
+
+        const floorId = sessionStorage.getItem("scrollFloorId");
+
+        if (!floorId) return;
+
+        let retry = 0;
+
+        const scrollToElement = () => {
+
+            const element = document.getElementById(`floor-${floorId}`);
+
+            if (element) {
+
+                element.scrollIntoView({
+                    behavior: "smooth",
+                    block: "center",
+                });
+
+                sessionStorage.removeItem("scrollFloorId");
+
+            } else if (retry < 15) {
+                retry++;
+                setTimeout(scrollToElement, 200);
+            }
+        };
+
+        scrollToElement();
+    }, [inventory]);
+
     return (
         <>
             <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>
@@ -1410,6 +1495,8 @@ const Inventory = () => {
                         canAction={canAction}
                         selectedBuildingIndex={selectedBuildingIndex}
                         onBuildingSelect={(index) => {
+
+                            sessionStorage.setItem("selectedBuildingId", inventory[index].InventoryBuildingId.toString());
                             setSelectedBuilding(inventory[index].InventoryFlatFloorBasementPodiumWingData);
                             setSelectedBuildingIndex(index);
                             setSelectedWing(inventory[index].InventoryFlatFloorBasementPodiumWingData[0]);
@@ -1419,6 +1506,7 @@ const Inventory = () => {
                     />
                     <div className="pt-3">
                         <StatusCounters
+                            totalCount={totalFlatsCount}
                             availableCount={availableFlatsCount}
                             holdCount={holdFlatsCount}
                             memberCount={memberFlatsCount}
@@ -1451,6 +1539,7 @@ const Inventory = () => {
                                                 localStorage.setItem(`inventorySelectedWing_${projectId}`, newWing.Wing);
                                             }
                                         }}
+                                        onEditWing={handleEditWing}
                                         onDeleteWing={handleDeleteWing}
                                         approvalStatus={selectedWing?.ApprovalStatus}
                                     />
@@ -1468,11 +1557,14 @@ const Inventory = () => {
 
                         <div className="flex items-center justify-between pt-2">
                             <StatusCounters
+                                totalCount={selectedWingTotalCount}
                                 availableCount={selectedWingAvailableCount}
                                 holdCount={selectedWingHoldCount}
                                 memberCount={selectedWingMemberCount}
                                 bookedCount={selectedWingBookedCount}
                                 blockedCount={selectedWingBlockedCount}
+                                selectedStatus={selectedStatus}
+                                onStatusClick={(status) => setSelectedStatus(status)}
                             />
 
                             {selectedWing?.ApprovalStatus && (
@@ -1555,7 +1647,6 @@ const Inventory = () => {
                 message={`Are you sure you want to delete unit "${selectedFlatToDelete?.Flat}"? This action cannot be undone.`}
             />
 
-            {/* Add Building Modal */}
             <Modal
                 isOpen={isAddBuildingModalOpen}
                 onClose={() => {
@@ -1667,7 +1758,7 @@ const Inventory = () => {
                 </div>
             </Modal>
 
-            {/* Add Wing Modal */}
+
             <Modal
                 isOpen={isAddWingModalOpen}
                 onClose={() => {
@@ -1728,7 +1819,6 @@ const Inventory = () => {
                 </div>
             </Modal>
 
-            {/* Delete Wing Confirmation Dialog */}
             <DeleteDialog
                 isOpen={isDeleteWingDialogOpen}
                 onClose={() => {
@@ -1754,7 +1844,6 @@ const Inventory = () => {
                 message={`Are you sure you want to delete building "${buildingToDelete?.BuildingNumber}"? This action cannot be undone.`}
             />
 
-            {/* Delete Floor Confirmation Dialog */}
             <DeleteDialog
                 isOpen={isDeleteFloorDialogOpen}
                 onClose={() => {
@@ -1766,7 +1855,6 @@ const Inventory = () => {
                 pageName="floor"
                 message={`Are you sure you want to delete floor "${floorToDelete?.floor.Floor}"? This action cannot be undone.`}
             />
-            {/* Approval Log History */}
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
                 title="Inventory"
@@ -1776,7 +1864,6 @@ const Inventory = () => {
                 request={approvalLogRequest}
             />
 
-            {/* Approval Action Modal */}
             <ApprovalActionModal
                 title="Inventory"
                 isOpen={isApprovalActionModalOpen}
@@ -1787,6 +1874,54 @@ const Inventory = () => {
                 onSubmit={handleApprovalSubmit}
                 loading={isLoading}
             />
+
+            <Modal
+                isOpen={isEditWingModalOpen}
+                onClose={() => {
+                    setIsEditWingModalOpen(false);
+                    setErrorNewWingNameEmpty('');
+
+                }}
+                title="Rename Wing"
+                onSubmit={handleUpdateWing}
+                saveText="Update"
+                onCancel={() => {
+                    setIsEditWingModalOpen(false);
+                    setErrorNewWingNameEmpty('');
+                }}
+                size="md"
+                loading={isLoading}
+            >
+                <div className="space-y-4">
+                    <div>
+                        <Input
+                            label="Old Wing Name"
+                            value={wingToEdit?.Wing}
+                            disabled
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            label="New Wing Name"
+                            value={newWingName}
+                            onChange={(e) => {
+
+                                setNewWingName(e.target.value);
+
+                                if (e.target.value.trim()) {
+                                    setErrorNewWingNameEmpty('');
+                                }
+                            }}
+                            placeholder="Enter New Wing Name"
+                            required
+                            maxLength={15}
+                            error={errorNewWingNameEmpty}
+
+                        />
+                    </div>
+
+                </div>
+            </Modal>
         </>
     )
 }

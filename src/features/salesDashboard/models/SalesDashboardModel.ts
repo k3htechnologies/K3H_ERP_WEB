@@ -7,8 +7,10 @@ export interface SalesDashboardDataset {
 }
 
 export interface Table0 {
-     SystemGeneratedCode: string | null
+    SystemGeneratedCode: string | null
     ProjectName: string | null
+    ProjectId: number | 0
+    MobileNumberCountryCode: string | null
     MobileNumber: string | null
     Name: string | null
     EnquiryDate: string | null
@@ -22,6 +24,8 @@ export interface Table0 {
 export interface Table1 {
     SystemGeneratedCode: string | null
     ProjectName: string | null
+    ProjectId: number | 0
+    MobileNumberCountryCode: string | null
     MobileNumber: string | null
     Name: string | null
     EnquiryFollowUpDays: string | null

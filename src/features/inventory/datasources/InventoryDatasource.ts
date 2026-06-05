@@ -115,10 +115,10 @@ export class InventoryDatasourceImpl implements InventoryDatasource {
                 PageSize: (params.PageSize ?? 0).toString(),
                 PageNumber: (params.PageNumber ?? 0).toString(),
                 ProjectId: (params.ProjectId ?? 0).toString(),
-                InventoryFlatId: (params.InventoryFlatId ?? 0).toString(),
-                RERACarpetAreaSqFt: (params.RERACarpetAreaSqFt ?? 0).toString(),
             });
 
+            if (params.InventoryFlatId) queryParams.append("InventoryFlatId", params.InventoryFlatId.toString());
+            if (params.RERACarpetAreaSqFt) queryParams.append("RERACarpetAreaSqFt", params.RERACarpetAreaSqFt.toString());
             if (params.BuildingNumber) queryParams.append('BuildingNumber', params.BuildingNumber);
             if (params.Wing) queryParams.append('Wing', params.Wing);
             if (params.Floor) queryParams.append('Floor', params.Floor);

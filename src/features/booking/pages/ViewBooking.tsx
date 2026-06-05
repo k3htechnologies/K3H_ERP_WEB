@@ -20,6 +20,7 @@ import RichTextEditor from '@/ui/components/forms/RichTextEditor';
 import { handleExportFile } from '@/core/utils/exportFile';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { formatCurrency, getSafeString } from '@/core/utils/comman';
+import { FileText } from 'lucide-react';
 
 export const ViewBooking: React.FC = () => {
 
@@ -34,17 +35,11 @@ export const ViewBooking: React.FC = () => {
     const location = useLocation();
     const { projectId } = useProject();
 
-    // Track source page for navigation back
     const sourcePage = (location.state as any)?.sourcePage || 'booking';
 
-    //#region BOOKING LIST STATE CONTEXT
     const { listState } = useBookingListState();
     const { bookingId, bookingName } = listState;
-    //#endregion
 
-    //#endregion
-
-    //#region TAB ACTIVITY
     const bookingTabList = [
         { id: 'Overview', label: 'Overview' },
         { id: 'Applicants', label: 'Applicants' },
@@ -53,19 +48,13 @@ export const ViewBooking: React.FC = () => {
     ];
 
     const [activeTab, setActiveTab] = useState<string>(bookingTabList[0].id);
-    //#endregion
-
-    //#region INIT
+    
     useEffect(() => {
         if (!projectId || !bookingId) return;
 
         loadBookingFromServer();
 
     }, [projectId, bookingId]);
-
-    //#endregion
-
-    //#region DATA LOAD OVERVIEW
 
     const fetchEnquiryDetails = async (enquiryIdToFetch: number) => {
 
@@ -132,7 +121,6 @@ export const ViewBooking: React.FC = () => {
                     if (booking?.EnquiryId && booking.EnquiryId > 0) {
 
                         await fetchEnquiryDetails(booking.EnquiryId);
-
                     }
 
                 } else {
@@ -238,7 +226,7 @@ export const ViewBooking: React.FC = () => {
 
                 width: "20",
                 align: "right",
-                render: (value) => value || "-",
+                render: (value) => formatCurrency(value) || "0",
             },
             {
                 key: "PaymentScheduleGSTAmount",
@@ -247,7 +235,7 @@ export const ViewBooking: React.FC = () => {
                 width: "20",
                 sortable: false,
                 align: "right",
-                render: (value) => value || "-",
+                render: (value) => formatCurrency(value) || "0",
             },
             {
                 key: "PaymentScheduleTDSAmount",
@@ -256,7 +244,7 @@ export const ViewBooking: React.FC = () => {
                 width: "20",
                 sortable: false,
                 align: "right",
-                render: (value) => value || "-",
+                render: (value) => formatCurrency(value) || "0",
             },
 
         ],
@@ -285,7 +273,7 @@ export const ViewBooking: React.FC = () => {
                 label: "Value (₹)",
                 sortable: false,
                 align: "right",
-                render: (value) => value || "-",
+                render: (value) => formatCurrency(value) || "0",
             },
             {
                 key: "GSTPercentage",
@@ -299,7 +287,7 @@ export const ViewBooking: React.FC = () => {
                 label: "GST Value (₹)",
                 sortable: false,
                 align: "right",
-                render: (value) => value || "-",
+                render: (value) => formatCurrency(value) || "0",
             },
         ],
         [],
@@ -340,6 +328,8 @@ export const ViewBooking: React.FC = () => {
                 canAction={canAction && !bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") && sourcePage === 'booking' ? true : false}
                 onEdit={() => navigate('/booking/add')}
 
+                ExtraButtontitleText="PDF"
+                ExtraButtontitleTextIcon={FileText}
                 ExtraButtonText="Generate"
                 onExtraButton={() => handleExportBookings("BOOKING FORM PDF")}
                 canActionExtraButtonText={bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false}
@@ -378,7 +368,7 @@ export const ViewBooking: React.FC = () => {
 
                                         <FieldItem label="Name" value={editEnquiryData?.Name || '-'} />
 
-                                        <FieldItem label="Mobile No:" value={getSafeString(editEnquiryData?.MobileNumber) ? `+91 ${editEnquiryData?.MobileNumber}` : '-'} />
+                                        <FieldItem label="Mobile No:" value={getSafeString(editEnquiryData?.MobileNumber) ? `${editEnquiryData?.MobileNumberCountryCode || "+91"} ${editEnquiryData?.MobileNumber}` : '-'} />
 
                                         <FieldItem label="Source" value={editEnquiryData?.Source || '-'} />
 
@@ -443,11 +433,13 @@ export const ViewBooking: React.FC = () => {
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg shadow-sm border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
 
-                                            <FieldItem label="Channel Partner" value={editEnquiryData?.ChannelPartnerName || '-'} />
-                                            <FieldItem label="CP Mobile" value={editEnquiryData?.ChannelPartnerMobileNumber ? `+91 ${editEnquiryData?.ChannelPartnerMobileNumber}` : '-'} />
-                                            <FieldItem label="CP Team Member" value={editEnquiryData?.ChannelPartnerTeamMemberName || '-'} />
-                                            <FieldItem label="CP Team Mobile" value={editEnquiryData?.ChannelPartnerTeamMemberMobileNumber || '-'} />
-
+                                            <FieldItem label="CP Code" value={editEnquiryData?.ChannelPartnerCode || '-'} />
+                                            <FieldItem label="CP Name" value={editEnquiryData?.ChannelPartnerName || '-'} />
+                                            <FieldItem label="CP Mobile Number" value={editEnquiryData?.ChannelPartnerMobileNumber ? `${editEnquiryData?.ChannelPartnerMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerMobileNumber}` : '-'} />
+                                            <FieldItem label="CP E-Mail ID" value={editEnquiryData?.EmailId || '-'} />
+                                            <FieldItem label="CP Team Member Name" value={editEnquiryData?.ChannelPartnerTeamMemberName || '-'} />
+                                            <FieldItem label="CP Team Mobile Number" value={editEnquiryData?.ChannelPartnerTeamMemberMobileNumber ? `${editEnquiryData?.ChannelPartnerTeamMemberMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerTeamMemberMobileNumber}` : '-'} />
+                                            
                                         </div>
                                     </div>
                                 )}
@@ -468,7 +460,8 @@ export const ViewBooking: React.FC = () => {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
                                                     <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                    <FieldItem label="Mobile Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
+                                                    
+                                                    <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
                                                     <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
                                                     <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
                                                     <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
@@ -477,12 +470,12 @@ export const ViewBooking: React.FC = () => {
                                                     <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
                                                     <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
                                                     <FieldItem label="Cancelled Cheque" value="" urls={applicant?.CancelledChequeURL} isIcon />
-                                                    <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon  />
-                                                    <FieldItem label="Income Docs (Form 16 / ITR)" value=""  urls={applicant?.IncomeForm16ITRURL}  isIcon />
-                                                    <FieldItem label="NRE / NRO Bank Details"  value=""  urls={applicant?.NreNroBankDetailsURL} isIcon />
+                                                    <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon />
+                                                    <FieldItem label="Income Docs (Form 16 / ITR)" value="" urls={applicant?.IncomeForm16ITRURL} isIcon />
+                                                    <FieldItem label="NRE / NRO Bank Details" value="" urls={applicant?.NreNroBankDetailsURL} isIcon />
                                                     <FieldItem label="Nominee Form" value="" urls={applicant?.NomineeFormURL} isIcon />
-                                                    <FieldItem label="Statement of Source of Funds"  value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
-                                                    <FieldItem label="Payment Proof"  value="" urls={applicant?.PaymentProofURL} isIcon />
+                                                    <FieldItem label="Statement of Source of Funds" value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
+                                                    <FieldItem label="Payment Proof" value="" urls={applicant?.PaymentProofURL} isIcon />
 
                                                 </div>
                                             </div>
@@ -574,10 +567,12 @@ export const ViewBooking: React.FC = () => {
                                     </h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
                                         <FieldItem label="Expected Registration Date" value={bookingData.RegistrationDate ? formatDate_dd_MonthName_yy(bookingData.RegistrationDate) : '-'} />
+                                        <FieldItem label="Final Registration Date" value={bookingData.FinalRegistrationDate ? formatDate_dd_MonthName_yy(bookingData.FinalRegistrationDate) : '-'} />
                                         <FieldItem label="Handover Type" value={getSafeString(bookingData.HandoverType)} />
-                                        <FieldItem label="Source Of Funding" value={getSafeString(bookingData.SourceOfFunding)} />
+
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
+                                        <FieldItem label="Source Of Funding" value={getSafeString(bookingData.SourceOfFunding)} />
                                         <FieldItem label="Number Of Parking" value={getSafeString(bookingData.NumberOfParking)} />
                                     </div>
                                 </section>
@@ -711,8 +706,12 @@ export const ViewBooking: React.FC = () => {
                         </section>
 
                         <section className="bg-white rounded-xl pt-5">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Payment Schedule
+
+                            <h4 className="text-lg font-semibold text-gray-900  mb-4">
+                                Payment Schedule{" "}
+                                <span className="text-sm font-normal text-gray-500">
+                                    ({getSafeString(bookingData.PaymentScheduleScheme)})
+                                </span>
                             </h4>
 
                             <DataTable
@@ -828,7 +827,7 @@ export const ViewBooking: React.FC = () => {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
                                                     <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                    <FieldItem label="Mobile Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
+                                                    <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
                                                     <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
                                                     <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
                                                     <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
@@ -837,12 +836,12 @@ export const ViewBooking: React.FC = () => {
                                                     <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
                                                     <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
                                                     <FieldItem label="Cancelled Cheque" value="" urls={applicant?.CancelledChequeURL} isIcon />
-                                                    <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon  />
-                                                    <FieldItem label="Income Docs (Form 16 / ITR)" value=""  urls={applicant?.IncomeForm16ITRURL}  isIcon />
-                                                    <FieldItem label="NRE / NRO Bank Details"  value=""  urls={applicant?.NreNroBankDetailsURL} isIcon />
+                                                    <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon />
+                                                    <FieldItem label="Income Docs (Form 16 / ITR)" value="" urls={applicant?.IncomeForm16ITRURL} isIcon />
+                                                    <FieldItem label="NRE / NRO Bank Details" value="" urls={applicant?.NreNroBankDetailsURL} isIcon />
                                                     <FieldItem label="Nominee Form" value="" urls={applicant?.NomineeFormURL} isIcon />
-                                                    <FieldItem label="Statement of Source of Funds"  value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
-                                                    <FieldItem label="Payment Proof"  value="" urls={applicant?.PaymentProofURL} isIcon />
+                                                    <FieldItem label="Statement of Source of Funds" value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
+                                                    <FieldItem label="Payment Proof" value="" urls={applicant?.PaymentProofURL} isIcon />
                                                 </div>
                                             </div>
                                         ))

@@ -3,6 +3,7 @@ import { DataTable, type PaginationInfo, type SortInfo, type TableColumn } from 
 import { Button } from '@/ui/components/forms';
 import { Trash2 } from 'lucide-react';
 import type { OtherChargesData } from '@/features/otherCharges/models/OtherChargesModel';
+import { formatCurrency } from '@/core/utils/comman';
 
 interface OtherChargesTableProps {
   data: OtherChargesData[];
@@ -73,7 +74,7 @@ export const OtherChargesTable: React.FC<OtherChargesTableProps> = ({
       if (col.key === 'Value') {
         return {
           ...col,
-          render: (value: number) => (value ? `₹ ${value}` : '-')
+          render: (value: number) => formatCurrency(value)?? '0'
         };
       }
 
@@ -94,7 +95,7 @@ export const OtherChargesTable: React.FC<OtherChargesTableProps> = ({
       if (col.key === 'GSTValue') {
         return {
           ...col,
-          render: (value: number) => (value ? `₹ ${value}` : '-')
+          render: (value: number) => formatCurrency(value)?? '0'
         };
       }
 
@@ -103,7 +104,7 @@ export const OtherChargesTable: React.FC<OtherChargesTableProps> = ({
           ...col,
           render: (_value, row: OtherChargesData) => (
             <span>
-              ₹ {(Number(row.Value || 0) + Number(row.GSTValue || 0)).toFixed(2)}
+              {formatCurrency(Number(row.Value || 0) + Number(row.GSTValue || 0))}
             </span>
           )
         };

@@ -41,6 +41,9 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
     const [, setLoadingMessage] = useState('');
 
     const handleAddFlat = () => {
+
+        sessionStorage.setItem("scrollFloorId", floor.InventoryFloorId.toString());
+
         const newFlatData = {
             InventoryFlatId: 0,
             Uniquekey: '',
@@ -72,7 +75,9 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
         });
     };
 
+
     const handleParkingClick = (e: React.MouseEvent) => {
+        sessionStorage.setItem("scrollFloorId", floor.InventoryFloorId.toString());
         e.stopPropagation();
         if (canAction && !approvalStatus?.toUpperCase().includes("APPROVED")) {
             setIsParkingModalOpen(true);
@@ -135,6 +140,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
 
     return (
         <div className="pt-2">
+            <div id={`floor-${floor.InventoryFloorId}`}>
             <ExpandableCard
                 key={floor.InventoryFloorId}
                 title={floor.Floor}
@@ -184,24 +190,25 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                 child={
                     <div className="flex flex-1 gap-5 thin-scroll">
                         {floor.InventoryFlatData?.map((flat, flatIndex) => (
-                            <FlatCard
-                                key={flatIndex}
-                                flat={flat}
-                                projectId={projectId}
-                                onDelete={onDelete}
-                                wing={wing.Wing}
-                                floor={floor.Floor}
-                                buildingNumber={building?.BuildingNumber ?? ""}
-                                canAction={canAction}
-                                canBookingAction={canBookingAction}
-                                approvalStatus={approvalStatus}
-                            />
+                            
+                                <FlatCard
+                                    key={flatIndex}
+                                    flat={flat}
+                                    projectId={projectId}
+                                    onDelete={onDelete}
+                                    wing={wing.Wing}
+                                    floor={floor.Floor}
+                                    buildingNumber={building?.BuildingNumber ?? ""}
+                                    canAction={canAction}
+                                    canBookingAction={canBookingAction}
+                                    approvalStatus={approvalStatus}
+                                />
+                            
                         ))}
                     </div>
                 }
             />
 
-            {/* Parking Count Update Modal */}
             <Modal
                 isOpen={isParkingModalOpen}
                 onClose={() => {
@@ -232,6 +239,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                     />
                 </div>
             </Modal>
+            </div>
         </div>
     );
 };

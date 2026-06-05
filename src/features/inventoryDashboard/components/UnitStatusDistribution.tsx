@@ -3,9 +3,10 @@ import type { Table0 } from "@/features/inventoryDashboard/models/InventoryDashb
 
 interface Props {
   overViewData: Table0[];
+  onOpenModal: (type: string, cardName: string, flatStatus: string, data: any) => void;
 }
 
-export default function UnitStatusDistribution({ overViewData }: Props) {
+export default function UnitStatusDistribution({ overViewData, onOpenModal }: Props) {
 
   const data = overViewData[0] || {};
 
@@ -48,22 +49,21 @@ export default function UnitStatusDistribution({ overViewData }: Props) {
             </Pie>
           </PieChart>
 
-          {/* Center Text */}
           <div className="absolute top-1/2 -translate-y-1/2 text-center">
             <p className="text-xs text-gray-500">Total Units</p>
             <p className="text-xl font-semibold">{data.TotalFlats ?? 0}</p>
           </div>
         </div>
 
-        {/* Bottom Cards */}
+
         <div className="grid grid-cols-2 gap-3 mt-4">
 
-          <Card title="Total Units" value={data.TotalFlats} color="text-black-500" />
-          <Card title="Member Units" value={data.AllotedFlats} color="text-purple-500" />
-          <Card title="Booked Units" value={data.BookedFlats} color="text-red-500" />
-          <Card title="Blocked Units" value={data.BlockedFlats} color="text-gray-900" />
-          <Card title="Hold Units" value={data.HoldFlats} color="text-yellow-500" />
-          <Card title="Available Units" value={data.AvailableFlats} color="text-green-500" />
+          <Card title="Total Units" value={data.TotalFlats} color="text-black-500" onClick={() => onOpenModal("Inventory", "Total Units", "", data.TotalFlats || 0)} />
+          <Card title="Member Units" value={data.AllotedFlats} color="text-purple-500" onClick={() => onOpenModal("Inventory", "Member Units", "Alloted", data.AllotedFlats|| 0)} />
+          <Card title="Booked Units" value={data.BookedFlats} color="text-red-500" onClick={() => onOpenModal("Inventory", "Booked Units", "Booked", data.BookedFlats || 0)} />
+          <Card title="Blocked Units" value={data.BlockedFlats} color="text-gray-900" onClick={() => onOpenModal("Inventory", "Blocked Units", "Blocked", data.BlockedFlats || 0)} />
+          <Card title="Hold Units" value={data.HoldFlats} color="text-yellow-500" onClick={() => onOpenModal("Inventory", "Hold Units", "Hold", data.HoldFlats || 0)} />
+          <Card title="Available Units" value={data.AvailableFlats} color="text-green-500" onClick={() => onOpenModal("Inventory", "Available Units", "Available", data.AvailableFlats || 0)} />
 
         </div>
       </div>
@@ -71,10 +71,13 @@ export default function UnitStatusDistribution({ overViewData }: Props) {
   );
 }
 
-/* Small Card Component */
-function Card({ title, value, color }: any) {
+function Card({ title, value, color, onClick }: any) {
+  const isDisabled = !value || value === 0;
   return (
-    <div className="bg-gray-50 rounded-lg p-3">
+    <div
+      onClick={!isDisabled ? onClick : undefined}
+      className="bg-gray-50 rounded-lg p-3 cursor-pointer hover:shadow transition"
+    >
       <p className="text-xs text-gray-500">{title}</p>
       <p className={`text-lg font-semibold ${color}`}>{value ?? 0}</p>
     </div>

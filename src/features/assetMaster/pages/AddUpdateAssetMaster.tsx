@@ -422,7 +422,6 @@ export const AddUpdateAssetMaster: React.FC = () => {
                   availableFilesURL={assetInvoiceURL ?? ""}
                   allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                   maxFiles={5}
-                  maxSizeMB={10}
                   onRemoveExisting={(url) => {
                     setRemovedAssetInvoiceUrls((prev) => [...prev, url])
                   }}

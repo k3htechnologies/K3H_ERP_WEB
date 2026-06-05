@@ -72,8 +72,7 @@ const NewAddedChannelPartner: React.FC<Props> = ({ NewAddedChannelPartnerData })
     return (
         <div className="space-y-3 pt-5">
 
-            <h2 className="text-lg font-semibold text-gray-800">Recently Added Channel Partner <span className="text-sm">
-                (Last 7 Days)</span></h2>
+            <h2 className="text-lg font-semibold text-gray-800">Recently Added Channel Partner <span className="text-sm">(Last 7 Days)</span></h2>
 
             <div className="bg-white rounded-lg border border-gray-100  space-y-4 p-4 h-[300px] " style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 

@@ -10,6 +10,7 @@ export interface ExpandableCardProps {
   customizedIcon?: ReactNode;
   child: ReactNode;
   defaultOpen?: boolean;
+  onClick?: (isOpen: boolean) => void;
 }
 
 export const ExpandableCard: React.FC<ExpandableCardProps> = ({
@@ -19,17 +20,29 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   child,
   height = 50,
   expandedheight = 282,
-  defaultOpen = false
+  defaultOpen = false,
+  onClick,
 }) => {
   const [isExpandableOpen, setExpandableOpen] = useState(defaultOpen);
 
   return (
     <div className="bg-[#F9FAFB] border border-[#135BEC30] rounded-[10px] shadow-md">
-      <div className="flex items-center justify-between p-4 cursor-pointer" onClick={() => setExpandableOpen((prev) => !prev)} style={{ height: height }} >
+      <div className="flex items-center justify-between p-4 cursor-pointer"
+
+        onClick={() => {
+          const nextState = !isExpandableOpen;
+          setExpandableOpen(nextState);
+          if (onClick) {
+            onClick(nextState);
+          }
+        }}
+
+        style={{ height: height }} >
+          
         <span className="font-medium text-gray-800">{title}</span>
 
         <div className="flex items-center gap-2">
-          
+
           {customizedIcon && (
             <div className="flex items-center rounded-md">
               {customizedIcon}
@@ -53,7 +66,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       )}
 
       {isExpandableOpen && (
-        <div className="p-4 text-sm text-gray-600 min-h-[180px] overflow-y-auto scroll-smooth" style={{ maxHeight: expandedheight }}>
+        <div className="p-4 text-sm text-gray-600 min-h-[180px] overflow-y-auto thin-scroll scroll-smooth" style={{ maxHeight: expandedheight }}>
           {child}
         </div>
       )}

@@ -26,41 +26,34 @@ export const FieldItem: React.FC<{
   isSetValue = true,
 }) => {
 
-    // Check if value is a ReactNode (React element)
     const isReactNode = React.isValidElement(value);
 
-    const displayValue = value !== undefined && value !== null && value !== ''
-      ? (isReactNode ? value : String(value))
-      : '-';
+    const displayValue = value !== undefined && value !== null && value !== ''? (isReactNode ? value : String(value)) : '-';
       
     const borderClass = withBorder ? 'border-b border-[#135bec2e]' : '';
 
-    // parse urls (returns [])
     const imageUrls = parseDocumentUrls(urls);
     const hasDocs = imageUrls.length > 0 ? true : false;
 
     const rowGridStyle: React.CSSProperties = {
       display: 'grid',
       gridTemplateColumns: !isUsedForInventoryFlat ? '180px 16px 1fr' : '120px 16px 1fr',
-      // gap: 8,
       gap: !isUsedForInventoryFlat ? 8 : 4,
       alignItems: 'center',
       width: '100%',
     };
 
-
     // ROW layout: label : value
     if (isRow) {
       return (
         <div className={`${borderClass} ${!isUsedForInventoryFlat ? withBorder ? 'pb-5' :"" : 'py-0.1'}`}>
+
           <div style={rowGridStyle}>
 
-            {/* Label */}
-            <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+            <div className="text-sm font-medium text-[#1D1D1D80]">
               {label}
             </div>
-
-            {/* Colon */}
+            
             <div className="text-sm text-[#1D1D1D80] text-center select-none">:</div>
 
             <div className="text-sm text-[#1D1D1D] font-medium break-words min-w-0">
@@ -127,9 +120,7 @@ export const FieldItem: React.FC<{
             }
           />
         ) : isReactNode ? (
-          <div className="mt-1">
-            {displayValue}
-          </div>
+          <div className="mt-1"> {displayValue}</div>
         ) : (
           <span className={`mt-1 text-sm text-[#1D1D1D] font-medium break-words whitespace-pre-line ${className} min-w-0`}>
             {displayValue}

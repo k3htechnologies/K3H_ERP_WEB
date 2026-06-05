@@ -8,6 +8,7 @@ export interface FilterWithPaginationLitigationRequest {
     CaseNumber?: string
     Title?: string
     CourtName?: string
+    ProjectName?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -16,6 +17,7 @@ export interface LitigationData {
     LitigationId: number | 0
     Uniquekey: string | null
     ProjectId: number | 0
+    ProjectName?: string
     Title: string | ''
     CaseNumber: string | ''
     CaseType: string | ''

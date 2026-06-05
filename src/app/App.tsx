@@ -165,12 +165,32 @@ import ViewBrokerageInvoice from '@/features/brokerage/pages/ViewBrokerageInvoic
 import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageInvoice';
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
 import Terms from '@/features/Terms/pages/TermsAndCondition';
-import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
-import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
-import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
-import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
+import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
+import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
+import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
+import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
+import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
+import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
+import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
+import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/BookingBrokerageListStateContext';
+import { ChannelPartnerUniverseListStateProvider } from '@/features/channelPartnerUniverse/context/ChannelPartnerUniverseListStateContext';
+import ChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ChannelPartnerUniverse';
+import ViewChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ViewChannelPartnerUniverse';
+import CrmDashboard from '@/features/crmDashboard/pages/CrmDashboard';
+import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
+import AchievementReport from '@/features/achievement/pages/AchievementReport';
+import { PayTrackReportListStateProvider } from '@/features/crmPayTrackReport/context/PayTrackReportListStateContext';
+import PayTrackReport from '@/features/crmPayTrackReport/pages/PayTrackReport';
+import AddRefundDetails from '@/features/crmPayTrack/pages/AddRefundDetails';
+import Ticket from '@/features/ticket/pages/Ticket';
+import ViewTicket from '@/features/ticket/pages/ViewTicket';
+import { TicketListStateProvider } from '@/features/ticket/context/TicketListStateContext';
+import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
+import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
+import BudgetLevelMaster from '@/features/budgetLevelMaster/pages/BudgetLevelMaster';
+import Budget from '@/features/budget/pages/Budget';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -194,6 +214,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/sign-in" replace />
   }
 
+
   return <>{children}</>
 }
 
@@ -212,21 +233,14 @@ function App() {
   return (
     <CountryStateCityDistrictVillage>
       <Suspense fallback={<LoadingSpinner />}>
+
         <Routes>
           {/* Public Routes */}
+
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-          <Route path='Terms' element={<Terms />} />
-          <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
+          <Route path="/" element={<ProtectedRoute> <Layout /></ProtectedRoute>}>
 
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<Dashboard />} />
 
@@ -336,6 +350,7 @@ function App() {
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
+            <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
@@ -350,7 +365,13 @@ function App() {
 
             {/* COMMAN */}
             <Route path="event" element={<Event />} />
+            <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
+            <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
+            <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
 
+            <Route path='ticket' element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
+            <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
+            <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
 
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />
@@ -360,6 +381,9 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
+
+            <Route path="cpUniverse" element={<ChannelPartnerUniverseListStateProvider><ChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
+            <Route path="cpUniverse/view" element={<ChannelPartnerUniverseListStateProvider><ViewChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
 
             <Route path="sourcing" element={<ChannelPartnerSourcingListStateProvider><ChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
             <Route path="sourcing/view" element={<ChannelPartnerSourcingListStateProvider><ViewChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
@@ -387,6 +411,9 @@ function App() {
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
 
             <Route path="performance" element={<PerformanceReport />} />
+            <Route path="achievement" element={<AchievementReport />} />
+
+            <Route path='channelPartnerCategory' element={<ChannelPartnerCategory />} />
 
             <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
             <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
@@ -442,20 +469,29 @@ function App() {
             <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
             {/* CRM */}
-            {/* CRM */}
+            <Route path="crmDashboard" element={<CrmDashboard />} />
+            <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
+            <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
+            <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
+            <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
+            {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
 
-            <Route path="brokerage" element={<Brokerage />} />
-            <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
-            <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
-            <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
+            <Route path="brokerage" element={<BookingBrokerageListStateProvider><Brokerage /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/brokerageInvoice/view" element={<BookingBrokerageListStateProvider><ViewBrokerageInvoice /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/brokerageInvoice/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdateBrokerageInvoice /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/PaidBrokerageBooking/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdatePaidBrokerageBooking /></BookingBrokerageListStateProvider>} />
+
+            <Route path='budgetLevelMaster' element={<BudgetLevelMaster />} />
+            <Route path='budget' element={<Budget />} />
+
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 
           <Route path='Terms' element={<Terms />} />
-          <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
+          <Route path='Privacy-Policy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
-          
+
         </Routes>
       </Suspense>
     </CountryStateCityDistrictVillage>

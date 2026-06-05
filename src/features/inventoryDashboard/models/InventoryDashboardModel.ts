@@ -47,6 +47,7 @@ export interface Table3 {
 }
 
 export interface Table4 {
+  ProjectId: number | 0
   Building: string | null
   Wing: string | null
   Floors: number | 0

@@ -114,8 +114,8 @@ export const useDesignationMaster = () => {
 
   //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
-  const fetchDesignationMasterList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
-    return await loadDesignationMaster(page, filters, sort ?? sortInfo);
+  const fetchDesignationMasterList = async (page: number = pagination.currentPage, sort?: SortInfo, searchtext?: string) => {
+    return await loadDesignationMaster(page, filters, sort ?? sortInfo, searchtext);
   }
 
   const loadDesignationMaster = async (page: number, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string) => {
@@ -168,9 +168,7 @@ export const useDesignationMaster = () => {
     }
     await loadDesignationMaster(1, filters, sortInfo, searchValue)
   }
-  //#endregion
-
-  //#region CLEAR SEARCH DESIGNATION 
+  
   const clearsearchDesignationMaster = () => {
 
     debouncedSearch.cancel?.();
@@ -180,9 +178,7 @@ export const useDesignationMaster = () => {
     loadDesignationMaster(1, { DesignationName: '' }, sortInfo, undefined);
 
   }
-  //#endregion
-
-  //#region EXPORT EXCEL | PDF
+  
   const handleExportDesignationMaster = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -213,15 +209,12 @@ export const useDesignationMaster = () => {
 
   const handleExportDesignationExcel = () => handleExportDesignationMaster('Excel')
   const handleExportDesignationPdf = () => handleExportDesignationMaster('PDF')
-  //#endregion
 
-  //#region HANDLE PAGE CHANGE EVENT
-  const handlePageChange = (page: number) => {
-    fetchDesignationMasterList(page);
-  };
-  //#endregion
+  const handlePageChange = useCallback((page: number) => {
+    loadDesignationMaster(page, filters, sortInfo, searchTerm || undefined);
+  }, [sortInfo, searchTerm],
+  );
 
-  //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sort);
@@ -229,9 +222,7 @@ export const useDesignationMaster = () => {
     loadDesignationMaster(1, filters, sort, searchTerm || undefined);
 
   }, [filters, searchTerm]);
-  //#endregion
 
-  //#region CUSTOMIZE TABLE COLUMNS
   const requiredDesignationMasterColumnKeys: string[] = REQUIRED_COLUMN_KEYS;
 
   const allDesignationMasterColumnKeys: string[] = designationMasterColumns.map(c => c.key)

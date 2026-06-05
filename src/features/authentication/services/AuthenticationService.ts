@@ -33,10 +33,10 @@ export const authenticationService = {
         }
     },
 
-    apicallSendOTPMobileNumberAndModule: async (mobileNumber: string, module: string): Promise<E.Either<Failure, ApiResponse<string>>> => {
+    apicallSendOTPMobileNumberAndModule: async (mobileNumber: string, module: string,name?: string,companyName?: string,projectName?: string,source?: string): Promise<E.Either<Failure, ApiResponse<string>>> => {
         try {
 
-            return E.right(await authenticationDatasource.sendOTPMobileNumberAndModule(mobileNumber, module));
+            return E.right(await authenticationDatasource.sendOTPMobileNumberAndModule(mobileNumber, module,name,companyName,projectName,source));
 
         } catch (error: any) {
 

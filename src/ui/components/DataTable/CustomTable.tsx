@@ -15,6 +15,8 @@ export interface TableColumn {
   truncate?: boolean
   maxWidth?: string
   children?: TableColumn[]
+  theadStyle?: React.CSSProperties
+  tdStyle?: React.CSSProperties
 }
 
 export interface PaginationInfo {
@@ -42,6 +44,9 @@ interface Props {
   recordsPerPage?: number
   sortInfo?: SortInfo
   onSort?: (sort: SortInfo) => void
+  theadStyle?: React.CSSProperties;
+  tdStyle?: React.CSSProperties;
+  rowStyle?: (row: any) => React.CSSProperties;
 }
 
 export const CustomTable: React.FC<Props> = ({
@@ -55,10 +60,12 @@ export const CustomTable: React.FC<Props> = ({
   maxHeight = useViewportHeight(255, 350, 900),
   recordsPerPage = 10,
   sortInfo,
-  onSort
+  onSort,
+  theadStyle,
+  rowStyle
 }) => {
   const scrollRef = useHorizontalScroll();
-  
+
   const handleSort = (columnKey: string) => {
     const column = columns.find(col => col.key === columnKey)
     if (!onSort || !column?.sortable) return
@@ -119,8 +126,7 @@ export const CustomTable: React.FC<Props> = ({
     const { currentPage, totalPages, totalRecords, pageSize, onPageChange } =
       pagination
 
-    const startRecord =
-      totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
+    const startRecord = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
 
     const endRecord = Math.min(currentPage * pageSize, totalRecords)
 
@@ -144,12 +150,12 @@ export const CustomTable: React.FC<Props> = ({
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
+              type="button"
               onClick={() => onPageChange(i + 1)}
-              className={`px-3 py-1 rounded ${
-                currentPage === i + 1
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-100"
-              }`}
+              className={`px-3 py-1 rounded ${currentPage === i + 1
+                ? "bg-blue-500 text-white"
+                : "hover:bg-gray-100"
+                }`}
             >
               {i + 1}
             </button>
@@ -173,9 +179,8 @@ export const CustomTable: React.FC<Props> = ({
     <div className={`bg-white rounded-lg shadow-sm  flex flex-col ${className}`} >
 
       <div ref={scrollRef}
-        className={`overflow-x-auto thin-scroll ${
-          fixedHeight ? "flex-1 overflow-y-auto" : ""
-        }`}
+        className={`overflow-x-auto thin-scroll ${fixedHeight ? "flex-1 overflow-y-auto" : ""
+          }`}
         style={
           fixedHeight
             ? { maxHeight: recordsPerPage === 10 ? "calc(10 * 2.5rem + 2.5rem)" : maxHeight }
@@ -201,11 +206,28 @@ export const CustomTable: React.FC<Props> = ({
                     key={cIndex}
                     colSpan={col.colSpan}
                     rowSpan={col.rowSpan}
-                    className="border border-gray-300 px-3 py-2 text-center text-sm font-medium"
+                    className={`px-4 py-2 text-gray-800 tracking-wider whitespace-nowrap
+                    ${col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'}
+                    ${col.width ? `w-${col.width}` : ''}
+                    ${col.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
+                    ${col.fixed === 'left' ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]' : col.fixed === 'right' ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]' : ''}
+               `}
+                    style={{
+                      ...(col.width ? { width: col.width } : {}),
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      lineHeight: '1.4',
+                      backgroundColor: col.theadStyle?.backgroundColor || theadStyle?.backgroundColor || '#E4F0FF',
+                      color: col.theadStyle?.color || theadStyle?.color || '#000',
+                      borderBottom: '1px solid #D1D5DB',
+                      borderRight: '1px solid #D1D5DB',
+
+                    }}
                     onClick={() => col.sortable && handleSort(col.key)}
                   >
 
-                    <div className="flex items-center justify-center gap-1">
+
+                    <div className={`flex items-center space-x-1  ${col.align === 'center' ? 'justify-center' : col.align === 'right' ? 'justify-end' : 'justify-start'}`}>
 
                       {col.label}
 
@@ -236,7 +258,9 @@ export const CustomTable: React.FC<Props> = ({
             ) : (
               data.map((row, i) => (
 
-                <tr key={i} className="hover:bg-gray-50">
+                <tr key={i} className="hover:bg-gray-50"
+                  style={rowStyle?.(row)}
+                >
 
                   {leafColumns.map(col => {
 
@@ -247,10 +271,35 @@ export const CustomTable: React.FC<Props> = ({
                     return (
                       <td
                         key={col.key}
-                        className="border border-gray-200 px-3 py-2 text-sm text-center"
+                        className={`px-4 py-2 text-gray-900 border border-gray-200
+                        ${col.align === 'center'
+                            ? 'text-center'
+                            : col.align === 'right'
+                              ? 'text-right'
+                              : 'text-left'}
+                         ${col.fixed === 'left'
+                            ? 'sticky left-0 z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100'
+                            : col.fixed === 'right'
+                              ? 'sticky right-0 z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100'
+                              : ''}
+                               `}
+                        style={{
+                          ...(col.width ? { width: col.width } : {}),
+                          fontSize: '14px',
+                          fontWeight: '400',
+                          lineHeight: '1.5',
+                          letterSpacing: '0%',
+                          minHeight: '40px',
+                          verticalAlign: 'middle',
+                          backgroundColor: rowStyle?.(row)?.backgroundColor,
+                          ...col.tdStyle
+                        }}
                       >
-                        {value ?? 0}
+                        <div className={`${col.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`} style={{ maxWidth: col.maxWidth || col.width, lineHeight: '1.5' }}>
+                          {value}
+                        </div>
                       </td>
+
                     )
                   })}
 

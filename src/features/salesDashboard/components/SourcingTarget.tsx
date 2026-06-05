@@ -173,9 +173,12 @@ export default function SourcingTarget({ performanceReportSourcingData }: Props)
     //#region
     return (
         <div className="space-y-3 pt-4">
-
+            
             <h2 className="text-lg font-semibold text-gray-800">
-               Sourcing Target (This Month)
+                Sourcing Target{" "}
+                <span className="text-sm font-normal text-gray-500">
+                    (Current Month – Project-wise)
+                </span>
             </h2>
 
             <div className="flex-1 bg-white rounded-xl p-5 border border-gray-100 min-w-0 overflow-hidden flex flex-col">

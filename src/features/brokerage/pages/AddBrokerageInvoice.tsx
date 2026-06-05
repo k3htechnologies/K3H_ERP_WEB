@@ -9,15 +9,16 @@ import * as E from "fp-ts/Either";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { Loader } from "@/core/utils/loader";
 import { TextArea } from "@/ui/components/forms/Textarea";
-import type { AddUpdateBrokerageInvoiceRequest, FilterWithPaginationBrokerageInvoiceRequest } from "../models/BrokerageInvoiceModel";
-import { brokerageInvoiceService } from "../services/BrokerageInvoiceService";
+import type { AddUpdateBrokerageInvoiceRequest, FilterWithPaginationBrokerageInvoiceRequest } from "@/features/brokerage/models/BrokerageInvoiceModel";
+import { brokerageInvoiceService } from "@/features/brokerage/services/BrokerageInvoiceService";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { filterIFSC, filterNumbers, hasAnyDocumentFile, isValidAccount, isValidIFSC } from "@/core/utils/fileValidation";
+import { filterIFSC, filterNumbers, filterNumbersWithDecimal, hasAnyDocumentFile, isValidIFSC } from "@/core/utils/fileValidation";
+import { useBookingBrokerageListState } from "@/features/brokerage/context/BookingBrokerageListStateContext";
 
 const initialFormState = (): AddUpdateBrokerageInvoiceRequest => ({
     BrokerageInvoiceId: 0,
@@ -25,12 +26,12 @@ const initialFormState = (): AddUpdateBrokerageInvoiceRequest => ({
     ProjectId: 0,
     BankListMasterId: 0,
     BookingId: 0,
-    InvoiceNumber: 0,
+    InvoiceNumber: "",
     InvoiceDate: '',
     UploadInvoiceURL: '',
     RemoveUploadInvoiceURL: '',
     AccountName: '',
-    AccountNumber: 0,
+    AccountNumber: '',
     IFSCCode: '',
     InvoiceAmount: 0,
     DueDate: '',
@@ -40,7 +41,6 @@ const initialFormState = (): AddUpdateBrokerageInvoiceRequest => ({
 
 export const AddUpdateBrokerageInvoice: React.FC = () => {
 
-    //#region STATE MANAGEMENT
     const [formData, setFormData] = useState<AddUpdateBrokerageInvoiceRequest>(() => initialFormState());
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -49,29 +49,25 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     const [removeUploadInvoiceURLUrls, SetRemoveUploadInvoiceURLUrls] = useState<string[]>([]);
     const [uploadInvoiceURL, setUploadInvoiceURL] = useState<string>();
 
-    // NAVIGATE
     const navigate = useNavigate();
 
-    // GET BROKERAGE INVOICE ID
-    const { BookingId, BrokerageInvoiceId } = useParams<{ BookingId?: string, BrokerageInvoiceId?: string }>();
-    const currentBookingId = BookingId ? Number(BookingId) : 0;
+    const { listState } = useBookingBrokerageListState();
+
+    const bookingId = listState.bookingId || '';
+
+    const { BrokerageInvoiceId } = useParams<{ BrokerageInvoiceId?: string }>();
+
     const brokerageInvoiceId = BrokerageInvoiceId ? Number(BrokerageInvoiceId) : 0;
 
     const isAddMode = brokerageInvoiceId === 0;
 
-    // ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const { projectId } = useProject();
 
-    // TOAST
     const { addToast } = useToast();
-    //#endregion
 
-    //#region MENU PERMISSIONS
-    const { canAction } = useMenuPermissions('/brokerage');
-    //#endregion
+    const { canAction } = useMenuPermissions('/invoice');
 
-    //#region HANDLE FIELD CHANGE EVENT
     const handleFieldChange = (field: keyof AddUpdateBrokerageInvoiceRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -79,30 +75,25 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-    //#endregion
 
-    //SET DROP DOWN 
     const [dropdownLabels, setDropdownLabels] = useState<{
         bankName?: string;
     }>({});
-    //#endregion
 
-    //#region INITIALIZATION
     useEffect(() => {
         if (!projectId) return;
 
         setFormData(prev => ({
             ...prev,
-            BookingId: currentBookingId,
+            BookingId: Number(bookingId),
             ProjectId: Number(projectId)
         }));
         if (!isAddMode) {
             fetchBrokerageInvoiceDetails();
         }
-    }, [currentBookingId, projectId, brokerageInvoiceId]);
-    //#endregion
 
-    //#region FETCH BROKERAGE INVOICE DETAILS
+    }, [bookingId, projectId, brokerageInvoiceId]);
+
     const fetchBrokerageInvoiceDetails = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -110,8 +101,8 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationBrokerageInvoiceRequest = {
                     PageNumber: 1,
-                    PageSize: 20,
-                    BookingId: Number(currentBookingId),
+                    PageSize: 1,
+                    BookingId: Number(bookingId),
                     ProjectId: Number(projectId),
                     BrokerageInvoiceId: Number(BrokerageInvoiceId)
                 };
@@ -143,10 +134,15 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                     setDropdownLabels({
                         bankName: e.BankName || "",
                     });
+
+                    setUploadInvoiceURL(e.UploadInvoiceURL)
+                    setUploadInvoiceURLFiles([])
+                    SetRemoveUploadInvoiceURLUrls([]);
+
+                } else {
                     setUploadInvoiceURL('')
                     setUploadInvoiceURLFiles([])
-                    SetRemoveUploadInvoiceURLUrls([])
-                } else {
+                    SetRemoveUploadInvoiceURLUrls([]);
                     addToast({ type: 'error', title: response.left.message });
                 }
                 return response;
@@ -171,6 +167,21 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
     } => {
         const newErrors: { [key: string]: string } = {};
 
+        if (!formData.InvoiceNumber) {
+            newErrors.InvoiceNumber = 'Invoice Number is required';
+        }
+
+        if (!formData.InvoiceDate) {
+            newErrors.InvoiceDate = 'Invoice Date is required';
+        }
+
+        if (!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceURLUrls)) {
+            newErrors.UploadInvoiceURL = "Invoice is required";
+        }
+
+        if (!formData.BankListMasterId) {
+            newErrors.BankListMasterId = "Bank Name is required";
+        }
 
         if (!formData.AccountNumber) {
             newErrors.AccountNumber = 'Account Number is required.';
@@ -178,42 +189,29 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         if (!formData.AccountName) {
             newErrors.AccountName = 'Account Name is required.';
         }
-        if (!formData.Remark) {
-            newErrors.Remark = 'Remarks is required.';
-        }
+
         if (!formData.IFSCCode?.trim()) {
             newErrors.IFSCCode = 'IFSC Code is required.'
-        }
-
-        else if (formData.IFSCCode.trim().length > 12) {
+        } else if (formData.IFSCCode.trim().length > 12) {
             newErrors.IFSCCode = 'IFSC Code must be at most 50 characters'
-        }
-        else if (!isValidIFSC(formData.IFSCCode.trim())) {
+        } else if (!isValidIFSC(formData.IFSCCode.trim())) {
             newErrors.IFSCCode = 'Enter a valid IFSC Code'
         }
-        if (!formData.AccountNumber) {
-            newErrors.AccountNumber = 'Account Number is required.';
-        } else if (!isValidAccount(formData.AccountNumber.toString())) {
-            newErrors.AccountNumber = "Enter a valid Account Number (6–18 digits)";
+
+
+        if (!formData.AccountNumber?.trim()) {
+            newErrors.AccountNumber = "Account Number is required.";
+        } else if (formData.AccountNumber.trim().length > 18) {
+            newErrors.AccountNumber = "Account Number must be at most 18 characters";
         }
-        if (!formData.InvoiceNumber) {
-            newErrors.InvoiceNumber = 'Invoice Number is required.';
-        }
-        if (!formData.BankListMasterId) {
-            newErrors.BankListMasterId = 'Bank Name is required.';
-        }
+
         if (!formData.InvoiceAmount) {
-            newErrors.InvoiceAmount = 'Invoice Amount is required.';
+            newErrors.InvoiceAmount = "Invoice Amount is required";
+        } else if (formData.InvoiceAmount <= 0) {
+            newErrors.InvoiceAmount = "Invoice Amount cannot be zero or negative";
         }
-        if (!formData.InvoiceDate) {
-            newErrors.InvoiceDate = 'Invoice Date is required.';
-        }
-        if (!formData.DueDate) {
-            newErrors.DueDate = 'Due Date is required.';
-        }
-        if (!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceURLUrls)) {
-            newErrors.UploadInvoiceURL = "File is required.";
-        }
+
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
@@ -227,7 +225,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         fd.append("BrokerageInvoiceId", formData.BrokerageInvoiceId.toString());
         fd.append("Uniquekey", formData.Uniquekey ?? "");
         fd.append("ProjectId", projectId!.toString());
-        fd.append("BookingId", currentBookingId.toString());
+        fd.append("BookingId", bookingId.toString());
         fd.append("InvoiceNumber", formData.InvoiceNumber.toString());
         fd.append("InvoiceDate", formData.InvoiceDate ?? "");
         fd.append("BankListMasterId", formData.BankListMasterId.toString());
@@ -235,7 +233,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
         fd.append("AccountNumber", formData.AccountNumber.toString());
         fd.append("IFSCCode", formData.IFSCCode ?? "");
         fd.append("InvoiceAmount", formData.InvoiceAmount.toString());
-        fd.append("DueDate", formData.DueDate ?? "");
+        fd.append("DueDate", formData.DueDate === "" ? "" : formData.DueDate);
         fd.append("Remark", formData.Remark ?? "");
 
         uploadInvoiceURLFiles.forEach((file) => {
@@ -275,7 +273,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-                    navigate(`/brokerageInvoice/view/${currentBookingId}`);
+                    navigate(`/brokerage/brokerageInvoice/view/`);
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -340,8 +338,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     onChange={setUploadInvoiceURLFiles}
                                     availableFilesURL={uploadInvoiceURL ?? ""}
                                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                    maxFiles={3}
-                                    maxSizeMB={10}
+                                    maxFiles={10}
                                     error={errors.UploadInvoiceURL}
                                     onRemoveExisting={(url) => {
                                         SetRemoveUploadInvoiceURLUrls((prev) => [...prev, url])
@@ -405,16 +402,24 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                             </div>
 
                             <div>
+
                                 <Input
-                                    type="text"
+                                    label="Invoice Amount (₹)"
+                                    value={formData.InvoiceAmount?.toString() ?? ""}
                                     required
-                                    label='Invoice Amount'
-                                    value={formData.InvoiceAmount ?? ""}
-                                    onChange={(e) => handleFieldChange("InvoiceAmount", e.target.value)}
-                                    placeholder="Enter Invoice Amount"
-                                    maxLength={15}
+                                    onChange={(e) => {
+                                        const val = filterNumbersWithDecimal(e.target.value);
+                                        if (val !== null) {
+                                            const invoiceAmount = filterNumbersWithDecimal(e.target.value);
+
+                                            handleFieldChange("InvoiceAmount", invoiceAmount);
+                                        }
+                                    }}
+                                    placeholder="Enter Invoice Amount (₹)"
+                                    rightIcon="₹"
                                     error={errors.InvoiceAmount}
                                 />
+
                             </div>
 
                             <div>
@@ -422,7 +427,6 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
                                     label="Due Date"
                                     value={formatDate_dd_mm_yyyy(formData.DueDate)}
                                     onChange={(val) => handleFieldChange('DueDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                    required
                                     error={errors.DueDate}
                                 />
                             </div>
@@ -430,8 +434,7 @@ export const AddUpdateBrokerageInvoice: React.FC = () => {
 
                         <div>
                             <TextArea
-                                label="  Remarks"
-                                required
+                                label="Remarks"
                                 className='thin-scroll'
                                 value={formData.Remark ?? ""}
                                 placeholder="Enter Remarks"

@@ -16,6 +16,7 @@ export interface LitigationHearingData {
     LitigationId: number | 0
     ProjectId: number | 0
     HearingDate: string | ''
+    FileName:string | ''
     HearingAttachementURL: string | ''
     Remark: string | ''
     CreatedById: number | 0
@@ -34,6 +35,7 @@ export interface AddUpdateLitigationHearingRequest {
     LitigationId: number | 0
     ProjectId: number | 0
     HearingDate: string | ''
+    FileName: string | ''
     HearingAttachementURL: string | null
     RemoveHearingAttachementURL: string | ''
     Remark: string | ''

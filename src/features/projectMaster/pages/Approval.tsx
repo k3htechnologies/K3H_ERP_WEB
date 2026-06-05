@@ -44,7 +44,7 @@ const Approval: React.FC = () => {
   const projectId = listState.projectId;
   const projectName = listState.projectName;
 
-  const { canAction } = useMenuPermissions("/projectMaster");
+  const { canAction } = useMenuPermissions("/projectMasterApprovalSetup");
 
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
 

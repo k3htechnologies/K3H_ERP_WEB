@@ -11,18 +11,11 @@ import type {
 } from "@/features/ChannelPartnerSourcing/models/ChannelPartnerSourcingModel";
 
 export abstract class ChannelPartnerSourcingDatasource {
-  abstract pullChannelPartnerSourcing(
-    params: FilterWithPaginationChannelPartnerSourcingRequest,
-    signal?: AbortSignal
-  ): Promise<ChannelPartnerSourcingListResponse>;
+  abstract pullChannelPartnerSourcing( params: FilterWithPaginationChannelPartnerSourcingRequest, signal?: AbortSignal): Promise<ChannelPartnerSourcingListResponse>;
 
-  abstract addUpdateChannelPartnerSourcing(
-    data: AddUpdateChannelPartnerSourcingRequest
-  ): Promise<ChannelPartnerSourcingSaveResponse>;
+  abstract addUpdateChannelPartnerSourcing(data: AddUpdateChannelPartnerSourcingRequest): Promise<ChannelPartnerSourcingSaveResponse>;
 
-  abstract deleteChannelPartnerSourcing(
-    params: DeleteChannelPartnerSourcingRequest
-  ): Promise<ChannelPartnerSourcingDeleteResponse>;
+  abstract deleteChannelPartnerSourcing(params: DeleteChannelPartnerSourcingRequest): Promise<ChannelPartnerSourcingDeleteResponse>;
 }
 
 export class ChannelPartnerSourcingDatasourceImpl implements ChannelPartnerSourcingDatasource {
@@ -98,20 +91,17 @@ export class ChannelPartnerSourcingDatasourceImpl implements ChannelPartnerSourc
         Uniquekey: params.Uniquekey ?? ''
       });
 
-      const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
-        `${ChannelPartnerSourcingApi.DELETE}?${queryParams.toString()}`
-      );
+      const response = await this.k3hHttpClient.deleteRequestWithAuthentication( `${ChannelPartnerSourcingApi.DELETE}?${queryParams.toString()}`);
 
       return response;
-    } catch (error: any) {
 
+    } catch (error: any) {
       console.error('ERROR: DELETE CHANNEL PARTNER SOURCING :', error);
 
       if (error instanceof TokenExpiredException) {
 
         return await this.deleteChannelPartnerSourcing(params);
       }
-
       throw error;
     }
   }

@@ -226,9 +226,10 @@ export const useSubMaterialMaster = () => {
   //#endregion
 
   //#region HANDLE PAGE CHANGE EVENT
-  const handlePageChange = (page: number) => {
-    fetchSubMaterialList(page);
-  };
+  
+  const handlePageChange = useCallback((page: number) => {
+    loadSubMaterials(page, filters, sortInfo, searchTerm || undefined);
+  }, [sortInfo, searchTerm]);
   //#endregion
 
   //#region TABLE SORT COLUMN

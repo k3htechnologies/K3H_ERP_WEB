@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { runApiWithLoader } from "@/core/utils";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import {  type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import usePagination from "@/core/hooks/usePagination";
 import * as E from 'fp-ts/Either';
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Loader } from "@/core/utils/loader";
 import { handleExportFile } from "@/core/utils/exportFile";
-import type {  FilterWithPaginationClickAchievementRequest } from "@/features/achievement/models/AchievementReportModel";
+import type { FilterWithPaginationClickAchievementRequest } from "@/features/achievement/models/AchievementReportModel";
 import { achievementReportService } from "@/features/achievement/services/AchievementReportService";
 import useToast from "@/core/hooks/useToast";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
@@ -30,7 +30,7 @@ interface Props {
     columnKey?: string;
 }
 
-export const AchievementBookingReport: React.FC<Props> = ({ filterType, fromDate, toDate ,projectId,employeeId, tabName, columnKey}) => {
+export const AchievementBookingReport: React.FC<Props> = ({ filterType, fromDate, toDate, projectId, employeeId, tabName, columnKey }) => {
 
     const [bookingList, setBookingList] = useState<BookingData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -141,7 +141,7 @@ export const AchievementBookingReport: React.FC<Props> = ({ filterType, fromDate
     const handleExportBookingExcel = () => handleExportBooking('Excel');
     const handleExportBookingPdf = () => handleExportBooking('PDF');
 
-     const bookingColumns = useMemo<TableColumn[]>(
+    const bookingColumns = useMemo<TableColumn[]>(
         () => [
             {
                 key: 'SystemGeneratedCode',
@@ -187,7 +187,14 @@ export const AchievementBookingReport: React.FC<Props> = ({ filterType, fromDate
                     );
                 }
             },
-            
+            {
+                key: 'ProjectName',
+                label: 'Project Name',
+                width: '15',
+                sortable: true,
+                align: 'left',
+                render: value => value || ''
+            },
             {
                 key: 'ApplicantName',
                 label: 'Applicant Name',

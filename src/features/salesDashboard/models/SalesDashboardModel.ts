@@ -1,9 +1,13 @@
 import type { ApiResponse } from "@/core/api/ApiResponse";
+import type { ProjectAchievementData } from "@/features/achievement/models/AchievementReportModel";
 export interface SalesDashboardDataset {
     Table0: Table0[];
     Table1: Table1[];
     Table2: Table2[];
     Table3: Table3[];
+    Table4: Table4[];
+    Table5: ProjectAchievementData[];
+    Table6: Table6[];
 }
 
 export interface Table0 {
@@ -119,6 +123,23 @@ export interface Table3 {
     NewCP: number | null
     ActualNewCP: number | null
     PerformanceNewCP: number | null
+}
+
+export interface Table4 {
+  TotalEmployees: number | null;
+  PresentCount: number | null;
+  OnLeaveCount: number | null;
+  AbsentCount: number | null;
+
+}
+
+export interface Table6 {
+    SystemGeneratedCode: string
+    ApplicantName: string
+    AgreementValue: number
+    CreatedDate: string
+    Flat: string
+    ProjectName: string
 }
 
 export interface EnquiryOutTimeData {

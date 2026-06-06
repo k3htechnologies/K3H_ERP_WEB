@@ -320,7 +320,7 @@ export const DataTableEditable: React.FC<Props> = ({
                 <th
                   key={col.key}
                   className={`
-                    py-3 px-4 text-sm font-semibold
+                    py-3 px-4 text-sm
                     ${col.headerClassName || ""}
                   `}
                   style={{

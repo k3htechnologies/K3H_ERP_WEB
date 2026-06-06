@@ -48,7 +48,8 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
             if (params.CityName?.trim()) queryParams.append('CityName', params.CityName.trim());
             if (params.VillageName?.trim()) queryParams.append('VillageName', params.VillageName.trim());
             if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
-            
+            if (params.NoOfIBM?.trim()) queryParams.append('NoOfIBM', params.NoOfIBM.trim());
+            if (params.NoOfOBM?.trim()) queryParams.append('NoOfOBM', params.NoOfOBM.trim());
             if (params.Status?.trim()) queryParams.append('Status', params.Status.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);

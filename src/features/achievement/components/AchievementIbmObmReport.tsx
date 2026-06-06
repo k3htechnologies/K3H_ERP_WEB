@@ -29,7 +29,7 @@ interface Props {
     columnKey?: string;
 }
 
-export const AchievementIbmObmReport: React.FC<Props> = ({ filterType, fromDate, toDate, projectId,employeeId, tabName, columnKey }) => {
+export const AchievementIbmObmReport: React.FC<Props> = ({ filterType, fromDate, toDate, projectId, employeeId, tabName, columnKey }) => {
 
     const [bookingList, setIbmObmList] = useState<IBMOBMReportData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -186,7 +186,14 @@ export const AchievementIbmObmReport: React.FC<Props> = ({ filterType, fromDate,
                     );
                 }
             },
-
+            {
+                key: 'ProjectName',
+                label: 'Project Name',
+                width: '15',
+                sortable: true,
+                align: 'left',
+                render: value => value || ''
+            },
             {
                 key: 'Name',
                 label: 'Name',

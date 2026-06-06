@@ -421,6 +421,14 @@ export const CallingData: React.FC = () => {
             render: value => value || '-'
         },
         {
+            key: 'Designation',
+            label: 'Designation',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
             key: "ModifiedDate",
             label: "Last Modified Date",
             width: "33",

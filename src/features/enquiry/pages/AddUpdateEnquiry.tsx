@@ -1696,7 +1696,14 @@ export const AddUpdateEnquiry: React.FC = () => {
                     </div>
                     {formData.FinalStage === "Lost" && (
                       <div>
-                        <SinglePageSelection label="Final Stage Detail" placeholder="Select Final Stage Detail" value={formData.FinalStageDetail ?? ""} onChange={(value) => handleFieldChange("FinalStageDetail", value)} options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} error={errors.FinalStageDetail} disabled={Number(formData.EnquiryId) > 0 ? true : false} />
+                        <SinglePageSelection
+                          required
+                          label="Final Stage Detail"
+                          placeholder="Select Final Stage Detail"
+                          value={formData.FinalStageDetail ?? ""}
+                          onChange={(value) => handleFieldChange("FinalStageDetail", value)}
+                          options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                          error={errors.FinalStageDetail} disabled={Number(formData.EnquiryId) > 0 ? true : false} />
                       </div>
                     )}
                   </div>

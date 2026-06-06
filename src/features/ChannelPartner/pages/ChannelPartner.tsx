@@ -35,6 +35,8 @@ import { useChannelPartnerListState } from '@/features/ChannelPartner/context/Ch
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { copyToClipboard } from '@/core/utils/comman';
 import { filterNumbers } from '@/core/utils/fileValidation';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { IBM_OBM_RANGE_FILTER_OPTIONS } from '@/core/constants';
 
 
 export const ChannelPartner: React.FC = () => {
@@ -68,11 +70,11 @@ export const ChannelPartner: React.FC = () => {
   const [isShowCustomizeChannelPartnerColumnsModal, setIsShowCustomizeChannelPartnerColumnsModal] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
-  
+
   const location = useLocation() as any;
-  
+
   useEffect(() => {
-   
+
     setPagination({ currentPage: listState.page });
 
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
@@ -82,13 +84,13 @@ export const ChannelPartner: React.FC = () => {
     }
   }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
-  
+
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
- 
+
   const fetchChannelPartnerList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadChannelPartner(page, filters, sort);
   }
@@ -117,6 +119,10 @@ export const ChannelPartner: React.FC = () => {
           Speciality: filterParams.Speciality?.trim() || undefined,
           CityName: filterParams.CityName?.trim() || undefined,
           VillageName: filterParams.VillageName?.trim() || undefined,
+          NoOfIBM: filterParams.NoOfIBM?.trim() || undefined,
+          NoOfOBM: filterParams.NoOfOBM?.trim() || undefined,
+          SystemGeneratedCode: filterParams.SystemGeneratedCode?.trim() || undefined,
+
           SortBy: getSortByParam(sortInfo ?? null, ChannelPartnerColumns)
 
         };
@@ -207,6 +213,9 @@ export const ChannelPartner: React.FC = () => {
           Speciality: filters.Speciality?.trim() || undefined,
           CityName: filters.CityName?.trim() || undefined,
           VillageName: filters.VillageName?.trim() || undefined,
+          NoOfIBM: filters.NoOfIBM?.trim() || undefined,
+          NoOfOBM: filters.NoOfOBM?.trim() || undefined,
+          SystemGeneratedCode: filters.SystemGeneratedCode?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, ChannelPartnerColumns),
           ExportType: exportType
         };
@@ -829,6 +838,14 @@ export const ChannelPartner: React.FC = () => {
 
         size="small-half">
         <div className="space-y-6">
+
+          <div>
+            <Input type="text"
+              label='CP Code'
+              value={tempFilters?.SystemGeneratedCode ?? ''}
+              onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
+              placeholder="Enter CP Code" />
+          </div>
           <div>
             <Input type="text"
               label='Full Name'
@@ -869,7 +886,7 @@ export const ChannelPartner: React.FC = () => {
             <Input type="text"
               label='Mobile Number'
               value={tempFilters?.MobileNumber ?? ''}
-              onChange={e => handleFilterChange('MobileNumber',filterNumbers(e.target.value))}
+              onChange={e => handleFilterChange('MobileNumber', filterNumbers(e.target.value))}
               placeholder="Enter Mobile Number" />
           </div>
           <div>
@@ -925,13 +942,37 @@ export const ChannelPartner: React.FC = () => {
             />
           </div>
           <div>
-
             <Input
               label='Village'
               type="text"
               value={tempFilters.VillageName || ''}
               onChange={e => handleFilterChange('VillageName', e.target.value)}
               placeholder="Enter Village"
+            />
+          </div>
+          <div>
+            <SinglePageSelection
+              label="No of IBM"
+              placeholder="Select No of IBM"
+              value={tempFilters.NoOfIBM || ''}
+              onChange={e => handleFilterChange('NoOfIBM', String(e))}
+              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
+                label: opt.name,
+                value: opt.id
+              }))}
+            />
+          </div>
+
+          <div>
+            <SinglePageSelection
+              label="No of OBM"
+              placeholder="Select No of OBM"
+              value={tempFilters.NoOfOBM || ''}
+              onChange={e => handleFilterChange('NoOfOBM', String(e))}
+              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
+                label: opt.name,
+                value: opt.id
+              }))}
             />
           </div>
         </div>

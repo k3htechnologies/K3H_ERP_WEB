@@ -78,6 +78,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/enquiry': '/enquiry',
         '/enquiryreport': '/enquiryReport',
         '/cpenquiryreport': '/cpEnquiryReport',
+        '/ibmobmreport': '/ibmObmReport',
         '/classificationparameter': '/classificationParameter',
         '/performance': '/performance',
         '/achievement': '/achievement',

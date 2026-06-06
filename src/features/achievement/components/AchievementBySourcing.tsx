@@ -202,6 +202,7 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
             align: 'left',
             render: value => value || ''
         },
+        
         {
             key: 'WalkinsByCP',
             label: 'Walkins By CP',

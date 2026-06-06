@@ -20,6 +20,7 @@ export interface CallingDataData {
   MobileNumber: string | "";
   Address: string | "";
   Source: string | "";
+  Designation: string | "";
   NoOfTimeCalling: number | 0;
   CreatedById: number | 0;
   CreatedBy: string | "";

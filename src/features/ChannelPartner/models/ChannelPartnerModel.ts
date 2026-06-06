@@ -22,6 +22,8 @@ export interface FilterWithPaginationChannelPartnerRequest {
     CityName?: string;
     VillageName?: string;
     SystemGeneratedCode?: string;
+    NoOfIBM?: string;
+    NoOfOBM?: string;
     Status?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'

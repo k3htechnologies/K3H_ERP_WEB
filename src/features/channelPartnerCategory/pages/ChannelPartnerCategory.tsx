@@ -11,6 +11,9 @@ import { Button, Input } from "@/ui/components/forms";
 import { DataTableEditable, type EditableTableColumn } from "@/ui/components/DataTable/DataTableEditable";
 import { filterNumbers, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
+import { handleExportFile } from "@/core/utils/exportFile";
 
 export const ChannelPartnerCategory: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -19,7 +22,7 @@ export const ChannelPartnerCategory: React.FC = () => {
     const { addToast } = useToast();
     const [channelPartnerCategoryData, setChannelPartnerCategoryData] = useState<ChannelPartnerCategoryData[]>([]);
     const [editchannelPartnerCategoryData, setEditchannelPartnerCategoryData] = useState<ChannelPartnerCategoryData[]>([])
-    const { canAction } = useMenuPermissions();
+    const { canAction, canExport } = useMenuPermissions();
 
     useEffect(() => {
         if (!projectId) return
@@ -68,8 +71,8 @@ export const ChannelPartnerCategory: React.FC = () => {
                 Data.map((item) => ({
                     ChannelPartnerCategoryId: item.ChannelPartnerCategoryId,
                     CategoryName: item.CategoryName,
-                    BookingRevenue: item.BookingRevenue,
-                    NoOfEnquirys: item.NoOfEnquirys,
+                    BookingRevenue: item.BookingRevenue || 0,
+                    NoOfEnquirys: item.NoOfEnquirys || 0,
                 }))
             )
         };
@@ -116,7 +119,7 @@ export const ChannelPartnerCategory: React.FC = () => {
             sortable: false,
             fixed: 'left',
             align: 'left',
-            headerClassName: "bg-[#E4F0FF] text-black tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: (value) => (
                 <TooltipText
                     text={value || '-'}
@@ -131,51 +134,118 @@ export const ChannelPartnerCategory: React.FC = () => {
             width: '20',
             sortable: false,
             align: 'left',
-            headerClassName: "bg-[#E4F0FF] text-black tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: value => value || '-',
-            renderEditor: (value?: string, onChange?: any) => (
+            renderEditor: canAction ? (value?: string, onChange?: any) => (
                 <Input
                     className="w-full border rounded px-2 py-1"
                     value={value ?? ""}
                     onChange={(e) => onChange(filterNumbersWithDecimal(e.target.value))}
                 />
-            )
+            ) : undefined
+
         },
         {
             key: 'NoOfEnquirys',
-            label: 'No Of Enquiries',
+            label: 'No Of Enquiries (Walkins)',
             width: '20',
             sortable: false,
             align: 'left',
-            headerClassName: "bg-[#E4F0FF] text-black tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: value => value || '-',
-            renderEditor: (value?: string, onChange?: any) => (
+            renderEditor: canAction ? (value?: string, onChange?: any) => (
                 <Input
                     className="w-full border rounded px-2 py-1"
                     value={value ?? ""}
                     maxLength={9}
-                    onChange={(e) => onChange(Number(filterNumbers(e.target.value) || 0))}
+                    onChange={(e) =>
+                        onChange(Number(filterNumbers(e.target.value) || 0))
+                    }
                 />
             )
+                : undefined
+
+        },
+        {
+            key: "ModifiedBy",
+            label: "Last Modified By",
+            width: "33",
+            sortable: false,
+            align: "left",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
+            render: (value, row) => <TooltipText text={value || row.CreatedBy || "-"} maxWidth="180px" tooltipThreshold={18} />,
+        },
+        {
+            key: "ModifiedDate",
+            label: "Last Modified Date",
+            width: "33",
+            sortable: false,
+            align: "left",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
+            render: (value, row) =>
+                value ? formatDate_dd_MonthName_yy(value) : row.CreatedDate ? formatDate_dd_MonthName_yy(row.CreatedDate) : "-",
         },
     ], [])
+
+    const handleExportChannelPartnerCategory = async (exportType: 'Excel' | 'PDF') => {
+
+        await runApiWithLoader(
+
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationchannelPartnerCategoryRequest = {
+                    ProjectId: Number(projectId),
+                    ExportType: exportType,
+                };
+
+                const response = await channelPartnerCategoryService.apiCallpullChannelPartnerCategoryData(params);
+
+                handleExportFile(response, exportType, 'Channel Partner Category', addToast);
+                return response
+            },
+            undefined,
+            (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
+            undefined,
+            'Preparing Export'
+        );
+    };
+
+    const handleExportChannelPartnerCategoryExcel = () => handleExportChannelPartnerCategory('Excel')
+    const handleExportChannelPartnerCategoryPdf = () => handleExportChannelPartnerCategory('PDF')
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
 
-            <div className="space-y-4 bg-white rounded-xll shadow-sm border border-gray-200">
-                <DataTableEditable
-                    columns={columns}
-                    data={channelPartnerCategoryData}
-                    onChange={(rows) => setEditchannelPartnerCategoryData(rows)}
-                    className="flex-1"
-                />
-            </div>
 
-            {canAction && (
+            <TableActionToolbar
+                isShowSearchBar={false}
+                isShowFilterButton={false}
+                isShowCustomizeButton={false}
+                isShowAddButton={false}
+                isShowImportButton={false}
+                isShowExportButton={canExport && channelPartnerCategoryData.length > 0}
+                onExportExcel={handleExportChannelPartnerCategoryExcel}
+                onExportPdf={handleExportChannelPartnerCategoryPdf}
+                exportLoading={isLoading}
+            />
+
+            {projectId && (
+                <div className="space-y-4 bg-white rounded-xll shadow-sm border border-gray-200">
+                    <DataTableEditable
+                        columns={columns}
+                        data={channelPartnerCategoryData}
+                        onChange={(rows) => setEditchannelPartnerCategoryData(rows)}
+                        className="flex-1"
+                    />
+                </div>
+            )}
+
+            {canAction && projectId && (
                 <div className="flex justify-end pt-5">
-                    <Button  onClick={handleAddUpdateChannelPartnerCategory}>
+                    <Button onClick={handleAddUpdateChannelPartnerCategory}>
                         Save
                     </Button>
                 </div>

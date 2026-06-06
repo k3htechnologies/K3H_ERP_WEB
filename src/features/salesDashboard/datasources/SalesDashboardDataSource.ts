@@ -4,7 +4,7 @@ import type { EnquiryOutTimeSaveResponse, SalesDashboardDatasetResponse, UpdateE
 import { SalesDashboardApi } from '@/features/salesDashboard/api/salesDashboardApi';
 
 export abstract class SalesDashboardDatasource {
-    abstract pullSalesDashboard(ProjectId: number, signal?: AbortSignal): Promise<SalesDashboardDatasetResponse>;
+    abstract pullSalesDashboard(ProjectId: number, FilterType?: string, FromDate?: string, ToDate?: string, signal?: AbortSignal): Promise<SalesDashboardDatasetResponse>;
     abstract UpadateEnquiryOutTime(data: UpdateEnquiryOutTimeRequest): Promise<EnquiryOutTimeSaveResponse>;
 }
 
@@ -13,12 +13,17 @@ export class SalesDashboardDatasourceImpl implements SalesDashboardDatasource {
         return baseClient
     }
 
-    async pullSalesDashboard(ProjectId: number, signal?: AbortSignal): Promise<SalesDashboardDatasetResponse> {
+    async pullSalesDashboard(ProjectId: number,FilterType?: string, FromDate?: string, ToDate?: string, signal?: AbortSignal): Promise<SalesDashboardDatasetResponse> {
         try {
 
             const queryParams = new URLSearchParams({
-                ProjectId: ProjectId.toString()
-            })
+                ProjectId: ProjectId.toString() ?? "0",
+                FilterType: FilterType ?? "",
+                FromDate: FromDate ?? "",
+                ToDate: ToDate ?? "",
+            });
+
+
             const response = await this.k3hHttpClient.getRequestWithAuthentication(`${SalesDashboardApi.PULL}?${queryParams.toString()}`, { signal })
             return response;
 
@@ -28,7 +33,7 @@ export class SalesDashboardDatasourceImpl implements SalesDashboardDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.pullSalesDashboard(ProjectId, signal);
+                return await this.pullSalesDashboard(ProjectId, FilterType, FromDate, ToDate, signal);
             }
 
             throw error

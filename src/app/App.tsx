@@ -190,6 +190,7 @@ import { TicketListStateProvider } from '@/features/ticket/context/TicketListSta
 import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
 import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
 import CollectionReport from '@/features/collectionReport/pages/CollectionReport';
+import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -407,6 +408,7 @@ function App() {
 
             <Route path="enquiryReport" element={<EnquiryReport />} />
             <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
+            <Route path="ibmObmReport" element={<IbmObmReport />} />
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
 
             <Route path="performance" element={<PerformanceReport />} />

@@ -24,6 +24,8 @@ import { updateFilter } from '@/core/utils/filterHelper';
 import { Button, Input } from '@/ui/components/forms';
 import { copyToClipboard } from '@/core/utils/comman';
 import { filterNumbers } from '@/core/utils/fileValidation';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { IBM_OBM_RANGE_FILTER_OPTIONS } from '@/core/constants';
 
 export const ChannelPartnerSourcing: React.FC = () => {
 
@@ -72,9 +74,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
     };
 
   }, [debouncedSearch]);
-  //#endregion
 
-  //#region DATA LOAD
   const fetchChannelPartnerList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadChannelPartner(page, filters, sort);
   }
@@ -106,6 +106,9 @@ export const ChannelPartnerSourcing: React.FC = () => {
           Speciality: filterParams.Speciality?.trim() || undefined,
           CityName: filterParams.CityName?.trim() || undefined,
           VillageName: filterParams.VillageName?.trim() || undefined,
+          NoOfIBM: filterParams.NoOfIBM?.trim() || undefined,
+          NoOfOBM: filterParams.NoOfOBM?.trim() || undefined,
+          SystemGeneratedCode: filterParams.SystemGeneratedCode?.trim() || undefined,
           ProjectId: projectId ?? 0,
           SortBy: getSortByParam(sortInfo ?? null, channelPartnerColumns)
         };
@@ -136,9 +139,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
       'Loading Channel Partner'
     );
   };
-  //#endregion
 
-  //#region SEARCH & CLEAR
   const searchChannelPartnerSourcing = async (searchValue: string) => {
 
     updateListState({ searchTerm: searchValue });
@@ -161,9 +162,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
     loadChannelPartner(1, {}, undefined, undefined);
 
   };
-  //#endregion
 
-  //#region TABLE CONFIG
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
   }, [sortInfo, updateListState]);
@@ -189,7 +188,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
 
   const dataForTable = useMemo(() => channelPartnerMasterList, [channelPartnerMasterList]);
 
-const handleNavigateToView = (row: ChannelPartnerData, ProjectId: number | undefined) => {
+  const handleNavigateToView = (row: ChannelPartnerData, ProjectId: number | undefined) => {
 
     if (!ProjectId) {
       addToast({ type: 'error', title: 'Please select a project' });
@@ -446,7 +445,7 @@ const handleNavigateToView = (row: ChannelPartnerData, ProjectId: number | undef
         render: (value) => value || '-'
       },
     ],
-   [canAction, handleNavigateToView]
+    [canAction, handleNavigateToView]
   );
 
   const applyFilters = () => {
@@ -525,6 +524,13 @@ const handleNavigateToView = (row: ChannelPartnerData, ProjectId: number | undef
 
         size="small-half">
         <div className="space-y-6">
+          <div>
+            <Input type="text"
+              label='CP Code'
+              value={tempFilters?.SystemGeneratedCode ?? ''}
+              onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
+              placeholder="Enter CP Code" />
+          </div>
           <div>
             <Input type="text"
               label='Full Name'
@@ -628,6 +634,31 @@ const handleNavigateToView = (row: ChannelPartnerData, ProjectId: number | undef
               value={tempFilters.VillageName || ''}
               onChange={e => handleFilterChange('VillageName', e.target.value)}
               placeholder="Enter Village"
+            />
+          </div>
+          <div>
+            <SinglePageSelection
+              label="No of IBM"
+              placeholder="Select No of IBM"
+              value={tempFilters.NoOfIBM || ''}
+              onChange={e => handleFilterChange('NoOfIBM', String(e))}
+              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
+                label: opt.name,
+                value: opt.id
+              }))}
+            />
+          </div>
+
+          <div>
+            <SinglePageSelection
+              label="No of OBM"
+              placeholder="Select No of OBM"
+              value={tempFilters.NoOfOBM || ''}
+              onChange={e => handleFilterChange('NoOfOBM', String(e))}
+              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
+                label: opt.name,
+                value: opt.id
+              }))}
             />
           </div>
         </div>

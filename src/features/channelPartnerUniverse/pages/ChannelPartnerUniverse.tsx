@@ -20,11 +20,13 @@ import { Button, Input } from '@/ui/components/forms';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { handleExportFile } from '@/core/utils/exportFile';
-import { ACTIVE_INACTIVE_OPTIONS } from '@/core/constants';
+import { ACTIVE_INACTIVE_OPTIONS, CHANNEL_PARTNER_CATEGORY_OPTIONS } from '@/core/constants';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { filterNumbers } from '@/core/utils/fileValidation';
 import { getActiveInactiveStatuscolor } from '../utils/Status';
 import { copyToClipboard, formatCurrency } from '@/core/utils/comman';
+import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
+import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
 
 export const ChannelPartnerUniverse: React.FC = () => {
 
@@ -47,6 +49,8 @@ export const ChannelPartnerUniverse: React.FC = () => {
 
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
+  const [isShowCustomizeChannelPartnerUniverseColumnsModal, setIsShowCustomizeChannelPartnerUniverseColumnsModal] = useState(false);
 
   const navigate = useNavigate();
 
@@ -99,7 +103,9 @@ export const ChannelPartnerUniverse: React.FC = () => {
           RERANumber: filterParams.RERANumber?.trim() || undefined,
           Status: filterParams.Status?.trim() || undefined,
           ActiveDays: Number(filterParams.ActiveDays) || 0,
-          SortBy: getSortByParam(sortInfo ?? null, channelPartnerColumns)
+          SystemGeneratedCode: filterParams.SystemGeneratedCode?.trim() || undefined,
+          ChannelPartnerCategory:filterParams.ChannelPartnerCategory?.trim() || undefined,
+          SortBy: getSortByParam(sortInfo ?? null, channelPartnerUniverseColumns)
         };
 
         const response = await channelPartnerUniverseService.apiCallPullChannelPartnerUniverse(params);
@@ -187,7 +193,7 @@ export const ChannelPartnerUniverse: React.FC = () => {
     navigate('/cpUniverse/view');
   };
 
-  const channelPartnerColumns = useMemo<TableColumn[]>(
+  const channelPartnerUniverseColumns = useMemo<TableColumn[]>(
     () => [
       {
         key: 'SystemGeneratedCode',
@@ -507,7 +513,9 @@ export const ChannelPartnerUniverse: React.FC = () => {
           RERANumber: filters.RERANumber?.trim() || undefined,
           Status: filters.Status?.trim() || undefined,
           ActiveDays: Number(filters.ActiveDays) || 0,
-          SortBy: getSortByParam(sortInfo ?? null, channelPartnerColumns),
+          SystemGeneratedCode: filters.SystemGeneratedCode?.trim() || undefined,
+          ChannelPartnerCategory:filters.ChannelPartnerCategory?.trim() || undefined,
+          SortBy: getSortByParam(sortInfo ?? null, channelPartnerUniverseColumns),
           ExportType: exportType
         };
 
@@ -526,6 +534,42 @@ export const ChannelPartnerUniverse: React.FC = () => {
 
   const handleExportChannelPartnerExcel = () => handleExportChannelPartner('Excel')
   const handleExportChannelPartnerPdf = () => handleExportChannelPartner('PDF')
+
+  const requiredChannelPartnerUniverseColumnKeys: string[] = ['Name', 'Actions'];
+
+  const allChannelPartnerUniverseColumnKeys: string[] = channelPartnerUniverseColumns.map(c => c.key);
+
+  const [selectedChannelPartnerUniverseColumnKeys, setSelectedChannelPartnerUniverseColumnKeys] = useState<string[]>(() => {
+    try {
+
+      const saved = LocalStorageHelper.getChannelPartnerUniverseTableColumns?.();
+
+      if (saved) {
+
+        const parsed = JSON.parse(saved) as string[]
+        // Ensure required columns are always present
+
+        const withRequired = Array.from(new Set([...parsed, ...requiredChannelPartnerUniverseColumnKeys]));
+
+        // Filter out any keys that no longer exist
+        return withRequired.filter(k => allChannelPartnerUniverseColumnKeys.includes(k));
+      }
+    } catch { }
+    return allChannelPartnerUniverseColumnKeys;
+  });
+
+  useEffect(() => {
+    setSelectedChannelPartnerUniverseColumnKeys(prev => Array.from(new Set([...prev, ...requiredChannelPartnerUniverseColumnKeys])).filter(k => allChannelPartnerUniverseColumnKeys.includes(k)));
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [channelPartnerUniverseColumns.length])
+
+  const visibleChannelPartnerUniverseColumns = useMemo(
+
+    () => channelPartnerUniverseColumns.filter(col => selectedChannelPartnerUniverseColumnKeys.includes(col.key)),
+
+    [channelPartnerUniverseColumns, selectedChannelPartnerUniverseColumnKeys]
+  );
 
 
   return (
@@ -550,8 +594,8 @@ export const ChannelPartnerUniverse: React.FC = () => {
           setShowFilterPopup(true);
         }}
 
-        isShowCustomizeButton={false}
-        onCustomize={() => { }}
+        isShowCustomizeButton={true}
+        onCustomize={() => setIsShowCustomizeChannelPartnerUniverseColumnsModal(true)}
         isShowAddButton={false}
         addTitle="Add"
         onAdd={() => { }}
@@ -561,9 +605,30 @@ export const ChannelPartnerUniverse: React.FC = () => {
         exportLoading={isLoading}
       />
 
+
+      <CustomizeColumnsModal
+        isOpen={isShowCustomizeChannelPartnerUniverseColumnsModal}
+        onClose={() => setIsShowCustomizeChannelPartnerUniverseColumnsModal(false)}
+        onApply={keys => {
+          const withRequired = Array.from(
+
+            new Set([...keys, ...requiredChannelPartnerUniverseColumnKeys])
+          );
+          setSelectedChannelPartnerUniverseColumnKeys(withRequired);
+
+          try {
+            LocalStorageHelper.storeChannelPartnerUniverseTableColumns?.(JSON.stringify(withRequired));
+          } catch { }
+        }}
+        columns={channelPartnerUniverseColumns}
+        selectedKeys={selectedChannelPartnerUniverseColumnKeys}
+        requiredKeys={requiredChannelPartnerUniverseColumnKeys}
+        title="Customize Table Columns"
+      />
+
       <DataTable
         data={dataForTable}
-        columns={channelPartnerColumns}
+        columns={visibleChannelPartnerUniverseColumns}
         pagination={paginationInfo}
         emptyMessage="No Channel Partner Universe found"
         fixedHeight
@@ -587,6 +652,13 @@ export const ChannelPartnerUniverse: React.FC = () => {
 
         size="small-half">
         <div className="space-y-6">
+          <div>
+            <Input type="text"
+              label='CP Code'
+              value={tempFilters?.SystemGeneratedCode ?? ''}
+              onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
+              placeholder="Enter CP Code" />
+          </div>
           <div>
             <SinglePageSelection
               label="Active / Inactive"
@@ -662,6 +734,18 @@ export const ChannelPartnerUniverse: React.FC = () => {
               value={tempFilters?.RERANumber ?? ''}
               onChange={e => handleFilterChange('RERANumber', e.target.value)}
               placeholder="Enter RERA Number" />
+          </div>
+          <div>
+            <SinglePageSelection
+              label="Channel Partner Category"
+              placeholder="Select Channel Partner Category"
+              value={tempFilters.ChannelPartnerCategory || ''}
+              onChange={e => handleFilterChange('ChannelPartnerCategory', String(e))}
+              options={CHANNEL_PARTNER_CATEGORY_OPTIONS.map(opt => ({
+                label: opt.name,
+                value: opt.id
+              }))}
+            />
           </div>
         </div>
       </Modal>

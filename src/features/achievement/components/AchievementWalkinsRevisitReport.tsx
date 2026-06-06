@@ -187,7 +187,14 @@ export const AchievementWalkinsRevisitReport: React.FC<Props> = ({ filterType, f
                 );
             }
         },
-        
+        {
+            key: 'ProjectName',
+            label: 'Project Name',
+            width: '15',
+            sortable: true,
+            align: 'left',
+            render: value => value || ''
+        },
         {
             key: 'Name',
             label: 'Name',

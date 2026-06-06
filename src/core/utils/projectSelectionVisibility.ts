@@ -50,6 +50,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         ,'inwardOutward'
         ,'ticket'
         ,'collectionReport'
+        ,'ibmObmReport'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

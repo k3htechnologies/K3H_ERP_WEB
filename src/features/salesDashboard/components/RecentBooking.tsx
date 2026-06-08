@@ -30,13 +30,16 @@ const RecentBooking: React.FC<Props> = ({ data }) => {
                                         <FieldItem label="Project Name" value={d.ProjectName} isRow={false} />
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-5">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
                                         <FieldItem label="Unit No" value={d.Flat} isRow={false} />
                                         <FieldItem label="Applicant" value={d.ApplicantName} isRow={false} />
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-5">
                                         <FieldItem label="Amount" value={formatCurrency(d.AgreementValue)} isRow={false} />
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-5">
+                                        
                                         <FieldItem label="Date" value={formatDate_dd_MonthName_yy_hh_mm(d.CreatedDate)} isRow={false} />
+                                        <FieldItem label="Sales Advisor" value={d.SalesAdvisor} isRow={false} />
+                                        <FieldItem label="Sourcing Manager" value={d.SourcingManager} isRow={false} />
                                     </div>
 
                                 </div>

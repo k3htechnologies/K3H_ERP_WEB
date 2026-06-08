@@ -4,6 +4,7 @@ import type { ProjectAchievementData } from '@/features/achievement/models/Achie
 import { Modal } from '@/ui/components/Modal/Modal';
 import AchievementBookingReport from '@/features/achievement/components/AchievementBookingReport';
 import AchievementWalkinsRevisitReport from '@/features/achievement/components/AchievementWalkinsRevisitReport';
+import ProjectWiseSalesDashboard from '../componentsProjectWise/ProjectWiseSalesDashboard';
 
 interface Props {
     projectAchievementData: ProjectAchievementData[];
@@ -15,6 +16,7 @@ interface Props {
 export default function ProjectAchievement({ projectAchievementData, filterType, fromDate, toDate }: Props) {
     const [selectedColumnClickBooking, setSelectedColumnClickBooking] = useState<any>(null);
     const [selectedColumnClickWalkingRevisit, setSelectedColumnClickWalkingRevisit] = useState<any>(null);
+    const [selectedColumnClickProjectName, setSelectedColumnClickProjectName] = useState<any>(null);
     const [tableData, setTableData] = useState<any[]>([]);
 
     useEffect(() => {
@@ -40,6 +42,16 @@ export default function ProjectAchievement({ projectAchievementData, filterType,
         });
     };
 
+    const handleColumnClickProjectName = (row: ProjectAchievementData) => {
+        setSelectedColumnClickProjectName({
+            filterType:filterType,
+            fromDate:fromDate,
+            toDate:toDate,
+            projectId: row.ProjectId,
+            project: row.ProjectName,
+        });
+    };
+
     const columns: TableColumn[] = [
         {
             key: 'ProjectName',
@@ -48,7 +60,19 @@ export default function ProjectAchievement({ projectAchievementData, filterType,
             sortable: false,
             fixed: 'left',
             align: 'left',
-            render: (value) => value || "-",
+            render: (value, row) => {
+
+                return (
+                    <span
+                        className="cursor-pointer text-blue-600 hover:underline"
+                        onClick={() => {
+                            handleColumnClickProjectName(row)
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'TotalWalkins',
@@ -56,7 +80,7 @@ export default function ProjectAchievement({ projectAchievementData, filterType,
             width: '15',
             sortable: false,
             align: 'center',
-             render: (value, row) => {
+            render: (value, row) => {
 
                 const isClickable = (value ?? 0) > 0;
 
@@ -202,6 +226,28 @@ export default function ProjectAchievement({ projectAchievementData, filterType,
                     size="large-half"
                 >
                     <AchievementBookingReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={selectedColumnClickBooking?.projectId} tabName={selectedColumnClickBooking?.tabName} columnKey={selectedColumnClickBooking?.columnKey} />
+                </Modal>
+            )}
+
+            {selectedColumnClickProjectName && (
+                <Modal
+                    isOpen={!!selectedColumnClickProjectName}
+                    onClose={() => setSelectedColumnClickProjectName(null)}
+                    size="large80"
+                    title={
+                        <div className="flex flex-col">
+
+                            <span className="font-semibold text-base">
+                                {selectedColumnClickProjectName.project || ""}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                {selectedColumnClickProjectName.filterType ? `  Filter: ${selectedColumnClickProjectName.filterType}` : ""}
+                            </span>
+
+                        </div>
+                    }
+                >
+                    <ProjectWiseSalesDashboard filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={selectedColumnClickProjectName?.projectId} projectName={selectedColumnClickProjectName?.project} />
                 </Modal>
             )}
         </div>

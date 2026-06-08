@@ -5,10 +5,9 @@ import { useToast } from '@/core/hooks/useToast';
 import * as E from 'fp-ts/Either';
 import { Loader } from '@/core/utils/loader';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
-import GenerateReport from "@/features/salesDashboard/components/GenerateReport";
 import Enquiries from "@/features/salesDashboard/components/Enquiries";
 import FollowUp from "@/features/salesDashboard/components/FollowUp";
-import type { Table0, Table1, Table2, Table3, Table4, Table6 } from "@/features/salesDashboard/models/SalesDashboardModel";
+import type { Table0, Table1, Table2, Table3, Table4, Table6,Table7 } from "@/features/salesDashboard/models/SalesDashboardModel";
 import ClosingTarget from "@/features/salesDashboard/components/ClosingTarget";
 import SourcingTarget from "@/features/salesDashboard/components/SourcingTarget";
 import AttendanceSummary from "@/features/dashboard/components/AttendanceSummary";
@@ -27,6 +26,7 @@ const SalesDashboard: React.FC = () => {
     const [attendanceSummaryData, setAttendanceSummaryData] = useState<Table4[]>([]);
     const [projectAchievementData, setProjectAchievementData] = useState<ProjectAchievementData[]>([]);
     const [bookingData, setBookingData] = useState<Table6[]>([]);
+    const [employeeOverviewTable, setEmployeeOverviewTable] = useState<Table7[]>([]);
 
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -72,6 +72,8 @@ const SalesDashboard: React.FC = () => {
                     setProjectAchievementData(e.Table5 || []);
 
                     setBookingData(e.Table6 || []);
+
+                    setEmployeeOverviewTable(e.Table7 || [])
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -146,7 +148,7 @@ const SalesDashboard: React.FC = () => {
                 {enquiryData.length > 0 && shouldLoadData &&
                     <div className="grid grid-cols-3 gap-5">
                         <div className="col-span-3 lg:col-span-1">
-                            <AttendanceSummary attendanceSummaryData={attendanceSummaryData} />
+                            <AttendanceSummary attendanceSummaryData={attendanceSummaryData} employeeOverviewTable={employeeOverviewTable} />
                         </div>
                         <div className="col-span-3 lg:col-span-2">
                             <RecentBooking data={bookingData} />

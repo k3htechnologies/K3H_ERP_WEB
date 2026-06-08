@@ -879,9 +879,6 @@ export const ViewBooking: React.FC = () => {
                             </div>
                         </section>
 
-
-
-
                         <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
                                 Other Remarks
@@ -1018,21 +1015,19 @@ export const ViewBooking: React.FC = () => {
                 )
                 }
                 {activeTab === 'Terms & Condition' && (
+                    <div className="space-y-3">
+                        {bookingData.TermsAndConditionsDescription ? (
+                            <section className="bg-white rounded-xl shadow-sm">
+                                <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
+                            </section>
 
-                    <section className="rounded-xl">
-
-                        <div className="grid grid-cols-1 gap-4">
-                            <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
-
-                        </div>
-                    </section>
-
-                )
-                }
-
-
-
-
+                        ) : (
+                            <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <NoDataView message="No Terms & Conditions Found" />
+                            </section>
+                        )}
+                    </div>
+                )}
             </div >
         </div >
     );

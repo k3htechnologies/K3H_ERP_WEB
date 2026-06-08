@@ -10,6 +10,7 @@ export interface FilterWithPaginationIbmObmReportRequest {
   Year?: number;
   FromDate?: string;
   ToDate?: string;
+   ExportType?: 'Excel' | 'PDF'
 }
 
 export interface ProjectWiseIbmObmEmpoyeesList {

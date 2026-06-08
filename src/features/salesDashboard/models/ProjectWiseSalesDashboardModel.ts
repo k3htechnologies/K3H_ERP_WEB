@@ -1,49 +1,13 @@
 import type { ApiResponse } from "@/core/api/ApiResponse";
 import type { ProjectAchievementData } from "@/features/achievement/models/AchievementReportModel";
 
-export interface SalesDashboardDataset {
+export interface ProjectWiseSalesDashboardDataset {
     Table0: Table0[];
     Table1: Table1[];
-    Table2: Table2[];
+    Table2: ProjectAchievementData[];
     Table3: Table3[];
-    Table4: Table4[];
-    Table5: ProjectAchievementData[];
-    Table6: Table6[];
-    Table7: Table7[];
 }
-
 export interface Table0 {
-    SystemGeneratedCode: string | null
-    ProjectName: string | null
-    ProjectId: number | 0
-    MobileNumberCountryCode: string | null
-    MobileNumber: string | null
-    Name: string | null
-    EnquiryDate: string | null
-    EnquiryTimeIn: string | null
-    SalesAdvisor: string | null
-    SourcingManager: string | null
-    CanTimeOut:boolean |false
-    EnquiryId: number | 0
-}
-
-export interface Table1 {
-    SystemGeneratedCode: string | null
-    ProjectName: string | null
-    ProjectId: number | 0
-    MobileNumberCountryCode: string | null
-    MobileNumber: string | null
-    Name: string | null
-    EnquiryFollowUpDays: string | null
-    FinalStage: string | null
-    NextFollowUpDate: string | null
-    SalesAdvisor: string | null
-    SourcingManager: string | null
-    CreatedDate: string | null
-    IsAction:boolean |false
-}
-
-export interface Table2 {
     EmployeeId: number | 0
     EmployeeName: string | null
     DesignationName: string | null
@@ -73,7 +37,7 @@ export interface Table2 {
     PerformanceBookingDirect: number | null
 }
 
-export interface Table3 {
+export interface Table1 {
     EmployeeId: number | 0
     EmployeeName: string | null
     DesignationName: string | null
@@ -127,45 +91,17 @@ export interface Table3 {
     PerformanceNewCP: number | null
 }
 
-export interface Table4 {
-  TotalEmployees: number | null;
-  PresentCount: number | null;
-  OnLeaveCount: number | null;
-  AbsentCount: number | null;
+export interface Table3 {
 
+    ChannelPartnerId: number | 0
+    ChannelPartnerName: string | null
+    SystemGeneratedCode: string | null
+    WalkinsByCP: number | null
+    Revisits: number | null
+    TotalBooking: number | null
+    TotalRevenue: number | null
 }
 
-export interface Table6 {
-    SystemGeneratedCode: string
-    ApplicantName: string
-    AgreementValue: number
-    CreatedDate: string
-    Flat: string
-    ProjectName: string
-    SalesAdvisor: string
-    SourcingManager: string
-}
 
-export interface Table7 {
-  Name: string | null;
-  Department: string | null;
-  DesignationName: string | null;
-  EmployeeCode: string | null;
-  Status: string | null;
-  PunchIn: string | null;
-  PunchOut: string | null;
-  EmailId: string | null;
-}
 
-export interface EnquiryOutTimeData {
-    EnquiryId: number | 0
-    ProjectId: number | 0
-}
-
-export interface UpdateEnquiryOutTimeRequest {
-    EnquiryId: number | 0
-    ProjectId: number | 0
-}
-
-export type SalesDashboardDatasetResponse = ApiResponse<SalesDashboardDataset>;
-export type EnquiryOutTimeSaveResponse = ApiResponse<EnquiryOutTimeData[]>;
+export type ProjectWiseSalesDashboardDatasetResponse = ApiResponse<ProjectWiseSalesDashboardDataset>;

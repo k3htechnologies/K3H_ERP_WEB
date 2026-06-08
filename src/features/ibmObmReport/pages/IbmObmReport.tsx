@@ -215,7 +215,7 @@ const IbmObmReport: React.FC = () => {
                     // greater than 10 → RED
                     if (num > 10) {
                         return (
-                            <span className="text-green-600 font-bold">
+                            <span className="text-red-600 font-bold">
                                 {num}
                             </span>
                         );
@@ -224,7 +224,7 @@ const IbmObmReport: React.FC = () => {
                     // greater than 0 → GREEN
                     if (num > 0) {
                         return (
-                            <span className="text-red-600 font-semibold">
+                            <span className="text-green-600 font-semibold">
                                 {num}
                             </span>
                         );
@@ -277,12 +277,13 @@ const IbmObmReport: React.FC = () => {
                     Stage: '',
                     Year: filters.ReportType?.toUpperCase() === "YEAR" ? Number(filters.Year) : undefined,
                     FromDate: filters.ReportType?.toUpperCase() === "DATE" ? filters.FromDate || undefined : undefined,
-                    ToDate: filters.ReportType?.toUpperCase() === "DATE" ? filters.ToDate || undefined : undefined
+                    ToDate: filters.ReportType?.toUpperCase() === "DATE" ? filters.ToDate || undefined : undefined,
+                    ExportType: exportType
                 };
 
                 const response = await ibmObmReportService.apiCallPullIbmObmReport(params);
 
-                handleExportFile(response, exportType, 'Channel Partner Category', addToast);
+                handleExportFile(response, exportType, 'IBM-OBM Report', addToast);
                 return response
             },
             undefined,

@@ -30,6 +30,7 @@ export class IbmObmReportDatasourceImpl implements IbmObmReportDatasource {
             if (params.Year) queryParams.append('Year', params.Year.toString());
             if (params.FromDate?.trim()) queryParams.append('FromDate', params.FromDate.trim());
             if (params.ToDate?.trim()) queryParams.append('ToDate', params.ToDate.trim());
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(`${IbmObmReportApi.PULL}?${queryParams.toString()}`)

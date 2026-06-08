@@ -113,7 +113,7 @@ const Dashboard: React.FC = () => {
           <EmployeeTable employeeOverviewTable={employeeOverviewTable} />
         </div>
         <div className="col-span-3 lg:col-span-1">
-          <AttendanceSummary attendanceSummaryData={attendanceSummaryData} />
+          <AttendanceSummary attendanceSummaryData={attendanceSummaryData} employeeOverviewTable={employeeOverviewTable}/>
         </div>
       </div>
 

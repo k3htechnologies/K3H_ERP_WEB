@@ -219,29 +219,35 @@ export const ChannelPartnerCategory: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
 
-
-            <TableActionToolbar
-                isShowSearchBar={false}
-                isShowFilterButton={false}
-                isShowCustomizeButton={false}
-                isShowAddButton={false}
-                isShowImportButton={false}
-                isShowExportButton={canExport && channelPartnerCategoryData.length > 0}
-                onExportExcel={handleExportChannelPartnerCategoryExcel}
-                onExportPdf={handleExportChannelPartnerCategoryPdf}
-                exportLoading={isLoading}
-            />
-
-            {projectId && (
-                <div className="space-y-4 bg-white rounded-xll shadow-sm border border-gray-200">
-                    <DataTableEditable
-                        columns={columns}
-                        data={channelPartnerCategoryData}
-                        onChange={(rows) => setEditchannelPartnerCategoryData(rows)}
-                        className="flex-1"
+            {projectId ? (
+                <>
+                    <TableActionToolbar
+                        isShowSearchBar={false}
+                        isShowFilterButton={false}
+                        isShowCustomizeButton={false}
+                        isShowAddButton={false}
+                        isShowImportButton={false}
+                        isShowExportButton={canExport && channelPartnerCategoryData.length > 0}
+                        onExportExcel={handleExportChannelPartnerCategoryExcel}
+                        onExportPdf={handleExportChannelPartnerCategoryPdf}
+                        exportLoading={isLoading}
                     />
+
+
+                    <div className="space-y-4 bg-white rounded-xll shadow-sm border border-gray-200">
+                        <DataTableEditable
+                            columns={columns}
+                            data={channelPartnerCategoryData}
+                            onChange={(rows) => setEditchannelPartnerCategoryData(rows)}
+                            className="flex-1"
+                        />
+                    </div>
+                </>
+            ) :
+                <div className="flex items-center justify-center text-gray-400">
+                    {projectId ? "No inventory data found" : "Please select a project"}
                 </div>
-            )}
+            }
 
             {canAction && projectId && (
                 <div className="flex justify-end pt-5">

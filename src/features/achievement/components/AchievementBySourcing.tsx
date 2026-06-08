@@ -636,7 +636,7 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
                     }
                     size="large-half"
                 >
-                    <AchievementWalkinsRevisitReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={0} employeeId={selectedColumnClickWalkingRevisit?.employeeId} tabName={selectedColumnClickWalkingRevisit?.tabName} columnKey={selectedColumnClickWalkingRevisit?.columnKey} />
+                    <AchievementWalkinsRevisitReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={projectId} employeeId={selectedColumnClickWalkingRevisit?.employeeId} tabName={selectedColumnClickWalkingRevisit?.tabName} columnKey={selectedColumnClickWalkingRevisit?.columnKey} />
                 </Modal>
             )}
 
@@ -659,7 +659,7 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
                     }
                     size="large-half"
                 >
-                    <AchievementBookingReport filterType={filterType} fromDate={fromDate} toDate={toDate} employeeId={selectedColumnClickBooking?.employeeId} tabName={selectedColumnClickBooking?.tabName} columnKey={selectedColumnClickBooking?.columnKey} />
+                    <AchievementBookingReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={projectId} employeeId={selectedColumnClickBooking?.employeeId} tabName={selectedColumnClickBooking?.tabName} columnKey={selectedColumnClickBooking?.columnKey} />
                 </Modal>
             )}
 
@@ -683,7 +683,7 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
                     }
                     size="large-half"
                 >
-                    <AchievementIbmObmReport filterType={filterType} fromDate={fromDate} toDate={toDate} employeeId={selectedColumnClickIbmObm?.employeeId} tabName={selectedColumnClickIbmObm?.tabName} columnKey={selectedColumnClickIbmObm?.columnKey} />
+                    <AchievementIbmObmReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={projectId} employeeId={selectedColumnClickIbmObm?.employeeId} tabName={selectedColumnClickIbmObm?.tabName} columnKey={selectedColumnClickIbmObm?.columnKey} />
                 </Modal>
             )}
 

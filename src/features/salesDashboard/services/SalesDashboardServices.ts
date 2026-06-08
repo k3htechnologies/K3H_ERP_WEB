@@ -2,6 +2,7 @@ import type { Failure } from '@/core/api/FailureResponse';
 import * as E from 'fp-ts/Either';
 import { SalesDashboardDatasourceImpl } from '@/features/salesDashboard/datasources/SalesDashboardDataSource';
 import type { EnquiryOutTimeSaveResponse, SalesDashboardDatasetResponse, UpdateEnquiryOutTimeRequest } from '@/features/salesDashboard/models/SalesDashboardModel';
+import type { ProjectWiseSalesDashboardDatasetResponse } from '../models/ProjectWiseSalesDashboardModel';
 
 const salesDashboardDatasource = new SalesDashboardDatasourceImpl();
 
@@ -29,4 +30,16 @@ export const salesDashboardService = {
             return E.left({ message: error.message, code: error.code });
         }
     },
+
+     apiCallPullProjectWiseSalesDashboard: async (ProjectId: number, FilterType?: string | null, FromDate?: string | null, ToDate?: string  | null, signal?: AbortSignal): Promise<E.Either<Failure, ProjectWiseSalesDashboardDatasetResponse>> => {
+        try {
+
+            return E.right(await salesDashboardDatasource.pullProjectWiseSalesDashboard(ProjectId, FilterType ?? "", FromDate ?? "",ToDate ?? "", signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+        }
+    },
+
 }

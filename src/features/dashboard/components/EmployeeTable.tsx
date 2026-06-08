@@ -37,8 +37,8 @@ export default function EmployeeTable({ employeeOverviewTable }: Props) {
             render: (value: string) => (<span className="font-medium text-black"> {(value || '')}  </span>),
         },
         {
-            key: "Department",
-            label: "Department",
+            key: "DesignationName",
+            label: "Designation",
             align: "left" as any,
             render: (value: string) => (
                 <span className="font-medium text-black">

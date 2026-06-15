@@ -5,6 +5,7 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import AchievementBookingReport from '@/features/achievement/components/AchievementBookingReport';
 import AchievementWalkinsRevisitReport from '@/features/achievement/components/AchievementWalkinsRevisitReport';
 import ProjectWiseSalesDashboard from '../componentsProjectWise/ProjectWiseSalesDashboard';
+import { formatCurrency, formatToKLCr } from '@/core/utils/comman';
 
 interface Props {
     projectAchievementData: ProjectAchievementData[];
@@ -161,8 +162,17 @@ export default function ProjectAchievement({ projectAchievementData, filterType,
             width: '15',
             sortable: false,
             align: 'center',
-            render: (value) => value || "0",
+            render: (value) => formatCurrency(value || 0),
+        },
+        {
+            key: 'TotalRevenue',
+            label: 'Revenue (₹)',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: (value) => formatToKLCr(value || 0),
         }
+
     ]
     //#endregion
 
@@ -170,7 +180,10 @@ export default function ProjectAchievement({ projectAchievementData, filterType,
     return (
         <div className="space-y-3 pt-4">
 
-            <h2 className="text-lg font-semibold text-gray-800">Project Achievement</h2>
+            <h2 className="text-lg font-semibold text-gray-800">Project Achievement {" "}
+                <span className="text-sm font-normal text-gray-500">
+                    ({tableData.length} Record's)
+                </span></h2>
 
             <div className="flex-1 bg-white rounded-xl p-5 h-[310px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
 

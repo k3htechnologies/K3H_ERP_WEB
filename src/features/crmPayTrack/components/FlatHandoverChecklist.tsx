@@ -7,7 +7,7 @@ import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { HANDOVER_STATUS } from "@/core/constants";
-import { Button } from "@/ui/components/forms";
+import { Button, Input } from "@/ui/components/forms";
 import { Loader } from "@/core/utils/loader";
 import type { AddUpdateFlatHandoverChecklistRequest, FilterWithPaginationFlatHandoverChecklist, FlatHandoverChecklistData } from "@/features/crmPayTrack/models/FlatHandoverCheckListModel";
 import { flatHandoverChecklistService } from "@/features/crmPayTrack/services/FlatHandoverCheckListService";
@@ -26,7 +26,7 @@ export const FlatHandoverChecklist: React.FC = () => {
     const { projectId } = useProject();
     const { addToast } = useToast();
     const { listState } = usePayTrackBookingListState();
-    const { bookingId,bookingApprovalStatus } = listState;
+    const { bookingId, bookingApprovalStatus } = listState;
     const { canAction } = useMenuPermissions();
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [formData, setFormData] = useState<FlatHandoverChecklistData | null>(null);
@@ -168,8 +168,6 @@ export const FlatHandoverChecklist: React.FC = () => {
 
                     setIsAddUpdateModalOpen(false);
 
-                    loadFlatHandoverChecklistData();
-
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
                 } else {
@@ -219,7 +217,7 @@ export const FlatHandoverChecklist: React.FC = () => {
 
             <div className="mb-5">
                 <Tabs
-                    tabs={FlatHandoverChecklistTabList}
+                    tabs={FlatHandoverChecklistTabList || []}
                     defaultActive={activeTab}
                     islarge={true}
                     onTabChange={(t) => {
@@ -233,7 +231,7 @@ export const FlatHandoverChecklist: React.FC = () => {
                     <div key={index} className="gap-x-4 rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
 
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <FieldItem label="Checklist items" value={item.Items} />
+                            <FieldItem label="Items" value={item.Items} className="font-bold"/>
                             <FieldItem label="Status" value={item.Status} />
 
                             <div className="flex justify-between gap-2">
@@ -254,6 +252,7 @@ export const FlatHandoverChecklist: React.FC = () => {
                                         color="transparent"
                                         isborderRadius
                                         size="sm"
+                                        title="Edit"
                                     >
                                         <Edit className="h-4 w-4" />
                                     </Button>
@@ -277,7 +276,7 @@ export const FlatHandoverChecklist: React.FC = () => {
                     setEditFlatHandoverCheckListData(null)
                     setErrors({});
                 }}
-                title={'Update'}
+                title={"Handover Checklist"}
                 saveText="Update"
                 onSubmit={handleAddUpdateFlatHandoverChecklist}
                 loading={isLoading}
@@ -286,29 +285,51 @@ export const FlatHandoverChecklist: React.FC = () => {
                 <div className="space-y-10 p-6 bg-blue-100">
                     <div className="space-y-4" >
 
-                        <div>
-                            <div >
-                                <SinglePageSelection
-                                    label="Status"
-                                    placeholder="Select Status"
-                                    value={formData?.Status ?? ""}
-                                    onChange={(e) => handleFieldChange("Status", String(e))}
-                                    options={HANDOVER_STATUS.map((opt) => ({ label: opt.name, value: opt.id, }))}
-                                    error={errors.Status}
-                                    required
-                                />
-                            </div>
+                         <div>
+                            <Input
+                                required
+                                type="text"
+                                label='Section'
+                                value={formData?.Section || ''}
+                                disabled
+                            />
+
                         </div>
+                        <div>
+                            <Input
+                                required
+                                type="text"
+                                label='Items'
+                                value={formData?.Items || ''}
+                                disabled
+                            />
+
+                        </div>
+
+                        <div >
+                            <SinglePageSelection
+                                label="Status"
+                                placeholder="Select Status"
+                                value={formData?.Status ?? ""}
+                                onChange={(e) => handleFieldChange("Status", String(e))}
+                                options={HANDOVER_STATUS.map((opt) => ({ label: opt.name, value: opt.id, }))}
+                                error={errors.Status}
+                                required
+                            />
+                        </div>
+
 
                         <div>
                             <TextArea
                                 label="Remark"
+                                required={formData?.Status?.toUpperCase() === "PENDING" ? true : false}
                                 className='thin-scroll'
                                 value={formData?.Remark ?? ""}
                                 placeholder="Enter Remark"
                                 onChange={(e) => handleFieldChange("Remark", e.target.value)}
                                 error={errors.Remark}
-                                rows={5}
+                                rows={10}
+                                maxLength={500}
                                 autoResize={false}
                             />
 

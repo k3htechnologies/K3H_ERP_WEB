@@ -441,7 +441,7 @@ export const BankDetails: React.FC = () => {
                                                 color="transparent"
                                                 size="sm"
                                                 isborderRadius
-                                                title="Edit Bank Details"
+                                                title="Edit Bank Loan Details"
                                                 disabled={!canDeleteActiveBank}
                                                 style={{
                                                     color: canDeleteActiveBank ? "" : "#9CA3AF",
@@ -492,7 +492,7 @@ export const BankDetails: React.FC = () => {
                                                         <FieldItem label="Branch Name" value={item.BankBranchName ?? "-"} />
                                                         <FieldItem label="Account Number" value={item.LoanAccountNumber ?? "-"} />
                                                         <FieldItem label="Loan Sanction Amount" value={formatCurrency(item.LoanSanctionAmount) ?? "-"} />
-                                                        <FieldItem label="Sanction Date" value={formatDate_dd_mm_yyyy(item.LoanSanctionDate)} />
+                                                        <FieldItem label="Loan Sanction Date" value={formatDate_dd_mm_yyyy(item.LoanSanctionDate)} />
                                                         <FieldItem label="No of Bank Documents" value={item.NoOfBankDocument ?? 0} />
                                                     </div>
                                                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4 text-sm pt-5">
@@ -567,7 +567,7 @@ export const BankDetails: React.FC = () => {
                                                         <FieldItem label="Branch Name" value={item.BankBranchName ?? "-"} />
                                                         <FieldItem label="Account Number" value={item.LoanAccountNumber ?? "-"} />
                                                         <FieldItem label="Loan Sanction Amount" value={formatCurrency(item.LoanSanctionAmount) ?? "-"} />
-                                                        <FieldItem label="Sanction Date" value={formatDate_dd_mm_yyyy(item.LoanSanctionDate)} />
+                                                        <FieldItem label="Loan Sanction Date" value={formatDate_dd_mm_yyyy(item.LoanSanctionDate)} />
                                                         <FieldItem label="No of Bank Documents" value={item.NoOfBankDocument ?? 0} />
                                                     </div>
                                                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4 text-sm pt-5">
@@ -635,7 +635,7 @@ export const BankDetails: React.FC = () => {
                                 <div>
                                     <Input
                                         label="Branch Name"
-                                        placeholder="Enter Bank Branch Name"
+                                        placeholder="Enter Branch Name"
                                         required
                                         value={formData.BankBranchName}
                                         maxLength={250}
@@ -679,7 +679,7 @@ export const BankDetails: React.FC = () => {
                                 {/* Loan Sanction Date */}
                                 <div>
                                     <DatePickerInput
-                                        label="Sanction Date"
+                                        label="Loan Sanction Date"
                                         value={formatDate_dd_mm_yyyy(formData.LoanSanctionDate)}
                                         onChange={(val) => handleFieldChange("LoanSanctionDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                         required

@@ -347,8 +347,16 @@ export function usePayrollColumns() {
         width: "12",
         sortable: false,
         align: "center",
-        render: (v: any) => <MapLink value={v} />,
-      },
+        render: (value: any, row: any) => (
+          <MapLink
+            value={value}
+            punchInLat={row.StartLatitude}
+            punchInLng={row.StartLongitude}
+            punchOutLat={row.EndLatitude}
+            punchOutLng={row.EndLongitude}
+          />
+        ),
+      }
     ],
     [sharedCols],
   );

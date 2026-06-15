@@ -1,11 +1,11 @@
 import baseClient from "@/core/config/baseClient";
-import type { FilterWithPaginationFlatAlterationRequest, FlatAlterationRequestListResponse, FlatAlterationRequestSaveReponse, AddUpdateFlatAlterationRequest } from "@/features/crmPayTrack/models/FlatAlterationRequestModel";
+import type { FilterWithPaginationFlatAlterationRequest, FlatAlterationRequestListResponse, FlatAlterationRequestSaveReponse } from "@/features/crmPayTrack/models/FlatAlterationRequestModel";
 import { FlatAlterationRequestApi } from "@/features/crmPayTrack/api/FlatAlterationRequestApi";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 
 export abstract class FlatAlterationCrmDatasource {
     abstract pullFlatAlterationRequest(params: FilterWithPaginationFlatAlterationRequest, signal?: AbortSignal): Promise<FlatAlterationRequestListResponse>;
-    abstract addUpdateFlatAlterationRequest(data: AddUpdateFlatAlterationRequest): Promise<FlatAlterationRequestSaveReponse>;
+    abstract addUpdateFlatAlterationRequest(formData: FormData): Promise<FlatAlterationRequestSaveReponse>;
 }
 
 export class FlatAlterationCrmDatasourceImpl implements FlatAlterationCrmDatasource {
@@ -40,21 +40,22 @@ export class FlatAlterationCrmDatasourceImpl implements FlatAlterationCrmDatasou
         }
     }
 
-    async addUpdateFlatAlterationRequest(params: AddUpdateFlatAlterationRequest): Promise<FlatAlterationRequestSaveReponse> {
+    async addUpdateFlatAlterationRequest(formData: FormData): Promise<FlatAlterationRequestSaveReponse> {
         try {
 
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                FlatAlterationRequestApi.ADD_UPDATE,
-                params
-            )
 
-            return response
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(
+                            FlatAlterationRequestApi.ADD_UPDATE,
+                            formData
+                        )
+            
+
         } catch (error) {
 
             console.error('ERROR: ADD UPDATE FLAT ALTERATION REQUEST :', error)
 
             if (error instanceof TokenExpiredException) {
-                return await this.addUpdateFlatAlterationRequest(params);
+                return await this.addUpdateFlatAlterationRequest(formData);
             }
             throw error
         }

@@ -241,6 +241,7 @@ export const ViewBooking: React.FC = () => {
                 align: "center",
                 render: (_value, row) => {
                     if (row.isTotal) return <span className={boldIfTotal(row)}>TOTAL</span>;
+                    
                     if (row.Type === "Date" && row.Date) {
 
                         return formatDate_dd_MonthName_yy(row.Date);
@@ -494,7 +495,7 @@ export const ViewBooking: React.FC = () => {
                                 <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
 
-                                        <FieldItem label="Unique Code:" value={editEnquiryData?.SystemGeneratedCode || '-'} />
+                                        <FieldItem label="Enquiry Code:" value={editEnquiryData?.SystemGeneratedCode || '-'} />
 
                                         <FieldItem label="Name" value={editEnquiryData?.Name || '-'} />
 
@@ -640,7 +641,7 @@ export const ViewBooking: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
                                         <FieldItem label="Wing" value={getSafeString(bookingData.Wing)} />
                                         <FieldItem label="Floor" value={getSafeString(bookingData.Floor)} />
-                                        <FieldItem label="Building Number" value={getSafeString(bookingData.BuildingNumber)} />
+                                        <FieldItem label="Building" value={getSafeString(bookingData.BuildingNumber)} />
                                     </div>
 
                                     <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${bookingData.ParkingNumber !== "" ? "border-b border-[#135bec2e] pb-4" : ""} `} >

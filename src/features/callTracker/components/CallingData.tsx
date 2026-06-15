@@ -27,7 +27,7 @@ import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelectio
 import { SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { Edit, Mail, Phone } from "lucide-react";
-import { filterEmail, filterMobile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
+import { filterEmail, filterMobile, filterNumbers, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
 
 export const CallingData: React.FC = () => {
 
@@ -690,8 +690,9 @@ export const CallingData: React.FC = () => {
                             type="text"
                             label='Mobile Number'
                             value={tempFilters.MobileNumber || ''}
-                            onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+                            onChange={e => handleFilterChange('MobileNumber', filterNumbers(e.target.value))}
                             placeholder="Enter Mobile Number"
+                            maxLength={13}
                         />
                     </div>
                     <div>

@@ -7,6 +7,8 @@ import { salesDashboardService } from "../services/SalesDashboardServices";
 import * as E from 'fp-ts/Either';
 import { Loader } from "@/core/utils/loader";
 import { DataTableWithOutBorder, type TableColumn } from "@/ui/components/DataTable/DataTableWithoutBorder";
+import Tabs from "@/ui/components/Tab/Tab";
+import { formatCurrency } from "@/core/utils/comman";
 
 interface Props {
     filterType: string;
@@ -57,7 +59,7 @@ export const ProjectWiseSalesDashboard: React.FC<Props> = ({ filterType, fromDat
                     setProjectAchievementData(e.Table2 || []);
 
                     setChannelPartnerData(e.Table3 || []);
-                    
+
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -74,57 +76,6 @@ export const ProjectWiseSalesDashboard: React.FC<Props> = ({ filterType, fromDat
     }, [projectId, addToast, filterType, fromDate, toDate]);
 
 
-    const projectAchievementColumns: TableColumn[] = [
-
-        {
-            key: 'TotalWalkins',
-            label: 'Walkins',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: (value) => value || "0",
-        },
-        {
-            key: 'WalkinsByCP',
-            label: 'Walkins By CP',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: (value) => value || "0",
-        },
-        {
-            key: 'WalkinsDirect',
-            label: 'Walkins Direct',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: (value) => value || "0",
-        },
-        {
-            key: 'Revisits',
-            label: 'Revisits',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: (value) => value || "0",
-        },
-        {
-            key: 'TotalBooking',
-            label: 'Booking',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: (value) => value || "0",
-        },
-        {
-            key: 'TotalRevenue',
-            label: 'Revenue (₹)',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: (value) => value || "0",
-        }
-    ]
 
     const PerformanceReportClosingColumns = useMemo<TableColumn[]>(() => [
         {
@@ -135,7 +86,7 @@ export const ProjectWiseSalesDashboard: React.FC<Props> = ({ filterType, fromDat
             fixed: 'left',
             align: 'left',
             render: (value) => (
-                <span className="text-black-400">
+                <span className="text-black-400 font-medium">
                     {value}
                 </span>
             )
@@ -249,7 +200,7 @@ export const ProjectWiseSalesDashboard: React.FC<Props> = ({ filterType, fromDat
             fixed: 'left',
             align: 'left',
             render: (value) => (
-                <span className="text-black-400">{value}</span>
+                <span className="text-black-400 font-medium">{value}</span>
             )
         },
 
@@ -429,7 +380,7 @@ export const ProjectWiseSalesDashboard: React.FC<Props> = ({ filterType, fromDat
             fixed: 'left',
             align: 'left',
             render: (value) => (
-                <span className="text-black-400">
+                <span className="text-black-400 font-medium">
                     {value}
                 </span>
             )
@@ -466,62 +417,119 @@ export const ProjectWiseSalesDashboard: React.FC<Props> = ({ filterType, fromDat
 
         {
             key: 'TotalRevenue',
-            label: 'Total Revenue',
-            align: 'center',
-            render: (value) => value || "0",
+            label: 'Total Revenue (₹)',
+            align: 'right',
+            render: (value) => formatCurrency(value || 0),
         },
-       
+
 
     ], []);
 
+    const tabList = [
+        { id: 'Overview', label: 'Overview' },
+        { id: 'Closing Target', label: 'Closing Target' },
+        { id: 'Sourcing Target', label: 'Sourcing Target' },
+        { id: 'Channel Partner', label: 'Channel Partner' },
+    ];
+
+    const [activeTab, setActiveTab] = useState<string>(tabList[0].id);
+
+
     return (
-        <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
+        <div>
             <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
 
-            <div>
+            <Tabs
+                tabs={tabList}
+                defaultActive={activeTab}
+                islarge={true}
+                onTabChange={(t) => {
+                    setActiveTab(t.id);
+                }}
+            />
 
-                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
+            {activeTab === 'Overview' && (
+                <div className="pt-5">
+                    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
+                        <div className="grid grid-cols-3 gap-3">
 
-                    <DataTableWithOutBorder
-                        columns={projectAchievementColumns}
-                        data={projectAchievementData}
-                        emptyMessage="No records Found"
-                        fixedHeight={true}
-                    />
+                            <div className="bg-[#0F2A44] text-white p-5 rounded-lg">
+                                <p className="text-sm">Walkins</p>
+                                <p className="font-semibold">{projectAchievementData?.[0]?.TotalWalkins ?? 0}</p>
+                            </div>
 
-                    <h2 className="text-lg pt-5 font-semibold text-gray-800">Closing Target</h2>
+                            <div className="bg-gray-100 p-5 rounded-lg">
+                                <p className="text-sm text-gray-600">Walkins By CP</p>
+                                <p className="font-semibold">{projectAchievementData?.[0]?.WalkinsByCP ?? 0}</p>
+                            </div>
 
-                    <DataTableWithOutBorder
-                        data={performanceReportClosingData}
-                        columns={PerformanceReportClosingColumns}
-                        emptyMessage="No Data Found"
-                        className="flex-1"
-                        fixedHeight={true}
-                    />
+                            <div className="bg-gray-100 p-5 rounded-lg">
+                                <p className="text-sm text-gray-600">Walkins Direct</p>
+                                <p className="font-semibold">{projectAchievementData?.[0]?.WalkinsDirect ?? 0}</p>
+                            </div>
 
-                    <h2 className="text-lg pt-5 font-semibold text-gray-800">Sourcing Target</h2>
-                    <DataTableWithOutBorder
-                        columns={PerformanceReportSourcingColumns}
-                        data={performanceReportSourcingData}
-                        emptyMessage="No records Found"
-                        className="flex-1"
-                        fixedHeight={true}
-                    />
+                            <div className="bg-gray-100 p-5 rounded-lg">
+                                <p className="text-sm text-gray-600">Revisits</p>
+                                <p className="font-semibold">{projectAchievementData?.[0]?.Revisits ?? 0}</p>
+                            </div>
+                            <div className="bg-gray-100 p-5 rounded-lg">
+                                <p className="text-sm text-gray-600">Booking</p>
+                                <p className="font-semibold">{projectAchievementData?.[0]?.TotalBooking ?? 0}</p>
+                            </div>
+                            <div className="bg-gray-100 p-5 rounded-lg">
+                                <p className="text-sm text-gray-600">Revenue (₹)</p>
+                                <p className="font-semibold">{formatCurrency(projectAchievementData?.[0]?.TotalRevenue ?? 0)}</p>
+                            </div>
 
-
-                    <h2 className="text-lg pt-5 font-semibold text-gray-800">Channel Partner</h2>
-
-                    <DataTableWithOutBorder
-                        data={channelPartnerData}
-                        columns={channelPartnerColumns}
-                        emptyMessage="No Data Found"
-                        className="flex-1"
-                        fixedHeight={true}
-                    />
-
+                        </div>
+                    </div>
                 </div>
-            </div>
+            )}
+
+            {activeTab === 'Closing Target' && (
+                <div className="pt-5">
+                    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
+                        <DataTableWithOutBorder
+                            data={performanceReportClosingData}
+                            columns={PerformanceReportClosingColumns}
+                            emptyMessage="No Data Found"
+                            className="flex-1"
+                            fixedHeight={true}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'Sourcing Target' && (
+                <div className="pt-5">
+                    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
+                        <DataTableWithOutBorder
+                            columns={PerformanceReportSourcingColumns}
+                            data={performanceReportSourcingData}
+                            emptyMessage="No records Found"
+                            className="flex-1"
+                            fixedHeight={true}
+                        />
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'Channel Partner' && (
+                <div className="pt-5">
+                    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
+                        <DataTableWithOutBorder
+                            data={channelPartnerData}
+                            columns={channelPartnerColumns}
+                            emptyMessage="No Data Found"
+                            className="flex-1"
+                            fixedHeight={true}
+                        />
+                    </div>
+                </div>
+            )}
+
         </div>
+
     )
 
 };

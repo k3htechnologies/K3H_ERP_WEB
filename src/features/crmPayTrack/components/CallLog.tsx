@@ -409,7 +409,7 @@ export const CallLog: React.FC = () => {
         },
         {
             key: 'CallStatus',
-            label: 'Status',
+            label: 'Call Status',
             width: '15',
             sortable: false,
             align: 'center',

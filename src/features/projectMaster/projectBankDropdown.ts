@@ -13,12 +13,11 @@ export interface ProjectBankDropdownItem {
   AcType: string;
 }
 
-export const fetchProjectBankDropdown = async (_pageNumber: number, params?: { projectId?: number }): Promise<{ totalNumberOfRecord: number; itemList: ProjectBankDropdownItem[]; }> => {
+export const fetchProjectBankDropdown = async (_pageNumber: number, params?: { projectId?: number,bankName?:string }): Promise<{ totalNumberOfRecord: number; itemList: ProjectBankDropdownItem[]; }> => {
+  
   try {
-    const responseEither =
-      await projectMasterService.apiCallPullProjectMasterWithBankDetails(
-        params?.projectId ?? 0
-      );
+
+    const responseEither = await projectMasterService.apiCallPullProjectMasterWithBankDetails( params?.projectId ?? 0,params?.bankName ?? "");
 
     if (E.isLeft(responseEither)) {
       return { totalNumberOfRecord: 0, itemList: [] };

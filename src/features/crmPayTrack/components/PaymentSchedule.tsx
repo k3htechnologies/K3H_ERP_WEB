@@ -72,7 +72,13 @@ export const PaymentSchedule: React.FC = () => {
 
     const handleSearchChange = (value: string) => {
         setSearchTerm(value);
-        loadPaymentScheduleCrmDetails(value)
+
+        if (!value.trim()) {
+            loadPaymentScheduleCrmDetails('');
+            return;
+        }
+
+        loadPaymentScheduleCrmDetails(value);
     };
 
     const handleClearSearch = () => {
@@ -190,7 +196,7 @@ export const PaymentSchedule: React.FC = () => {
         return [
             {
                 key: "Name",
-                label: 'Name',
+                label: 'Stage (Milestone)',
                 width: '14',
                 align: 'left',
                 render: (_value, row) => {
@@ -365,7 +371,7 @@ export const PaymentSchedule: React.FC = () => {
                     const isDisabled =
                         isLocked ||
                         bookingApprovalStatus?.toUpperCase() !== 'APPROVED';
-                        
+
                     if (isLocked) return null;
 
                     return (

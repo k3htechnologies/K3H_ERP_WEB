@@ -3,7 +3,6 @@ import { FlatAlterationCrmDatasourceImpl } from '@/features/crmPayTrack/datasour
 import type {
     FilterWithPaginationFlatAlterationRequest,
     FlatAlterationRequestListResponse,
-    AddUpdateFlatAlterationRequest,
     FlatAlterationRequestSaveReponse
 } from '@/features/crmPayTrack/models/FlatAlterationRequestModel';
 
@@ -25,10 +24,10 @@ export const flatAlterationService = {
         }
     },
 
-    apiCallAddUpdateFlatAlterationRequest: async (params: AddUpdateFlatAlterationRequest): Promise<E.Either<Failure, FlatAlterationRequestSaveReponse>> => {
+    apiCallAddUpdateFlatAlterationRequest: async (formData: FormData): Promise<E.Either<Failure, FlatAlterationRequestSaveReponse>> => {
         try {
 
-            return E.right(await flatAlterationCrmDatasource.addUpdateFlatAlterationRequest(params));
+            return E.right(await flatAlterationCrmDatasource.addUpdateFlatAlterationRequest(formData));
 
         } catch (error: any) {
 

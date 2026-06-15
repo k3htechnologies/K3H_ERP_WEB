@@ -217,10 +217,13 @@ export const Summary: React.FC = () => {
                 if (E.isRight(response)) {
 
                     const booking = response.right.Data;
+
                     const item = Array.isArray(booking) ? booking[0] : booking;
 
                     setBookingData(item);
                     triggerRefresh();
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
                 }
                 else {
 
@@ -312,22 +315,22 @@ export const Summary: React.FC = () => {
                                 <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         <FieldItem label="Applicant Type" value={getSafeString(applicant?.ApplicantType)} className='text-blue-900 bold' />
-                                        <FieldItem label="Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
+                                        <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
                                         <FieldItem label="Mobile Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
                                         <FieldItem label="Email Id" value={getSafeString(applicant?.ApplicantEmailId)} />
-                                        <FieldItem label="Aadhar Card" value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
-                                        <FieldItem label="Pan Card" value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
-                                        <FieldItem label="Voting Id" value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
-                                        <FieldItem label="Passport" value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
+                                        <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
+                                        <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
+                                        <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
+                                        <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
                                         <FieldItem label="Driving License" value={getSafeString(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
                                         <FieldItem label="Voting ID Number" value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
-                                        <FieldItem label="GST Number" value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
+                                        <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
                                         <FieldItem label="Cancelled Cheque" value={getSafeString(applicant?.CancelledChequeURL)} urls={applicant?.CancelledChequeURL} isIcon />
-                                        <FieldItem label="POA" value={getSafeString(applicant?.POAURL)} urls={applicant?.POAURL} isIcon />
-                                        <FieldItem label="Income Form 16 IT" value={getSafeString(applicant?.IncomeForm16ITRURL)} urls={applicant?.IncomeForm16ITRURL} isIcon />
-                                        <FieldItem label="Nre/Nro/BankDetails" value={getSafeString(applicant?.NreNroBankDetailsURL)} urls={applicant?.NreNroBankDetailsURL} isIcon />
+                                        <FieldItem label="POA (if NRI Execution)" value={getSafeString(applicant?.POAURL)} urls={applicant?.POAURL} isIcon />
+                                        <FieldItem label="Income Docs (Form 16 / ITR)" value={getSafeString(applicant?.IncomeForm16ITRURL)} urls={applicant?.IncomeForm16ITRURL} isIcon />
+                                        <FieldItem label="NRE / NRO Bank Details" value={getSafeString(applicant?.NreNroBankDetailsURL)} urls={applicant?.NreNroBankDetailsURL} isIcon />
                                         <FieldItem label="Nominee Form" value={getSafeString(applicant?.NomineeFormURL)} urls={applicant?.NomineeFormURL} isIcon />
-                                        <FieldItem label="Statement Of Source Of Funds" value={getSafeString(applicant?.StatementOfSourceOfFundsURL)} urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
+                                        <FieldItem label="Statement of Source of Funds" value={getSafeString(applicant?.StatementOfSourceOfFundsURL)} urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
                                         <FieldItem label="Payment Proof" value={getSafeString(applicant?.PaymentProofURL)} urls={applicant?.PaymentProofURL} isIcon />
                                         <FieldItem label="Created By" value={getSafeString(applicant?.CreatedBy)} />
                                         <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(applicant?.CreatedDate ?? '')} />
@@ -353,22 +356,29 @@ export const Summary: React.FC = () => {
                             {swappedParkingData.map((parking, index) => (
                                 <div key={parking.ParkingId || index}>
 
+                                    <h3 className="text-sm font-semibold text-gray-500">
+                                        Parking {index + 1}
+                                    </h3>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4">
                                         <FieldItem label="Parking Number" value={getSafeString(parking.ParkingNumber)} />
+                                        <FieldItem label="Building" value={getSafeString(parking.BuildingNumber)} />
+                                        <FieldItem label="Wing" value={getSafeString(parking.Wing)} />
+                                        <FieldItem label="Floor" value={getSafeString(parking.Floor)} />
+
+
+
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-3 border-b border-[#135bec2e] pb-4">
                                         <FieldItem label="Category" value={getSafeString(parking.ParkingCategory)} />
                                         <FieldItem label="Type" value={getSafeString(parking.ParkingType)} />
                                         <FieldItem label="Size" value={getSafeString(parking.ParkingSubType)} />
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-3 border-b border-[#135bec2e] pb-4">
                                         <FieldItem label="Dimensions" value={getSafeString(parking.ParkingDimensions)} />
-                                        <FieldItem label="EV Charging" value={getSafeString(parking.IsEVChargingAvailable ? 'Yes' : 'No')} />
-                                        <FieldItem label="Parking Status" value={getSafeString(parking.ParkingStatus)} />
-                                        <FieldItem label="Building Number" value={getSafeString(parking.BuildingNumber)} />
+
+
 
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-3">
-                                        <FieldItem label="Wing" value={getSafeString(parking.Wing)} />
-                                        <FieldItem label="Floor" value={getSafeString(parking.Floor)} />
+                                        <FieldItem label="EV Charging" value={getSafeString(parking.IsEVChargingAvailable ? 'Yes' : 'No')} />
                                         <FieldItem label="Approval Status" value={getSafeString(parking.ApprovalStatus)} />
                                     </div>
                                 </div>
@@ -376,28 +386,35 @@ export const Summary: React.FC = () => {
                         </div>
                     ) : bookingData?.ParkingData && bookingData.ParkingData.length > 0 ? (
                         <div className="space-y-4">
-                            {bookingData.ParkingData.map((parking, index) => (
-                                <div key={parking.ParkingId || index}>
+                            {bookingData.ParkingData.map((parking, index) => {
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pb-4">
-                                        <FieldItem label="Parking Number" value={getSafeString(parking.ParkingNumber)} />
-                                        <FieldItem label="Category" value={getSafeString(parking.ParkingCategory)} />
-                                        <FieldItem label="Type" value={getSafeString(parking.ParkingType)} />
-                                        <FieldItem label="Size" value={getSafeString(parking.ParkingSubType)} />
+                                const isLast = index === (bookingData.ParkingData?.length ?? 0) - 1;
+
+                                return (
+                                    <div key={parking.ParkingId || index} className="pt-4">
+                                        <h3 className="text-sm font-semibold text-gray-500">
+                                            Parking {index + 1}
+                                        </h3>
+                                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
+                                            <FieldItem label="Parking Number" value={getSafeString(parking.ParkingNumber)} />
+                                            <FieldItem label="Building" value={getSafeString(parking.BuildingNumber)} />
+                                            <FieldItem label="Wing" value={getSafeString(parking.Wing)} />
+                                            <FieldItem label="Floor" value={getSafeString(parking.Floor)} />
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
+
+                                            <FieldItem label="Category" value={getSafeString(parking.ParkingCategory)} />
+                                            <FieldItem label="Type" value={getSafeString(parking.ParkingType)} />
+                                            <FieldItem label="Size" value={getSafeString(parking.ParkingSubType)} />
+                                            <FieldItem label="Dimensions" value={getSafeString(parking.ParkingDimensions)} />
+                                        </div>
+                                        <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
+
+                                            <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
+                                        </div>
                                     </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-3 border-b border-[#135bec2e] pb-4">
-                                        <FieldItem label="Dimensions" value={getSafeString(parking.ParkingDimensions)} />
-                                        <FieldItem label="EV Charging" value={getSafeString(parking.IsEVChargingAvailable ? 'Yes' : 'No')} />
-                                        <FieldItem label="Parking Status" value={getSafeString(parking.ParkingStatus)} />
-                                        <FieldItem label="Building Number" value={getSafeString(parking.BuildingNumber)} />
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-3">
-                                        <FieldItem label="Wing" value={getSafeString(parking.Wing)} />
-                                        <FieldItem label="Floor" value={getSafeString(parking.Floor)} />
-                                        <FieldItem label="Approval Status" value={getSafeString(parking.ApprovalStatus)} />
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     ) : (
                         <div className="py-6 text-center text-gray-500 text-sm">
@@ -409,7 +426,7 @@ export const Summary: React.FC = () => {
 
             <div className="col-span-7 pt-5">
                 <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4">
-                    <h4 className="text-lg font-semibold text-gray-900 pb-2">Flat Specification Remark</h4>
+                    <h4 className="text-lg font-semibold text-gray-900 pb-2">Flat Alteration Remarks</h4>
                     <div className="lg:col-span-3 pt-1">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4">
                             <FieldItem label="" value={bookingData?.FlatAlterationRemark || "-"} />
@@ -424,8 +441,8 @@ export const Summary: React.FC = () => {
                         <h4 className="text-lg font-semibold text-gray-900 pb-2">Cancellation Summary</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                             <FieldItem label="Current Status" value={bookingData?.ApprovalStatus || "-"} />
-                            <FieldItem label="Cancelled Date" value={formatDate_dd_MonthName_yy(bookingData?.CreatedDate ?? '')} />
-                            <FieldItem label="Cancelled By" value={getSafeString(bookingData?.CreatedBy)} />
+                            <FieldItem label="Cancelled Date" value={formatDate_dd_MonthName_yy(bookingData?.CancelledDate ?? '')} />
+                            <FieldItem label="Cancelled By" value={getSafeString(bookingData?.CancelledBy)} />
                         </div>
                     </div>
                 </div>
@@ -458,7 +475,7 @@ export const Summary: React.FC = () => {
                     loadCancelBooking();
                 }}
                 title="Are you sure you want to cancel this booking?"
-                message="Please save all your work before confirming."
+                message="Ensure that all required approvals are completed before proceeding.Once cancelled, this booking cannot be restored"
                 confirmText="Yes"
                 cancelText="No"
                 loading={false}

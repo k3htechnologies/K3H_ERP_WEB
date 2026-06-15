@@ -121,54 +121,62 @@ export const CustomTable: React.FC<Props> = ({
   const renderPagination = () => {
     if (!pagination) return null
 
-    const { currentPage, totalPages, totalRecords, pageSize, onPageChange } =
-      pagination
-
+    const { currentPage, totalPages, totalRecords, pageSize, onPageChange } = pagination
     const startRecord = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
-
     const endRecord = Math.min(currentPage * pageSize, totalRecords)
 
     return (
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-2 bg-white border-t border-gray-200">
-
         <div className="text-sm text-gray-700">
           Showing {startRecord} to {endRecord} of {totalRecords} entries
         </div>
-
         <div className="flex items-center space-x-2">
-
           <button
             type="button"
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="p-2 border border-gray-200 rounded"
+            disabled={totalRecords === 0 ? true : currentPage === 1}
+            className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft className="h-4 w-4" />
           </button>
 
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              type="button"
-              onClick={() => onPageChange(i + 1)}
-              className={`px-3 py-1 rounded ${currentPage === i + 1
-                ? "bg-blue-500 text-white"
-                : "hover:bg-gray-100"
-                }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum
+              if (totalPages <= 5) {
+                pageNum = i + 1
+              } else if (currentPage <= 3) {
+                pageNum = i + 1
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i
+              } else {
+                pageNum = currentPage - 2 + i
+              }
+
+              return (
+                <button
+                  type="button"
+                  key={pageNum}
+                  onClick={() => onPageChange(pageNum)}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors duration-200 ${currentPage === pageNum
+                    ? 'bg-blue-500 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                >
+                  {pageNum}
+                </button>
+              )
+            })}
+          </div>
 
           <button
             type="button"
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="p-2 border border-gray-200 rounded"
+            disabled={totalRecords === 0 ? true : currentPage === totalPages}
+            className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            <ChevronRight size={16} />
+            <ChevronRight className="h-4 w-4" />
           </button>
-
         </div>
       </div>
     )

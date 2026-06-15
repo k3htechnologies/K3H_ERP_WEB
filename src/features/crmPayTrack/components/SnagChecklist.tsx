@@ -109,8 +109,6 @@ export const SnagChecklist: React.FC = () => {
 
                     setSnagCheckListData(response.right.Data);
 
-                    loadSnagChecklistData()
-
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
                 } else {

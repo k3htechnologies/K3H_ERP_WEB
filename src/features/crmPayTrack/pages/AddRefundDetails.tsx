@@ -9,7 +9,7 @@ import type { ProjectWithBankDetails } from "@/features/projectMaster/models/Pro
 import { fetchProjectBankDropdown } from "@/features/projectMaster/projectBankDropdown";
 import { fetchBankListMasterDropdown } from '@/features/bankListMaster/bankListMasterDropDown';
 import { Input } from "@/ui/components/forms";
-import { filterIFSC, filterNumbers } from "@/core/utils/fileValidation";
+import { filterIFSC, filterNumbers, isValidIFSC } from "@/core/utils/fileValidation";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { REFUNDED_DETAILS_AMOUNT_TYPE_OPTIONS, PAYMENT_MODE } from '@/core/constants';
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
@@ -135,14 +135,16 @@ export const AddRefundDetails: React.FC = () => {
     }, [projectId, bookingId]);
 
 
-    const fetchProjectBankList = useCallback
-        (async (page: number) => {
-            return fetchProjectBankDropdown(page, {
-                projectId: Number(projectId)
+    const fetchProjectBankList = useCallback(
+        async (pageNumber: number, params?: { value?: string }) => {
+            return fetchProjectBankDropdown(pageNumber, {
+                projectId: projectId || 0,
+                bankName: params?.value || ""
             });
         },
-            [projectId]
-        );
+        [projectId]
+    );
+
 
     const validateAddRefundAmountDetails = (): {
 
@@ -168,12 +170,19 @@ export const AddRefundDetails: React.FC = () => {
         if (!formData.BankListMasterId) {
             newErrors.BankListMasterId = 'Bank Name is required.';
         }
-        if (!formData.AccountNumber) {
-            newErrors.AccountNumber = 'Account Number is required.';
+        if (!formData.AccountNumber?.trim()) {
+            newErrors.AccountNumber = "Account Number is required.";
+        } else if (formData.AccountNumber.trim().length > 18) {
+            newErrors.AccountNumber = "Account Number must be at most 50 characters";
         }
-        if (!formData.IFSCCode) {
-            newErrors.IFSCCode = 'IFSC Code is required.';
+        if (!formData.IFSCCode?.trim()) {
+            newErrors.IFSCCode = "IFSC Code is required.";
+        } else if (formData.IFSCCode.trim().length > 12) {
+            newErrors.IFSCCode = "IFSC Code must be at most 50 characters";
+        } else if (!isValidIFSC(formData.IFSCCode.trim())) {
+            newErrors.IFSCCode = "Enter a valid IFSC Code";
         }
+        
         if (!formData.PaymentFor) {
             newErrors.PaymentFor = 'Payment For is required.';
         }
@@ -343,8 +352,7 @@ export const AddRefundDetails: React.FC = () => {
                 <div>
                 </div>{" "}
             </Loader>
-
-            <div className="flex-1 overflow-y-auto thin-scroll ">
+            <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
                 <form onSubmit={handleAddUpdateRefundedAmountLedgerDetails}>
 
                     <div className="space-y-4 pb-2">
@@ -378,6 +386,8 @@ export const AddRefundDetails: React.FC = () => {
                             </div>
 
                             <div>
+
+
                                 <Input
                                     label="Account Number"
                                     placeholder="Enter Account Number"
@@ -413,7 +423,7 @@ export const AddRefundDetails: React.FC = () => {
                                 <SingleSelectDropdownWithPagination
                                     label="Bank"
                                     required
-                                    title="Select Bank"
+                                    title="Select Bank Name"
                                     size="lg"
                                     dataFetchCallBack={fetchBankListMasterDropdown}
                                     onSelected={(item) => {
@@ -438,8 +448,9 @@ export const AddRefundDetails: React.FC = () => {
                                     error={errors.AccountNumber}
                                     placeholder="Enter Account Number"
                                     required
-                                    maxLength={15}
+                                    maxLength={18}
                                 />
+
                             </div>
 
                             <div>
@@ -507,12 +518,12 @@ export const AddRefundDetails: React.FC = () => {
 
                             <div>
                                 <Input
-                                    label="Transaction No. / Cheque No. / Demand Draft Number"
+                                    label="Transaction / Cheque / Demand Draft No."
                                     required
                                     value={formData.TransactionChequeDemandDraftNumber || ''}
                                     onChange={(e) => handleFieldChange('TransactionChequeDemandDraftNumber', e.target.value)}
                                     error={errors.TransactionChequeDemandDraftNumber}
-                                    placeholder="Enter Transaction / Cheque / Demand Draft Number"
+                                    placeholder="Enter Transaction / Cheque / Demand Draft No"
 
                                 />
                             </div>

@@ -439,7 +439,7 @@ export const CollectionReport: React.FC = () => {
                 isShowCustomizeButton={false}
                 isShowAddButton={false}
                 isShowImportButton={false}
-                isShowExportButton={canExport}
+                isShowExportButton={projectWiseCollectionReportList.length > 0 && canExport}
                 onExportExcel={handleExportProjectWiseCollectionReportExcelFile}
                 onExportPdf={handleExportProjectWiseCollectionReportPdfFile}
                 exportLoading={isLoading}
@@ -449,7 +449,7 @@ export const CollectionReport: React.FC = () => {
                 key={searchTerm}
                 data={projectWiseCollectionReportList}
                 pagination={ProjectWiseCollectionReportPaginationInfo}
-                emptyMessage="No Data Found"
+                emptyMessage="No collection reports found"
                 className="flex-1"
 
                 header={(row) => (

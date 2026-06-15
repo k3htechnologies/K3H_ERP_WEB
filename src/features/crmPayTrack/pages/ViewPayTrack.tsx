@@ -76,7 +76,7 @@ export const ViewPayTrack: React.FC = () => {
             titleText={`Booking Details : ${bookingName}`}
             subTitleText={bookingType ?? ""}
             subSubTitleText={flat ?? ""}
-            subSubSubTitleText={bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? "" : bookingApprovalStatus}
+             subSubSubTitleText={bookingApprovalStatus ?? ""}
             cancelText="Back"
             EditText="Edit"
             canAction={activeTab === "BookingForm"  && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}

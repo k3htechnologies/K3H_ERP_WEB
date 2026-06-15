@@ -4,10 +4,9 @@ import { salesDashboardService } from '@/features/salesDashboard/services/SalesD
 import { useToast } from '@/core/hooks/useToast';
 import * as E from 'fp-ts/Either';
 import { Loader } from '@/core/utils/loader';
-import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import Enquiries from "@/features/salesDashboard/components/Enquiries";
 import FollowUp from "@/features/salesDashboard/components/FollowUp";
-import type { Table0, Table1, Table2, Table3, Table4, Table6,Table7 } from "@/features/salesDashboard/models/SalesDashboardModel";
+import type { Table0, Table1, Table2, Table3, Table4, Table6, Table7 } from "@/features/salesDashboard/models/SalesDashboardModel";
 import ClosingTarget from "@/features/salesDashboard/components/ClosingTarget";
 import SourcingTarget from "@/features/salesDashboard/components/SourcingTarget";
 import AttendanceSummary from "@/features/dashboard/components/AttendanceSummary";
@@ -15,6 +14,8 @@ import type { ProjectAchievementData } from "@/features/achievement/models/Achie
 import ProjectAchievement from "@/features/salesDashboard/components/ProjectAchievement";
 import { DateRangeWithActions } from "@/ui/components/DateRangeWithActions";
 import RecentBooking from "@/features/salesDashboard/components/RecentBooking";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 
 const SalesDashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
@@ -29,7 +30,7 @@ const SalesDashboard: React.FC = () => {
     const [employeeOverviewTable, setEmployeeOverviewTable] = useState<Table7[]>([]);
 
     const { addToast } = useToast();
-    const { projectId } = useProject();
+    const [projectId, setProjectId] = useState<number>(0);
 
     const [filterType, setFilterType] = useState<"TODAY" | "WEEKLY" | "MONTHLY" | "DATEWISE">("MONTHLY");
     const [fromDate, setFromDate] = useState<string | null>(null);
@@ -42,6 +43,7 @@ const SalesDashboard: React.FC = () => {
         if (filterType.toUpperCase() === "DATEWISE" && (!fromDate || !toDate)) return;
 
         loadSalesDashboardData();
+
     }, [projectId, filterType, fromDate, toDate]);
 
     //#region DATA LOADING | FETCH |  LOAD 
@@ -141,11 +143,28 @@ const SalesDashboard: React.FC = () => {
                     </div>
                 )}
 
+                <div className="flex justify-end">
+                    <div className="w-full md:w-100">
+                        <SinglePageSelection
+                            required
+                            options={(LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).map(opt => ({
+                                label: opt.ProjectName,
+                                value: opt.ProjectId
+                            }))}
+
+                            value={projectId}
+                            onChange={(value) => setProjectId(Number(value) || 0)}
+
+                            placeholder="All Project"
+                        />
+                    </div>
+                </div>
+
             </div>
 
             <div>
 
-                {enquiryData.length > 0 && shouldLoadData &&
+                {attendanceSummaryData.length > 0 && shouldLoadData &&
                     <div className="grid grid-cols-3 gap-5">
                         <div className="col-span-3 lg:col-span-1">
                             <AttendanceSummary attendanceSummaryData={attendanceSummaryData} employeeOverviewTable={employeeOverviewTable} />

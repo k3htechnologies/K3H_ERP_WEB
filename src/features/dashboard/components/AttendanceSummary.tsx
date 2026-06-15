@@ -75,7 +75,7 @@ export default function AttendanceSummary({ attendanceSummaryData, employeeOverv
             label: "Designation",
             align: "left" as any,
             render: (value: string) => (
-                <span className="font-medium text-black">
+                <span className="text-black">
                     {(value || '')}
                 </span>),
         },
@@ -85,7 +85,7 @@ export default function AttendanceSummary({ attendanceSummaryData, employeeOverv
             label: "Status",
             align: "center",
             render: (value: string) => (
-                <span className="font-medium text-black">
+                <span className="text-black">
                     {(value || '')}
                 </span>),
         },
@@ -103,7 +103,7 @@ export default function AttendanceSummary({ attendanceSummaryData, employeeOverv
                 const formattedTime = `${Number(parts[0])}:${parts[1]}`;
 
                 return (
-                    <span className="font-medium text-black">
+                    <span className=" text-black">
                         {getSafeString(formattedTime)}
                     </span>
                 );
@@ -123,7 +123,7 @@ export default function AttendanceSummary({ attendanceSummaryData, employeeOverv
                 const formattedTime = `${Number(parts[0])}:${parts[1]}`;
 
                 return (
-                    <span className="font-medium text-black">
+                    <span className="text-black">
                         {getSafeString(formattedTime)}
                     </span>
                 );
@@ -136,7 +136,7 @@ export default function AttendanceSummary({ attendanceSummaryData, employeeOverv
     return (
         <div className="space-y-3 pt-5">
             <div className="bg-white p-5 rounded-xl  border border-gray-100 h-[370px]" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
-                <p className="text-md font-semibold text-gray-500 pb-2">Attendance Summary</p>
+                <p className="text-md font-semibold pb-2">Attendance Summary</p>
 
                 {(attendanceSummaryData?.length ?? 0 > 0) ? (
                     <>
@@ -163,7 +163,20 @@ export default function AttendanceSummary({ attendanceSummaryData, employeeOverv
                             <div className="space-y-3">
                                 {data?.length > 0 ? (
                                     data.map((t, i) => (
-                                        <div key={i} onClick={() => setSelectedStatus(t.name)} className="cursor-pointer  rounded-lg p-2 flex items-center gap-3">
+
+                                        <div
+                                            key={i}
+                                            onClick={() => {
+                                                if ((t.value ?? 0) > 0) {
+                                                    setSelectedStatus(t.name);
+                                                }
+                                            }}
+                                            className={`rounded-lg p-2 flex items-center gap-3 ${(t.value ?? 0) > 0
+                                                    ? "cursor-pointer"
+                                                    : "cursor-not-allowed opacity-50"
+                                                }`}
+                                        >
+
                                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: t.color }}></div>
 
                                             <p className="font-semibold text-[22px]">{t.value ?? 0}</p>

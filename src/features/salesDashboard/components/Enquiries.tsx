@@ -218,7 +218,7 @@ export default function Enquiries({ enquiryData }: Props) {
             <h2 className="text-lg font-semibold text-gray-800">
                Enquiries{" "}
                 <span className="text-sm font-normal text-gray-500">
-                    (Todays)
+                    ({enquiryList.length} Record's)
                 </span>
             </h2>
 

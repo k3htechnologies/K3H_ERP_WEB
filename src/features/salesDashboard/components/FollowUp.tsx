@@ -190,7 +190,11 @@ export default function FollowUp({ enquiryFollowUpData }: Props) {
     return (
         <div className="space-y-3 pt-4">
 
-            <h2 className="text-lg font-semibold text-gray-800">Follow Up</h2>
+            <h2 className="text-lg font-semibold text-gray-800">Follow Up  {" "}
+                <span className="text-sm font-normal text-gray-500">
+                    ({tableData.length} Record's)
+                </span>
+            </h2>
 
             <div className="flex-1 bg-white rounded-xl p-5 h-[310px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
 

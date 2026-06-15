@@ -24,6 +24,8 @@ import { Input } from '@/ui/components/forms';
 import DataTableExpandable from '@/ui/components/DataTable/DataTableExpandable';
 import { DataTableWithOutBorder } from '@/ui/components/DataTable/DataTableWithoutBorder';
 import { usePayTrackBookingListState } from '../context/PayTrackBookingListStateContext';
+import { filterNumbers } from '@/core/utils/fileValidation';
+import { formatCurrency } from '@/core/utils/comman';
 
 const PayTrack: React.FC = () => {
 
@@ -65,7 +67,7 @@ const PayTrack: React.FC = () => {
                     Flat: filterParams.Flat || undefined,
                     Floor: filterParams.Floor || undefined,
                     ApplicantName: filterParams.ApplicantName?.trim() || undefined,
-                    ApplicantMobileNumber: filterParams.ApplicantMobileNumber || undefined,
+                    ApplicantMobileNumber: filterParams.ApplicantMobileNumber?.trim() || undefined,
                     Configuration: filterParams.Configuration || undefined,
                     SortBy: getSortByParam(sortInfoParam ?? null, payTrackColumns),
                 };
@@ -302,7 +304,7 @@ const PayTrack: React.FC = () => {
                 width: "14",
                 sortable: false,
                 align: "left",
-                render: (value) => (value ? `+91 ${value}` : "-"),
+                render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
             },
             {
                 key: 'BookingType',
@@ -310,6 +312,14 @@ const PayTrack: React.FC = () => {
                 width: '14',
                 align: 'left',
                 render: value => value || '-'
+            },
+             {
+                key: 'AgreementValue',
+                label: 'Agreement Value (₹)',
+                width: '18',
+                sortable: false,
+                align: 'right',
+                render: value => value ? formatCurrency(value) : 0
             },
             {
                 key: 'BuildingNumber',
@@ -334,7 +344,7 @@ const PayTrack: React.FC = () => {
             },
             {
                 key: 'Flat',
-                label: 'Flat',
+                label: 'Unit',
                 width: '14',
                 align: 'left',
                 render: value => value || '-'
@@ -363,17 +373,18 @@ const PayTrack: React.FC = () => {
                 render: value => (value ? formatDate_dd_MonthName_yy(value) : '-')
             },
             {
+                key: 'BookingApprovalStatus',
+                label: 'Booking Approval Status ',
+                width: '14',
+                align: 'left',
+                render: value => value || '-'
+            },
+            {
                 key: "ApprovalGroup",
                 label: "Approval Details",
                 align: "center",
                 children: [
-                    {
-                        key: 'BookingApprovalStatus',
-                        label: 'Status',
-                        width: '14',
-                        align: 'left',
-                        render: value => value || '-'
-                    },
+                    
                     {
                         key: 'PendingLedgerApprovalCount',
                         label: 'Pending Ledger',
@@ -415,7 +426,7 @@ const PayTrack: React.FC = () => {
             key: 'type',
             label: 'Type',
             align: 'left',
-            width: "200px",
+            width: "300px",
             render: (value, row) => (
                 <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
                     {value}
@@ -429,7 +440,7 @@ const PayTrack: React.FC = () => {
             width: "300px",
             render: (value, row) => (
                 <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
-                    ₹ {value.toLocaleString()}
+                     {formatCurrency(value)}
                 </span>
             )
         },
@@ -440,7 +451,7 @@ const PayTrack: React.FC = () => {
             width: "300px",
             render: (value, row) => (
                 <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
-                    ₹ {value.toLocaleString()}
+                   {formatCurrency(value)}
                 </span>
             )
         },
@@ -454,7 +465,7 @@ const PayTrack: React.FC = () => {
 
                 return (
                     <span className={row.isTotal ? 'font-bold text-gray-500' : ''}>
-                        ₹ {pending.toLocaleString()}
+                        {formatCurrency(pending)}
                     </span>
                 );
             }
@@ -513,9 +524,9 @@ const PayTrack: React.FC = () => {
                 onSearchChange={searchPayTrackBookings}
                 onClearSearch={clearPayTrackSearchBookings}
                 isShowCustomizeButton
-                filters={tempFilters}
+                filters={filters}
                 onOpenFilter={() => {
-                    setTempFilters(tempFilters);
+                    setTempFilters(filters || {});
                     setShowFilterPopup(true);
                 }}
 
@@ -559,8 +570,8 @@ const PayTrack: React.FC = () => {
                                 paid: row.ReceivedRegistrationFees || 0,
                             },
                             {
-                                type: 'Agreement Value',
-                                total: row.AgreementValue || 0,
+                                type: 'Agreement Value (Without TDS)',
+                                total: Number(row.AgreementValue) - Number(row.AgreementValueTDS) || 0,
                                 paid: row.ReceivedAgreementValue || 0,
                             },
                             {
@@ -668,19 +679,19 @@ const PayTrack: React.FC = () => {
                         <div>
                             <Input
                                 type="text"
-                                label='Applicants Name'
+                                label='Applicant Name'
                                 value={tempFilters.ApplicantName || ''}
                                 onChange={e => handleFilterChange('ApplicantName', e.target.value)}
-                                placeholder="Enter Applicants Name"
+                                placeholder="Enter Applicant Name"
                             />
                         </div>
                         <div>
                             <Input
-                                type="number"
-                                label='Applicants Mobile Number'
+                                label='Applicant Mobile Number'
                                 value={tempFilters.ApplicantMobileNumber || ''}
-                                onChange={e => handleFilterChange('ApplicantMobileNumber', e.target.value)}
-                                placeholder="Enter Applicants Mobile Number"
+                                onChange={e => handleFilterChange('ApplicantMobileNumber', filterNumbers(e.target.value))}
+                                placeholder="Enter Applicant Mobile Number"
+                                 maxLength={13}
                             />
                         </div>
                         <div>

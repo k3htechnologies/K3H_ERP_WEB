@@ -127,6 +127,11 @@ export interface BookingData {
     ModifiedById: number | null;
     ModifiedBy: string | null;
     ModifiedDate: string | null;
+
+    CancelledById: number | null;
+    CancelledBy: string | null;
+    CancelledDate: string | null;
+
     IsApproval: boolean;
     ApprovalStatus: string | null;
     ProjectId: number | null;

@@ -925,7 +925,13 @@ const AddUpdateEmployeePage: React.FC = () => {
                 <Input label="Account Number" placeholder="Enter Account Number" required value={formData.AccountNo} maxLength={18} onChange={(e) => handleFieldChange("AccountNo", filterNumbers(e.target.value))} error={errors.AccountNo} />
               </div>
               <div>
-                <Input label="IFSC Code" placeholder="Enter IFSC Code" required value={formData.IFSCCode} onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))} error={errors.IFSCCode} />
+                <Input 
+                 label="IFSC Code"
+                  placeholder="Enter IFSC Code" 
+                  required 
+                  value={formData.IFSCCode} 
+                  onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))} 
+                  error={errors.IFSCCode} />
               </div>
             </div>
           </div>

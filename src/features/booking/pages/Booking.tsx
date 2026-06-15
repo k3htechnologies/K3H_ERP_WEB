@@ -31,7 +31,7 @@ import ApprovalActions from '@/features/modulesWorkflowApproval/components/Appro
 import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService';
 import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/ApprovalLogModal';
 import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
-import { filterNumbersWithDecimal } from '@/core/utils/fileValidation';
+import { filterNumbers, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
 import { copyToClipboard } from '@/core/utils/comman';
 import { Copy } from 'lucide-react';
 
@@ -647,7 +647,7 @@ export const Booking: React.FC = () => {
                                 label='Applicant Mobile Number'
                                 type="text"
                                 value={tempFilters.ApplicantMobileNumber || ''}
-                                onChange={e => handleFilterChange('ApplicantMobileNumber', e.target.value)}
+                                onChange={e => handleFilterChange('ApplicantMobileNumber', filterNumbers(e.target.value))}
                                 placeholder="Enter Mobile Number"
                                 maxLength={13}
                             />

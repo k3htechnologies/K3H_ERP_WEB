@@ -1,6 +1,6 @@
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { getFollowUpColor, getStatusColor } from '@/features/enquiry/pages/Status';
-import { DataTableWithOutBorder, type TableColumn } from '@/ui/components/DataTable/DataTableWithoutBorder';
+import { type TableColumn } from '@/ui/components/DataTable/DataTableWithoutBorder';
 import { useCallback, useEffect, useState } from 'react';
 import type { Table1 } from '@/features/salesDashboard/models/SalesDashboardModel';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
@@ -10,6 +10,7 @@ import { Copy } from 'lucide-react';
 import useToast from '@/core/hooks/useToast';
 import { useNavigate } from 'react-router-dom';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
+import { DataTableWithHeaderRowDivider } from '@/ui/components/DataTable/DataTableWithHeaderRowDivider';
 
 interface Props {
     enquiryFollowUpData: Table1[];
@@ -92,7 +93,7 @@ export default function FollowUp({ enquiryFollowUpData }: Props) {
             sortable: false,
             align: 'left',
             render: (value, row) => {
-                
+
                 if (row?.IsAction) {
                     return (
                         <TooltipText
@@ -188,22 +189,22 @@ export default function FollowUp({ enquiryFollowUpData }: Props) {
 
     //#region
     return (
-        <div className="space-y-3 pt-4">
+        <div className="space-y-3">
 
-            <h2 className="text-lg font-semibold text-gray-800">Follow Up  {" "}
-                <span className="text-sm font-normal text-gray-500">
-                    ({tableData.length} Record's)
-                </span>
-            </h2>
+            <div className="flex-1 bg-white rounded-xl p-5 h-[410px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
 
-            <div className="flex-1 bg-white rounded-xl p-5 h-[310px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
+                <h3 className="font-semibold text-gray-500">Awaiting Follow Up <span className="text-sm font-normal text-gray-500">
+                    ({tableData.length} Records)
+                </span></h3>
 
-                <DataTableWithOutBorder
-                    columns={columns}
-                    data={tableData}
-                    emptyMessage="No records Found"
-                    fixedHeight={true}
-                />
+                <div className='pt-5'>
+                    <DataTableWithHeaderRowDivider
+                        columns={columns}
+                        data={tableData}
+                        emptyMessage="No records Found"
+                        fixedHeight={true}
+                    />
+                </div>
             </div>
         </div>
     );

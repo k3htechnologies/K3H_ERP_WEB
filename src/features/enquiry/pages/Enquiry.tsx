@@ -925,7 +925,7 @@ export const Enquiry: React.FC = () => {
 
                     </div>
                     {/* SUB SOURCE */}
-                    {tempFilters.Source === 'Direct Walking' && (
+                    {tempFilters.Source === 'Direct Walkin' && (
                         <div>
                             <SinglePageSelection
                                 label="Sub Source"
@@ -941,7 +941,7 @@ export const Enquiry: React.FC = () => {
                     )}
 
                     {/* SUB SUB SOURCE */}
-                    {tempFilters.Source === 'Direct Walking' &&
+                    {tempFilters.Source === 'Direct Walkin' &&
                         tempFilters.SubSource === 'Advertisement' && (
                             <div>
                                 <SinglePageSelection

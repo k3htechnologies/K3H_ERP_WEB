@@ -465,20 +465,20 @@ const ViewEnquiry: React.FC = () => {
                                     </>
                                 )}
 
-                                {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Advertisement' && (
+                                {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Advertisement' && (
                                     <>
                                         <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
                                         <FieldItem label="Sub Sub Source" value={safe(enquiryData?.SubSubSource)} />
                                     </>
                                 )}
 
-                                {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource !== 'Advertisement' && (
+                                {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource !== 'Advertisement' && (
                                     <>
                                         <FieldItem label="Sub Source" value={safe(enquiryData?.SubSource)} />
                                     </>
                                 )}
 
-                                {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Reference' && (
+                                {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Reference' && (
                                     <>
                                         <FieldItem label="Referral Project Name" value={safe(enquiryData?.ReferralProjectName ?? "")} />
                                         <FieldItem label="Referral Unit Number" value={safe(enquiryData?.ReferralUnitNumber ?? "")} />
@@ -486,7 +486,7 @@ const ViewEnquiry: React.FC = () => {
 
                                     </>
                                 )}
-                                {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Loyalty' && (
+                                {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Loyalty' && (
                                     <>
                                         <FieldItem label="Existing Project Name" value={safe(enquiryData?.LoyaltyExistingProjectName ?? "")} />
                                         <FieldItem label="Existing Unit Number" value={safe(enquiryData?.LoyaltyExistingUnitNumber ?? "")} />
@@ -494,7 +494,7 @@ const ViewEnquiry: React.FC = () => {
 
                                     </>
                                 )}
-                                {enquiryData?.Source === 'Direct Walking' && enquiryData?.SubSource === 'Employee Reference' && (
+                                {enquiryData?.Source === 'Direct Walkin' && enquiryData?.SubSource === 'Employee Reference' && (
                                     <>
                                         <FieldItem label="Employee Reference Name" value={safe(enquiryData?.EmployeeReferenceName ?? "")} />
                                         <FieldItem label="Employee Reference Mobile Number" value={safe(enquiryData?.EmployeeReferenceMobileNumber) ? `+91 ${safe(enquiryData?.EmployeeReferenceMobileNumber)}` : '-'} />

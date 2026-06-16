@@ -1082,11 +1082,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                   />
                 </div>
 
-                {formData.Source === "Direct Walking" && (
+                {formData.Source === "Direct Walkin" && (
                   <div>
                     <SinglePageSelection
                       label="Sub Source"
-                      required={formData.Source === "Direct Walking" ? true : false}
+                      required={formData.Source === "Direct Walkin" ? true : false}
                       placeholder="Select Sub Source"
                       disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                       value={formData.SubSource ?? ""}
@@ -1108,11 +1108,11 @@ export const AddUpdateEnquiry: React.FC = () => {
                   </div>
                 )}
 
-                {formData.Source === "Direct Walking" && formData.SubSource === "Advertisement" && (
+                {formData.Source === "Direct Walkin" && formData.SubSource === "Advertisement" && (
                   <div>
                     <SinglePageSelection
                       label="Sub Sub Source"
-                      required={formData.Source === "Direct Walking" && formData.SubSource === "Advertisement" ? true : false}
+                      required={formData.Source === "Direct Walkin" && formData.SubSource === "Advertisement" ? true : false}
                       placeholder="Select Sub Sub Source"
                       disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                       value={formData.SubSubSource ?? ""}
@@ -1126,7 +1126,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                   </div>
                 )}
 
-                {formData.Source === "Direct Walking" && formData.SubSource === "Reference" && (
+                {formData.Source === "Direct Walkin" && formData.SubSource === "Reference" && (
                   <>
                     <div>
                       <SingleSelectDropdownWithPagination
@@ -1187,7 +1187,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     </div>
                   </>
                 )}
-                {formData.Source === "Direct Walking" && formData.SubSource === "Loyalty" && (
+                {formData.Source === "Direct Walkin" && formData.SubSource === "Loyalty" && (
                   <>
                     <div>
                       <SingleSelectDropdownWithPagination
@@ -1248,7 +1248,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                   </>
                 )}
 
-                {formData.Source === "Direct Walking" && formData.SubSource === "Employee Reference" && (
+                {formData.Source === "Direct Walkin" && formData.SubSource === "Employee Reference" && (
                   <>
                     <div>
                       <SingleSelectDropdownWithPagination

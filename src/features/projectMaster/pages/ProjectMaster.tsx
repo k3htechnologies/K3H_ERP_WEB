@@ -206,8 +206,8 @@ export const ProjectMaster: React.FC = () => {
 
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
-    fetchProjectList(page);
-  }, [updateListState]);
+  }, [sortInfo, updateListState],
+  );
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
     updateListState({ sortInfo: sort, page: 1 });

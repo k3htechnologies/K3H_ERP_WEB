@@ -3,7 +3,7 @@ import useToast from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { MASTER_DATA, REPORT_TYPE_OPTIONS, YEAR_OPTIONS } from "@/core/constants";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dayName_dd_mm_yyyy, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { DataTable, type FilterInfo, type PaginationInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import usePagination from "@/core/hooks/usePagination";
 import { runApiWithLoader } from "@/core/utils";
@@ -121,7 +121,7 @@ const IbmObmReport: React.FC = () => {
             projectWiseIbmObmEmployeesList.forEach(emp =>
                 emp.IbmObmStagesData?.forEach(item => {
                     if (item.Date)
-                        set.add(formatDate_dd_mm_yyyy(item.Date));
+                        set.add(formatDate_dayName_dd_mm_yyyy(item.Date));
                 })
             );
 
@@ -373,6 +373,8 @@ const IbmObmReport: React.FC = () => {
                     setFilters({ ...tempFilters });
 
                     fetchIbmObmReport(1, tempFilters);
+
+                    setShowFilterPopup(false);
                 }}
                 saveText="Apply "
                 cancelText="Clear"

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { DataTableWithOutBorder, type TableColumn } from '@/ui/components/DataTable/DataTableWithoutBorder';
+import { type TableColumn } from '@/ui/components/DataTable/DataTableWithoutBorder';
 import { Button } from "@/ui/components/forms";
 import { ConfirmationDialogBox } from '@/core/utils/confirmationDialogBox';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
@@ -11,6 +11,7 @@ import * as E from "fp-ts/Either";
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { copyToClipboard } from '@/core/utils/comman';
 import { Copy } from 'lucide-react';
+import { DataTableWithHeaderRowDivider } from '@/ui/components/DataTable/DataTableWithHeaderRowDivider';
 
 interface Props {
     enquiryData: Table0[];
@@ -33,12 +34,12 @@ export default function Enquiries({ enquiryData }: Props) {
 
     //#region DATA LOADING | FETCH |  LOAD 
     const loadSalesDashboardData = useCallback(async () => {
-        
+
         await runApiWithLoader(setIsLoading,
             setLoadingMessage,
             async () => {
                 const response = await salesDashboardService.apiCallPullSalesDashboard(0);
-                
+
                 if (E.isRight(response)) {
 
                     const e = response.right.Data;
@@ -81,7 +82,7 @@ export default function Enquiries({ enquiryData }: Props) {
                     loadSalesDashboardData();
 
                 } else {
-                    
+
                     addToast({ type: "error", title: response.left.message });
                 }
                 setIsConfirmationDialogBoxOpen(false);
@@ -103,7 +104,7 @@ export default function Enquiries({ enquiryData }: Props) {
             fixed: 'left',
             render: (value) => value || "-",
         },
-          {
+        {
             key: 'SystemGeneratedCode',
             label: 'Enquiry Code',
             sortable: false,
@@ -127,7 +128,7 @@ export default function Enquiries({ enquiryData }: Props) {
                                     e.stopPropagation();
                                     const success = await copyToClipboard(value);
                                     if (success) {
-                                        addToast({ type: 'success', title: `${value} Copied!`});
+                                        addToast({ type: 'success', title: `${value} Copied!` });
                                     }
                                 }}
                                 color="transparent"
@@ -190,7 +191,7 @@ export default function Enquiries({ enquiryData }: Props) {
             align: 'center',
             fixed: 'right',
             render: (_value, row) => {
-                
+
                 return (
                     <Button
                         onClick={() => {
@@ -213,23 +214,25 @@ export default function Enquiries({ enquiryData }: Props) {
 
     //#region
     return (
-        <div className="space-y-3 pt-4">
+        <div className="space-y-3">
 
-            <h2 className="text-lg font-semibold text-gray-800">
-               Enquiries{" "}
-                <span className="text-sm font-normal text-gray-500">
-                    ({enquiryList.length} Record's)
-                </span>
-            </h2>
+            <div className="flex-1 bg-white rounded-xl p-5 h-[410px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
 
-            <div className="flex-1 bg-white rounded-xl p-5 h-[310px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
-                <DataTableWithOutBorder
-                    columns={columns}
-                    data={enquiryList}
-                    emptyMessage="No records Found"
-                    fixedHeight={true}
-                    
-                />
+
+                <h3 className="font-semibold text-gray-500">Time-Out Enquiries <span className="text-sm font-normal text-gray-500">
+                    ({enquiryList.length} Records)
+                </span></h3>
+
+                <div className='pt-5'>
+
+                    <DataTableWithHeaderRowDivider
+                        columns={columns}
+                        data={enquiryList}
+                        emptyMessage="No records Found"
+                        fixedHeight={true}
+                    />
+
+                </div>
             </div>
 
             <ConfirmationDialogBox

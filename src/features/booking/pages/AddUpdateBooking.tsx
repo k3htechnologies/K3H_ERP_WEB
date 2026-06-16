@@ -2072,7 +2072,7 @@ export const AddUpdateBooking: React.FC = () => {
                   </div>
 
                   {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
+                  {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Reference" && (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                         <FieldItem label="Referral Name" value={enquiryList?.ReferralUnitOwnerName || "-"} />
@@ -2083,7 +2083,7 @@ export const AddUpdateBooking: React.FC = () => {
                   )}
 
                   {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Loyalty" && (
+                  {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Loyalty" && (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                         <FieldItem label="Existing Project" value={enquiryList?.LoyaltyExistingProjectName || "-"} />
@@ -2093,7 +2093,7 @@ export const AddUpdateBooking: React.FC = () => {
                   )}
 
                   {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Employee Reference" && (
+                  {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Employee Reference" && (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                         <FieldItem label="Employee Name" value={enquiryList?.EmployeeReferenceName || "-"} />
@@ -2500,7 +2500,7 @@ export const AddUpdateBooking: React.FC = () => {
           )}
 
           {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-          {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
+          {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Reference" && (
             <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Referral Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2532,7 +2532,7 @@ export const AddUpdateBooking: React.FC = () => {
           )}
 
           {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-          {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Loyalty" && (
+          {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Loyalty" && (
             <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Loyalty Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2564,7 +2564,7 @@ export const AddUpdateBooking: React.FC = () => {
           )}
 
           {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-          {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Employee Reference" && (
+          {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Employee Reference" && (
             <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Employee Reference Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

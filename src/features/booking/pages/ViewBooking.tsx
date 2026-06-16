@@ -524,7 +524,7 @@ export const ViewBooking: React.FC = () => {
 
                                 </div>
                                 {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Reference' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Reference' && (
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
 
@@ -537,7 +537,7 @@ export const ViewBooking: React.FC = () => {
                                 )}
 
                                 {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Loyalty' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Loyalty' && (
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
 
@@ -550,7 +550,7 @@ export const ViewBooking: React.FC = () => {
                                 )}
 
                                 {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Employee Reference' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Employee Reference' && (
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
 
@@ -783,7 +783,7 @@ export const ViewBooking: React.FC = () => {
                                             </>
                                         )}
 
-                                        {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Reference' && (
+                                        {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Reference' && (
                                             <>
                                                 <div className="py-4">
                                                     <FieldItem label="Referral (%)" value={getSafeString(bookingData.ReferralAmount)} isRow />
@@ -794,7 +794,7 @@ export const ViewBooking: React.FC = () => {
                                             </>
                                         )}
 
-                                        {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Loyalty' && (
+                                        {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Loyalty' && (
                                             <>
                                                 <div className="py-4">
                                                     <FieldItem label="Loyalty (%)" value={getSafeString(bookingData.LoyaltyPercentage)} isRow />
@@ -805,7 +805,7 @@ export const ViewBooking: React.FC = () => {
                                             </>
                                         )}
 
-                                        {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Employee Reference' && (
+                                        {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Employee Reference' && (
                                             <>
                                                 <div className="py-4">
                                                     <FieldItem label="Employee Reference (%)" value={getSafeString(bookingData.EmployeeReferencePercentage)} isRow />

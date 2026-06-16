@@ -6,9 +6,7 @@ import * as E from 'fp-ts/Either';
 import { Loader } from '@/core/utils/loader';
 import Enquiries from "@/features/salesDashboard/components/Enquiries";
 import FollowUp from "@/features/salesDashboard/components/FollowUp";
-import type { Table0, Table1, Table2, Table3, Table4, Table6, Table7 } from "@/features/salesDashboard/models/SalesDashboardModel";
-import ClosingTarget from "@/features/salesDashboard/components/ClosingTarget";
-import SourcingTarget from "@/features/salesDashboard/components/SourcingTarget";
+import type { Table0, Table1, Table4, Table6, Table7, Table8 } from "@/features/salesDashboard/models/SalesDashboardModel";
 import AttendanceSummary from "@/features/dashboard/components/AttendanceSummary";
 import type { ProjectAchievementData } from "@/features/achievement/models/AchievementReportModel";
 import ProjectAchievement from "@/features/salesDashboard/components/ProjectAchievement";
@@ -16,18 +14,21 @@ import { DateRangeWithActions } from "@/ui/components/DateRangeWithActions";
 import RecentBooking from "@/features/salesDashboard/components/RecentBooking";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import Tabs from "@/ui/components/Tab/Tab";
+import OverviewCards from "@/features/salesDashboard/components/OverviewCards";
+import HighestPerformer from "@/features/salesDashboard/components/HighestPerformer";
 
 const SalesDashboard: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [enquiryData, setEnquiryData] = useState<Table0[]>([]);
     const [enquiryFollowUpData, setEnquiryFollowUpData] = useState<Table1[]>([]);
-    const [performanceReportClosingData, setPerformanceReportClosingData] = useState<Table2[]>([]);
-    const [performanceReportSourcingData, setPerformanceReportSourcingData] = useState<Table3[]>([]);
     const [attendanceSummaryData, setAttendanceSummaryData] = useState<Table4[]>([]);
     const [projectAchievementData, setProjectAchievementData] = useState<ProjectAchievementData[]>([]);
     const [bookingData, setBookingData] = useState<Table6[]>([]);
     const [employeeOverviewTable, setEmployeeOverviewTable] = useState<Table7[]>([]);
+    const [highestPerformerData, setHighestPerformerData] = useState<Table8[]>([]);
+
 
     const { addToast } = useToast();
     const [projectId, setProjectId] = useState<number>(0);
@@ -46,7 +47,16 @@ const SalesDashboard: React.FC = () => {
 
     }, [projectId, filterType, fromDate, toDate]);
 
-    //#region DATA LOADING | FETCH |  LOAD 
+    const tabList = [
+        { id: "Today", label: "Today" },
+        { id: "Weekly", label: "Weekly" },
+        { id: "Monthly", label: "Monthly" },
+        { id: "Datewise", label: "Datewise" },
+        { id: "Overall", label: "Overall" },
+    ];
+
+    const [activeTab, setActiveTab] = useState<string>('Monthly');
+
     const loadSalesDashboardData = useCallback(async () => {
         await runApiWithLoader(setIsLoading,
             setLoadingMessage,
@@ -65,9 +75,7 @@ const SalesDashboard: React.FC = () => {
 
                     setEnquiryFollowUpData(e.Table1 || []);
 
-                    setPerformanceReportClosingData(e.Table2 || []);
-
-                    setPerformanceReportSourcingData(e.Table3 || []);
+                    // Here 2 ,3 Table Removed DUE TO TARGET WE CAN ADD IN PROJECT CLICK BUTTON
 
                     setAttendanceSummaryData(e.Table4 || []);
 
@@ -75,7 +83,9 @@ const SalesDashboard: React.FC = () => {
 
                     setBookingData(e.Table6 || []);
 
-                    setEmployeeOverviewTable(e.Table7 || [])
+                    setEmployeeOverviewTable(e.Table7 || []);
+
+                    setHighestPerformerData(e.Table8 || [])
 
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -91,8 +101,6 @@ const SalesDashboard: React.FC = () => {
         );
     }, [projectId, addToast, filterType, fromDate, toDate]);
 
-    //#endregion
-
     return (
         <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
@@ -101,29 +109,24 @@ const SalesDashboard: React.FC = () => {
 
                 <div className="flex gap-2">
 
-                    {["Today", "Weekly", "Monthly", "Datewise", "Overall"].map((tab) => {
+                    <Tabs
+                        tabs={tabList}
+                        defaultActive={activeTab}
+                        islarge={true}
+                        onTabChange={(t) => {
+                            setActiveTab(t.id);
 
-                        const tabValue = tab.toUpperCase();
+                            const tabValue = t.id.toUpperCase();
 
-                        return (
-                            <button
-                                key={tab}
-                                onClick={() => {
+                            setFilterType(tabValue as any);
 
-                                    setFilterType(tabValue as any);
-
-                                    if (tabValue !== "DATEWISE") {
-                                        setFromDate(null);
-                                        setToDate(null);
-                                    }
-                                }}
-                                className={`px-6 py-3 rounded-md text-sm font-medium transition-all ${filterType === tabValue ? "bg-blue-600 text-white shadow" : "bg-gray-200 hover:bg-gray-300 text-gray-700"
-                                    }`}
-                            >
-                                {tab}
-                            </button>
-                        );
-                    })}
+                            if (tabValue !== "DATEWISE") {
+                                setFromDate(null);
+                                setToDate(null);
+                            }
+                        }}
+                        istoggleTab={true}
+                    />
                 </div>
 
 
@@ -164,22 +167,39 @@ const SalesDashboard: React.FC = () => {
 
             <div>
 
-                {attendanceSummaryData.length > 0 && shouldLoadData &&
-                    <div className="grid grid-cols-3 gap-5">
-                        <div className="col-span-3 lg:col-span-1">
-                            <AttendanceSummary attendanceSummaryData={attendanceSummaryData} employeeOverviewTable={employeeOverviewTable} />
+                {shouldLoadData &&
+                    <OverviewCards projectAchievementData={projectAchievementData} enquiryFollowUpData={enquiryFollowUpData} />
+                }
+
+                {shouldLoadData &&
+                    <div className="grid grid-cols-12 gap-5">
+                        <div className="col-span-12 lg:col-span-4">
+                            <AttendanceSummary attendanceSummaryData={attendanceSummaryData}  employeeOverviewTable={employeeOverviewTable} />
                         </div>
-                        <div className="col-span-3 lg:col-span-2">
+
+                        <div className="col-span-12 lg:col-span-8">
                             <RecentBooking data={bookingData} />
+                        </div>
+
+                        
+                    </div>
+                }
+
+                {shouldLoadData &&
+                    <div className="grid grid-cols-12 gap-5">
+                        <div className="col-span-12 lg:col-span-8">
+                           {projectAchievementData.length > 0 && shouldLoadData && <ProjectAchievement projectAchievementData={projectAchievementData} filterType={filterType} fromDate={fromDate} toDate={toDate} />}
+                        </div>
+
+                        <div className="col-span-12 lg:col-span-4">
+                            <HighestPerformer highestPerformerData={highestPerformerData} />
                         </div>
                     </div>
                 }
-                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
-                    {projectAchievementData.length > 0 && shouldLoadData && <ProjectAchievement projectAchievementData={projectAchievementData} filterType={filterType} fromDate={fromDate} toDate={toDate} />}
+                <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 pt-3">
+                    
                     {enquiryData.length > 0 && shouldLoadData && <Enquiries enquiryData={enquiryData} />}
                     {enquiryFollowUpData.length > 0 && shouldLoadData && <FollowUp enquiryFollowUpData={enquiryFollowUpData} />}
-                    {performanceReportClosingData.length > 0 && shouldLoadData && <ClosingTarget performanceReportClosingData={performanceReportClosingData} />}
-                    {performanceReportSourcingData.length > 0 && shouldLoadData && <SourcingTarget performanceReportSourcingData={performanceReportSourcingData} />}
 
                 </div>
             </div>

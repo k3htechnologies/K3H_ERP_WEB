@@ -175,9 +175,9 @@ export const PaginationCardView: React.FC<Props> = ({
                 >
                   {expandedCard === index ? (
 
-                    <ChevronDown size={18} className="text-black-600" />
-                  ) : (
                     <ChevronUp size={18} className="text-black-600" />
+                  ) : (
+                    <ChevronDown size={18} className="text-black-600" />
                   )}
                 </button>
 

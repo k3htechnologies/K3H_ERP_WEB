@@ -1,4 +1,4 @@
-import { DataTableWithOutBorder, type TableColumn } from '@/ui/components/DataTable/DataTableWithoutBorder';
+import { type TableColumn } from '@/ui/components/DataTable/DataTableWithoutBorder';
 import { useEffect, useState } from 'react';
 import type { ProjectAchievementData } from '@/features/achievement/models/AchievementReportModel';
 import { Modal } from '@/ui/components/Modal/Modal';
@@ -6,6 +6,7 @@ import AchievementBookingReport from '@/features/achievement/components/Achievem
 import AchievementWalkinsRevisitReport from '@/features/achievement/components/AchievementWalkinsRevisitReport';
 import ProjectWiseSalesDashboard from '../componentsProjectWise/ProjectWiseSalesDashboard';
 import { formatCurrency, formatToKLCr } from '@/core/utils/comman';
+import { DataTableWithHeaderRowDivider } from '@/ui/components/DataTable/DataTableWithHeaderRowDivider';
 
 interface Props {
     projectAchievementData: ProjectAchievementData[];
@@ -45,9 +46,9 @@ export default function ProjectAchievement({ projectAchievementData, filterType,
 
     const handleColumnClickProjectName = (row: ProjectAchievementData) => {
         setSelectedColumnClickProjectName({
-            filterType:filterType,
-            fromDate:fromDate,
-            toDate:toDate,
+            filterType: filterType,
+            fromDate: fromDate,
+            toDate: toDate,
             projectId: row.ProjectId,
             project: row.ProjectName,
         });
@@ -166,7 +167,7 @@ export default function ProjectAchievement({ projectAchievementData, filterType,
         },
         {
             key: 'TotalRevenue',
-            label: 'Revenue (₹)',
+            label: 'Revenue (CR)',
             width: '15',
             sortable: false,
             align: 'center',
@@ -180,19 +181,21 @@ export default function ProjectAchievement({ projectAchievementData, filterType,
     return (
         <div className="space-y-3 pt-4">
 
-            <h2 className="text-lg font-semibold text-gray-800">Project Achievement {" "}
-                <span className="text-sm font-normal text-gray-500">
-                    ({tableData.length} Record's)
-                </span></h2>
+            <div className="flex-1 bg-white rounded-xl p-5 h-[475px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
 
-            <div className="flex-1 bg-white rounded-xl p-5 h-[310px] border border-gray-100 min-w-0 overflow-hidden flex flex-col">
+                <h3 className="font-semibold text-gray-500">Project Achievement <span className="text-sm font-normal text-gray-500">
+                    ({tableData.length} Records)
+                </span></h3>
 
-                <DataTableWithOutBorder
-                    columns={columns}
-                    data={tableData}
-                    emptyMessage="No records Found"
-                    fixedHeight={true}
-                />
+                <div className='pt-5'>
+                    <DataTableWithHeaderRowDivider
+                        columns={columns}
+                        data={tableData}
+                        emptyMessage="No records Found"
+                        fixedHeight={true}
+                        className="flex-1"
+                    />
+                </div>
             </div>
 
             {selectedColumnClickWalkingRevisit && (

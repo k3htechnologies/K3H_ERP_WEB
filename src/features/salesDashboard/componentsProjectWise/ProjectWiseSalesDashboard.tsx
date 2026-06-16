@@ -6,9 +6,11 @@ import { runApiWithLoader } from "@/core/utils";
 import { salesDashboardService } from "../services/SalesDashboardServices";
 import * as E from 'fp-ts/Either';
 import { Loader } from "@/core/utils/loader";
-import { DataTableWithOutBorder, type TableColumn } from "@/ui/components/DataTable/DataTableWithoutBorder";
+import {  type TableColumn } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import Tabs from "@/ui/components/Tab/Tab";
 import { formatCurrency } from "@/core/utils/comman";
+import { Users ,UserPlus ,UserCheck,RefreshCcw,BadgeCheck,IndianRupee} from "lucide-react";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 interface Props {
     filterType: string;
@@ -450,46 +452,121 @@ export const ProjectWiseSalesDashboard: React.FC<Props> = ({ filterType, fromDat
 
             {activeTab === 'Overview' && (
                 <div className="pt-5">
-                    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
-                        <div className="grid grid-cols-3 gap-3">
 
-                            <div className="bg-[#0F2A44] text-white p-5 rounded-lg">
-                                <p className="text-sm">Walkins</p>
-                                <p className="font-semibold">{projectAchievementData?.[0]?.TotalWalkins ?? 0}</p>
-                            </div>
+                    <div className="grid grid-cols-3 gap-3">
+                        <div className="rounded-2xl p-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)", backgroundColor: "#F9FAFB" }} >
+                            <div className="flex items-start gap-3">
 
-                            <div className="bg-gray-100 p-5 rounded-lg">
-                                <p className="text-sm text-gray-600">Walkins By CP</p>
-                                <p className="font-semibold">{projectAchievementData?.[0]?.WalkinsByCP ?? 0}</p>
-                            </div>
+                                <div className="p-3 rounded-xl" style={{ backgroundColor: "#D8E2FF" }}>
+                                    <Users  size={20} style={{ color: "0058BE" }} />
+                                </div>
 
-                            <div className="bg-gray-100 p-5 rounded-lg">
-                                <p className="text-sm text-gray-600">Walkins Direct</p>
-                                <p className="font-semibold">{projectAchievementData?.[0]?.WalkinsDirect ?? 0}</p>
-                            </div>
+                                <div className="pl-2">
+                                    <p className="text-sm text-gray-500" >Walkins</p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {projectAchievementData?.[0]?.TotalWalkins ?? 0}
+                                    </p>
+                                </div>
 
-                            <div className="bg-gray-100 p-5 rounded-lg">
-                                <p className="text-sm text-gray-600">Revisits</p>
-                                <p className="font-semibold">{projectAchievementData?.[0]?.Revisits ?? 0}</p>
                             </div>
-                            <div className="bg-gray-100 p-5 rounded-lg">
-                                <p className="text-sm text-gray-600">Booking</p>
-                                <p className="font-semibold">{projectAchievementData?.[0]?.TotalBooking ?? 0}</p>
-                            </div>
-                            <div className="bg-gray-100 p-5 rounded-lg">
-                                <p className="text-sm text-gray-600">Revenue (₹)</p>
-                                <p className="font-semibold">{formatCurrency(projectAchievementData?.[0]?.TotalRevenue ?? 0)}</p>
-                            </div>
-
                         </div>
+
+                        <div className="rounded-2xl p-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)", backgroundColor: "#F9FAFB" }} >
+                            <div className="flex items-start gap-3">
+
+                                <div className="p-3 rounded-xl" style={{ backgroundColor: "#D8E2FF" }}>
+                                    <UserPlus  size={20} style={{ color: "0058BE" }} />
+                                </div>
+
+                                <div className="pl-2">
+                                    <p className="text-sm text-gray-500" >Walkins By CP</p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {projectAchievementData?.[0]?.WalkinsByCP ?? 0}
+                                    </p>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        
+                        <div className="rounded-2xl p-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)", backgroundColor: "#F9FAFB" }} >
+                            <div className="flex items-start gap-3">
+
+                                <div className="p-3 rounded-xl" style={{ backgroundColor: "#D8E2FF" }}>
+                                    <UserCheck  size={20} style={{ color: "0058BE" }} />
+                                </div>
+
+                                <div className="pl-2">
+                                    <p className="text-sm text-gray-500" >Walkins Direct</p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {projectAchievementData?.[0]?.WalkinsDirect ?? 0}
+                                    </p>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl p-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)", backgroundColor: "#F9FAFB" }} >
+                            <div className="flex items-start gap-3">
+
+                                <div className="p-3 rounded-xl" style={{ backgroundColor: "#D8E2FF" }}>
+                                    <RefreshCcw  size={20} style={{ color: "0058BE" }} />
+                                </div>
+
+                                <div className="pl-2">
+                                    <p className="text-sm text-gray-500" >Revisits</p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {projectAchievementData?.[0]?.Revisits ?? 0}
+                                    </p>
+                                </div>
+
+                            </div>
+                        </div>
+
+                         <div className="rounded-2xl p-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)", backgroundColor: "#F9FAFB" }} >
+                            <div className="flex items-start gap-3">
+
+                                <div className="p-3 rounded-xl" style={{ backgroundColor: "#D8E2FF" }}>
+                                    <BadgeCheck  size={20} style={{ color: "0058BE" }} />
+                                </div>
+
+                                <div className="pl-2">
+                                    <p className="text-sm text-gray-500" >Booking</p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {projectAchievementData?.[0]?.TotalBooking ?? 0}
+                                    </p>
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <div className="rounded-2xl p-4 border border-gray-100" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)", backgroundColor: "#F9FAFB" }} >
+                            <div className="flex items-start gap-3">
+
+                                <div className="p-3 rounded-xl" style={{ backgroundColor: "#D8E2FF" }}>
+                                    <IndianRupee  size={20} style={{ color: "0058BE" }} />
+                                </div>
+
+                                <div className="pl-2">
+                                    <p className="text-sm text-gray-500" >Revenue (₹)</p>
+                                    <p className="text-2xl font-semibold text-gray-900">
+                                        {projectAchievementData?.[0]?.TotalRevenue ?? 0}
+                                    </p>
+                                </div>
+
+                            </div>
+                        </div>
+
+
                     </div>
+
                 </div>
             )}
 
             {activeTab === 'Closing Target' && (
                 <div className="pt-5">
-                    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
-                        <DataTableWithOutBorder
+                    <div className="bg-white  rounded-lg shadow-sm border border-gray-200 p-5">
+                        <DataTableWithHeaderRowDivider
                             data={performanceReportClosingData}
                             columns={PerformanceReportClosingColumns}
                             emptyMessage="No Data Found"
@@ -502,8 +579,8 @@ export const ProjectWiseSalesDashboard: React.FC<Props> = ({ filterType, fromDat
 
             {activeTab === 'Sourcing Target' && (
                 <div className="pt-5">
-                    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
-                        <DataTableWithOutBorder
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                        <DataTableWithHeaderRowDivider
                             columns={PerformanceReportSourcingColumns}
                             data={performanceReportSourcingData}
                             emptyMessage="No records Found"
@@ -516,8 +593,8 @@ export const ProjectWiseSalesDashboard: React.FC<Props> = ({ filterType, fromDat
 
             {activeTab === 'Channel Partner' && (
                 <div className="pt-5">
-                    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
-                        <DataTableWithOutBorder
+                    <div className="bg-white  rounded-lg shadow-sm border border-gray-200 p-5">
+                        <DataTableWithHeaderRowDivider
                             data={channelPartnerData}
                             columns={channelPartnerColumns}
                             emptyMessage="No Data Found"

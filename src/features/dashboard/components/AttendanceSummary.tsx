@@ -1,10 +1,9 @@
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
-import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import type { Table0, Table7 } from "../models/UserDashboardModel";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { getSafeString } from "@/core/utils/comman";
-import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { useState } from "react";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 interface Props {
     attendanceSummaryData?: Table7[];
@@ -135,17 +134,24 @@ export default function AttendanceSummary({ attendanceSummaryData, employeeOverv
 
     return (
         <div className="space-y-3 pt-5">
-            <div className="bg-white p-5 rounded-xl  border border-gray-100 h-[370px]" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
-                <p className="text-md font-semibold pb-2">Attendance Summary</p>
+            <div className="bg-white p-5 rounded-xl  border border-gray-100 h-[430px]" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+                <p className="text-md text-gray-500 font-semibold pb-2">Attendance Summary</p>
 
                 {(attendanceSummaryData?.length ?? 0 > 0) ? (
                     <>
-                        <div className="grid grid-cols-2 items-center gap-4">
-                            {/* Left DONUT */}
-                            <div className="relative h-[220px] min-h-[220px] w-full min-w-0">
+                        <div className="flex flex-col items-center">
+                            {/* DONUT CHART */}
+                            <div className="relative h-[220px] w-full">
                                 <ResponsiveContainer width="100%" height={200}>
                                     <PieChart>
-                                        <Pie data={data} innerRadius={40} outerRadius={80} paddingAngle={5} dataKey="value" cornerRadius={10}>
+                                        <Pie
+                                            data={data}
+                                            innerRadius={40}
+                                            outerRadius={80}
+                                            paddingAngle={5}
+                                            dataKey="value"
+                                            cornerRadius={10}
+                                        >
                                             {data.map((t, i) => (
                                                 <Cell key={i} fill={t.color} />
                                             ))}
@@ -154,42 +160,49 @@ export default function AttendanceSummary({ attendanceSummaryData, employeeOverv
                                 </ResponsiveContainer>
 
                                 {/* CENTER TOTAL */}
-                                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+                                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center">
                                     <p className="text-xl font-bold text-gray-800">{total ?? 0}</p>
                                 </div>
                             </div>
 
-                            {/* Right LEGEND */}
-                            <div className="space-y-3">
-                                {data?.length > 0 ? (
-                                    data.map((t, i) => (
+                            {/* TOTAL EMPLOYEES */}
+                            <p className="text-lg font-semibold mb-4">
+                                Total Employees : {total ?? 0}
+                            </p>
 
+                            {/* LEGEND BELOW */}
+                            <div className="w-full space-y-4">
+                                {data.map((t, i) => (
+                                    <div
+                                        key={i}
+                                        onClick={() => {
+                                            if ((t.value ?? 0) > 0) {
+                                                setSelectedStatus(t.name);
+                                            }
+                                        }}
+                                        className={`flex items-center gap-4 ${(t.value ?? 0) > 0
+                                                ? "cursor-pointer"
+                                                : "cursor-not-allowed opacity-50"
+                                            }`}
+                                    >
                                         <div
-                                            key={i}
-                                            onClick={() => {
-                                                if ((t.value ?? 0) > 0) {
-                                                    setSelectedStatus(t.name);
-                                                }
-                                            }}
-                                            className={`rounded-lg p-2 flex items-center gap-3 ${(t.value ?? 0) > 0
-                                                    ? "cursor-pointer"
-                                                    : "cursor-not-allowed opacity-50"
-                                                }`}
-                                        >
+                                            className="w-4 h-4 rounded-full"
+                                            style={{ backgroundColor: t.color }}
+                                        />
 
-                                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: t.color }}></div>
+                                        <span className="text-gray-600 w-24">
+                                            {t.name}
+                                        </span>
 
-                                            <p className="font-semibold text-[22px]">{t.value ?? 0}</p>
-                                            <p className="text-sm text-gray-500 font-medium">{t.name ?? "-"}</p>
-                                        </div>
-                                    ))
-                                ) : (
-                                    <NoDataView message="No data available" />
-                                )}
+                                        <span className="text-[16px] font-semibold text-blue-600">
+                                            {t.value ?? 0}
+                                        </span>
+                                    </div>
+                                ))}
                             </div>
                         </div>
 
-                        <p className="text-sm font-bold text-left p-1 ml-20">{total ?? 0} Total Employees</p>
+
                     </>
                 ) : (
                     <p className="text-sm text-gray-500 text-center py-10">No attendance data available</p>
@@ -213,11 +226,12 @@ export default function AttendanceSummary({ attendanceSummaryData, employeeOverv
                     </div>
                 }
             >
-                <DataTableWithOutBorder
+                <DataTableWithHeaderRowDivider
                     data={filteredEmployees}
                     columns={employeeColumns}
                     emptyMessage="No Data Found"
                     className="flex-1"
+                    recordsPerPage={30}
                     fixedHeight={true}
                 />
             </Modal>

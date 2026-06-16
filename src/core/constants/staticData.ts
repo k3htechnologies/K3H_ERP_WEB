@@ -222,7 +222,7 @@ export const MASTER_DATA = {
 
   possessionType: ["RTMI", "Under 1 Year", "1 Years To 2 Years", "2 Years To 3 Years", "3 Years & Above"],
 
-  source: ["Channel Partner", "Direct Walking"],
+  source: ["Channel Partner", "Direct Walkin"],
 
   subSources: [
     "Advertisement",
@@ -262,7 +262,7 @@ export const MASTER_DATA = {
     "Purchased somewhere else",
     "Not connected calls >7",
     "Low Budget",
-    "Ready Posession",
+    "Ready Possession",
     "Location",
     "Product Issue",
     "Pricing Issue",

@@ -90,13 +90,17 @@ export const LOCAL_STORAGE_KEYS = {
     PAY_TRACK_REPORT_SELECTED_COLUMNS: 'payTrackReport.selectedColumns',
     BROKERAGE_BOOKING_SELECTED_COLUMNS: 'brokerage.selectedColumns',
     PAY_TRACK_CALL_LOG_SELECTED_COLUMNS: 'payTrackCallLog.selectedColumns',
+    DAILY_COLLECTION_REPORT_SELECTED_COLUMNS: 'dailyCollectionReport.selectedColumns',
 
     //MORE
     INWARD_OUTWARD_SELECTED_COLUMNS: 'inwardOutward.selectedColumns',
 
 
- //TICKET MASTER
+    //TICKET MASTER
     TICKET_MASTER_SELECTED_COLUMNS: 'ticket.selectedColumns',
+
+    //TAX TRACKER
+     NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
 
 
 } as const

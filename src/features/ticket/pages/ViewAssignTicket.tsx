@@ -155,7 +155,7 @@ export const ViewAssignTicket = () => {
         const newErrors: { [key: string]: string } = {};
 
         if (!formData.AssignToEmployeeId) {
-            newErrors.AssignToEmployeeId = 'Assigned To is required.';
+            newErrors.AssignToEmployeeId = 'Primary Assignee is required';
         }
 
         if (!formData.ResolvedTillDate) {
@@ -263,6 +263,8 @@ export const ViewAssignTicket = () => {
                         <FieldItem label="Platform" value={ticketData?.Platform} />
                         <FieldItem label="Module" value={ticketData?.Module} />
                         <FieldItem label="Raised By" value={ticketData?.CreatedBy} />
+                    </div>
+                    <div className="mt-3">
                         <FieldItem label="Description" value={ticketData?.TicketDescription} />
                     </div>
                 </section>
@@ -297,7 +299,7 @@ export const ViewAssignTicket = () => {
                                 error={errors.AssignToEmployeeId}
                             />
                         </div>
-                        <div >
+                        <div>
                             <MultiSelectPagination
                                 label="Collaborators"
                                 dataFetchCallBack={fetchCollaboratorWithTicketsDropdown}
@@ -313,7 +315,7 @@ export const ViewAssignTicket = () => {
                                 }}
                             />
                         </div>
-                        <div >
+                        <div>
                             <DatePickerInput
                                 required
                                 label="Estimated Completion Date"

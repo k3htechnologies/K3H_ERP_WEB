@@ -609,6 +609,8 @@ export const MASTER_DATA = {
 
   ibmObmReportStage: ["IBM", "OBM"],
 
+  noticeType: ['Income Tax', 'GST'],
+
 } as const;
 
 // ============================================================================
@@ -730,6 +732,7 @@ export const HANDOVER_STATUS = toOptions(MASTER_DATA.handOverStatus);
 export const IBM_OBM_RANGE_FILTER_OPTIONS = toOptions(MASTER_DATA.ibmObmRangeFilter);
 export const CHANNEL_PARTNER_CATEGORY_OPTIONS= toOptions(MASTER_DATA.channelPartnerCategory);
 export const IBM_OBM_REPORT_STAGE_OPTIONS = toOptions(MASTER_DATA.ibmObmReportStage);
+export const NOTICE_TYPE_OPTIONS = toOptions(MASTER_DATA.noticeType);
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)
 // ============================================================================

@@ -17,6 +17,7 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { formatCurrency } from "@/core/utils/comman";
+import { getNameInitials } from "@/core/utils/getNameInitials";
 
 const ViewInwardOutward: React.FC = () => {
 
@@ -161,7 +162,7 @@ const ViewInwardOutward: React.FC = () => {
                                     <FieldItem label="Document Title" value={inwardOutwardData?.DocumentTitle} />
                                     <FieldItem label="Document Type" value={inwardOutwardData?.DocumentType} />
                                     <FieldItem label="Delivery Type" value={inwardOutwardData?.DeliveryType} />
-                                    <FieldItem label="Inward Number" value={inwardOutwardData?.InwardNumber} />
+                                    <FieldItem label="Amount" value={formatCurrency(inwardOutwardData?.Amount ?? 0)} />
                                     <FieldItem label="Date" value={inwardOutwardData?.InwardOutwardDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InwardOutwardDate) : ""} />
                                     <FieldItem label="Invoice Number" value={inwardOutwardData?.InVoiceNumber} />
                                     <FieldItem label="Invoice Date" value={inwardOutwardData?.InVoiceDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InVoiceDate) : ""} />
@@ -203,7 +204,8 @@ const ViewInwardOutward: React.FC = () => {
                                 <div className="lg:col-span-3 pb-1">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                         <FieldItem label="Cheque No." value={inwardOutwardData?.ChequeNo} />
-                                        <FieldItem label="Amount" value={formatCurrency(inwardOutwardData?.Amount)}/>
+                                        <FieldItem className="cursor-pointer text-blue-500" label="Attachment" value={inwardOutwardData?.DocumentURL ? "View" : "-"} urls={inwardOutwardData?.DocumentURL} isIcon />
+                                        <FieldItem label="Amount" value={formatCurrency(inwardOutwardData?.Amount)} />
                                         <FieldItem label="Document Description" value={inwardOutwardData?.DocumentDescription ?? ''} />
                                     </div>
                                 </div>
@@ -227,9 +229,11 @@ const ViewInwardOutward: React.FC = () => {
                                 <div className="lg:col-span-3 pb-1">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                         <FieldItem label="Received By" value={inwardOutwardData?.ReceivedBy} />
+                                        <FieldItem className="cursor-pointer text-blue-500" label="Receiver's Signature" value={inwardOutwardData?.ReceiversSignature ? "View" : "-"} urls={inwardOutwardData?.ReceiversSignature} isIcon />
+                                        <FieldItem className="cursor-pointer text-blue-500" label="Attachment" value={inwardOutwardData?.AcknowledgementURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementURL} isIcon />
                                         <FieldItem label="Handover To" value={inwardOutwardData?.HandOverTo} />
                                         <FieldItem label="Handover Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.HandOverDate ?? '')} />
-
+                                        <FieldItem label="Remark" value={inwardOutwardData?.AcknowledgementRemark ?? ''} />
                                     </div>
                                 </div>
                             </section>
@@ -242,7 +246,6 @@ const ViewInwardOutward: React.FC = () => {
                                         <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.CreatedDate ?? '')} />
                                         <FieldItem label="Modified By" value={inwardOutwardData?.ModifiedBy} />
                                         <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.ModifiedDate ?? '')} />
-
                                     </div>
                                 </div>
                             </section>
@@ -258,36 +261,40 @@ const ViewInwardOutward: React.FC = () => {
                             </h1>
 
                             <div className="overflow-y-auto h-[240px] thin-scroll pr-2 pt-2">
-                                {trackingData?.map((item, index) => {
-                                    const { bg, text } = getInwardOutwardStatusColor(item.DeliveryStatus || '');
-                                    const isLast = index === trackingData.length - 1;
+                                {trackingData && trackingData.length > 0 ? (
+                                    trackingData.map((item, index) => {
+                                        const { bg, text } = getInwardOutwardStatusColor(item.DeliveryStatus || '');
+                                        const isLast = index === trackingData.length - 1;
 
-                                    return (
-                                        <div key={index} className="flex items-start gap-3">
+                                        return (
+                                            <div key={index} className="flex items-start gap-3">
+                                                <div className="flex flex-col items-center self-stretch">
+                                                    <div className="w-3 h-3 rounded-full bg-blue-600 shrink-0" />
+                                                    {!isLast && (
+                                                        <div className="w-[3px] flex-1 bg-blue-300" />
+                                                    )}
+                                                </div>
 
-                                            <div className="flex flex-col items-center self-stretch">
-                                                <div className="w-3 h-3 rounded-full bg-blue-600 shrink-0" />
+                                                <div className={`flex-1 ${!isLast ? 'pb-6' : 'pb-1'}`}>
+                                                    <p className="text-sm font-semibold text-gray-900 leading-tight">
+                                                        {item.DeliveryDate ? formatDate_dd_MonthName_yy(item.DeliveryDate) : '-'}
+                                                    </p>
 
-                                                {!isLast && (
-                                                    <div className="w-[3px] flex-1 bg-blue-300" />
-                                                )}
+                                                    <span
+                                                        className="inline-block mt-2 px-3 py-0.5 rounded-full text-xs font-medium"
+                                                        style={{ backgroundColor: bg, color: text }}
+                                                    >
+                                                        {item.DeliveryStatus || '-'}
+                                                    </span>
+                                                </div>
                                             </div>
-
-                                            <div className={`flex-1 ${!isLast ? 'pb-6' : 'pb-1'}`}>
-                                                <p className="text-sm font-semibold text-gray-900 leading-tight">
-                                                    {item.DeliveryDate ? formatDate_dd_MonthName_yy(item.DeliveryDate): '-'}
-                                                </p>
-
-                                                <span
-                                                    className="inline-block mt-2 px-3 py-0.5 rounded-full text-xs font-medium"
-                                                    style={{ backgroundColor: bg, color: text }}
-                                                >
-                                                    {item.DeliveryStatus || '-'}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                        );
+                                    })
+                                ) : (
+                                    <div className="flex justify-center items-center h-full text-gray-500 text-sm">
+                                        No document tracking data found.
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -315,7 +322,7 @@ const ViewInwardOutward: React.FC = () => {
                                             <div className="flex flex-col items-center">
 
                                                 <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-sm">
-                                                    {employeeName.trim().split(" ").map(w => w[0]).join("").toUpperCase().slice(0, 3)}
+                                                    {getNameInitials(employeeName)}
                                                 </div>
 
                                                 {index !== employeeNames.length - 1 && (
@@ -341,7 +348,7 @@ const ViewInwardOutward: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-4 h-[499px]">
+                        <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 mt-4 h-[556px]">
                             <h1 className="text-lg font-semibold text-black border-b border-gray-400 pb-2">
                                 Revert
                             </h1>

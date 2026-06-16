@@ -8,6 +8,10 @@ export interface FilterWithPaginationInwardAndOutWardRequest {
     SystemGeneratedCode?: string
     ReceiverName?: string
     DocumentType?: string
+    DocumentTitle?: string;
+    DeliveryStatus?: string;
+    SenderMobileNo?: string;
+    ReceiverMobileNo?: string;
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -88,7 +92,7 @@ export interface AddUpdateInwardAndOutWardRequest {
     EmployeeNames: string | null
     InVoiceDate: string | null,
     InwardNumber: number | 0,
-    InVoiceNumber: number | 0,
+    InVoiceNumber: number | null,
     HandOverDate: string | null,
     HandOverTo: string | null,
 

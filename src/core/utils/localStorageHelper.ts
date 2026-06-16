@@ -16,7 +16,7 @@ export const LocalStorageHelper = {
       console.error("Error storing employee data:", error);
     }
   },
-  
+
   //COMMAN
   storeBankListMasterTableColumns: (columns: string): void => {
     try {
@@ -25,7 +25,7 @@ export const LocalStorageHelper = {
       console.error("Error Bank List Master Columns Details:", error);
     }
   },
-  
+
   getBankListMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BANK_LIST_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -39,14 +39,14 @@ export const LocalStorageHelper = {
     return null;
   },
 
-   storeMenuData: (menuData: ModuleData[] | ModuleData): void => {
+  storeMenuData: (menuData: ModuleData[] | ModuleData): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.MENU_MODULE, JSON.stringify(menuData));
     } catch (error) {
       console.error("ERROR : STORING MENU DATA :", error);
     }
   },
-  
+
   getMenuData: (): ModuleData[] | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
     if (stored) {
@@ -59,7 +59,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
- 
+
   storeCountry_State_District_City_Village_Data: (locationData: CountryStateCityDistrictVillageData[] | ModuleData): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER, JSON.stringify(locationData));
@@ -67,7 +67,7 @@ export const LocalStorageHelper = {
       console.error("ERROR : STORING MENU DATA :", error);
     }
   },
-  
+
   getCountry_State_District_City_VillageData: (): CountryStateCityDistrictVillageData[] | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COUNTRY_STATE_DISTRICT_CITY_VILLAGE_MASTER);
     if (stored) {
@@ -80,7 +80,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeSelectedProject: (projectId: number): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID, String(projectId));
@@ -88,7 +88,7 @@ export const LocalStorageHelper = {
       console.error("Error storing selected project:", error);
     }
   },
-  
+
   getSelectedProject: (): number | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
     if (stored) {
@@ -111,7 +111,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeToken: (token: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.TOKEN, token);
@@ -119,7 +119,7 @@ export const LocalStorageHelper = {
       console.error("Error storing Token:", error);
     }
   },
-  
+
   getStoredTokenData: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TOKEN);
     if (stored) {
@@ -133,7 +133,7 @@ export const LocalStorageHelper = {
     return null;
   },
 
-  
+
   storeLastVisitedPage: (path: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.LAST_VISITED_PAGE, path);
@@ -141,7 +141,7 @@ export const LocalStorageHelper = {
       console.error("Error storing last visited page:", error);
     }
   },
-  
+
   getLastVisitedPage: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LAST_VISITED_PAGE);
     if (stored) {
@@ -154,7 +154,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeDepartmentMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS, columns);
@@ -162,7 +162,7 @@ export const LocalStorageHelper = {
       console.error("Error Department Master Columns Details:", error);
     }
   },
-  
+
   getDepartmentMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -175,7 +175,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeDesignationMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS, columns);
@@ -183,7 +183,7 @@ export const LocalStorageHelper = {
       console.error("Error Designation Master Columns Details:", error);
     }
   },
-  
+
   getDesignationMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DESIGNATION_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -196,7 +196,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeEmployeeMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.EMPLOYEE_MASTER_SELECTED_COLUMNS, columns);
@@ -204,7 +204,7 @@ export const LocalStorageHelper = {
       console.error("Error Employee Master Columns Details:", error);
     }
   },
-  
+
   getEmployeeMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.EMPLOYEE_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -217,7 +217,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeTenantTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.TENANT_SELECTED_COLUMNS, columns);
@@ -225,7 +225,7 @@ export const LocalStorageHelper = {
       console.error("Error Tenant Columns Details:", error);
     }
   },
-  
+
   getTenantTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TENANT_SELECTED_COLUMNS);
     if (stored) {
@@ -238,7 +238,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeBranchMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.BRANCH_MASTER_SELECTED_COLUMNS, columns);
@@ -246,7 +246,7 @@ export const LocalStorageHelper = {
       console.error("Error Branch Master Columns Details:", error);
     }
   },
-  
+
   getBranchMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BRANCH_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -259,7 +259,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeBranchAssociationsMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.BRANCH_ASSOCIATIONS_MASTER_SELECTED_COLUMNS, columns);
@@ -267,7 +267,7 @@ export const LocalStorageHelper = {
       console.error("Error Branch Associations Master Columns Details:", error);
     }
   },
-  
+
   getBranchAssociationsMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BRANCH_ASSOCIATIONS_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -280,7 +280,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeAssetMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ASSET_MASTER_SELECTED_COLUMNS, columns);
@@ -288,7 +288,7 @@ export const LocalStorageHelper = {
       console.error("Error Asset Master Columns Details:", error);
     }
   },
-  
+
   getAssetMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ASSET_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -301,7 +301,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeAssetMappingMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ASSET_MAPPING_MASTER_SELECTED_COLUMNS, columns);
@@ -309,7 +309,7 @@ export const LocalStorageHelper = {
       console.error("Error Asset Mapping Master Columns Details:", error);
     }
   },
-  
+
   getAssetMappingMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ASSET_MAPPING_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -322,7 +322,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeDeductionMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.DEDUCTION_MASTER_SELECTED_COLUMNS, columns);
@@ -330,7 +330,7 @@ export const LocalStorageHelper = {
       console.error("Error Deduction Master Columns Details:", error);
     }
   },
-  
+
   getDeductionMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DEDUCTION_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -343,7 +343,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeEarningMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.EARNING_MASTER_SELECTED_COLUMNS, columns);
@@ -351,7 +351,7 @@ export const LocalStorageHelper = {
       console.error("Error Earning Master Columns Details:", error);
     }
   },
-  
+
   getEarningMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.EARNING_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -364,7 +364,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeVendorTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.VENDOR_SELECTED_COLUMNS, columns);
@@ -372,7 +372,7 @@ export const LocalStorageHelper = {
       console.error("Error Vendor Columns Details:", error);
     }
   },
-  
+
   getVendorTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.VENDOR_SELECTED_COLUMNS);
     if (stored) {
@@ -385,7 +385,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeCompanyMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS, columns);
@@ -393,7 +393,7 @@ export const LocalStorageHelper = {
       console.error("Error Company Master Columns Details:", error);
     }
   },
-  
+
   getCompanyMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COMPANY_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -415,7 +415,7 @@ export const LocalStorageHelper = {
       console.error("Error Holiday Master Columns Details:", error);
     }
   },
- 
+
   getHolidayMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.HOLIDAY_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -428,7 +428,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeHolidayMappingMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS, columns);
@@ -436,7 +436,7 @@ export const LocalStorageHelper = {
       console.error("Error Holiday Mapping Master Columns Details:", error);
     }
   },
-  
+
   getHolidayMappingMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.HOLIDAY_MAPPING_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -457,7 +457,7 @@ export const LocalStorageHelper = {
       console.error("Error Leave Encashment Master Columns Details:", error);
     }
   },
-  
+
   getLeaveEncashmentMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_ENCASHMENT_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -470,7 +470,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeLeaveTypeMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.LEAVE_TYPE_MASTER_SELECTED_COLUMNS, columns);
@@ -478,7 +478,7 @@ export const LocalStorageHelper = {
       console.error("Error Leave Type Master Columns Details:", error);
     }
   },
-  
+
   getLeaveTypeMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_TYPE_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -491,7 +491,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeLeaveTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.LEAVE_SELECTED_COLUMNS, columns);
@@ -499,7 +499,7 @@ export const LocalStorageHelper = {
       console.error("Error Leave Columns Details:", error);
     }
   },
- 
+
   getLeaveTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_SELECTED_COLUMNS);
     if (stored) {
@@ -512,7 +512,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeLeaveCreditConfigurationTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS, columns);
@@ -520,7 +520,7 @@ export const LocalStorageHelper = {
       console.error("Error Leave Credit Configuration Columns Details:", error);
     }
   },
-  
+
   getLeaveCreditConfigurationTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS);
     if (stored) {
@@ -541,7 +541,7 @@ export const LocalStorageHelper = {
       console.error("Error Outdoor Columns Details:", error);
     }
   },
-  
+
   getOutdoorTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.OUTDOOR_SELECTED_COLUMNS);
     if (stored) {
@@ -554,7 +554,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeCompOffTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.COMP_OFF_SELECTED_COLUMNS, columns);
@@ -562,7 +562,7 @@ export const LocalStorageHelper = {
       console.error("Error Comp Off Columns Details:", error);
     }
   },
-  
+
   getCompOffTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.COMP_OFF_SELECTED_COLUMNS);
     if (stored) {
@@ -575,7 +575,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeShiftMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.SHIFT_MASTER_SELECTED_COLUMNS, columns);
@@ -583,7 +583,7 @@ export const LocalStorageHelper = {
       console.error("Error Shift Master Columns Details:", error);
     }
   },
-  
+
   getShiftMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SHIFT_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -596,7 +596,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeShiftMappingMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.SHIFT_MAPPING_MASTER_SELECTED_COLUMNS, columns);
@@ -604,7 +604,7 @@ export const LocalStorageHelper = {
       console.error("Error Shift Mapping Master Columns Details:", error);
     }
   },
-  
+
   getShiftMappingMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SHIFT_MAPPING_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -617,7 +617,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeWeekOffMappingMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS, columns);
@@ -625,7 +625,7 @@ export const LocalStorageHelper = {
       console.error("Error Week Off Mapping Master Columns Details:", error);
     }
   },
-  
+
   getWeekOffMappingMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MAPPING_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -638,7 +638,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeWeekOffMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MASTER_SELECTED_COLUMNS, columns);
@@ -646,7 +646,7 @@ export const LocalStorageHelper = {
       console.error("Error Week Off Master Columns Details:", error);
     }
   },
-  
+
   getWeekOffMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.WEEK_OFF_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -659,7 +659,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeTncMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.TNC_MASTER_SELECTED_COLUMNS, columns);
@@ -667,7 +667,7 @@ export const LocalStorageHelper = {
       console.error("Error Tnc Master Columns Details:", error);
     }
   },
-  
+
   getTncMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TNC_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -680,7 +680,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeSubMaterialMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.SUB_MATERIAL_MASTER_SELECTED_COLUMNS, columns);
@@ -688,7 +688,7 @@ export const LocalStorageHelper = {
       console.error("Error Sub Material Master Columns Details:", error);
     }
   },
-  
+
   getSubMaterialMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SUB_MATERIAL_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -701,7 +701,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeUomMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.UOM_MASTER_SELECTED_COLUMNS, columns);
@@ -709,7 +709,7 @@ export const LocalStorageHelper = {
       console.error("Error Uom Master Columns Details:", error);
     }
   },
-  
+
   getUomMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.UOM_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -722,7 +722,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeMaterialMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.MATERIAL_MASTER_SELECTED_COLUMNS, columns);
@@ -730,7 +730,7 @@ export const LocalStorageHelper = {
       console.error("Error Material Master Columns Details:", error);
     }
   },
-  
+
   getMaterialMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -752,7 +752,7 @@ export const LocalStorageHelper = {
       console.error("Error Channel Partner Columns Details:", error);
     }
   },
-  
+
   getChannelPartnerTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SELECTED_COLUMNS);
     if (stored) {
@@ -765,7 +765,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeChannelPartnerUniverseTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_UNIVERSE_SELECTED_COLUMNS, columns);
@@ -773,7 +773,7 @@ export const LocalStorageHelper = {
       console.error("Error Channel Partner Columns Details:", error);
     }
   },
- 
+
   getChannelPartnerUniverseTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_UNIVERSE_SELECTED_COLUMNS);
     if (stored) {
@@ -786,7 +786,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeChannelPartnerSourcingTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS, columns);
@@ -794,7 +794,7 @@ export const LocalStorageHelper = {
       console.error("Error Channel Partner Sourcing Columns Details:", error);
     }
   },
-  
+
   getChannelPartnerSourcingTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS);
     if (stored) {
@@ -807,7 +807,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeEnquiryTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS, columns);
@@ -815,7 +815,7 @@ export const LocalStorageHelper = {
       console.error("Error Enquiry Master Columns Details:", error);
     }
   },
- 
+
   getEnquiryTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS);
     if (stored) {
@@ -836,7 +836,7 @@ export const LocalStorageHelper = {
       console.error("Error storing selected GRE:", error);
     }
   },
-  
+
   getSelectedIsGRE: (): number | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.SELECTED_PROJECT_ID);
     if (stored) {
@@ -853,7 +853,7 @@ export const LocalStorageHelper = {
       console.error("Error Calling Data Columns Details:", error);
     }
   },
- 
+
   getCallingDataTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CALLING_DATA_SELECTED_COLUMNS);
     if (stored) {
@@ -866,7 +866,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeCallLogTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS, columns);
@@ -874,7 +874,7 @@ export const LocalStorageHelper = {
       console.error("Error Call Log Columns Details:", error);
     }
   },
-  
+
   getCallLogTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.CALL_LOG_SELECTED_COLUMNS);
     if (stored) {
@@ -887,7 +887,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeBookingTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS, columns);
@@ -895,7 +895,7 @@ export const LocalStorageHelper = {
       console.error("Error BOOKING Columns Details:", error);
     }
   },
-  
+
   getBookingTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BOOKING_SELECTED_COLUMNS);
     if (stored) {
@@ -908,7 +908,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeIncentiveReportTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.INCENTIVE_REPORT_COLUMNS, columns);
@@ -916,7 +916,7 @@ export const LocalStorageHelper = {
       console.error("Error INCENTIVE REPORT Columns Details:", error);
     }
   },
-  
+
   getIncentiveReportTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.INCENTIVE_REPORT_COLUMNS);
     if (stored) {
@@ -929,7 +929,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storePaymentScheduleSchemeMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS, columns);
@@ -937,7 +937,7 @@ export const LocalStorageHelper = {
       console.error("Error PAYMENT SCHEDULE SCHEME MASTER Columns Details:", error);
     }
   },
-  
+
   getPaymentScheduleSchemeMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS);
     if (stored) {
@@ -958,7 +958,7 @@ export const LocalStorageHelper = {
       console.error('Error Achievement by Project Columns Details:', error)
     }
   },
-  
+
   getAchievementByProjectTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_PROJECT_COLUMNS)
     if (stored) {
@@ -971,7 +971,7 @@ export const LocalStorageHelper = {
     }
     return null
   },
-  
+
   storeAchievementBySourcingTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_SOURCING_COLUMNS, columns);
@@ -979,7 +979,7 @@ export const LocalStorageHelper = {
       console.error('Error Achievement by Sourcing Columns Details:', error)
     }
   },
-  
+
   getAchievementBySourcingTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_SOURCING_COLUMNS)
     if (stored) {
@@ -992,7 +992,7 @@ export const LocalStorageHelper = {
     }
     return null
   },
-  
+
   storeAchievementByClosingTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CLOSING_COLUMNS, columns);
@@ -1000,7 +1000,7 @@ export const LocalStorageHelper = {
       console.error('Error Achievement by Closing Columns Details:', error)
     }
   },
-  
+
   getAchievementByClosingTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CLOSING_COLUMNS)
     if (stored) {
@@ -1021,7 +1021,7 @@ export const LocalStorageHelper = {
       console.error('Error Achievement by Walkins Revisit Columns Details:', error)
     }
   },
-  
+
   getAchievementByWalkinsRevisitTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_WALKINS_REVISIT_COLUMNS)
     if (stored) {
@@ -1042,7 +1042,7 @@ export const LocalStorageHelper = {
       console.error('Error Achievement by Booking Columns Details:', error)
     }
   },
-  
+
   getAchievementByBookingTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_BOOKING_COLUMNS)
     if (stored) {
@@ -1063,7 +1063,7 @@ export const LocalStorageHelper = {
       console.error('Error Achievement by IbmObm Columns Details:', error)
     }
   },
-  
+
   getAchievementByIbmObmTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_IBMOBM_COLUMNS)
     if (stored) {
@@ -1076,9 +1076,9 @@ export const LocalStorageHelper = {
     }
     return null
   },
-  
 
- //PROJECT DOCUMENT
+
+  //PROJECT DOCUMENT
   storeProjectDocumentCategoryMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS, columns);
@@ -1086,7 +1086,7 @@ export const LocalStorageHelper = {
       console.error("Error Project Document Category Master Columns Details:", error);
     }
   },
-  
+
   getProjectDocumentCategoryMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -1099,7 +1099,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeApprovalDocumentCategoryMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS, columns);
@@ -1107,7 +1107,7 @@ export const LocalStorageHelper = {
       console.error("Error Approval Document Category Master Columns Details:", error);
     }
   },
-  
+
   getApprovalDocumentCategoryMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -1120,7 +1120,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeProjectRERADocumentCategoryMasterTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS, columns);
@@ -1128,7 +1128,7 @@ export const LocalStorageHelper = {
       console.error("Error Project RERA Document Category Master Columns Details:", error);
     }
   },
-  
+
   getProjectRERADocumentCategoryMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_RERA_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
     if (stored) {
@@ -1141,7 +1141,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   //REDEVELOPMENT
   storeRedevelopmentBuildingTableColumns: (columns: string): void => {
     try {
@@ -1150,7 +1150,7 @@ export const LocalStorageHelper = {
       console.error("Error Redevelopment Building Columns Details:", error);
     }
   },
-  
+
   getRedevelopmentBuildingTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.REDEVELOPMENT_BUILDING_COLUMNS);
     if (stored) {
@@ -1172,7 +1172,7 @@ export const LocalStorageHelper = {
       console.error("Error Litigation Columns Details:", error);
     }
   },
-  
+
   getLitigationTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.LITIGATION_SELECTED_COLUMNS);
     if (stored) {
@@ -1185,8 +1185,8 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
-  
+
+
   //CRM 
 
   storePayTrackBookingTableColumns: (columns: string): void => {
@@ -1196,7 +1196,7 @@ export const LocalStorageHelper = {
       console.error("Error PAY TRACK BOOKING Columns Details:", error);
     }
   },
-  
+
   getPayTrackBookingTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PAY_TRACK_BOOKING_SELECTED_COLUMNS);
     if (stored) {
@@ -1209,7 +1209,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storePayTrackReportTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.PAY_TRACK_REPORT_SELECTED_COLUMNS, columns);
@@ -1217,7 +1217,7 @@ export const LocalStorageHelper = {
       console.error("Error PAY TRACK REPORT Columns Details:", error);
     }
   },
-  
+
   getPayTrackReportTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PAY_TRACK_REPORT_SELECTED_COLUMNS);
     if (stored) {
@@ -1230,7 +1230,7 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-  
+
   storeBrokerageBookingTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS, columns);
@@ -1238,7 +1238,7 @@ export const LocalStorageHelper = {
       console.error('Error Brokerage Booking Columns Details:', error)
     }
   },
-  
+
   getBrokerageBookingTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS)
     if (stored) {
@@ -1251,7 +1251,7 @@ export const LocalStorageHelper = {
     }
     return null
   },
-  
+
   storePayTrackCallLogTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS, columns);
@@ -1259,7 +1259,7 @@ export const LocalStorageHelper = {
       console.error("Error Pay Track Call Log Columns Details:", error);
     }
   },
-  
+
   getPayTrackCallLogTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS);
     if (stored) {
@@ -1273,6 +1273,26 @@ export const LocalStorageHelper = {
     return null;
   },
 
+  storeDailyCollectionReportTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Daily Collection Report Columns Details:', error)
+    }
+  },
+
+  getDailyCollectionReportTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Daily Collection Report Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
   //MORE
 
   storeInwardOutwardTableColumns: (columns: string): void => {
@@ -1282,7 +1302,7 @@ export const LocalStorageHelper = {
       console.error('Error Inward Outward Columns Details:', error)
     }
   },
-  
+
   getInwardOutwardTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS)
     if (stored) {
@@ -1295,8 +1315,8 @@ export const LocalStorageHelper = {
     }
     return null
   },
-  
-   getTicketMasterTableColumns: (): string | null => {
+
+  getTicketMasterTableColumns: (): string | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS);
     if (stored) {
       try {
@@ -1308,6 +1328,36 @@ export const LocalStorageHelper = {
     }
     return null;
 
+  },
+
+  storeTicketMasterTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Ticket Master Columns Details:", error);
+    }
+  },
+
+  //TAX TRACKER
+  storeNoticeSectionMasterTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Notice Section Master Columns Details:", error);
+    }
+  },
+
+  getNoticeSectionMasterTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Notice Section Master Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
   },
 
 
@@ -1357,12 +1407,15 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BROKERAGE_BOOKING_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.PAY_TRACK_CALL_LOG_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.INWARD_OUTWARD_SELECTED_COLUMNS);
-      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_PROJECT_COLUMNS); 
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_PROJECT_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CLOSING_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_SOURCING_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_WALKINS_REVISIT_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_BOOKING_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_IBMOBM_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS);
 
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
@@ -1387,7 +1440,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.INWARD_OUTWARD);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING_Brokerage);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TICKET);
-      
+
 
     } catch (error) {
       console.error("ERROR : CLEARING LOCAL STORAGE:", error);

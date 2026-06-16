@@ -191,6 +191,8 @@ import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
 import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
 import CollectionReport from '@/features/collectionReport/pages/CollectionReport';
 import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
+import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
+import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -475,13 +477,16 @@ function App() {
             <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
             {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
             <Route path="collectionReport" element={<CollectionReport />} />
-            
+            <Route path="dailyCollectionReport" element={<DailyCollectionReport />} />
+
 
             <Route path="brokerage" element={<BookingBrokerageListStateProvider><Brokerage /></BookingBrokerageListStateProvider>} />
             <Route path="brokerage/brokerageInvoice/view" element={<BookingBrokerageListStateProvider><ViewBrokerageInvoice /></BookingBrokerageListStateProvider>} />
             <Route path="brokerage/brokerageInvoice/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdateBrokerageInvoice /></BookingBrokerageListStateProvider>} />
             <Route path="brokerage/PaidBrokerageBooking/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdatePaidBrokerageBooking /></BookingBrokerageListStateProvider>} />
 
+            {/* TAX TRACKER */}
+            <Route path="noticeSection" element={<NoticeSectionMaster />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

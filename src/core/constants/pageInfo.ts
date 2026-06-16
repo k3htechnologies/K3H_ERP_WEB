@@ -526,10 +526,24 @@ export const getPageInfo = (path: string) => {
                 description: "Comprehensive report for collection management with real-time insights and actionable data",
             }
 
+        case 'dailyCollectionReport':
+            return {
+                title: "Daily Collection Report",
+                description: "Comprehensive report for collection management with real-time insights and actionable data",
+            }
+
+
         case 'brokerage':
             return {
                 title: "Brokerage",
                 description: "Brokerage",
+            }
+
+        //TAX TRACKER
+        case 'noticeSection':
+            return {
+                title: 'Notice Section Master',
+                description: 'Centralized management of notice sections for real estate projects',
             }
 
         default:

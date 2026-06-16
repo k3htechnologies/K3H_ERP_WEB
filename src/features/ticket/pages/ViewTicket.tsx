@@ -186,12 +186,11 @@ export const ViewTicket: React.FC = () => {
                         </section>
                     )}
                 </div>
-
                 <div className="col-span-1 mt-5">
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-4 h-full">
                         <div className="border-b pb-2 mt-1">
                             <div className="flex flex-col gap-2">
-                                <h1 className="text-lg font-semibold text-black">
+                                <h1 className="text-lg font-semibold text-gray-900">
                                     Tracking History
                                 </h1>
                             </div>
@@ -200,8 +199,10 @@ export const ViewTicket: React.FC = () => {
                         <div className="mt-3 overflow-y-auto h-[500px] thin-scroll pr-2">
                             {trackingHistory && trackingHistory.length > 0 && (
                                 trackingHistory.map((item, index) => (
-                                    <div key={index} className="grid grid-cols-[24px_1fr] gap-3">
-
+                                    <div
+                                        key={index}
+                                        className="grid grid-cols-[24px_1fr] gap-3 w-full"
+                                    >
                                         <div className="flex flex-col items-center">
                                             <div className="h-4 w-4 rounded-full bg-blue-600 z-10"></div>
 
@@ -210,20 +211,28 @@ export const ViewTicket: React.FC = () => {
                                             )}
                                         </div>
 
-                                        <div className="flex flex-col gap-1 pb-4">
+                                        <div className="flex flex-col gap-1 pb-4 min-w-0">
                                             <div className="flex items-start justify-between gap-3">
                                                 <span className="font-medium text-gray-900 text-sm">
-                                                    {formatDate_dd_MonthName_yy(item.CreatedDate ?? "")}
+                                                    {formatDate_dd_MonthName_yy(
+                                                        item.CreatedDate ?? ""
+                                                    )}
                                                 </span>
 
-                                                <span className="text-xs text-gray-500">
+                                                <span className="text-xs text-gray-500 shrink-0">
                                                     {(() => {
-                                                        const { bg, text } = getTicketStatusColor(item.AssignedStatus || '');
+                                                        const { bg, text } =
+                                                            getTicketStatusColor(
+                                                                item.AssignedStatus || ""
+                                                            );
 
                                                         return (
                                                             <span
                                                                 className="inline-block px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap"
-                                                                style={{ backgroundColor: bg, color: text }}
+                                                                style={{
+                                                                    backgroundColor: bg,
+                                                                    color: text,
+                                                                }}
                                                             >
                                                                 {item.AssignedStatus || "-"}
                                                             </span>
@@ -232,7 +241,7 @@ export const ViewTicket: React.FC = () => {
                                                 </span>
                                             </div>
 
-                                            <p className="text-xs text-gray-600 leading-relaxed">
+                                            <p className="text-xs text-gray-600 leading-relaxed break-all whitespace-pre-wrap">
                                                 {item.AssignedRemark || "-"}
                                             </p>
                                         </div>

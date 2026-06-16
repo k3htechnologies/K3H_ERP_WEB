@@ -30,12 +30,13 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { formatCurrency } from "@/core/utils/comman";
 import { toUpperCase } from "fp-ts/lib/string";
+import { handleExportFile } from "@/core/utils/exportFile";
 
 const initialFormState = (): AddRevertInwardOutwardData => ({
     InwardOutwardRevertId: 0,
     InwardOutwardId: 0,
     UniqueKey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    RevertDate: '',
+    RevertDate: new Date().toISOString().split("T")[0],
     RevertDocumentURL: '',
     RevertRemark: '',
 });
@@ -58,7 +59,7 @@ export const InwardOutward: React.FC = () => {
 
     const { addToast } = useToast();
 
-    const { canAction } = useMenuPermissions();
+    const { canExport, canAction } = useMenuPermissions();
 
     const location = useLocation() as any;
 
@@ -150,6 +151,37 @@ export const InwardOutward: React.FC = () => {
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
+    };
+
+    const handleExportInwardOutward = async (exportType: 'Excel' | 'PDF') => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationInwardAndOutWardRequest = {
+                    PageNumber: 1,
+                    PageSize: pagination.totalRecords,
+                    InwardOutwardId: filters.InwardOutwardId ? Number(filters.InwardOutwardId) : 0,
+                    SystemGeneratedCode: searchTerm?.trim() || undefined,
+                    ReceiverName: filters.ReceiverName ?? undefined,
+                    SenderName: filters.SenderName ?? undefined,
+                    DocumentType: filters.DocumentType?.trim() ?? undefined,
+                    SortBy: getSortByParam(sortInfo ?? null, InwardOutwardDataColumns),
+                    ExportType: exportType
+                };
+
+                const response = await inwardOutwardService.apiCallPullInwardOutward(params);
+
+                handleExportFile(response, exportType, 'InwardOutward', addToast);
+
+                return response;
+            },
+            undefined,
+            (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
+            undefined,
+            'Preparing Export'
+        );
     };
 
     const handleRevert = (row: InwardAndOutWardData) => {
@@ -542,9 +574,9 @@ export const InwardOutward: React.FC = () => {
             render: (_value, row) => {
 
                 const showDelete = (row.DeliveryStatus || "") === "" ? true : false;
-
                 return (
                     <div className="flex justify-between">
+
                         <Button
                             onClick={(e) => {
                                 e.preventDefault();
@@ -576,7 +608,8 @@ export const InwardOutward: React.FC = () => {
                                 cursor: showDelete ? 'pointer' : 'not-allowed',
                                 opacity: showDelete ? 1 : 0.5
                             }}
-                            
+                            title="Revert Inward Outward"
+
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
@@ -780,6 +813,10 @@ export const InwardOutward: React.FC = () => {
                 isShowAddButton={canAction}
                 addTitle="Add"
                 onAdd={handleAddInwardOutward}
+
+                isShowExportButton={canExport && inwardOutwardDataList.length > 0}
+                onExportExcel={() => handleExportInwardOutward('Excel')}
+                onExportPdf={() => handleExportInwardOutward('PDF')}
             />
 
             <div className="pt-1">
@@ -926,7 +963,44 @@ export const InwardOutward: React.FC = () => {
                             onChange={e => handleFilterChange('DocumentType', e.target.value)}
                             placeholder="Enter Document Type" />
                     </div>
+                    <div>
+                        <Input type="text"
+                            label='Document Title'
+                            value={tempFilters?.DocumentTitle ?? ''}
+                            onChange={e => handleFilterChange('DocumentTitle', e.target.value)}
+                            placeholder="Enter Document Title" />
+                    </div>
+                    <div>
+                        <Input type="text"
+                            label='Status'
+                            value={tempFilters?.DeliveryStatus ?? ''}
+                            onChange={e => handleFilterChange('DeliveryStatus', e.target.value)}
+                            placeholder="Enter Status" />
+                    </div>
 
+                    <div>
+                        <Input type="text"
+                            label='Sender Mobile No'
+                            value={tempFilters?.SenderMobileNo ?? ''}
+                            onChange={e => handleFilterChange('SenderMobileNo', e.target.value)}
+                            placeholder="Enter Sender Mobile No" />
+                    </div>
+
+                    <div>
+                        <Input type="text"
+                            label='Receiver Mobile No'
+                            value={tempFilters?.ReceiverMobileNo ?? ''}
+                            onChange={e => handleFilterChange('ReceiverMobileNo', e.target.value)}
+                            placeholder="Enter Receiver Mobile No" />
+                    </div>
+
+                    <div>
+                        <DatePickerInput
+                            label="Created Date"
+                            value={formatDate_dd_mm_yyyy(tempFilters?.CreatedDate ?? '')}
+                            onChange={(val) => handleFilterChange('CreatedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) ?? '')}
+                        />
+                    </div>
                 </div>
             </Modal>
 

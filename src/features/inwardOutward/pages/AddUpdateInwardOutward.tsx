@@ -55,7 +55,7 @@ const initialFormState = (): AddUpdateInwardAndOutWardRequest => ({
     EmployeeNames: "",
     InVoiceDate: "",
     InwardNumber: 0,
-    InVoiceNumber: 0,
+    InVoiceNumber: null,
     HandOverDate: "",
     HandOverTo: "",
 
@@ -190,42 +190,61 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
     // ============================================================= [VALIDATION FUNCTION] =============================================================================================
     const validateAddUpdateInwardOutwardForm = (): {
-
         isValid: boolean;
         errors: { [key: string]: string };
-
     } => {
         const newErrors: { [k: string]: string } = {};
 
-        if (formData.DeliveryType === "Cheque" && !formData.ChequeNo) {
-            newErrors.ChequeNo = "Cheque No is required";
+        if (formData.DeliveryType === "Cheque") {
+            if (!formData.ChequeNo) {
+                newErrors.ChequeNo = "Cheque Number is required";
+            } else if (Number(formData.ChequeNo) === 0) {
+                newErrors.ChequeNo = "Cheque Number cannot be zero";
+            }
+            if (!formData.Amount) {
+                newErrors.Amount = "Amount is required";
+            } else if (formData.Amount <= 0) {
+                newErrors.Amount = "Amount must be greater than 0";
+            }
+            if (formData.InVoiceNumber === null || String(formData.InVoiceNumber).trim() === "") {
+                newErrors.InVoiceNumber = "Invoice Number is required";
+            }
+            if (formData.InVoiceNumber !== null && String(formData.InVoiceNumber).trim() !== "") {
+                if (Number(formData.InVoiceNumber) === 0) {
+                    newErrors.InVoiceNumber = "Invoice Number cannot be zero";
+                }
+            }
+
+            if (!formData.InVoiceDate) {
+                newErrors.InVoiceDate = "Invoice Date is required";
+            }
+        } else {
+            if (formData.InVoiceNumber !== null && String(formData.InVoiceNumber).trim() !== "") {
+                if (Number(formData.InVoiceNumber) === 0) {
+                    newErrors.InVoiceNumber = "Invoice Number cannot be zero";
+                }
+            }
         }
+
         if (!formData.DocumentTitle) {
             newErrors.DocumentTitle = "Document Title is required";
         }
         if (!formData.DocumentDescription) {
             newErrors.DocumentDescription = "Document Description is required";
         }
-
         if (!formData.DocumentType) {
             newErrors.DocumentType = "Document Type is required";
-        }
-        if (!formData.Amount) {
-            newErrors.Amount = "Amount is required";
-        } else if (formData.Amount <= 0) {
-            newErrors.Amount = "Amount must be greater than 0";
         }
         if (!formData.SenderName) {
             newErrors.SenderName = "Sender Name is required";
         }
         if (!formData.SenderMobileNo?.trim()) {
-            newErrors.SenderMobileNo = 'Mobile Number is required.'
+            newErrors.SenderMobileNo = 'Sender Mobile Number is required.'
         } else if (!isValidMobile(formData.SenderMobileNo.trim())) {
             newErrors.SenderMobileNo = 'Enter a Valid 10-Digit Mobile Number'
         }
-
         if (!formData.SenderEmailId?.trim()) {
-            newErrors.SenderEmailId = 'E-mail Id is required'
+            newErrors.SenderEmailId = 'Sender E-mail Id is required'
         } else if (!isValidEmail(formData.SenderEmailId.trim())) {
             newErrors.SenderEmailId = 'Enter a Valid E-mail Id'
         }
@@ -236,37 +255,57 @@ export const AddUpdateInwardOutward: React.FC = () => {
             newErrors.ReceiverName = "Receiver Name is required";
         }
         if (!formData.ReceiverMobileNo?.trim()) {
-            newErrors.ReceiverMobileNo = 'Mobile Number is required.'
+            newErrors.ReceiverMobileNo = 'Receiver Mobile Number is required.'
         } else if (!isValidMobile(formData.ReceiverMobileNo.trim())) {
             newErrors.ReceiverMobileNo = 'Enter a Valid 10-Digit Mobile Number'
         }
-
         if (!formData.ReceiverEmailId?.trim()) {
-            newErrors.ReceiverEmailId = 'E-mail Id is required'
+            newErrors.ReceiverEmailId = 'Receiver E-mail Id is required'
         } else if (!isValidEmail(formData.ReceiverEmailId.trim())) {
             newErrors.ReceiverEmailId = 'Enter a Valid E-mail Id'
         }
         if (!formData.ReceiverAddress) {
             newErrors.ReceiverAddress = "Receiver Address is required";
         }
-        if (!formData.InVoiceDate) {
-            newErrors.InVoiceDate = "Invoice Date required";
+
+        // Data Duplicacy Checks
+
+        if (formData.SenderMobileNo?.trim() && formData.ReceiverMobileNo?.trim() && formData.SenderMobileNo.trim() === formData.ReceiverMobileNo.trim()) {
+            newErrors.ReceiverMobileNo = "Sender and Receiver mobile numbers should not be the same";
+            newErrors.SenderMobileNo = "Sender and Receiver mobile numbers should not be the same";
         }
-        if (!formData.InVoiceNumber) {
-            newErrors.InVoiceNumber = "Invoice Number is required";
+        if (formData.SenderEmailId?.trim() &&
+            formData.ReceiverEmailId?.trim() &&
+            formData.SenderEmailId.trim().toLowerCase() === formData.ReceiverEmailId.trim().toLowerCase()
+        ) {
+            console.log("Sender and Receiver Email-Ids should not be the same");
+            newErrors.ReceiverEmailId = "Sender and Receiver Email-Ids should not be the same";
+            newErrors.SenderEmailId = "Sender and Receiver Email-Ids should not be the same";
         }
-        if (!formData.InwardNumber) {
-            newErrors.InwardNumber = "Inward Number is required";
+        if (
+            formData.SenderName?.trim() &&
+            formData.ReceiverName?.trim() &&
+            formData.SenderName.trim().toLowerCase() === formData.ReceiverName.trim().toLowerCase()
+        ) {
+            newErrors.ReceiverName = "Sender and Receiver names should not be the same";
+            newErrors.SenderName = "Sender and Receiver names should not be the same";
         }
-        if (!formData.ReceiverAddress) {
-            newErrors.ReceiverAddress = "Receiver Address is required";
+        if (
+            formData.SenderAddress?.trim() &&
+            formData.ReceiverAddress?.trim() &&
+            formData.SenderAddress.trim().toLowerCase() === formData.ReceiverAddress.trim().toLowerCase()
+        ) {
+            newErrors.ReceiverAddress = "Sender and Receiver addresses should not be the same";
+            newErrors.SenderAddress = "Sender and Receiver addresses should not be the same";
         }
+
         if (!formData.EmployeeId) {
             newErrors.EmployeeId = "Assign Employee is required";
         }
         if (!hasAnyDocumentFile(documentURLFiles, documentURL, removedDocumentURLs)) {
-            newErrors.DocumentURL = "File is required.";
+            newErrors.DocumentURL = "Document File is required.";
         }
+
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors,
@@ -427,7 +466,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}</Loader>
 
             <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
-                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Details</h3>
+                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2"> Delivery Details</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -442,6 +481,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 checked={formData.DeliveryType === "Others"}
                                 onChange={() => {
                                     handleFieldChange("DeliveryType", "Others");
+                                    handleFieldChange("ChequeNo", "");
                                 }}
                             />
 
@@ -471,19 +511,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
                     <div>
                         <Input
-                            type="text"
-                            required
-                            label='Inward Number'
-                            value={formData.InwardNumber ?? ""}
-                            onChange={(e) => handleFieldChange("InwardNumber", filterNumbersWithDecimal(e.target.value) || 0)}
-                            placeholder="Enter Inward Number"
-                            maxLength={15}
-                            error={errors.InwardNumber}
-                        />
-                    </div>
-
-                    <div>
-                        <Input
                             label="Document Title"
                             value={formData.DocumentTitle ?? ''}
                             required
@@ -507,10 +534,13 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            required
+                            required={formData.DeliveryType === "Cheque"}
                             label='Invoice Number'
                             value={formData.InVoiceNumber ?? ""}
-                            onChange={(e) => handleFieldChange("InVoiceNumber", filterNumbersWithDecimal(e.target.value) || 0)}
+                            onChange={(e) => {
+                                const val = filterNumbersWithDecimal(e.target.value);
+                                handleFieldChange("InVoiceNumber", val);
+                            }}
                             placeholder="Enter Invoice Number"
                             maxLength={15}
                             error={errors.InVoiceNumber}
@@ -522,7 +552,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             label="Invoice Date"
                             value={formatDate_dd_mm_yyyy(formData.InVoiceDate ?? '')}
                             onChange={(val) => handleFieldChange('InVoiceDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                            required
+                            required={formData.DeliveryType === "Cheque"}
                             error={errors.InVoiceDate}
                         />
                     </div>
@@ -531,9 +561,9 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <Input
                             label="Amount (₹)"
                             value={formData.Amount ?? ''}
-                            required
+                            required={formData.DeliveryType === "Cheque"}
                             rightIcon="₹"
-                            onChange={e => handleFieldChange('Amount', filterNumbersWithDecimal(e.target.value) || 0)}
+                            onChange={e => handleFieldChange('Amount', filterNumbersWithDecimal(e.target.value) || "")}
                             error={errors.Amount}
                             maxLength={15}
                             placeholder="Enter Amount"
@@ -546,7 +576,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 label="Cheque No"
                                 value={formData.ChequeNo ?? ''}
                                 required
-                                onChange={e => handleFieldChange('ChequeNo',filterNumbers(e.target.value))}
+                                onChange={e => handleFieldChange('ChequeNo', filterNumbers(e.target.value))}
                                 error={errors.ChequeNo}
                                 maxLength={6}
                                 placeholder="Enter Cheque No"
@@ -579,9 +609,10 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 }
                             }}
                             leftIcon="+91"
-                            error={errors.SenderMobileNo}
                             rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                            placeholder="Enter Sender Contact Number"
+                            placeholder="Enter Sender Mobile Number"
+                            error={errors.SenderMobileNo}
+
                         />
                     </div>
 
@@ -599,7 +630,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
                     <div>
                         <Input
-                            label="Email-ID"
+                            label="Email-Id"
                             value={formData.SenderEmailId ?? ''}
                             required
                             onChange={(e) => {
@@ -607,7 +638,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 handleFieldChange("SenderEmailId", emailId);
                             }}
                             error={errors.SenderEmailId}
-                            placeholder="Enter Valid E-mail Id"
+                            placeholder="Enter Sender E-mail Id"
                             rightIcon={<Mail className="h-8 w-8" />}
                         />
                     </div>
@@ -651,7 +682,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             leftIcon="+91"
                             rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
                             error={errors.ReceiverMobileNo}
-                            placeholder="Enter Receiver Contact Number"
+                            placeholder="Enter Receiver Mobile Number"
                         />
                     </div>
 
@@ -669,7 +700,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
                     <div>
                         <Input
-                            label="Email-ID"
+                            label="Email-Id"
                             value={formData.ReceiverEmailId ?? ''}
                             required
                             onChange={(e) => {
@@ -677,7 +708,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 handleFieldChange("ReceiverEmailId", emailId);
                             }}
                             error={errors.ReceiverEmailId}
-                            placeholder="Enter Valid E-mail Id"
+                            placeholder="Enter Receiver E-mail Id"
                             rightIcon={<Mail className="h-8 w-8" />}
                         />
                     </div>
@@ -702,7 +733,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <MultiFilePicker
                             label="Upload Document"
                             required
-                            placeholder="select file"
+                            placeholder="Upload Document File"
                             value={documentURLFiles}
                             onChange={setDocumentURLFiles}
                             availableFilesURL={documentURL ?? ''}
@@ -732,7 +763,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                     <div>
                         <MultiSelectPagination
-                            label="Assign Employee"
+                            label="Employee"
                             dataFetchCallBack={fetchEmployeeMasterDropdown}
                             selectedValues={employeeDropdown.selectedValues}
                             options={employeeDropdown.initialOptions}
@@ -792,13 +823,14 @@ export const AddUpdateInwardOutward: React.FC = () => {
                     <div>
                         <MultiFilePicker
                             label="Receiver’s Signature"
-                            placeholder="select file"
+                            placeholder="Select files"
                             disabled={!canAction}
                             value={receiversSignatureFiles}
                             onChange={setReceiversSignatureFiles}
                             availableFilesURL={receiversSignatureURL ?? ''}
                             allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                             maxFiles={5}
+                            maxSizeMB={10}
                             onRemoveExisting={(url) => {
                                 setRemovedReceiversSignatureURLs((prev) => [...prev, url]);
                             }}
@@ -863,7 +895,8 @@ export const AddUpdateInwardOutward: React.FC = () => {
                 cancelText="Cancel"
                 saveText={formData.InwardOutwardId ? "Update" : "Add"}
                 onCancel={() => navigate(-1)}
-                canAction={(formData.DeliveryStatus || "") === "" ? true : false}
+                // canAction={(formData.DeliveryStatus || "") === "" ? true : false}
+                canAction={canAction}
                 onSave={() => {
                     handleAddUpdateInward();
                 }}

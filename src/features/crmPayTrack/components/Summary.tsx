@@ -20,6 +20,8 @@ import { XIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { parkingModificationService } from '@/features/crmPayTrack/services/ParkingModificationService';
 import type { FilterWithPaginationParkingModificationDetails } from '@/features/crmPayTrack/models/ParkingModificationModel';
+import type { FilterWithPaginationBookingApplicantModificationRequest } from "@/features/crmPayTrack/models/BookingApplicantModificationModel";
+import { bookingApplicantModificationService } from "@/features/crmPayTrack/services/BookingApplicantModelCrmService";
 
 const initialFormStateForInitialAmountRefundRequest = (): AddUpdateRefundAmountData => ({
     BookingId: 0,
@@ -31,6 +33,7 @@ const initialFormStateForInitialAmountRefundRequest = (): AddUpdateRefundAmountD
 export const Summary: React.FC = () => {
 
     const [bookingData, setBookingData] = useState<BookingData | null>(null);
+    const [modifiedApplicantData, setModifiedApplicantData] = useState<any[]>([]);
     const [swappedParkingData, setSwappedParkingData] = useState<any[] | null>(null);
     const [initiateRefund, setInitiateRefund] = useState(false);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
@@ -43,7 +46,6 @@ export const Summary: React.FC = () => {
     const { bookingId } = listState;
     const navigate = useNavigate();
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-    const applicantData = bookingData?.BookingApplicantData;
     const isBookingCancel = bookingData?.ApprovalStatus === 'Cancel';
     const isRefundStatus = bookingData?.ApprovalStatus === 'Refund';
 
@@ -75,6 +77,46 @@ export const Summary: React.FC = () => {
 
                     const booking = response.right.Data?.[0] ?? null;
                     setBookingData(booking);
+
+
+                    const applicantParams: FilterWithPaginationBookingApplicantModificationRequest = {
+                        PageNumber: 1,
+                        PageSize: 100,
+                        ProjectId: Number(projectId),
+                        BookingId: Number(bookingId),
+                    };
+
+                    const applicantResponse =
+                        await bookingApplicantModificationService.apiCallPullBookingApplicantModification(applicantParams);
+
+                    if (E.isRight(applicantResponse)) {
+
+                        const data = applicantResponse.right.Data ?? [];
+
+                        const approvedData = data.filter(
+                            item => item.ApprovalStatus === 'Approved'
+                        );
+
+                        const latestApplicant = [...approvedData]
+                            .filter(item => item.ApplicantType === 'Applicant')
+                            .sort(
+                                (a, b) =>
+                                    Number(b.VersionNumber) - Number(a.VersionNumber)
+                            )[0];
+
+                        if (latestApplicant) {
+
+                            const latestVersion = Number(latestApplicant.VersionNumber);
+
+                            const filteredApplicants = approvedData.filter(
+                                item => Number(item.VersionNumber) >= latestVersion
+                            );
+
+                            setModifiedApplicantData(filteredApplicants);
+                        } else {
+                            setModifiedApplicantData([]);
+                        }
+                    }
 
                     const parkingParams: FilterWithPaginationParkingModificationDetails = {
                         PageNumber: 1,
@@ -305,13 +347,13 @@ export const Summary: React.FC = () => {
 
 
             <div className="pt-5">
-                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                <section className="bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f] h-[405px] overflow-y-auto thin-scroll ">
                     <h4 className="text-lg font-semibold text-gray-900 mb-4 ">
                         Applicant Details
                     </h4>
-                    {applicantData && applicantData.length > 0 ? (
+                    {modifiedApplicantData && modifiedApplicantData.length > 0 ? (
                         <div className="space-y-4">
-                            {applicantData.map((applicant, i) => (
+                            {modifiedApplicantData.map((applicant, i) => (
                                 <div key={applicant.BookingApplicantId ?? i} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                         <FieldItem label="Applicant Type" value={getSafeString(applicant?.ApplicantType)} className='text-blue-900 bold' />

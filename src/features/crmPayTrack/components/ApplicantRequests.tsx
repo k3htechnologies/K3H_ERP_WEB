@@ -174,32 +174,46 @@ export const ApplicantRequests: React.FC = () => {
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
     const applicantModificationList = useMemo(() => {
-        return (bookingApplicantModificationData || []).filter((app) => app.VersionNumber !== "1");
+        if (!bookingApplicantModificationData?.length) return [];
+
+        const sortedData = [...bookingApplicantModificationData].sort(
+            (a, b) => Number(a.VersionNumber) - Number(b.VersionNumber)
+        );
+
+        const latestApplicantIndex = [...sortedData]
+            .map((item, index) => ({
+                index,
+                isApplicant: item.ApplicantType === "Applicant",
+            }))
+            .filter(x => x.isApplicant)
+            .pop()?.index;
+
+        if (latestApplicantIndex === undefined) {
+            return [];
+        }
+
+        return sortedData.slice(latestApplicantIndex);
     }, [bookingApplicantModificationData]);
 
     const applicantTypeOptions = useMemo(() => {
-        const hasApplicantInSavedModifications = (bookingApplicantModificationData || [])
-            .filter((app) => app.VersionNumber !== "1")
-            .some(
-                (app) =>
-                    app.ApplicantType === "Applicant" &&
-                    app.BookingApplicantModificationRequestId !== editingApplicantData?.row.BookingApplicantModificationRequestId
-            );
-
         const hasApplicantInLocalList = applicantList.some(
             (app, index) =>
                 app.ApplicantType === "Applicant" &&
                 index !== editingApplicantData?.index
         );
-        const shouldDisableApplicant = hasApplicantInSavedModifications || hasApplicantInLocalList;
+
+        const shouldDisableApplicant = hasApplicantInLocalList;
 
         return APPLICANT_TYPE.filter((opt) => {
             if (opt.name === "Applicant" && shouldDisableApplicant) {
                 return editingApplicantData?.row.ApplicantType === "Applicant";
             }
             return true;
-        }).map((opt) => ({ label: opt.name, value: opt.id }));
-    }, [bookingApplicantModificationData, editingApplicantData, applicantList]);
+        }).map((opt) => ({
+            label: opt.name,
+            value: opt.id
+        }));
+    }, [applicantList, editingApplicantData]);
 
 
     useEffect(() => {
@@ -291,11 +305,10 @@ export const ApplicantRequests: React.FC = () => {
             newErrorsBookingApplicant.ApplicantMobileNumber = "Enter a valid 10-Digit Mobile Number";
         }
 
-        if (!formDataDetails.ApplicantEmailId?.trim()) {
-            newErrorsBookingApplicant.ApplicantEmailId = "E-mail Id is required";
-        }
-        else if (!isValidEmail(formDataDetails.ApplicantEmailId.trim())) {
-            newErrorsBookingApplicant.ApplicantEmailId = "Enter a Valid E-mail Id";
+        if (formDataDetails.ApplicantEmailId?.trim() && !isValidEmail(formDataDetails.ApplicantEmailId.trim())) {
+            newErrorsBookingApplicant.ApplicantEmailId = "Enter a valid Email Id";
+        } else if (!formDataDetails.ApplicantEmailId?.trim()) {
+            newErrorsBookingApplicant.ApplicantEmailId = "Email Id is required";
         }
 
         const mergedPhotoFiles = editingApplicantData ? calculateMergedFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs) : applicantPhotoFiles.slice();

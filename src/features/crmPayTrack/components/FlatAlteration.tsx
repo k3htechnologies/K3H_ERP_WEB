@@ -33,7 +33,7 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 
 const initialFormStateForFlatAlterationRequest = (): AddUpdateFlatAlterationRequest => ({
     FlatAlterationRequestId: 0,
-    UniqueKey: "7b14cc10-2533-f111-854a-c7681b271aa8",
+    UniqueKey: "ef0c7084-186a-f111-8573-e2b4d451609c",
     BookingId: 0,
     ProjectId: 0,
     FlatAlterationRemark: "",

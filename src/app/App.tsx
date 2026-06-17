@@ -180,6 +180,7 @@ import ChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/Chan
 import ViewChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ViewChannelPartnerUniverse';
 import CrmDashboard from '@/features/crmDashboard/pages/CrmDashboard';
 import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
+import CollectionReport from '@/features/collectionReport/pages/CollectionReport';
 import AchievementReport from '@/features/achievement/pages/AchievementReport';
 import { PayTrackReportListStateProvider } from '@/features/crmPayTrackReport/context/PayTrackReportListStateContext';
 import PayTrackReport from '@/features/crmPayTrackReport/pages/PayTrackReport';
@@ -353,6 +354,7 @@ function App() {
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
             <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
+            
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />

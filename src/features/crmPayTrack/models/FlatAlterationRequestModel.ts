@@ -26,7 +26,7 @@ export interface FlatAlterationRequestData {
 }
 
 export interface AddUpdateFlatAlterationRequest {
-    FlatAlterationRequestId: number;
+    FlatAlterationRequestId: number | 0;
     UniqueKey: string;
     BookingId: number;
     ProjectId: number;

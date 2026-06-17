@@ -170,10 +170,33 @@ export const ApplicantRequests: React.FC = () => {
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
     const { bookingId, bookingData, bookingApprovalStatus } = listState;
+    const { bookingId, bookingData, bookingApprovalStatus } = listState;
 
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
     const applicantModificationList = useMemo(() => {
+        if (!bookingApplicantModificationData?.length) return [];
+
+        const sortedData = [...bookingApplicantModificationData].sort(
+            (a, b) => Number(a.VersionNumber) - Number(b.VersionNumber)
+        );
+
+        const latestApplicantIndex = [...sortedData]
+            .map((item, index) => ({
+                index,
+                isApplicant: item.ApplicantType === "Applicant",
+            }))
+            .filter(x => x.isApplicant)
+            .pop()?.index;
+
+        if (latestApplicantIndex === undefined) {
+            return [];
+        }
+
+        return sortedData.slice(latestApplicantIndex);
+    }, [bookingApplicantModificationData]);
+
+    const applicantTypeOptions = useMemo(() => {
         if (!bookingApplicantModificationData?.length) return [];
 
         const sortedData = [...bookingApplicantModificationData].sort(
@@ -204,11 +227,18 @@ export const ApplicantRequests: React.FC = () => {
 
         const shouldDisableApplicant = hasApplicantInLocalList;
 
+        const shouldDisableApplicant = hasApplicantInLocalList;
+
         return APPLICANT_TYPE.filter((opt) => {
             if (opt.name === "Applicant" && shouldDisableApplicant) {
                 return editingApplicantData?.row.ApplicantType === "Applicant";
             }
             return true;
+        }).map((opt) => ({
+            label: opt.name,
+            value: opt.id
+        }));
+    }, [applicantList, editingApplicantData]);
         }).map((opt) => ({
             label: opt.name,
             value: opt.id
@@ -307,6 +337,8 @@ export const ApplicantRequests: React.FC = () => {
 
         if (formDataDetails.ApplicantEmailId?.trim() && !isValidEmail(formDataDetails.ApplicantEmailId.trim())) {
             newErrorsBookingApplicant.ApplicantEmailId = "Enter a valid Email Id";
+        } else if (!formDataDetails.ApplicantEmailId?.trim()) {
+            newErrorsBookingApplicant.ApplicantEmailId = "Email Id is required";
         } else if (!formDataDetails.ApplicantEmailId?.trim()) {
             newErrorsBookingApplicant.ApplicantEmailId = "Email Id is required";
         }
@@ -1021,6 +1053,7 @@ export const ApplicantRequests: React.FC = () => {
                     </h4>
 
                     {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
+                    {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
                         <Button
                             onClick={() => { setIsAddUpdateApplicantDetailsModalOpen(true); }}
                             color="blue"
@@ -1192,6 +1225,7 @@ export const ApplicantRequests: React.FC = () => {
                         </div>
 
                         <div>
+                            <Input label="Email Id" required error={errorsBookingApplicant.ApplicantEmailId} type="text" value={formDataDetails.ApplicantEmailId ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantEmailId", filterEmail(e.target.value))} placeholder="Enter Email Id" />
                             <Input label="Email Id" required error={errorsBookingApplicant.ApplicantEmailId} type="text" value={formDataDetails.ApplicantEmailId ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantEmailId", filterEmail(e.target.value))} placeholder="Enter Email Id" />
                         </div>
                         <div>

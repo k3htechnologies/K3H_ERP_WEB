@@ -190,7 +190,6 @@ import ViewTicket from '@/features/ticket/pages/ViewTicket';
 import { TicketListStateProvider } from '@/features/ticket/context/TicketListStateContext';
 import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
 import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
-import CollectionReport from '@/features/collectionReport/pages/CollectionReport';
 import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
 import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
 import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';

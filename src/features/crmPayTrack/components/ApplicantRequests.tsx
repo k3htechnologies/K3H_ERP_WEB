@@ -170,80 +170,36 @@ export const ApplicantRequests: React.FC = () => {
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
     const { bookingId, bookingData, bookingApprovalStatus } = listState;
-    const { bookingId, bookingData, bookingApprovalStatus } = listState;
 
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
     const applicantModificationList = useMemo(() => {
-        if (!bookingApplicantModificationData?.length) return [];
-
-        const sortedData = [...bookingApplicantModificationData].sort(
-            (a, b) => Number(a.VersionNumber) - Number(b.VersionNumber)
-        );
-
-        const latestApplicantIndex = [...sortedData]
-            .map((item, index) => ({
-                index,
-                isApplicant: item.ApplicantType === "Applicant",
-            }))
-            .filter(x => x.isApplicant)
-            .pop()?.index;
-
-        if (latestApplicantIndex === undefined) {
-            return [];
-        }
-
-        return sortedData.slice(latestApplicantIndex);
+        return (bookingApplicantModificationData || []).filter((app) => app.VersionNumber !== "1");
     }, [bookingApplicantModificationData]);
 
     const applicantTypeOptions = useMemo(() => {
-        if (!bookingApplicantModificationData?.length) return [];
+        const hasApplicantInSavedModifications = (bookingApplicantModificationData || [])
+            .filter((app) => app.VersionNumber !== "1")
+            .some(
+                (app) =>
+                    app.ApplicantType === "Applicant" &&
+                    app.BookingApplicantModificationRequestId !== editingApplicantData?.row.BookingApplicantModificationRequestId
+            );
 
-        const sortedData = [...bookingApplicantModificationData].sort(
-            (a, b) => Number(a.VersionNumber) - Number(b.VersionNumber)
-        );
-
-        const latestApplicantIndex = [...sortedData]
-            .map((item, index) => ({
-                index,
-                isApplicant: item.ApplicantType === "Applicant",
-            }))
-            .filter(x => x.isApplicant)
-            .pop()?.index;
-
-        if (latestApplicantIndex === undefined) {
-            return [];
-        }
-
-        return sortedData.slice(latestApplicantIndex);
-    }, [bookingApplicantModificationData]);
-
-    const applicantTypeOptions = useMemo(() => {
         const hasApplicantInLocalList = applicantList.some(
             (app, index) =>
                 app.ApplicantType === "Applicant" &&
                 index !== editingApplicantData?.index
         );
-
-        const shouldDisableApplicant = hasApplicantInLocalList;
-
-        const shouldDisableApplicant = hasApplicantInLocalList;
+        const shouldDisableApplicant = hasApplicantInSavedModifications || hasApplicantInLocalList;
 
         return APPLICANT_TYPE.filter((opt) => {
             if (opt.name === "Applicant" && shouldDisableApplicant) {
                 return editingApplicantData?.row.ApplicantType === "Applicant";
             }
             return true;
-        }).map((opt) => ({
-            label: opt.name,
-            value: opt.id
-        }));
-    }, [applicantList, editingApplicantData]);
-        }).map((opt) => ({
-            label: opt.name,
-            value: opt.id
-        }));
-    }, [applicantList, editingApplicantData]);
+        }).map((opt) => ({ label: opt.name, value: opt.id }));
+    }, [bookingApplicantModificationData, editingApplicantData, applicantList]);
 
 
     useEffect(() => {
@@ -335,12 +291,11 @@ export const ApplicantRequests: React.FC = () => {
             newErrorsBookingApplicant.ApplicantMobileNumber = "Enter a valid 10-Digit Mobile Number";
         }
 
-        if (formDataDetails.ApplicantEmailId?.trim() && !isValidEmail(formDataDetails.ApplicantEmailId.trim())) {
-            newErrorsBookingApplicant.ApplicantEmailId = "Enter a valid Email Id";
-        } else if (!formDataDetails.ApplicantEmailId?.trim()) {
-            newErrorsBookingApplicant.ApplicantEmailId = "Email Id is required";
-        } else if (!formDataDetails.ApplicantEmailId?.trim()) {
-            newErrorsBookingApplicant.ApplicantEmailId = "Email Id is required";
+        if (!formDataDetails.ApplicantEmailId?.trim()) {
+            newErrorsBookingApplicant.ApplicantEmailId = "E-mail Id is required";
+        }
+        else if (!isValidEmail(formDataDetails.ApplicantEmailId.trim())) {
+            newErrorsBookingApplicant.ApplicantEmailId = "Enter a Valid E-mail Id";
         }
 
         const mergedPhotoFiles = editingApplicantData ? calculateMergedFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs) : applicantPhotoFiles.slice();
@@ -1053,7 +1008,6 @@ export const ApplicantRequests: React.FC = () => {
                     </h4>
 
                     {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
-                    {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
                         <Button
                             onClick={() => { setIsAddUpdateApplicantDetailsModalOpen(true); }}
                             color="blue"
@@ -1225,7 +1179,6 @@ export const ApplicantRequests: React.FC = () => {
                         </div>
 
                         <div>
-                            <Input label="Email Id" required error={errorsBookingApplicant.ApplicantEmailId} type="text" value={formDataDetails.ApplicantEmailId ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantEmailId", filterEmail(e.target.value))} placeholder="Enter Email Id" />
                             <Input label="Email Id" required error={errorsBookingApplicant.ApplicantEmailId} type="text" value={formDataDetails.ApplicantEmailId ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantEmailId", filterEmail(e.target.value))} placeholder="Enter Email Id" />
                         </div>
                         <div>

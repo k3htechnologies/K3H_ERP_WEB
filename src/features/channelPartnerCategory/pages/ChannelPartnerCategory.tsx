@@ -116,7 +116,7 @@ export const ChannelPartnerCategory: React.FC = () => {
             sortable: false,
             fixed: 'left',
             align: 'left',
-            headerClassName: "bg-[#E4F0FF] text-black tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: (value) => (
                 <TooltipText
                     text={value || '-'}
@@ -131,7 +131,7 @@ export const ChannelPartnerCategory: React.FC = () => {
             width: '20',
             sortable: false,
             align: 'left',
-            headerClassName: "bg-[#E4F0FF] text-black tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: value => value || '-',
             renderEditor: (value?: string, onChange?: any) => (
                 <Input
@@ -147,7 +147,7 @@ export const ChannelPartnerCategory: React.FC = () => {
             width: '20',
             sortable: false,
             align: 'left',
-            headerClassName: "bg-[#E4F0FF] text-black tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: value => value || '-',
             renderEditor: (value?: string, onChange?: any) => (
                 <Input
@@ -175,7 +175,7 @@ export const ChannelPartnerCategory: React.FC = () => {
 
             {canAction && (
                 <div className="flex justify-end pt-5">
-                    <Button  onClick={handleAddUpdateChannelPartnerCategory}>
+                    <Button onClick={handleAddUpdateChannelPartnerCategory}>
                         Save
                     </Button>
                 </div>

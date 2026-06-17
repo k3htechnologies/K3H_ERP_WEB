@@ -10,7 +10,7 @@ import type { TableColumn } from "@/ui/components/DataTable/DataTableWithoutBord
 import { type FilterInfo, type PaginationInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Loader } from "@/core/utils/loader";
-import { ChevronRight, Edit } from "lucide-react";
+import { ChevronRight, Edit, Plus } from "lucide-react";
 import { Button, Input } from "@/ui/components/forms";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Modal } from "@/ui/components/Modal/Modal";
@@ -19,11 +19,15 @@ import { handleExportFile } from "@/core/utils/exportFile";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import Tabs from "@/ui/components/Tab/Tab";
-import { getBudgetStatusColor } from "../utils/Status";
+import { getBudgetStatusColor } from "@/features/budget/utils/Status";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
+import { fetchSpecificationMasterDropdown } from "@/features/specificationMaster/utils/SpecificationMasterDropDown";
+import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
+import { fetchUOMMasterDropdown } from "@/features/uomMaster/uomMasterDropdown";
 
 const initialFormState = (): AddUpdateBudget => ({
     "BudgetLevelMasterId": 0,
@@ -54,6 +58,7 @@ export const Budget: React.FC = () => {
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const [isShowCustomizeModal, setIsShowCustomizeModal] = useState(false);
     const [filters,] = useState<FilterInfo>({});
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
     const BudgetTabList = [
         { id: "Concept Budget", label: "Concept Budget" },
@@ -80,7 +85,6 @@ export const Budget: React.FC = () => {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
-                    LevelType: getLevelTypeFromTab(activeTab),
                     CategoryName: searchText ?? filterParams.CategoryName ?? undefined,
                     SortBy: getSortByParam(sort ?? null, BudgetColumns),
                 }
@@ -226,7 +230,6 @@ export const Budget: React.FC = () => {
                     PageSize: pagination.totalRecords,
                     ProjectId: Number(projectId),
                     CategoryName: filters.CategoryName?.trim() || undefined,
-                    LevelType: getLevelTypeFromTab(activeTab),
                     SortBy: getSortByParam(sortInfo ?? null, BudgetColumns),
                     ExportType: exportType
                 }
@@ -280,22 +283,6 @@ export const Budget: React.FC = () => {
                 return "#E5E5E6";
             case "L5":
                 return "#F0F0F0";
-            default:
-                return "";
-        }
-    };
-
-    const getLevelTypeFromTab = (tab: string): string => {
-        switch (tab) {
-            case "Concept Budget":
-                return "L1";
-
-            case "Schematic Budget":
-                return "L1,L2";
-
-            case "Detailed Budget":
-                return "L1,L2,L3,L4,L5";
-
             default:
                 return "";
         }
@@ -423,28 +410,59 @@ export const Budget: React.FC = () => {
             fixed: "right",
             align: "center",
             render: (_value, row) => {
-                if (!canAction) return
 
                 const isDisabled = row.LevelType === "L1" || row.LevelType === "L2";
                 return (
-                    <Button
-                        color="transparent"
-                        isborderRadius
-                        size="sm"
-                        disabled={isDisabled}
-                        style={{
-                            color: isDisabled ? "#9CA3AF" : "blue",
-                            padding: "4px 8px",
-                        }}
-                        title="Edit Budget"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            if (isDisabled) return;
-                            handleEditBudget(row);
-                        }}
-                        leftIcon={<Edit className="h-4 w-4" />}
-                    />
+                    <div className="flex justify-between">
+                        <Button
+                            color="transparent"
+                            isborderRadius
+                            size="sm"
+                            style={{
+                                color: canAction ? "green" : "#9CA3AF",
+                                cursor: canAction ? "pointer" : "not-allowed",
+                                opacity: canAction ? 1 : 0.5
+                            }}
+                            disabled={!canAction}
+                            title="Add Category Name"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+
+                                const nextLevel = buildNextLevelIds(row);
+
+                                setFormData({
+                                    ...initialFormState(),
+                                    ProjectId: Number(projectId),
+                                    ...nextLevel
+                                })
+                                setIsAddModalOpen(true)
+                            }}
+                            leftIcon={<Plus className="h-4 w-4" />}
+                        />
+
+                        <Button
+                            color="transparent"
+                            isborderRadius
+                            size="sm"
+                            disabled={isDisabled}
+                            style={{
+                                color: isDisabled ? "#9CA3AF" : "blue",
+                                padding: "4px 8px",
+                                cursor: canAction ? "pointer" : "not-allowed",
+                                opacity: canAction ? 1 : 0.5
+                            }}
+                            title="Edit Budget"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (isDisabled) return;
+                                handleEditBudget(row);
+                            }}
+                            leftIcon={<Edit className="h-4 w-4" />}
+                        />
+                    </div>
+
                 );
             }
         }
@@ -489,25 +507,7 @@ export const Budget: React.FC = () => {
         [seletedBudgetColumnKeys, BudgetColumns]
     )
 
-    const BudgetData = useMemo(() => {
-        if (activeTab === "Concept Budget") {
-            return budgetData.filter(item => item.LevelType === "L1");
-        }
-
-        if (activeTab === "Schematic Budget") {
-            return budgetData.filter(item =>
-                ["L1", "L2"].includes(item.LevelType ?? "")
-            );
-        }
-
-        if (activeTab === "Detailed Budget") {
-            return budgetData
-        }
-
-        return budgetData;
-    }, [budgetData, activeTab]);
-
-    const BudgetForTable = useMemo(() => BudgetData, [BudgetData]);
+    const BudgetForTable = useMemo(() => budgetData, [budgetData]);
 
     const handlePageChange = (page: number) => {
         setPagination({ currentPage: page })
@@ -531,24 +531,73 @@ export const Budget: React.FC = () => {
     }),
         [pagination, handlePageChange]);
 
+    const handleAddUpdatemodal = () => {
+        setIsAddModalOpen(true)
+    }
+    
+    const buildNextLevelIds = (row: BudgetData) => {
+
+        switch (row.LevelType) {
+
+            case "L1":
+                return {
+                    LevelId1: row.BudgetLevelMasterId,
+                    LevelId2: 0,
+                    LevelId3: 0,
+                    LevelId4: 0
+                }
+
+            case "L2":
+                return {
+                    LevelId1: row.LevelId1,
+                    LevelId2: row.BudgetLevelMasterId,
+                    LevelId3: 0,
+                    LevelId4: 0
+                }
+
+            case "L3":
+                return {
+                    LevelId1: row.LevelId1,
+                    LevelId2: row.LevelId2,
+                    LevelId3: row.BudgetLevelMasterId,
+                    LevelId4: 0
+                }
+
+            case "L4":
+                return {
+                    LevelId1: row.LevelId1,
+                    LevelId2: row.LevelId2,
+                    LevelId3: row.LevelId3,
+                    LevelId4: row.BudgetLevelMasterId
+                }
+
+            default:
+                return {
+                    LevelId1: 0,
+                    LevelId2: 0,
+                    LevelId3: 0,
+                    LevelId4: 0
+
+                }
+        }
+    }
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
 
             <TableActionToolbar
                 isShowSearchBar
-
                 searchTerm={searchTerm}
                 onClearSearch={handlClearSearch}
                 onSearchChange={handleSearch}
                 searchPlaceholder="Search By WBS Code / Cost Head / Description"
-                isShowAddButton
+                isShowAddButton={activeTab == "Detailed Budget"}
                 addTitle="Add"
-
+                onAdd={handleAddUpdatemodal}
                 isShowExportButton={canExport && BudgetColumns.length > 0}
                 onExportExcel={handleExportBudgetExcel}
                 onExportPdf={handleExportBudgetPdf}
-
                 isShowCustomizeButton
                 onCustomize={() => {
                     setIsShowCustomizeModal(true)
@@ -562,13 +611,6 @@ export const Budget: React.FC = () => {
                     islarge={true}
                     onTabChange={(t) => {
                         setActiveTab(t.id);
-                        setPagination({ currentPage: 1 });
-
-                        loadBudgetData(
-                            1, { LevelType: getLevelTypeFromTab(t.id) },
-                            sortInfo,
-                            searchTerm
-                        );
                     }}
                 />
             </div>
@@ -629,20 +671,20 @@ export const Budget: React.FC = () => {
                 size="xl"
                 loading={isLoading}
             >
-                <span className="text-md font-semibold text-[#00000080] flex items-center gap-2">
-                    {editBudgetData?.WBSCode}
-
-                    <ChevronRight className="h-5 w-5 text-gray-800" />
-
-                    {editBudgetData?.CategoryName}
-
-                    <ChevronRight className="h-5 w-5 text-gray-800" />
-
-                    {editBudgetData?.LevelType}
-                </span>
-
                 <div className="space-y-10 p-6 bg-blue-100">
                     <div className="space-y-4" >
+
+                        <span className="text-md font-semibold text-[#00000080] flex items-center gap-2">
+                            {editBudgetData?.WBSCode}
+
+                            <ChevronRight className="h-5 w-5 text-gray-800" />
+
+                            {editBudgetData?.CategoryName}
+
+                            <ChevronRight className="h-5 w-5 text-gray-800" />
+
+                            {editBudgetData?.LevelType}
+                        </span>
 
                         <div>
                             <Input
@@ -703,6 +745,58 @@ export const Budget: React.FC = () => {
                                 rows={5}
                                 autoResize={false}
                                 required
+                            />
+                        </div>
+
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal
+                isOpen={isAddModalOpen}
+                onClose={() => {
+                    setIsAddModalOpen(false);
+                }}
+                onCancel={() => {
+                    setIsAddModalOpen(false)
+                }}
+                onSubmit={handleAddUpdatemodal}
+                title="Add"
+                saveText="Save"
+                size="xl"
+            >
+                <div className="space-y-10 p-6 bg-blue-100">
+                    <div className="space-y-4" >
+
+                        <div>
+                            <SingleSelectDropdownWithPagination
+                                label="Category Name"
+                                title="Select Category Name"
+                                size="lg"
+                                dataFetchCallBack={fetchSpecificationMasterDropdown("L1")}
+                                onSelected={() => {
+                                }}
+                                initialValue={createDropdownInitialValue(formData.BudgetLevelMasterId)}
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <Input
+                                label="Order By"
+                                placeholder="Enter Order By"
+                                required
+                            />
+                        </div>
+
+                        <div>
+                            <SingleSelectDropdownWithPagination
+                                label="UOM"
+                                title="UOM"
+                                size="lg"
+                                dataFetchCallBack={fetchUOMMasterDropdown}
+                                onSelected={() => {
+                                }}
                             />
                         </div>
 

@@ -19,6 +19,7 @@ import { fetchUOMMasterDropdown } from "@/features/uomMaster/uomMasterDropdown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { getBudgetStatusColor } from "@/features/budget/utils/Status";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { fetchSpecificationMasterDropdown } from "@/features/specificationMaster/utils/SpecificationMasterDropDown";
 
 const initialFormState = (): AddUpdateBudgetLevelMaster => ({
     BudgetLevelMasterId: 0,
@@ -113,7 +114,6 @@ export const BudgetLevelMaster: React.FC = () => {
                     OrderBy: editBudgetLevelMasterData.OrderBy,
                     UomMasterId: editBudgetLevelMasterData.UomMasterId
                 });
-
                 setDropdownLabels({
                     uom: editBudgetLevelMasterData.Uom || "",
                 });
@@ -127,6 +127,14 @@ export const BudgetLevelMaster: React.FC = () => {
         formData.LevelId2 === 0 &&
         formData.LevelId3 === 0 &&
         formData.LevelId4 === 0;
+
+    const isL2Mode =
+        formData.LevelId1 === formData.LevelId1 &&
+        formData.LevelId2 === 0 &&
+        formData.LevelId3 === 0 &&
+        formData.LevelId4 === 0;
+
+    const ShowUom = !isL1Mode && !isL2Mode
 
     const ValidateAddUpdateBudgetLevelMasterForm = (): {
 
@@ -196,7 +204,6 @@ export const BudgetLevelMaster: React.FC = () => {
                         });
 
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-
                     } else {
 
                         const updatedRecord = response.right.Data[0] as BudgetLevelMasterData;
@@ -345,7 +352,6 @@ export const BudgetLevelMaster: React.FC = () => {
     const buildNextLevelIds = (row: BudgetLevelMasterData) => {
 
         switch (row.LevelType) {
-
             case "L1":
                 return {
                     LevelId1: row.BudgetLevelMasterId,
@@ -425,7 +431,6 @@ export const BudgetLevelMaster: React.FC = () => {
                 roots.push(node);
             }
         });
-
         return roots;
     };
 
@@ -500,31 +505,30 @@ export const BudgetLevelMaster: React.FC = () => {
                             })()}
 
                             <span>{node.CategoryName}</span>
-
                         </div>
 
                         <div className="flex justify-end gap-1">
-                            <Button
-                                color="transparent"
-                                size="sm"
-                                style={{ color: 'green', padding: '4px 8px' }}
-                                title="Add"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
+                            {node.LevelType !== "L5" && (
+                                <Button
+                                    color="transparent"
+                                    size="sm"
+                                    style={{ color: 'green', padding: '4px 8px' }}
+                                    title="Add"
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
 
-                                    if (node.LevelType === "L5") return;
-
-                                    const nextLevel = buildNextLevelIds(node);
-                                    setFormData({
-                                        ...initialFormState(),
-                                        ProjectId: Number(projectId),
-                                        ...nextLevel
-                                    });
-                                    setIsAddUpdateModalOpen(true);
-                                }}
-                                leftIcon={<Plus className="h-4 w-4" />}
-                            />
+                                        const nextLevel = buildNextLevelIds(node);
+                                        setFormData({
+                                            ...initialFormState(),
+                                            ProjectId: Number(projectId),
+                                            ...nextLevel
+                                        });
+                                        setIsAddUpdateModalOpen(true);
+                                    }}
+                                    leftIcon={<Plus className="h-4 w-4" />}
+                                />
+                            )}
 
                             <Button
                                 color="transparent"
@@ -560,6 +564,7 @@ export const BudgetLevelMaster: React.FC = () => {
                                 leftIcon={<Trash2 className="h-4 w-4" />}
                             />
                         </div>
+
                     </div>
                 </div>
 
@@ -582,6 +587,16 @@ export const BudgetLevelMaster: React.FC = () => {
         () => buildTree(budgetLevelMasterData),
         [budgetLevelMasterData]
     );
+
+    const currentLevel = useMemo(() => {
+
+        if (formData.LevelId4 > 0) return "L5";
+        if (formData.LevelId3 > 0) return "L4";
+        if (formData.LevelId2 > 0) return "L3";
+        if (formData.LevelId1 > 0) return "L2";
+
+        return "L1";
+    }, [formData]);
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -643,16 +658,63 @@ export const BudgetLevelMaster: React.FC = () => {
             >
                 <div className="space-y-10 p-6 bg-blue-100">
                     <div className="space-y-4" >
-                        <div>
-                            <Input
-                                label="Category Name"
-                                value={formData.CategoryName ?? ""}
-                                placeholder="Enter Category Name"
-                                onChange={(e) => handleFieldChange("CategoryName", e.target.value)}
-                                error={errors.CategoryName}
-                                required
+
+                        {currentLevel === "L2" && (
+                            <SingleSelectDropdownWithPagination
+                                label="L5"
+                                dataFetchCallBack={fetchSpecificationMasterDropdown("L2")}
+                                onSelected={(item) =>
+                                    handleFieldChange("CategoryName", item?.label ?? "")
+                                }
                             />
-                        </div>
+                        )}
+
+                        {currentLevel === "L3" && (
+                            <SingleSelectDropdownWithPagination
+                                label="L3"
+                                dataFetchCallBack={fetchSpecificationMasterDropdown("L3")}
+                                onSelected={(item) =>
+                                    handleFieldChange("CategoryName", item?.label ?? "")
+                                }
+                            />
+                        )}
+
+                        {currentLevel === "L4" && (
+                            <SingleSelectDropdownWithPagination
+                                label="L4"
+                                dataFetchCallBack={fetchSpecificationMasterDropdown("L4")}
+                                onSelected={(item) =>
+                                    handleFieldChange("CategoryName", item?.label ?? "")
+                                }
+                            />
+                        )}
+
+                        {currentLevel === "L5" && (
+                            <SingleSelectDropdownWithPagination
+                                label="L5"
+                                dataFetchCallBack={fetchSpecificationMasterDropdown("L5")}
+                                onSelected={(item) =>
+                                    handleFieldChange("CategoryName", item?.label ?? "")
+                                }
+                            />
+                        )}
+
+                        {currentLevel === "L1" && (
+                            <div>
+                                <SingleSelectDropdownWithPagination
+                                    label="Category Name"
+                                    value={formData.CategoryName ?? ""}
+                                    size="lg"
+                                    dataFetchCallBack={fetchSpecificationMasterDropdown("L1")}
+                                    onSelected={(item) => {
+                                        handleFieldChange("CategoryName", item?.value ?? null);
+                                    }}
+                                    initialValue={createDropdownInitialValue(String(formData.CategoryName))}
+                                    error={errors.CategoryName}
+                                    required
+                                />
+                            </div>
+                        )}
 
                         {isL1Mode && (
                             <div>
@@ -667,22 +729,24 @@ export const BudgetLevelMaster: React.FC = () => {
                             </div>
                         )}
 
-                        <div>
-                            <SingleSelectDropdownWithPagination
-                                label="UOM"
-                                title="Select UOM"
-                                size="lg"
-                                dataFetchCallBack={fetchUOMMasterDropdown}
-                                onSelected={(item) => {
-                                    if (!item) {
-                                        handleFieldChange("UomMasterId", null);
-                                        return;
-                                    }
-                                    handleFieldChange("UomMasterId", Number(item.value));
-                                }}
-                                initialValue={createDropdownInitialValue(formData.UomMasterId, dropdownLabels.uom)}
-                            />
-                        </div>
+                        {ShowUom && (
+                            <div>
+                                <SingleSelectDropdownWithPagination
+                                    label="UOM"
+                                    title="Select UOM"
+                                    size="lg"
+                                    dataFetchCallBack={fetchUOMMasterDropdown}
+                                    onSelected={(item) => {
+                                        if (!item) {
+                                            handleFieldChange("UomMasterId", null);
+                                            return;
+                                        }
+                                        handleFieldChange("UomMasterId", Number(item.value));
+                                    }}
+                                    initialValue={createDropdownInitialValue(formData.UomMasterId, dropdownLabels.uom)}
+                                />
+                            </div>
+                        )}
                     </div>
                 </div>
             </Modal>

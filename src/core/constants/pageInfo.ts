@@ -532,6 +532,11 @@ export const getPageInfo = (path: string) => {
                 title: "Budget",
                 description: "Profile"
             }
+        case 'specificationmaster':
+            return {
+                title: "Specification Master",
+                description: "Profile"
+            }
 
         default:
             return {

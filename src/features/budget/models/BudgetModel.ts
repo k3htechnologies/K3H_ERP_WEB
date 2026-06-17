@@ -19,15 +19,14 @@ export interface BudgetData {
     CategoryName: string | null
     UomMasterId: number | 0
     WBSCode: string | null
-    LevelName: string | null
-    LevelID1: number | 0
-    Level1Name: string | null
-    LevelID2: number | 0
-    Level2Name: string | null
-    LevelID3: number | 0
-    Level3Name: string | null
     LevelType: string | null
-    LevelID4: number | 0
+    LevelId1: number | 0
+    Level1Name: string | null
+    LevelId2: number | 0
+    Level2Name: string | null
+    LevelId3: number | 0
+    Level3Name: string | null
+    LevelId4: number | 0
     Level4Name: string | null
     OrderBy: number | 0
     Quantity: number | 0

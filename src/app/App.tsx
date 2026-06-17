@@ -191,6 +191,7 @@ import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
 import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
 import BudgetLevelMaster from '@/features/budgetLevelMaster/pages/BudgetLevelMaster';
 import Budget from '@/features/budget/pages/Budget';
+import SpecificationMaster from '@/features/specificationMaster/pages/SpecificationMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -483,6 +484,7 @@ function App() {
 
             <Route path='budgetLevelMaster' element={<BudgetLevelMaster />} />
             <Route path='budget' element={<Budget />} />
+            <Route path='specificationMaster' element={<SpecificationMaster />} />
 
           </Route>
 

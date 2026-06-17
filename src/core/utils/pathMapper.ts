@@ -120,7 +120,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         //ESTIMATION AND BUDGET
         '/budgetlevelmaster': '/BudgetLevelMaster',
         '/budget': '/budget',
-
+        '/specificationmaster': 'specificationMaster',
     }
 
 

@@ -24,10 +24,11 @@ import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 
 const initialFormStateForFlatAlterationRequest = (): AddUpdateFlatAlterationRequest => ({
     FlatAlterationRequestId: 0,
-    UniqueKey: "7b14cc10-2533-f111-854a-c7681b271aa8",
+    UniqueKey: "ef0c7084-186a-f111-8573-e2b4d451609c",
     BookingId: 0,
     ProjectId: 0,
     FlatAlterationRemark: '',
+    ProofOfDocumentURL: '',
     IsApproval: false,
     ApprovalStatus: '',
     VersionNumber: '',
@@ -37,7 +38,7 @@ const initialFormStateForFlatAlterationRequest = (): AddUpdateFlatAlterationRequ
     ModifiedById: 0,
     ModifiedBy: '',
     ModifiedDate: '',
-    FlatAlterationDocumentURL: [],
+    // FlatAlterationDocumentURL: [],
     RemoveFlatAlterationDocumentURL: '',
 });
 
@@ -63,7 +64,7 @@ export const FlatAlteration: React.FC = () => {
     const { addToast } = useToast();
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
-    const { bookingId, bookingData,bookingApprovalStatus } = listState;
+    const { bookingId, bookingData, bookingApprovalStatus } = listState;
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
     useEffect(() => {
@@ -318,7 +319,7 @@ export const FlatAlteration: React.FC = () => {
                         Flat Alteration Remark
                     </h4>
 
-                    {canAction &&  bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
+                    {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
                         <Button
                             onClick={handleCreateRequestFlatSpecificationModal}
                             color="blue"

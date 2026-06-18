@@ -13,7 +13,7 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button, Input } from "@/ui/components/forms";
-import { IdCardIcon, Plus, Trash2 } from "lucide-react";
+import { Edit, IdCardIcon, Plus, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { bookingApplicantModificationService } from '@/features/crmPayTrack/services/BookingApplicantModelCrmService';
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
@@ -586,6 +586,81 @@ export const ApplicantRequests: React.FC = () => {
         );
     };
 
+    const handleEditApplicant = (row: RequestBookingApplicantWithFiles, index: number) => {
+        setEditingApplicantData({ row, index });
+
+        setFormDataDetails({
+            BookingApplicantModificationRequestId: row.BookingApplicantModificationRequestId ?? 0,
+            ApplicantType: row.ApplicantType || '',
+            ApplicantName: row.ApplicantName || '',
+            ApplicantMobileNumber: row.ApplicantMobileNumber || '',
+            ApplicantEmailId: row.ApplicantEmailId || '',
+            AadharCardNumber: row.AadharCardNumber || '',
+            PanNumber: row.PanNumber || '',
+            PassportNumber: row.PassportNumber || '',
+            DrivingLicenseNumber: row.DrivingLicenseNumber || '',
+            VotingIdNumber: row.VotingIdNumber || '',
+            GSTNumber: row.GSTNumber || '',
+            RemovePhotoURL: '',
+            RemoveAadharCardURL: '',
+            RemovePanCardURL: '',
+            RemovePassportURL: '',
+            RemoveDrivingLicenseURL: '',
+            RemoveVotingIdURL: '',
+            RemoveGSTNumberURL: '',
+            PhotoURL: [],
+            AadharCardURL: [],
+            PanCardURL: [],
+            PassportURL: [],
+            DrivingLicenseURL: [],
+            VotingIdURL: [],
+            GSTNumberURL: [],
+            CancelledChequeURL: [],
+            POAURL: [],
+            IncomeForm16ITRURL: [],
+            NreNroBankDetailsURL: [],
+            NomineeFormURL: [],
+            StatementOfSourceOfFundsURL: [],
+            PaymentProofURL: [],
+            ProofOfDocumentURL: [],
+            RemoveProofOfDocumentURL: '',
+        });
+
+        setApplicantPhotoFiles(row._photoFiles ?? []);
+        setRemovedApplicantPhotoURLs([]);
+        setAadharCardFiles(row._aadharFiles ?? []);
+        setRemovedAadharCardURLs([]);
+        setPanCardFiles(row._panFiles ?? []);
+        setRemovedPanCardURLs([]);
+        setPassportFiles(row._passportFiles ?? []);
+        setRemovedPassportURLs([]);
+        setDrivingLicenseFiles(row._drivingFiles ?? []);
+        setRemovedDrivingLicenseURLs([]);
+        setVotingIdFiles(row._votingFiles ?? []);
+        setRemovedVotingIdURLs([]);
+        setGstFiles(row._gstFiles ?? []);
+        setRemovedGstURLs([]);
+        setCancelledChequeFiles(row._cancelledChequeFiles ?? []);
+        setRemovedCancelledChequeURLs([]);
+        setPOAFiles(row._pOAFiles ?? []);
+        setRemovedPOAURLs([]);
+        setIncomeForm16ITRFiles(row._incomeForm16ITRFiles ?? []);
+        setRemovedIncomeForm16ITRURLs([]);
+        setNreNroBankDetailsFiles(row._nreNroBankDetailsFiles ?? []);
+        setRemovedNreNroBankDetailsURLs([]);
+        setNomineeFormFiles(row._nomineeFormFiles ?? []);
+        setRemovedNomineeFormURLs([]);
+        setStatementOfSourceOfFundsFiles(row._statementOfSourceOfFundsFiles ?? []);
+        setRemovedStatementOfSourceOfFundsURLs([]);
+        setPaymentProofFiles(row._paymentProofFiles ?? []);
+        setRemovedPaymentProofURLs([]);
+        setProofOfDocumentFiles(row._proofOfDocumentFiles ?? []);
+        setRemovedProofOfDocumentURLs([]);
+
+        setErrorsBookingApplicant({});
+        setIsAddUpdateApplicantDetailsModalOpen(true);
+    };
+
     const handleSaveApplicantRequests = async () => {
         if (applicantList.length === 0) return;
 
@@ -984,16 +1059,34 @@ export const ApplicantRequests: React.FC = () => {
                 width: "10",
                 sortable: false,
                 align: "center" as const,
-                render: (_v: any, _row: any, index: number) => (
-                    <div className="flex justify-center">
+                fixed: "right" as const,
+                render: (_v: any, row: any, index: number) => (
+                    <div className="flex items-center justify-center gap-2">
                         <Button
-                            onClick={() => setApplicantList((prev) => prev.filter((_, i) => i !== index))}
-                            variant="outline"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleEditApplicant(row, index);
+                            }}
                             color="transparent"
+                            isborderRadius
+                            size="sm"
+                            title="Edit"
+                            leftIcon={<Edit className="h-4 w-4" />}
+                        />
+                        <Button
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setApplicantList((prev) => prev.filter((_, i) => i !== index));
+                            }}
+                            color="transparent"
+                            isborderRadius
                             size="sm"
                             title="Delete"
+                            style={{ color: 'red' }}
                         >
-                            <Trash2 className="h-4 w-4 text-red-500" />
+                            <Trash2 className="h-4 w-4 " />
                         </Button>
                     </div>
                 ),

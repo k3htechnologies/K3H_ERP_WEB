@@ -174,32 +174,37 @@ export const ApplicantRequests: React.FC = () => {
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
     const applicantModificationList = useMemo(() => {
-        return (bookingApplicantModificationData || []).filter((app) => app.VersionNumber !== "1");
+        if (!bookingApplicantModificationData?.length) {
+            return [];
+        }
+
+        const highestVersion = Math.max(
+            ...bookingApplicantModificationData.map(item => Number(item.VersionNumber) || 0)
+        );
+
+        return bookingApplicantModificationData.filter(
+            item => Number(item.VersionNumber) === highestVersion
+        );
     }, [bookingApplicantModificationData]);
 
-    const applicantTypeOptions = useMemo(() => {
-        const hasApplicantInSavedModifications = (bookingApplicantModificationData || [])
-            .filter((app) => app.VersionNumber !== "1")
-            .some(
-                (app) =>
-                    app.ApplicantType === "Applicant" &&
-                    app.BookingApplicantModificationRequestId !== editingApplicantData?.row.BookingApplicantModificationRequestId
-            );
 
+    const applicantTypeOptions = useMemo(() => {
         const hasApplicantInLocalList = applicantList.some(
-            (app, index) =>
-                app.ApplicantType === "Applicant" &&
-                index !== editingApplicantData?.index
+            (app, index) => app.ApplicantType === "Applicant" && index !== editingApplicantData?.index
         );
-        const shouldDisableApplicant = hasApplicantInSavedModifications || hasApplicantInLocalList;
+
+        const shouldDisableApplicant = hasApplicantInLocalList;
 
         return APPLICANT_TYPE.filter((opt) => {
             if (opt.name === "Applicant" && shouldDisableApplicant) {
                 return editingApplicantData?.row.ApplicantType === "Applicant";
             }
             return true;
-        }).map((opt) => ({ label: opt.name, value: opt.id }));
-    }, [bookingApplicantModificationData, editingApplicantData, applicantList]);
+        }).map((opt) => ({
+            label: opt.name,
+            value: opt.id
+        }));
+    }, [applicantList, editingApplicantData]);
 
 
     useEffect(() => {
@@ -291,11 +296,10 @@ export const ApplicantRequests: React.FC = () => {
             newErrorsBookingApplicant.ApplicantMobileNumber = "Enter a valid 10-Digit Mobile Number";
         }
 
-        if (!formDataDetails.ApplicantEmailId?.trim()) {
-            newErrorsBookingApplicant.ApplicantEmailId = "E-mail Id is required";
-        }
-        else if (!isValidEmail(formDataDetails.ApplicantEmailId.trim())) {
-            newErrorsBookingApplicant.ApplicantEmailId = "Enter a Valid E-mail Id";
+        if (formDataDetails.ApplicantEmailId?.trim() && !isValidEmail(formDataDetails.ApplicantEmailId.trim())) {
+            newErrorsBookingApplicant.ApplicantEmailId = "Enter a valid Email Id";
+        } else if (!formDataDetails.ApplicantEmailId?.trim()) {
+            newErrorsBookingApplicant.ApplicantEmailId = "Email Id is required";
         }
 
         const mergedPhotoFiles = editingApplicantData ? calculateMergedFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs) : applicantPhotoFiles.slice();
@@ -525,6 +529,7 @@ export const ApplicantRequests: React.FC = () => {
             return [...prev, applicantToSave];
         });
 
+
         setIsAddUpdateApplicantDetailsModalOpen(false);
         setEditingApplicantData(null);
         setFormDataDetails(initialFormStateForDetailsRequest());
@@ -556,7 +561,7 @@ export const ApplicantRequests: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationBookingApplicantModificationRequest = {
                     PageNumber: 1,
-                    PageSize: 10,
+                    PageSize: 100,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
 
@@ -583,6 +588,25 @@ export const ApplicantRequests: React.FC = () => {
 
     const handleSaveApplicantRequests = async () => {
         if (applicantList.length === 0) return;
+
+        const applicantCount = applicantList.filter(
+            item => item.ApplicantType === "Applicant"
+        ).length;
+
+        if (applicantCount === 0) {
+            addToast({
+                type: "error",
+                title: "At least one Applicant is required."
+            });
+            return;
+        }
+        if (applicantCount > 1) {
+            addToast({
+                type: "error",
+                title: "Only one Applicant is allowed."
+            });
+            return;
+        }
 
         await runApiWithLoader(
             setIsLoading,
@@ -691,6 +715,7 @@ export const ApplicantRequests: React.FC = () => {
             "Saving Applicant Requests"
         );
     };
+
 
     const summaryColumns = useMemo<TableColumn[]>(
         () => [
@@ -929,7 +954,9 @@ export const ApplicantRequests: React.FC = () => {
                 sortable: false,
                 align: "center",
                 render: (value, row) => {
-
+                    if (row.ApplicantType !== "Applicant") {
+                        return "-";
+                    }
                     return (
                         <ApprovalActions
                             approvalStatus={value || "-"}
@@ -1069,7 +1096,6 @@ export const ApplicantRequests: React.FC = () => {
                     setIsAddUpdateApplicantDetailsModalOpen(false);
                     setFormDataDetails(initialFormStateForDetailsRequest());
                     setEditingApplicantData(null);
-                    setApplicantList([]);
                     setErrorsBookingApplicant({});
                     setApplicantPhotoFiles([]);
                     setAadharCardFiles([]);
@@ -1107,7 +1133,6 @@ export const ApplicantRequests: React.FC = () => {
                     setIsAddUpdateApplicantDetailsModalOpen(false);
                     setFormDataDetails(initialFormStateForDetailsRequest());
                     setEditingApplicantData(null);
-                    setApplicantList([]);
                     setErrorsBookingApplicant({});
                     setApplicantPhotoFiles([]);
                     setAadharCardFiles([]);

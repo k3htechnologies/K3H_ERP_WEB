@@ -638,6 +638,7 @@ export const BankLoanDocuments: React.FC = () => {
                                 value={formData.FileName ?? ''}
                                 onChange={(e) => handleFieldChange('FileName', e.target.value)}
                                 error={errors.FileName}
+                                maxLength={100}
                                 required
                             />
                         </div>

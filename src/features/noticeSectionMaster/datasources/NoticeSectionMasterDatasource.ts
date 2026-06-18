@@ -33,6 +33,8 @@ export class NoticeSectionMasterDatasourceImpl implements NoticeSectionMasterDat
 
             if (params.NoticeSectionMasterId) queryParams.append('NoticeSectionMasterId', params.NoticeSectionMasterId.toString());
             if (params.NoticeSection?.trim()) queryParams.append('NoticeSection', params.NoticeSection.trim());
+            if (params.GovernmentCompliance?.trim()) queryParams.append('GovernmentCompliance', params.GovernmentCompliance.trim());
+            
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

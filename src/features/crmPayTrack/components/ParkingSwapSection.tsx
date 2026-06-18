@@ -399,12 +399,10 @@ export const ParkingSwapSection: React.FC = () => {
                                         color="blue"
                                         size="sm"
                                         variant="solid"
-                                        defineWidth
-                                        style={{ width: '190px' }}
                                         leftIcon={<Plus className="h-4 w-4" />}
                                         disabled={isBookingCancelled || isParkingDetailsEmpty}
                                     >
-                                        Create Requests
+                                        Parking Change Requests
                                     </Button>
                                 </div>
                             )}

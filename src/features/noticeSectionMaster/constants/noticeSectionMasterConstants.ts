@@ -4,7 +4,7 @@ import type { TableColumn } from '@/ui/components/DataTable/DataTable';
 export const INITIAL_FORM_STATE: AddUpdateNoticeSectionMasterRequest = {
     NoticeSectionMasterId: 0,
     Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-    NoticeType: '',
+    GovernmentCompliance: '',
     NoticeSection: ''
 };
 
@@ -16,8 +16,8 @@ export const getInitialFormState = (): AddUpdateNoticeSectionMasterRequest => ({
 
 export const getNoticeSectionMasterColumns = (): TableColumn[] => [
     {
-        key: 'NoticeType',
-        label: 'Notice Type',
+        key: 'GovernmentCompliance',
+        label: 'Government Compliance',
         width: '30',
         sortable: true,
         fixed: 'left',

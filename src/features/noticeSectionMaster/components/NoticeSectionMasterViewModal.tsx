@@ -54,7 +54,7 @@ export const NoticeSectionMasterViewModal: React.FC<NoticeSectionMasterViewModal
         >
             <div className="space-y-6">
 
-                <FieldItem label="Notice Type" value={data.NoticeType} isRow withBorder={true} />
+                <FieldItem label="Government Compliance" value={data.GovernmentCompliance} isRow withBorder={true} />
                 <FieldItem label="Notice U/S" value={data.NoticeSection} isRow withBorder={true} />
 
                 <h4 className="text-lg font-semibold pb-2">

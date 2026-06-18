@@ -47,10 +47,10 @@ export const NoticeSectionMasterFormModal: React.FC<NoticeSectionMasterFormModal
                                 label="Notice Type"
                                 required
                                 placeholder="Select Notice Type"
-                                value={formData.NoticeType ?? ''}
-                                onChange={(value) => onFieldChange("NoticeType", value)}
+                                value={formData.GovernmentCompliance ?? ''}
+                                onChange={(value) => onFieldChange("GovernmentCompliance", value)}
                                 options={NOTICE_TYPE_OPTIONS.map(opt => ({ label: opt.name, value: opt.id }))}
-                                error={errors.NoticeType}
+                                error={errors.GovernmentCompliance}
                             />
                         </div>
                     </div>

@@ -96,7 +96,7 @@ export const PaymentLedger: React.FC = () => {
 
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  const { canAction } = useMenuPermissions("/paymentLedger");
+  const { canAction,canExport } = useMenuPermissions("/paymentLedger");
 
   const { projectId } = useProject();
 
@@ -787,7 +787,7 @@ export const PaymentLedger: React.FC = () => {
         onClearSearch={handleClearSearch}
 
         // EXPORT
-        isShowExportButton={dataWithTotal.length > 0}
+        isShowExportButton={canExport && dataWithTotal.length > 0}
         onExportExcel={handleExportPayTrackPaymentLedgerExcelFile}
         onExportPdf={handleExportPayTrackPaymentLedgerPdfFile}
         exportLoading={isLoading}
@@ -871,7 +871,7 @@ export const PaymentLedger: React.FC = () => {
                           />
                           <FieldItem label="Payment Mode" value={row.PaymentMode || "-"} isRow />
 
-                          <FieldItem label="Booking Amount" isSetValue={false} value={row.IsBookingAmount ? "Yes" : "No"} isRow />
+                         {row.IsBookingAmount && ( <FieldItem label="Booking Amount" isSetValue={false} value={row.IsBookingAmount ? "Yes" : "No"} isRow />)}
 
                           {row.ChargeName !== "" && <FieldItem label="Other Charges" value={row.ChargeName || "-"} isRow />}
 
@@ -952,6 +952,7 @@ export const PaymentLedger: React.FC = () => {
                             label="Transaction / Cheque / Demand Draft No"
                             urls={row.TransactionChequeDemandDraftURL}
                             value={row.TransactionChequeDemandDraftNumber || "-"}
+                            isIcon
                           />
 
                           <FieldItem

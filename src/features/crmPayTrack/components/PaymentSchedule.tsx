@@ -16,12 +16,14 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 
 export const PaymentSchedule: React.FC = () => {
     const [paymentScheduleCrmList, setPaymentScheduleCrmList] = useState<PaymentScheduleModelData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const { canAction,canExport } = useMenuPermissions('/paymentSchedule');
 
     const dtRef = useRef<DataTableExpandableRef | null>(null);
 
@@ -85,7 +87,6 @@ export const PaymentSchedule: React.FC = () => {
         setSearchTerm('');
         loadPaymentScheduleCrmDetails('')
     }
-
 
     const handleExportPayTrackPaymentScheduleExcel = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
@@ -372,7 +373,7 @@ export const PaymentSchedule: React.FC = () => {
                         isLocked ||
                         bookingApprovalStatus?.toUpperCase() !== 'APPROVED';
 
-                    if (isLocked) return null;
+                    if (!canAction ||isLocked) return null;
 
                     return (
                         <div className="flex items-center justify-center">
@@ -461,7 +462,7 @@ export const PaymentSchedule: React.FC = () => {
                 onSearchChange={handleSearchChange}
                 onClearSearch={handleClearSearch}
                 // EXPORT
-                isShowExportButton={dataWithTotal.length > 0}
+                isShowExportButton={canExport && dataWithTotal.length > 0}
                 onExportExcel={handleExportPayTrackPaymentScheduleExcelFile}
                 onExportPdf={handleExportPayTrackPaymentSchedulePdfFile}
                 exportLoading={isLoading}

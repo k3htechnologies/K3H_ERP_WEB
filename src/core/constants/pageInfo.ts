@@ -361,7 +361,7 @@ export const getPageInfo = (path: string) => {
                 title: "Inventory and Parking Overall Report",
                 description: "Comprehensive report for inventory and parking management with real-time insights and actionable data",
             }
-        
+
 
 
             {/* SALES */ }
@@ -520,12 +520,6 @@ export const getPageInfo = (path: string) => {
                 title: "Pay Track Report",
                 description: "Secure your unit by completing the booking process",
             }
-            
-        case 'collectionReport':
-            return {
-                title: "Collection Report",
-                description: "Comprehensive report for collection management with real-time insights and actionable data",
-            }
 
         case 'collectionReport':
             return {
@@ -547,6 +541,12 @@ export const getPageInfo = (path: string) => {
             }
 
         //TAX TRACKER
+        case 'taxTracker':
+            return {
+                title: 'Tax Tracker',
+                description: 'Tax Tracker for tracking notices issued by authorities across India',
+            }
+
         case 'noticeSection':
             return {
                 title: 'Notice Section Master',

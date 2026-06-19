@@ -126,6 +126,8 @@ import Parking from '@/features/parking/pages/Parking';
 import RedevelopmentDashboard from '@/features/redevelopmentDashboard/pages/RedevelopmentDashboard';
 import InventoryDashboard from '@/features/inventoryDashboard/pages/InventoryDashboard';
 import { LitigationListStateProvider } from '@/features/litigation/context/LitigationListStateContext';
+import { TaxTrackerListStateProvider } from '@/features/taxTracker/context/TaxTrackerListStateContext';
+
 import Litigation from '@/features/litigation/pages/Litigation';
 import AddUpdateLitigation from '@/features/litigation/pages/AddUpdateLitigation';
 import ViewLitigation from '@/features/litigation/pages/ViewLitigation';
@@ -193,6 +195,7 @@ import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/Chan
 import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
 import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
 import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
+import TaxTracker from '@/features/taxTracker/pages/TaxTracker';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -353,7 +356,7 @@ function App() {
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
             <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
-            
+
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
@@ -460,6 +463,12 @@ function App() {
             <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
             <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
             <Route path="legalDashboard" element={<LitigationDashboard />} />
+
+            {/* TAX TRACKER */}
+            <Route path='taxTracker' element={<TaxTrackerListStateProvider><TaxTracker /></TaxTrackerListStateProvider>} />
+            {/* <Route path='taxTracker/add/:TaxTrackerId?' element={<TaxTrackerListStateProvider><AddUpdateTaxTracker /></TaxTrackerListStateProvider>} />
+            <Route path='taxTracker/view' element={<TaxTrackerListStateProvider><ViewTaxTracker /></TaxTrackerListStateProvider>} /> */}
+            {/* <Route path='taxTracker/document' element={<TaxTrackerListStateProvider><TaxTrackerDocument /></TaxTrackerListStateProvider>} /> */}
 
 
             {/* PROJECT */}

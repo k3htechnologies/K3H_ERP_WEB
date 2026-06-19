@@ -5,7 +5,7 @@ export interface FilterWithPaginationNoticeSectionMasterRequest {
     PageNumber: number
     IsCheckPermission?: boolean
     NoticeSectionMasterId?: number
-    NoticeType?: string
+    GovernmentCompliance?: string
     NoticeSection?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
@@ -15,7 +15,7 @@ export interface FilterWithPaginationNoticeSectionMasterRequest {
 export interface NoticeSectionMasterData {
     NoticeSectionMasterId: number | 0
     Uniquekey: string | ''
-    NoticeType: string | ''
+    GovernmentCompliance: string | ''
     NoticeSection: string | ''
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -28,7 +28,7 @@ export interface NoticeSectionMasterData {
 export interface AddUpdateNoticeSectionMasterRequest {
     NoticeSectionMasterId?: number
     Uniquekey?: string
-    NoticeType: string
+    GovernmentCompliance: string
     NoticeSection: string
 }
 

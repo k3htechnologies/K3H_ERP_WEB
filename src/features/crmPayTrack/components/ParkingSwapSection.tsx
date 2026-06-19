@@ -17,7 +17,7 @@ import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable
 import { Loader } from "@/core/utils/loader";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button, Input } from "@/ui/components/forms";
-import { Plus } from "lucide-react";
+import { Edit, Plus } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
@@ -302,6 +302,21 @@ export const ParkingSwapSection: React.FC = () => {
         setIsParkingApprovalActionModalOpen(true);
     };
 
+    const handleEditParkingSwap = (row: any) => {
+        setFormData((prev) => ({
+            ...prev,
+            ParkingModificationRequestId: row.ParkingModificationRequestId ?? 0,
+        }));
+
+        setSwapParkingFormData({
+            ParkingId: String(row.ParkingId),
+        });
+
+        setSwapParkingErrors({});
+        setErrors({});
+        setIsAddUpdateParkingSwapModalOpen(true);
+    };
+
     const parkingColumns = useMemo<TableColumn[]>(
         () => [
             {
@@ -354,7 +369,7 @@ export const ParkingSwapSection: React.FC = () => {
                 fixed: "left",
                 render: (value: boolean) => (value ? "Yes" : "No"),
             },
-            
+
 
             {
                 key: "ApprovalStatus",
@@ -374,8 +389,36 @@ export const ParkingSwapSection: React.FC = () => {
                     />
                 )
             },
+            ...(canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !isBookingCancelled && !isParkingDetailsEmpty
+                ? [
+                    {
+                        key: "actions",
+                        label: "Actions",
+                        width: "10",
+                        sortable: false,
+                        align: "center" as const,
+                        fixed: "right" as const,
+                        render: (_v: any, row: any) => (
+                            <div className="flex items-center justify-center gap-2">
+                                <Button
+                                    onClick={(e: React.MouseEvent) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleEditParkingSwap(row);
+                                    }}
+                                    color="transparent"
+                                    isborderRadius
+                                    size="sm"
+                                    title="Edit"
+                                    leftIcon={<Edit className="h-4 w-4" />}
+                                />
+                            </div>
+                        ),
+                    },
+                ]
+                : []),
         ],
-        []
+        [canAction, bookingApprovalStatus, isBookingCancelled, isParkingDetailsEmpty, handleEditParkingSwap]
     )
 
 

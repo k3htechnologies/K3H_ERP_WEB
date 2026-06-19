@@ -99,7 +99,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/inventory': '/inventory',
         '/parking': '/parking',
         '/inventoryparkingoverallreport': '/inventoryParkingOverallReport',
-        
+
 
         //CHANNEL PARTNER
         '/channelpartnerdashboard': '/channelPartnerDashboard',
@@ -112,7 +112,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/paytrackreport': '/payTrackReport',
         '/brokerage': '/brokerage',
         '/collectionreport': '/collectionReport',
-         '/dailycollectionreport': '/dailyCollectionReport',
+        '/dailycollectionreport': '/dailyCollectionReport',
 
         //MORE
         '/inwardoutward': '/inwardOutward',
@@ -122,6 +122,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/companypolicy': '/companyPolicy',
 
         //TAX TRACKER
+        '/taxtracker': '/taxTracker',
         '/noticesection': '/noticeSection',
     }
 

@@ -2,35 +2,33 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo, t
 import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
 import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
 
-export type TaxTrackerListState = {
+export type TaxTrackerDocumentListState = {
     page: number;
     pageSize: number;
     searchTerm: string;
     filters: FilterInfo;
     sortInfo: SortInfo | undefined;
     TaxTrackerId: number;
-    CompanyId: number;
-    NoticeSection: string;
+    TaxTrackerDocumentId: number;
 };
 
-const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.TAX_TRACKER;
+const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.TAX_TRACKER_DOCUMENT;
 
-const getInitialState = (): TaxTrackerListState => {
+const getInitialState = (): TaxTrackerDocumentListState => {
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
 
         if (stored) {
-            const parsed = JSON.parse(stored) as TaxTrackerListState;
+            const parsed = JSON.parse(stored) as TaxTrackerDocumentListState;
 
             return {
                 ...parsed,
                 TaxTrackerId: parsed.TaxTrackerId || 0,
-                CompanyId: parsed.CompanyId || 0,
-                NoticeSection: parsed.NoticeSection || "",
+                TaxTrackerDocumentId: parsed.TaxTrackerDocumentId || 0,
             };
         }
     } catch (error) {
-        console.error('Error loading Tax Tracker list state:', error);
+        console.error('Error loading Tax Tracker Document list state:', error);
     }
 
     return {
@@ -40,33 +38,32 @@ const getInitialState = (): TaxTrackerListState => {
         filters: {},
         sortInfo: undefined,
         TaxTrackerId: 0,
-        CompanyId: 0,
-        NoticeSection: '',
+        TaxTrackerDocumentId: 0,
     };
 };
 
 type Ctx = {
-    listState: TaxTrackerListState;
-    updateListState: (newState: Partial<TaxTrackerListState>) => void;
+    listState: TaxTrackerDocumentListState;
+    updateListState: (newState: Partial<TaxTrackerDocumentListState>) => void;
     resetFilters: () => void;
     resetToDefault: () => void;
-    clearTaxTrackerContext: () => void;
+    clearTaxTrackerDocumentContext: () => void;
 };
 
-const TaxTrackerListStateContext = createContext<Ctx | null>(null);
+const TaxTrackerDocumentListStateContext = createContext<Ctx | null>(null);
 
-export const TaxTrackerListStateProvider = ({ children }: { children: ReactNode }) => {
-    const [listState, setListState] = useState<TaxTrackerListState>(() => getInitialState());
+export const TaxTrackerDocumentListStateProvider = ({ children }: { children: ReactNode }) => {
+    const [listState, setListState] = useState<TaxTrackerDocumentListState>(() => getInitialState());
 
     useEffect(() => {
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(listState));
         } catch (error) {
-            console.error('Error saving Tax Tracker list state:', error);
+            console.error('Error saving Tax Tracker Document list state:', error);
         }
     }, [listState]);
 
-    const updateListState = useCallback((updates: Partial<TaxTrackerListState>) => {
+    const updateListState = useCallback((updates: Partial<TaxTrackerDocumentListState>) => {
         setListState((prev) => ({ ...prev, ...updates }));
     }, []);
 
@@ -81,25 +78,23 @@ export const TaxTrackerListStateProvider = ({ children }: { children: ReactNode 
     }, []);
 
     const resetToDefault = useCallback(() => {
-        const defaultState: TaxTrackerListState = {
+        const defaultState: TaxTrackerDocumentListState = {
             page: 1,
             pageSize: 20,
             searchTerm: "",
             filters: {},
             sortInfo: undefined,
             TaxTrackerId: 0,
-            CompanyId: 0,
-            NoticeSection: "",
+            TaxTrackerDocumentId: 0,
         };
         setListState(defaultState);
     }, []);
 
-    const clearTaxTrackerContext = useCallback(() => {
+    const clearTaxTrackerDocumentContext = useCallback(() => {
         setListState((prev) => ({
             ...prev,
             TaxTrackerId: 0,
-            CompanyId: 0,
-            NoticeSection: "",
+            TaxTrackerDocumentId: 0,
         }));
     }, []);
 
@@ -108,18 +103,18 @@ export const TaxTrackerListStateProvider = ({ children }: { children: ReactNode 
         updateListState,
         resetFilters,
         resetToDefault,
-        clearTaxTrackerContext
-    }), [listState, updateListState, resetFilters, resetToDefault, clearTaxTrackerContext]);
+        clearTaxTrackerDocumentContext
+    }), [listState, updateListState, resetFilters, resetToDefault, clearTaxTrackerDocumentContext]);
 
     return (
-        <TaxTrackerListStateContext.Provider value={contextValue}>
+        <TaxTrackerDocumentListStateContext.Provider value={contextValue}>
             {children}
-        </TaxTrackerListStateContext.Provider>
+        </TaxTrackerDocumentListStateContext.Provider>
     );
 };
 
-export const useTaxTrackerListState = () => {
-    const ctx = useContext(TaxTrackerListStateContext);
-    if (!ctx) throw new Error("useTaxTrackerListState must be used inside TaxTrackerListStateProvider");
+export const useTaxTrackerDocumentListState = () => {
+    const ctx = useContext(TaxTrackerDocumentListStateContext);
+    if (!ctx) throw new Error("useTaxTrackerDocumentListState must be used inside TaxTrackerDocumentListStateProvider");
     return ctx;
 };

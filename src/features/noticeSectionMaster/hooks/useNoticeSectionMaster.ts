@@ -77,7 +77,7 @@ export const useNoticeSectionMaster = () => {
                     NoticeSectionMasterId: editingNoticeSectionMasterData.NoticeSectionMasterId,
                     Uniquekey: editingNoticeSectionMasterData.Uniquekey || getInitialFormState().Uniquekey,
                     NoticeSection: editingNoticeSectionMasterData.NoticeSection || '',
-                    NoticeType: editingNoticeSectionMasterData.NoticeType || ''
+                    GovernmentCompliance: editingNoticeSectionMasterData.GovernmentCompliance || ''
                 });
             } else {
                 setFormData(getInitialFormState());
@@ -112,7 +112,7 @@ export const useNoticeSectionMaster = () => {
                     PageSize: pagination.pageSize,
                     IsCheckPermission: true,
                     NoticeSectionMasterId: filterParams.NoticeSectionMasterId ? Number(filterParams.NoticeSectionMasterId) : 0,
-                    NoticeType: searchtext ?? filterParams.NoticeType ?? undefined,
+                    GovernmentCompliance: searchtext ?? filterParams.GovernmentCompliance ?? undefined,
                     NoticeSection: searchtext ?? filterParams.NoticeSection ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, noticeSectionMasterColumns)
                 }
@@ -187,7 +187,7 @@ export const useNoticeSectionMaster = () => {
                     PageSize: pagination.totalRecords,
                     IsCheckPermission: true,
                     NoticeSectionMasterId: filters.NoticeSectionMasterId ? Number(filters.NoticeSectionMasterId) : 0,
-                    NoticeType: filters.NoticeType ?? undefined,
+                    GovernmentCompliance: filters.GovernmentCompliance ?? undefined,
                     NoticeSection: filters.NoticeSection ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, noticeSectionMasterColumns),
                     ExportType: exportType
@@ -264,7 +264,7 @@ export const useNoticeSectionMaster = () => {
     const handleEditNoticeSectionMaster = useCallback((row: NoticeSectionMasterData) => {
         setEditingNoticeSectionMasterData({
             ...row,
-            NoticeType: row.NoticeType || '',
+            GovernmentCompliance: row.GovernmentCompliance || '',
             NoticeSection: row.NoticeSection || ''
         })
         setIsAddUpdateModalOpen(true);
@@ -289,8 +289,8 @@ export const useNoticeSectionMaster = () => {
             newErrors.NoticeSection = "Notice Section is required";
         }
 
-        if (formData.NoticeType.trim() === "") {
-            newErrors.NoticeType = "Notice Type is required"
+        if (formData.GovernmentCompliance.trim() === "") {
+            newErrors.GovernmentCompliance = "Government Compliance is required"
         }
 
         return {
@@ -304,7 +304,7 @@ export const useNoticeSectionMaster = () => {
         return {
             NoticeSectionMasterId: formData.NoticeSectionMasterId,
             Uniquekey: formData.Uniquekey,
-            NoticeType: formData.NoticeType,
+            GovernmentCompliance: formData.GovernmentCompliance,
             NoticeSection: formData.NoticeSection
         };
     };

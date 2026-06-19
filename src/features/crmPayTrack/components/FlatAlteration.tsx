@@ -13,7 +13,7 @@ import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable
 import { usePayTrackBookingListState } from "@/features/crmPayTrack/context/PayTrackBookingListStateContext";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button } from "@/ui/components/forms";
-import { Plus } from "lucide-react";
+import { Edit, Plus } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { flatAlterationService } from "@/features/crmPayTrack/services/FlatAlterationService";
 import usePagination from "@/core/hooks/usePagination";
@@ -68,6 +68,7 @@ export const FlatAlteration: React.FC = () => {
     const [proofOfDocumentFiles, setProofOfDocumentFiles] = useState<(File | string)[]>([]);
     const [RemoveProofOfDocumentUrls, setRemoveProofOfDocumentUrls] = useState<string[]>([]);
     const [proofOfDocumentURL, setProofOfDocumentURL] = useState<string>();
+    const [editingFlatAlterationData, setEditingFlatAlterationData] = useState<FlatAlterationRequestData | null>(null);
 
     useEffect(() => {
         if (!projectId || !bookingId) return;
@@ -246,6 +247,8 @@ export const FlatAlteration: React.FC = () => {
                 if (E.isRight(response)) {
                     if (response.right.Data && response.right.Data.length > 0) {
                         const latestDataIndex = response.right.Data.length - 1;
+                        console.log(response.right.Data);
+
                         setFlatAlterationData(response.right.Data[latestDataIndex]);
                     } else {
                         setFlatAlterationData(null);
@@ -267,6 +270,44 @@ export const FlatAlteration: React.FC = () => {
         );
     };
 
+    useEffect(() => {
+        if (isAddUpdateFlatAlterationModalOpen) {
+            if (editingFlatAlterationData) {
+                setFormDataForFlatAlteration({
+                    FlatAlterationRequestId: editingFlatAlterationData.FlatAlterationRequestId || 0,
+                    UniqueKey: editingFlatAlterationData.UniqueKey || initialFormStateForFlatAlterationRequest().UniqueKey,
+                    BookingId: editingFlatAlterationData.BookingId || 0,
+                    ProjectId: editingFlatAlterationData.ProjectId || 0,
+                    ProofOfDocumentURL: null,
+                    FlatAlterationRemark: editingFlatAlterationData.FlatAlterationRemark || '',
+                });
+                setProofOfDocumentFiles([]);
+                setProofOfDocumentURL(editingFlatAlterationData.ProofOfDocumentURL || '');
+                setRemoveProofOfDocumentUrls([]);
+            } else {
+                setFormDataForFlatAlteration({
+                    ...initialFormStateForFlatAlterationRequest(),
+                    ProjectId: Number(projectId),
+                });
+                setProofOfDocumentFiles([]);
+                setProofOfDocumentURL('');
+                setRemoveProofOfDocumentUrls([]);
+            }
+            setErrors({});
+        }
+    }, [isAddUpdateFlatAlterationModalOpen, editingFlatAlterationData, projectId]);
+
+    const handleEditFlatAlteration = (row: FlatAlterationRequestData) => {
+        // setEditingFlatAlterationData(row);
+        setEditingFlatAlterationData({
+            ...row,
+        });
+        setProofOfDocumentFiles([]);
+        setProofOfDocumentURL(row.ProofOfDocumentURL ?? "");
+        setRemoveProofOfDocumentUrls([]);
+        setIsAddUpdateFlatAlterationModalOpen(true);
+    };
+
     const flatAlterationColumns = useMemo<TableColumn[]>(
         () => [
             {
@@ -275,6 +316,16 @@ export const FlatAlteration: React.FC = () => {
                 sortable: false,
                 align: "left",
                 render: (value: string, row: any) => {
+
+
+
+                    console.log("value", value)
+                    console.log("row", row)
+                    console.log("Proof URL", row.ProofOfDocumentURL);
+                    console.log('Parse Document URL', parseDocumentUrls(row.ProofOfDocumentURL));
+
+
+
                     return (
                         <div className="flex items-center justify-between w-full">
                             <div className="truncate max-w-[400px]">
@@ -302,8 +353,36 @@ export const FlatAlteration: React.FC = () => {
                     />
                 ),
             },
+            ...(canAction && bookingApprovalStatus?.toUpperCase() === "APPROVED" && !isBookingCancelled
+                ? [
+                    {
+                        key: "actions",
+                        label: "Actions",
+                        width: "10",
+                        sortable: false,
+                        align: "center" as const,
+                        fixed: "right" as const,
+                        render: (_v: any, row: any) => (
+                            <div className="flex items-center justify-center gap-2">
+                                <Button
+                                    onClick={(e: React.MouseEvent) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        handleEditFlatAlteration(row);
+                                    }}
+                                    color="transparent"
+                                    isborderRadius
+                                    size="sm"
+                                    title="Edit"
+                                    leftIcon={<Edit className="h-4 w-4" />}
+                                />
+                            </div>
+                        ),
+                    },
+                ]
+                : []),
         ],
-        [],
+        [canAction, bookingApprovalStatus, isBookingCancelled, handleEditFlatAlteration],
     );
 
     const handleCreateRequestFlatSpecificationModal = () => {
@@ -312,8 +391,8 @@ export const FlatAlteration: React.FC = () => {
         setProofOfDocumentURL("");
         setRemoveProofOfDocumentUrls([]);
         setFormDataForFlatAlteration(initialFormStateForFlatAlterationRequest());
-
     };
+
 
     const handleFlatAlterationApprovalLog = (row: FlatAlterationRequestData) => {
         const request: ModulesApprovalStatusRequest = {
@@ -370,6 +449,7 @@ export const FlatAlteration: React.FC = () => {
                                         FlatAlterationRemark: bookingData?.FlatAlterationRemark,
                                         ApprovalStatus: bookingData?.FlatAlterationRequestApprovalStatus,
                                         IsApproval: bookingData?.FlatAlterationRequestIsApproval,
+                                        // ProofOfDocumentURL: bookingData?.ProofOfDocumentURL || ""
                                     },
                                 ]
                         }
@@ -401,8 +481,8 @@ export const FlatAlteration: React.FC = () => {
                     setRemoveProofOfDocumentUrls([]);
                     setErrors({});
                 }}
-                title="Flat Alteration Request"
-                saveText="Add"
+                title={formDataForFlatAlteration.FlatAlterationRequestId > 0 ? "Edit Flat Alteration Request" : "Flat Alteration Request"}
+                saveText={formDataForFlatAlteration.FlatAlterationRequestId > 0 ? "Update" : "Add"}
                 onSubmit={(e) => {
                     if (e) e.preventDefault();
                     handleAddUpdateFlatAlteration();

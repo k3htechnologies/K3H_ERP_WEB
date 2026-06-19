@@ -20,7 +20,7 @@ export interface FilterWithPaginationPayTrackBooking {
     ExportType?: "PDF" | "Excel";
 }
 
-    
+
 export type PayTrackRow = {
     type: string;
     total: number;
@@ -48,11 +48,11 @@ export interface PayTrackBookingData {
     FlatType: string | null;
     RERACarpetAreaSqFt: number | null;
     FlatConfiguration: string | null;
-    
+
     RegistrationDate: string | null;
     FinalRegistrationDate: string | null;
     FlatAlterationRemark: string | null;
-
+    ProofOfDocumentURL: string | null;
 
     AgreementValue: number | null;
     ReceivedAgreementValue: number | null;
@@ -78,7 +78,7 @@ export interface PayTrackBookingData {
     BookingApprovalStatus: string | null;
 
     ApprovalStatus: string | null;
-    
+
     TotalAmountReceivedAgainstBooking: number | null;
     TotalAmountRefundedAgainstBooking: number | null;
     RefundedAmountOnTillDate: number | null;

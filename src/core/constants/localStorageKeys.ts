@@ -100,7 +100,7 @@ export const LOCAL_STORAGE_KEYS = {
     TICKET_MASTER_SELECTED_COLUMNS: 'ticket.selectedColumns',
 
     //TAX TRACKER
-     NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
+    NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
 
 
 } as const
@@ -129,5 +129,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     INWARD_OUTWARD: 'inwardOutward.listState',
     BOOKING_Brokerage: 'bookingBrokerage.listState',
     TICKET: 'ticket.listState',
+    TAX_TRACKER: 'taxTracker.listState',
+    TAX_TRACKER_DOCUMENT: 'taxTrackerDocument.listState',
 
 } as const

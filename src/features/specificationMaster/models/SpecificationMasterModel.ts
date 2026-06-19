@@ -21,13 +21,8 @@ export interface SpecificationMasterData {
     LevelType: string | null
     Level1Name: string | null
     Level2Name: string | null
-    Level3Name: string | null
-    Level4Name: string | null
     LevelId1: number | 0
     LevelId2: number | 0
-    LevelId3: number | 0
-    LevelId4: number | 0
-    OrderBy: number | 0
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -43,9 +38,6 @@ export interface AddUpdateSpecificationMaster {
     UomMasterId: number | 0
     LevelId1: number | 0,
     LevelId2: number | 0,
-    LevelId3: number | 0,
-    LevelId4: number | 0,
-    OrderBy: number | 0,
 }
 
 export interface DeleteSpecificationMasterRequest {

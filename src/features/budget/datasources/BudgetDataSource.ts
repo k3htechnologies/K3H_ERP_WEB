@@ -21,7 +21,7 @@ export class BudgetDatasourceImpl implements BudgetDatasource {
             });
 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
-            if (params.BudgetLevelMasterId) queryParams.append("BudgetLevelMasterId", params.BudgetLevelMasterId.toString());
+            if (params.BudgetId) queryParams.append("BudgetId", params.BudgetId.toString());
             if (params.CategoryName) queryParams.append("CategoryName", params.CategoryName.trim());
             if (params.LevelType) queryParams.append("LevelType", params.LevelType.trim());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());

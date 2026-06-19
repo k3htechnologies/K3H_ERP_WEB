@@ -29,9 +29,6 @@ const initialFormState = (): AddUpdateSpecificationMaster => ({
     UomMasterId: 0,
     LevelId1: 0,
     LevelId2: 0,
-    LevelId3: 0,
-    LevelId4: 0,
-    OrderBy: 0
 });
 
 export const SpecificationMaster: React.FC = () => {
@@ -61,8 +58,6 @@ export const SpecificationMaster: React.FC = () => {
         { id: "L1", label: "L1" },
         { id: "L2", label: "L2" },
         { id: "L3", label: "L3" },
-        { id: "L4", label: "L4" },
-        { id: "L5", label: "L5" },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(SpecificationMasterTabsList[0].id);
@@ -120,9 +115,6 @@ export const SpecificationMaster: React.FC = () => {
                     CategoryName: editSpecificationMasterData.CategoryName ?? "",
                     LevelId1: editSpecificationMasterData.LevelId1,
                     LevelId2: editSpecificationMasterData.LevelId2,
-                    LevelId3: editSpecificationMasterData.LevelId3,
-                    LevelId4: editSpecificationMasterData.LevelId4,
-                    OrderBy: editSpecificationMasterData.OrderBy,
                     UomMasterId: editSpecificationMasterData.UomMasterId
                 });
                 setDropdownLabels({
@@ -156,10 +148,7 @@ export const SpecificationMaster: React.FC = () => {
             CategoryName: formData.CategoryName,
             LevelId1: formData.LevelId1,
             LevelId2: formData.LevelId2,
-            LevelId3: formData.LevelId3,
-            LevelId4: formData.LevelId4,
             UomMasterId: formData.UomMasterId,
-            OrderBy: Number(formData.OrderBy),
         }
     }
 
@@ -227,6 +216,7 @@ export const SpecificationMaster: React.FC = () => {
                                 );
                             }, 100);
                         }
+
                         setSpecificationMasterlist(prevData =>
                             prevData.map(item =>
                                 item.SpecificationMasterId === formData.SpecificationMasterId
@@ -234,7 +224,6 @@ export const SpecificationMaster: React.FC = () => {
                                     : item
                             )
                         );
-
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
                     }
                     setIsAddUpdateModalOpen(false);
@@ -275,8 +264,6 @@ export const SpecificationMaster: React.FC = () => {
             [
                 row.Level1Name,
                 row.Level2Name,
-                row.Level3Name,
-                row.Level4Name
             ].filter(Boolean)
                 .join("  >  ")
         );
@@ -389,40 +376,20 @@ export const SpecificationMaster: React.FC = () => {
                 return {
                     LevelId1: row.SpecificationMasterId,
                     LevelId2: 0,
-                    LevelId3: 0,
-                    LevelId4: 0,
                 };
 
             case "L2":
                 return {
                     LevelId1: row.SpecificationMasterId,
                     LevelId2: 0,
-                    LevelId3: 0,
-                    LevelId4: 0,
                 };
 
             case "L3":
                 return {
                     LevelId1: row.LevelId1,
                     LevelId2: row.SpecificationMasterId,
-                    LevelId3: 0,
-                    LevelId4: 0,
                 };
 
-            case "L4":
-                return {
-                    LevelId1: row.LevelId1,
-                    LevelId2: row.LevelId2,
-                    LevelId3: row.SpecificationMasterId,
-                    LevelId4: 0,
-                };
-            case "L5":
-                return {
-                    LevelId1: row.LevelId1,
-                    LevelId2: row.LevelId2,
-                    LevelId3: row.LevelId3,
-                    LevelId4: row.SpecificationMasterId,
-                }
         }
     };
 
@@ -474,8 +441,6 @@ export const SpecificationMaster: React.FC = () => {
                                             [
                                                 row.Level1Name,
                                                 row.Level2Name,
-                                                row.Level3Name,
-                                                row.Level4Name,
                                                 row.CategoryName
                                             ].filter(Boolean)
                                                 .join(" > ")
@@ -690,6 +655,7 @@ export const SpecificationMaster: React.FC = () => {
                         }
                         return [];
                     },
+
                     renderRow: (fetchedData) => {
                         const details: SpecificationMasterData[] = Array.isArray(fetchedData) ? fetchedData : fetchedData ? [fetchedData] : [];
                         if (!details || details.length === 0) {

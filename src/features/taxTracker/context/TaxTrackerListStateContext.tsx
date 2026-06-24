@@ -9,8 +9,11 @@ export type TaxTrackerListState = {
     filters: FilterInfo;
     sortInfo: SortInfo | undefined;
     TaxTrackerId: number;
-    CompanyId: number;
+    CompanyId: number | 0;
+    CompanyName: string;
+    FinancialYear: string;
     NoticeSection: string;
+    NoticeType: string;
 };
 
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.TAX_TRACKER;
@@ -26,7 +29,10 @@ const getInitialState = (): TaxTrackerListState => {
                 ...parsed,
                 TaxTrackerId: parsed.TaxTrackerId || 0,
                 CompanyId: parsed.CompanyId || 0,
+                CompanyName: parsed.CompanyName || "",
+                FinancialYear: parsed.FinancialYear || "",
                 NoticeSection: parsed.NoticeSection || "",
+                NoticeType: parsed.NoticeType || "",
             };
         }
     } catch (error) {
@@ -41,7 +47,10 @@ const getInitialState = (): TaxTrackerListState => {
         sortInfo: undefined,
         TaxTrackerId: 0,
         CompanyId: 0,
+        CompanyName: '',
+        FinancialYear: '',
         NoticeSection: '',
+        NoticeType: '',
     };
 };
 
@@ -89,7 +98,10 @@ export const TaxTrackerListStateProvider = ({ children }: { children: ReactNode 
             sortInfo: undefined,
             TaxTrackerId: 0,
             CompanyId: 0,
-            NoticeSection: "",
+            CompanyName: '',
+            FinancialYear: '',
+            NoticeSection: '',
+            NoticeType: '',
         };
         setListState(defaultState);
     }, []);
@@ -99,7 +111,9 @@ export const TaxTrackerListStateProvider = ({ children }: { children: ReactNode 
             ...prev,
             TaxTrackerId: 0,
             CompanyId: 0,
-            NoticeSection: "",
+            CompanyName: '',
+            FinancialYear: '',
+            NoticeSection: '',
         }));
     }, []);
 

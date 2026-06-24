@@ -53,7 +53,7 @@ export const Ticket: React.FC = () => {
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
-    const [isShowCustomizeCallLogColumnsModal, setIsShowCustomizeCallLogColumnsModal] = useState(false);
+    const [isShowCustomizeTicketColumnsModal, setIsShowCustomizeTicketColumnsModal] = useState(false);
     const [documentURLFiles, setDocumentURLFiles] = useState<(File | string)[]>([]);
     const [documentURL, setDocumentURL] = useState<string>("");
     const [removedDocumentURLs, setRemovedDocumentURLs] = useState<string[]>([]);
@@ -434,8 +434,8 @@ export const Ticket: React.FC = () => {
         );
     };
 
-    const handleExportCallLogExcel = () => handleExportTicketMaster('Excel')
-    const handleExportCallLogPdf = () => handleExportTicketMaster('PDF')
+    const handleExportTicketExcel = () => handleExportTicketMaster('Excel')
+    const handleExportTicketPdf = () => handleExportTicketMaster('PDF')
 
     const handleNavigateToView = useCallback((row: TicketData) => {
         updateListState({ TicketId: row.TicketId ?? 0, SystemGeneratedCode: row.SystemGeneratedCode ?? '', Platform: row.Platform ?? '' });
@@ -701,14 +701,14 @@ export const Ticket: React.FC = () => {
                 }}
                 isShowCustomizeButton
                 onCustomize={() => {
-                    setIsShowCustomizeCallLogColumnsModal(true);
+                    setIsShowCustomizeTicketColumnsModal(true);
                 }}
                 isShowAddButton={canAction}
                 addTitle="Add"
                 onAdd={handleAddTicketMasterModal}
                 isShowExportButton={canExport && ticketList.length > 0}
-                onExportExcel={handleExportCallLogExcel}
-                onExportPdf={handleExportCallLogPdf}
+                onExportExcel={handleExportTicketExcel}
+                onExportPdf={handleExportTicketPdf}
                 exportLoading={isLoading}
             />
 
@@ -868,8 +868,8 @@ export const Ticket: React.FC = () => {
             </Modal>
 
             <CustomizeColumnsModal
-                isOpen={isShowCustomizeCallLogColumnsModal}
-                onClose={() => setIsShowCustomizeCallLogColumnsModal(false)}
+                isOpen={isShowCustomizeTicketColumnsModal}
+                onClose={() => setIsShowCustomizeTicketColumnsModal(false)}
                 onApply={keys => {
                     const withRequired = Array.from(
                         new Set([...keys, ...requiredTicketMasterColumnKeys])

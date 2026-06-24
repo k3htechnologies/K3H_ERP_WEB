@@ -6,7 +6,6 @@ import type {
     TaxTrackerSaveResponse,
     TaxTrackerDeleteResponse,
     DeleteTaxTrackerRequest,
-    AddUpdateTaxTrackerRequest,
 
 } from '@/features/taxTracker/models/TaxTrackerModel'
 
@@ -28,11 +27,11 @@ export const taxTrackerService = {
         }
     },
 
-    apiCallAddUpdateTaxTracker: async (params: AddUpdateTaxTrackerRequest): Promise<E.Either<Failure, TaxTrackerSaveResponse>> => {
+    apiCallAddUpdateTaxTracker: async (formData: FormData): Promise<E.Either<Failure, TaxTrackerSaveResponse>> => {
 
         try {
 
-            return E.right(await taxTrackerDatasource.addUpadateTaxTracker(params));
+            return E.right(await taxTrackerDatasource.addUpadateTaxTracker(formData));
 
         } catch (error: any) {
 

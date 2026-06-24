@@ -13,6 +13,7 @@ import type { NoticeSectionMasterData } from '@/features/noticeSectionMaster/mod
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { handleExportFile } from "@/core/utils/exportFile";
+import type { TabItem } from "@/ui/components/Tab/Tab";
 
 export const useNoticeSectionMaster = () => {
 
@@ -48,6 +49,17 @@ export const useNoticeSectionMaster = () => {
     //FILTER STATES
     const [filters, setFilters] = useState<FilterInfo>({});
 
+    // TABLIST
+    const [governementComplianceTabList, setGovernmentComplianceTabList] = useState<TabItem[]>([
+        { id: "Income Tax", label: "Income Tax" },
+        { id: "GST", label: "GST" },
+        { id: "PT", label: "PT" },
+        { id: "PF", label: "PF" },
+        { id: "ESIC", label: "ESIC" },
+        { id: "Other", label: "Other" },
+    ]);
+    const [activeTab, setActiveTab] = useState<string>("Income Tax");
+
     //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
@@ -80,12 +92,26 @@ export const useNoticeSectionMaster = () => {
                     GovernmentCompliance: editingNoticeSectionMasterData.GovernmentCompliance || ''
                 });
             } else {
-                setFormData(getInitialFormState());
+                setFormData({
+                    ...getInitialFormState(),
+                    GovernmentCompliance: activeTab,
+                });
             }
             setErrors({});
         }
-    }, [isAddUpdateModalOpen, editingNoticeSectionMasterData]);
+    }, [isAddUpdateModalOpen, editingNoticeSectionMasterData, activeTab]);
 
+    const filteredNoticeSectionMasterList = useMemo(() => {
+
+        if (!activeTab) {
+            return noticeSectionMasterList;
+        }
+
+        return noticeSectionMasterList.filter(
+            item => item.GovernmentCompliance === activeTab
+        );
+
+    }, [noticeSectionMasterList, activeTab]);
 
     //#region TABLE COLUMN DEFINITION
 
@@ -112,7 +138,7 @@ export const useNoticeSectionMaster = () => {
                     PageSize: pagination.pageSize,
                     IsCheckPermission: true,
                     NoticeSectionMasterId: filterParams.NoticeSectionMasterId ? Number(filterParams.NoticeSectionMasterId) : 0,
-                    GovernmentCompliance: searchtext ?? filterParams.GovernmentCompliance ?? undefined,
+                    GovernmentCompliance: activeTab,
                     NoticeSection: searchtext ?? filterParams.NoticeSection ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, noticeSectionMasterColumns)
                 }
@@ -393,7 +419,10 @@ export const useNoticeSectionMaster = () => {
 
     const handleAddNoticeSectionModal = () => {
         setEditingNoticeSectionMasterData(null);
-        setFormData(getInitialFormState());
+        setFormData({
+            ...getInitialFormState(),
+            GovernmentCompliance: activeTab, // Automatically set from selected tab
+        });
         setErrors({});
         setIsAddUpdateModalOpen(true);
     }
@@ -489,6 +518,9 @@ export const useNoticeSectionMaster = () => {
         deleteNoticeSectionMasterDetailsData,
         isViewModalOpen,
         viewNoticeSectionMasterDetailsData,
+        governementComplianceTabList,
+        activeTab,
+        filteredNoticeSectionMasterList,
 
         //Setters
         setSearchTerm,
@@ -505,6 +537,8 @@ export const useNoticeSectionMaster = () => {
         setDeleteNoticeSectionMasterDetailsData,
         setIsViewModalOpen,
         setViewNoticeSectionMasterDetailsData,
+        setGovernmentComplianceTabList,
+        setActiveTab,
 
         //Actions
         fetchNoticeSectionList,

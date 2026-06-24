@@ -6,14 +6,13 @@ import type {
     TaxTrackerSaveResponse,
     TaxTrackerDeleteResponse,
     DeleteTaxTrackerRequest,
-    AddUpdateTaxTrackerRequest,
 
 } from '@/features/taxTracker/models/TaxTrackerModel';
 import { TaxTrackerApi } from "@/features/taxTracker/api/TaxTrackerApi";
 
 export abstract class TaxTrackerDatasource {
     abstract pullTaxTracker(params: FilterWithPaginationTaxTrackerRequest, signal?: AbortSignal): Promise<TaxTrackerListResponse>;
-    abstract addUpadateTaxTracker(params: AddUpdateTaxTrackerRequest): Promise<TaxTrackerSaveResponse>;
+    abstract addUpadateTaxTracker(formData: FormData): Promise<TaxTrackerSaveResponse>;
     abstract deleteTaxTracker(params: DeleteTaxTrackerRequest): Promise<TaxTrackerDeleteResponse>;
 }
 
@@ -30,12 +29,12 @@ export class TaxTrackerDatasourceImpl implements TaxTrackerDatasource {
                 PageNumber: (params.PageNumber ?? 1).toString(),
             })
             if (params.TaxTrackerId) queryParams.append('TaxTrackerId', params.TaxTrackerId.toString());
-            if (params.GovernmentCompliance) queryParams.append('GovernmentCompliance', params.GovernmentCompliance.toString());
+            if (params.GovernmentCompliance) queryParams.append('GovernmentCompliance', params.GovernmentCompliance);
             if (params.CompanyId) queryParams.append('CompanyId', params.CompanyId.toString());
-            if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
-            if (params.NoticeSection?.trim()) queryParams.append('NoticeSection', params.NoticeSection.trim());
-            if (params.FinancialYear?.trim()) queryParams.append('FinancialYear', params.FinancialYear.trim());
-            if (params.NoticeStatus?.trim()) queryParams.append('NoticeStatus', params.NoticeStatus.trim());
+            if (params.CompanyName) queryParams.append('CompanyName', params.CompanyName);
+            if (params.NoticeSection) queryParams.append('NoticeSection', params.NoticeSection);
+            if (params.FinancialYear) queryParams.append('FinancialYear', params.FinancialYear);
+            if (params.NoticeStatus) queryParams.append('NoticeStatus', params.NoticeStatus);
             if (params.FromNoticeDate) queryParams.append('FromNoticeDate', params.FromNoticeDate.toString());
             if (params.ToNoticeDate) queryParams.append('ToNoticeDate', params.ToNoticeDate.toString());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
@@ -58,13 +57,13 @@ export class TaxTrackerDatasourceImpl implements TaxTrackerDatasource {
         }
     }
 
-    async addUpadateTaxTracker(params: AddUpdateTaxTrackerRequest): Promise<TaxTrackerSaveResponse> {
+    async addUpadateTaxTracker(formData: FormData): Promise<TaxTrackerSaveResponse> {
 
         try {
 
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 TaxTrackerApi.ADD_UPDATE,
-                params
+                formData
             )
             return response
 
@@ -74,7 +73,7 @@ export class TaxTrackerDatasourceImpl implements TaxTrackerDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpadateTaxTracker(params);
+                return await this.addUpadateTaxTracker(formData);
             }
             throw error
         }

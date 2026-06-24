@@ -82,8 +82,6 @@ export const FlatAlteration: React.FC = () => {
         }
     };
 
-
-
     const handleFlatAlterationApprovalSubmit = async (remark: string) => {
         if (!approvalFlatAlterationRowData) return;
 
@@ -298,7 +296,6 @@ export const FlatAlteration: React.FC = () => {
     }, [isAddUpdateFlatAlterationModalOpen, editingFlatAlterationData, projectId]);
 
     const handleEditFlatAlteration = (row: FlatAlterationRequestData) => {
-        // setEditingFlatAlterationData(row);
         setEditingFlatAlterationData({
             ...row,
         });

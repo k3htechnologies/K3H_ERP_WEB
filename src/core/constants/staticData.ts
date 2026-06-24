@@ -609,7 +609,15 @@ export const MASTER_DATA = {
 
   ibmObmReportStage: ["IBM", "OBM"],
 
-  noticeType: ['Income Tax', 'GST'],
+  noticeType: ['Income Tax', 'GST', 'PT', 'PF', 'ESIC', 'Other'],
+
+  authorityOptions: ["Income Tax Department", "GST Department", "Other"],
+
+  financialYear: ["2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2025-27"],
+
+  noticeStatus: ['Open', 'Closed', 'Reopened'],
+
+  noticeSection: ['Section 143(1)', 'Section 143(2)', 'Section 148', 'Section 153A', 'Section 153C', 'Section 155(1)', 'Section 156', 'Section 245', 'Section 274', 'Section 275', 'Section 276CC', 'Other']
 
 } as const;
 
@@ -730,9 +738,13 @@ export const MODULE_OPTIONS = toOptions(MASTER_DATA.module);
 export const ASSIGN_STATUS_TYPE_OPTIONS = toOptions(MASTER_DATA.assignStatusType);
 export const HANDOVER_STATUS = toOptions(MASTER_DATA.handOverStatus);
 export const IBM_OBM_RANGE_FILTER_OPTIONS = toOptions(MASTER_DATA.ibmObmRangeFilter);
-export const CHANNEL_PARTNER_CATEGORY_OPTIONS= toOptions(MASTER_DATA.channelPartnerCategory);
+export const CHANNEL_PARTNER_CATEGORY_OPTIONS = toOptions(MASTER_DATA.channelPartnerCategory);
 export const IBM_OBM_REPORT_STAGE_OPTIONS = toOptions(MASTER_DATA.ibmObmReportStage);
 export const NOTICE_TYPE_OPTIONS = toOptions(MASTER_DATA.noticeType);
+export const FINANCIAL_YEAR_OPTIONS = toOptions(MASTER_DATA.financialYear);
+export const NOTICE_US_OPTIONS = toOptions(MASTER_DATA.noticeSection);
+export const AUTHORITY_OPTIONS = toOptions(MASTER_DATA.authorityOptions);
+export const NOTICE_STATUS_OPTIONS = toOptions(MASTER_DATA.noticeStatus);
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)
 // ============================================================================

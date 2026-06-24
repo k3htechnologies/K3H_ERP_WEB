@@ -9,6 +9,7 @@ import { NoticeSectionMasterFormModal } from "@/features/noticeSectionMaster/com
 import { createFormResetHandler } from "@/features/noticeSectionMaster/utils/noticeSectionMasterUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { NoticeSectionMasterViewModal } from "@/features/noticeSectionMaster/components/NoticeSectionMasterViewModal";
+import { Tabs } from "@/ui/components/Tab/Tab";
 
 export const NoticeSectionMaster: React.FC = () => {
 
@@ -36,6 +37,9 @@ export const NoticeSectionMaster: React.FC = () => {
         isConfirmationDialogBoxOpen,
         isViewModalOpen,
         viewNoticeSectionMasterDetailsData,
+        governementComplianceTabList,
+        activeTab,
+        filteredNoticeSectionMasterList,
 
         //Setters
         setSearchTerm,
@@ -49,6 +53,7 @@ export const NoticeSectionMaster: React.FC = () => {
         setDeleteNoticeSectionMasterDetailsData,
         setIsViewModalOpen,
         setViewNoticeSectionMasterDetailsData,
+        setActiveTab,
 
         //Actions
         handleSortColumn,
@@ -67,7 +72,6 @@ export const NoticeSectionMaster: React.FC = () => {
 
 
     const noticeSectionListForTable = useMemo(() => noticeSectionMasterList, [noticeSectionMasterList]);
-
 
     const noticeSectionMasterPaginationInfo = useMemo(
         () => ({
@@ -132,19 +136,31 @@ export const NoticeSectionMaster: React.FC = () => {
                 exportLoading={isLoading}
             />
 
-            <NoticeSectionMasterTable
-                data={noticeSectionListForTable}
-                columns={visibleNoticeSectionMasterColumns}
-                pagination={noticeSectionMasterPaginationInfo}
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-                onView={handleViewNoticeSectionMasterDetails}
-                onEdit={handleEditNoticeSectionMaster}
-                onDelete={handleConfirmationDialogBoxOpen}
-                lastUpdatedRow={lastUpdatedRow}
-                canAction={canAction}
-                loading={isLoading}
+            <Tabs
+                tabs={governementComplianceTabList}
+                defaultActive={activeTab}
+                islarge={true}
+                onTabChange={(t) => {
+                    setActiveTab(t.id);
+                }}
             />
+
+            <div className="mt-5">
+                <NoticeSectionMasterTable
+                    data={filteredNoticeSectionMasterList}
+                    columns={visibleNoticeSectionMasterColumns}
+                    pagination={noticeSectionMasterPaginationInfo}
+                    sortInfo={sortInfo}
+                    onSort={handleSortColumn}
+                    onView={handleViewNoticeSectionMasterDetails}
+                    onEdit={handleEditNoticeSectionMaster}
+                    onDelete={handleConfirmationDialogBoxOpen}
+                    lastUpdatedRow={lastUpdatedRow}
+                    canAction={canAction}
+                    loading={isLoading}
+                />
+            </div>
+
 
             <NoticeSectionMasterViewModal
                 isOpen={isViewModalOpen}

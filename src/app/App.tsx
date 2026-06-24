@@ -196,6 +196,8 @@ import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
 import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
 import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
 import TaxTracker from '@/features/taxTracker/pages/TaxTracker';
+import AddUpdateTaxTracker from '@/features/taxTracker/pages/AddUpdateTaxTracker';
+import ViewTaxTracker from '@/features/taxTracker/pages/ViewTaxTracker';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -466,9 +468,8 @@ function App() {
 
             {/* TAX TRACKER */}
             <Route path='taxTracker' element={<TaxTrackerListStateProvider><TaxTracker /></TaxTrackerListStateProvider>} />
-            {/* <Route path='taxTracker/add/:TaxTrackerId?' element={<TaxTrackerListStateProvider><AddUpdateTaxTracker /></TaxTrackerListStateProvider>} />
-            <Route path='taxTracker/view' element={<TaxTrackerListStateProvider><ViewTaxTracker /></TaxTrackerListStateProvider>} /> */}
-            {/* <Route path='taxTracker/document' element={<TaxTrackerListStateProvider><TaxTrackerDocument /></TaxTrackerListStateProvider>} /> */}
+            <Route path='taxTracker/add/:TaxTrackerId?' element={<TaxTrackerListStateProvider><AddUpdateTaxTracker /></TaxTrackerListStateProvider>} />
+            <Route path='taxTracker/view' element={<TaxTrackerListStateProvider><ViewTaxTracker /></TaxTrackerListStateProvider>} />
 
 
             {/* PROJECT */}

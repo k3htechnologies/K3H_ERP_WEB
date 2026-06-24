@@ -63,25 +63,19 @@ export interface AddUpdateTaxTrackerRequest {
     Uniquekey: string | null;
     GovernmentCompliance: string | null;
     CompanyId: number | 0;
-    CompanyName: string | null;
-    FinancialYear: string | null;
+    FinancialYear: string | '';
     ResponsiblePersonId: string | null;
-    ResponsiblePerson: string | null;
     NoticeType: string | null;
     NoticeSectionMasterId: number | 0;
-    NoticeSection: string | null;
     Authority: string | null;
     NoticeDate: string | null;
     DueDate: string | null;
     NoticeStatus: string | null;
-    TaxTrackerDocumentDetailsData: TaxTrackerDocumentDetailsData[];
-    IsDelete: boolean
-    CreatedById: number | 0
-    CreatedBy: string | ''
-    CreatedDate: string | null
-    ModifiedById: number | 0
-    ModifiedBy: string | ''
-    ModifiedDate: string | null
+    NoticeDocumentURL: File[] | null;
+    RemoveNoticeDocumentURL: string | null;
+    OfficerName: string | null;
+    OfficerAddress: string | null;
+    NoticeDescription: string | null;
 }
 
 export interface DeleteTaxTrackerRequest {

@@ -9,7 +9,7 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import * as E from "fp-ts/Either";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import {  type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { usePayTrackBookingListState } from "@/features/crmPayTrack/context/PayTrackBookingListStateContext";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button } from "@/ui/components/forms";
@@ -30,7 +30,7 @@ import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApprov
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
-import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 const initialFormStateForFlatAlterationRequest = (): AddUpdateFlatAlterationRequest => ({
     FlatAlterationRequestId: 0,
@@ -54,11 +54,11 @@ export const FlatAlteration: React.FC = () => {
 
     const [isFlatAlterationApprovalLogModalOpen, setIsFlatAlterationApprovalLogModalOpen] = useState(false);
     const [approvalFlatAlterationLogRequest, setApprovalFlatAlterationLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
-    const [flatAlterationOwnerRemark, setFlatAlterationOwnerRemark] = useState<string | null>("");
+
     const [isFlatAlterationApprovalActionModalOpen, setIsFlatAlterationApprovalActionModalOpen] = useState(false);
     const [approvalFlatAlterationActionType, setApprovalFlatAlterationActionType] = useState<"approve" | "reject">("approve");
     const [approvalFlatAlterationRowData, setApprovalFlatAlterationRowData] = useState<FlatAlterationRequestData | null>(null);
-    const { canAction } = useMenuPermissions("/payTrack");
+    const { canAction } = useMenuPermissions("/modificationRequest");
     const { pagination, setPagination } = usePagination(10);
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -81,8 +81,6 @@ export const FlatAlteration: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-
-
 
     const handleFlatAlterationApprovalSubmit = async (remark: string) => {
         if (!approvalFlatAlterationRowData) return;
@@ -268,6 +266,24 @@ export const FlatAlteration: React.FC = () => {
         );
     };
 
+
+    const handleFlatAlterationApprovalLog = (row: FlatAlterationRequestData) => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "FLAT ALTERATION APPROVAL",
+            Id: bookingId ?? 0,
+            ProjectId: projectId ?? 0,
+            SubId: row.FlatAlterationRequestId ?? 0,
+        };
+        setApprovalFlatAlterationLogRequest(request);
+        setIsFlatAlterationApprovalLogModalOpen(true);
+    };
+
+    const handleFlatAlterationApproveRejectDocument = (row: FlatAlterationRequestData, approvalType: "approve" | "reject") => {
+        setApprovalFlatAlterationRowData(row);
+        setApprovalFlatAlterationActionType(approvalType);
+        setIsFlatAlterationApprovalActionModalOpen(true);
+    };
+
     const flatAlterationColumns = useMemo<TableColumn[]>(
         () => [
             {
@@ -304,7 +320,7 @@ export const FlatAlteration: React.FC = () => {
                 ),
             },
         ],
-        [],
+        [canAction, handleFlatAlterationApprovalLog, handleFlatAlterationApproveRejectDocument],
     );
 
     const handleCreateRequestFlatSpecificationModal = () => {
@@ -316,72 +332,51 @@ export const FlatAlteration: React.FC = () => {
 
     };
 
-    const handleFlatAlterationApprovalLog = (row: FlatAlterationRequestData) => {
-        const request: ModulesApprovalStatusRequest = {
-            ModuleName: "FLAT ALTERATION APPROVAL",
-            Id: bookingId ?? 0,
-            ProjectId: projectId ?? 0,
-            SubId: row.FlatAlterationRequestId ?? 0,
-        };
-        setFlatAlterationOwnerRemark(row.FlatAlterationRemark);
-        setApprovalFlatAlterationLogRequest(request);
-        setIsFlatAlterationApprovalLogModalOpen(true);
-    };
-
-    const handleFlatAlterationApproveRejectDocument = (row: FlatAlterationRequestData, approvalType: "approve" | "reject") => {
-        setApprovalFlatAlterationRowData(row);
-        setFlatAlterationOwnerRemark(row.FlatAlterationRemark);
-        setApprovalFlatAlterationActionType(approvalType);
-        setIsFlatAlterationApprovalActionModalOpen(true);
-    };
-
     return (
         <div>
-            <Loader loading={isLoading} title={loadingMessage}>
-                <div></div>
-            </Loader>
+            <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>
+            <div className="pt-5">
+                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden  justify-between">
+                    <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
+                        <h4 className="text-sm font-semibold text-[#13367A]">
+                            Flat Alteration Remark
+                        </h4>
 
-            <section className="bg-white rounded-xl pt-5">
-                <div className="flex justify-between items-center pb-4">
-                    <h4 className="text-lg font-semibold text-gray-900">Flat Alteration Remark</h4>
+                        {canAction && bookingApprovalStatus?.toUpperCase() === "APPROVED" && (
+                            <Button
+                                onClick={handleCreateRequestFlatSpecificationModal}
+                                color="blue"
+                                size="sm"
+                                variant="solid"
+                                leftIcon={<Plus className="h-4 w-4" />}
+                                disabled={isBookingCancelled}
+                            >
+                                Flat Alteration Requests
+                            </Button>
+                        )}
+                    </div>
+                    <div className="p-6">
+                        <DataTableWithHeaderRowDivider
+                            columns={flatAlterationColumns}
+                            data={
+                                flatAlterationData
+                                    ? [flatAlterationData]
+                                    : bookingData?.FlatAlterationRemark
+                                        ? [
+                                            {
+                                                FlatAlterationRemark: bookingData?.FlatAlterationRemark,
+                                                ApprovalStatus: bookingData?.FlatAlterationRequestApprovalStatus,
+                                                IsApproval: bookingData?.FlatAlterationRequestIsApproval,
+                                            },
+                                        ]
+                                        : []
+                            }
+                            fixedHeight={false}
+                        />
+                    </div>
 
-                    {canAction && bookingApprovalStatus?.toUpperCase() === "APPROVED" && (
-                        <Button
-                            onClick={handleCreateRequestFlatSpecificationModal}
-                            color="blue"
-                            size="sm"
-                            variant="solid"
-                            leftIcon={<Plus className="h-4 w-4" />}
-                            disabled={isBookingCancelled}
-                        >
-                            Flat Alteration Requests
-                        </Button>
-                    )}
-                </div>
-
-                {flatAlterationData || bookingData?.FlatAlterationRemark ? (
-                    <DataTable
-                        columns={flatAlterationColumns}
-                        data={
-                            flatAlterationData
-                                ? [flatAlterationData]
-                                : [
-                                    {
-                                        FlatAlterationRemark: bookingData?.FlatAlterationRemark,
-                                        ApprovalStatus: bookingData?.FlatAlterationRequestApprovalStatus,
-                                        IsApproval: bookingData?.FlatAlterationRequestIsApproval,
-                                    },
-                                ]
-                        }
-                        fixedHeight={false}
-                        className="shadow-sm border border-gray-100 rounded-lg"
-                    />
-                ) : (
-                     <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <NoDataView message="No Flat Alteration Remark Found" />
-                        </section>
-                )}
-            </section>
+                </section>
+            </div>
 
             <Modal
                 isOpen={isAddUpdateFlatAlterationModalOpen}
@@ -442,7 +437,7 @@ export const FlatAlteration: React.FC = () => {
             <ApprovalLogModal
                 isOpen={isFlatAlterationApprovalLogModalOpen}
                 title="Flat Alteration Remarks"
-                titleText={flatAlterationOwnerRemark ?? ""}
+                titleText={""}
                 onClose={() => setIsFlatAlterationApprovalLogModalOpen(false)}
                 request={approvalFlatAlterationLogRequest}
             />
@@ -452,7 +447,7 @@ export const FlatAlteration: React.FC = () => {
                 isOpen={isFlatAlterationApprovalActionModalOpen}
                 onClose={() => setIsFlatAlterationApprovalActionModalOpen(false)}
                 actionType={approvalFlatAlterationActionType}
-                titleText={flatAlterationOwnerRemark ?? ""}
+                titleText={""}
                 onSubmit={handleFlatAlterationApprovalSubmit}
                 loading={isLoading}
             />

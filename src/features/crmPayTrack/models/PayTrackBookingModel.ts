@@ -1,11 +1,12 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
-import type { BookingOtherChargesData } from "@/features/booking/models/BookingModel";
+import type { BookingApplicantData, BookingOtherChargesData } from "@/features/booking/models/BookingModel";
 import type { ParkingData } from "@/features/parking/models/ParkingModel";
 
 export interface FilterWithPaginationPayTrackBooking {
     PageNumber: number;
     PageSize: number;
     IsCheckPermission?: boolean;
+    IsFinalRegistrationCompleted?: string | '';
     ProjectId?: number;
     FromDate?: string | null;
     ToDate?: string | null;
@@ -15,12 +16,14 @@ export interface FilterWithPaginationPayTrackBooking {
     Floor?: string
     Configuration?: string
     ApplicantMobileNumber?: string
+    AgreementValue?: number;
+    BookingType?: string;
     SortBy?: string;
     BookingId?: number;
     ExportType?: "PDF" | "Excel";
 }
 
-    
+
 export type PayTrackRow = {
     type: string;
     total: number;
@@ -29,6 +32,7 @@ export type PayTrackRow = {
     isTotal?: boolean;
 };
 export interface PayTrackBookingData {
+
     BookingId: number | null;
     ProjectName: string | null;
     ProjectId: number | null;
@@ -44,6 +48,7 @@ export interface PayTrackBookingData {
     Wing: string | null;
     Floor: string | null;
     Flat: string | null;
+    NumberOfParking:number;
     ParkingNumber: string | null;
     FlatType: string | null;
     RERACarpetAreaSqFt: number | null;
@@ -51,9 +56,10 @@ export interface PayTrackBookingData {
     
     RegistrationDate: string | null;
     FinalRegistrationDate: string | null;
+    IsFinalRegistrationCompleted:boolean;
+    FinalRegistrationURL: string | null;
+    
     FlatAlterationRemark: string | null;
-
-
     AgreementValue: number | null;
     ReceivedAgreementValue: number | null;
 
@@ -93,6 +99,7 @@ export interface PayTrackBookingData {
     TenantId: number | null;
     LedgerCount: number | null;
     BookingOtherChargesData?: BookingOtherChargesData[] | null;
+    BookingApplicantData?: BookingApplicantData[] | null;
 }
 
 export interface PayTrackBookingApplicantData {

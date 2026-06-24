@@ -120,10 +120,10 @@ export const projectMasterService = {
         }
     },
 
-    apiCallPullProjectMasterWithBankDetails: async (ProjectId: number,BankName?:string, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectMasterWithBankDetailsResponse>> => {
+    apiCallPullProjectMasterWithBankDetails: async (ProjectId: number,BankName?:string,isCheckPermission?:boolean, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProjectMasterWithBankDetailsResponse>> => {
         try {
 
-            return E.right(await projectMasterDatasource.pullProjectMasterWithBankDetails(ProjectId,BankName, options?.signal));
+            return E.right(await projectMasterDatasource.pullProjectMasterWithBankDetails(ProjectId,BankName,isCheckPermission, options?.signal));
 
         } catch (error: any) {
 

@@ -9,7 +9,6 @@ import type {
     FilterWithPaginationChannelPartnerBookingRequest,
     FilterPaymentScheduleStagesRequest,
     PaymentScheduleStagesResponse,
-    UpdatePayTrackBookingRegistrationDateParking,
     BookingUpdateegistrationDateParkingResponse
 } from '@/features/booking/models/BookingModel'
 
@@ -57,9 +56,9 @@ export const bookingService = {
             return E.left({ message: error.message, code: error.code });
         }
     },
-    apiCallUpdatePayTrackBookingRegistrationDateParking: async (params: UpdatePayTrackBookingRegistrationDateParking): Promise<E.Either<Failure, BookingUpdateegistrationDateParkingResponse>> => {
+    apiCallUpdatePayTrackBookingRegistrationDateParking: async (formData: FormData): Promise<E.Either<Failure, BookingUpdateegistrationDateParkingResponse>> => {
         try {
-            return E.right(await bookingDatasource.updatePayTrackBookingRegistrationDateParking(params));
+            return E.right(await bookingDatasource.updatePayTrackBookingRegistrationDateParking(formData));
         } catch (error: any) {
             return E.left({ message: error.message, code: error.code });
         }

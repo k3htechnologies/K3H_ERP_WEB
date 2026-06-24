@@ -273,7 +273,7 @@ const IbmObmReport: React.FC = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     ProjectId: Number(filters.ProjectId) ?? 0,
-                    EmployeeName: filters.EmployeeName ?? '',
+                    EmployeeName: searchTerm?.trim() || filters.EmployeeName || '',
                     Stage: '',
                     Year: filters.ReportType?.toUpperCase() === "YEAR" ? Number(filters.Year) : undefined,
                     FromDate: filters.ReportType?.toUpperCase() === "DATE" ? filters.FromDate || undefined : undefined,

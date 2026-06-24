@@ -7,7 +7,7 @@ import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
 import * as E from 'fp-ts/Either';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
-import { DataTable, type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { usePayTrackBookingListState } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
@@ -17,7 +17,7 @@ import { IdCardIcon, Plus, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { bookingApplicantModificationService } from '@/features/crmPayTrack/services/BookingApplicantModelCrmService';
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { filterEmail, filterAadhaar, filterPAN, filterPassportNumber, filterDrivingLicenseNumber, filterVoterId, filterGST, isValidMobile, isValidEmail, calculateMergedFiles, isValidAadhaar, isValidPAN, isValidPassportNumber, isValidDrivingLicenseNumber, isValidVoterId, isValidGST, mergeFiles, calculateRemovedFiles, createFileUrlString, filterMobile } from "@/core/utils/fileValidation";
+import { filterEmail, filterAadhaar, filterPAN, filterPassportNumber, filterDrivingLicenseNumber, filterVoterId, filterGST, isValidMobile, isValidEmail, calculateMergedFiles, isValidAadhaar, isValidPAN, isValidPassportNumber, isValidDrivingLicenseNumber, isValidVoterId, isValidGST, mergeFiles, calculateRemovedFiles, createFileUrlString } from "@/core/utils/fileValidation";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
 import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from '@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel';
@@ -25,6 +25,8 @@ import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 const initialFormStateForDetailsRequest = (): BookingApplicantModificationRequest => ({
     BookingApplicantModificationRequestId: 0,
@@ -41,6 +43,7 @@ const initialFormStateForDetailsRequest = (): BookingApplicantModificationReques
     ApplicantName: '',
     VotingIdURL: [],
     ApplicantMobileNumber: '',
+    ApplicantMobileNumberCountryCode: "+91",
     AadharCardNumber: '',
     RemoveDrivingLicenseURL: '',
     GSTNumber: '',
@@ -101,8 +104,11 @@ type RequestBookingApplicantWithFiles = BookingApplicantModificationDataRequest 
     ModifiedDate?: string | null;
 
 }
+interface Props {
+    onLoaded?: () => void;
+}
 
-export const ApplicantRequests: React.FC = () => {
+export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
 
     const [bookingApplicantModificationData, setBookingApplicantModificationData] = useState<BookingApplicantModificationDataRequest[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -174,7 +180,7 @@ export const ApplicantRequests: React.FC = () => {
 
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
-   const applicantModificationList = useMemo(() => {
+    const applicantModificationList = useMemo(() => {
         if (!bookingApplicantModificationData?.length) {
             return [];
         }
@@ -188,35 +194,12 @@ export const ApplicantRequests: React.FC = () => {
         );
     }, [bookingApplicantModificationData]);
 
-    const applicantTypeOptions = useMemo(() => {
-        const hasApplicantInSavedModifications = (bookingApplicantModificationData || [])
-            .filter((app) => app.VersionNumber !== "1")
-            .some(
-                (app) =>
-                    app.ApplicantType === "Applicant" &&
-                    app.BookingApplicantModificationRequestId !== editingApplicantData?.row.BookingApplicantModificationRequestId
-            );
-
-        const hasApplicantInLocalList = applicantList.some(
-            (app, index) =>
-                app.ApplicantType === "Applicant" &&
-                index !== editingApplicantData?.index
-        );
-        const shouldDisableApplicant = hasApplicantInSavedModifications || hasApplicantInLocalList;
-
-        return APPLICANT_TYPE.filter((opt) => {
-            if (opt.name === "Applicant" && shouldDisableApplicant) {
-                return editingApplicantData?.row.ApplicantType === "Applicant";
-            }
-            return true;
-        }).map((opt) => ({ label: opt.name, value: opt.id }));
-    }, [bookingApplicantModificationData, editingApplicantData, applicantList]);
-
 
     useEffect(() => {
         if (!projectId || !bookingId) return;
 
         fetchBookingApplicantModificationList();
+
 
     }, [projectId, bookingId]);
 
@@ -288,6 +271,7 @@ export const ApplicantRequests: React.FC = () => {
             newErrorsBookingApplicant.ProofOfDocumentURL = "Proof of Document is required";
         }
 
+
         if (!formDataDetails.ApplicantType?.trim()) {
             newErrorsBookingApplicant.ApplicantType = "Applicant Type is required";
         }
@@ -295,12 +279,12 @@ export const ApplicantRequests: React.FC = () => {
         if (!formDataDetails.ApplicantName?.trim()) {
             newErrorsBookingApplicant.ApplicantName = "Applicant Name is required";
         }
-
         if (!formDataDetails.ApplicantMobileNumber?.trim()) {
             newErrorsBookingApplicant.ApplicantMobileNumber = "Mobile Number is required";
-        } else if (!isValidMobile(formDataDetails.ApplicantMobileNumber.trim())) {
-            newErrorsBookingApplicant.ApplicantMobileNumber = "Enter a valid 10-Digit Mobile Number";
+        } else if (!isValidMobile(formDataDetails.ApplicantMobileNumber.trim(), formDataDetails.ApplicantMobileNumberCountryCode!.trim())) {
+            newErrorsBookingApplicant.ApplicantMobileNumber = "Enter a valid Mobile Number";
         }
+
 
         if (!formDataDetails.ApplicantEmailId?.trim()) {
             newErrorsBookingApplicant.ApplicantEmailId = "E-mail Id is required";
@@ -462,6 +446,7 @@ export const ApplicantRequests: React.FC = () => {
             ApplicantType: formDataDetails.ApplicantType || "",
             ApplicantName: formDataDetails.ApplicantName || "",
             ApplicantMobileNumber: formDataDetails.ApplicantMobileNumber || "",
+            ApplicantMobileNumberCountryCode: formDataDetails.ApplicantMobileNumberCountryCode!.trim() || "",
             ApplicantEmailId: formDataDetails.ApplicantEmailId || "",
             PhotoURL: createFileUrlString(mergedPhotoFiles),
             AadharCardNumber: formDataDetails.AadharCardNumber || "",
@@ -557,7 +542,8 @@ export const ApplicantRequests: React.FC = () => {
     };
 
     const fetchBookingApplicantModificationList = async () => {
-        return await loadBookingApplicantModificationRequest();
+        await loadBookingApplicantModificationRequest();
+        onLoaded?.();
     };
 
     const loadBookingApplicantModificationRequest = async () => {
@@ -642,6 +628,7 @@ export const ApplicantRequests: React.FC = () => {
                     formDataToSend.append(`${prefix}.ApplicantType`, app.ApplicantType ?? "");
                     formDataToSend.append(`${prefix}.ApplicantName`, app.ApplicantName ?? "");
                     formDataToSend.append(`${prefix}.ApplicantMobileNumber`, app.ApplicantMobileNumber ?? "");
+                    formDataToSend.append(`${prefix}.ApplicantMobileNumberCountryCode`, app.ApplicantMobileNumberCountryCode ?? "");
                     formDataToSend.append(`${prefix}.ApplicantEmailId`, app.ApplicantEmailId ?? "");
                     formDataToSend.append(`${prefix}.AadharCardNumber`, app.AadharCardNumber ?? "");
                     formDataToSend.append(`${prefix}.PanNumber`, app.PanNumber ?? "");
@@ -763,7 +750,7 @@ export const ApplicantRequests: React.FC = () => {
                 width: "15",
                 sortable: false,
                 align: "center",
-                render: (value) => value || "-",
+                render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
             },
             {
                 key: "ApplicantEmailId",
@@ -1027,67 +1014,75 @@ export const ApplicantRequests: React.FC = () => {
                 <div></div>
             </Loader>
 
-            <section className="bg-white rounded-xl pt-5">
-                <div className="flex justify-between items-center mb-8">
-                    <h4 className="text-lg font-semibold text-gray-900">
-                        Applicant Details
-                    </h4>
+            <div className="pt-5">
+                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden  justify-between">
+                    <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
+                        <h4 className="text-sm font-semibold text-[#C2410C]">
+                            Applicant Details
+                        </h4>
 
-                    {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
-                        <Button
-                            onClick={() => { setIsAddUpdateApplicantDetailsModalOpen(true); }}
-                            color="blue"
-                            size="sm"
-                            variant="solid"
-                            leftIcon={<Plus className="h-4 w-4" />}
-                            disabled={isBookingCancelled}
-                        >
-                            Applicant Change Request
-                        </Button>
-                    )}
-                </div>
+                        {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
 
-                {applicantList.length > 0 && (
-                    <div className="mb-8">
-                        <div className="flex justify-between items-center mb-4">
-                            <h5 className="text-md font-medium text-blue-800">Pending Requests (unsaved)</h5>
-                            <Button
-                                onClick={handleSaveApplicantRequests}
-                                color="blue"
-                                size="sm"
-                                variant="solid"
-                                loading={isLoading}
-                                style={{ width: '140px' }}
-                                disabled={isBookingCancelled}
-                            >
-                                Save
-                            </Button>
-                        </div>
-                        <DataTable
-                            columns={pendingColumns}
-                            data={applicantList}
-                            fixedHeight={false}
-                            className="shadow-sm border border-blue-100 rounded-lg"
-                        />
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    onClick={() => { setIsAddUpdateApplicantDetailsModalOpen(true); }}
+                                    color="blue"
+                                    size="sm"
+                                    variant="solid"
+                                    leftIcon={<Plus className="h-4 w-4" />}
+                                    disabled={isBookingCancelled}
+                                >
+                                    Add
+                                </Button>
+
+                                {applicantList.length > 0 && (
+                                    <Button
+                                        onClick={handleSaveApplicantRequests}
+                                        size="sm"
+
+                                        color="transparent"
+                                        variant="transparent_border_background"
+
+                                        loading={isLoading}
+                                        style={{ width: '140px' }}
+                                        disabled={isBookingCancelled}
+                                    >
+                                        Save
+                                    </Button>
+                                )}
+                            </div>
+
+                        )}
                     </div>
-                )}
 
-                {applicantModificationList.length > 0 ? (
-                    <DataTable
-                        columns={summaryColumns}
-                        data={applicantModificationList}
-                        fixedHeight={false}
-                        className="shadow-sm border border-gray-100 rounded-lg"
-                    />
-                ) : (
-                    applicantList.length === 0 && (
-                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <NoDataView message="No Applicant Found" />
-                        </section>
-                    )
-                )}
-            </section>
+                    {applicantList.length > 0 && (
+                        <div className="p-6">
+                            <DataTableWithHeaderRowDivider
+                                columns={pendingColumns}
+                                data={applicantList}
+                                fixedHeight={false}
+                            />
+                        </div>
+                    )}
 
+                    {applicantModificationList.length > 0 ? (
+                        <div className="p-5">
+                            <DataTableWithHeaderRowDivider
+                                columns={summaryColumns}
+                                data={applicantModificationList}
+                                fixedHeight={false}
+                            />
+                        </div>
+                    ) : (
+                        applicantList.length === 0 && (
+                            <section className="md:col-span-4 bg-white rounded-xl p-6">
+                                <NoDataView message="No Applicant Found" />
+                            </section>
+                        )
+                    )}
+
+                </section>
+            </div>
             <Modal
                 isOpen={isAddUpdateApplicantDetailsModalOpen}
                 onClose={() => {
@@ -1190,7 +1185,13 @@ export const ApplicantRequests: React.FC = () => {
                             </div>
                         </div>
                         <div>
-                            <SinglePageSelection label="Applicant Type" placeholder="Select Applicant Type" required value={formDataDetails?.ApplicantType ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantType", String(e))} options={applicantTypeOptions} error={errorsBookingApplicant.ApplicantType} />
+                            <SinglePageSelection
+                                label="Applicant Type"
+                                placeholder="Select Applicant Type"
+                                required value={formDataDetails?.ApplicantType ?? ""}
+                                onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantType", String(e))}
+                                options={APPLICANT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                error={errorsBookingApplicant.ApplicantType} />
                         </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1198,11 +1199,20 @@ export const ApplicantRequests: React.FC = () => {
                             <Input label="Applicant Name" placeholder="Enter Applicant Name" type="text" value={formDataDetails.ApplicantName ?? ''} onChange={(e) => handleFieldChangeBookingApplicantDetails('ApplicantName', e.target.value)} error={errorsBookingApplicant.ApplicantName} required
                             />
                         </div>
-
                         <div>
-                            <Input label="Mobile Number" required error={errorsBookingApplicant.ApplicantMobileNumber} type="text" value={formDataDetails.ApplicantMobileNumber ?? ""} maxLength={10} leftIcon="+91" onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantMobileNumber", filterMobile(e.target.value))} placeholder="Enter Mobile Number" />
+                            <MobileNumberInput
+                                mobileNumber={formDataDetails.ApplicantMobileNumber ?? ""}
+                                countryCode={formDataDetails.ApplicantMobileNumberCountryCode ?? "+91"}
+                                required
+                                error={errorsBookingApplicant.ApplicantMobileNumber}
+                                onMobileChange={(value) =>
+                                    handleFieldChangeBookingApplicantDetails("ApplicantMobileNumber", value)
+                                }
+                                onCountryCodeChange={(value) =>
+                                    handleFieldChangeBookingApplicantDetails("ApplicantMobileNumberCountryCode", value)
+                                }
+                            />
                         </div>
-
                         <div>
                             <Input label="Email Id" required error={errorsBookingApplicant.ApplicantEmailId} type="text" value={formDataDetails.ApplicantEmailId ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantEmailId", filterEmail(e.target.value))} placeholder="Enter Email Id" />
                         </div>

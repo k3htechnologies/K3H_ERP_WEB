@@ -82,15 +82,15 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
   Source: "",
   SubSource: "",
   SubSubSource: "",
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+  // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS REFERENCE]=========================
   ReferralProjectId: 0,
   ReferralInventoryFlatId: 0,
 
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+  // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS LOTALTY]=========================
 
   LoyaltyProjectId: 0,
   LoyaltyInventoryFlatId: 0,
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+  // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
 
   EmployeeReferenceEmployeeId: 0,
 
@@ -277,15 +277,15 @@ export const AddUpdateEnquiry: React.FC = () => {
               SubSource: e.SubSource ?? prev.SubSource,
               SubSubSource: e.SubSubSource ?? prev.SubSubSource,
 
-              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+              // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS REFERENCE]=========================
               ReferralProjectId: e.ReferralProjectId ?? prev.ReferralProjectId,
               ReferralInventoryFlatId: e.ReferralInventoryFlatId ?? prev.ReferralInventoryFlatId,
 
-              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+              // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS LOTALTY]=========================
               LoyaltyProjectId: e.LoyaltyProjectId ?? prev.LoyaltyProjectId,
               LoyaltyInventoryFlatId: e.LoyaltyInventoryFlatId ?? prev.LoyaltyInventoryFlatId,
 
-              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+              // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
               EmployeeReferenceEmployeeId: e.EmployeeReferenceEmployeeId ?? prev.EmployeeReferenceEmployeeId,
 
               ChannelPartnerTeamMemberId: e.ChannelPartnerTeamMemberId ?? prev.ChannelPartnerTeamMemberId,
@@ -503,8 +503,8 @@ export const AddUpdateEnquiry: React.FC = () => {
       }
     }
 
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-    if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE") {
+    // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS REFERENCE]=========================
+    if (formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "REFERENCE") {
       if (!formData.ReferralProjectId) {
         newErrors.ReferralProjectId = "Referral Project Name is required";
       }
@@ -516,8 +516,8 @@ export const AddUpdateEnquiry: React.FC = () => {
       }
     }
 
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-    if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "LOYALTY") {
+    // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS LOTALTY]=========================
+    if (formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "LOYALTY") {
       if (!formData.LoyaltyProjectId) {
         newErrors.LoyaltyProjectId = "Loyalty Existing Project Name is required";
       }
@@ -530,8 +530,8 @@ export const AddUpdateEnquiry: React.FC = () => {
       }
     }
 
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-    if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE") {
+    // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+    if (formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE") {
       if (!formData.EmployeeReferenceEmployeeId) {
         newErrors.EmployeeReferenceEmployeeId = "Employee Name is required";
       }
@@ -607,13 +607,13 @@ export const AddUpdateEnquiry: React.FC = () => {
   const PushEnquiryFormData = (): AddUpdateEnquiryRequest => {
     const villageIdsString = villageDropdown.selectedValues.length > 0 ? villageDropdown.selectedValues.join(",") : "";
 
-    // =====================[DIRECT WALKING → REFERENCE]=========================
-    const isDirectReference = formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE";
-    // =====================[DIRECT WALKING → LOYALTY]=========================
-    const isDirectLoyalty = formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "LOYALTY";
+    // =====================[DIRECT WALKIN → REFERENCE]=========================
+    const isDirectReference = formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "REFERENCE";
+    // =====================[DIRECT WALKIN → LOYALTY]=========================
+    const isDirectLoyalty = formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "LOYALTY";
 
-    // =====================[DIRECT WALKING → EMPLOYEE REFERENCE]=========================
-    const isEmployeeReference = formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE";
+    // =====================[DIRECT WALKIN → EMPLOYEE REFERENCE]=========================
+    const isEmployeeReference = formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE";
 
     const isIndian = formData.Nationality === "" || formData.Nationality?.toUpperCase() === "Indian";
 
@@ -637,15 +637,15 @@ export const AddUpdateEnquiry: React.FC = () => {
       SubSource: formData.SubSource,
       SubSubSource: formData.Source?.toUpperCase() === "CHANNEL PARTNER" ? String(channelPartnerId) : formData.SubSubSource,
 
-      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+      // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS REFERENCE]=========================
       ReferralProjectId: isDirectReference ? formData.ReferralProjectId : 0,
       ReferralInventoryFlatId: isDirectReference ? formData.ReferralInventoryFlatId : 0,
 
-      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+      // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS LOTALTY]=========================
       LoyaltyProjectId: isDirectLoyalty ? formData.LoyaltyProjectId : 0,
       LoyaltyInventoryFlatId: isDirectLoyalty ? formData.LoyaltyInventoryFlatId : 0,
 
-      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+      // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
       EmployeeReferenceEmployeeId: isEmployeeReference ? formData.EmployeeReferenceEmployeeId : 0,
 
       ChannelPartnerTeamMemberId: formData.ChannelPartnerTeamMemberId,

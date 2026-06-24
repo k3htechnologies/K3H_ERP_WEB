@@ -11,7 +11,6 @@ import type {
     FilterPaymentScheduleStagesRequest,
     PaymentScheduleStagesResponse,
     BookingUpdateegistrationDateParkingResponse,
-    UpdatePayTrackBookingRegistrationDateParking
 } from '@/features/booking/models/BookingModel'
 
 export abstract class BookingDatasource {
@@ -20,6 +19,7 @@ export abstract class BookingDatasource {
     abstract cancelBooking(params: CancelBookingRequest): Promise<BookingDeleteResponse>;
     abstract pullChannelPartnerBooking(params: FilterWithPaginationChannelPartnerBookingRequest, signal?: AbortSignal): Promise<BookingListResponse>;
     abstract pullPaymentScheduleStages(params: FilterPaymentScheduleStagesRequest): Promise<PaymentScheduleStagesResponse>;
+    abstract updatePayTrackBookingRegistrationDateParking(formData: FormData): Promise<BookingUpdateegistrationDateParkingResponse>;
 }
 
 export class BookingDatasourceImpl implements BookingDatasource {
@@ -178,11 +178,11 @@ export class BookingDatasourceImpl implements BookingDatasource {
         }
     }
 
-    async updatePayTrackBookingRegistrationDateParking(params: UpdatePayTrackBookingRegistrationDateParking): Promise<BookingUpdateegistrationDateParkingResponse> {
+    async updatePayTrackBookingRegistrationDateParking(formData: FormData): Promise<BookingUpdateegistrationDateParkingResponse> {
         try {
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 BookingApi.UPDATE_BOOKING_REGISTRATIONDATE_PARKING,
-                params
+                formData
             )
 
             return response
@@ -191,7 +191,7 @@ export class BookingDatasourceImpl implements BookingDatasource {
 
            if (error instanceof TokenExpiredException) {
 
-                return  await this.updatePayTrackBookingRegistrationDateParking(params);
+                return  await this.updatePayTrackBookingRegistrationDateParking(formData);
             }
 
             throw error

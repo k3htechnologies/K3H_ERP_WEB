@@ -61,9 +61,9 @@ export const DataTableWithHeaderRowDivider: React.FC<DataTableWithHeaderRowDivid
     sortInfo,
     onSort,
 }) => {
-    
+
     const scrollRef = useHorizontalScroll()
-    
+
     const handleSort = (columnKey: string) => {
         const column = columns.find(col => col.key === columnKey)
         if (!onSort || !column?.sortable) return
@@ -142,7 +142,7 @@ export const DataTableWithHeaderRowDivider: React.FC<DataTableWithHeaderRowDivid
         <div className={`rounded-lg flex flex-col}  ${fixedHeight ? 'h-full' : ''} ${className}`}>
 
             {/* Table Container with Fixed Height */}
-            <div ref={scrollRef}  className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
+            <div ref={scrollRef} className={`overflow-x-auto thin-scroll ${fixedHeight ? 'flex-1 overflow-y-auto' : ''}`} style={fixedHeight ? {
                 maxHeight: recordsPerPage === 10 ? 'calc(10 * 2.5rem + 2.5rem)' : maxHeight
             } : {}}>
                 <table className={`min-w-full border-collapse`}>
@@ -171,15 +171,15 @@ export const DataTableWithHeaderRowDivider: React.FC<DataTableWithHeaderRowDivid
                                     key={column.key}
                                     className={`px-4 py-2  bg-white text-gray-800 tracking-wider whitespace-nowrap
                                                     ${column.align === 'center' ? 'text-center' :
-                                                                                        column.align === 'right' ? 'text-right' : 'text-left'}
+                                            column.align === 'right' ? 'text-right' : 'text-left'}
                                                     ${column.width ? `w-${column.width}` : ''}
                                                     ${column.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
                                                     ${column.fixed === 'left'
-                                                                                        ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
-                                                                                        : column.fixed === 'right'
-                                                                                            ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
-                                                                                            : ''
-                                                                                    }
+                                            ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]'
+                                            : column.fixed === 'right'
+                                                ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]'
+                                                : ''
+                                        }
                                                     `}
                                     style={{
                                         ...(column.width ? { width: column.width } : {}),
@@ -256,11 +256,16 @@ export const DataTableWithHeaderRowDivider: React.FC<DataTableWithHeaderRowDivid
                                                     title=""
                                                 >
                                                     <div
-                                                        className={`${column.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`}
-                                                        style={{
-                                                            maxWidth: column.maxWidth || column.width || '200px',
-                                                            lineHeight: '1.5'
-                                                        }}
+                                                        className={`
+                                                                ${column.truncate !== false ? 'truncate whitespace-nowrap' : ''}
+                                                                max-w-full
+                                                                ${column.align === 'right'
+                                                                ? 'text-right'
+                                                                : column.align === 'center'
+                                                                    ? 'text-center'
+                                                                    : 'text-left'}
+    `}
+
                                                     >
                                                         {cellValue}
                                                     </div>

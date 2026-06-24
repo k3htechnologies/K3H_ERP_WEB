@@ -34,7 +34,7 @@ export abstract class ProjectMasterDatasource {
     abstract addUpdateProjectMasterWithCompany(params: AddUpdateProjectMasterWithCompanyRequest): Promise<ProjectMasterWithCompanySaveResponse>
 
 
-    abstract pullProjectMasterWithBankDetails(ProjectId: number,BankName?:string, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse>;
+    abstract pullProjectMasterWithBankDetails(ProjectId: number, BankName?: string,IsCheckPermission?: boolean, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse>;
     abstract addUpdateProjectMasterWithBankDetails(params: AddUpdateProjectMasterWithBankDetailsRequest): Promise<ProjectMasterWithBankDetailsSaveResponse>;
     abstract deleteProjectMasterWithBankDetails(params: DeleteProjectMasterWithBankDetailsRequest): Promise<ProjectMasterWithBankDetailsDeleteResponse>
 }
@@ -253,14 +253,16 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
         }
     }
 
-    async pullProjectMasterWithBankDetails(ProjectId: number,BankName?:string, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse> {
+    async pullProjectMasterWithBankDetails(ProjectId: number, BankName?: string, IsCheckPermission?: boolean, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse> {
+      
         try {
             const queryParams = new URLSearchParams({
                 ProjectId: (ProjectId ?? 0).toString(),
-                BankName:BankName ?? ""
+                BankName: BankName ?? "",
+                IsCheckPermission: (IsCheckPermission ?? true).toString()
             })
             return await this.k3hHttpClient.getRequestWithAuthentication(`${ProjectMasterApi.PULL_PROJECT_WITH_BANK_DETAILS}?${queryParams.toString()}`, { signal })
-            
+
 
         } catch (error: any) {
 
@@ -268,7 +270,7 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.pullProjectMasterWithBankDetails(Number(ProjectId),BankName);
+                return await this.pullProjectMasterWithBankDetails(Number(ProjectId), BankName);
             }
 
             throw error

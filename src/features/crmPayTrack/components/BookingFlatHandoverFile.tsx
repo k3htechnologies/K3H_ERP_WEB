@@ -430,6 +430,13 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                         addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
                     }
+
+                    setFormData(initialFormState());
+                    setErrors({});
+                    setDocumentFiles([]);
+                    setDocumentURL('');
+                    setRemovedDocumentURLs([]);
+
                     setEditingBankDocumentPayTrackBookingFilesData(null);
 
                 } else {
@@ -587,6 +594,7 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                                 label="File Name"
                                 placeholder="Enter File Name"
                                 type="text"
+                                disabled={pageName!="Flat Handover" ? false :true}
                                 value={formData.FileName ?? ''}
                                 onChange={(e) => handleFieldChange('FileName', e.target.value)}
                                 error={errors.FileName}

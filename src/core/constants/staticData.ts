@@ -524,13 +524,13 @@ export const MASTER_DATA = {
   activeInactive: ["Active", "Inactive"],
 
   paymentFor: [
+    "Stamp Duty",
+    "Registration Fees",
     "Agreement Value (Without TDS)",
     "Agreement Value GST",
     "Agreement Value TDS",
     "Other Charges Value",
-    "Other Charges GST",
-    "Registration Fees",
-    "Stamp Duty",
+    "Other Charges GST"
   ],
 
   paymentReceivedFrom: ["Bank", "Owner"],

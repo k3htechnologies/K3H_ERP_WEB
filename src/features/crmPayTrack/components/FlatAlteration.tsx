@@ -30,6 +30,7 @@ import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApprov
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const initialFormStateForFlatAlterationRequest = (): AddUpdateFlatAlterationRequest => ({
     FlatAlterationRequestId: 0,
@@ -426,11 +427,10 @@ export const FlatAlteration: React.FC = () => {
                             color="blue"
                             size="sm"
                             variant="solid"
-                            style={{ width: "190px" }}
                             leftIcon={<Plus className="h-4 w-4" />}
                             disabled={isBookingCancelled}
                         >
-                            Create Requests
+                            Flat Alteration Requests
                         </Button>
                     )}
                 </div>
@@ -454,9 +454,9 @@ export const FlatAlteration: React.FC = () => {
                         className="shadow-sm border border-gray-100 rounded-lg"
                     />
                 ) : (
-                    <div className="text-center py-10 rounded-xl text-gray-400 border border-dashed border-gray-200">
-                        No alteration remarks found.
-                    </div>
+                     <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <NoDataView message="No Flat Alteration Remark Found" />
+                        </section>
                 )}
             </section>
 

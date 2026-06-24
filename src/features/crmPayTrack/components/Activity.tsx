@@ -21,6 +21,7 @@ import useToast from '@/core/hooks/useToast';
 import { useNavigate } from 'react-router-dom';
 import { Edit } from 'lucide-react';
 import { Button } from '@/ui/components/forms';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
 
 export const Activity: React.FC = () => {
 
@@ -198,7 +199,7 @@ export const Activity: React.FC = () => {
                         }
                     }}
                     title={
-                        <div className="font-semibold text-lg pt-4 pb-4">
+                        <div className="font-medium text-md">
                             Booking Applicant History
                         </div>
                     }
@@ -262,7 +263,7 @@ export const Activity: React.FC = () => {
                                 ));
                             })() : (
                                 <div className="text-center text-gray-500 py-8">
-                                    No applicant history found.
+                                    <NoDataView message='No applicant history found'/>
                                 </div>
                             )}
                         </div>
@@ -277,7 +278,7 @@ export const Activity: React.FC = () => {
                         }
                     }}
                     title={
-                        <div className="font-semibold text-lg pt-4 pb-4">
+                        <div className="font-medium text-md">
                             Parking History
                         </div>
                     }
@@ -305,8 +306,8 @@ export const Activity: React.FC = () => {
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-center text-gray-500 py-8">
-                                    No parking history found.
+                                <div className="text-center text-gray-500">
+                                     <NoDataView message='No parking history found'/>
                                 </div>
                             )}
                         </div>
@@ -321,7 +322,7 @@ export const Activity: React.FC = () => {
                         }
                     }}
                     title={
-                        <div className="font-semibold text-lg pt-4 pb-4">
+                        <div className="font-medium text-md">
                             Flat Alteration History
                         </div>
                     }
@@ -346,7 +347,7 @@ export const Activity: React.FC = () => {
                                 ))
                             ) : (
                                 <div className="text-center text-gray-500 py-8">
-                                    No flat alteration history found.
+                                      <NoDataView message='No flat alteration history found'/>
                                 </div>
                             )}
                         </div>
@@ -362,7 +363,7 @@ export const Activity: React.FC = () => {
                         }
                     }}
                     title={
-                        <div className="font-semibold text-lg pt-4 pb-4">
+                        <div className="font-medium text-md">
                             Refunded Amount Details History
                         </div>
                     }
@@ -444,7 +445,7 @@ export const Activity: React.FC = () => {
                                 ))
                             ) : (
                                 <div className="text-center text-gray-500 py-8 bg-gray-50">
-                                    No refunded amount details history found.
+                                    <NoDataView message='No refunded amount details history found'/>
                                 </div>
                             )}
                         </div>

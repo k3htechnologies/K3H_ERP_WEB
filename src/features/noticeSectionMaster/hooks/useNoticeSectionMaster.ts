@@ -90,6 +90,7 @@ export const useNoticeSectionMaster = () => {
                     Uniquekey: editingNoticeSectionMasterData.Uniquekey || getInitialFormState().Uniquekey,
                     NoticeSection: editingNoticeSectionMasterData.NoticeSection || '',
                     GovernmentCompliance: editingNoticeSectionMasterData.GovernmentCompliance || ''
+                    GovernmentCompliance: editingNoticeSectionMasterData.GovernmentCompliance || ''
                 });
             } else {
                 setFormData({
@@ -214,6 +215,7 @@ export const useNoticeSectionMaster = () => {
                     IsCheckPermission: true,
                     NoticeSectionMasterId: filters.NoticeSectionMasterId ? Number(filters.NoticeSectionMasterId) : 0,
                     GovernmentCompliance: filters.GovernmentCompliance ?? undefined,
+                    GovernmentCompliance: filters.GovernmentCompliance ?? undefined,
                     NoticeSection: filters.NoticeSection ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, noticeSectionMasterColumns),
                     ExportType: exportType
@@ -291,6 +293,7 @@ export const useNoticeSectionMaster = () => {
         setEditingNoticeSectionMasterData({
             ...row,
             GovernmentCompliance: row.GovernmentCompliance || '',
+            GovernmentCompliance: row.GovernmentCompliance || '',
             NoticeSection: row.NoticeSection || ''
         })
         setIsAddUpdateModalOpen(true);
@@ -330,6 +333,7 @@ export const useNoticeSectionMaster = () => {
         return {
             NoticeSectionMasterId: formData.NoticeSectionMasterId,
             Uniquekey: formData.Uniquekey,
+            GovernmentCompliance: formData.GovernmentCompliance,
             GovernmentCompliance: formData.GovernmentCompliance,
             NoticeSection: formData.NoticeSection
         };

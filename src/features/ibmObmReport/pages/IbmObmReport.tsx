@@ -157,7 +157,7 @@ const IbmObmReport: React.FC = () => {
 
                         const key =
                             filters.ReportType?.toUpperCase() === "DATE"
-                                ? formatDate_dd_mm_yyyy(item.Date)
+                                ? formatDate_dayName_dd_mm_yyyy(item.Date)
                                 : item.MonthName;
 
                         if (key && row.hasOwnProperty(key)) {

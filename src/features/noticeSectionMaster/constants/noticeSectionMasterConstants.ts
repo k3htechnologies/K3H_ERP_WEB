@@ -5,6 +5,7 @@ export const INITIAL_FORM_STATE: AddUpdateNoticeSectionMasterRequest = {
     NoticeSectionMasterId: 0,
     Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
     GovernmentCompliance: '',
+    GovernmentCompliance: '',
     NoticeSection: ''
 };
 

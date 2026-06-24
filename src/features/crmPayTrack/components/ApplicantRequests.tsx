@@ -24,6 +24,7 @@ import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const initialFormStateForDetailsRequest = (): BookingApplicantModificationRequest => ({
     BookingApplicantModificationRequestId: 0,
@@ -165,7 +166,7 @@ export const ApplicantRequests: React.FC = () => {
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [approvalRowData, setApprovalRowData] = useState<BookingApplicantModificationDataRequest | null>(null);
 
-    const { canAction } = useMenuPermissions("/payTrack");
+    const { canAction } = useMenuPermissions("/modificationRequest");
     const { addToast } = useToast();
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
@@ -173,7 +174,7 @@ export const ApplicantRequests: React.FC = () => {
 
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
-    const applicantModificationList = useMemo(() => {
+   const applicantModificationList = useMemo(() => {
         if (!bookingApplicantModificationData?.length) {
             return [];
         }
@@ -187,8 +188,15 @@ export const ApplicantRequests: React.FC = () => {
         );
     }, [bookingApplicantModificationData]);
 
-
     const applicantTypeOptions = useMemo(() => {
+        const hasApplicantInSavedModifications = (bookingApplicantModificationData || [])
+            .filter((app) => app.VersionNumber !== "1")
+            .some(
+                (app) =>
+                    app.ApplicantType === "Applicant" &&
+                    app.BookingApplicantModificationRequestId !== editingApplicantData?.row.BookingApplicantModificationRequestId
+            );
+
         const hasApplicantInLocalList = applicantList.some(
             (app, index) => app.ApplicantType === "Applicant" && index !== editingApplicantData?.index
         );
@@ -664,22 +672,15 @@ export const ApplicantRequests: React.FC = () => {
     const handleSaveApplicantRequests = async () => {
         if (applicantList.length === 0) return;
 
-        const applicantCount = applicantList.filter(
-            item => item.ApplicantType === "Applicant"
-        ).length;
+        const applicantCount = applicantList.filter(item => item.ApplicantType === "Applicant").length;
 
         if (applicantCount === 0) {
-            addToast({
-                type: "error",
-                title: "At least one Applicant is required."
-            });
+            addToast({ type: "error", title: "At least one Applicant is required." });
             return;
         }
         if (applicantCount > 1) {
-            addToast({
-                type: "error",
-                title: "Only one Applicant is allowed."
-            });
+
+            addToast({ type: "error", title: "Only one Applicant is allowed." });
             return;
         }
 
@@ -805,6 +806,7 @@ export const ApplicantRequests: React.FC = () => {
                             images={parseDocumentUrls(row.ProofOfDocumentURL)}
                             title="Proof of Document"
                             triggerLabel="-"
+                            isIcon={false}
                             isWrap={false}
                         />
                     );
@@ -1133,11 +1135,10 @@ export const ApplicantRequests: React.FC = () => {
                             color="blue"
                             size="sm"
                             variant="solid"
-                            style={{ width: '190px' }}
                             leftIcon={<Plus className="h-4 w-4" />}
                             disabled={isBookingCancelled}
                         >
-                            Create Requests
+                            Applicant Change Request
                         </Button>
                     )}
                 </div>
@@ -1176,9 +1177,9 @@ export const ApplicantRequests: React.FC = () => {
                     />
                 ) : (
                     applicantList.length === 0 && (
-                        <div className="text-center py-10  rounded-xl text-gray-400">
-                            No Applicant details found
-                        </div>
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <NoDataView message="No Applicant Found" />
+                        </section>
                     )
                 )}
             </section>

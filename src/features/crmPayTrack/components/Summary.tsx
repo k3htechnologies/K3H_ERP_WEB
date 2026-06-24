@@ -20,8 +20,7 @@ import { XIcon } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { parkingModificationService } from '@/features/crmPayTrack/services/ParkingModificationService';
 import type { FilterWithPaginationParkingModificationDetails } from '@/features/crmPayTrack/models/ParkingModificationModel';
-import type { FilterWithPaginationBookingApplicantModificationRequest } from "@/features/crmPayTrack/models/BookingApplicantModificationModel";
-import { bookingApplicantModificationService } from "@/features/crmPayTrack/services/BookingApplicantModelCrmService";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormStateForInitialAmountRefundRequest = (): AddUpdateRefundAmountData => ({
     BookingId: 0,
@@ -48,6 +47,7 @@ export const Summary: React.FC = () => {
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const isBookingCancel = bookingData?.ApprovalStatus === 'Cancel';
     const isRefundStatus = bookingData?.ApprovalStatus === 'Refund';
+    const { canAction } = useMenuPermissions('/modificationRequest');
 
     useEffect(() => {
         if (!projectId || !bookingId) return;
@@ -297,6 +297,7 @@ export const Summary: React.FC = () => {
                         }}
                         variant="solid"
                         color="red_light"
+                        disabled={!canAction}
                         leftIcon={<XIcon className="h-6 w-6 text-red-600" />}
                         size="md"
                         style={{ width: '190px', height: '40px', outline: 'none', border: 'none' }}
@@ -367,13 +368,13 @@ export const Summary: React.FC = () => {
                                         <FieldItem label="Driving License" value={getSafeString(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />
                                         <FieldItem label="Voting ID Number" value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
                                         <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
-                                        <FieldItem label="Cancelled Cheque" value={getSafeString(applicant?.CancelledChequeURL)} urls={applicant?.CancelledChequeURL} isIcon />
-                                        <FieldItem label="POA (if NRI Execution)" value={getSafeString(applicant?.POAURL)} urls={applicant?.POAURL} isIcon />
-                                        <FieldItem label="Income Docs (Form 16 / ITR)" value={getSafeString(applicant?.IncomeForm16ITRURL)} urls={applicant?.IncomeForm16ITRURL} isIcon />
-                                        <FieldItem label="NRE / NRO Bank Details" value={getSafeString(applicant?.NreNroBankDetailsURL)} urls={applicant?.NreNroBankDetailsURL} isIcon />
-                                        <FieldItem label="Nominee Form" value={getSafeString(applicant?.NomineeFormURL)} urls={applicant?.NomineeFormURL} isIcon />
-                                        <FieldItem label="Statement of Source of Funds" value={getSafeString(applicant?.StatementOfSourceOfFundsURL)} urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
-                                        <FieldItem label="Payment Proof" value={getSafeString(applicant?.PaymentProofURL)} urls={applicant?.PaymentProofURL} isIcon />
+                                        <FieldItem label="Cancelled Cheque" value={getSafeString(applicant?.CancelledChequeURL)} urls={applicant?.CancelledChequeURL} isIcon isSetValue={false} />
+                                        <FieldItem label="POA (if NRI Execution)" value={getSafeString(applicant?.POAURL)} urls={applicant?.POAURL} isIcon  isSetValue={false} />
+                                        <FieldItem label="Income Docs (Form 16 / ITR)" value={getSafeString(applicant?.IncomeForm16ITRURL)} urls={applicant?.IncomeForm16ITRURL} isIcon isSetValue={false}  />
+                                        <FieldItem label="NRE / NRO Bank Details" value={getSafeString(applicant?.NreNroBankDetailsURL)} urls={applicant?.NreNroBankDetailsURL} isIcon  isSetValue={false} />
+                                        <FieldItem label="Nominee Form" value={getSafeString(applicant?.NomineeFormURL)} urls={applicant?.NomineeFormURL} isIcon isSetValue={false} />
+                                        <FieldItem label="Statement of Source of Funds" value={getSafeString(applicant?.StatementOfSourceOfFundsURL)} urls={applicant?.StatementOfSourceOfFundsURL} isIcon isSetValue={false} />
+                                        <FieldItem label="Payment Proof" value={getSafeString(applicant?.PaymentProofURL)} urls={applicant?.PaymentProofURL} isIcon isSetValue={false}  />
                                         <FieldItem label="Created By" value={getSafeString(applicant?.CreatedBy)} />
                                         <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(applicant?.CreatedDate ?? '')} />
                                     </div>

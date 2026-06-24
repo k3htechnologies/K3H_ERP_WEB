@@ -13,6 +13,8 @@ import Tabs from "@/ui/components/Tab/Tab";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { Button } from "@/ui/components/forms";
 import { DataTableEditable, type EditableTableColumn } from "@/ui/components/DataTable/DataTableEditable";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 export const SnagChecklist: React.FC = () => {
 
@@ -24,8 +26,8 @@ export const SnagChecklist: React.FC = () => {
     const { addToast } = useToast();
 
     const { listState } = usePayTrackBookingListState();
-    const { bookingId,bookingApprovalStatus } = listState;
-    const { canAction } = useMenuPermissions();
+    const { bookingId, bookingApprovalStatus } = listState;
+    const { canAction } = useMenuPermissions('/snagChecklist');
 
     const SnagChecklistTabList = [
         { id: "Civil", label: "Civil" },
@@ -109,6 +111,8 @@ export const SnagChecklist: React.FC = () => {
 
                     setSnagCheckListData(response.right.Data);
 
+                    setEditSnagCheckListData(response.right.Data);
+
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
                 } else {
@@ -130,7 +134,7 @@ export const SnagChecklist: React.FC = () => {
         {
             key: 'CheckFor',
             label: 'Check For',
-            width: '100%',
+            width: '50%',
             sortable: false,
             align: 'left',
             headerClassName: `bg-[#F3F4F6] text-[#374151] text-sm font-semibold py-4`,
@@ -140,6 +144,37 @@ export const SnagChecklist: React.FC = () => {
                     {value || ""}
                 </div>
             )
+        },
+        {
+            key: 'ModifiedBy',
+            label: 'Last Modified By',
+            width: '33',
+            sortable: false,
+            align: 'left',
+            headerClassName: `bg-[#F3F4F6] text-[#374151] text-sm font-semibold `,
+            cellClassName: ` border-r-0`,
+            render: (value, row) => (
+                <TooltipText
+                    text={value || row.CreatedBy || '-'}
+                    maxWidth="180px"
+                    tooltipThreshold={18}
+                />
+            )
+        },
+        {
+            key: 'ModifiedDate',
+            label: 'Last Modified Date',
+            width: '33',
+            sortable: false,
+            align: 'left',
+            headerClassName: `bg-[#F3F4F6] text-[#374151] text-sm font-semibold `,
+            cellClassName: ` border-r-0`,
+            render: (value, row) =>
+                value
+                    ? formatDate_dd_MonthName_yy_hh_mm(value)
+                    : row.CreatedDate
+                        ? formatDate_dd_MonthName_yy_hh_mm(row.CreatedDate)
+                        : '-'
         },
 
         {
@@ -151,12 +186,12 @@ export const SnagChecklist: React.FC = () => {
             headerClassName: `bg-[#F3F4F6] text-[#374151] text-sm font-semibold `,
             cellClassName: ` border-r-0 text-center`,
             render: (_value, row) => {
-                if (!canAction) return null;
 
                 return (
                     <div className="flex justify-center">
                         <Checkbox
                             checked={row.IsCheck === true}
+                            disabled={!canAction}
                             onChange={(e) => {
                                 const checked = e.target.checked;
 

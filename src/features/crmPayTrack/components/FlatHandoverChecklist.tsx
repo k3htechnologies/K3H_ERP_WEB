@@ -16,6 +16,7 @@ import Tabs from "@/ui/components/Tab/Tab";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Edit } from "lucide-react";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 
 export const FlatHandoverChecklist: React.FC = () => {
 
@@ -230,24 +231,30 @@ export const FlatHandoverChecklist: React.FC = () => {
                 return (
                     <div key={index} className="gap-x-4 rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <FieldItem label="Items" value={item.Items} className="font-bold"/>
-                            <FieldItem label="Status" value={item.Status} />
+                        <div className="flex justify-between items-start gap-4">
+                            <FieldItem label="Items" value={item.Items} className="font-bold" />
 
-                            <div className="flex justify-between gap-2">
-                                <FieldItem label="Remark" value={item.Remark} />
+                            <div className="flex items-center gap-2">
+                                <span
+                                    className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${item.Status === "Pending"
+                                        ? "bg-yellow-100 text-yellow-700"
+                                        : item.Status === "Yes"
+                                            ? "bg-green-100 text-green-700"
+                                            : item.Status === "No"
+                                                ? "bg-red-100 text-red-700"
+                                                : "bg-gray-100 text-gray-700"
+                                        }`}
+                                >
+                                    {item.Status}
+                                </span>
 
-                                {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
+                                {canAction && bookingApprovalStatus?.toUpperCase() === "APPROVED" && (
                                     <Button
-                                        style={{
-                                            color: 'blue',
-                                            padding: '0px 8px'
-
-                                        }}
+                                        style={{ color: "blue", padding: "0px 8px" }}
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            handleEditFlatHandoverCheckListData(item)
+                                            handleEditFlatHandoverCheckListData(item);
                                         }}
                                         color="transparent"
                                         isborderRadius
@@ -257,9 +264,33 @@ export const FlatHandoverChecklist: React.FC = () => {
                                         <Edit className="h-4 w-4" />
                                     </Button>
                                 )}
-
                             </div>
                         </div>
+
+                        <div className="pt-4">
+                            <FieldItem label="Remark" value={item.Remark} />
+                        </div>
+
+                        <div className="pt-4">
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                <div className="lg:col-span-3 pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Last Modified By" value={item!.ModifiedBy==="" ? item!.CreatedBy : item!.ModifiedBy} />
+                                        <FieldItem
+                                            label="Last Modified Date"
+                                            value={item!.ModifiedBy==="" ?
+                                                item!.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(item!.CreatedDate) : "-"
+                                                :
+                                                item!.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(item!.ModifiedDate) : "-"
+                                            }
+
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 )
             })}
@@ -285,7 +316,7 @@ export const FlatHandoverChecklist: React.FC = () => {
                 <div className="space-y-10 p-6 bg-blue-100">
                     <div className="space-y-4" >
 
-                         <div>
+                        <div>
                             <Input
                                 required
                                 type="text"

@@ -96,12 +96,12 @@ export const PaymentLedger: React.FC = () => {
 
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  const { canAction,canExport } = useMenuPermissions("/paymentLedger");
+  const { canAction, canExport } = useMenuPermissions("/paymentLedger");
 
   const { projectId } = useProject();
 
   const { listState } = usePayTrackBookingListState();
-  const { bookingId, bookingName, flat, bookingOtherChargesData, bookingApprovalStatus } = listState;
+  const { bookingId, bookingName, flat, bookingOtherChargesData, bookingApprovalStatus, bookingData } = listState;
 
   const { addToast } = useToast();
 
@@ -469,11 +469,13 @@ export const PaymentLedger: React.FC = () => {
         const total = formData.PaymentFor.toUpperCase().includes("GST") ? selectedCharge.GSTValue || 0 : selectedCharge.Value || 0;
 
         const alreadyPaid = 0;
-        const remaining = total - alreadyPaid;
+        const remaining = Number((total - alreadyPaid).toFixed(2));
 
-        if (formData.ReceivedAmount > remaining) {
+        const receivedAmount = Number(Number(formData.ReceivedAmount).toFixed(2));
 
-          newErrors.ReceivedAmount = `Amount cannot exceed remaining ₹ ${remaining.toFixed(2)}`;
+        if (receivedAmount > remaining) {
+
+          newErrors.ReceivedAmount = `Amount cannot exceed remaining ₹ ${remaining}`;
         }
       }
 
@@ -482,9 +484,11 @@ export const PaymentLedger: React.FC = () => {
       const selectedRow = paymentLedgerList.find((x) => x.PaymentFor === formData.PaymentFor);
 
       if (selectedRow) {
-        const total = selectedRow.TotalAmount || 0;
-        const alreadyPaid = selectedRow.ReceivedAmount || 0;
-        const remaining = total - alreadyPaid;
+        
+        const total = Number(Number(selectedRow.TotalAmount || 0).toFixed(2));
+        const alreadyPaid = Number(Number(selectedRow.ReceivedAmount || 0).toFixed(2));
+
+        const remaining = Number((total - alreadyPaid).toFixed(2));
 
         if (formData.ReceivedAmount > remaining) {
           newErrors.ReceivedAmount = `Amount cannot exceed remaining ₹ ${remaining}`;
@@ -678,7 +682,7 @@ export const PaymentLedger: React.FC = () => {
       return fetchProjectBankDropdown(pageNumber, {
         projectId: projectId || 0,
         bankName: params?.value || "",
-        isCheckPermission:false
+        isCheckPermission: false
       });
     },
     [projectId]
@@ -792,7 +796,13 @@ export const PaymentLedger: React.FC = () => {
         onExportExcel={handleExportPayTrackPaymentLedgerExcelFile}
         onExportPdf={handleExportPayTrackPaymentLedgerPdfFile}
         exportLoading={isLoading}
-        isShowAddButton={canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
+        isShowAddButton={canAction
+          && (
+            Number(bookingData?.AgreementValue) -
+            Number(bookingData?.ReceivedAgreementValue) -
+            Number(bookingData?.ReceivedAgreementValueTDS)
+          ) > 0
+          && bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
         addTitle="Add"
         onAdd={handlePaymentLedgerCrmModal} />
 
@@ -808,7 +818,7 @@ export const PaymentLedger: React.FC = () => {
 
           keyField: "PaymentFor",
           alwaysFetchOnOpen: true,
-          rowExpandable: (row) =>  !row.isTotal,
+          rowExpandable: (row) => !row.isTotal,
 
           fetchRow: async (row) => {
 
@@ -873,7 +883,7 @@ export const PaymentLedger: React.FC = () => {
                           />
                           <FieldItem label="Payment Mode" value={row.PaymentMode || "-"} isRow />
 
-                         {row.IsBookingAmount && ( <FieldItem label="Booking Amount" isSetValue={false} value={row.IsBookingAmount ? "Yes" : "No"} isRow />)}
+                          {row.IsBookingAmount && (<FieldItem label="Booking Amount" isSetValue={false} value={row.IsBookingAmount ? "Yes" : "No"} isRow />)}
 
                           {row.ChargeName !== "" && <FieldItem label="Other Charges" value={row.ChargeName || "-"} isRow />}
 
@@ -909,7 +919,7 @@ export const PaymentLedger: React.FC = () => {
                             title="Edit">
                             <Edit className="h-4 w-4" />
                           </Button>
-                          
+
 
                           <Button
                             onClick={(e) => {
@@ -947,6 +957,8 @@ export const PaymentLedger: React.FC = () => {
 
                         <div className="space-y-3">
                           <h3 className="font-semibold mb-2">Customer Bank Details</h3>
+
+                          <FieldItem label="Payment Received From" value={row.PaymentReceivedFrom || "-"} />
 
                           <FieldItem label="Bank" value={row.BankName || "-"} />
 

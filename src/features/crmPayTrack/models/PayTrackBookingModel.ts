@@ -40,6 +40,7 @@ export interface PayTrackBookingData {
     SystemGeneratedCode: string | null;
     ApplicantName: string | null;
     ApplicantMobileNumber: string | null;
+    ApplicantMobileNumberCountryCode: string | null;
     BookingType: string | null;
     ParkingData: ParkingData[] | null;
 

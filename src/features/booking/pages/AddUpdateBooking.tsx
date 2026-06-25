@@ -1031,7 +1031,7 @@ export const AddUpdateBooking: React.FC = () => {
       },
       {
         key: "Date",
-        label: "Date / Stage",
+        label: "Date / Stage (Milestone)",
         sortable: false,
         align: "center",
 

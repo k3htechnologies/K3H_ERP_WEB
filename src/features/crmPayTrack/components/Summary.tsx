@@ -364,7 +364,7 @@ export const Summary: React.FC = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                             <FieldItem label="Applicant Type" value={getSafeString(applicant?.ApplicantType)} className='text-blue-900 bold' />
                                             <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                            <FieldItem label="Mobile Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
+                                            <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
                                             <FieldItem label="Email Id" value={getSafeString(applicant?.ApplicantEmailId)} />
                                             <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
                                             <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
@@ -449,7 +449,7 @@ export const Summary: React.FC = () => {
 
                     <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE]">
                         <h4 className="text-sm font-semibold text-[#1D1D1D]">
-                            Flat Alteration Remarks
+                          Unit / Modulation / Customization Remark
                         </h4>
                     </div>
                     <div className="p-4 bg-white">

@@ -323,7 +323,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
         return [
             {
                 key: "Date",
-                label: "Date / Stage",
+                label: "Date / Stage (Milestone)",
                 width: "30",
                 align: "left",
                 render: (_value, row) => {
@@ -532,6 +532,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
 
         setIsUpdateBookingRDPModalOpen(false);
         setModalOpen(false);
+        setErrors({});
     };
 
     const validateUpdateBookingRDPForm = (): {
@@ -621,6 +622,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                     setFinalRegistrationFiles([]);
                     setFinalRegistrationURL("");
                     setRemoveFinalRegistrationUrls([]);
+                    setErrors({});
 
                     updateListState({ parkingNumber: booking.ParkingNumber || "", isFinalRegistrationCompleted: booking.IsFinalRegistrationCompleted || false });
 
@@ -1201,7 +1203,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
 
                         <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE]">
                             <h4 className="text-sm font-semibold text-[#1D1D1D]">
-                                Flat Alteration Remarks
+                                Unit / Modulation / Customization Remark
                             </h4>
                         </div>
                         <div className="p-4 bg-white">
@@ -1217,7 +1219,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
 
                         <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE]">
                             <h4 className="text-sm font-semibold text-[#1D1D1D]">
-                                Payment Remarks
+                                Payment Related Remark
                             </h4>
                         </div>
                         <div className="p-4 bg-white">

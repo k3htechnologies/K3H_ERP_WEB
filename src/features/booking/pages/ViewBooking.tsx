@@ -234,7 +234,7 @@ export const ViewBooking: React.FC = () => {
             },
             {
                 key: "Date",
-                label: "Date / Stage",
+                label: "Date / Stage (Milestone)",
                 sortable: false,
 
                 width: "30",
@@ -861,7 +861,7 @@ export const ViewBooking: React.FC = () => {
 
                         <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Flat Alteration Remarks
+                                Unit / Modulation / Customization Remark
                             </h4>
                             <div className="grid grid-cols-1 gap-4">
                                 <FieldItem label="Remarks" value={getSafeString(bookingData.FlatAlterationRemark)} />

@@ -395,31 +395,39 @@ export const BankDetails: React.FC = () => {
                     {isDataLoaded && !isLoading && activeLoans.length === 0 && (
                         <div className="pt-5">
 
-                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden  justify-between">
 
-                                <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE]">
-                                    <h4 className="text-sm font-semibold text-[#1D1D1D]">
-                                        No Active Bank
+                                <div className="bg-[#E6FFE6] px-3 py-0.5 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
+
+                                    <h4 className="text-sm font-semibold text-[#00A800]">
+                                        Active Bank
                                     </h4>
-                                </div>
-                                <div className="p-4 bg-white flex justify-end">
 
-                                    {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
-                                        <Button
-                                            color="primary"
-                                            size="sm"
-                                            onClick={() => {
-                                                setMode("edit");
-                                                setErrors({});
-                                                setFormData(initialFormState());
-                                                setDropdownLabels({
-                                                    bankName: "",
-                                                });
-                                            }}
-                                        >
-                                            Add Bank Details
-                                        </Button>
-                                    )}
+                                    <div className="flex items-center gap-2">
+
+                                        {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
+                                            <Button
+                                                color="primary"
+                                                size="sm"
+                                                onClick={() => {
+                                                    setMode("edit");
+                                                    setErrors({});
+                                                    setFormData(initialFormState());
+                                                    setDropdownLabels({
+                                                        bankName: "",
+                                                    });
+                                                }}
+                                            >
+                                                Add Bank Details
+                                            </Button>
+                                        )}
+
+                                    </div>
+
+                                </div>
+                                <div className="p-4 bg-white">
+
+                                   <p className="text-center text-sm"> No active Bank Found</p>
                                 </div>
                             </section>
 
@@ -429,61 +437,61 @@ export const BankDetails: React.FC = () => {
                     {isDataLoaded && !isLoading && activeLoans.length > 0 && (
                         <>
                             <div className="pt-5">
-                                
+
                                 <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden  justify-between">
 
-                                   <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
+                                    <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
 
-                                    <h4 className="text-sm font-semibold text-[#1D1D1D]">
-                                        Active Bank
-                                    </h4>
+                                        <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                                            Active Bank
+                                        </h4>
 
-                                    <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2">
 
-                                        <Button
-                                            color="transparent"
-                                            size="sm"
-                                            isborderRadius
-                                            title="Edit Bank Loan Details"
-                                            disabled={!canDeleteActiveBank}
-                                            style={{
-                                                color: canDeleteActiveBank ? "" : "#9CA3AF",
-                                                cursor: canDeleteActiveBank ? "pointer" : "not-allowed",
-                                                opacity: canDeleteActiveBank ? 1 : 0.5,
-                                            }}
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                if (!canDeleteActiveBank) return;
-                                                setBankLoanDetailsData(activeLoans[0]);
-                                                setMode("edit");
-                                            }}
-                                        >
-                                            <Edit className="h-4 w-4" />
-                                        </Button>
+                                            <Button
+                                                color="transparent"
+                                                size="sm"
+                                                isborderRadius
+                                                title="Edit Bank Loan Details"
+                                                disabled={!canDeleteActiveBank}
+                                                style={{
+                                                    color: canDeleteActiveBank ? "" : "#9CA3AF",
+                                                    cursor: canDeleteActiveBank ? "pointer" : "not-allowed",
+                                                    opacity: canDeleteActiveBank ? 1 : 0.5,
+                                                }}
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    if (!canDeleteActiveBank) return;
+                                                    setBankLoanDetailsData(activeLoans[0]);
+                                                    setMode("edit");
+                                                }}
+                                            >
+                                                <Edit className="h-4 w-4" />
+                                            </Button>
 
-                                        <Button
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                if (!canDeleteActiveBank) return;
-                                                handleConfirmationDialogBoxOpen();
-                                            }}
-                                            disabled={!canDeleteActiveBank}
-                                            color="transparent"
-                                            isborderRadius
-                                            size="sm"
-                                            style={{
-                                                color: canDeleteActiveBank ? "red" : "#9CA3AF",
-                                            }}
-                                            title="Delete Bank Loan Details"
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                            <Button
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    e.stopPropagation();
+                                                    if (!canDeleteActiveBank) return;
+                                                    handleConfirmationDialogBoxOpen();
+                                                }}
+                                                disabled={!canDeleteActiveBank}
+                                                color="transparent"
+                                                isborderRadius
+                                                size="sm"
+                                                style={{
+                                                    color: canDeleteActiveBank ? "red" : "#9CA3AF",
+                                                }}
+                                                title="Delete Bank Loan Details"
+                                            >
+                                                <Trash2 className="h-4 w-4" />
+                                            </Button>
+
+                                        </div>
 
                                     </div>
-
-                                </div>
                                     <div className="p-4 bg-white">
                                         {activeLoans.map((item, index) => {
                                             return (
@@ -575,7 +583,7 @@ export const BankDetails: React.FC = () => {
                                                             <FieldItem label="Branch Name" value={item.BankBranchName ?? "-"} />
                                                             <FieldItem label="Account Number" value={item.LoanAccountNumber ?? "-"} />
                                                             <FieldItem label="Loan Sanction Amount" value={formatCurrency(item.LoanSanctionAmount) ?? "-"} />
-                                                            <FieldItem label="Loan Sanction Date" value={formatDate_dd_mm_yyyy(item.LoanSanctionDate)} />
+                                                            <FieldItem label="Loan Sanction Date" value={formatDate_dd_MonthName_yy(item.LoanSanctionDate)} />
                                                             <FieldItem label="No of Bank Documents" value={item.NoOfBankDocument ?? 0} />
                                                         </div>
                                                         <div className="grid grid-cols-1 md:grid-cols-1 gap-4 text-sm pt-5">

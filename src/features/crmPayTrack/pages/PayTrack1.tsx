@@ -233,6 +233,7 @@ const PayTrack: React.FC = () => {
         bookingOtherChargesData: row.BookingOtherChargesData ?? [],
         bookingData: row ?? [],
         parkingNumber: row.ParkingNumber || "",
+        totalAmountRefundedAgainstBooking:row.TotalAmountRefundedAgainstBooking || 0,
         isFinalRegistrationCompleted: row.IsFinalRegistrationCompleted || false,
         totalUnitCost:
           (row.AgreementValue || 0) +
@@ -243,7 +244,6 @@ const PayTrack: React.FC = () => {
           (row.OtherChargesGSTAmount || 0),
       });
       navigate("/payTrack/view");
-      
     },
     [navigate, updateListState],
   );

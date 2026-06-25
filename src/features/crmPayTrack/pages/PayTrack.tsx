@@ -1,14 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { usePagination } from "@/core/hooks/usePagination";
-import { type SortInfo, type TableColumn, type FilterInfo, type PaginationInfo } from "@/ui/components/DataTable/DataTable";
+import { type FilterInfo, type PaginationInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import * as E from "fp-ts/Either";
 import { useToast } from "@/core/hooks/useToast";
-import { getSortByParam } from "@/core/constants/sortingColumnDetails";
-import type {
-  PayTrackBookingData,
-  FilterWithPaginationPayTrackBooking,
-  PayTrackRow,
-} from "@/features/crmPayTrack/models/PayTrackBookingModel";
+import type { PayTrackBookingData, FilterWithPaginationPayTrackBooking } from "@/features/crmPayTrack/models/PayTrackBookingModel";
 import { payTrackBookingService } from "@/features/crmPayTrack/services/PayTrackBookingService";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { handleExportFile } from "@/core/utils/exportFile";
@@ -18,23 +13,24 @@ import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { runApiWithLoader } from "@/core/utils";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
-import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { useNavigate } from "react-router-dom";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
-import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
-import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { updateFilter } from "@/core/utils/filterHelper";
 import { Input } from "@/ui/components/forms";
-import DataTableExpandable from "@/ui/components/DataTable/DataTableExpandable";
-import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
 import { usePayTrackBookingListState } from "../context/PayTrackBookingListStateContext";
 import { filterNumbers, filterNumbersWithDecimal } from "@/core/utils/fileValidation";
-import { formatCurrency } from "@/core/utils/comman";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
+import PaginationCard from "@/ui/components/Card/PaginationCard";
+import { formatCurrency } from "@/core/utils/comman";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import { getStatusColor } from "@/features/modulesWorkflowApproval/utils/Status";
+import { ExternalLink, Phone } from "lucide-react";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const PayTrack: React.FC = () => {
   const [payTrackList, setPayTrackList] = useState<PayTrackBookingData[]>([]);
+  const [selectedBooking, setSelectedBooking] = useState<PayTrackBookingData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
   const navigate = useNavigate();
@@ -47,8 +43,6 @@ const PayTrack: React.FC = () => {
 
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  const [isShowCustomizePayTrackColumnsModal, setIsShowCustomizePayTrackColumnsModal] = useState(false);
-
   const { canExport } = useMenuPermissions("/bookingPayTrack");
 
   const { projectId } = useProject();
@@ -57,7 +51,7 @@ const PayTrack: React.FC = () => {
 
   const { page, filters, sortInfo, searchTerm } = listState;
 
-  const loadPayTrackList = async (pageNum: number, filterParams: FilterInfo, sortInfoParam?: SortInfo) => {
+  const loadPayTrackList = async (pageNum: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -77,13 +71,18 @@ const PayTrack: React.FC = () => {
           AgreementValue: filterParams.AgreementValue ? Number(filterParams.AgreementValue) : undefined,
           BookingType: filterParams.BookingType?.trim() || undefined,
           IsFinalRegistrationCompleted: filterParams.IsFinalRegistrationCompleted ?? undefined,
-          SortBy: getSortByParam(sortInfoParam ?? null, payTrackColumns),
         };
 
         const response = await payTrackBookingService.apiCallPullPayTrackBooking(params);
 
         if (E.isRight(response)) {
           setPayTrackList(response.right.Data);
+
+          if (response.right.Data.length > 0) {
+            setSelectedBooking(response.right.Data[0]);
+          } else {
+            setSelectedBooking(null);
+          }
 
           setPagination({
             currentPage: pageNum,
@@ -104,16 +103,16 @@ const PayTrack: React.FC = () => {
       "Loading Pay Track Booking",
     );
   };
-  
+
   useEffect(() => {
     if (!projectId) return;
 
     clearPayTrackBookingContext();
 
     if (searchTerm && searchTerm.trim()) {
-      loadPayTrackList(page, { ApplicantName: searchTerm.trim() }, sortInfo);
+      loadPayTrackList(page, { ApplicantName: searchTerm.trim() });
     } else {
-      loadPayTrackList(page, filters, sortInfo);
+      loadPayTrackList(page, filters);
     }
   }, [projectId, page, filters, sortInfo, searchTerm, clearPayTrackBookingContext]);
 
@@ -125,7 +124,7 @@ const PayTrack: React.FC = () => {
     setTempFilters(filters);
   }, [filters]);
 
-  
+
 
   const debouncedSearch = useDebouncedCallback((value: string, isSearch: boolean = true) => {
     let filterParams: FilterInfo = {};
@@ -149,7 +148,7 @@ const PayTrack: React.FC = () => {
     debouncedSearch(searchValue, false);
   };
 
-  
+
   const clearPayTrackSearchBookings = () => {
     debouncedSearch.cancel?.();
     resetFilters();
@@ -175,7 +174,6 @@ const PayTrack: React.FC = () => {
           AgreementValue: tempFilters.AgreementValue ? Number(tempFilters.AgreementValue) : undefined,
           BookingType: tempFilters.BookingType?.trim() || undefined,
           IsFinalRegistrationCompleted: tempFilters.IsFinalRegistrationCompleted ?? undefined,
-          SortBy: getSortByParam(sortInfo ?? null, payTrackColumns),
           ExportType: exportType,
         };
 
@@ -194,21 +192,13 @@ const PayTrack: React.FC = () => {
 
   const handleExportPayTrackExcelFile = () => handleExportPayTrackExcel("Excel");
   const handleExportPayTrackPdfFile = () => handleExportPayTrackExcel("PDF");
-  
+
   const handlePageChange = useCallback(
     (newPage: number) => {
       updateListState({ page: newPage });
     },
     [updateListState],
   );
-
-  const handleSortColumn = useCallback(
-    (sort: SortInfo) => {
-      updateListState({ sortInfo: sort, page: 1 });
-    },
-    [filters, updateListState, searchTerm],
-  );
-
   const payTrackBookingPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
@@ -221,321 +211,138 @@ const PayTrack: React.FC = () => {
   );
 
   const payTrackBookingsForTable = useMemo(() => payTrackList, [payTrackList]);
-  
-  const handleViewpayTrackBDetails = useCallback((row: PayTrackBookingData) => {
 
-      updateListState({
-        bookingId: row.BookingId ?? 0,
-        bookingName: row.ApplicantName ?? "",
-        bookingType: row.BookingType ?? "",
-        flat: row.Flat ?? "",
-        bookingApprovalStatus: row.BookingApprovalStatus ?? "",
-        bookingOtherChargesData: row.BookingOtherChargesData ?? [],
-        bookingData: row ?? [],
-        parkingNumber: row.ParkingNumber || "",
-        totalAmountRefundedAgainstBooking:row.TotalAmountRefundedAgainstBooking || 0,
-        isFinalRegistrationCompleted: row.IsFinalRegistrationCompleted || false,
-        totalUnitCost:
-          (row.AgreementValue || 0) +
-          (row.AgreementValueGSTAmount || 0) +
-          (row.StampDutyAmount || 0) +
-          (row.RegistrationFees || 0) +
-          (row.OtherChargesAmount || 0) +
-          (row.OtherChargesGSTAmount || 0),
-      });
-      navigate("/payTrack/view");
-    },
+  const handleViewpayTrackDetails = useCallback((row: PayTrackBookingData) => {
+
+    updateListState({
+      bookingId: row.BookingId ?? 0,
+      bookingName: row.ApplicantName ?? "",
+      bookingType: row.BookingType ?? "",
+      flat: row.Flat ?? "",
+      bookingApprovalStatus: row.BookingApprovalStatus ?? "",
+      bookingOtherChargesData: row.BookingOtherChargesData ?? [],
+      bookingData: row ?? [],
+      parkingNumber: row.ParkingNumber || "",
+      totalAmountRefundedAgainstBooking: row.TotalAmountRefundedAgainstBooking || 0,
+      isFinalRegistrationCompleted: row.IsFinalRegistrationCompleted || false,
+      totalUnitCost:
+        (row.AgreementValue || 0) +
+        (row.AgreementValueGSTAmount || 0) +
+        (row.StampDutyAmount || 0) +
+        (row.RegistrationFees || 0) +
+        (row.OtherChargesAmount || 0) +
+        (row.OtherChargesGSTAmount || 0),
+    });
+    navigate("/payTrack/view");
+  },
     [navigate, updateListState],
-  );
-  //#endregion
-
-  //#region TABLE COLUMN
-
-  const payTrackColumns = useMemo<TableColumn[]>(
-    () => [
-      {
-        key: "SystemGeneratedCode",
-        label: "Enquiry Code",
-        width: "30",
-        sortable: false,
-        fixed: "left",
-        align: "left",
-        render: (value) => (
-          <TooltipText
-            text={value || "-"}
-            maxWidth="150px"
-            tooltipThreshold={20}
-            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-          />
-        ),
-      },
-      {
-        key: "ApplicantName",
-        label: "Applicant Name",
-        width: "14",
-        render: (value, row) => (
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="min-w-0">
-                <TooltipText text={value || "-"} maxWidth="260px" tooltipThreshold={26} onClick={() => handleViewpayTrackBDetails(row)} />
-              </div>
-            </div>
-          </div>
-        ),
-      },
-      {
-        key: "ApplicantMobileNumber",
-        label: "Applicant Mobile Number",
-        width: "14",
-        sortable: false,
-        align: "left",
-        render: (value, row) => (value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : "-"),
-      },
-      {
-        key: "BookingType",
-        label: "Booking Type",
-        width: "14",
-        align: "left",
-        render: (value) => value || "-",
-      },
-      {
-        key: "AgreementValue",
-        label: "Agreement Value (₹)",
-        width: "18",
-        sortable: false,
-        align: "right",
-        render: (value) => (value ? formatCurrency(value) : 0),
-      },
-      {
-        key: "BuildingNumber",
-        label: "Building Number",
-        width: "14",
-        align: "left",
-        render: (value) => value || "-",
-      },
-      {
-        key: "Wing",
-        label: "Wing",
-        width: "14",
-        align: "left",
-        render: (value) => value || "-",
-      },
-      {
-        key: "Floor",
-        label: "Floor",
-        width: "14",
-        align: "left",
-        render: (value) => value || "-",
-      },
-      {
-        key: "Flat",
-        label: "Unit",
-        width: "14",
-        align: "left",
-        render: (value) => value || "-",
-      },
-
-      {
-        key: "FlatConfiguration",
-        label: "Configuration ",
-        width: "14",
-        align: "left",
-        render: (value) => value || "-",
-      },
-      {
-        key: "IsFinalRegistrationCompleted",
-        label: "Final Registration",
-        width: "14",
-        sortable: false,
-        align: "center",
-        render: (value) => {
-          const isCompleted = value === true || value === "Yes" || value === 1;
-
-          return (
-            <span
-              className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-              style={{
-                backgroundColor: isCompleted ? "#DCFCE7" : "#FEE2E2",
-                color: isCompleted ? "#166534" : "#991B1B",
-              }}
-            >
-              {isCompleted ? "Yes" : "No"}
-            </span>
-          );
-        },
-      },
-
-      {
-        key: "RegistrationDate",
-        label: "Expected Registration Date ",
-        width: "14",
-        align: "left",
-        render: (value) => (value ? formatDate_dd_MonthName_yy(value) : "-"),
-      },
-      {
-        key: "FinalRegistrationDate",
-        label: "Final Registration Date ",
-        width: "14",
-        align: "left",
-        render: (value) => (value ? formatDate_dd_MonthName_yy(value) : "-"),
-      },
-      
-      {
-    key: "BookingApprovalStatus",
-    label: "Booking Approval Status",
-    width: "14",
-    sortable: false,
-    align: "center",
-    render: (value) => {
-        const status = value?.toLowerCase()?.trim();
-
-        const bg =
-            status === "approved"
-                ? "#DCFCE7"
-                : status === "pending"
-                ? "#FFF0C2"
-                : status === "cancel" || status === "cancelled"
-                ? "#FFDEDE"
-                : status === "refund" || status === "refunded"
-                ? "#DBEAFE"
-                : "#F3F4F6";
-
-        const text =
-            status === "approved"
-                ? "#00A800"
-                : status === "pending"
-                ? "#7E4604"
-                : status === "cancel" || status === "cancelled"
-                ? "#FF0000"
-                : status === "refund" || status === "refunded"
-                ? "#1D4ED8"
-                : "#374151";
-
-        return (
-            <span
-                className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                style={{
-                    backgroundColor: bg,
-                    color: text,
-                }}
-            >
-                {value || "-"}
-            </span>
-        );
-    },
-},
-      {
-        key: "ApprovalGroup",
-        label: "Approval Details",
-        align: "center",
-        children: [
-          {
-            key: "PendingLedgerApprovalCount",
-            label: "Pending Ledger",
-            width: "14",
-            align: "left",
-            render: (v) => v || "0",
-          },
-          {
-            key: "FlatAlterationRequestIsApproval",
-            label: "Flat Alteration",
-            width: "14",
-            align: "left",
-            render: (v) => (v ? "Yes" : "No"),
-          },
-          {
-            key: "ParkingModificationRequestIsApproval",
-            label: "Parking Modification",
-            width: "14",
-            align: "left",
-            render: (v) => (v ? "Yes" : "No"),
-          },
-          {
-            key: "BookingApplicantModificationRequestIsApproval",
-            label: "Applicant Modification",
-            width: "14",
-            align: "left",
-            render: (v) => (v ? "Yes" : "No"),
-          },
-        ],
-      },
-    ],
-    [handleViewpayTrackBDetails],
-  );
-
-  const payTrackPaymentColumns = useMemo<TableColumn[]>(
-    () => [
-      {
-        key: "type",
-        label: "Type",
-        align: "left",
-        width: "300px",
-        render: (value, row) => <span className={row.isTotal ? "font-bold text-gray-500" : ""}>{value}</span>,
-      },
-      {
-        key: "total",
-        label: "Total Amount",
-        align: "right",
-        width: "300px",
-        render: (value, row) => <span className={row.isTotal ? "font-bold text-gray-500" : ""}>{formatCurrency(value)}</span>,
-      },
-      {
-        key: "paid",
-        label: "Paid Amount",
-        align: "right",
-        width: "300px",
-        render: (value, row) => <span className={row.isTotal ? "font-bold text-gray-500" : ""}>{formatCurrency(value)}</span>,
-      },
-      {
-        key: "pending",
-        label: "Outstanding Amount",
-        align: "right",
-        width: "300px",
-        render: (_, row) => {
-          const pending = (row.total || 0) - (row.paid || 0);
-
-          return <span className={row.isTotal ? "font-bold text-gray-500" : ""}>{formatCurrency(pending)}</span>;
-        },
-      },
-    ],
-    [],
-  );
-
-  const requiredPayTrackBookingColumnKeys: string[] = ["ApplicantName", "Actions"];
-
-  const allPayTrackBookingColumnKeys: string[] = payTrackColumns.map((c) => c.key);
-
-  const [selectedPayTrackBookingColumnKeys, setSelectedPayTrackBookingColumnKeys] = useState<string[]>(() => {
-    try {
-      const saved = LocalStorageHelper.getPayTrackBookingTableColumns?.();
-      if (saved) {
-        const parsed = JSON.parse(saved) as string[];
-        const withRequired = Array.from(new Set([...parsed, ...requiredPayTrackBookingColumnKeys]));
-        return withRequired.filter((k) => allPayTrackBookingColumnKeys.includes(k));
-      }
-    } catch {
-      // ignore
-    }
-    return allPayTrackBookingColumnKeys;
-  });
-
-  useEffect(() => {
-    setSelectedPayTrackBookingColumnKeys((prev) =>
-      Array.from(new Set([...prev, ...requiredPayTrackBookingColumnKeys])).filter((k) => allPayTrackBookingColumnKeys.includes(k)),
-    );
-  }, [payTrackColumns.length]);
-
-  const visiblepayTrackBookingColumns = useMemo(
-    () => payTrackColumns.filter((col) => selectedPayTrackBookingColumnKeys.includes(col.key)),
-    [payTrackColumns, selectedPayTrackBookingColumnKeys],
   );
 
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters((prev) => updateFilter(prev, key, value));
   };
 
+  const paymentData = useMemo(() => {
+    if (!selectedBooking) return [];
+
+    const data = [
+      {
+        type: "Stamp Duty",
+        total: selectedBooking.StampDutyAmount || 0,
+        paid: selectedBooking.ReceivedStampDutyAmount || 0,
+      },
+      {
+        type: "Registration Fees",
+        total: selectedBooking.RegistrationFees || 0,
+        paid: selectedBooking.ReceivedRegistrationFees || 0,
+      },
+      {
+        type: "Agreement Value (Without TDS)",
+        total: Number(selectedBooking.AgreementValue || 0) - Number(selectedBooking.AgreementValueTDS || 0),
+        paid: selectedBooking.ReceivedAgreementValue || 0,
+      },
+      {
+        type: "Agreement Value GST",
+        total: selectedBooking.AgreementValueGSTAmount || 0,
+        paid: selectedBooking.ReceivedAgreementValueGSTAmount || 0,
+      },
+      {
+        type: "Agreement Value TDS",
+        total: selectedBooking.AgreementValueTDS || 0,
+        paid: selectedBooking.ReceivedAgreementValueTDS || 0,
+      },
+      {
+        type: "Other Charges Value",
+        total: selectedBooking.OtherChargesAmount || 0,
+        paid: selectedBooking.ReceivedOtherChargesAmount || 0,
+      },
+      {
+        type: "Other Charges GST",
+        total: selectedBooking.OtherChargesGSTAmount || 0,
+        paid: selectedBooking.ReceivedOtherChargesGSTAmount || 0,
+      },
+    ].map((x) => ({
+      ...x,
+      pending: x.total - x.paid,
+    }));
+
+    const total = data.reduce((s, x) => s + x.total, 0);
+    const paid = data.reduce((s, x) => s + x.paid, 0);
+    const pending = total - paid;
+
+    return [
+      ...data,
+      {
+        type: "Total",
+        total,
+        paid,
+        pending,
+        isTotal: true,
+      },
+    ];
+  }, [selectedBooking]);
+
+  const payTrackPaymentColumns = useMemo<TableColumn[]>(() => [
+    {
+      key: "type",
+      label: "Type",
+      align: "left",
+      width: "300px",
+      render: (value, row) => (
+        <span className={row.isTotal ? "font-bold" : ""}>{value}</span>
+      ),
+    },
+    {
+      key: "total",
+      label: "Total Amount",
+      align: "right",
+      width: "300px",
+      render: (value, row) => (
+        <span className={row.isTotal ? "font-bold" : ""}>{formatCurrency(value)}</span>
+      ),
+    },
+    {
+      key: "paid",
+      label: "Received Amount",
+      align: "right",
+      width: "300px",
+      render: (value, row) => (
+        <span className={row.isTotal ? "font-bold" : ""}>{formatCurrency(value)}</span>
+      ),
+    },
+    {
+      key: "pending",
+      label: "Outstanding Amount",
+      align: "right",
+      width: "300px",
+      render: (_, row) => (
+        <span className={row.isTotal ? "font-bold" : ""}>{formatCurrency(row.pending)}</span>
+      ),
+    },
+  ], []);
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+    <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
       <Loader loading={isLoading} title={loadingMessage}>
         {" "}
         <div></div>{" "}
@@ -554,7 +361,6 @@ const PayTrack: React.FC = () => {
           setShowFilterPopup(true);
         }}
         isShowFilterButton
-        onCustomize={() => setIsShowCustomizePayTrackColumnsModal(true)}
         // IMPORT
         isShowImportButton={false}
         // EXPORT
@@ -564,112 +370,255 @@ const PayTrack: React.FC = () => {
         exportLoading={isLoading}
       />
 
-      <DataTableExpandable
-        data={payTrackBookingsForTable}
-        columns={visiblepayTrackBookingColumns}
-        pagination={payTrackBookingPaginationInfo}
-        sortInfo={sortInfo}
-        onSort={handleSortColumn}
-        emptyMessage="No Pay Track Booking Data Found"
-        loading={isLoading}
-        fixedHeight
-        recordsPerPage={20}
-        expandable={{
-          keyField: "BookingId",
-          alwaysFetchOnOpen: false,
+      {payTrackBookingsForTable.length === 0 ?
 
-          fetchRow: async (row) => {
-            return [
-              {
-                type: "Stamp Duty",
-                total: row.StampDutyAmount || 0,
-                paid: row.ReceivedStampDutyAmount || 0,
-              },
-              {
-                type: "Registration Fees",
-                total: row.RegistrationFees || 0,
-                paid: row.ReceivedRegistrationFees || 0,
-              },
-              {
-                type: "Agreement Value (Without TDS)",
-                total: Number(row.AgreementValue) - Number(row.AgreementValueTDS) || 0,
-                paid: row.ReceivedAgreementValue || 0,
-              },
-              {
-                type: "Agreement Value GST",
-                total: row.AgreementValueGSTAmount || 0,
-                paid: row.ReceivedAgreementValueGSTAmount || 0,
-              },
-              {
-                type: "Agreement Value TDS",
-                total: row.AgreementValueTDS || 0,
-                paid: row.ReceivedAgreementValueTDS || 0,
-              },
+        <section className="bg-white rounded-xl p-6 border-[0.1px] border-[#3333334f]">
+          <NoDataView message="No Pay Track Data Available" />
+        </section>
 
-              {
-                type: "Other Charges Value",
-                total: row.OtherChargesAmount || 0,
-                paid: row.ReceivedOtherChargesAmount || 0,
-              },
-              {
-                type: "Other Charges GST",
-                total: row.OtherChargesGSTAmount || 0,
-                paid: row.ReceivedOtherChargesGSTAmount || 0,
-              },
-            ];
-          },
+        :
+        <div className="grid grid-cols-12 gap-4">
 
-          renderRow: (fetchedData: PayTrackRow[]) => {
-            const totalAmount = fetchedData.reduce((sum, r) => sum + r.total, 0);
-            const totalPaid = fetchedData.reduce((sum, r) => sum + r.paid, 0);
+          <div className="col-span-12 lg:col-span-4">
 
-            const totalPending = totalAmount - totalPaid;
+            <PaginationCard
+              key={searchTerm}
+              data={payTrackBookingsForTable}
+              pagination={payTrackBookingPaginationInfo}
+              emptyMessage="No Data found"
+              className="flex-1"
+              selectedRowKey={selectedBooking?.BookingId || 0}
+              onRowClick={setSelectedBooking}
+              rowKey="BookingId"
+              header={(row) => (
 
-            const dataWithTotal = [
-              ...fetchedData,
-              {
-                type: "Total",
-                total: totalAmount,
-                paid: totalPaid,
-                pending: totalPending,
-                isTotal: true,
-              },
-            ];
+                <div className="flex items-start justify-between w-full">
 
-            return (
-              <DataTableWithOutBorder
-                data={dataWithTotal}
-                columns={payTrackPaymentColumns}
-                emptyMessage="No Data Found"
-                recordsPerPage={20}
-                className="flex-1"
-                sortInfo={sortInfo}
-                onSort={handleSortColumn}
-                loading={isLoading}
-              />
-            );
-          },
+                  <div className="flex flex-col">
 
-          expandButton: { openText: "Hide", closeText: "Show" },
-        }}
-      />
+                    <span className="font-medium text-md text-[#1E293B]">
+                      {row.ApplicantName}
+                    </span>
 
-      <CustomizeColumnsModal
-        isOpen={isShowCustomizePayTrackColumnsModal}
-        onClose={() => setIsShowCustomizePayTrackColumnsModal(false)}
-        onApply={(keys) => {
-          const withRequired = Array.from(new Set([...keys, ...requiredPayTrackBookingColumnKeys]));
-          setSelectedPayTrackBookingColumnKeys(withRequired);
+                    <span className="mt-3 text-xs px-2 py-1 rounded-full font-medium bg-[#DBEAFE] text-[#1D1D1D]">
+                      {row.SystemGeneratedCode}
+                    </span>
 
-          try {
-            LocalStorageHelper.storePayTrackBookingTableColumns?.(JSON.stringify(withRequired));
-          } catch {}
-        }}
-        columns={payTrackColumns}
-        selectedKeys={selectedPayTrackBookingColumnKeys}
-        requiredKeys={requiredPayTrackBookingColumnKeys}
-        title="Customize Table Columns"
-      />
+
+                  </div>
+
+                  <div className="flex flex-col">
+
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(row.BookingApprovalStatus ?? "")}}`}>
+                      {row.BookingApprovalStatus}
+                    </span>
+
+                    <span className="mt-3 font-medium text-sm text-[#1E293B]">
+                      {row.Flat}
+                    </span>
+
+                  </div>
+                </div>
+              )}
+            />
+          </div>
+          {selectedBooking && (
+            <div className="col-span-12 lg:col-span-8">
+              <div className="bg-white rounded-2xl overflow-hidden">
+
+                {/* Header */}
+                <div className="p-6">
+
+                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+
+                    <div>
+                      <h2 className="inline-flex items-center gap-1 text-xl font-semibold text-[#135BEC] cursor-pointer hover:text-[#0F4BCF] hover:underline transition-colors"
+                        onClick={() => {
+                          if (selectedBooking) {
+                            handleViewpayTrackDetails(selectedBooking);
+                          }
+                        }}
+                      >
+                        {selectedBooking?.ApplicantName}
+                        <ExternalLink size={16} />
+                      </h2>
+
+                      <div className="flex flex-wrap items-center gap-3 mt-2 text-sm text-[#64748B]">
+                        <Phone size={14} className="text-[#64748B]" />
+                        <span>
+                          {selectedBooking?.ApplicantMobileNumberCountryCode ?? "+91"}{" "}
+                          {selectedBooking?.ApplicantMobileNumber}
+                        </span>
+
+                        <span>•</span>
+
+                        <span>{selectedBooking?.SystemGeneratedCode}</span>
+                      </div>
+                    </div>
+
+                    {/* Right */}
+                    <div className="flex flex-col items-end">
+
+                      <span className="text-xs text-gray-500 mb-1">
+                        Final Registration : {formatDate_dd_MonthName_yy(selectedBooking?.FinalRegistrationDate ?? "")}
+                      </span>
+
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${getStatusColor(selectedBooking?.IsFinalRegistrationCompleted ? "Completed" : "Pending")}}`}>
+
+                        {selectedBooking?.IsFinalRegistrationCompleted ? "Completed" : "Pending"}
+                      </span>
+                    </div>
+
+                  </div>
+
+                  {/* Booking Details */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-5">
+
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                      <p className="text-[11px] uppercase text-gray-400">
+                        Building & Wing
+                      </p>
+                      <p className="font-semibold text-gray-800 mt-1">
+                        {selectedBooking?.BuildingNumber} - {selectedBooking?.Wing}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                      <p className="text-[11px] uppercase text-gray-400">
+                        Floor & Unit
+                      </p>
+                      <p className="font-semibold text-gray-800 mt-1">
+                        {selectedBooking?.Floor} {selectedBooking?.Flat}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                      <p className="text-[11px] uppercase text-gray-400">
+                        Configuration
+                      </p>
+                      <p className="font-semibold text-gray-800 mt-1">
+                        {selectedBooking?.FlatConfiguration}
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                      <p className="text-[11px] uppercase text-gray-400">
+                        Registration Date
+                      </p>
+
+                      <p className="font-semibold text-gray-800 mt-1">
+                        {formatDate_dd_MonthName_yy(selectedBooking?.RegistrationDate ?? "")}
+                      </p>
+                    </div>
+
+
+                  </div>
+                </div>
+
+                {/* Summary */}
+                <div className="px-6 pb-5">
+
+                  <div className="border border-gray-200 rounded-2xl bg-white">
+
+                    <div className="grid grid-cols-3 divide-x divide-[#E5E7EB]">
+
+                      <div className="text-center py-4">
+                        <p className="text-xs uppercase text-gray-400">
+                          Agreement Value
+                        </p>
+                        <p className="text-2xl font-medium mt-2">
+                          {formatCurrency(selectedBooking?.AgreementValue)}
+                        </p>
+                      </div>
+
+                      <div className="text-center py-4">
+                        <p className="text-xs uppercase text-gray-400">
+                          Received Amount
+                        </p>
+                        <p className="text-2xl font-medium mt-2">
+                          {formatCurrency(selectedBooking?.ReceivedAgreementValue)}
+                        </p>
+                      </div>
+
+                      <div className="text-center py-4">
+                        <p className="text-xs uppercase text-gray-400">
+                          Outstanding Amount
+                        </p>
+                        <p className="text-2xl font-medium mt-2 text-red-500">
+                          {formatCurrency(Number(selectedBooking?.AgreementValue) - Number(selectedBooking?.ReceivedAgreementValue) - Number(selectedBooking?.ReceivedAgreementValueTDS))}
+                        </p>
+                      </div>
+
+                    </div>
+                  </div>
+
+                  {/* Ledger Table */}
+                  <div className="mt-5 overflow-hidden">
+
+                    <DataTableWithHeaderRowDivider
+                      data={paymentData}
+                      columns={payTrackPaymentColumns}
+                      emptyMessage="No Data Found"
+                      recordsPerPage={20}
+                      loading={false}
+                    />
+                  </div>
+
+                  <div className="mt-6 border border-gray-200 rounded-2xl bg-white p-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-2">
+                          Pending Ledger
+                        </p>
+
+                        <div className="h-10 rounded-lg bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-700">
+                          {selectedBooking?.PendingLedgerApprovalCount ?? 0}
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-2">
+                          Flat Alteration
+                        </p>
+
+                        <div className="h-10 rounded-lg bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-700">
+                          {selectedBooking?.FlatAlterationRequestIsApproval ? "Yes" : "No"}
+                        </div>
+                      </div>
+
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-2">
+                          Parking Modification
+                        </p>
+
+                        <div className="h-10 rounded-lg bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-700">
+                          {selectedBooking?.ParkingModificationRequestIsApproval ? "Yes" : "No"}
+                        </div>
+                      </div>
+
+
+                      <div>
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400 mb-2">
+                          Applicant Modification
+                        </p>
+
+                        <div className="h-10 rounded-lg bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-700">
+                          {selectedBooking?.BookingApplicantModificationRequestIsApproval ? "Yes" : "No"}
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </div>
+          )}
+        </div>
+      }
 
       <Modal
         isOpen={showFilterPopup}

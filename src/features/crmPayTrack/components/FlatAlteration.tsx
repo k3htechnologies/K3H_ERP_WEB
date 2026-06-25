@@ -130,7 +130,7 @@ export const FlatAlteration: React.FC = () => {
         }
 
         if (!formDataForFlatAlteration.FlatAlterationRemark) {
-            errors.FlatAlterationRemark = "Flat Alteration Remark is required";
+            errors.FlatAlterationRemark = "Unit / Modulation / Customization Remark is required";
         }
 
         return {
@@ -288,7 +288,7 @@ export const FlatAlteration: React.FC = () => {
         () => [
             {
                 key: "FlatAlterationRemark",
-                label: "Flat Alteration Remark",
+                label: "Unit / Modulation / Customization Remark",
                 sortable: false,
                 align: "left",
                 render: (value: string, row: any) => {
@@ -337,9 +337,9 @@ export const FlatAlteration: React.FC = () => {
             <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>
             <div className="pt-5">
                 <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden  justify-between">
-                    <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
-                        <h4 className="text-sm font-semibold text-[#13367A]">
-                            Flat Alteration Remark
+                    <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
+                        <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                            Unit / Modulation / Customization Remark
                         </h4>
 
                         {canAction && bookingApprovalStatus?.toUpperCase() === "APPROVED" && (
@@ -351,7 +351,7 @@ export const FlatAlteration: React.FC = () => {
                                 leftIcon={<Plus className="h-4 w-4" />}
                                 disabled={isBookingCancelled}
                             >
-                                Flat Alteration Requests
+                                Add
                             </Button>
                         )}
                     </div>
@@ -371,7 +371,7 @@ export const FlatAlteration: React.FC = () => {
                                         ]
                                         : []
                             }
-                            fixedHeight={false}
+                            fixedHeight={true}
                         />
                     </div>
 
@@ -396,7 +396,7 @@ export const FlatAlteration: React.FC = () => {
                     setRemoveProofOfDocumentUrls([]);
                     setErrors({});
                 }}
-                title="Flat Alteration Request"
+                title="Unit / Modulation / Customization Remark"
                 saveText="Add"
                 onSubmit={(e) => {
                     if (e) e.preventDefault();
@@ -423,9 +423,9 @@ export const FlatAlteration: React.FC = () => {
                         />
                     </div>
                     <TextArea
-                        label="Flat Alteration Remarks"
+                        label="Unit / Modulation / Customization Remark"
                         required
-                        placeholder="Enter Flat Alteration Remarks"
+                        placeholder="Enter Unit / Modulation / Customization Remark"
                         value={formDataForFlatAlteration.FlatAlterationRemark}
                         onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)}
                         error={errors.FlatAlterationRemark}
@@ -436,14 +436,14 @@ export const FlatAlteration: React.FC = () => {
 
             <ApprovalLogModal
                 isOpen={isFlatAlterationApprovalLogModalOpen}
-                title="Flat Alteration Remarks"
+                title="Unit / Modulation / Customization Remark"
                 titleText={""}
                 onClose={() => setIsFlatAlterationApprovalLogModalOpen(false)}
                 request={approvalFlatAlterationLogRequest}
             />
 
             <ApprovalActionModal
-                title="Flat Alteration Remarks"
+                title="Unit / Modulation / Customization Remark"
                 isOpen={isFlatAlterationApprovalActionModalOpen}
                 onClose={() => setIsFlatAlterationApprovalActionModalOpen(false)}
                 actionType={approvalFlatAlterationActionType}

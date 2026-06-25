@@ -184,7 +184,7 @@ export const Activity: React.FC = () => {
                                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 tracking-wide">
                                                 Version {version}
                                             </span>
-                                            <div className="flex-1 border-t border-gray-200" />
+                                            
                                         </div>
 
                                         <div className="space-y-3">
@@ -217,7 +217,7 @@ export const Activity: React.FC = () => {
                                         </div>
 
                                         {vIdx < versionKeys.length - 1 && (
-                                            <hr className="my-6 border-gray-200" />
+                                            <div className="my-6" />
                                         )}
                                     </div>
                                 ));
@@ -271,7 +271,7 @@ export const Activity: React.FC = () => {
                                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                                                 Version {version}
                                             </span>
-                                            <div className="flex-1 border-t border-gray-200" />
+                                            
                                         </div>
 
                                         <div className="space-y-3">
@@ -321,7 +321,7 @@ export const Activity: React.FC = () => {
                     }}
                     title={
                         <div className="font-medium text-md">
-                            Flat Alteration History
+                            Unit / Modulation / Customization History
                         </div>
                     }
                     child={
@@ -353,7 +353,7 @@ export const Activity: React.FC = () => {
                                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">
                                                 Version {version}
                                             </span>
-                                            <div className="flex-1 border-t border-gray-200" />
+                                           
                                         </div>
 
                                         <div className="space-y-3">
@@ -362,10 +362,13 @@ export const Activity: React.FC = () => {
                                                     key={data.FlatAlterationRequestId || index}
                                                     className="bg-white rounded-lg px-8 py-4 border border-gray-200"
                                                 >
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 md:gap-y-3">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-x-8 md:gap-y-3">
 
-                                                        <FieldItem label="Flat Alteration Remark" value={getSafeString(data.FlatAlterationRemark)} urls={data.ProofOfDocumentURL} isIcon />
-                                                        <FieldItem label="Approval Status" value={getSafeString(data.ApprovalStatus)} />
+                                                        <FieldItem label="Unit / Modulation / Customization Remark" value={getSafeString(data.FlatAlterationRemark)} urls={data.ProofOfDocumentURL} isIcon />
+                                                        
+                                                    </div>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 md:gap-y-3 pt-5">
+
                                                         <FieldItem label="Created By" value={getSafeString(data.CreatedBy)} />
                                                         <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '')} />
                                                         <FieldItem label="Modified By" value={getSafeString(data.ModifiedBy)} />

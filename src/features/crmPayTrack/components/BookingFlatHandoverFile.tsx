@@ -318,8 +318,15 @@ export const BookingFlatHandoverFile: React.FC<BankDocumentsProps> = ({ fileType
                 fixed: "right",
                 render: (_value, row) => {
 
-                    const showEdit = canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !row.ApprovalStatus?.toUpperCase().includes("APPROVED");
-                    const showDelete = canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !row.ApprovalStatus?.toUpperCase().includes("APPROVED") && pageName != "Flat Handover" ? true : false;
+                    const showEdit = canAction
+                        && bookingApprovalStatus?.toUpperCase() === 'APPROVED'
+                        && !row.ApprovalStatus?.toUpperCase().includes("APPROVED");
+                        
+
+                    const showDelete = canAction
+                        && bookingApprovalStatus?.toUpperCase() === 'APPROVED'
+                        && !row.ApprovalStatus?.toUpperCase().includes("APPROVED")
+                        && pageName != "Flat Handover" ? true : false;
 
                     return (
                         <div className="flex items-center justify-end ml-2 gap-1">

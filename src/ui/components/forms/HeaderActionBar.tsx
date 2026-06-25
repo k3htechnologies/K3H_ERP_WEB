@@ -208,7 +208,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                     <Button
                         color="blue"
                         size="sm"
-                        title="Edit Info"
+                        title={EditText}
                         onClick={onEdit}
                         disabled={isLoading}
                     >

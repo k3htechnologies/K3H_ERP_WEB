@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
-import { Box, Building2, Car, ClipboardCheck, FileText, Folder } from "lucide-react";
+import { Box, Building2, Car, ClipboardCheck, FileText, Folder, Home, KeyRound, ReceiptIndianRupee, UserCog, Wallet } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/ui/components/forms";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 
 interface Props {
     moduleApproval: any[];
@@ -61,6 +61,13 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
 
             // ✅ BOOKING
             case "Booking":
+            case "CRM Payment Ledger":
+            case "Booking Applicant Modification":
+            case "Flat Alteration":
+            case "Parking Modification":
+            case "Refund Payment Ledger":
+            case "Flat Handover":
+
                 return [
                     { key: "ProjectName", label: "Project", render: renderText },
                     { key: "Flat", label: "Flat", render: renderText },
@@ -120,6 +127,36 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
             icon: Folder,
             bg: "#FDF4FF",
             color: "#A21CAF"
+        },
+        "CRM Payment Ledger": {
+            icon: Wallet,
+            bg: "#EFF6FF",
+            color: "#2563EB"
+        },
+        "Booking Applicant Modification": {
+            icon: UserCog,
+            bg: "#ECFDF5",
+            color: "#059669"
+        },
+        "Flat Alteration": {
+            icon: Home,
+            bg: "#FEF3C7",
+            color: "#D97706"
+        },
+        "Parking Modification": {
+            icon: Car,
+            bg: "#F3E8FF",
+            color: "#7C3AED"
+        },
+        "Refund Payment Ledger": {
+            icon: ReceiptIndianRupee,
+            bg: "#FEE2E2",
+            color: "#DC2626"
+        },
+        "Flat Handover": {
+            icon: KeyRound,
+            bg: "#E0F2FE",
+            color: "#0284C7"
         }
     };
 
@@ -206,10 +243,10 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
                         </Button>
                     </div>
                 }
-                size="xl"
+                size="xxl"
             >
                 {selectedModule?.data?.length > 0 ? (
-                    <DataTableWithOutBorder
+                    <DataTableWithHeaderRowDivider
                         data={selectedModule.data}
                         columns={getColumnsByModule(selectedModule?.moduleName)}
                         recordsPerPage={5}

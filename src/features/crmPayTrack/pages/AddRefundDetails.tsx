@@ -9,7 +9,7 @@ import type { ProjectWithBankDetails } from "@/features/projectMaster/models/Pro
 import { fetchProjectBankDropdown } from "@/features/projectMaster/projectBankDropdown";
 import { fetchBankListMasterDropdown } from '@/features/bankListMaster/bankListMasterDropDown';
 import { Input } from "@/ui/components/forms";
-import { filterIFSC, filterNumbers, hasAnyDocumentFile, isValidIFSC } from "@/core/utils/fileValidation";
+import { filterIFSC, filterNumbers, filterNumbersWithDecimal, hasAnyDocumentFile, isValidIFSC } from "@/core/utils/fileValidation";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { PAYMENT_MODE } from '@/core/constants';
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
@@ -24,7 +24,7 @@ import { usePayTrackBookingListState } from "@/features/crmPayTrack/context/PayT
 import { useNavigate, useLocation } from "react-router-dom";
 import type { RefundAmountDetailsData } from "@/features/crmPayTrack/models/RefundAmountDetailsModel";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { formatCurrency } from "@/core/utils/comman";
+import { formatCurrency, getSafeString } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateRefundAmountDetailsRequest => ({
     RefundedAmountLedgerId: 0,
@@ -63,7 +63,7 @@ export const AddRefundDetails: React.FC = () => {
 
     const { projectId } = useProject();
     const { listState, updateListState } = usePayTrackBookingListState();
-    const { bookingId,totalAmountRefundedAgainstBooking } = listState;
+    const { bookingId, totalAmountRefundedAgainstBooking,bookingData } = listState;
     const { canAction } = useMenuPermissions("/modificationRequest");
     const { addToast } = useToast();
 
@@ -172,10 +172,10 @@ export const AddRefundDetails: React.FC = () => {
             newErrors.RefundedAmount = 'Refundable Amount is required.';
         }
 
-        if (formData?.RefundedAmount > (listState.bookingData?.TotalAmountRefundedAgainstBooking ?? 0) -(listState.bookingData?.RefundedAmountOnTillDate ?? 0)) {
-            newErrors.RefundedAmount =`Refundable Amount cannot be greater than ₹ ${(
-                                            (listState.bookingData?.TotalAmountRefundedAgainstBooking ?? 0) -
-                                            (listState.bookingData?.RefundedAmountOnTillDate ?? 0)).toFixed(2)}.`
+        if (formData?.RefundedAmount > (bookingData?.TotalAmountRefundedAgainstBooking ?? 0) - (bookingData?.RefundedAmountOnTillDate ?? 0)) {
+            newErrors.RefundedAmount = `Refundable Amount cannot be greater than ₹ ${(
+                (bookingData?.TotalAmountRefundedAgainstBooking ?? 0) -
+                (bookingData?.RefundedAmountOnTillDate ?? 0)).toFixed(2)}.`
         }
         if (!formData.TransactionChequeDemandDraftNumber) {
             newErrors.TransactionChequeDemandDraftNumber = 'Transaction / Cheque / Demand Draft No. is required.';
@@ -284,13 +284,91 @@ export const AddRefundDetails: React.FC = () => {
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-            <Loader loading={isLoading} title={loadingMessage}>
-                {" "}
-                <div>
-                </div>{" "}
+            <Loader loading={isLoading} title={loadingMessage}> {" "}
+                <div> </div>{" "}
             </Loader>
             <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
                 <form onSubmit={handleAddUpdateRefundedAmountLedgerDetails}>
+                    <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                        <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                            <h4 className="text-sm font-semibold text-[#13367A]">
+                                Unit Details
+                            </h4>
+                        </div>
+                        <div className="p-4 bg-white">
+                            <div className="grid grid-cols-4 gap-4 bg-white rounded-lg pt-4">
+                                <FieldItem label="Project Name" value={getSafeString(bookingData?.ProjectName)} />
+                                <FieldItem label="Wing" value={getSafeString(bookingData?.Wing)} />
+                                <FieldItem label="Floor" value={getSafeString(bookingData?.Floor)} />
+                                <FieldItem label="Unit Number" value={getSafeString(bookingData?.Flat)} />
+                                <FieldItem label="Configuration" value={getSafeString(bookingData?.FlatConfiguration)} />
+                                <FieldItem label="RERA Carpet Area (SqFt)" value={getSafeString(bookingData?.RERACarpetAreaSqFt)} />
+                                <FieldItem label="Agreement Value (With TDS) (₹)" value={formatCurrency(bookingData?.AgreementValue)} />
+                                <FieldItem label="Number Of Parking" value={getSafeString(bookingData?.NumberOfParking)} />
+
+                            </div>
+                        </div>
+                    </section>
+
+                    {bookingData?.BookingApplicantData && bookingData?.BookingApplicantData.length > 0 && (
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+
+                            <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#C2410C]">
+                                    Applicant & Co - Applicant Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                {bookingData?.BookingApplicantData.map((applicant, i) => (
+                                    <div key={applicant.BookingApplicantId ?? i} className="">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
+                                            <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
+                                            <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
+
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </section>
+                    )}
+
+                    {bookingData?.ParkingData && bookingData?.ParkingData.length > 0 && (
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-5">
+
+                            <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#13367A]">
+                                    Parking Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                {bookingData?.ParkingData.map((parking, index) => {
+
+                                    const isLast = index === (bookingData?.ParkingData?.length ?? 0) - 1;
+
+                                    return (
+                                        <div key={parking.ParkingId || index} className="pt-4">
+                                            <h3 className="text-sm font-semibold text-gray-500">
+                                                Parking {index + 1}
+                                            </h3>
+                                            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : "border-b border-[#135bec2e] pb-4 pt-4"} `} >
+                                                <FieldItem label="Parking Number" value={getSafeString(parking.ParkingNumber)} />
+                                                <FieldItem label="Category" value={getSafeString(parking.ParkingCategory)} />
+                                                <FieldItem label="Type" value={getSafeString(parking.ParkingType)} />
+                                            </div>
+
+                                            <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${!isLast ? "border-b border-[#135bec2e] pb-4" : ""} `} >
+                                                <FieldItem label="Size" value={getSafeString(parking.ParkingSubType)} />
+                                                <FieldItem label="Dimensions" value={getSafeString(parking.ParkingDimensions)} />
+                                                <FieldItem label="EV Charging" value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} />
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <h3 className="font-semibold mb-2">
                             Note: This is the refund amount finalized for this booking. Please consider this amount while initiating any further refund process.
@@ -303,14 +381,14 @@ export const AddRefundDetails: React.FC = () => {
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                         <h3 className="font-semibold mb-2">Received Amount</h3>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                            <FieldItem label="Stamp Duty" value={formatCurrency(listState.bookingData?.ReceivedStampDutyAmount)} />
-                            <FieldItem label="Registration Fees" value={formatCurrency(listState.bookingData?.ReceivedRegistrationFees)} />
-                            <FieldItem label="Agreement Value(Without TDS)" value={formatCurrency(listState.bookingData?.ReceivedAgreementValue)} />
-                            <FieldItem label="Agreement Value GST" value={formatCurrency(listState.bookingData?.ReceivedAgreementValueGSTAmount)} />
-                            <FieldItem label="Agreement Value TDS" value={formatCurrency(listState.bookingData?.ReceivedAgreementValueTDS)} />
-                            <FieldItem label="Other Charges" value={formatCurrency(listState.bookingData?.ReceivedOtherChargesAmount)} />
-                            <FieldItem label="Other Charges GST" value={formatCurrency(listState.bookingData?.ReceivedOtherChargesGSTAmount)} />
-                            <FieldItem label="Total Received" value={formatCurrency(listState.bookingData?.RefundedAmountOnTillDate)} />
+                            <FieldItem label="Stamp Duty" value={formatCurrency(bookingData?.ReceivedStampDutyAmount)} />
+                            <FieldItem label="Registration Fees" value={formatCurrency(bookingData?.ReceivedRegistrationFees)} />
+                            <FieldItem label="Agreement Value(Without TDS)" value={formatCurrency(bookingData?.ReceivedAgreementValue)} />
+                            <FieldItem label="Agreement Value GST" value={formatCurrency(bookingData?.ReceivedAgreementValueGSTAmount)} />
+                            <FieldItem label="Agreement Value TDS" value={formatCurrency(bookingData?.ReceivedAgreementValueTDS)} />
+                            <FieldItem label="Other Charges" value={formatCurrency(bookingData?.ReceivedOtherChargesAmount)} />
+                            <FieldItem label="Other Charges GST" value={formatCurrency(bookingData?.ReceivedOtherChargesGSTAmount)} />
+                            <FieldItem label="Total Received" value={formatCurrency(bookingData?.RefundedAmountOnTillDate)} />
 
                         </div>
                     </div>
@@ -450,12 +528,22 @@ export const AddRefundDetails: React.FC = () => {
                             </div>
 
                             <div>
+
                                 <Input
-                                    label='Refundable Amount'
+                                    label="Refundable Amount (₹)"
+                                    placeholder="Enter Refundable Amount (₹)"
                                     required
-                                    value={formData.RefundedAmount || ''}
-                                    onChange={e => handleFieldChange('RefundedAmount', Number(e.target.value))}
-                                    placeholder="Enter Refundable Amount"
+                                    value={formData.RefundedAmount || ""}
+                                    onChange={(e) => {
+                                        const val = filterNumbersWithDecimal(e.target.value);
+                                        if (val !== null) {
+                                            const refundedAmountAmount = filterNumbersWithDecimal(e.target.value);
+
+                                            handleFieldChange("RefundedAmount", refundedAmountAmount);
+                                        }
+                                    }}
+
+                                    rightIcon="₹"
                                     error={errors.RefundedAmount}
                                 />
                             </div>

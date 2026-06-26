@@ -165,9 +165,7 @@ import AddUpdateBrokerageInvoice from '@/features/brokerage/pages/AddBrokerageIn
 import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokeragePayment';
 import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
-import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
-import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
-import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
+
 import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/BookingBrokerageListStateContext';
 import { ChannelPartnerUniverseListStateProvider } from '@/features/channelPartnerUniverse/context/ChannelPartnerUniverseListStateContext';
 import ChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ChannelPartnerUniverse';
@@ -175,9 +173,6 @@ import ViewChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/
 import CrmDashboard from '@/features/crmDashboard/pages/CrmDashboard';
 import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
 import AchievementReport from '@/features/achievement/pages/AchievementReport';
-import { PayTrackReportListStateProvider } from '@/features/crmPayTrackReport/context/PayTrackReportListStateContext';
-import PayTrackReport from '@/features/crmPayTrackReport/pages/PayTrackReport';
-import AddRefundDetails from '@/features/crmPayTrack/pages/AddRefundDetails';
 import Ticket from '@/features/ticket/pages/Ticket';
 import ViewTicket from '@/features/ticket/pages/ViewTicket';
 import { TicketListStateProvider } from '@/features/ticket/context/TicketListStateContext';
@@ -483,10 +478,7 @@ function App() {
 
             {/* CRM */}
             <Route path="crmDashboard" element={<CrmDashboard />} />
-            <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
-            <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
-            <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
-            <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
+   
             {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
             <Route path="collectionReport" element={<CollectionReport />} />
             <Route path="dailyCollectionReport" element={<DailyCollectionReport />} />

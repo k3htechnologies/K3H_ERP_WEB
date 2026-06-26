@@ -78,6 +78,16 @@ export const SubMaterialMasterTable: React.FC<SubMaterialMasterTableProps> = ({
           )
         };
       }
+      if (col.key === 'IsTolerant') {
+        return {
+          ...col,
+          render: (value, _row: SubMaterialMasterData) => (
+            <div className="text-center">
+              {(value as boolean) ? 'Yes' : 'No'}
+            </div>
+          )
+        };
+      }
       return col;
     });
   }, [columns, canAction, onView, onDelete]);

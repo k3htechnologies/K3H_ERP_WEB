@@ -7,6 +7,7 @@ import { fetchUOMMasterDropdown } from '@/features/uomMaster/uomMasterDropdown';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
 import type { AddUpdateSubMaterialMasterRequest } from '@/features/subMaterialMaster/models/SubMaterialMasterModel';
 
+
 interface SubMaterialMasterFormModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -99,6 +100,23 @@ export const SubMaterialMasterFormModal: React.FC<SubMaterialMasterFormModalProp
               error={errors.UomMasterId}
             />
           </div>
+          <div className="pt-2">
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={formData.IsTolerant ?? false}
+                onChange={(e) =>
+                  onFieldChange("IsTolerant", e.target.checked)
+                }
+                className="h-4 w-4 rounded border-gray-300"
+              />
+
+              <span className="text-sm font-medium text-gray-700">
+                do you want to allow tolerance for this sub material?
+              </span>
+            </label>
+          </div>
+
         </div>
       </div>
     </Modal>

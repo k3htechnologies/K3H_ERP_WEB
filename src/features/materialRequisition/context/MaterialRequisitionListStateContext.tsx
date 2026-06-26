@@ -35,7 +35,9 @@ export type MaterialRequisitionDetailItem = {
     Uom: string
     RequiredDate: string
     MaterialReceivedQuantityTillDate: number
-
+    IsTolerant?: boolean
+    TolerancePercentage?: number
+    Tolerance?: number
 }
 
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.MATERIAL_REQUISITION;

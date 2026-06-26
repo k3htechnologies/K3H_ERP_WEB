@@ -32,8 +32,7 @@ const initialFormState = (): AddUpdateStockManagementRequest => ({
     Reason: "",
     InwardOutwardType: "",
     MaterialQuantityInwardOutward: 0,
-    SenderName: "",
-    ReceiverName: ""
+    PartyName: "",
 })
 
 export const StockManagement: React.FC = () => {
@@ -90,7 +89,7 @@ export const StockManagement: React.FC = () => {
     );
 
     const loadStockManagementData = async (page: number = pagination.currentPage, filterParams: FilterInfo, sortInfo?: SortInfo, searchtext?: string,) => {
-        
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -154,6 +153,8 @@ export const StockManagement: React.FC = () => {
 
     const ViewStockManagementDetails = useCallback((row: StockManagementRequestData) => {
         updateListState({
+            MaterialId: row.MaterialId ?? row.MaterialMasterId ?? 0,
+            SubMaterialId: row.SubMaterialMasterId ?? 0,
             SubMaterialMasterId: row.SubMaterialMasterId ?? 0,
             MaterialName: row.MaterialName ?? "",
             SubMaterialName: row.SubMaterialName ?? ""
@@ -223,7 +224,7 @@ export const StockManagement: React.FC = () => {
                 render: (value) => value || "-"
             },
             {
-                key: "AvailableMaterialQuantityInStock",
+                key: "AvailableMaterial",
                 label: 'Available Quantity',
                 width: "20",
                 sortable: false,
@@ -352,11 +353,11 @@ export const StockManagement: React.FC = () => {
         ) {
             newErrors.MaterialQuantityInwardOutward = "You Cannot remove stock more than available stock.";
         }
-        if (formData.InwardOutwardType === "INWARD" && !formData.SenderName?.trim()) {
-            newErrors.SenderName = "Sender Name is required.";
+        if (formData.InwardOutwardType === "INWARD" && !formData.PartyName?.trim()) {
+            newErrors.PartyName = "Party Name is required.";
         }
-        if (formData.InwardOutwardType === "OUTWARD" && !formData.ReceiverName?.trim()) {
-            newErrors.ReceiverName = "Receiver Name is required.";
+        if (formData.InwardOutwardType === "OUTWARD" && !formData.PartyName?.trim()) {
+            newErrors.PartyName = "Party Name is required.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -371,8 +372,7 @@ export const StockManagement: React.FC = () => {
             InwardOutwardType: formData.InwardOutwardType,
             ProjectId: Number(projectId),
             MaterialQuantityInwardOutward: formData.MaterialQuantityInwardOutward,
-            SenderName: formData.SenderName,
-            ReceiverName: formData.ReceiverName
+            PartyName: formData.PartyName,
         };
     };
 
@@ -602,11 +602,11 @@ export const StockManagement: React.FC = () => {
                                 label={isInward ? "Sender Name" : "Receiver Name"}
                                 required
                                 type="text"
-                                value={isInward ? formData.SenderName ?? '' : formData.ReceiverName ?? ''}
+                                value={formData.PartyName || ''}
                                 onChange={(e) =>
-                                    handleFieldChange(isInward ? "SenderName" : "ReceiverName", e.target.value)
+                                    handleFieldChange("PartyName", e.target.value)
                                 }
-                                error={isInward ? errors.SenderName : errors.ReceiverName}
+                                error={errors.PartyName}
                                 maxLength={250}
                                 placeholder={isInward ? "Enter Sender Name" : "Enter Receiver Name"}
                             />

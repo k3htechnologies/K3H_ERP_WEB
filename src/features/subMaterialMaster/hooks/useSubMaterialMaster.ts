@@ -99,7 +99,8 @@ export const useSubMaterialMaster = () => {
           Uniquekey: editingSubMaterialMasterData.Uniquekey || getInitialFormState().Uniquekey,
           MaterialMasterId: editingSubMaterialMasterData.MaterialMasterId || 0,
           SubMaterialName: editingSubMaterialMasterData.SubMaterialName || '',
-          UomMasterId: editingSubMaterialMasterData.UomMasterId || 0
+            UomMasterId: editingSubMaterialMasterData.UomMasterId || 0,
+            IsTolerant: (editingSubMaterialMasterData as any).IsTolerant ?? false
         });
 
         setDropdownLabels({
@@ -366,7 +367,8 @@ export const useSubMaterialMaster = () => {
       Uniquekey: formData.Uniquekey,
       MaterialMasterId: formData.MaterialMasterId,
       SubMaterialName: formData.SubMaterialName,
-      UomMasterId: formData.UomMasterId
+      UomMasterId: formData.UomMasterId,
+      IsTolerant: formData.IsTolerant ?? false
     };
   };
 

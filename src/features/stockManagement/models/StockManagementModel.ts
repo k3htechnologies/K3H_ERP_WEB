@@ -6,6 +6,10 @@ export interface FilterWithPaginationStockManagementRequest {
     ProjectId?: number
     MaterialName?: string
     SubMaterialName?: string
+    MaterialId?: number
+    SubMaterialId?: number
+    SubMaterialMasterId?: number
+    MaterialMasterId?: number
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -13,6 +17,8 @@ export interface FilterWithPaginationStockManagementRequest {
 export interface StockManagementRequestData {
     MaterialName: string | null
     SubMaterialName: string | null
+    MaterialId?: number | 0
+    MaterialMasterId?: number | 0
     SubMaterialMasterId: number | 0
     UomCode: string | null
     TotalMaterialQuantityInStock: number | null
@@ -25,8 +31,7 @@ export interface AddUpdateStockManagementRequest {
     Reason: string | null
     InwardOutwardType: string | null
     MaterialQuantityInwardOutward: number | 0
-    SenderName: string | null
-    ReceiverName: string | null
+    PartyName: string
 }
 
 export interface FilterWithPaginationStockManagementHistoryRequest {
@@ -34,14 +39,18 @@ export interface FilterWithPaginationStockManagementHistoryRequest {
     PageNumber: number
     ProjectId?: number
     SubMaterialMasterId?: number
+    MaterialId?: number
+    SubMaterialId?: number
     type?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
 
 export interface StockManagementRequestHistoryData {
+    MaterialRequisitionGRNStockId: number | 0
     MaterialName: string | null
     SubMaterialName: string | null
+    MaterialMasterId?: number | 0
     SubMaterialMasterId: number | 0
     UomCode: string | null
     MaterialQuantityInwardOutward: number | 0
@@ -50,6 +59,15 @@ export interface StockManagementRequestHistoryData {
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
+}
+
+export interface AddUpdateStockManagementRequest {
+    SubMaterialMasterId: number | 0
+    ProjectId: number | 0
+    Reason: string | null
+    InwardOutwardType: string | null
+    MaterialQuantityInwardOutward: number | 0
+    PartyName:string
 }
 
 export type StockManagementListResponse = ApiResponse<StockManagementRequestData[]>

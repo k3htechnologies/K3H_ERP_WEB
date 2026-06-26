@@ -7,6 +7,8 @@ export const INITIAL_FORM_STATE: AddUpdateSubMaterialMasterRequest = {
   MaterialMasterId: 0,
   SubMaterialName: '',
   UomMasterId: 0
+  ,
+  IsTolerant: false
 };
 
 export const REQUIRED_COLUMN_KEYS: string[] = ['SubMaterialName', 'Actions'];
@@ -35,6 +37,13 @@ export const getSubMaterialMasterColumns = (): TableColumn[] => [
     key: 'Uom',
     label: 'UOM',
     width: '20',
+    sortable: false,
+    align: 'center'
+  },
+  {
+    key: 'IsTolerant',
+    label: 'Tolerance',
+    width: '10',
     sortable: false,
     align: 'center'
   },

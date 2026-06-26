@@ -68,6 +68,10 @@ export interface MaterialSubMaterialUOM {
     MaterialMasterIdRef: number
     UomMasterId: number
     UomCode: string
+    IsTolerant?: boolean
+    MaterialTolerant?: number
+    TolerancePercentage?: number
+    Tolerance?: number
 }
 
 export interface MateriaLSubMaterialMasterUOMWrapper {

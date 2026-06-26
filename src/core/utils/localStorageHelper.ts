@@ -1014,6 +1014,69 @@ export const LocalStorageHelper = {
     return null
   },
 
+  storeAchievementByWalkinsRevisitTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_WALKINS_REVISIT_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Walkins Revisit Columns Details:', error)
+    }
+  },
+
+  getAchievementByWalkinsRevisitTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_WALKINS_REVISIT_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_WALKINS_REVISIT_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Walkins Revisit Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+
+  storeAchievementByBookingTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_BOOKING_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Booking Columns Details:', error)
+    }
+  },
+
+  getAchievementByBookingTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_BOOKING_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_BOOKING_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Booking Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+
+  storeAchievementByIbmObmTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_IBMOBM_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by IbmObm Columns Details:', error)
+    }
+  },
+
+  getAchievementByIbmObmTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_IBMOBM_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_IBMOBM_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by IbmObm Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+
 
   //PROJECT DOCUMENT
   storeProjectDocumentCategoryMasterTableColumns: (columns: string): void => {
@@ -1210,6 +1273,26 @@ export const LocalStorageHelper = {
     return null;
   },
 
+  storeDailyCollectionReportTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Daily Collection Report Columns Details:', error)
+    }
+  },
+
+  getDailyCollectionReportTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Daily Collection Report Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
   //MORE
 
   storeInwardOutwardTableColumns: (columns: string): void => {
@@ -1245,6 +1328,36 @@ export const LocalStorageHelper = {
     }
     return null;
 
+  },
+
+  storeTicketMasterTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Ticket Master Columns Details:", error);
+    }
+  },
+
+  //TAX TRACKER
+  storeNoticeSectionMasterTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Notice Section Master Columns Details:", error);
+    }
+  },
+
+  getNoticeSectionMasterTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Notice Section Master Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
   },
 
   storeBudgetTableColumns: (columns: string): void => {
@@ -1317,7 +1430,14 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_PROJECT_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CLOSING_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_SOURCING_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_WALKINS_REVISIT_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_BOOKING_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_IBMOBM_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS);
+
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);

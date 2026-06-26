@@ -33,6 +33,7 @@ import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { isVendorComplete } from '@/features/vendor/utils/vendorUtils';
+import { filterNumbers } from '@/core/utils/fileValidation';
 
 
 export const Vendor: React.FC = () => {
@@ -839,8 +840,9 @@ export const Vendor: React.FC = () => {
                 label='Mobile Number'
                 type="text"
                 value={tempFilters.MobileNumber || ''}
-                onChange={(e) => handleFilterChange('MobileNumber', e.target.value)}
+                onChange={(e) => handleFilterChange('MobileNumber', filterNumbers(e.target.value))}
                 placeholder="Enter Mobile Number"
+                maxLength={13}
               />
             </div>
             <div>

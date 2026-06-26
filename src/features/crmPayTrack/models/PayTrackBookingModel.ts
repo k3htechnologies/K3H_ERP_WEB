@@ -75,6 +75,8 @@ export interface PayTrackBookingData {
     OtherChargesGSTAmount: number | null;
     ReceivedOtherChargesGSTAmount: number | null;
 
+    BookingApprovalStatus: string | null;
+
     ApprovalStatus: string | null;
     
     TotalAmountReceivedAgainstBooking: number | null;

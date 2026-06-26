@@ -16,7 +16,7 @@ import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useNavigate } from 'react-router-dom';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
@@ -31,6 +31,9 @@ import ApprovalActions from '@/features/modulesWorkflowApproval/components/Appro
 import { modulesWorkflowApprovalService } from '@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService';
 import { ApprovalLogModal } from '@/features/modulesWorkflowApproval/components/ApprovalLogModal';
 import ApprovalActionModal from '@/features/modulesWorkflowApproval/components/ApprovalActionModal';
+import { filterNumbers, filterNumbersWithDecimal } from '@/core/utils/fileValidation';
+import { copyToClipboard } from '@/core/utils/comman';
+import { Copy } from 'lucide-react';
 
 export const Booking: React.FC = () => {
     //#region STATE
@@ -63,19 +66,11 @@ export const Booking: React.FC = () => {
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [approvalRowData, setApprovalRowData] = useState<BookingData | null>(null);
 
-    //#endregion
-
-    //#region PROJECT SELECTION GET ID
     const { projectId } = useProject()
-    //#endregion
 
-    //#region BOOKING LIST STATE CONTEXT
     const { listState, updateListState, resetFilters, clearBookingContext } = useBookingListState();
 
     const { page, filters, sortInfo, searchTerm } = listState;
-    //#endregion
-
-    //#region DATA LOAD BOOKING
 
     const loadBookings = async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
         await runApiWithLoader(
@@ -130,9 +125,7 @@ export const Booking: React.FC = () => {
         );
     };
 
-    //#endregion
 
-    //#region INIT
     useEffect(() => {
 
         if (!projectId) return;
@@ -157,15 +150,6 @@ export const Booking: React.FC = () => {
 
     }, [page]);
 
-    useEffect(() => {
-
-        setTempFilters(filters);
-
-    }, [filters]);
-
-    //#endregion
-
-    //#region SEARCH BOOKING FILTER
 
     const debouncedSearch = useDebouncedCallback((value: string, isSearch: boolean = true) => {
 
@@ -194,18 +178,18 @@ export const Booking: React.FC = () => {
         debouncedSearch(searchValue, false);
     };
 
-    //#endregion
-
-    //#region CLEAR SEARCH BOOKING
     const clearSearchBookings = () => {
         debouncedSearch.cancel?.();
         resetFilters();
         setTempFilters({});
     };
 
-    //#endregion
+    const applyFilters = () => {
+        updateListState({ filters: tempFilters, page: 1 });
+        loadBookings(1, tempFilters, sortInfo);
+        setShowFilterPopup(false);
+    };
 
-    //#region  EXCEL EXPORT TO EXCEL | PDF
     const handleExportBookings = async (exportType: 'Excel' | 'PDF' | 'BOOKING FORM PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -256,9 +240,6 @@ export const Booking: React.FC = () => {
     const handleExportBookingExcel = () => handleExportBookings('Excel');
     const handleExportBookingPdf = () => handleExportBookings('PDF');
 
-    //#endregion
-
-    //#region TABLE CONFIG
     const handlePageChange = useCallback((newPage: number) => {
         updateListState({ page: newPage });
     }, [updateListState]);
@@ -282,9 +263,7 @@ export const Booking: React.FC = () => {
     );
 
     const bookingsForTable = useMemo(() => bookingList, [bookingList]);
-    //#endregion
 
-    //#region VIEW BOOKING DETAILS
     const handleViewBookingDetails = useCallback((row: BookingData) => {
         updateListState({
             bookingId: row.BookingId ?? 0,
@@ -292,9 +271,6 @@ export const Booking: React.FC = () => {
         });
         navigate('/booking/view');
     }, [navigate, updateListState]);
-    //#endregion
-
-    //#region TABLE COLUMN
 
     const handleApprovalLog = (row: BookingData) => {
         const request: ModulesApprovalStatusRequest = {
@@ -330,14 +306,42 @@ export const Booking: React.FC = () => {
                 sortable: false,
                 fixed: 'left',
                 align: 'left',
-                render: value => (
-                    <TooltipText
-                        text={value || '-'}
-                        maxWidth="150px"
-                        tooltipThreshold={20}
-                        tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
-                    />
-                )
+                render: (value) => {
+                    return (
+                        <div className="flex items-center gap-2">
+
+                            <TooltipText
+                                text={value || '-'}
+                                maxWidth="150px"
+                                tooltipThreshold={20}
+                                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                            />
+
+                            {value && (
+                                <Button
+                                    onClick={async (e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        const success = await copyToClipboard(value);
+                                        if (success) {
+                                            addToast({ type: 'success', title: `${value} Copied!` });
+                                        }
+                                    }}
+                                    color="transparent"
+                                    size="sm"
+                                    style={{
+                                        padding: '2px 6px',
+                                        color: '#6B7280',
+                                        cursor: 'pointer'
+                                    }}
+                                    title="Copy"
+                                >
+                                    <Copy className="h-3.5 w-3.5" />
+                                </Button>
+                            )}
+                        </div>
+                    );
+                }
             },
             {
                 key: 'ApplicantName',
@@ -359,6 +363,23 @@ export const Booking: React.FC = () => {
                         </div>
                     </div>
                 )
+            },
+            {
+                key: 'ApplicantMobileNumber',
+                label: 'Applicant Mobile Number',
+                width: '14',
+                sortable: false,
+                align: 'left',
+                render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
+
+            },
+            {
+                key: 'Source',
+                label: 'Source',
+                width: '10',
+                sortable: false,
+                align: 'left',
+                render: value => value || '-'
             },
             {
                 key: 'BookingType',
@@ -401,6 +422,23 @@ export const Booking: React.FC = () => {
                 render: value => value ? `₹${Number(value).toLocaleString('en-IN')}` : '-'
             },
             {
+                key: 'CreatedDate',
+                label: 'Created Date',
+                width: '12',
+                sortable: false,
+                align: 'center',
+                render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+            },
+            {
+                key: 'CreatedBy',
+                label: 'Created By',
+                width: '10',
+                sortable: false,
+                align: 'left',
+                render: value => value || '-'
+            },
+
+            {
                 key: 'RegistrationDate',
                 label: 'Expected Registration Date',
                 width: '16',
@@ -431,9 +469,7 @@ export const Booking: React.FC = () => {
         ],
         [canAction, handleViewBookingDetails, handleApprovalLog, handleApproveRejectDocument]
     );
-    //#endregion
 
-    //#region CUSTOMIZE COLUMNS
     const requiredBookingColumnKeys: string[] = ['ApplicantName', 'Actions'];
 
     const allBookingColumnKeys: string[] = bookingColumns.map(c => c.key);
@@ -465,15 +501,11 @@ export const Booking: React.FC = () => {
         () => bookingColumns.filter(col => selectedBookingColumnKeys.includes(col.key)),
         [bookingColumns, selectedBookingColumnKeys]
     );
-    //#endregion
-
-    //#region  HANDLE CHANGE EVENT
 
     const handleFilterChange = (key: string, value: string) => {
         setTempFilters(prev => updateFilter(prev, key, value));
     };
 
-    //#endregion
 
     const handleApprovalSubmit = async (remark: string) => {
 
@@ -533,9 +565,9 @@ export const Booking: React.FC = () => {
                 onSearchChange={searchBookings}
                 onClearSearch={clearSearchBookings}
                 isShowFilterButton
-                filters={tempFilters}
+                filters={filters}
                 onOpenFilter={() => {
-                    setTempFilters(tempFilters);
+                    setTempFilters(filters || {});
                     setShowFilterPopup(true);
                 }}
                 isShowCustomizeButton
@@ -586,8 +618,7 @@ export const Booking: React.FC = () => {
                 title="Filter - Booking"
                 onSubmit={e => {
                     e.preventDefault();
-                    updateListState({ filters: tempFilters, page: 1 });
-                    setShowFilterPopup(false);
+                    applyFilters();
                 }}
                 saveText="Apply "
                 cancelText="Clear"
@@ -616,8 +647,9 @@ export const Booking: React.FC = () => {
                                 label='Applicant Mobile Number'
                                 type="text"
                                 value={tempFilters.ApplicantMobileNumber || ''}
-                                onChange={e => handleFilterChange('ApplicantMobileNumber', e.target.value)}
+                                onChange={e => handleFilterChange('ApplicantMobileNumber', filterNumbers(e.target.value))}
                                 placeholder="Enter Mobile Number"
+                                maxLength={13}
                             />
                         </div>
 
@@ -683,7 +715,7 @@ export const Booking: React.FC = () => {
 
                         </div>
                         {/* SUB SOURCE */}
-                        {tempFilters.Source === 'Direct Walking' && (
+                        {tempFilters.Source === 'Direct Walkin' && (
                             <div>
                                 <SinglePageSelection
                                     label="Sub Source"
@@ -699,7 +731,7 @@ export const Booking: React.FC = () => {
                         )}
 
                         {/* SUB SUB SOURCE */}
-                        {tempFilters.Source === 'Direct Walking' &&
+                        {tempFilters.Source === 'Direct Walkin' &&
                             tempFilters.SubSource === 'Advertisement' && (
                                 <div>
                                     <SinglePageSelection
@@ -734,10 +766,15 @@ export const Booking: React.FC = () => {
                         <div>
                             <Input
                                 label='Agreement Value'
-                                type="number"
                                 value={tempFilters.AgreementValue || ''}
-                                onChange={e => handleFilterChange('AgreementValue', e.target.value)}
+                                onChange={(e) => {
+                                    const value = filterNumbersWithDecimal(e.target.value);
+                                    handleFilterChange('AgreementValue', value)
+                                }
+                                }
+
                                 placeholder="Enter Agreement Value"
+                                maxLength={9}
                             />
                         </div>
 

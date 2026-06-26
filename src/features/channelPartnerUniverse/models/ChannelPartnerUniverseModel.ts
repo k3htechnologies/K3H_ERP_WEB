@@ -15,6 +15,8 @@ export interface FilterWithPaginationChannelPartnerUniverseRequest {
     RERANumber?: string
     Status?: string
     ActiveDays?: number
+    SystemGeneratedCode?:string
+    ChannelPartnerCategory?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }

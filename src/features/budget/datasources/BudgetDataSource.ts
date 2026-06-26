@@ -16,8 +16,8 @@ export class BudgetDatasourceImpl implements BudgetDatasource {
     async pullBudget(params: FilterWithPaginationBudgetRequest, signal?: AbortSignal): Promise<BudgetListResponse> {
         try {
             const queryParams = new URLSearchParams({
-                pageSize: String(params.PageSize ?? 10),
-                pageNumber: String(params.PageNumber ?? 1),
+                PageSize: (params.PageSize ?? 20).toString(),
+                PageNumber: (params.PageNumber ?? 1).toString(),
             });
 
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());

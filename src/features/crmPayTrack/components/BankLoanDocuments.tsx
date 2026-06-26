@@ -68,7 +68,7 @@ export const BankLoanDocuments: React.FC = () => {
     const { canAction } = useMenuPermissions("/bankLoan");
 
     const { listState } = usePayTrackBookingListState();
-    const { bookingId } = listState;
+    const { bookingId,bookingApprovalStatus } = listState;
 
     const { projectId } = useProject();
 
@@ -188,7 +188,7 @@ export const BankLoanDocuments: React.FC = () => {
             },
             {
                 key: "LoanAccountNumber",
-                label: "Loan Account Number",
+                label: "Account Number",
                 width: "15",
                 sortable: false,
                 align: "right",
@@ -196,7 +196,7 @@ export const BankLoanDocuments: React.FC = () => {
             },
             {
                 key: "BankBranchName",
-                label: "Bank Branch Name",
+                label: "Branch Name",
                 width: "15",
                 sortable: false,
                 align: "left",
@@ -204,7 +204,7 @@ export const BankLoanDocuments: React.FC = () => {
             },
             {
                 key: "NoOfBankDocument",
-                label: "Documents Count",
+                label: "Document Count",
                 width: "15",
                 sortable: false,
                 align: "center",
@@ -218,7 +218,7 @@ export const BankLoanDocuments: React.FC = () => {
                 align: "center",
                 render: (_value, row) => {
 
-                    const showEdit = canAction ? (row.BankStatusClosedActive) === "Active" : false;
+                    const showEdit = canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED'  ? (row.BankStatusClosedActive) === "Active" : false;
 
                     return (
                         <div>
@@ -295,7 +295,7 @@ export const BankLoanDocuments: React.FC = () => {
                 fixed: "right",
                 render: (_value, row) => {
 
-                    const showEdit = canAction ? (row.BankStatusClosedActive) === "Active" : false;
+                    const showEdit = canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED'  ? (row.BankStatusClosedActive) === "Active" : false;
 
                     return (
                         <div className="flex items-center justify-end ml-2 gap-1">
@@ -425,6 +425,7 @@ export const BankLoanDocuments: React.FC = () => {
                 const payload = PushBankDocumentPayTrackBookingFiles();
 
                 const response = await bankDocumentPayTrackBookingFilesService.apiCallAddUpdateBankDocumentsPayTrackBookingFiles(payload);
+
                 if (E.isRight(response)) {
 
                     setIsAddUpdateModalOpen(false);
@@ -446,6 +447,8 @@ export const BankLoanDocuments: React.FC = () => {
                     setEditingBankDocumentPayTrackBookingFilesData(null);
 
                     dtRef.current?.collapseAll?.();
+
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -537,7 +540,7 @@ export const BankLoanDocuments: React.FC = () => {
                 ref={dtRef}
                 data={bookingLoanDetailsList}
                 columns={bankLoanDetailsColumns}
-                emptyMessage="No Payment Ledger Found"
+                emptyMessage="No Bank Loan Found"
                 loading={isLoading}
                 fixedHeight
                 recordsPerPage={20}
@@ -635,6 +638,7 @@ export const BankLoanDocuments: React.FC = () => {
                                 value={formData.FileName ?? ''}
                                 onChange={(e) => handleFieldChange('FileName', e.target.value)}
                                 error={errors.FileName}
+                                maxLength={100}
                                 required
                             />
                         </div>

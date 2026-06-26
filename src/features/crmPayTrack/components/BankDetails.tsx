@@ -5,7 +5,7 @@ import { SingleSelectDropdownWithPagination } from "@/ui/components/DropDown/Sin
 import { fetchBankListMasterDropdown } from "@/features/bankListMaster/bankListMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import type {
     AddUpdateBookingLoanDetailsRequest,
     BookingLoanDetailsData,
@@ -51,7 +51,7 @@ export const BankDetails: React.FC = () => {
     const { canAction } = useMenuPermissions("/bankLoan");
 
     const { listState } = usePayTrackBookingListState();
-    const { bookingId, totalUnitCost } = listState;
+    const { bookingId, totalUnitCost, bookingApprovalStatus } = listState;
 
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -163,7 +163,7 @@ export const BankDetails: React.FC = () => {
         if (!formData.LoanAccountNumber?.trim()) {
             newErrors.LoanAccountNumber = "Account Number is required.";
         } else if (formData.LoanAccountNumber.trim().length > 18) {
-            newErrors.LoanAccountNumber = "Account Number must be at most 50 characters";
+            newErrors.LoanAccountNumber = "Account Number must be at most 18 characters";
         }
 
         if (!formData.LoanSanctionAmount) {
@@ -273,9 +273,9 @@ export const BankDetails: React.FC = () => {
     const handleDeleteBankLoanDetails = async () => {
         setIsConfirmationDialogBoxOpen(false);
 
-       const deleteId = activeLoans?.[0]?.BookingLoanDetailsId;
+        const deleteId = activeLoans?.[0]?.BookingLoanDetailsId;
 
-       if (!deleteId) return;
+        if (!deleteId) return;
 
         await runApiWithLoader(
             setIsLoading,
@@ -376,9 +376,9 @@ export const BankDetails: React.FC = () => {
 
     const activeLoans = bookingLoanDetailsList.filter((x) => x.BankStatusClosedActive !== "Closed");
 
-    const canDeleteActiveBank = canAction && !activeLoans[0]?.NoOfBankDocument && activeLoans[0]?.BankStatusClosedActive !== "Closed";
+    const canDeleteActiveBank = canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !activeLoans[0]?.NoOfBankDocument && activeLoans[0]?.BankStatusClosedActive !== "Closed";
 
-    const canClosedBank = canAction && activeLoans[0]?.NoOfBankDocument > 0 && activeLoans[0]?.BankStatusClosedActive !== "Closed";
+    const canClosedBank = canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && activeLoans[0]?.NoOfBankDocument > 0 && activeLoans[0]?.BankStatusClosedActive !== "Closed";
 
     const closedLoans = bookingLoanDetailsList.filter((x) => x.BankStatusClosedActive === "Closed");
 
@@ -390,7 +390,7 @@ export const BankDetails: React.FC = () => {
 
             {mode === "view" && (
                 <>
-                    {activeLoans.length === 0 && (
+                    {!isLoading && activeLoans.length === 0 && (
                         <div className="pt-5">
                             <section className="bg-white rounded-xl p-3 border-[0.1px] border-[#3333330f]">
 
@@ -399,8 +399,8 @@ export const BankDetails: React.FC = () => {
                                     <h4 className="text-sm font-medium text-gray-500">
                                         No Active Bank
                                     </h4>
-                                    
-                                    {canAction && (
+
+                                    {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
                                         <Button
                                             color="primary"
                                             size="sm"
@@ -422,7 +422,7 @@ export const BankDetails: React.FC = () => {
                         </div>
                     )}
 
-                    {activeLoans.length > 0 && (
+                    {!isLoading && activeLoans.length > 0 && (
                         <>
                             <div className="pt-5">
                                 <section className="bg-white rounded-xl shadow-sm p-3 border-[0.1px] border-[#3333334f]">
@@ -441,7 +441,7 @@ export const BankDetails: React.FC = () => {
                                                 color="transparent"
                                                 size="sm"
                                                 isborderRadius
-                                                title="Edit Bank Details"
+                                                title="Edit Bank Loan Details"
                                                 disabled={!canDeleteActiveBank}
                                                 style={{
                                                     color: canDeleteActiveBank ? "" : "#9CA3AF",
@@ -492,7 +492,7 @@ export const BankDetails: React.FC = () => {
                                                         <FieldItem label="Branch Name" value={item.BankBranchName ?? "-"} />
                                                         <FieldItem label="Account Number" value={item.LoanAccountNumber ?? "-"} />
                                                         <FieldItem label="Loan Sanction Amount" value={formatCurrency(item.LoanSanctionAmount) ?? "-"} />
-                                                        <FieldItem label="Sanction Date" value={formatDate_dd_mm_yyyy(item.LoanSanctionDate)} />
+                                                        <FieldItem label="Loan Sanction Date" value={formatDate_dd_MonthName_yy(item.LoanSanctionDate)} />
                                                         <FieldItem label="No of Bank Documents" value={item.NoOfBankDocument ?? 0} />
                                                     </div>
                                                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4 text-sm pt-5">
@@ -522,7 +522,7 @@ export const BankDetails: React.FC = () => {
                                                     {canClosedBank && (
                                                         <div className="mt-5 flex justify-between items-center">
                                                             <Checkbox
-                                                                label="Do you want to closed this account?"
+                                                                label="Do you want to close this account?"
                                                                 checked={isDeactivate}
                                                                 onChange={(e) => setIsDeactivate(e.target.checked)}
                                                             />
@@ -534,7 +534,7 @@ export const BankDetails: React.FC = () => {
                                                                         handleSubmitClosedBankDetails(item);
                                                                     }}
                                                                 >
-                                                                    Closed Account
+                                                                    Close Account
                                                                 </Button>
                                                             )}
                                                         </div>
@@ -549,7 +549,7 @@ export const BankDetails: React.FC = () => {
                         </>
                     )}
 
-                    {closedLoans.length > 0 && (
+                    {!isLoading && closedLoans.length > 0 && (
                         <>
                             <div className="pt-5">
                                 <section className="bg-white rounded-xl shadow-sm p-3 border-[0.1px] border-[#3333334f]">
@@ -567,7 +567,7 @@ export const BankDetails: React.FC = () => {
                                                         <FieldItem label="Branch Name" value={item.BankBranchName ?? "-"} />
                                                         <FieldItem label="Account Number" value={item.LoanAccountNumber ?? "-"} />
                                                         <FieldItem label="Loan Sanction Amount" value={formatCurrency(item.LoanSanctionAmount) ?? "-"} />
-                                                        <FieldItem label="Sanction Date" value={formatDate_dd_mm_yyyy(item.LoanSanctionDate)} />
+                                                        <FieldItem label="Loan Sanction Date" value={formatDate_dd_mm_yyyy(item.LoanSanctionDate)} />
                                                         <FieldItem label="No of Bank Documents" value={item.NoOfBankDocument ?? 0} />
                                                     </div>
                                                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4 text-sm pt-5">
@@ -635,7 +635,7 @@ export const BankDetails: React.FC = () => {
                                 <div>
                                     <Input
                                         label="Branch Name"
-                                        placeholder="Enter Bank Branch Name"
+                                        placeholder="Enter Branch Name"
                                         required
                                         value={formData.BankBranchName}
                                         maxLength={250}
@@ -679,7 +679,7 @@ export const BankDetails: React.FC = () => {
                                 {/* Loan Sanction Date */}
                                 <div>
                                     <DatePickerInput
-                                        label="Sanction Date"
+                                        label="Loan Sanction Date"
                                         value={formatDate_dd_mm_yyyy(formData.LoanSanctionDate)}
                                         onChange={(val) => handleFieldChange("LoanSanctionDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                         required

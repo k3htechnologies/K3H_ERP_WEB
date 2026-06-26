@@ -37,8 +37,8 @@ export default function EmployeeTable({ employeeOverviewTable }: Props) {
             render: (value: string) => (<span className="font-medium text-black"> {(value || '')}  </span>),
         },
         {
-            key: "Department",
-            label: "Department",
+            key: "DesignationName",
+            label: "Designation",
             align: "left" as any,
             render: (value: string) => (
                 <span className="font-medium text-black">
@@ -109,10 +109,11 @@ export default function EmployeeTable({ employeeOverviewTable }: Props) {
 
     return (
         <div className="space-y-3 pt-4 sm:pt-5">
-            <h2 className="text-base sm:text-lg font-semibold text-gray-800 ml-1 sm:ml-2">Team Overview</h2>
 
-            <div className="bg-white rounded-xl p-4 h-[310px] border border-gray-100 flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+            <div className="bg-white rounded-xl p-4 h-[430px] border border-gray-100 flex flex-col" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
                
+               <p className="text-md text-gray-500 font-semibold pb-2 pl-4">Attendance Summary</p>
+
                 {employeeOverviewTable?.length > 0 ? (
                     <div className="min-w-[500px] sm:min-w-full flex-1 overflow-hidden flex flex-col">
                         <DataTableWithOutBorder

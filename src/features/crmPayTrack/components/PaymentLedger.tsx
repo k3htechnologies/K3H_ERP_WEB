@@ -96,12 +96,12 @@ export const PaymentLedger: React.FC = () => {
 
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  const { canAction } = useMenuPermissions("/paymentLedger");
+  const { canAction,canExport } = useMenuPermissions("/paymentLedger");
 
   const { projectId } = useProject();
 
   const { listState } = usePayTrackBookingListState();
-  const { bookingId, bookingName, flat, bookingOtherChargesData } = listState;
+  const { bookingId, bookingName, flat, bookingOtherChargesData, bookingApprovalStatus } = listState;
 
   const { addToast } = useToast();
 
@@ -206,15 +206,15 @@ export const PaymentLedger: React.FC = () => {
     );
   };
 
-   const handleSearchChange = (value: string) => {
-        setSearchTerm(value);
-        loadPaymentLedger(value)
-    };
+  const handleSearchChange = (value: string) => {
+    setSearchTerm(value);
+    loadPaymentLedger(value)
+  };
 
-    const handleClearSearch = () => {
-        setSearchTerm('');
-        loadPaymentLedger('')
-    }
+  const handleClearSearch = () => {
+    setSearchTerm('');
+    loadPaymentLedger('')
+  }
 
   const handleEditPaymentLedger = useCallback((row: PaymentLedgerSummaryModelData) => {
     setEditingPaymentLedgerData({
@@ -301,14 +301,12 @@ export const PaymentLedger: React.FC = () => {
   }, [paymentLedgerList, totals]);
 
   const payTrackPaymentLedgerColumns = useMemo<TableColumn[]>(() => {
+
     const boldIfTotal = (row: any) => (row.isTotal ? "font-bold text-gray-500" : "");
-
-    const formatCurrency = (value: number) => `₹ ${Number(value || 0).toLocaleString()}`;
-
     return [
       {
         key: "PaymentFor",
-        label: "Stage",
+        label: "Stage (Milestone)",
         render: (value, row) => <span className={boldIfTotal(row)}>{value}</span>,
       },
       {
@@ -403,7 +401,7 @@ export const PaymentLedger: React.FC = () => {
 
         const response = await paymentLedgerService.apiCallPullPaymentLedgerSummary(params);
 
-        handleExportFile(response, exportType, 'Payment Schedule', addToast)
+        handleExportFile(response, exportType, 'Payment Ledger', addToast)
         return response;
       },
       undefined,
@@ -496,7 +494,7 @@ export const PaymentLedger: React.FC = () => {
 
 
     if (!formData.TransactionChequeDemandDraftNumber) {
-      newErrors.TransactionChequeDemandDraftNumber = "Transaction / Cheque / Demand Draft Number is required";
+      newErrors.TransactionChequeDemandDraftNumber = "Transaction / Cheque / Demand Draft No. is required";
     }
 
     if (!formData.TransactionChequeDemandDraftDate) {
@@ -599,6 +597,10 @@ export const PaymentLedger: React.FC = () => {
           setDocumentFiles([]);
           setDocumentURL("");
           setRemovedDocumentURLs([]);
+
+          addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
+
         } else {
           addToast({ type: "error", title: response.left?.message });
         }
@@ -672,12 +674,13 @@ export const PaymentLedger: React.FC = () => {
   };
 
   const fetchProjectBankList = useCallback(
-    async (page: number) => {
-      return fetchProjectBankDropdown(page, {
-        projectId: Number(projectId),
+    async (pageNumber: number, params?: { value?: string }) => {
+      return fetchProjectBankDropdown(pageNumber, {
+        projectId: projectId || 0,
+        bankName: params?.value || ""
       });
     },
-    [projectId],
+    [projectId]
   );
 
   const handleApprovalSubmit = async (remark: string) => {
@@ -784,11 +787,11 @@ export const PaymentLedger: React.FC = () => {
         onClearSearch={handleClearSearch}
 
         // EXPORT
-        isShowExportButton={dataWithTotal.length > 0}
+        isShowExportButton={canExport && dataWithTotal.length > 0}
         onExportExcel={handleExportPayTrackPaymentLedgerExcelFile}
         onExportPdf={handleExportPayTrackPaymentLedgerPdfFile}
         exportLoading={isLoading}
-        isShowAddButton={canAction}
+        isShowAddButton={canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
         addTitle="Add"
         onAdd={handlePaymentLedgerCrmModal} />
 
@@ -801,11 +804,15 @@ export const PaymentLedger: React.FC = () => {
         fixedHeight
         recordsPerPage={20}
         expandable={{
+
           keyField: "PaymentFor",
           alwaysFetchOnOpen: true,
+          rowExpandable: (row) =>  !row.isTotal,
 
           fetchRow: async (row) => {
+
             setExpandedParentRow(row);
+
             setExpandedParentId(row.PaymentFor);
 
             if (!row || row.isTotal || !row.PaymentFor) {
@@ -848,26 +855,32 @@ export const PaymentLedger: React.FC = () => {
             return (
               <div className="space-y-4">
                 {details.map((row, index) => {
-                  const showEdit = canAction && !row.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
+
+                  const showEdit = canAction && !row.IsBookingAmount && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !row.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
+
                   return (
                     <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                       <div className="flex justify-between items-center">
                         <div className="text-sm text-gray-700">
                           <FieldItem
-                            label="Amount"
+                            label={row.PaymentFor}
                             value={formatCurrency(row.ReceivedAmount || 0)}
                             urls={row.PaymentReceiptURL}
                             isRow
                             isIcon={true}
                           />
                           <FieldItem label="Payment Mode" value={row.PaymentMode || "-"} isRow />
+
+                         {row.IsBookingAmount && ( <FieldItem label="Booking Amount" isSetValue={false} value={row.IsBookingAmount ? "Yes" : "No"} isRow />)}
+
                           {row.ChargeName !== "" && <FieldItem label="Other Charges" value={row.ChargeName || "-"} isRow />}
+
                         </div>
 
                         <div className="flex items-center gap-2">
                           <ApprovalActions
                             approvalStatus={row.ApprovalStatus || "-"}
-                            showApproval={row.IsApproval}
+                            showApproval={row.IsApproval && bookingApprovalStatus?.toUpperCase() === 'APPROVED'}
                             isIcons={true}
                             onHistory={() => handleApprovalLog(row)}
                             onApprove={() => handleApproveRejectDocument(row, "approve")}
@@ -926,6 +939,8 @@ export const PaymentLedger: React.FC = () => {
                           <FieldItem label="Account Number" value={row.ProjectAccountNumber || "-"} isRow={false} />
                           <FieldItem label="Bank Name" value={row.ProjectBankName || "-"} isRow={false} />
                           <FieldItem label="IFSC Code" value={row.ProjectIFSCCode || "-"} isRow={false} />
+                          <FieldItem label="Nature Of Account" value={row.ProjectNatureOfAccount || "-"} isRow={false} />
+                          <FieldItem label="Account Type" value={row.ProjectAcType || "-"} isRow={false} />
                         </div>
 
                         <div className="space-y-3">
@@ -937,6 +952,7 @@ export const PaymentLedger: React.FC = () => {
                             label="Transaction / Cheque / Demand Draft No"
                             urls={row.TransactionChequeDemandDraftURL}
                             value={row.TransactionChequeDemandDraftNumber || "-"}
+                            isIcon
                           />
 
                           <FieldItem
@@ -1235,7 +1251,7 @@ export const PaymentLedger: React.FC = () => {
         onClose={handleDeleteDialogClose}
         onConfirm={handleDeletePaymentLedgerCrm}
         loading={isLoading}
-        pageName="Bank Document"
+        pageName="Payment Ledger"
       />
 
       <ApprovalLogModal

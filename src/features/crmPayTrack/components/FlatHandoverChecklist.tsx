@@ -7,7 +7,7 @@ import { runApiWithLoader } from "@/core/utils";
 import * as E from "fp-ts/Either";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { HANDOVER_STATUS } from "@/core/constants";
-import { Button } from "@/ui/components/forms";
+import { Button, Input } from "@/ui/components/forms";
 import { Loader } from "@/core/utils/loader";
 import type { AddUpdateFlatHandoverChecklistRequest, FilterWithPaginationFlatHandoverChecklist, FlatHandoverChecklistData } from "@/features/crmPayTrack/models/FlatHandoverCheckListModel";
 import { flatHandoverChecklistService } from "@/features/crmPayTrack/services/FlatHandoverCheckListService";
@@ -16,6 +16,7 @@ import Tabs from "@/ui/components/Tab/Tab";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Edit } from "lucide-react";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 
 export const FlatHandoverChecklist: React.FC = () => {
 
@@ -26,7 +27,7 @@ export const FlatHandoverChecklist: React.FC = () => {
     const { projectId } = useProject();
     const { addToast } = useToast();
     const { listState } = usePayTrackBookingListState();
-    const { bookingId } = listState;
+    const { bookingId, bookingApprovalStatus } = listState;
     const { canAction } = useMenuPermissions();
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [formData, setFormData] = useState<FlatHandoverChecklistData | null>(null);
@@ -168,8 +169,6 @@ export const FlatHandoverChecklist: React.FC = () => {
 
                     setIsAddUpdateModalOpen(false);
 
-                    loadFlatHandoverChecklistData();
-
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
                 } else {
@@ -219,7 +218,7 @@ export const FlatHandoverChecklist: React.FC = () => {
 
             <div className="mb-5">
                 <Tabs
-                    tabs={FlatHandoverChecklistTabList}
+                    tabs={FlatHandoverChecklistTabList || []}
                     defaultActive={activeTab}
                     islarge={true}
                     onTabChange={(t) => {
@@ -232,35 +231,66 @@ export const FlatHandoverChecklist: React.FC = () => {
                 return (
                     <div key={index} className="gap-x-4 rounded-lg shadow-sm border border-gray-300 p-4 mb-4">
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            <FieldItem label="Checklist items" value={item.Items} />
-                            <FieldItem label="Status" value={item.Status} />
+                        <div className="flex justify-between items-start gap-4">
+                            <FieldItem label="Items" value={item.Items} className="font-bold" />
 
-                            <div className="flex justify-between gap-2">
-                                <FieldItem label="Remark" value={item.Remark} />
+                            <div className="flex items-center gap-2">
+                                <span
+                                    className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${item.Status === "Pending"
+                                        ? "bg-yellow-100 text-yellow-700"
+                                        : item.Status === "Yes"
+                                            ? "bg-green-100 text-green-700"
+                                            : item.Status === "No"
+                                                ? "bg-red-100 text-red-700"
+                                                : "bg-gray-100 text-gray-700"
+                                        }`}
+                                >
+                                    {item.Status}
+                                </span>
 
-                                {canAction && (
+                                {canAction && bookingApprovalStatus?.toUpperCase() === "APPROVED" && (
                                     <Button
-                                        style={{
-                                            color: 'blue',
-                                            padding: '0px 8px'
-
-                                        }}
+                                        style={{ color: "blue", padding: "0px 8px" }}
                                         onClick={(e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            handleEditFlatHandoverCheckListData(item)
+                                            handleEditFlatHandoverCheckListData(item);
                                         }}
                                         color="transparent"
                                         isborderRadius
                                         size="sm"
+                                        title="Edit"
                                     >
                                         <Edit className="h-4 w-4" />
                                     </Button>
                                 )}
-
                             </div>
                         </div>
+
+                        <div className="pt-4">
+                            <FieldItem label="Remark" value={item.Remark} />
+                        </div>
+
+                        <div className="pt-4">
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+                                <div className="lg:col-span-3 pb-3">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                        <FieldItem label="Last Modified By" value={item!.ModifiedBy==="" ? item!.CreatedBy : item!.ModifiedBy} />
+                                        <FieldItem
+                                            label="Last Modified Date"
+                                            value={item!.ModifiedBy==="" ?
+                                                item!.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(item!.CreatedDate) : "-"
+                                                :
+                                                item!.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(item!.ModifiedDate) : "-"
+                                            }
+
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 )
             })}
@@ -277,7 +307,7 @@ export const FlatHandoverChecklist: React.FC = () => {
                     setEditFlatHandoverCheckListData(null)
                     setErrors({});
                 }}
-                title={'Update'}
+                title={"Handover Checklist"}
                 saveText="Update"
                 onSubmit={handleAddUpdateFlatHandoverChecklist}
                 loading={isLoading}
@@ -287,28 +317,50 @@ export const FlatHandoverChecklist: React.FC = () => {
                     <div className="space-y-4" >
 
                         <div>
-                            <div >
-                                <SinglePageSelection
-                                    label="Status"
-                                    placeholder="Select Status"
-                                    value={formData?.Status ?? ""}
-                                    onChange={(e) => handleFieldChange("Status", String(e))}
-                                    options={HANDOVER_STATUS.map((opt) => ({ label: opt.name, value: opt.id, }))}
-                                    error={errors.Status}
-                                    required
-                                />
-                            </div>
+                            <Input
+                                required
+                                type="text"
+                                label='Section'
+                                value={formData?.Section || ''}
+                                disabled
+                            />
+
                         </div>
+                        <div>
+                            <Input
+                                required
+                                type="text"
+                                label='Items'
+                                value={formData?.Items || ''}
+                                disabled
+                            />
+
+                        </div>
+
+                        <div >
+                            <SinglePageSelection
+                                label="Status"
+                                placeholder="Select Status"
+                                value={formData?.Status ?? ""}
+                                onChange={(e) => handleFieldChange("Status", String(e))}
+                                options={HANDOVER_STATUS.map((opt) => ({ label: opt.name, value: opt.id, }))}
+                                error={errors.Status}
+                                required
+                            />
+                        </div>
+
 
                         <div>
                             <TextArea
                                 label="Remark"
+                                required={formData?.Status?.toUpperCase() === "PENDING" ? true : false}
                                 className='thin-scroll'
                                 value={formData?.Remark ?? ""}
                                 placeholder="Enter Remark"
                                 onChange={(e) => handleFieldChange("Remark", e.target.value)}
                                 error={errors.Remark}
-                                rows={5}
+                                rows={10}
+                                maxLength={500}
                                 autoResize={false}
                             />
 

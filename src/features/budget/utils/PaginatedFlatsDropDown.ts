@@ -14,8 +14,9 @@ export const fetchPaginatedFlatsDropdown = async (pageNumber: number, params?: {
         }
 
         const apiResponse = responseEither.right;
-        
+
         const itemList = (apiResponse?.Data || []).map((d: any) => {
+
             const label = [
                 d.BuildingNumber,
                 d.Wing,
@@ -36,7 +37,7 @@ export const fetchPaginatedFlatsDropdown = async (pageNumber: number, params?: {
         };
 
     } catch (err) {
-        console.error('FETCH PAGINATED FLATS  DROPDOWN ERROR', err);
+        console.error('FETCH PAGINATED FLATS DROPDOWN ERROR', err);
         return { totalNumberOfRecord: 0, itemList: [] as { label: string; value: string }[] };
     }
 };

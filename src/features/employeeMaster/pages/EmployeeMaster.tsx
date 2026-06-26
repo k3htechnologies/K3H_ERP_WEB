@@ -45,6 +45,7 @@ import { isEmployeeComplete } from "@/features/employeeMaster/utils/employeeUtil
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { ACTIVE_INACTIVE_OPTIONS } from "@/core/constants";
 import { getNameInitials } from "@/core/utils/getNameInitials";
+import { filterNumbers } from "@/core/utils/fileValidation";
 
 export const EmployeeMaster: React.FC = () => {
   //#region STATE
@@ -954,9 +955,10 @@ export const EmployeeMaster: React.FC = () => {
                 label="Personal Mobile Number"
                 value={tempFilters.MobileNumber || ""}
                 onChange={(e) =>
-                  handleFilterChange("MobileNumber", e.target.value)
+                  handleFilterChange("MobileNumber", filterNumbers(e.target.value))
                 }
                 placeholder="Enter Personal Mobile Number"
+                maxLength={13}
               />
             </div>
             <div>

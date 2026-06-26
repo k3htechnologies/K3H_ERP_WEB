@@ -17,6 +17,7 @@ export type PayTrackBookingListState = {
   bookingOtherChargesData?: BookingOtherChargesData[];
   bookingData?: PayTrackBookingData | null;
   totalUnitCost: number;
+  bookingApprovalStatus: string;
   flat: string;
   activeTab?: string;
   activeSubTab?: string;
@@ -39,6 +40,7 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
       bookingOtherChargesData: [],
       bookingData: null,
       totalUnitCost: 0,
+      bookingApprovalStatus:"",
       flat: "",
       activeTab: undefined,
       activeSubTab: undefined,
@@ -59,6 +61,7 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
           bookingType: parsed.state.bookingType || "",
           flat: parsed.state.flat || "",
           totalUnitCost: parsed.state.totalUnitCost || 0,
+          bookingApprovalStatus:parsed.state.bookingApprovalStatus || "",
           bookingOtherChargesData: parsed.state.bookingOtherChargesData || [],
           bookingData: parsed.state.bookingData || null,
           activeTab: parsed.state.activeTab,
@@ -82,6 +85,7 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
     bookingType: "",
     flat: "",
     totalUnitCost: 0,
+    bookingApprovalStatus:"",
     bookingOtherChargesData: [],
     bookingData: null,
     activeTab: undefined,
@@ -95,7 +99,7 @@ type PayTrackBookingListStateContextType = {
   updateListState: (updates: Partial<PayTrackBookingListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData) => void;
+  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number,bookingApprovalStatus:string, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData) => void;
   clearPayTrackBookingContext: () => void;
   triggerRefresh: () => void;
 };
@@ -120,6 +124,7 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
         bookingType: "",
         flat: "",
         totalUnitCost: 0,
+        bookingApprovalStatus:"",
         bookingOtherChargesData: [],
         bookingData: null,
         activeTab: undefined,
@@ -176,6 +181,7 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       bookingType: "",
       flat: "",
       totalUnitCost: 0,
+      bookingApprovalStatus:"",
       bookingOtherChargesData: [],
       bookingData: null,
       activeTab: undefined,
@@ -185,7 +191,7 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
     setListState(defaultState);
   }, []);
 
-  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData) => {
+  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number,bookingApprovalStatus:string, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData) => {
     setListState((prev) => ({
       ...prev,
       bookingId,
@@ -193,6 +199,7 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       bookingType,
       flat,
       totalUnitCost,
+      bookingApprovalStatus,
       bookingOtherChargesData: bookingOtherChargesData || [],
       bookingData: bookingData || null,
       activeTab: undefined,
@@ -209,6 +216,7 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       bookingType: "",
       flat: "",
       totalUnitCost: 0,
+      bookingApprovalStatus:"",
       bookingOtherChargesData: [],
       bookingData: null,
       activeTab: undefined,

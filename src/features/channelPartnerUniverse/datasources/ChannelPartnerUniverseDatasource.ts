@@ -36,6 +36,8 @@ export class ChannelPartnerUniverseDatasourceImpl implements ChannelPartnerUnive
             if (params.RERANumber?.trim()) queryParams.append('RERANumber', params.RERANumber.trim());
             if (params.Status?.trim()) queryParams.append('Status', params.Status.trim());
             if (params.ActiveDays) queryParams.append('ActiveDays', params.ActiveDays.toString());
+            if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
+            if (params.ChannelPartnerCategory?.trim()) queryParams.append('ChannelPartnerCategory', params.ChannelPartnerCategory.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

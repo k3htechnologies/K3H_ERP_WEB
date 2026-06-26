@@ -64,7 +64,7 @@ export const ParkingSwapSection: React.FC = () => {
     const { addToast } = useToast();
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
-    const { bookingId, bookingData } = listState;
+    const { bookingId, bookingData, bookingApprovalStatus } = listState;
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
     const isParkingDetailsEmpty = !bookingData?.ParkingNumber || bookingData.ParkingNumber === "-";
@@ -91,7 +91,7 @@ export const ParkingSwapSection: React.FC = () => {
                     PageSize: 100,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
-                    
+
                 };
 
                 const response = await parkingModificationService.apiCallPullParkingModificationDetails(params);
@@ -345,14 +345,16 @@ export const ParkingSwapSection: React.FC = () => {
                 fixed: "left",
                 render: (value) => value || "-",
             },
+
             {
-                key: "ParkingStatus",
-                label: "Parking Status",
+                key: "IsEVChargingAvailable",
+                label: "EV Charging",
                 sortable: false,
                 align: "left",
                 fixed: "left",
-                render: (value) => value || "-",
+                render: (value: boolean) => (value ? "Yes" : "No"),
             },
+            
 
             {
                 key: "ApprovalStatus",
@@ -379,45 +381,42 @@ export const ParkingSwapSection: React.FC = () => {
 
     return (
         <div>
-            <Loader loading={isLoading} title={loadingMessage}>
-                <div></div>
-            </Loader>
+            <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>
 
-            <section className="bg-white rounded-xl pt-5">
-                <div className="flex justify-between items-center mb-4">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4 ">
-                        Parking Details
-                    </h4>
-                    <div className="">
-                        {canAction && (
-                            <div className="flex justify-end pb-2">
-                                <Button
-                                    onClick={() => {
-                                        setIsAddUpdateParkingSwapModalOpen(true);
-                                    }}
-                                    color="blue"
-                                    size="sm"
-                                    variant="solid"
-                                    defineWidth
-                                    style={{ width: '190px' }}
-                                    leftIcon={<Plus className="h-4 w-4" />}
-                                    disabled={isBookingCancelled || isParkingDetailsEmpty}
-                                >
-                                    Create Requests
-                                </Button>
-                            </div>
-                        )}
+            {!isParkingDetailsEmpty && (
+                <section className="bg-white rounded-xl pt-5">
+                    <div className="flex justify-between items-center mb-4">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-4 ">
+                            Parking Details
+                        </h4>
+                        <div className="">
+                            {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
+                                <div className="flex justify-end pb-2">
+                                    <Button
+                                        onClick={() => {
+                                            setIsAddUpdateParkingSwapModalOpen(true);
+                                        }}
+                                        color="blue"
+                                        size="sm"
+                                        variant="solid"
+                                        leftIcon={<Plus className="h-4 w-4" />}
+                                        disabled={isBookingCancelled || isParkingDetailsEmpty}
+                                    >
+                                        Parking Change Requests
+                                    </Button>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
 
-                <DataTable
-                    columns={parkingColumns}
-                    data={tableData}
-                    fixedHeight={true}
-                    className="flex-1"
-                />
-            </section>
-
+                    <DataTable
+                        columns={parkingColumns}
+                        data={tableData}
+                        fixedHeight={true}
+                        className="flex-1"
+                    />
+                </section>
+            )}
             <Modal
                 isOpen={isAddUpdateParkingSwapModalOpen}
                 onClose={() => {
@@ -446,7 +445,8 @@ export const ParkingSwapSection: React.FC = () => {
                             <Input label="Current Parking Number" value={bookingData?.ParkingNumber || "-"} disabled />
                         </div>
                         <MultiSelectPagination
-                            label="Parking Type"
+                            label="Parking"
+                            required
                             dataFetchCallBack={fetchParkingProjectWise}
                             selectedValues={parkingDropdown.selectedValues}
                             options={parkingDropdown.initialOptions}

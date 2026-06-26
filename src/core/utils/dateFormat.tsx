@@ -127,6 +127,26 @@ export const formatDate_dd_mm_yyyy = (dateString?: string | null): string => {
 
   return `${dd}-${mm}-${yyyy}`;
 };
+
+
+export const formatDate_dayName_dd_mm_yyyy = (
+  dateString?: string | null
+): string => {
+  if (!dateString) return "";
+
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "";
+
+  const dayName = date.toLocaleDateString("en-US", {
+    weekday: "short",
+  });
+
+  const dd = String(date.getDate()).padStart(2, "0");
+  const mm = String(date.getMonth() + 1).padStart(2, "0");
+  const yyyy = date.getFullYear();
+
+  return `${dayName} ${dd}-${mm}-${yyyy}`;
+};
 /**
  * Extract time string (HH:MM) from ISO datetime string
  * @param isoString - ISO datetime string (e.g., "2025-01-15T10:30:00" or "10:30")

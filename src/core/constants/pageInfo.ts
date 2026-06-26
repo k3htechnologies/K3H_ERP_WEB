@@ -432,6 +432,11 @@ export const getPageInfo = (path: string) => {
                 title: "Enquiry Report",
                 description: "Turn Enquiries into Opportunities",
             }
+        case 'ibmObmReport':
+            return {
+                title: "IBM OBM Report",
+                description: "Turn Enquiries into Opportunities",
+            }
         case 'cpEnquiryReport':
             return {
                 title: "Channel Partner Enquiry Report",
@@ -515,10 +520,30 @@ export const getPageInfo = (path: string) => {
                 description: "Secure your unit by completing the booking process",
             }
 
+        case 'collectionReport':
+            return {
+                title: "Collection Report",
+                description: "Comprehensive report for collection management with real-time insights and actionable data",
+            }
+
+        case 'dailyCollectionReport':
+            return {
+                title: "Daily Collection Report",
+                description: "Comprehensive report for collection management with real-time insights and actionable data",
+            }
+
+
         case 'brokerage':
             return {
                 title: "Brokerage",
                 description: "Brokerage",
+            }
+
+        //TAX TRACKER
+        case 'noticeSection':
+            return {
+                title: 'Notice Section Master',
+                description: 'Centralized management of notice sections for real estate projects',
             }
 
         //ESTIMATION AND BUDGET

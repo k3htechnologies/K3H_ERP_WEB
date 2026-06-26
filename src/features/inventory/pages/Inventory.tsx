@@ -1258,7 +1258,7 @@ const Inventory = () => {
         {
             key: 'Facing',
             label: 'Facing',
-            width: '120px',
+            width: '200px',
             sortable: false,
         },
         {

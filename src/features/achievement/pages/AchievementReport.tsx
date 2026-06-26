@@ -13,10 +13,11 @@ export const AchievementReport: React.FC = () => {
 
     const AchievementTabList = [
         { id: 'Project', label: 'Project' },
-        { id: 'Sourcing', label: 'Sourcing' },
         { id: 'Closing', label: 'Closing' },
+        { id: 'Sourcing', label: 'Sourcing' },
     ];
     const [achievementActiveTab, setAchievementActiveTab] = useState(AchievementTabList[0].id);
+    
     const shouldLoadData = filterType !== "DATEWISE" || (fromDate && toDate);
 
     return (
@@ -84,9 +85,9 @@ export const AchievementReport: React.FC = () => {
 
             
 
-            {achievementActiveTab.toUpperCase() === "PROJECT" && shouldLoadData  && (<AchievementByProject filterType={filterType} fromDate={fromDate} toDate={toDate} />)}
+            {achievementActiveTab.toUpperCase() === "PROJECT" && shouldLoadData  &&  (<AchievementByProject filterType={filterType} fromDate={fromDate} toDate={toDate} />)}
             {achievementActiveTab.toUpperCase() === "SOURCING" && shouldLoadData &&  (<AchievementBySourcing filterType={filterType} fromDate={fromDate} toDate={toDate} />)}
-            {achievementActiveTab.toUpperCase() === "CLOSING" && shouldLoadData && (<AchievementByClosing filterType={filterType} fromDate={fromDate} toDate={toDate} />)}
+            {achievementActiveTab.toUpperCase() === "CLOSING" && shouldLoadData &&   (<AchievementByClosing filterType={filterType} fromDate={fromDate} toDate={toDate} />)}
 
         </div>
     )

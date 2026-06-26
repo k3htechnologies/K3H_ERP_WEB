@@ -27,6 +27,12 @@ import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleS
 import { fetchSpecificationMasterDropdown } from "@/features/specificationMaster/utils/SpecificationMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchPaginatedFlatsDropdown } from "../utils/PaginatedFlatsDropDown";
+import { updateFilter } from "@/core/utils/filterHelper";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { BUDGET_LEVEL_TYPE } from "@/core/constants";
+import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
+import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
+import { formatCurrency } from "@/core/utils/comman";
 
 const initialFormState = (): AddUpdateBudget => ({
     ProjectId: 0,
@@ -37,10 +43,10 @@ const initialFormState = (): AddUpdateBudget => ({
     LevelId3: 0,
     OrderBy: 0,
     InventoryFlatId: "",
-    Quantity: 0,
-    LabourCost: 0,
-    MaterialCost: 0,
-    PMCost: 0,
+    Quantity: "" as any,
+    LabourCost: "" as any,
+    MaterialCost: "" as any,
+    PMCost: "" as any,
     BudgetAmount: 0,
     Remark: ""
 });
@@ -61,20 +67,32 @@ export const Budget: React.FC = () => {
     const { canAction, canExport } = useMenuPermissions();
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const [isShowCustomizeModal, setIsShowCustomizeModal] = useState(false);
-    const [filters,] = useState<FilterInfo>({});
+    const [filters, setFilters] = useState<FilterInfo>({});
+    const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+    const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [addLevel, setAddLevel] = useState<"L1" | "L2" | "L3">("L1");
     const [parentPath, setParentPath] = useState("");
     const [dropdownLabels, setDropdownLabels] = useState<{ level1Name?: string; level2Name?: string, level3Name?: string, flat?: string }>({});
     const [selectedUom, setSelectedUom] = useState("");
+    const [selectFlatValues, setSelectFlatValues] = useState<string | number | null>(null);
 
     useEffect(() => {
         if (!projectId) return
 
+        setPagination({ currentPage: 1 });
         loadBudgetData(1, filters, sortInfo, searchTerm)
     }, [projectId]);
 
-    const loadBudgetData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
+    const flatDropDown = useMultiSelectDropdown({
+        value: selectFlatValues,
+        fetchCallback: fetchPaginatedFlatsDropdown,
+        fetchParams: {
+            projectId: String(projectId),
+        },
+        autoFetchOptions: true,
+    });
 
+    const loadBudgetData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
         runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -85,6 +103,7 @@ export const Budget: React.FC = () => {
                     ProjectId: Number(projectId),
                     BudgetId: filterParams.BudgetId ? Number(filterParams.BudgetId) : undefined,
                     CategoryName: searchText ?? filterParams.CategoryName ?? undefined,
+                    LevelType: filterParams.LevelType ?? undefined,
                     SortBy: getSortByParam(sort ?? null, BudgetColumns),
                 }
 
@@ -139,7 +158,7 @@ export const Budget: React.FC = () => {
                     BudgetAmount: editBudgetData.BudgetAmount,
                     Remark: editBudgetData.Remark
                 });
-
+                setSelectFlatValues(editBudgetData.InventoryFlatId || null);
                 setDropdownLabels({
                     level1Name: editBudgetData.Level1Name || "",
                     level2Name: editBudgetData.Level2Name || "",
@@ -175,38 +194,21 @@ export const Budget: React.FC = () => {
 
         if (addLevel === "L3") {
 
-            if (!formData?.LabourCost) {
-                newErrors.LabourCost = "Labour Cost is Required"
-            } else if (formData.LabourCost <= 0) {
-                newErrors.LabourCost = "Labour Cost Can't be 0"
-            }
+            const isEmpty = (val: any) => val === undefined || val === null || val === "";
 
-            if (!formData?.MaterialCost) {
-                newErrors.MaterialCost = "Material Cost is Required"
-            } else if (formData.MaterialCost <= 0) {
-                newErrors.MaterialCost = "Material Cost Can't be 0"
+            if (isEmpty(formData?.LabourCost)) {
+                newErrors.LabourCost = "Labour Rate is Required"
             }
-
-            if (!formData?.Quantity) {
+            if (isEmpty(formData?.MaterialCost)) {
+                newErrors.MaterialCost = "Material Rate is Required"
+            }
+            if (isEmpty(formData?.Quantity)) {
                 newErrors.Quantity = "Quantity is Required"
-            } else if (formData.Quantity <= 0) {
-                newErrors.Quantity = "Quantity Can't be 0"
             }
-
-            if (!formData?.PMCost) {
-                newErrors.PMCost = "PM Cost is Required"
-            } else if (formData.PMCost <= 0) {
-                newErrors.PMCost = "PM Cost Can't be 0"
-            }
-
-            if (!formData.InventoryFlatId) {
-                newErrors.InventoryFlatId = "Flat is Required"
-            }
-            if (!formData?.Remark) {
-                newErrors.Remark = "Remark is Required"
+            if (isEmpty(formData?.PMCost)) {
+                newErrors.PMCost = "P&M Rate is Required"
             }
         }
-
         return {
             isValid: Object.keys(newErrors).length == 0,
             errors: newErrors,
@@ -217,7 +219,6 @@ export const Budget: React.FC = () => {
     const budget = Number(formData?.Quantity || 0) * totalRate;
 
     const PushBudgetFormData = (): AddUpdateBudget => {
-
         return {
             BudgetId: formData.BudgetId,
             ProjectId: Number(projectId),
@@ -236,7 +237,7 @@ export const Budget: React.FC = () => {
         };
     };
 
-    const handleAddUpdateBudget = async (e: React.FormEvent) => {
+    const handleUpdateBudget = async (e: React.FormEvent) => {
         e.preventDefault();
 
         setErrors({});
@@ -250,6 +251,7 @@ export const Budget: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
+
                 const payload = PushBudgetFormData();
 
                 const response = await budgetService.apiCallAddUpdateBudget(payload);
@@ -327,7 +329,6 @@ export const Budget: React.FC = () => {
                     .filter(Boolean)
                     .join(" > ");
             }
-
             return "";
         };
         setParentPath(buildParentPath(row));
@@ -379,7 +380,7 @@ export const Budget: React.FC = () => {
             label: 'Cost Head / Description',
             width: '15',
             sortable: false,
-            align: "center",
+            align: "left",
             render: (value) => (
                 <TooltipText
                     text={value || ""}
@@ -423,7 +424,13 @@ export const Budget: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || ""}
+                    tooltipThreshold={25}
+                    maxWidth="200px"
+                />
+            )
         },
         {
             key: 'Quantity',
@@ -439,7 +446,7 @@ export const Budget: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value ? `₹ ${value}` : '-'
+            render: value => value ? formatCurrency(value) : '0'
         },
         {
             key: "MaterialCost",
@@ -447,7 +454,7 @@ export const Budget: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value ? `₹ ${value}` : '-'
+            render: value => value ? formatCurrency(value) : '0'
         },
         {
             key: "PMCost",
@@ -455,7 +462,7 @@ export const Budget: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value ? `₹ ${value}` : '-'
+            render: value => value ? formatCurrency(value) : '0'
         },
         {
             key: "TotalRate",
@@ -463,7 +470,7 @@ export const Budget: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value ? `₹ ${value}` : '-'
+            render: value => value ? formatCurrency(value) : '0'
         },
         {
             key: "BudgetAmount",
@@ -471,7 +478,7 @@ export const Budget: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value ? `₹ ${value}` : '-'
+            render: value => value ? formatCurrency(value) : '0'
         },
         {
             key: 'Remark',
@@ -503,7 +510,14 @@ export const Budget: React.FC = () => {
                                 color="transparent"
                                 isborderRadius
                                 size="sm"
-                                title="Add Category Name"
+                                title="Add Budget"
+                                disabled={!canAction}
+                                style={{
+                                    color: canAction ? "green" : "#9CA3AF",
+                                    padding: "4px 8px",
+                                    cursor: canAction ? "pointer" : "not-allowed",
+                                    opacity: canAction ? 1 : 0.5
+                                }}
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
@@ -531,6 +545,7 @@ export const Budget: React.FC = () => {
                                             LevelId2: row.LevelId2,
                                             LevelId3: 0,
                                         });
+                                        setSelectFlatValues("");
                                         setParentPath(
                                             [row.Level1Name, row.Level2Name]
                                                 .filter(Boolean)
@@ -614,14 +629,13 @@ export const Budget: React.FC = () => {
 
     const visibleBudgetColumns = useMemo(
         () => BudgetColumns.filter(col => seletedBudgetColumnKeys.includes(col.key)),
-        [seletedBudgetColumnKeys, BudgetColumns]
-    )
+        [seletedBudgetColumnKeys, BudgetColumns])
 
     const BudgetForTable = useMemo(() => budgetData, [budgetData]);
 
     const handlePageChange = (page: number) => {
         setPagination({ currentPage: page })
-        loadBudgetData(page, {}, sortInfo, searchTerm);
+        loadBudgetData(page, filters, sortInfo, searchTerm);
     };
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
@@ -688,6 +702,26 @@ export const Budget: React.FC = () => {
         }
     };
 
+    const applyFilters = () => {
+
+        setFilters(tempFilters);
+        setPagination({ currentPage: 1 });
+        loadBudgetData(1, tempFilters);
+        setShowFilterPopup(false);
+    };
+
+    const clearFilters = () => {
+
+        setTempFilters({});
+        setFilters({});
+        setPagination({ currentPage: 1 });
+        loadBudgetData(1, {}, sortInfo, searchTerm);
+    };
+
+    const handleFilterChange = (key: string, value: string) => {
+        setTempFilters(prev => updateFilter(prev, key, value));
+    }
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
@@ -701,6 +735,13 @@ export const Budget: React.FC = () => {
                 isShowAddButton={canAction}
                 addTitle="Add"
                 onAdd={handleAddUpdateModal}
+
+                isShowFilterButton
+                filters={filters}
+                onOpenFilter={() => {
+                    setTempFilters(filters);
+                    setShowFilterPopup(true);
+                }}
                 isShowExportButton={canExport && BudgetColumns.length > 0}
                 onExportExcel={handleExportBudgetExcel}
                 onExportPdf={handleExportBudgetPdf}
@@ -750,13 +791,14 @@ export const Budget: React.FC = () => {
 
             <Modal
                 isOpen={isAddUpdateModalOpen}
-                onSubmit={handleAddUpdateBudget}
+                onSubmit={handleUpdateBudget}
                 onClose={() => {
                     setIsAddUpdateModalOpen(false);
                     setEditBudgetData(null);
                     setErrors({});
                     setParentPath("");
                     setSelectedUom("");
+                    setSelectFlatValues("")
                 }}
                 onCancel={() => {
                     setIsAddUpdateModalOpen(false);
@@ -764,6 +806,7 @@ export const Budget: React.FC = () => {
                     setErrors({});
                     setParentPath("");
                     setSelectedUom("");
+                    setSelectFlatValues("")
                 }}
                 title={editBudgetData ? "Update Budget" : "Add Budget"}
                 saveText={editBudgetData ? "Update" : "Add"}
@@ -852,10 +895,11 @@ export const Budget: React.FC = () => {
                                     <Input
                                         label="Quantity"
                                         placeholder="Enter Quantity"
-                                        value={formData?.Quantity || ""}
+                                        value={formData?.Quantity ?? ""}
                                         onChange={(e) => handleFieldChange("Quantity", filterNumbersWithDecimal(e.target.value))}
                                         error={errors.Quantity}
-                                        maxLength={8}
+                                        maxLength={16}
+                                        min={0}
                                         required
                                     />
                                 </div>
@@ -864,10 +908,11 @@ export const Budget: React.FC = () => {
                                     <Input
                                         label="Labour Rate (₹)"
                                         placeholder="Enter Labour Rate"
-                                        value={formData?.LabourCost || ""}
+                                        value={formData?.LabourCost ?? ""}
                                         onChange={(e) => handleFieldChange("LabourCost", filterNumbersWithDecimal(e.target.value))}
                                         error={errors.LabourCost}
-                                        maxLength={8}
+                                        maxLength={16}
+                                        min={0}
                                         required
                                     />
                                 </div>
@@ -876,10 +921,11 @@ export const Budget: React.FC = () => {
                                     <Input
                                         label="Material Rate (₹)"
                                         placeholder="Enter Material Rate"
-                                        value={formData?.MaterialCost || ""}
+                                        value={formData?.MaterialCost ?? ""}
                                         onChange={(e) => handleFieldChange("MaterialCost", filterNumbersWithDecimal(e.target.value))}
                                         error={errors.MaterialCost}
-                                        maxLength={8}
+                                        maxLength={16}
+                                        min={0}
                                         required
                                     />
                                 </div>
@@ -888,10 +934,11 @@ export const Budget: React.FC = () => {
                                     <Input
                                         label="P&M Rate (₹)"
                                         placeholder="Enter P&M Rate"
-                                        value={formData?.PMCost || ""}
+                                        value={formData?.PMCost ?? ""}
                                         onChange={(e) => handleFieldChange("PMCost", filterNumbersWithDecimal(e.target.value))}
                                         error={errors.PMCost}
-                                        maxLength={8}
+                                        maxLength={16}
+                                        min={0}
                                         required
                                     />
                                 </div>
@@ -907,7 +954,6 @@ export const Budget: React.FC = () => {
                                 <div>
                                     <Input
                                         label="Budget Amount (₹)"
-                                        placeholder="Enter Budget Amount"
                                         value={budget}
                                         disabled
                                     />
@@ -915,21 +961,22 @@ export const Budget: React.FC = () => {
                             </div>
 
                             <div>
-                                <SingleSelectDropdownWithPagination
+                                <MultiSelectPagination
                                     key={projectId}
                                     label="Flat"
-                                    required
                                     title="Select Flat"
                                     size="lg"
                                     dataFetchCallBack={(pageNumber) => fetchPaginatedFlatsDropdown(pageNumber, { projectId: Number(projectId) })}
-                                    onSelected={(item) => {
-                                        if (!item) {
-                                            handleFieldChange("InventoryFlatId", null)
-                                            return
+                                    options={flatDropDown.initialOptions}
+                                    selectedValues={flatDropDown.selectedValues}
+                                    onChange={(values) => {
+                                        const { idsString } = flatDropDown.handleChange(values);
+                                        setSelectFlatValues(idsString || null);
+                                        handleFieldChange("InventoryFlatId", idsString);
+                                        if (errors.InventoryFlatId) {
+                                            setErrors((prev) => ({ ...prev, InventoryFlatId: "" }));
                                         }
-                                        handleFieldChange("InventoryFlatId", (item.value));
                                     }}
-                                    initialValue={createDropdownInitialValue(formData.InventoryFlatId, dropdownLabels.flat)}
                                     error={errors.InventoryFlatId}
                                 />
                             </div>
@@ -941,14 +988,43 @@ export const Budget: React.FC = () => {
                                     className='thin-scroll'
                                     value={formData?.Remark || ""}
                                     onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                    error={errors.Remark}
                                     rows={5}
+                                    error={errors.Remark}
                                     autoResize={false}
-                                    required
                                 />
                             </div>
                         </>
                     )}
+                </div>
+            </Modal>
+
+            <Modal
+                isOpen={showFilterPopup}
+                onClose={() => setShowFilterPopup(false)}
+                title="Filter - Budget"
+                onSubmit={e => {
+                    e.preventDefault();
+                    applyFilters();
+                }}
+                saveText="Apply "
+                cancelText="Clear"
+                onCancel={() => clearFilters()}
+                size="small-half"
+            >
+                <div className="space-y-4">
+
+                    <div>
+                        <SinglePageSelection
+                            label='Level Type'
+                            value={tempFilters.LevelType || ''}
+                            placeholder="Select Level Type"
+                            onChange={e => handleFilterChange('LevelType', String(e))}
+                            options={BUDGET_LEVEL_TYPE.map(opt => ({
+                                label: opt.name,
+                                value: opt.id
+                            }))}
+                        />
+                    </div>
 
                 </div>
             </Modal>
@@ -957,3 +1033,4 @@ export const Budget: React.FC = () => {
     )
 }
 export default Budget;
+

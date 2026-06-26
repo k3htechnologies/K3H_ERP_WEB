@@ -199,12 +199,12 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                     BookingId: bookingId,
                     ProjectId: Number(projectId),
                     IsCheckPermission: false,
-                    ExportType: welcome==="E-Mail" ?'WELCOME MESSAGE ON MAIL' :'WELCOME MESSAGE'
+                    ExportType: welcome === "E-Mail" ? 'WELCOME MESSAGE ON MAIL' : 'WELCOME MESSAGE'
                 };
 
                 const response = await bookingService.apiCallPullBooking(params);
 
-                addToast({ type: 'success', title: `${welcome} sent successfully`})
+                addToast({ type: 'success', title: `${welcome} sent successfully` })
 
                 setWelcome("");
 
@@ -332,7 +332,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
             },
             {
                 key: "PaymentScheduleAmount",
-                label: "Amount (₹)",
+                label: "Amount Without TDS (₹)",
                 width: "20",
                 align: "right",
                 render: (value, row) => (
@@ -363,11 +363,28 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                     </span>
                 ),
             },
+
+            {
+                key: "PaymentScheduleTotalAmount",
+                label: "Total Amount With TDS (₹)",
+                sortable: false,
+                width: "20",
+                align: "right",
+                render: (_, row) =>
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(
+                            (row?.PaymentScheduleAmount || 0) +
+                            (row?.PaymentScheduleTDSAmount || 0)
+                        ) || "0"}
+                    </span>
+            },
         ];
     }, []);
 
     const otherChargesDataWithTotal = useMemo(() => {
         const data = bookingData?.BookingOtherChargesData || [];
+
+        if (data.length === 0) return [];
 
         const totals = data.reduce(
             (acc, row) => {
@@ -572,11 +589,14 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                 <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
 
-                                        <FieldItem label="Unique Code:" value={editEnquiryData?.SystemGeneratedCode || '-'} />
+                                        <FieldItem label="Enquiry Code:" value={editEnquiryData?.SystemGeneratedCode || '-'} />
 
                                         <FieldItem label="Name" value={editEnquiryData?.Name || '-'} />
 
-                                        <FieldItem label="Mobile No:" value={getSafeString(editEnquiryData?.MobileNumber) ? `+91 ${editEnquiryData?.MobileNumber}` : '-'} />
+                                        <FieldItem label="E-Mail ID" value={editEnquiryData?.EmailId || '-'} />
+
+                                        <FieldItem label="Mobile No" value={!getSafeString(editEnquiryData?.MobileNumber) ? "-" : `${editEnquiryData?.MobileNumberCountryCode ?? "+91"}  ${editEnquiryData?.MobileNumber}`} />
+
 
                                         <FieldItem label="Source" value={editEnquiryData?.Source || '-'} />
 
@@ -599,7 +619,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
 
                                 </div>
                                 {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Reference' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Reference' && (
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
 
@@ -612,7 +632,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                 )}
 
                                 {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Loyalty' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Loyalty' && (
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
 
@@ -625,7 +645,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                 )}
 
                                 {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Employee Reference' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Employee Reference' && (
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
 
@@ -641,11 +661,13 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg shadow-sm border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
 
-                                            <FieldItem label="Channel Partner" value={editEnquiryData?.ChannelPartnerName || '-'} />
-                                            <FieldItem label="CP Mobile" value={editEnquiryData?.ChannelPartnerMobileNumber ? `+91 ${editEnquiryData?.ChannelPartnerMobileNumber}` : '-'} />
-                                            <FieldItem label="CP Team Member" value={editEnquiryData?.ChannelPartnerTeamMemberName || '-'} />
-                                            <FieldItem label="CP Team Mobile" value={editEnquiryData?.ChannelPartnerTeamMemberMobileNumber || '-'} />
-
+                                            <FieldItem label="CP Code" value={editEnquiryData?.ChannelPartnerCode || '-'} />
+                                            <FieldItem label="CP Name" value={editEnquiryData?.ChannelPartnerName || '-'} />
+                                            <FieldItem label="CP Mobile Number" value={editEnquiryData?.ChannelPartnerMobileNumber ? `${editEnquiryData?.ChannelPartnerMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerMobileNumber}` : '-'} />
+                                            <FieldItem label="CP E-Mail ID" value={editEnquiryData?.ChannelPartnerEmailId || '-'} />
+                                            <FieldItem label="CP Team Member Name" value={editEnquiryData?.ChannelPartnerTeamMemberName || '-'} />
+                                            <FieldItem label="CP Team Mobile Number" value={editEnquiryData?.ChannelPartnerTeamMemberMobileNumber ? `${editEnquiryData?.ChannelPartnerTeamMemberMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerTeamMemberMobileNumber}` : '-'} />
+                                            <FieldItem label="CP  Team E-Mail ID" value={editEnquiryData?.ChannelPartnerTeamMemberEmailId || '-'} />
                                         </div>
                                     </div>
                                 )}
@@ -663,7 +685,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
                                                 <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                <FieldItem label="Mobile Number" value={getSafeString(applicant?.ApplicantMobileNumber)} />
+                                                <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
                                                 <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
                                                 <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
                                                 <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
@@ -671,13 +693,13 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                                 <FieldItem label="Voting ID No." value={getSafeString(applicant?.VotingIdNumber)} urls={applicant?.VotingIdURL} isIcon />
                                                 <FieldItem label="Passport No." value={getSafeString(applicant?.PassportNumber)} urls={applicant?.PassportURL} isIcon />
                                                 <FieldItem label="GST No." value={getSafeString(applicant?.GSTNumber)} urls={applicant?.GSTNumberURL} isIcon />
-                                                <FieldItem label="Cancelled Cheque" value="" urls={applicant?.CancelledChequeURL} isIcon />
-                                                <FieldItem label="POA (if NRI Execution)" value="" urls={applicant?.POAURL} isIcon />
-                                                <FieldItem label="Income Docs (Form 16 / ITR)" value="" urls={applicant?.IncomeForm16ITRURL} isIcon />
-                                                <FieldItem label="NRE / NRO Bank Details" value="" urls={applicant?.NreNroBankDetailsURL} isIcon />
-                                                <FieldItem label="Nominee Form" value="" urls={applicant?.NomineeFormURL} isIcon />
-                                                <FieldItem label="Statement of Source of Funds" value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
-                                                <FieldItem label="Payment Proof" value="" urls={applicant?.PaymentProofURL} isIcon />
+                                                <FieldItem label="Cancelled Cheque" value="" isSetValue={false} urls={applicant?.CancelledChequeURL} isIcon />
+                                                <FieldItem label="POA (if NRI Execution)" isSetValue={false} value="" urls={applicant?.POAURL} isIcon />
+                                                <FieldItem label="Income Docs (Form 16 / ITR)" isSetValue={false} urls={applicant?.IncomeForm16ITRURL} isIcon />
+                                                <FieldItem label="NRE / NRO Bank Details" isSetValue={false} value="" urls={applicant?.NreNroBankDetailsURL} isIcon />
+                                                <FieldItem label="Nominee Form" value="" isSetValue={false} urls={applicant?.NomineeFormURL} isIcon />
+                                                <FieldItem label="Statement of Source of Funds" isSetValue={false} value="" urls={applicant?.StatementOfSourceOfFundsURL} isIcon />
+                                                <FieldItem label="Payment Proof" value="" isSetValue={false} urls={applicant?.PaymentProofURL} isIcon />
 
                                             </div>
                                         </div>
@@ -847,7 +869,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                     </>
                                 )}
 
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Reference' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Reference' && (
                                     <>
                                         <div className="py-4">
                                             <FieldItem label="Referral (%)" value={getSafeString(bookingData.ReferralAmount)} isRow />
@@ -858,7 +880,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                     </>
                                 )}
 
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Loyalty' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Loyalty' && (
                                     <>
                                         <div className="py-4">
                                             <FieldItem label="Loyalty (%)" value={getSafeString(bookingData.LoyaltyPercentage)} isRow />
@@ -869,7 +891,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                                     </>
                                 )}
 
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Employee Reference' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Employee Reference' && (
                                     <>
                                         <div className="py-4">
                                             <FieldItem label="Employee Reference (%)" value={getSafeString(bookingData.EmployeeReferencePercentage)} isRow />
@@ -1011,8 +1033,13 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                 </section>
 
                 <section className="bg-white rounded-xl pt-5">
-                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                        Payment Schedule
+
+
+                    <h4 className="text-lg font-semibold text-gray-900  mb-4">
+                        Payment Schedule{" "}
+                        <span className="text-sm font-normal text-gray-500">
+                            ({getSafeString(bookingData.PaymentScheduleScheme)})
+                        </span>
                     </h4>
 
                     <DataTable
@@ -1026,53 +1053,49 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
 
                 </section>
 
-                {bookingData.FlatAlterationRemark && (
-                    <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Flat Alteration Remarks
-                        </h4>
-                        <div className="grid grid-cols-1 gap-4">
-                            <FieldItem label="Remarks" value={getSafeString(bookingData.FlatAlterationRemark)} />
-                        </div>
-                    </section>
-                )}
+
+                <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        Flat Alteration Remarks
+                    </h4>
+                    <div className="grid grid-cols-1 gap-4">
+                        <FieldItem label="Remarks" value={getSafeString(bookingData.FlatAlterationRemark)} />
+                    </div>
+                </section>
+
+                <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        Payment Remarks
+                    </h4>
+                    <div className="grid grid-cols-1 gap-4">
+                        <FieldItem label="Remarks" value={getSafeString(bookingData.PaymentRemark)} />
+                    </div>
+                </section>
+
+                <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        Other Remarks
+                    </h4>
+                    <div className="grid grid-cols-1 gap-4">
+                        <FieldItem label="Remarks" value={getSafeString(bookingData.OtherRemark)} />
+                    </div>
+                </section>
 
 
-                {bookingData.PaymentRemark && (
-                    <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Payment Remarks
-                        </h4>
-                        <div className="grid grid-cols-1 gap-4">
-                            <FieldItem label="Remarks" value={getSafeString(bookingData.PaymentRemark)} />
-                        </div>
-                    </section>
-                )}
+                <section className={`rounded-xl pt-5 ${!bookingData.TermsAndConditionsDescription ? 'bg-white shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-5' : ''}`}>
+                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                        Terms & Conditions
+                    </h4>
 
+                    <div className="grid grid-cols-1 gap-4">
+                        {bookingData.TermsAndConditionsDescription ? (
+                            <RichTextEditor value={bookingData.TermsAndConditionsDescription} onChange={() => { }} readOnly />
+                        ) : (
+                            <FieldItem label="Terms & Conditions" value={getSafeString(bookingData.TermsAndConditionsDescription)} />
+                        )}
+                    </div>
+                </section>
 
-                {bookingData.OtherRemark && (
-                    <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Other Remarks
-                        </h4>
-                        <div className="grid grid-cols-1 gap-4">
-                            <FieldItem label="Remarks" value={getSafeString(bookingData.OtherRemark)} />
-                        </div>
-                    </section>
-                )}
-
-
-                {bookingData.TermsAndConditionsDescription && (
-                    <section className="rounded-xl pt-5">
-                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                            Terms & Conditions
-                        </h4>
-                        <div className="grid grid-cols-1 gap-4">
-                            <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
-
-                        </div>
-                    </section>
-                )}
 
                 <div className='pt-5'>
                     <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">

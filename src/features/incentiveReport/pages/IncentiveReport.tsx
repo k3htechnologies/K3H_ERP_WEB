@@ -642,7 +642,7 @@ export const IncentiveReport: React.FC = () => {
 
                         </div>
                         {/* SUB SOURCE */}
-                        {tempFilters.Source === 'Direct Walking' && (
+                        {tempFilters.Source === 'Direct Walkin' && (
                             <div>
                                 <SinglePageSelection
                                     label="Sub Source"

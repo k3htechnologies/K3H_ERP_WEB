@@ -45,10 +45,11 @@ export const ViewBooking: React.FC = () => {
         { id: 'Applicants', label: 'Applicants' },
         { id: 'Charges', label: 'Other Charges' },
         { id: 'Payment', label: 'Payment Schedule' },
+        { id: 'Terms & Condition', label: 'Terms & Condition' },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(bookingTabList[0].id);
-    
+
     useEffect(() => {
         if (!projectId || !bookingId) return;
 
@@ -180,15 +181,56 @@ export const ViewBooking: React.FC = () => {
 
     //#endregion
 
-    const paymentScheduleColumns = useMemo<TableColumn[]>(
-        () => [
+    const paymentScheduleDataWithTotal = useMemo(() => {
+        const data = bookingData?.BookingPaymentScheduleData || [];
+
+        const totals = data.reduce(
+            (acc, row) => {
+                acc.PaymentScheduleAmount += row.PaymentScheduleAmount || 0;
+                acc.PaymentScheduleGSTAmount += row.PaymentScheduleGSTAmount || 0;
+                acc.PaymentSchedulePercentage += row.PaymentSchedulePercentage || 0;
+                acc.PaymentScheduleTDSAmount += row.PaymentScheduleTDSAmount || 0;
+                return acc;
+            },
+            {
+                PaymentScheduleAmount: 0,
+                PaymentScheduleGSTAmount: 0,
+                PaymentSchedulePercentage: 0,
+                PaymentScheduleTDSAmount: 0,
+            }
+        );
+
+        return [
+            ...data,
+            {
+                Name: "TOTAL",
+                Type: "Stage",
+                PaymentSchedulePercentage: totals.PaymentSchedulePercentage,
+                PaymentScheduleAmount: totals.PaymentScheduleAmount,
+                PaymentScheduleGSTAmount: totals.PaymentScheduleGSTAmount,
+                PaymentScheduleTDSAmount: totals.PaymentScheduleTDSAmount,
+                isTotal: true,
+            },
+        ];
+    }, [bookingData]);
+
+
+    const paymentScheduleColumns = useMemo<TableColumn[]>(() => {
+
+        const boldIfTotal = (row: any) => row.isTotal ? "font-bold text-gray-500" : "";
+
+        return [
             {
                 key: "Type",
                 label: "Type",
                 sortable: false,
                 width: "20",
                 align: "left",
-                render: (value) => value || "-",
+                render: (value, row) => {
+                    if (row.isTotal) return <span className={boldIfTotal(row)}></span>;
+
+                    return value || "-";
+                },
             },
             {
                 key: "Date",
@@ -198,7 +240,8 @@ export const ViewBooking: React.FC = () => {
                 width: "30",
                 align: "center",
                 render: (_value, row) => {
-
+                    if (row.isTotal) return <span className={boldIfTotal(row)}>TOTAL</span>;
+                    
                     if (row.Type === "Date" && row.Date) {
 
                         return formatDate_dd_MonthName_yy(row.Date);
@@ -217,16 +260,24 @@ export const ViewBooking: React.FC = () => {
 
                 width: "20",
                 align: "right",
-                render: (value) => `${value || 0}%`,
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {value || "-"}
+                    </span>
+                ),
             },
             {
                 key: "PaymentScheduleAmount",
-                label: "Amount (₹)",
+                label: "Amount  Without TDS (₹)",
                 sortable: false,
 
                 width: "20",
                 align: "right",
-                render: (value) => formatCurrency(value) || "0",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                ),
             },
             {
                 key: "PaymentScheduleGSTAmount",
@@ -235,63 +286,142 @@ export const ViewBooking: React.FC = () => {
                 width: "20",
                 sortable: false,
                 align: "right",
-                render: (value) => formatCurrency(value) || "0",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                ),
             },
             {
                 key: "PaymentScheduleTDSAmount",
                 label: "TDS Amount (₹)",
-
                 width: "20",
                 sortable: false,
                 align: "right",
-                render: (value) => formatCurrency(value) || "0",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                ),
             },
 
-        ],
-        [],
-    );
+            {
+                key: "PaymentScheduleTotalAmount",
+                label: "Total Amount With TDS (₹)",
+                sortable: false,
+                width: "20",
+                align: "right",
+                render: (_, row) =>
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(
+                            (row?.PaymentScheduleAmount || 0) +
+                            (row?.PaymentScheduleTDSAmount || 0)
+                        ) || "0"}
+                    </span>
+            },
+        ];
+    }, []);
 
-    const otherChargesColumns = useMemo<TableColumn[]>(
-        () => [
+    const otherChargesDataWithTotal = useMemo(() => {
+
+        const data = bookingData?.BookingOtherChargesData || [];
+
+        if (data.length === 0) return [];
+
+        const totals = data.reduce(
+            (acc, row) => {
+
+                acc.Value += row.Value || 0;
+                acc.GSTPercentage += row.GSTPercentage || 0;
+                acc.GSTValue += row.GSTValue || 0;
+                return acc;
+
+            },
+            {
+                Value: 0,
+                GSTPercentage: 0,
+                GSTValue: 0,
+            }
+        );
+
+        return [
+            ...data,
+            {
+                ChargeName: "TOTAL",
+                CalculatedOn: "",
+                Value: totals.Value,
+                GSTPercentage: totals.GSTPercentage || 0,
+                GSTValue: totals.GSTValue,
+                isTotal: true,
+            },
+        ];
+    }, [bookingData]);
+
+
+    const otherChargesColumns = useMemo<TableColumn[]>(() => {
+
+        const boldIfTotal = (row: any) =>
+            row.isTotal ? "font-bold text-gray-500" : "";
+
+        return [
             {
                 key: "ChargeName",
                 label: "Charges",
                 sortable: false,
                 align: "left",
                 fixed: "left",
-                render: (value) => value || "-",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {row.isTotal ? "" : value || "-"}
+                    </span>
+                ),
             },
             {
                 key: "CalculatedOn",
                 label: "Calculated On",
                 sortable: false,
                 align: "left",
-                render: (value) => value || "-",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {row.isTotal ? "TOTAL" : value || "-"}
+                    </span>
+                ),
             },
             {
                 key: "Value",
                 label: "Value (₹)",
                 sortable: false,
                 align: "right",
-                render: (value) => formatCurrency(value) || "0",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                ),
             },
             {
                 key: "GSTPercentage",
                 label: "GST (%)",
                 sortable: false,
                 align: "right",
-                render: (value) => `${value || 0}%`,
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {`${value || 0} %`}
+                    </span>
+                ),
             },
             {
                 key: "GSTValue",
                 label: "GST Value (₹)",
                 sortable: false,
                 align: "right",
-                render: (value) => formatCurrency(value) || "0",
+                render: (value, row) => (
+                    <span className={boldIfTotal(row)}>
+                        {formatCurrency(value) || "0"}
+                    </span>
+                ),
             },
-        ],
-        [],
-    );
+        ];
+    }, []);
 
     if (!bookingData) {
         return (
@@ -313,6 +443,7 @@ export const ViewBooking: React.FC = () => {
                 titleText={`Booking Details : ${bookingData.ApplicantName ?? bookingName}`}
                 subTitleText={bookingData.BookingType ?? ""}
                 subSubTitleText={bookingData.Flat ?? ""}
+                subSubSubTitleText={bookingData.ApprovalStatus ?? ""}
                 cancelText="Back"
                 EditText="Edit"
                 onCancel={() => {
@@ -325,7 +456,7 @@ export const ViewBooking: React.FC = () => {
                         navigate('/booking');
                     }
                 }}
-                canAction={canAction && !bookingData.ApprovalStatus?.toUpperCase().includes("APPROVED") && sourcePage === 'booking' ? true : false}
+                canAction={canAction && bookingData.ApprovalStatus?.toUpperCase().includes("PENDING") && sourcePage === 'booking' ? true : false}
                 onEdit={() => navigate('/booking/add')}
 
                 ExtraButtontitleText="PDF"
@@ -364,9 +495,11 @@ export const ViewBooking: React.FC = () => {
                                 <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
 
-                                        <FieldItem label="Unique Code:" value={editEnquiryData?.SystemGeneratedCode || '-'} />
+                                        <FieldItem label="Enquiry Code:" value={editEnquiryData?.SystemGeneratedCode || '-'} />
 
                                         <FieldItem label="Name" value={editEnquiryData?.Name || '-'} />
+
+                                        <FieldItem label="E-Mail ID" value={editEnquiryData?.EmailId || '-'} />
 
                                         <FieldItem label="Mobile No:" value={getSafeString(editEnquiryData?.MobileNumber) ? `${editEnquiryData?.MobileNumberCountryCode || "+91"} ${editEnquiryData?.MobileNumber}` : '-'} />
 
@@ -391,7 +524,7 @@ export const ViewBooking: React.FC = () => {
 
                                 </div>
                                 {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Reference' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Reference' && (
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
 
@@ -404,7 +537,7 @@ export const ViewBooking: React.FC = () => {
                                 )}
 
                                 {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Loyalty' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Loyalty' && (
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
 
@@ -417,7 +550,7 @@ export const ViewBooking: React.FC = () => {
                                 )}
 
                                 {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-                                {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Employee Reference' && (
+                                {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Employee Reference' && (
                                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200 pt-5">
                                         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
 
@@ -436,10 +569,10 @@ export const ViewBooking: React.FC = () => {
                                             <FieldItem label="CP Code" value={editEnquiryData?.ChannelPartnerCode || '-'} />
                                             <FieldItem label="CP Name" value={editEnquiryData?.ChannelPartnerName || '-'} />
                                             <FieldItem label="CP Mobile Number" value={editEnquiryData?.ChannelPartnerMobileNumber ? `${editEnquiryData?.ChannelPartnerMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerMobileNumber}` : '-'} />
-                                            <FieldItem label="CP E-Mail ID" value={editEnquiryData?.EmailId || '-'} />
+                                            <FieldItem label="CP E-Mail ID" value={editEnquiryData?.ChannelPartnerEmailId || '-'} />
                                             <FieldItem label="CP Team Member Name" value={editEnquiryData?.ChannelPartnerTeamMemberName || '-'} />
                                             <FieldItem label="CP Team Mobile Number" value={editEnquiryData?.ChannelPartnerTeamMemberMobileNumber ? `${editEnquiryData?.ChannelPartnerTeamMemberMobileNumberCountryCode} ${editEnquiryData?.ChannelPartnerTeamMemberMobileNumber}` : '-'} />
-                                            
+                                            <FieldItem label="CP  Team E-Mail ID" value={editEnquiryData?.ChannelPartnerTeamMemberEmailId || '-'} />
                                         </div>
                                     </div>
                                 )}
@@ -460,7 +593,7 @@ export const ViewBooking: React.FC = () => {
                                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                                     <FieldItem label="Type" value={getSafeString(applicant.ApplicantType)} className='text-blue-900 bold' />
                                                     <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
-                                                    
+
                                                     <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
                                                     <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
                                                     <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
@@ -508,7 +641,7 @@ export const ViewBooking: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pt-4 pb-4">
                                         <FieldItem label="Wing" value={getSafeString(bookingData.Wing)} />
                                         <FieldItem label="Floor" value={getSafeString(bookingData.Floor)} />
-                                        <FieldItem label="Building Number" value={getSafeString(bookingData.BuildingNumber)} />
+                                        <FieldItem label="Building" value={getSafeString(bookingData.BuildingNumber)} />
                                     </div>
 
                                     <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4 ${bookingData.ParkingNumber !== "" ? "border-b border-[#135bec2e] pb-4" : ""} `} >
@@ -650,7 +783,7 @@ export const ViewBooking: React.FC = () => {
                                             </>
                                         )}
 
-                                        {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Reference' && (
+                                        {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Reference' && (
                                             <>
                                                 <div className="py-4">
                                                     <FieldItem label="Referral (%)" value={getSafeString(bookingData.ReferralAmount)} isRow />
@@ -661,7 +794,7 @@ export const ViewBooking: React.FC = () => {
                                             </>
                                         )}
 
-                                        {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Loyalty' && (
+                                        {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Loyalty' && (
                                             <>
                                                 <div className="py-4">
                                                     <FieldItem label="Loyalty (%)" value={getSafeString(bookingData.LoyaltyPercentage)} isRow />
@@ -672,7 +805,7 @@ export const ViewBooking: React.FC = () => {
                                             </>
                                         )}
 
-                                        {editEnquiryData?.Source === 'Direct Walking' && editEnquiryData?.SubSource === 'Employee Reference' && (
+                                        {editEnquiryData?.Source === 'Direct Walkin' && editEnquiryData?.SubSource === 'Employee Reference' && (
                                             <>
                                                 <div className="py-4">
                                                     <FieldItem label="Employee Reference (%)" value={getSafeString(bookingData.EmployeeReferencePercentage)} isRow />
@@ -696,7 +829,7 @@ export const ViewBooking: React.FC = () => {
                                 Other Charges
                             </h4>
                             <DataTable
-                                data={bookingData?.BookingOtherChargesData || []}
+                                data={otherChargesDataWithTotal || []}
                                 columns={otherChargesColumns}
                                 emptyMessage="No Other Charges Found"
                                 fixedHeight={false}
@@ -715,7 +848,7 @@ export const ViewBooking: React.FC = () => {
                             </h4>
 
                             <DataTable
-                                data={bookingData.BookingPaymentScheduleData || []}
+                                data={paymentScheduleDataWithTotal || []}
                                 columns={paymentScheduleColumns}
                                 emptyMessage="No Payment Schedule Found"
                                 fixedHeight={false}
@@ -725,53 +858,52 @@ export const ViewBooking: React.FC = () => {
 
                         </section>
 
-                        {bookingData.FlatAlterationRemark && (
-                            <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Flat Alteration Remarks
-                                </h4>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={getSafeString(bookingData.FlatAlterationRemark)} />
-                                </div>
-                            </section>
-                        )}
+
+                        <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Flat Alteration Remarks
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <FieldItem label="Remarks" value={getSafeString(bookingData.FlatAlterationRemark)} />
+                            </div>
+                        </section>
 
 
-                        {bookingData.PaymentRemark && (
-                            <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Payment Remarks
-                                </h4>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={getSafeString(bookingData.PaymentRemark)} />
-                                </div>
-                            </section>
-                        )}
 
 
-                        {bookingData.OtherRemark && (
-                            <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Other Remarks
-                                </h4>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <FieldItem label="Remarks" value={getSafeString(bookingData.OtherRemark)} />
-                                </div>
-                            </section>
-                        )}
+                        <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Payment Remarks
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <FieldItem label="Remarks" value={getSafeString(bookingData.PaymentRemark)} />
+                            </div>
+                        </section>
+
+                        <section className="bg-white rounded-xl shadow-sm  p-6 border-[0.1px] border-[#3333334f] mt-5">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Other Remarks
+                            </h4>
+                            <div className="grid grid-cols-1 gap-4">
+                                <FieldItem label="Remarks" value={getSafeString(bookingData.OtherRemark)} />
+                            </div>
+                        </section>
 
 
-                        {bookingData.TermsAndConditionsDescription && (
-                            <section className="rounded-xl pt-5">
-                                <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                    Terms & Conditions
-                                </h4>
-                                <div className="grid grid-cols-1 gap-4">
-                                    <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
 
-                                </div>
-                            </section>
-                        )}
+                        <section className={`rounded-xl pt-5 ${!bookingData.TermsAndConditionsDescription ? 'bg-white shadow-sm p-6 border-[0.1px] border-[#3333334f] mt-5' : ''}`}>
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                Terms & Conditions
+                            </h4>
+
+                            <div className="grid grid-cols-1 gap-4">
+                                {bookingData.TermsAndConditionsDescription ? (
+                                    <RichTextEditor value={bookingData.TermsAndConditionsDescription} onChange={() => { }} readOnly />
+                                ) : (
+                                    <FieldItem label="Terms & Conditions" value={getSafeString(bookingData.TermsAndConditionsDescription)} />
+                                )}
+                            </div>
+                        </section>
 
                         <div className='pt-5'>
                             <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
@@ -860,7 +992,7 @@ export const ViewBooking: React.FC = () => {
                     activeTab === 'Charges' && (
                         <div className="space-y-4">
                             <DataTable
-                                data={bookingData.BookingOtherChargesData || []}
+                                data={otherChargesDataWithTotal || []}
                                 columns={otherChargesColumns}
                                 emptyMessage="No Other Charges Found"
                                 fixedHeight={false}
@@ -870,22 +1002,33 @@ export const ViewBooking: React.FC = () => {
                     )
                 }
 
-                {
-                    activeTab === 'Payment' && (
-                        <div className="space-y-4">
-                            <DataTable
-                                data={bookingData.BookingPaymentScheduleData || []}
-                                columns={paymentScheduleColumns}
-                                emptyMessage="No Payment Schedule Found"
-                                fixedHeight={false}
-                                recordsPerPage={20}
-                                className="min-w-full" />
+                {activeTab === 'Payment' && (
+                    <div className="space-y-4">
+                        <DataTable
+                            data={paymentScheduleDataWithTotal || []}
+                            columns={paymentScheduleColumns}
+                            emptyMessage="No Payment Schedule Found"
+                            fixedHeight={false}
+                            recordsPerPage={20}
+                            className="min-w-full" />
 
-                        </div>
-                    )
+                    </div>
+                )
                 }
+                {activeTab === 'Terms & Condition' && (
+                    <div className="space-y-3">
+                        {bookingData.TermsAndConditionsDescription ? (
+                            <section className="bg-white rounded-xl shadow-sm">
+                                <RichTextEditor value={bookingData.TermsAndConditionsDescription ?? ""} onChange={() => { }} readOnly={true} />
+                            </section>
 
-
+                        ) : (
+                            <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                                <NoDataView message="No Terms & Conditions Found" />
+                            </section>
+                        )}
+                    </div>
+                )}
             </div >
         </div >
     );

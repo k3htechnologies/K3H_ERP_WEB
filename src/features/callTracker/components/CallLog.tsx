@@ -30,6 +30,7 @@ import { fetchVillageDropdown } from "@/features/technical/villageDropDown";
 import { BUDGET_TYPE_OPTIONS, CALL_STATUS_OPTIONS, COMMERCIAL_FLAT_CONFIGURATION, REQUIREMENT_TYPE_OPTIONS, RESIDENTIAL_FLAT_CONFIGURATION } from "@/core/constants";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
+import { filterNumbers } from "@/core/utils/fileValidation";
 
 const initialFormState = (): UpdateCallLogRequest => ({
     CallLogId: 0,
@@ -93,7 +94,7 @@ export const CallLog: React.FC = () => {
                     PageSize: pagination.pageSize,
                     CallLogId: filterParams.CallLogId ? Number(filterParams.CallLogId) : undefined,
                     ProjectId: Number(projectId),
-                    Name: searchText?.trim() || undefined,
+                    Name: searchText || filterParams.Name?.trim() || undefined,
                     MobileNumber: filterParams.MobileNumber ? Number(filterParams.MobileNumber) : undefined,
                     RescheduleDateFromDate: filterParams.RescheduleDateFromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.RescheduleDateFromDate) || undefined : undefined,
                     RescheduleDateToDate: filterParams.RescheduleDateToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.RescheduleDateToDate) || undefined : undefined,
@@ -382,7 +383,7 @@ export const CallLog: React.FC = () => {
         },
         {
             key: 'CallDate',
-            label: 'Call Time',
+            label: 'Call DateTime',
             width: '15',
             sortable: false,
             align: 'center',
@@ -408,7 +409,6 @@ export const CallLog: React.FC = () => {
             key: 'VillageName',
             label: 'Location',
             width: '30',
-            fixed: 'left',
             align: 'left',
              render: (value) => (
                 <TooltipText
@@ -778,7 +778,7 @@ export const CallLog: React.FC = () => {
                             type="text"
                             label="Mobile Number"
                             value={tempFilters?.MobileNumber ?? ''}
-                            onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+                            onChange={e => handleFilterChange('MobileNumber', filterNumbers(e.target.value))}
                             placeholder="Enter Mobile Number"
                         />
                     </div>

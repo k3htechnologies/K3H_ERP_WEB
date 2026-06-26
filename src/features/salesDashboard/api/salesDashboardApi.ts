@@ -1,6 +1,7 @@
 export const SalesDashboardApi = {
     PULL: '/SalesDashboard/PullSalesDashboard',
-    UPDATE_ENQUIRY_OUT_TIME: '/Enquiry/EnquiryOutTime'
+    UPDATE_ENQUIRY_OUT_TIME: '/Enquiry/EnquiryOutTime',
+    PULL_PROJECT_WISE_SALES_DASHBOARD: '/SalesDashboard/PullProjectWiseSalesDashboard',
     
 } as const
 

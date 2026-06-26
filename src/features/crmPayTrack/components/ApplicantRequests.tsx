@@ -24,6 +24,7 @@ import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 
 const initialFormStateForDetailsRequest = (): BookingApplicantModificationRequest => ({
     BookingApplicantModificationRequestId: 0,
@@ -58,8 +59,8 @@ const initialFormStateForDetailsRequest = (): BookingApplicantModificationReques
     NomineeFormURL: [],
     StatementOfSourceOfFundsURL: [],
     PaymentProofURL: [],
-    BookingApplicantModificationDocumentUploadURL: [],
-    RemoveBookingApplicantModificationDocumentUploadURL: '',
+    ProofOfDocumentURL: [],
+    RemoveProofOfDocumentURL: '',
 });
 
 type RequestBookingApplicantWithFiles = BookingApplicantModificationDataRequest & {
@@ -78,7 +79,7 @@ type RequestBookingApplicantWithFiles = BookingApplicantModificationDataRequest 
     _nomineeFormFiles?: (File | string)[];
     _statementOfSourceOfFundsFiles?: (File | string)[];
     _paymentProofFiles?: (File | string)[];
-    _bookingApplicantModificationDocumentUploadFiles?: (File | string)[];
+    _proofOfDocumentFiles?: (File | string)[];
 
     RemovePhotoURL?: string;
     RemoveAadharCardURL?: string;
@@ -94,8 +95,7 @@ type RequestBookingApplicantWithFiles = BookingApplicantModificationDataRequest 
     RemoveNomineeFormURL?: string;
     RemoveStatementOfSourceOfFundsURL?: string;
     RemovePaymentProofURL?: string;
-    
-    RemoveBookingApplicantModificationDocumentUploadURL?: string;
+    RemoveProofOfDocumentURL?: string;
 
     CreatedDate?: string | null;
     ModifiedDate?: string | null;
@@ -109,36 +109,52 @@ export const ApplicantRequests: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState('');
     const [isAddUpdateApplicantDetailsModalOpen, setIsAddUpdateApplicantDetailsModalOpen] = useState(false);
     const [applicantList, setApplicantList] = useState<RequestBookingApplicantWithFiles[]>([]);
-    const [bookingApplicantModificationDocumentUploadFiles, setBookingApplicantModificationDocumentUploadFiles] = useState<(File | string)[]>([]);
-    const [removedBookingApplicantModificationDocumentUploadURLs, setRemovedBookingApplicantModificationDocumentUploadURLs] = useState<string[]>([]);
+
     const [applicantPhotoFiles, setApplicantPhotoFiles] = useState<(File | string)[]>([]);
     const [removedApplicantPhotoURLs, setRemovedApplicantPhotoURLs] = useState<string[]>([]);
+
     const [aadharCardFiles, setAadharCardFiles] = useState<(File | string)[]>([]);
     const [removedAadharCardURLs, setRemovedAadharCardURLs] = useState<string[]>([]);
+
     const [panCardFiles, setPanCardFiles] = useState<(File | string)[]>([]);
     const [removedPanCardURLs, setRemovedPanCardURLs] = useState<string[]>([]);
+
     const [passportFiles, setPassportFiles] = useState<(File | string)[]>([]);
     const [removedPassportURLs, setRemovedPassportURLs] = useState<string[]>([]);
+
     const [drivingLicenseFiles, setDrivingLicenseFiles] = useState<(File | string)[]>([]);
     const [removedDrivingLicenseURLs, setRemovedDrivingLicenseURLs] = useState<string[]>([]);
+
     const [votingIdFiles, setVotingIdFiles] = useState<(File | string)[]>([]);
     const [removedVotingIdURLs, setRemovedVotingIdURLs] = useState<string[]>([]);
+
     const [gstFiles, setGstFiles] = useState<(File | string)[]>([]);
     const [removedGstURLs, setRemovedGstURLs] = useState<string[]>([]);
+
     const [cancelledChequeFiles, setCancelledChequeFiles] = useState<(File | string)[]>([]);
     const [removedCancelledChequeURLs, setRemovedCancelledChequeURLs] = useState<string[]>([]);
+
     const [pOAFiles, setPOAFiles] = useState<(File | string)[]>([]);
     const [removedPOAURLs, setRemovedPOAURLs] = useState<string[]>([]);
+
     const [incomeForm16ITRFiles, setIncomeForm16ITRFiles] = useState<(File | string)[]>([]);
     const [removedIncomeForm16ITRURLs, setRemovedIncomeForm16ITRURLs] = useState<string[]>([]);
+
     const [nreNroBankDetailsFiles, setNreNroBankDetailsFiles] = useState<(File | string)[]>([]);
     const [removedNreNroBankDetailsURLs, setRemovedNreNroBankDetailsURLs] = useState<string[]>([]);
+
     const [nomineeFormFiles, setNomineeFormFiles] = useState<(File | string)[]>([]);
     const [removedNomineeFormURLs, setRemovedNomineeFormURLs] = useState<string[]>([]);
+
     const [statementOfSourceOfFundsFiles, setStatementOfSourceOfFundsFiles] = useState<(File | string)[]>([]);
     const [removedStatementOfSourceOfFundsURLs, setRemovedStatementOfSourceOfFundsURLs] = useState<string[]>([]);
+
     const [paymentProofFiles, setPaymentProofFiles] = useState<(File | string)[]>([]);
     const [removedPaymentProofURLs, setRemovedPaymentProofURLs] = useState<string[]>([]);
+
+    const [proofOfDocumentFiles, setProofOfDocumentFiles] = useState<(File | string)[]>([]);
+    const [removedProofOfDocumentURLs, setRemovedProofOfDocumentURLs] = useState<string[]>([]);
+
     const [formDataDetails, setFormDataDetails] = useState<BookingApplicantModificationRequest>(() => initialFormStateForDetailsRequest());
     const [editingApplicantData, setEditingApplicantData] = useState<{ row: RequestBookingApplicantWithFiles; index: number } | null>(null);
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -150,16 +166,26 @@ export const ApplicantRequests: React.FC = () => {
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [approvalRowData, setApprovalRowData] = useState<BookingApplicantModificationDataRequest | null>(null);
 
-    const { canAction } = useMenuPermissions("/payTrack");
+    const { canAction } = useMenuPermissions("/modificationRequest");
     const { addToast } = useToast();
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
-    const { bookingId, bookingData } = listState;
+    const { bookingId, bookingData, bookingApprovalStatus } = listState;
 
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
-    const applicantModificationList = useMemo(() => {
-        return (bookingApplicantModificationData || []).filter((app) => app.VersionNumber !== "1");
+   const applicantModificationList = useMemo(() => {
+        if (!bookingApplicantModificationData?.length) {
+            return [];
+        }
+
+        const highestVersion = Math.max(
+            ...bookingApplicantModificationData.map(item => Number(item.VersionNumber) || 0)
+        );
+
+        return bookingApplicantModificationData.filter(
+            item => Number(item.VersionNumber) === highestVersion
+        );
     }, [bookingApplicantModificationData]);
 
     const applicantTypeOptions = useMemo(() => {
@@ -256,6 +282,12 @@ export const ApplicantRequests: React.FC = () => {
     } => {
         const newErrorsBookingApplicant: { [key: string]: string } = {};
 
+        const mergedProofOfDocumentFiles = editingApplicantData ? calculateMergedFiles(editingApplicantData.row._proofOfDocumentFiles, proofOfDocumentFiles, removedProofOfDocumentURLs) : proofOfDocumentFiles.slice();
+
+        if (mergedProofOfDocumentFiles.length === 0) {
+            newErrorsBookingApplicant.ProofOfDocumentURL = "Proof of Document is required";
+        }
+
         if (!formDataDetails.ApplicantType?.trim()) {
             newErrorsBookingApplicant.ApplicantType = "Applicant Type is required";
         }
@@ -270,8 +302,11 @@ export const ApplicantRequests: React.FC = () => {
             newErrorsBookingApplicant.ApplicantMobileNumber = "Enter a valid 10-Digit Mobile Number";
         }
 
-        if (formDataDetails.ApplicantEmailId?.trim() && !isValidEmail(formDataDetails.ApplicantEmailId.trim())) {
-            newErrorsBookingApplicant.ApplicantEmailId = "Enter a valid Email Id";
+        if (!formDataDetails.ApplicantEmailId?.trim()) {
+            newErrorsBookingApplicant.ApplicantEmailId = "E-mail Id is required";
+        }
+        else if (!isValidEmail(formDataDetails.ApplicantEmailId.trim())) {
+            newErrorsBookingApplicant.ApplicantEmailId = "Enter a Valid E-mail Id";
         }
 
         const mergedPhotoFiles = editingApplicantData ? calculateMergedFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs) : applicantPhotoFiles.slice();
@@ -402,7 +437,7 @@ export const ApplicantRequests: React.FC = () => {
         const finalRemovedNomineeFormURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._nomineeFormFiles, nomineeFormFiles, removedNomineeFormURLs) : removedNomineeFormURLs;
         const finalRemovedStatementOfSourceOfFundsURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._statementOfSourceOfFundsFiles, statementOfSourceOfFundsFiles, removedStatementOfSourceOfFundsURLs) : removedStatementOfSourceOfFundsURLs;
         const finalRemovedPaymentProofURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._paymentProofFiles, paymentProofFiles, removedPaymentProofURLs) : removedPaymentProofURLs;
-        const finalRemovedBookingApplicantModificationDocumentUploadURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._bookingApplicantModificationDocumentUploadFiles, bookingApplicantModificationDocumentUploadFiles, removedBookingApplicantModificationDocumentUploadURLs) : removedBookingApplicantModificationDocumentUploadURLs.slice();
+        const finalRemovedProofOfDocumentURLs = editingApplicantData ? calculateRemovedFiles(editingApplicantData.row._proofOfDocumentFiles, proofOfDocumentFiles, removedProofOfDocumentURLs) : removedProofOfDocumentURLs.slice();
 
         const mergedPhotoFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, finalRemovedPhotoURLs) : applicantPhotoFiles.slice();
         const mergedAadharFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._aadharFiles, aadharCardFiles, finalRemovedAadharURLs) : aadharCardFiles.slice();
@@ -418,12 +453,12 @@ export const ApplicantRequests: React.FC = () => {
         const mergedNomineeFormFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._nomineeFormFiles, nomineeFormFiles, finalRemovedNomineeFormURLs) : nomineeFormFiles.slice();
         const mergedStatementOfSourceOfFundsFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._statementOfSourceOfFundsFiles, statementOfSourceOfFundsFiles, finalRemovedStatementOfSourceOfFundsURLs) : statementOfSourceOfFundsFiles.slice();
         const mergedPaymentProofFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._paymentProofFiles, paymentProofFiles, finalRemovedPaymentProofURLs) : paymentProofFiles.slice();
-        const mergedBookingApplicantModificationDocumentUploadFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._bookingApplicantModificationDocumentUploadFiles, bookingApplicantModificationDocumentUploadFiles, finalRemovedBookingApplicantModificationDocumentUploadURLs) : bookingApplicantModificationDocumentUploadFiles.slice();
+        const mergedProofOfDocumentFiles = editingApplicantData ? mergeFiles(editingApplicantData.row._proofOfDocumentFiles, proofOfDocumentFiles, finalRemovedProofOfDocumentURLs) : proofOfDocumentFiles.slice();
 
         const applicantToSave: RequestBookingApplicantWithFiles = {
 
             BookingApplicantModificationRequestId: editingApplicantData?.row.BookingApplicantModificationRequestId ?? 0,
-            BookingApplicantModificationDocumentUploadURL: createFileUrlString(mergedBookingApplicantModificationDocumentUploadFiles),
+
             ApplicantType: formDataDetails.ApplicantType || "",
             ApplicantName: formDataDetails.ApplicantName || "",
             ApplicantMobileNumber: formDataDetails.ApplicantMobileNumber || "",
@@ -448,6 +483,7 @@ export const ApplicantRequests: React.FC = () => {
             NomineeFormURL: createFileUrlString(mergedNomineeFormFiles),
             StatementOfSourceOfFundsURL: createFileUrlString(mergedStatementOfSourceOfFundsFiles),
             PaymentProofURL: createFileUrlString(mergedPaymentProofFiles),
+            ProofOfDocumentURL: createFileUrlString(mergedProofOfDocumentFiles),
             IsApproval: false,
             ApprovalStatus: "",
             VersionNumber: "1",
@@ -472,6 +508,7 @@ export const ApplicantRequests: React.FC = () => {
             _nomineeFormFiles: mergedNomineeFormFiles,
             _statementOfSourceOfFundsFiles: mergedStatementOfSourceOfFundsFiles,
             _paymentProofFiles: mergedPaymentProofFiles,
+            _proofOfDocumentFiles: mergedProofOfDocumentFiles,
 
             RemovePhotoURL: finalRemovedPhotoURLs.join(','),
             RemoveAadharCardURL: finalRemovedAadharURLs.join(','),
@@ -487,7 +524,7 @@ export const ApplicantRequests: React.FC = () => {
             RemoveNomineeFormURL: finalRemovedNomineeFormURLs.join(','),
             RemoveStatementOfSourceOfFundsURL: finalRemovedStatementOfSourceOfFundsURLs.join(','),
             RemovePaymentProofURL: finalRemovedPaymentProofURLs.join(','),
-            RemoveBookingApplicantModificationDocumentUploadURL: finalRemovedBookingApplicantModificationDocumentUploadURLs.join(','),
+            RemoveProofOfDocumentURL: finalRemovedProofOfDocumentURLs.join(','),
         };
 
         setApplicantList((prev) => {
@@ -516,6 +553,7 @@ export const ApplicantRequests: React.FC = () => {
         setNomineeFormFiles([]);
         setStatementOfSourceOfFundsFiles([]);
         setPaymentProofFiles([]);
+        setProofOfDocumentFiles([]);
     };
 
     const fetchBookingApplicantModificationList = async () => {
@@ -556,6 +594,18 @@ export const ApplicantRequests: React.FC = () => {
 
     const handleSaveApplicantRequests = async () => {
         if (applicantList.length === 0) return;
+
+        const applicantCount = applicantList.filter(item => item.ApplicantType === "Applicant").length;
+
+        if (applicantCount === 0) {
+            addToast({ type: "error", title: "At least one Applicant is required." });
+            return;
+        }
+        if (applicantCount > 1) {
+
+            addToast({ type: "error", title: "Only one Applicant is allowed." });
+            return;
+        }
 
         await runApiWithLoader(
             setIsLoading,
@@ -613,7 +663,7 @@ export const ApplicantRequests: React.FC = () => {
                     formDataToSend.append(`${prefix}.RemoveNomineeFormURL`, app.RemoveNomineeFormURL ?? "");
                     formDataToSend.append(`${prefix}.RemoveStatementOfSourceOfFundsURL`, app.RemoveStatementOfSourceOfFundsURL ?? "");
                     formDataToSend.append(`${prefix}.RemovePaymentProofURL`, app.RemovePaymentProofURL ?? "");
-                    formDataToSend.append(`${prefix}.RemoveBookingApplicantModificationDocumentUploadURL`, app.RemoveBookingApplicantModificationDocumentUploadURL ?? "");
+                    formDataToSend.append(`${prefix}.RemoveProofOfDocumentURL`, app.RemoveProofOfDocumentURL ?? "");
 
                     formDataToSend.append(`${prefix}.CancelledChequeURL`, app.CancelledChequeURL ?? "");
                     formDataToSend.append(`${prefix}.POAURL`, app.POAURL ?? "");
@@ -622,6 +672,7 @@ export const ApplicantRequests: React.FC = () => {
                     formDataToSend.append(`${prefix}.NomineeFormURL`, app.NomineeFormURL ?? "");
                     formDataToSend.append(`${prefix}.StatementOfSourceOfFundsURL`, app.StatementOfSourceOfFundsURL ?? "");
                     formDataToSend.append(`${prefix}.PaymentProofURL`, app.PaymentProofURL ?? "");
+                    formDataToSend.append(`${prefix}.ProofOfDocumentURL`, app.ProofOfDocumentURL ?? "");
 
                     const realApp: any = app;
                     addFilesWithExisting(formDataToSend, prefix, realApp._photoFiles, "PhotoURL");
@@ -638,14 +689,17 @@ export const ApplicantRequests: React.FC = () => {
                     addFilesWithExisting(formDataToSend, prefix, realApp._nomineeFormFiles, "NomineeFormURL");
                     addFilesWithExisting(formDataToSend, prefix, realApp._statementOfSourceOfFundsFiles, "StatementOfSourceOfFundsURL");
                     addFilesWithExisting(formDataToSend, prefix, realApp._paymentProofFiles, "PaymentProofURL");
+                    addFilesWithExisting(formDataToSend, prefix, realApp._proofOfDocumentFiles, "ProofOfDocumentURL");
                 });
 
                 const response = await bookingApplicantModificationService.apiCallAddUpdateBookingApplicantModification(formDataToSend);
 
                 if (E.isRight(response)) {
+
                     addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
                     setApplicantList([]);
                     fetchBookingApplicantModificationList();
+
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -663,6 +717,23 @@ export const ApplicantRequests: React.FC = () => {
 
     const summaryColumns = useMemo<TableColumn[]>(
         () => [
+            {
+                key: "ProofOfDocumentURL",
+                label: "Proof of Document",
+                width: "15",
+                align: "center",
+                render: (_value: string, row: any) => {
+                    return (
+                        <MultiImageViewer
+                            images={parseDocumentUrls(row.ProofOfDocumentURL)}
+                            title="Proof of Document"
+                            triggerLabel="-"
+                            isIcon={false}
+                            isWrap={false}
+                        />
+                    );
+                },
+            },
             {
                 key: "ApplicantName",
                 label: "Applicant Name",
@@ -788,6 +859,7 @@ export const ApplicantRequests: React.FC = () => {
                             images={parseDocumentUrls(row.POAURL)}
                             title="POA Document"
                             triggerLabel="-"
+
                             isWrap={false}
                         />
                     );
@@ -881,7 +953,9 @@ export const ApplicantRequests: React.FC = () => {
                 sortable: false,
                 align: "center",
                 render: (value, row) => {
-
+                    if (row.ApplicantType !== "Applicant") {
+                        return "-";
+                    }
                     return (
                         <ApprovalActions
                             approvalStatus={value || "-"}
@@ -916,7 +990,7 @@ export const ApplicantRequests: React.FC = () => {
                             variant="outline"
                             color="transparent"
                             size="sm"
-                            title="Remove"
+                            title="Delete"
                         >
                             <Trash2 className="h-4 w-4 text-red-500" />
                         </Button>
@@ -959,17 +1033,16 @@ export const ApplicantRequests: React.FC = () => {
                         Applicant Details
                     </h4>
 
-                    {canAction && (
+                    {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
                         <Button
                             onClick={() => { setIsAddUpdateApplicantDetailsModalOpen(true); }}
                             color="blue"
                             size="sm"
                             variant="solid"
-                            style={{ width: '190px' }}
                             leftIcon={<Plus className="h-4 w-4" />}
                             disabled={isBookingCancelled}
                         >
-                            Create Requests
+                            Applicant Change Request
                         </Button>
                     )}
                 </div>
@@ -1008,9 +1081,9 @@ export const ApplicantRequests: React.FC = () => {
                     />
                 ) : (
                     applicantList.length === 0 && (
-                        <div className="text-center py-10  rounded-xl text-gray-400">
-                            No applicant records found.
-                        </div>
+                        <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
+                            <NoDataView message="No Applicant Found" />
+                        </section>
                     )
                 )}
             </section>
@@ -1037,6 +1110,7 @@ export const ApplicantRequests: React.FC = () => {
                     setNomineeFormFiles([]);
                     setStatementOfSourceOfFundsFiles([]);
                     setPaymentProofFiles([]);
+                    setProofOfDocumentFiles([]);
                     setRemovedApplicantPhotoURLs([]);
                     setRemovedAadharCardURLs([]);
                     setRemovedPanCardURLs([]);
@@ -1051,6 +1125,7 @@ export const ApplicantRequests: React.FC = () => {
                     setRemovedNomineeFormURLs([]);
                     setRemovedStatementOfSourceOfFundsURLs([]);
                     setRemovedPaymentProofURLs([]);
+                    setRemovedProofOfDocumentURLs([]);
                 }}
 
                 onCancel={() => {
@@ -1073,6 +1148,7 @@ export const ApplicantRequests: React.FC = () => {
                     setNomineeFormFiles([]);
                     setStatementOfSourceOfFundsFiles([]);
                     setPaymentProofFiles([]);
+                    setProofOfDocumentFiles([]);
                     setRemovedApplicantPhotoURLs([]);
                     setRemovedAadharCardURLs([]);
                     setRemovedPanCardURLs([]);
@@ -1087,6 +1163,7 @@ export const ApplicantRequests: React.FC = () => {
                     setRemovedNomineeFormURLs([]);
                     setRemovedStatementOfSourceOfFundsURLs([]);
                     setRemovedPaymentProofURLs([]);
+                    setRemovedProofOfDocumentURLs([]);
                 }}
 
                 title="Add Applicant"
@@ -1100,7 +1177,16 @@ export const ApplicantRequests: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                         <div>
                             <div>
-                                <MultiFilePicker label="Proof of Document" placeholder="Upload Document" error={errorsBookingApplicant.BookingApplicantModificationDocumentUploadURL} value={bookingApplicantModificationDocumentUploadFiles} onChange={setBookingApplicantModificationDocumentUploadFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedBookingApplicantModificationDocumentUploadURLs((prev) => [...prev, url])} />
+                                <MultiFilePicker
+                                    label="Proof of Document"
+                                    placeholder="Select Proof of Document"
+                                    required
+                                    error={errorsBookingApplicant.ProofOfDocumentURL}
+                                    value={proofOfDocumentFiles}
+                                    onChange={setProofOfDocumentFiles}
+                                    allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                                    maxFiles={3} maxSizeMB={10}
+                                    onRemoveExisting={(url) => setRemovedProofOfDocumentURLs((prev) => [...prev, url])} />
                             </div>
                         </div>
                         <div>
@@ -1109,7 +1195,7 @@ export const ApplicantRequests: React.FC = () => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <Input label="Name" placeholder="Enter Your Name" type="text" value={formDataDetails.ApplicantName ?? ''} onChange={(e) => handleFieldChangeBookingApplicantDetails('ApplicantName', e.target.value)} error={errorsBookingApplicant.ApplicantName} required
+                            <Input label="Applicant Name" placeholder="Enter Applicant Name" type="text" value={formDataDetails.ApplicantName ?? ''} onChange={(e) => handleFieldChangeBookingApplicantDetails('ApplicantName', e.target.value)} error={errorsBookingApplicant.ApplicantName} required
                             />
                         </div>
 
@@ -1118,19 +1204,19 @@ export const ApplicantRequests: React.FC = () => {
                         </div>
 
                         <div>
-                            <Input label="Email Id" error={errorsBookingApplicant.ApplicantEmailId} type="text" value={formDataDetails.ApplicantEmailId ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantEmailId", filterEmail(e.target.value))} placeholder="Enter Email Id" />
+                            <Input label="Email Id" required error={errorsBookingApplicant.ApplicantEmailId} type="text" value={formDataDetails.ApplicantEmailId ?? ""} onChange={(e) => handleFieldChangeBookingApplicantDetails("ApplicantEmailId", filterEmail(e.target.value))} placeholder="Enter Email Id" />
                         </div>
                         <div>
                             <MultiFilePicker label="Profile Photo" placeholder="Select Photo" required error={errorsBookingApplicant.PhotoURL} value={applicantPhotoFiles} onChange={setApplicantPhotoFiles} allowedTypes={["image/jpeg", "image/png"]} maxFiles={1} maxSizeMB={5} onRemoveExisting={(url) => setRemovedApplicantPhotoURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <Input label="Aadhaar Card Number" error={errorsBookingApplicant.AadharCardNumber} required type="text" value={formDataDetails.AadharCardNumber ?? ""} maxLength={12} onChange={(e) => handleFieldChangeBookingApplicantDetails("AadharCardNumber", filterAadhaar(e.target.value))} placeholder="Enter Aadhaar Number" rightIcon={<IdCardIcon />} />
+                            <Input label="Aadhaar Number" error={errorsBookingApplicant.AadharCardNumber} required type="text" value={formDataDetails.AadharCardNumber ?? ""} maxLength={12} onChange={(e) => handleFieldChangeBookingApplicantDetails("AadharCardNumber", filterAadhaar(e.target.value))} placeholder="Enter Aadhaar Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
                             <MultiFilePicker label="Aadhaar Card" required placeholder="Select Aadhaar Card" error={errorsBookingApplicant.AadharCardURL} value={aadharCardFiles} onChange={setAadharCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={2} maxSizeMB={10} onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <Input label="PAN Card Number" required error={errorsBookingApplicant.PanNumber} type="text" value={formDataDetails.PanNumber ?? ""} maxLength={10} onChange={(e) => handleFieldChangeBookingApplicantDetails("PanNumber", filterPAN(e.target.value).toUpperCase())} placeholder="Enter PAN Number" rightIcon={<IdCardIcon />} />
+                            <Input label="PAN Number" required error={errorsBookingApplicant.PanNumber} type="text" value={formDataDetails.PanNumber ?? ""} maxLength={10} onChange={(e) => handleFieldChangeBookingApplicantDetails("PanNumber", filterPAN(e.target.value).toUpperCase())} placeholder="Enter PAN Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
                             <MultiFilePicker label="PAN Card" required placeholder="Select PAN Card" error={errorsBookingApplicant.PanCardURL} value={panCardFiles} onChange={setPanCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]} maxFiles={2} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])} />
@@ -1139,13 +1225,13 @@ export const ApplicantRequests: React.FC = () => {
                             <Input label="Passport Number" error={errorsBookingApplicant.PassportNumber} type="text" value={formDataDetails.PassportNumber ?? ""} maxLength={8} onChange={(e) => handleFieldChangeBookingApplicantDetails("PassportNumber", filterPassportNumber(e.target.value.toUpperCase()))} placeholder="Enter Passport Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Upload Passport" placeholder="Select Passport" error={errorsBookingApplicant.PassportURL} value={passportFiles} onChange={setPassportFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Passport" placeholder="Select Passport" error={errorsBookingApplicant.PassportURL} value={passportFiles} onChange={setPassportFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="Driving License Number" error={errorsBookingApplicant.DrivingLicenseNumber} type="text" value={formDataDetails.DrivingLicenseNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicantDetails("DrivingLicenseNumber", filterDrivingLicenseNumber(e.target.value.toUpperCase()))} placeholder="Enter Driving License Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Upload Driving License" placeholder="Select Driving License" error={errorsBookingApplicant.DrivingLicenseURL} value={drivingLicenseFiles} onChange={setDrivingLicenseFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Driving License" placeholder="Select Driving License" error={errorsBookingApplicant.DrivingLicenseURL} value={drivingLicenseFiles} onChange={setDrivingLicenseFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="Voting ID Number" error={errorsBookingApplicant.VotingIdNumber} type="text" value={formDataDetails.VotingIdNumber ?? ""} maxLength={10} onChange={(e) => handleFieldChangeBookingApplicantDetails("VotingIdNumber", filterVoterId(e.target.value.toUpperCase()))} placeholder="Enter Voting ID Number" rightIcon={<IdCardIcon />} />
@@ -1157,25 +1243,25 @@ export const ApplicantRequests: React.FC = () => {
                             <Input label="GST Number" error={errorsBookingApplicant.GSTNumber} type="text" value={formDataDetails.GSTNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicantDetails("GSTNumber", filterGST(e.target.value.toUpperCase()))} placeholder="Enter GST Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Upload GST" placeholder="Select GST" error={errorsBookingApplicant.GSTNumberURL} value={gstFiles} onChange={setGstFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="GST Documents" placeholder="Select GST Documents" error={errorsBookingApplicant.GSTNumberURL} value={gstFiles} onChange={setGstFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <MultiFilePicker label="Cancelled Cheque" placeholder="Select Cancelled Cheque" error={errorsBookingApplicant.CancelledChequeURL} value={cancelledChequeFiles} onChange={setCancelledChequeFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedCancelledChequeURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="POA (Power of Attorney)" placeholder="Select POA Document" error={errorsBookingApplicant.POAURL} value={pOAFiles} onChange={setPOAFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPOAURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="POA (if NRI Execution)" placeholder="Select POA Document" error={errorsBookingApplicant.POAURL} value={pOAFiles} onChange={setPOAFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPOAURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Income Form 16 / ITR" placeholder="Select Income Form 16 / ITR" error={errorsBookingApplicant.IncomeForm16ITRURL} value={incomeForm16ITRFiles} onChange={setIncomeForm16ITRFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedIncomeForm16ITRURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Income Docs (Form 16 / ITR)" placeholder="Select Income Document" error={errorsBookingApplicant.IncomeForm16ITRURL} value={incomeForm16ITRFiles} onChange={setIncomeForm16ITRFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedIncomeForm16ITRURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="NRE / NRO Bank Details" placeholder="Select NRE / NRO Bank Details" error={errorsBookingApplicant.NreNroBankDetailsURL} value={nreNroBankDetailsFiles} onChange={setNreNroBankDetailsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedNreNroBankDetailsURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="NRE / NRO Bank Details" placeholder="Select NRE / NRO Bank Document" error={errorsBookingApplicant.NreNroBankDetailsURL} value={nreNroBankDetailsFiles} onChange={setNreNroBankDetailsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedNreNroBankDetailsURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <MultiFilePicker label="Nominee Form" placeholder="Select Nominee Form" error={errorsBookingApplicant.NomineeFormURL} value={nomineeFormFiles} onChange={setNomineeFormFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedNomineeFormURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Statement of Source of Funds" placeholder="Select Statement of Source of Funds" error={errorsBookingApplicant.StatementOfSourceOfFundsURL} value={statementOfSourceOfFundsFiles} onChange={setStatementOfSourceOfFundsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedStatementOfSourceOfFundsURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Statement of Source of Funds" placeholder="Select Source Document" error={errorsBookingApplicant.StatementOfSourceOfFundsURL} value={statementOfSourceOfFundsFiles} onChange={setStatementOfSourceOfFundsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedStatementOfSourceOfFundsURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <MultiFilePicker label="Payment Proof" placeholder="Select Payment Proof" error={errorsBookingApplicant.PaymentProofURL} value={paymentProofFiles} onChange={setPaymentProofFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPaymentProofURLs((prev) => [...prev, url])} />

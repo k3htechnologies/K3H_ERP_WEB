@@ -64,7 +64,7 @@ export const DateRangeWithActions: React.FC<DateRangeWithActionsProps> = ({
   const hasExportOptions = onExportExcel || onExportPdf;
 
   return (
-    <div className="pb-4">
+    <div>
       <div className="flex items-center justify-between gap-4 flex-wrap">
         <div className="relative min-w-0 w-[526px]">
           <DateRangeSelector

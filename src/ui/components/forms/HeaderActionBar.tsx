@@ -6,6 +6,7 @@ interface HeaderActionBarProps {
     titleText?: string;
     subTitleText?: string;
     subSubTitleText?: string;
+    subSubSubTitleText?: string;
 
     cancelText?: string;
     onCancel?: () => void;
@@ -32,6 +33,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
     titleText,
     subTitleText,
     subSubTitleText,
+    subSubSubTitleText,
     EditText = "Edit",
 
 
@@ -109,8 +111,16 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                                     {subSubTitleText}
                                 </>
                             )}
+
+                            {subSubSubTitleText && (
+                                <>
+                                    <ChevronRight className="h-5 w-5 text-gray-800" />
+
+                                    {subSubSubTitleText}
+                                </>
+                            )}
                         </span>
-                        
+
                     )}
 
                 </h2>
@@ -120,7 +130,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
 
             <div className="flex items-center gap-2">
-                {(onExtraButton || onExtraExtraButton ) && canActionExtraButtonText && canActionExtraExtraButton && (
+                {(onExtraButton || onExtraExtraButton) && canActionExtraButtonText && canActionExtraExtraButton && (
                     <div className="relative" ref={generateRef}>
                         <Button
                             type="button"
@@ -144,7 +154,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                         {isGenerateOpen && (
                             <div className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-100">
 
-                                {onExtraButton &&  canActionExtraButtonText &&(
+                                {onExtraButton && canActionExtraButtonText && (
 
                                     <Button
                                         onClick={(e) => {
@@ -205,6 +215,8 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                         {EditText}
                     </Button>
                 )}
+
+                
             </div>
 
         </div>

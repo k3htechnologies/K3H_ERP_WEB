@@ -9,7 +9,7 @@ import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
 import { DataTable, type FilterInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import usePagination from "@/core/hooks/usePagination";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import type { PaginationInfo } from "@/ui/components/Pagination/Pagination";
 import useToast from "@/core/hooks/useToast";
@@ -28,52 +28,45 @@ import { Copy, Trash2 } from "lucide-react";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { useEnquiryListState } from "@/features/enquiry/context/EnquiryListStateContext";
-import { getStatusColor } from "./Status";
+import { getFollowUpColor, getStatusColor } from "./Status";
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { SOURCE_TYPE_OPTIONS, SUB_SUB_SOURCE_CHANNEL_PARTNER_OPTIONS, SUB_SUB_SOURCE_TYPE_OPTIONS, SUBSOURCE_TYPE_OPTIONS } from "@/core/constants/staticData";
 import { copyToClipboard } from "@/core/utils/comman";
+import { filterNumbers } from "@/core/utils/fileValidation";
 
 export const Enquiry: React.FC = () => {
 
-    //#region STATE MANAGEMENT
     const [EnquiryList, setEnquiryMasterList] = useState<EnquiryData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
 
-    // USE NAVIGATE
     const navigate = useNavigate();
+
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const search = searchParams.get('search') || '';
 
     const { projectId } = useProject();
 
-    // PAGINATION STATE
     const { pagination, setPagination } = usePagination(20);
 
-    // TOAST
     const { addToast } = useToast();
 
-    //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-    //DELETE ENQUIRY MASTER
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [deleteEnquiryData, setDeleteEnquiryData] = useState<EnquiryData | null>(null)
 
-    //CUSTOMIZE COLUMN MODAL
     const [isShowCustomizeEnquiryColumnsModal, setIsShowCustomizeEnquiryColumnsModal] = useState(false);
 
-    //MENU PERMISSIONS
     const { canAction, canExport } = useMenuPermissions();
-    //#endregion
 
     const { listState, updateListState, resetFilters } = useEnquiryListState();
     const { page, filters, sortInfo, searchTerm } = listState;
-    //#endregion
-
-    //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
     const loadEnquiry = useCallback(async (pageNum: number, filterParams: FilterInfo, sortInfo?: SortInfo) => {
         await runApiWithLoader(
@@ -145,22 +138,35 @@ export const Enquiry: React.FC = () => {
         );
     }, [projectId, pagination.pageSize, addToast]);
 
-    //#endregion
-
-    //#region INIT
     useEffect(() => {
+
+        if (search && search.trim()) {
+
+            updateListState({
+                searchTerm: search.trim(),
+                page: 1
+            });
+
+        }
+
+    }, [search, updateListState]);
+
+    useEffect(() => {
+
         if (!projectId) return;
 
-        if (searchTerm && searchTerm.trim()) {
+        const finalSearch = search || searchTerm;
 
-            loadEnquiry(page, { Name: searchTerm.trim() }, sortInfo);
+        if (finalSearch && finalSearch.trim()) {
+
+            loadEnquiry(page, { Name: finalSearch.trim() }, sortInfo);
 
         } else {
 
             loadEnquiry(page, filters, sortInfo);
 
         }
-    }, [projectId, page, filters, sortInfo, searchTerm, loadEnquiry]);
+    }, [projectId, page, filters, sortInfo, searchTerm, search,loadEnquiry]);
 
     useEffect(() => {
         setPagination({ currentPage: page });
@@ -170,9 +176,6 @@ export const Enquiry: React.FC = () => {
         setTempFilters(filters);
     }, [filters]);
 
-    //#endregion
-
-    //#region SEARCH & CLEAR
     const debouncedSearch = useDebouncedCallback((value: string) => {
         const trimmed = value.trim();
 
@@ -200,7 +203,12 @@ export const Enquiry: React.FC = () => {
     const clearSearchEnquiry = () => {
         debouncedSearch.cancel?.();
         resetFilters();
+        updateListState({
+            searchTerm: '',
+            page: 1
+        });
         setTempFilters({});
+        setSearchParams({});
     };
 
     //#region EXPORT / IMPORT EXCEL AND PDF
@@ -268,7 +276,7 @@ export const Enquiry: React.FC = () => {
     //#region HANDLE PAGE CHNAGE EVENT
     const handlePageChange = useCallback((newPage: number) => {
         updateListState({ page: newPage });
-    }, [sortInfo,updateListState]);
+    }, [sortInfo, updateListState]);
 
     //#region TABLE SORT COLUMN
 
@@ -340,7 +348,7 @@ export const Enquiry: React.FC = () => {
                                     e.stopPropagation();
                                     const success = await copyToClipboard(value);
                                     if (success) {
-                                        addToast({ type: 'success', title: `${value} Copied!`});
+                                        addToast({ type: 'success', title: `${value} Copied!` });
                                     }
                                 }}
                                 color="transparent"
@@ -391,22 +399,35 @@ export const Enquiry: React.FC = () => {
             align: 'center',
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
         },
-         {
+        {
             key: 'EnquiryTimeIn',
             label: 'Enquiry Time',
             width: '14',
             sortable: false,
             align: 'left',
-            render: (value, row) => value +' - '+row.EnquiryTimeOut || '-'
+            render: (value, row) => value + ' - ' + row.EnquiryTimeOut || '-'
         },
-        
+
         {
             key: 'EnquiryFollowUpDays',
             label: 'Enquiry Follow Up Days',
             width: '14',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => {
+                const { text } = getFollowUpColor(value);
+
+                return (
+                    <span
+                        className="inline-block px-2 py-1 rounded-full whitespace-nowrap"
+                        style={{
+                            color: text
+                        }}
+                    >
+                        {value || "-"}
+                    </span>
+                );
+            }
         },
         {
             key: 'NextFollowUpDate',
@@ -642,7 +663,7 @@ export const Enquiry: React.FC = () => {
             align: 'center',
             render: (_value, row) => {
 
-                const canDelete = canAction && row?.FinalStage?.toUpperCase() == "";
+                const canDelete = canAction && !row?.NextFollowUpDate  && row?.FinalStage?.toUpperCase() == "";
 
                 return (
                     <div className="flex items-center justify-center gap-2">
@@ -790,7 +811,7 @@ export const Enquiry: React.FC = () => {
 
             <TableActionToolbar
                 isShowSearchBar
-                searchTerm={searchTerm}
+                searchTerm={search || searchTerm}
                 searchPlaceholder="Search By Name"
                 onSearchChange={handleSearchEnquiry}
                 onClearSearch={clearSearchEnquiry}
@@ -879,7 +900,7 @@ export const Enquiry: React.FC = () => {
                     </div>
 
                     <div>
-                        <Input type="text" label="Mobile Number" value={tempFilters?.MobileNumber ?? ''} onChange={e => handleFilterChange('MobileNumber', e.target.value)} placeholder="Enter Mobile Number" />
+                        <Input type="text" label="Mobile Number" value={tempFilters?.MobileNumber ?? ''} onChange={e => handleFilterChange('MobileNumber', filterNumbers(e.target.value))} placeholder="Enter Mobile Number" />
                     </div>
 
                     <div>
@@ -904,7 +925,7 @@ export const Enquiry: React.FC = () => {
 
                     </div>
                     {/* SUB SOURCE */}
-                    {tempFilters.Source === 'Direct Walking' && (
+                    {tempFilters.Source === 'Direct Walkin' && (
                         <div>
                             <SinglePageSelection
                                 label="Sub Source"
@@ -920,7 +941,7 @@ export const Enquiry: React.FC = () => {
                     )}
 
                     {/* SUB SUB SOURCE */}
-                    {tempFilters.Source === 'Direct Walking' &&
+                    {tempFilters.Source === 'Direct Walkin' &&
                         tempFilters.SubSource === 'Advertisement' && (
                             <div>
                                 <SinglePageSelection

@@ -80,6 +80,15 @@ export const COLOR_MAP = {
       }
     },
   },
+  primaryLight: {
+    solid: {
+      backgroundColor: COLORS.primaryLight,
+      color: 'white',
+      border: `1px solid ${COLORS.primaryLight}`,
+      hover: { backgroundColor: COLORS.primaryLight },
+    },
+   
+  },
   error: {
     solid: {
       backgroundColor: COLORS.error,

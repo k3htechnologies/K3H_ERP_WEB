@@ -1,7 +1,8 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
 export interface FilterWithPaginationchannelPartnerCategoryRequest {
-    ProjectId?: number
+    ProjectId?: number,
+    ExportType?: "Excel" | "PDF";
 }
 
 export interface ChannelPartnerCategoryData {

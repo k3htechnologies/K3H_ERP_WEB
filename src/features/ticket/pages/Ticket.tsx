@@ -185,12 +185,17 @@ export const Ticket: React.FC = () => {
             newErrors.Platform = "Platform is required";
         }
 
-        if (formData.Module?.trim() === "") {
+        if (!formData.Module?.trim()) {
             newErrors.Module = "Module is required";
+        } else if (formData.Module.length > 253) {
+            newErrors.Module = "Module cannot exceed 253 characters";
         }
-
         if (!formData.Priority || formData.Priority.trim() === "") {
             newErrors.Priority = "Priority is required";
+        }
+
+        if (!formData.TicketRemark || formData.TicketRemark.trim() === "") {
+            newErrors.TicketRemark = "Remark is required";
         }
 
         if (formData.TicketDescription?.trim() === "") {
@@ -272,7 +277,6 @@ export const Ticket: React.FC = () => {
                 addToast({ type: 'error', title: error.message })
             },
             undefined,
-            'Ticket added successfully '
         )
     };
 
@@ -412,6 +416,7 @@ export const Ticket: React.FC = () => {
                     PageSize: pagination.totalRecords,
                     TicketId: filters.TicketId ? Number(filters.TicketId) : 0,
                     SystemGeneratedCode: searchTerm?.trim() || undefined,
+                    TicketStatus: filters.TicketStatus,
                     SortBy: getSortByParam(sortInfo ?? null, ticketColumns),
                     ExportType: exportType
                 };
@@ -440,6 +445,8 @@ export const Ticket: React.FC = () => {
 
     const ticketColumns = useMemo<TableColumn[]>(() => {
         const userDept = LocalStorageHelper.getStoredEmployeeData()?.Department;
+        const userDesignation = LocalStorageHelper.getStoredEmployeeData()?.Designation;
+        console.log('The user designation is ', userDesignation);
         const isITDept = userDept === "Information Technology";
 
         const columns: TableColumn[] = [
@@ -469,7 +476,13 @@ export const Ticket: React.FC = () => {
                 key: 'Module',
                 label: 'Module',
                 width: '15',
-                render: (value) => value || ''
+                render: (value) => (
+                    <TooltipText
+                        text={value || '-'}
+                        maxWidth="250px"
+                        tooltipThreshold={25}
+                    />
+                )
             },
             {
                 key: 'Priority',
@@ -517,7 +530,7 @@ export const Ticket: React.FC = () => {
                 label: 'Status',
                 width: '15',
                 render: (_value, row: TicketData) => {
-                    const displayStatus = row.AssignedStatus || row.TicketStatus || "-";
+                    const displayStatus = row.TicketStatus || "-";
                     const { bg, text } = getTicketStatusColor(displayStatus);
                     return (
                         <span
@@ -552,6 +565,7 @@ export const Ticket: React.FC = () => {
                                                 handleAssignTicketMaster(row);
                                             }}
                                             leftIcon={<UserCheck className="h-4 w-4" />}
+                                            title='Assign Ticket'
                                         />
                                     ) : (
                                         <>
@@ -692,7 +706,7 @@ export const Ticket: React.FC = () => {
                 isShowAddButton={canAction}
                 addTitle="Add"
                 onAdd={handleAddTicketMasterModal}
-                isShowExportButton={canExport}
+                isShowExportButton={canExport && ticketList.length > 0}
                 onExportExcel={handleExportCallLogExcel}
                 onExportPdf={handleExportCallLogPdf}
                 exportLoading={isLoading}
@@ -801,15 +815,17 @@ export const Ticket: React.FC = () => {
                     </div>
 
                     <div className="items-center gap-10">
-                        <h2 className="font-medium text-gray-500">Set Priority <span className="text-red-500">*</span> </h2>
+                        <h2 className="text-sm font-medium text-gray-500">
+                            Set Priority <span className="text-red-500">*</span>
+                        </h2>
                         <div className="flex gap-2 mt-4">
                             <RadioPill
                                 name="Priority"
-                                label="High"
-                                value="High"
-                                checked={formData.Priority === "High"}
+                                label="Low"
+                                value="Low"
+                                checked={formData.Priority === "Low"}
                                 onChange={() =>
-                                    handleFieldChange("Priority", "High")
+                                    handleFieldChange("Priority", "Low")
                                 }
                             />
 
@@ -825,21 +841,26 @@ export const Ticket: React.FC = () => {
 
                             <RadioPill
                                 name="Priority"
-                                label="Low"
-                                value="Low"
-                                checked={formData.Priority === "Low"}
+                                label="High"
+                                value="High"
+                                checked={formData.Priority === "High"}
                                 onChange={() =>
-                                    handleFieldChange("Priority", "Low")
+                                    handleFieldChange("Priority", "High")
                                 }
                             />
+
+
+
                         </div>
 
                         <div className="mt-4">
                             <TextArea
                                 label="Remark"
+                                required
                                 placeholder="Enter Remark"
                                 value={formData.TicketRemark || ''}
                                 onChange={(e) => handleFieldChange("TicketRemark", e.target.value)}
+                                error={errors.TicketRemark}
                             />
                         </div>
                     </div>
@@ -856,7 +877,7 @@ export const Ticket: React.FC = () => {
                     setSelectedTicketMasterColumnKeys(withRequired);
 
                     try {
-                        LocalStorageHelper.storePayTrackCallLogTableColumns?.(
+                        LocalStorageHelper.storeTicketMasterTableColumns?.(
                             JSON.stringify(withRequired)
                         );
                     } catch { }
@@ -919,7 +940,7 @@ export const Ticket: React.FC = () => {
                             label="Department"
                             value={tempFilters?.DepartmentName ?? ''}
                             onChange={e => handleFilterChange('DepartmentName', e.target.value)}
-                            placeholder="Enter Department Name"
+                            placeholder="Enter Department "
                         />
                     </div>
 
@@ -929,7 +950,7 @@ export const Ticket: React.FC = () => {
                             label="Status"
                             value={tempFilters?.TicketStatus ?? ''}
                             onChange={e => handleFilterChange('TicketStatus', e.target.value)}
-                            placeholder="Enter Ticket Status"
+                            placeholder="Enter Status"
                         />
                     </div>
                 </div>

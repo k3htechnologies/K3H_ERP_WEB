@@ -23,7 +23,6 @@ import type { FilterModulesWorkflowApprovalRequest, ModulesWorkflowApprovalData 
 import { Mail, Phone } from 'lucide-react';
 import { formatCurrency } from '@/core/utils/comman';
 
-
 export const ViewProjectMaster: React.FC = () => {
 
     const [isLoading, setIsLoading] = useState(false);
@@ -679,6 +678,7 @@ export const ViewProjectMaster: React.FC = () => {
                                             label="Project Status"
                                             value={editProjectData?.ProjectStatus ?? '-'}
                                         />
+                                        
                                     </div>
                                 </section>
 

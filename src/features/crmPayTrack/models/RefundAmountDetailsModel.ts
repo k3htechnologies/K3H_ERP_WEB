@@ -17,6 +17,8 @@ export interface RefundAmountDetailsData {
     ProjectBankName: string | null;
     ProjectAccountNumber: string | null;
     ProjectIFSCCode: string | null;
+    ProjectNatureOfAccount: string;
+    ProjectAcType: string;
     AccountHolderName: string | null;
     BankListMasterId: number;
     BankName: string | null;

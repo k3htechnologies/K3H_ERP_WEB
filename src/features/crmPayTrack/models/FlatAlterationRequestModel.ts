@@ -13,6 +13,7 @@ export interface FlatAlterationRequestData {
     BookingId: number;
     ProjectId: number;
     FlatAlterationRemark: string;
+    ProofOfDocumentURL: string;
     IsApproval: boolean;
     ApprovalStatus: string;
     VersionNumber: string;
@@ -30,17 +31,8 @@ export interface AddUpdateFlatAlterationRequest {
     BookingId: number;
     ProjectId: number;
     FlatAlterationRemark: string;
-    FlatAlterationDocumentURL?: File[] | null;
-    RemoveFlatAlterationDocumentURL?: string;
-    IsApproval: boolean;
-    ApprovalStatus: string;
-    VersionNumber: string;
-    CreatedById?: number;
-    CreatedBy?: string;
-    CreatedDate?: string;
-    ModifiedById?: number;
-    ModifiedBy?: string;
-    ModifiedDate?: string;
+    ProofOfDocumentURL?: File[] | null;
+    RemoveProofOfDocumentURL?: string;
 }
 
 export type FlatAlterationRequestListResponse = ApiResponse<FlatAlterationRequestData[]>;

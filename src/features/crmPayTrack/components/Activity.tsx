@@ -16,11 +16,12 @@ import * as E from 'fp-ts/Either';
 import { ExpandableCard } from "@/ui/components/Card/ExpandableCard";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatCurrency, getSafeString } from '@/core/utils/comman';
-import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import useToast from '@/core/hooks/useToast';
 import { useNavigate } from 'react-router-dom';
 import { Edit } from 'lucide-react';
 import { Button } from '@/ui/components/forms';
+import NoDataView from '@/ui/components/NoDataView/NoDataView';
 
 export const Activity: React.FC = () => {
 
@@ -190,7 +191,7 @@ export const Activity: React.FC = () => {
 
             <div className="pt-5 space-y-6">
                 <ExpandableCard
-                    expandedheight={400}
+                    expandedheight={600}
                     showline={false}
                     onClick={(isOpen) => {
                         if (isOpen) {
@@ -198,56 +199,71 @@ export const Activity: React.FC = () => {
                         }
                     }}
                     title={
-                        <div className="font-semibold text-lg pt-4 pb-4">
+                        <div className="font-medium text-md">
                             Booking Applicant History
                         </div>
                     }
                     child={
                         <div>
-                            {bookingApplicantModificationLst.length > 0 ? (
-                                bookingApplicantModificationLst.map((data, index) => (
-                                    <div key={data.BookingApplicantModificationRequestId || index}>
+                            {bookingApplicantModificationLst.length > 0 ? (() => {
+                                const grouped = bookingApplicantModificationLst.reduce<
+                                    Record<string, BookingApplicantModificationDataRequest[]>
+                                >((acc, item) => {
+                                    const key = String(item.VersionNumber ?? '');
+                                    if (!acc[key]) acc[key] = [];
+                                    acc[key].push(item);
+                                    return acc;
+                                }, {});
+
+                                const versionKeys = Object.keys(grouped);
+
+                                return versionKeys.map((version, vIdx) => (
+                                    <div key={version}>
                                         <div className="flex items-center gap-3 px-2 py-2 -mt-5">
                                             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200 tracking-wide">
-                                                Version {data.VersionNumber}
+                                                Version {version}
                                             </span>
                                             <div className="flex-1 border-t border-gray-200" />
                                         </div>
 
-                                        <div className="bg-white rounded-lg px-8 py-4 border border-gray-200">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 md:gap-y-3">
-                                                <FieldItem label="Request Date" value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '')} />
-                                                <FieldItem label="Name" value={getSafeString(data.ApplicantName)} urls={data.PhotoURL} isIcon />
-                                                <FieldItem label="Applicant Type" value={getSafeString(data.ApplicantType)} />
-                                                <FieldItem label="Mobile Number" value={getSafeString(data.ApplicantMobileNumber)} />
-                                                <FieldItem label="Email Id" value={getSafeString(data.ApplicantEmailId)} />
-                                                <FieldItem label="Aadhar Card" value={getSafeString(data.AadharCardNumber)} urls={data.AadharCardURL} isIcon />
-                                                <FieldItem label="Pan Card" value={getSafeString(data.PanNumber)} urls={data.PanCardURL} isIcon />
-                                                <FieldItem label="Voting Id" value={getSafeString(data.VotingIdNumber)} urls={data.VotingIdURL} isIcon />
-                                                <FieldItem label="Passport" value={getSafeString(data.PassportNumber)} urls={data.PassportURL} isIcon />
-                                                <FieldItem label="Driving License" value={getSafeString(data.DrivingLicenseNumber)} urls={data.DrivingLicenseURL} isIcon />
-                                                <FieldItem label="GST Number" value={getSafeString(data.GSTNumber)} urls={data.GSTNumberURL} isIcon />
-                                                <FieldItem label="Cancelled Cheque" value={getSafeString(data?.CancelledChequeURL)} urls={data?.CancelledChequeURL} isIcon />
-                                                <FieldItem label="POA" value={getSafeString(data?.POAURL)} urls={data?.POAURL} isIcon />
-                                                <FieldItem label="Income Form 16 " value={getSafeString(data?.IncomeForm16ITRURL)} urls={data?.IncomeForm16ITRURL} isIcon />
-                                                <FieldItem label="Nre/Nro/BankDetails" value={getSafeString(data?.NreNroBankDetailsURL)} urls={data?.NreNroBankDetailsURL} isIcon />
-                                                <FieldItem label="Nominee Form" value={getSafeString(data?.NomineeFormURL)} urls={data?.NomineeFormURL} isIcon />
-                                                <FieldItem label="Statement Of Source Of Funds" value={getSafeString(data?.StatementOfSourceOfFundsURL)} urls={data?.StatementOfSourceOfFundsURL} isIcon />
-                                                <FieldItem label="Payment Proof" value={getSafeString(data?.PaymentProofURL)} urls={data?.PaymentProofURL} isIcon />
-                                                <FieldItem label="Created By" value={getSafeString(data?.CreatedBy)} />
-                                                <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(data?.CreatedDate ?? '')} />
-                                                <FieldItem label="Approval Status" value={getSafeString(data.ApprovalStatus)} />
-                                            </div>
+                                        <div className="space-y-3">
+                                            {grouped[version].map((data, rowIdx) => (
+                                                <div key={data.BookingApplicantModificationRequestId || rowIdx} className="bg-white rounded-lg px-8 py-4 border border-gray-200">
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 md:gap-y-3">
+                                                        <FieldItem label="Type" value={getSafeString(data.ApplicantType)} />
+                                                        <FieldItem label="Applicant Name" value={getSafeString(data.ApplicantName)} urls={data.PhotoURL} isIcon />
+                                                        <FieldItem label="Mobile Number" value={getSafeString(data.ApplicantMobileNumber)} />
+                                                        <FieldItem label="E-Mail ID" value={getSafeString(data.ApplicantEmailId)} />
+                                                        <FieldItem label="Aadhaar Card No." value={getSafeString(data.AadharCardNumber)} urls={data.AadharCardURL} isIcon />
+                                                        <FieldItem label="PAN No." value={getSafeString(data.PanNumber)} urls={data.PanCardURL} isIcon />
+                                                        <FieldItem label="Driving License" value={getSafeString(data.DrivingLicenseNumber)} urls={data.DrivingLicenseURL} isIcon />
+                                                        <FieldItem label="Voting ID No." value={getSafeString(data.VotingIdNumber)} urls={data.VotingIdURL} isIcon />
+                                                        <FieldItem label="Passport No." value={getSafeString(data.PassportNumber)} urls={data.PassportURL} isIcon />
+                                                        <FieldItem label="GST No." value={getSafeString(data.GSTNumber)} urls={data.GSTNumberURL} isIcon />
+                                                        <FieldItem label="Proof of Document" value={getSafeString(data?.ProofOfDocumentURL)} urls={data?.ProofOfDocumentURL} isIcon isSetValue={false} />
+                                                        <FieldItem label="Cancelled Cheque" value={getSafeString(data?.CancelledChequeURL)} urls={data?.CancelledChequeURL} isIcon isSetValue={false} />
+                                                        <FieldItem label="POA (if NRI Execution)" value={getSafeString(data?.POAURL)} urls={data?.POAURL} isIcon isSetValue={false} />
+                                                        <FieldItem label="Income Docs (Form 16 / ITR)" value={getSafeString(data?.IncomeForm16ITRURL)} urls={data?.IncomeForm16ITRURL} isIcon isSetValue={false} />
+                                                        <FieldItem label="NRE / NRO Bank Details" value={getSafeString(data?.NreNroBankDetailsURL)} urls={data?.NreNroBankDetailsURL} isIcon isSetValue={false} />
+                                                        <FieldItem label="Nominee Form" value={getSafeString(data?.NomineeFormURL)} urls={data?.NomineeFormURL} isIcon isSetValue={false} />
+                                                        <FieldItem label="Statement of Source of Funds" value={getSafeString(data?.StatementOfSourceOfFundsURL)} urls={data?.StatementOfSourceOfFundsURL} isIcon isSetValue={false} />
+                                                        <FieldItem label="Payment Proof" value={getSafeString(data?.PaymentProofURL)} urls={data?.PaymentProofURL} isIcon isSetValue={false} />
+                                                        <FieldItem label="Created By" value={getSafeString(data?.CreatedBy)} />
+                                                        <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(data?.CreatedDate ?? '')} />
+                                                        <FieldItem label="Approval Status" value={getSafeString(data.ApprovalStatus)} />
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
 
-                                        {index < bookingApplicantModificationLst.length - 1 && (
+                                        {vIdx < versionKeys.length - 1 && (
                                             <hr className="my-6 border-gray-200" />
                                         )}
                                     </div>
-                                ))
-                            ) : (
+                                ));
+                            })() : (
                                 <div className="text-center text-gray-500 py-8">
-                                    No applicant history found.
+                                    <NoDataView message='No applicant history found'/>
                                 </div>
                             )}
                         </div>
@@ -262,7 +278,7 @@ export const Activity: React.FC = () => {
                         }
                     }}
                     title={
-                        <div className="font-semibold text-lg pt-4 pb-4">
+                        <div className="font-medium text-md">
                             Parking History
                         </div>
                     }
@@ -270,27 +286,19 @@ export const Activity: React.FC = () => {
                         <div className="space-y-4">
                             {parkingModificationList.length > 0 ? (
                                 parkingModificationList.map((data) => (
-                                    <div
-                                        className="bg-white rounded-lg px-6 py-4 border border-gray-200 "
-                                    >
+                                    <div className="bg-white rounded-lg px-6 py-4 border border-gray-200">
                                         <div>
                                             {data.parkingData?.map((item, indx) => (
                                                 <div key={indx} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 md:gap-y-3">
-                                                    <FieldItem label="Requested Date" value={formatDate_dd_MonthName_yy(item.ParkingBookingCreatedDate ?? '')} />
-                                                    <FieldItem label="Owner Name" value={getSafeString(item.OwnerName)} />
+
                                                     <FieldItem label="Parking Number" value={getSafeString(item.ParkingNumber)} />
                                                     <FieldItem label="Category" value={getSafeString(item.ParkingCategory)} />
                                                     <FieldItem label="Type" value={getSafeString(item.ParkingType)} />
                                                     <FieldItem label="Size" value={getSafeString(item.ParkingSubType)} />
                                                     <FieldItem label="Dimensions" value={getSafeString(item.ParkingDimensions)} />
                                                     <FieldItem label="EV Charging" value={getSafeString(item.IsEVChargingAvailable) ? 'Yes' : 'No'} />
-                                                    <FieldItem label="Parking Status" value={getSafeString(item.ParkingStatus)} />
-                                                    <FieldItem label="Inventory Building" value={getSafeString(item.InventoryBuildingId)} />
-                                                    <FieldItem label="Inventory Wing" value={getSafeString(item.InventoryFlatFloorBasementPodiumWingId)} />
-                                                    <FieldItem label="Inventory Floor" value={getSafeString(item.InventoryFloorId)} />
-                                                    <FieldItem label="Booking Id" value={getSafeString(item.BookingId)} />
-                                                    <FieldItem label="Approval Status" value={getSafeString(item.ApprovalStatus)} />
-                                                    <FieldItem label="Requested By" value={getSafeString(item.ParkingBookingCreatedBy)} />
+                                                    <FieldItem label="Created By" value={getSafeString(data.CreatedBy)} />
+                                                    <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '')} />
                                                 </div>
                                             ))}
 
@@ -298,8 +306,8 @@ export const Activity: React.FC = () => {
                                     </div>
                                 ))
                             ) : (
-                                <div className="text-center text-gray-500 py-8">
-                                    No parking history found.
+                                <div className="text-center text-gray-500">
+                                     <NoDataView message='No parking history found'/>
                                 </div>
                             )}
                         </div>
@@ -314,19 +322,19 @@ export const Activity: React.FC = () => {
                         }
                     }}
                     title={
-                        <div className="font-semibold text-lg pt-4 pb-4">
+                        <div className="font-medium text-md">
                             Flat Alteration History
                         </div>
                     }
                     child={
-                        <div>
+                        <div className="space-y-4">
                             {flatAlterationList.length > 0 ? (
                                 flatAlterationList.map((data, index) => (
                                     <div key={data.FlatAlterationRequestId || index}>
 
                                         <div className="bg-white rounded-lg px-8 py-4 border border-gray-200">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-x-8 md:gap-y-3">
-                                                <FieldItem label="Flat Alteration Remark" value={getSafeString(data.FlatAlterationRemark)} />
+                                                <FieldItem label="Flat Alteration Remark" value={getSafeString(data.FlatAlterationRemark)} urls={data.ProofOfDocumentURL} isIcon />
                                                 <FieldItem label="Approval Status" value={getSafeString(data.ApprovalStatus)} />
                                                 <FieldItem label="Created By" value={getSafeString(data.CreatedBy)} />
                                                 <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '')} />
@@ -335,14 +343,11 @@ export const Activity: React.FC = () => {
                                             </div>
                                         </div>
 
-                                        {index < flatAlterationList.length - 2 && (
-                                            <hr className="my-6 border-gray-200" />
-                                        )}
                                     </div>
                                 ))
                             ) : (
                                 <div className="text-center text-gray-500 py-8">
-                                    No flat alteration history found.
+                                      <NoDataView message='No flat alteration history found'/>
                                 </div>
                             )}
                         </div>
@@ -351,13 +356,14 @@ export const Activity: React.FC = () => {
 
                 <ExpandableCard
                     showline={false}
+                    expandedheight={600}
                     onClick={(isOpen) => {
                         if (isOpen) {
                             loadRefundedAmountDetailsHistory();
                         }
                     }}
                     title={
-                        <div className="font-semibold text-lg pt-4 pb-4">
+                        <div className="font-medium text-md">
                             Refunded Amount Details History
                         </div>
                     }
@@ -389,44 +395,57 @@ export const Activity: React.FC = () => {
 
                                             <div className="space-y-3">
                                                 <h3 className="font-semibold text-gray-900 mb-2">Developers Bank Details</h3>
+                                                <FieldItem label="Project Bank name" value={getSafeString(data.ProjectBankName ?? '-')} isRow={false} />
                                                 <FieldItem label="Account Number" value={getSafeString(data.ProjectAccountNumber ?? '-')} isRow={false} />
-                                                <FieldItem label="Bank Name" value={getSafeString(data.ProjectBankName ?? '-')} isRow={false} />
                                                 <FieldItem label="IFSC Code" value={getSafeString(data.ProjectIFSCCode ?? '-')} isRow={false} />
-                                                <FieldItem label="Payment For" value={getSafeString(data.PaymentFor ?? '-')} isRow={false} />
+                                                <FieldItem label="Nature Of Account" value={data.ProjectNatureOfAccount || "-"} isRow={false} />
+                                                <FieldItem label="Account Type" value={data.ProjectAcType || "-"} isRow={false} />
                                             </div>
 
                                             <div className="space-y-3">
                                                 <h3 className="font-semibold text-gray-900 mb-2">Customers Party Bank Details</h3>
-                                                <FieldItem label="Account Holder" value={getSafeString(data.AccountHolderName ?? '-')} />
-                                                <FieldItem label="Bank" value={getSafeString(data.BankName ?? '-')} />
-                                                <FieldItem label="Transaction / Cheque / DD No" value={getSafeString(data.TransactionChequeDemandDraftNumber ?? '-')} urls={data.TransactionChequeDemandDraftURL} />
-                                                <FieldItem label="Transaction / Cheque / DD Date" value={formatDate_dd_MonthName_yy(data.TransactionChequeDemandDraftDate ?? '') || '-'} />
-                                                <FieldItem label="Transaction / Cheque / DD URL" value={data.TransactionChequeDemandDraftURL ? 'View Document' : '-'} urls={data.TransactionChequeDemandDraftURL} isIcon />
+                                                <FieldItem label="Account Holder Name" value={getSafeString(data.AccountHolderName ?? '-')} />
+                                                <FieldItem label="Bank Name" value={getSafeString(data.BankName ?? '-')} />
+                                                <FieldItem label="Account Number" value={getSafeString(data.AccountNumber ?? '-')} />
+                                                <FieldItem label="IFSC Code" value={getSafeString(data.IFSCCode ?? '-')} />
+
                                             </div>
 
                                             <div className="space-y-3">
-                                                <h3 className="font-semibold text-gray-900 mb-2">Other Info</h3>
+                                                <h3 className="font-semibold text-gray-900 mb-2">Action Details</h3>
 
-                                                <FieldItem
-                                                    label="Request Date"
-                                                    value={formatDate_dd_MonthName_yy(data.CreatedDate ?? '') || '-'}
-                                                />
-                                                <FieldItem label="Amount Type" value={getSafeString(data.AmountType ?? '-')} />
-                                                <FieldItem label="Payment Type" value={getSafeString(data.PaymentType ?? '-')} />
-                                                <FieldItem label="Created By" value={getSafeString(data.CreatedBy ?? '-')} />
-                                                <FieldItem
-                                                    label="Payment Receipt"
-                                                    value={data.PaymentReceiptURL ? 'View Receipt' : '-'}
-                                                    urls={data.PaymentReceiptURL}
-                                                    isIcon
-                                                />
+                                                <FieldItem label="Created By" value={data?.CreatedBy ?? "-"} />
+                                                <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(data?.CreatedDate ?? "-")} />
+                                                <FieldItem label="Modified By" value={data?.ModifiedBy ?? "-"} />
+                                                <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(data?.ModifiedDate ?? "-")} />
+
                                             </div>
+                                        </div>
+
+                                        <h3 className="font-semibold text-gray-900 pt-5">Payment Details</h3>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm pt-5">
+                                            <FieldItem label="Payment For" value={getSafeString(data.PaymentFor ?? '-')} isRow={false} />
+                                            <FieldItem label="Payment Mode" value={getSafeString(data.PaymentMode ?? '-')} isRow={false} />
+                                            <FieldItem label="Amount Type" value={getSafeString(data.AmountType ?? '-')} isRow={false} />
+                                            <FieldItem label="Refunded Amount" value={formatCurrency(data.RefundedAmount ?? '0')} isRow={false} />
+
+                                            <FieldItem label="Transaction / Cheque / Demand Draft No." value={getSafeString(data.TransactionChequeDemandDraftNumber ?? '-')} urls={data.TransactionChequeDemandDraftURL} isRow={false} />
+                                            <FieldItem label="Transaction / Cheque / Demand Draft Date" value={formatDate_dd_MonthName_yy(data.TransactionChequeDemandDraftDate ?? '') || '-'} isRow={false} />
+
+                                            <FieldItem
+                                                label="Payment Receipt"
+                                                value={data.PaymentReceiptURL ? 'View Receipt' : '-'}
+                                                urls={data.PaymentReceiptURL}
+                                                isIcon
+                                                isRow={false}
+                                            />
                                         </div>
                                     </div>
                                 ))
                             ) : (
                                 <div className="text-center text-gray-500 py-8 bg-gray-50">
-                                    No refunded amount details history found.
+                                    <NoDataView message='No refunded amount details history found'/>
                                 </div>
                             )}
                         </div>

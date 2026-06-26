@@ -78,6 +78,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/enquiry': '/enquiry',
         '/enquiryreport': '/enquiryReport',
         '/cpenquiryreport': '/cpEnquiryReport',
+        '/ibmobmreport': '/ibmObmReport',
         '/classificationparameter': '/classificationParameter',
         '/performance': '/performance',
         '/achievement': '/achievement',
@@ -109,6 +110,8 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/paytrack': '/payTrack',
         '/paytrackreport': '/payTrackReport',
         '/brokerage': '/brokerage',
+        '/collectionreport': '/collectionReport',
+         '/dailycollectionreport': '/dailyCollectionReport',
 
         //MORE
         '/inwardoutward': '/inwardOutward',
@@ -117,8 +120,10 @@ export const mapPathToRoute = (apiPath: string): string => {
         //SETTING EXTRA
         '/companypolicy': '/companyPolicy',
 
+        //TAX TRACKER
+        '/noticesection': '/noticeSection',
+
         //ESTIMATION AND BUDGET
-        '/budgetlevelmaster': '/BudgetLevelMaster',
         '/budget': '/budget',
         '/specificationmaster': 'specificationMaster',
     }

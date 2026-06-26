@@ -748,7 +748,7 @@ const ViewLitigation: React.FC = () => {
 
                               <FieldItem label="Closure Date" value={formatDate_dd_MonthName_yy(item.ClosureDate)} />
 
-                              {isLatest && isCaseReopen && (
+                              {canAction && isLatest && isCaseReopen && (
                                 <Button
                                   color="transparent"
                                   isborderRadius
@@ -824,7 +824,7 @@ const ViewLitigation: React.FC = () => {
                         </Button>
                       )}
 
-                      {litigationStatus === "Closed" && (
+                      {litigationStatus === "Closed" && canAction && (
                         <Button
                           size="sm"
                           onClick={() => {
@@ -990,9 +990,12 @@ const ViewLitigation: React.FC = () => {
                   value={closureURLFiles}
                   onChange={setClosureURLFiles}
                   availableFilesURL={closureURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                  maxFiles={5}
-                  maxSizeMB={50}
+                  allowedTypes={["image/jpeg", 
+                                 "image/png",
+                                 "image/jpg",
+                                 "application/pdf",
+                                 "application/vnd.ms-excel",
+                                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
                   onRemoveExisting={(url) => {
                     SetRemoveClosureAttachementUrls((prev) => [...prev, url]);
                   }}
@@ -1064,9 +1067,12 @@ const ViewLitigation: React.FC = () => {
                   value={hearingURLFiles}
                   onChange={setHearingURLFiles}
                   availableFilesURL={hearingURL ?? ""}
-                  allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
-                  maxFiles={5}
-                  maxSizeMB={50}
+                  allowedTypes={["image/jpeg", 
+                                 "image/png",
+                                 "image/jpg",
+                                 "application/pdf",
+                                 "application/vnd.ms-excel",
+                                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
                   onRemoveExisting={(url) => {
                     SetRemoveHearingAttachementUrls((prev) => [...prev, url]);
                   }}

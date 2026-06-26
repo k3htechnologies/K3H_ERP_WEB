@@ -27,6 +27,7 @@ import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME_BMC, PROJECT_SUB_SCHEME_MHADA, PROJECT_SUB_SCHEME_SRA } from '@/core/constants';
 import ToggleSwitch from '@/ui/components/forms/ToggleSwitch';
+import { getStatusColor } from '../utils/Status';
 
 export const ProjectMaster: React.FC = () => {
 
@@ -205,8 +206,8 @@ export const ProjectMaster: React.FC = () => {
 
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
-    fetchProjectList(page);
-  }, [updateListState]);
+  }, [sortInfo, updateListState],
+  );
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
     updateListState({ sortInfo: sort, page: 1 });
@@ -367,7 +368,21 @@ export const ProjectMaster: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: (value) => value || '-'
+        render: (value) => {
+          const { bg, text } = getStatusColor(value);
+
+          return (
+            <span
+              className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+              style={{
+                backgroundColor: bg,
+                color: text
+              }}
+            >
+              {value || "-"}
+            </span>
+          );
+        }
       },
       {
         key: 'StateName',
@@ -497,7 +512,7 @@ export const ProjectMaster: React.FC = () => {
               isborderRadius
               disabled={!canApprovalAction}
               size='sm'
-              
+
               style={{
                 color: canApprovalAction ? 'black' : '#9CA3AF',
                 padding: '4px 8px',

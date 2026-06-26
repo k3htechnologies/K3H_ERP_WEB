@@ -41,11 +41,14 @@ export interface PaymentLedgerSummaryModelData {
     ProjectBankName: string;
     ProjectAccountNumber: string;
     ProjectIFSCCode: string;
+    ProjectNatureOfAccount: string;
+    ProjectAcType: string;
 
     ReceivedAmount: number;
     TransactionChequeDemandDraftNumber: string;
     TransactionChequeDemandDraftURL: string;
     TransactionChequeDemandDraftDate: string;
+    IsBookingAmount: boolean;
 
     ApprovalStatus: string;
     IsApproval: boolean;

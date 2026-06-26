@@ -21,6 +21,7 @@ import DataTableExpandable, { type DataTableExpandableRef } from "@/ui/component
 import type { AddUpdateSpecificationMaster, DeleteSpecificationMasterRequest, filterwithPaginationSpecificationMasterRequest, SpecificationMasterData } from "@/features/specificationMaster/models/SpecificationMasterModel";
 import { specificationMasterService } from "@/features/specificationMaster/services/SpecificationMasterService";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { handleExportFile } from "@/core/utils/exportFile";
 
 const initialFormState = (): AddUpdateSpecificationMaster => ({
     SpecificationMasterId: 0,
@@ -45,7 +46,7 @@ export const SpecificationMaster: React.FC = () => {
     const [deleteSpecificationMaster, setDeleteSpecificationMaster] = useState<SpecificationMasterData | null>(null);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
-    const { canAction } = useMenuPermissions();
+    const { canAction, canExport } = useMenuPermissions();
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const [dropdownLabels, setDropdownLabels] = useState<{ uom?: string; }>({});
     const dtRef = useRef<DataTableExpandableRef | null>(null);
@@ -389,23 +390,17 @@ export const SpecificationMaster: React.FC = () => {
                     LevelId1: row.LevelId1,
                     LevelId2: row.SpecificationMasterId,
                 };
-
         }
     };
+
+    const isExpandable = activeTab !== "L1";
+    const showUom = activeTab !== "L1" && activeTab !== "L2"
 
     const SpecificationMasterColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'CategoryName',
             label: 'Category Name',
-            width: '20',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
-        {
-            key: 'Uom',
-            label: 'UOM',
-            width: '20',
+            width: '50',
             sortable: false,
             align: 'left',
             render: value => value || '-'
@@ -510,14 +505,16 @@ export const SpecificationMaster: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
-        {
-            key: 'Uom',
-            label: 'UOM',
-            width: '25',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
+        ...(showUom
+            ? [{
+                key: "Uom",
+                label: "UOM",
+                width: "25",
+                sortable: false,
+                align: "left" as const,
+                render: (value: any) => value || "-"
+            }]
+            : []),
         {
             key: "Actions",
             label: "Actions",
@@ -525,8 +522,6 @@ export const SpecificationMaster: React.FC = () => {
             fixed: "right",
             align: "center",
             render: (_value, row) => {
-                if (!canAction) return null;
-
                 return (
                     <div className="flex items-center justify-end ml-2 gap-1">
                         <Button
@@ -534,9 +529,11 @@ export const SpecificationMaster: React.FC = () => {
                             isborderRadius
                             size='sm'
                             style={{
-                                color: 'blue',
-                                padding: '4px 8px'
+                                color: canAction ? "blue" : "#9CA3AF",
+                                cursor: canAction ? "pointer" : "not-allowed",
+                                opacity: canAction ? 1 : 0.5
                             }}
+                            disabled={!canAction}
                             title="Edit Specification Master"
                             onClick={(e) => {
                                 e.preventDefault()
@@ -551,9 +548,11 @@ export const SpecificationMaster: React.FC = () => {
                             isborderRadius
                             size="sm"
                             style={{
-                                color: 'red',
-                                padding: '4px 8px'
+                                color: canAction ? "red" : "#9CA3AF",
+                                cursor: canAction ? "pointer" : "not-allowed",
+                                opacity: canAction ? 1 : 0.5
                             }}
+                            disabled={!canAction}
                             title="Delete Specification Master"
                             onClick={(e) => {
                                 e.preventDefault();
@@ -566,7 +565,7 @@ export const SpecificationMaster: React.FC = () => {
                 );
             }
         }
-    ], []);
+    ], [showUom]);
 
     const handlePageChange = (page: number) => {
 
@@ -589,11 +588,41 @@ export const SpecificationMaster: React.FC = () => {
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange
         }),
-        [pagination, handlePageChange])
+        [pagination, handlePageChange]);
 
     const SpecificationmasterForTable = useMemo(() => specificationMasterlist, [specificationMasterlist]);
 
-    const isExpandable = activeTab !== "L1";
+    const handleExportSpecificationMaster = async (exportType: 'Excel' | 'PDF') => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: filterwithPaginationSpecificationMasterRequest = {
+                    PageNumber: 1,
+                    PageSize: pagination.totalRecords,
+                    LevelType: activeTab,
+                    // IsCheckPermission: true,
+                    // IsExpandChild: true,
+                    SortBy: getSortByParam(sortInfo ?? null, SpecificationMasterColumns),
+                    ExportType: exportType
+                }
+
+                const response = await specificationMasterService.apiCallPullSpecificationMaster(params);
+
+                handleExportFile(response, exportType, "Specification Master", addToast);
+
+                return response
+            },
+            undefined,
+            (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
+            undefined,
+            'Preparing Export'
+        );
+    };
+
+
+    const handleExportSpecificationmasterExcel = () => handleExportSpecificationMaster("Excel");
+    const habndleExportSpecificationmasterPdf = () => handleExportSpecificationMaster("PDF");
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -604,6 +633,10 @@ export const SpecificationMaster: React.FC = () => {
                 searchTerm={searchTerm}
                 onClearSearch={handlClearSearch}
                 onSearchChange={handleSearch}
+
+                isShowExportButton={canExport && SpecificationMasterColumns.length > 0}
+                onExportExcel={handleExportSpecificationmasterExcel}
+                onExportPdf={habndleExportSpecificationmasterPdf}
                 isShowAddButton={canAction && activeTab === "L1"}
                 addTitle="Add"
                 onAdd={handleAddUpdateModalOpen}
@@ -701,7 +734,7 @@ export const SpecificationMaster: React.FC = () => {
 
                 <div className="space-y-10 p-6 bg-blue-100">
                     {parentPath && (
-                        <div className="mb-4 text-md font-medium text-gray-500">
+                        <div className="mb-4 text-lg font-medium text-gray-500">
                             {parentPath}
                         </div>
                     )}
@@ -718,7 +751,7 @@ export const SpecificationMaster: React.FC = () => {
                             />
                         </div>
 
-                        {activeTab !== "L1" && activeTab !== "L2" && (
+                        {showUom && (
                             <div>
                                 <SingleSelectDropdownWithPagination
                                     label="UOM"

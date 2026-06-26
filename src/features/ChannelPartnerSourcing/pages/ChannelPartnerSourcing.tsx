@@ -17,11 +17,15 @@ import { ChannelPartnerService } from '@/features/ChannelPartner/services/Channe
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { useProject } from '@/features/projectMaster/context/ProjectContext';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Copy } from 'lucide-react';
 import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { updateFilter } from '@/core/utils/filterHelper';
-import { Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
+import { copyToClipboard } from '@/core/utils/comman';
+import { filterNumbers } from '@/core/utils/fileValidation';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { IBM_OBM_RANGE_FILTER_OPTIONS } from '@/core/constants';
 
 export const ChannelPartnerSourcing: React.FC = () => {
 
@@ -43,13 +47,11 @@ export const ChannelPartnerSourcing: React.FC = () => {
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchChannelPartnerSourcing(value);
   }, 350);
-  //#endregion
 
   const navigate = useNavigate();
 
   const { projectId } = useProject();
 
-  //#region INIT
   useEffect(() => {
 
     setPagination({ currentPage: listState.page });
@@ -72,9 +74,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
     };
 
   }, [debouncedSearch]);
-  //#endregion
 
-  //#region DATA LOAD
   const fetchChannelPartnerList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadChannelPartner(page, filters, sort);
   }
@@ -106,6 +106,9 @@ export const ChannelPartnerSourcing: React.FC = () => {
           Speciality: filterParams.Speciality?.trim() || undefined,
           CityName: filterParams.CityName?.trim() || undefined,
           VillageName: filterParams.VillageName?.trim() || undefined,
+          NoOfIBM: filterParams.NoOfIBM?.trim() || undefined,
+          NoOfOBM: filterParams.NoOfOBM?.trim() || undefined,
+          SystemGeneratedCode: filterParams.SystemGeneratedCode?.trim() || undefined,
           ProjectId: projectId ?? 0,
           SortBy: getSortByParam(sortInfo ?? null, channelPartnerColumns)
         };
@@ -136,9 +139,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
       'Loading Channel Partner'
     );
   };
-  //#endregion
 
-  //#region SEARCH & CLEAR
   const searchChannelPartnerSourcing = async (searchValue: string) => {
 
     updateListState({ searchTerm: searchValue });
@@ -161,9 +162,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
     loadChannelPartner(1, {}, undefined, undefined);
 
   };
-  //#endregion
 
-  //#region TABLE CONFIG
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
   }, [sortInfo, updateListState]);
@@ -188,13 +187,10 @@ export const ChannelPartnerSourcing: React.FC = () => {
   );
 
   const dataForTable = useMemo(() => channelPartnerMasterList, [channelPartnerMasterList]);
-  //#endregion
 
-  //#region COLUMNS
+  const handleNavigateToView = (row: ChannelPartnerData, ProjectId: number | undefined) => {
 
-  const handleNavigateToView = (row: ChannelPartnerData) => {
-
-    if (!projectId) {
+    if (!ProjectId) {
       addToast({ type: 'error', title: 'Please select a project' });
       return;
     }
@@ -210,7 +206,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
     () => [
       {
         key: 'SystemGeneratedCode',
-        label: 'Unique Code',
+        label: 'CP Code',
         width: '20',
         sortable: true,
         fixed: 'left',
@@ -232,6 +228,29 @@ export const ChannelPartnerSourcing: React.FC = () => {
                 </span>
               )}
 
+              {value && (
+                <Button
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const success = await copyToClipboard(value);
+                    if (success) {
+                      addToast({ type: 'success', title: `${value} Copied!` });
+                    }
+                  }}
+                  color="transparent"
+                  size="sm"
+                  style={{
+                    padding: '2px 6px',
+                    color: '#6B7280',
+                    cursor: 'pointer'
+                  }}
+                  title="Copy"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+              )}
+
             </div>
           );
         }
@@ -247,7 +266,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
             text={value || '-'}
             maxWidth="250px"
             tooltipThreshold={25}
-            onClick={() => handleNavigateToView(row)}
+            onClick={() => handleNavigateToView(row, Number(projectId))}
           />
         )
       },
@@ -255,7 +274,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         key: 'NoOfIbm',
         label: 'No of IBM',
         width: '15',
-        sortable: false,
+        sortable: true,
         align: 'left',
         render: (value) => value || '0'
       },
@@ -263,7 +282,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         key: 'NoOfObm',
         label: 'No of OBM',
         width: '15',
-        sortable: false,
+        sortable: true,
         align: 'left',
         render: (value) => value || '0'
       },
@@ -323,7 +342,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-         render: (value, row) => value ? `${row.MobileNumberCountryCode || "+91"} ${value}` : '-'
+        render: (value, row) => value ? `${row.MobileNumberCountryCode || "+91"} ${value}` : '-'
       },
 
       {
@@ -426,7 +445,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
         render: (value) => value || '-'
       },
     ],
-    [canAction]
+    [canAction, handleNavigateToView]
   );
 
   const applyFilters = () => {
@@ -461,7 +480,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
           debouncedSearch(v);
         }}
         onClearSearch={clearSearch}
-        
+
         isShowFilterButton
         filters={filters}
         onOpenFilter={() => {
@@ -507,6 +526,13 @@ export const ChannelPartnerSourcing: React.FC = () => {
         <div className="space-y-6">
           <div>
             <Input type="text"
+              label='CP Code'
+              value={tempFilters?.SystemGeneratedCode ?? ''}
+              onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
+              placeholder="Enter CP Code" />
+          </div>
+          <div>
+            <Input type="text"
               label='Full Name'
               value={tempFilters?.Name ?? ''}
               onChange={e => handleFilterChange('Name', e.target.value)}
@@ -545,7 +571,7 @@ export const ChannelPartnerSourcing: React.FC = () => {
             <Input type="text"
               label='Mobile Number'
               value={tempFilters?.MobileNumber ?? ''}
-              onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+              onChange={e => handleFilterChange('MobileNumber', filterNumbers(e.target.value))}
               placeholder="Enter Mobile Number" />
           </div>
           <div>
@@ -608,6 +634,31 @@ export const ChannelPartnerSourcing: React.FC = () => {
               value={tempFilters.VillageName || ''}
               onChange={e => handleFilterChange('VillageName', e.target.value)}
               placeholder="Enter Village"
+            />
+          </div>
+          <div>
+            <SinglePageSelection
+              label="No of IBM"
+              placeholder="Select No of IBM"
+              value={tempFilters.NoOfIBM || ''}
+              onChange={e => handleFilterChange('NoOfIBM', String(e))}
+              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
+                label: opt.name,
+                value: opt.id
+              }))}
+            />
+          </div>
+
+          <div>
+            <SinglePageSelection
+              label="No of OBM"
+              placeholder="Select No of OBM"
+              value={tempFilters.NoOfOBM || ''}
+              onChange={e => handleFilterChange('NoOfOBM', String(e))}
+              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
+                label: opt.name,
+                value: opt.id
+              }))}
             />
           </div>
         </div>

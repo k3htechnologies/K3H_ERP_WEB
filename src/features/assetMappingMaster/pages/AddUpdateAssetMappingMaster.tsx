@@ -13,13 +13,13 @@ import { fetchEmployeeMasterById, fetchEmployeeMasterDropdown } from "@/features
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
 import { fetchAssetById, fetchAssetMasterDropdown } from "@/features/assetMaster/assetMasterDropDown";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
-import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, convert_yy_mm_dd_To_dd_mm_yyyy, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import Checkbox from "@/ui/components/forms/Checkbox";
-import {  isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
+import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
 import type { AssetMasterData } from "@/features/assetMaster/models/AssetMasterModel";
 
@@ -61,7 +61,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
   const [isEditAllowedForAssetAndEmployee, SetIsEditAllowedForAssetAndEmployee] = useState<boolean>(true);
-  
+
 
   const [dropdownLabels, setDropdownLabels] = useState<{
     employeeName?: string;
@@ -99,7 +99,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
         const response = await assetMappingMasterService.apiCallPullAssetMappingMaster(params);
 
         if (E.isRight(response)) {
-          
+
           const e = response.right.Data?.[0];
 
           if (e) {
@@ -114,7 +114,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
               ConditionOnIssue: e.ConditionOnIssue ?? prev.ConditionOnIssue,
               ConditionOnReturn: e.ConditionOnReturn ?? prev.ConditionOnReturn,
               Remarks: e.Remarks ?? prev.Remarks,
-              
+
             }));
 
             if (e.EmployeeId) {
@@ -191,13 +191,15 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
       newErrors.AssignedDate = "Assigned Date is required";
     }
 
-    const assignedDate=convert_yy_mm_dd_To_dd_mm_yyyy(formData.AssignedDate)
-    
-    if (formData.AssignedDate && !isToDateGreaterOrEqualFromDate(joiningDate || "", assignedDate!)) {
+    const v_assignedDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.AssignedDate ? new Date(formData.AssignedDate) : undefined);
+
+    const v_returnDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.ReturnDate ? new Date(formData.ReturnDate) : undefined);
+
+    if (formData.AssignedDate && !isToDateGreaterOrEqualFromDate(joiningDate!, v_assignedDate!)) {
       newErrors.AssignedDate = "Assigned Date must be greater than or equal to Joining Date";
     }
 
-    if (isReturnAsset === true && formData.ReturnDate && !isToDateGreaterOrEqualFromDate(formData.AssignedDate!, formData.ReturnDate!)) {
+    if (isReturnAsset === true && formData.ReturnDate && !isToDateGreaterOrEqualFromDate(v_assignedDate!, v_returnDate)) {
       newErrors.ReturnDate = "Return Date must be greater than or equal to Assigned Date";
     }
 
@@ -327,7 +329,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                 label="Employee"
                 title="Select Employee"
                 size="lg"
-                 disabled={!isEditAllowedForAssetAndEmployee}
+                disabled={!isEditAllowedForAssetAndEmployee}
                 required
                 dataFetchCallBack={fetchEmployeeMasterDropdown}
                 onSelected={(item) => {

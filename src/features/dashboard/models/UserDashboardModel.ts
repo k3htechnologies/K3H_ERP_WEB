@@ -20,6 +20,7 @@ export interface UserDashboardDataset {
 export interface Table0 {
   Name: string | null;
   Department: string | null;
+  DesignationName: string | null;
   EmployeeCode: string | null;
   Status: string | null;
   PunchIn: string | null;

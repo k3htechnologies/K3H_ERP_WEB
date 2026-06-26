@@ -14,14 +14,19 @@ import useToast from "@/core/hooks/useToast";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
+import { Modal } from "@/ui/components/Modal/Modal";
+import AchievementWalkinsRevisitReport from "@/features/achievement/components/AchievementWalkinsRevisitReport";
+import { AchievementBookingReport } from "@/features/achievement/components/AchievementBookingReport";
+import AchievementIbmObmReport from "./AchievementIbmObmReport";
 
 interface Props {
     filterType: string;
     fromDate: string | null;
     toDate: string | null;
+    projectId?: number;
 }
 
-export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, toDate }) => {
+export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, toDate, projectId }) => {
 
     const [sourcingAchievementList, setSourcingAchievementList] = useState<AchievementSourcingData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -33,6 +38,11 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
     const { pagination, setPagination } = usePagination(20);
     const [isShowCustomizeAchievementSourcingByColumnsModal, setIsShowCustomizeAchievementBySourcingColumnsModal] = useState(false);
 
+    const [selectedColumnClickWalkingRevisit, setSelectedColumnClickWalkingRevisit] = useState<any>(null);
+    const [selectedColumnClickBooking, setSelectedColumnClickBooking] = useState<any>(null);
+    const [selectedColumnClickIbmObm, setSelectedColumnClickIbmObm] = useState<any>(null);
+
+
     const loadAchievementBySourcingData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
 
         await runApiWithLoader(
@@ -42,9 +52,9 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
                 const params: FilterWithPaginationAchievementRequest = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
-                    ProjectId: filterParams.ProjectId ? Number(filterParams.ProjectId) : undefined,
+                    ProjectId: Number(projectId) || 0,
                     EmployeeName: searchText?.trim() || undefined,
-                    ProjectName: filterParams.EmployeeName || undefined,
+                    ProjectName: filterParams.ProjectName || undefined,
                     FilterType: filterType.trim() || undefined,
                     FromDate: fromDate ? fromDate || undefined : undefined,
                     ToDate: toDate ? toDate || undefined : undefined,
@@ -118,7 +128,8 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
                 const params: FilterWithPaginationAchievementRequest = {
 
                     PageNumber: 1,
-                    PageSize: pagination.pageSize,
+                    PageSize: pagination.totalRecords,
+                    ProjectId: Number(projectId) || 0,
                     ProjectName: searchTerm?.trim() || undefined,
                     FilterType: filterType.trim() || undefined,
                     FromDate: fromDate ? fromDate || undefined : undefined,
@@ -142,7 +153,34 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
     const handleExportAchievementBySourcingExcel = () => handleExportAchievementBySourcing('Excel');
     const handleExportAchievementBySourcingPdf = () => handleExportAchievementBySourcing('PDF');
 
-    const AchievementBySourcingColumns: TableColumn[] = [
+    const handleColumnClickWalkingRevisit = (row: AchievementSourcingData, tabName: string, columnKey: string,) => {
+        setSelectedColumnClickWalkingRevisit({
+            employeeId: row.EmployeeId,
+            employeeName: row.EmployeeName,
+            tabName: tabName,
+            columnKey: columnKey
+        });
+    };
+
+    const handleColumnClickBooking = (row: AchievementSourcingData, tabName: string, columnKey: string,) => {
+        setSelectedColumnClickBooking({
+            employeeId: row.EmployeeId,
+            employeeName: row.EmployeeName,
+            tabName: tabName,
+            columnKey: columnKey
+        });
+    };
+
+    const handleColumnClickIbmObm = (row: AchievementSourcingData, tabName: string, columnKey: string,) => {
+        setSelectedColumnClickIbmObm({
+            employeeId: row.EmployeeId,
+            employeeName: row.EmployeeName,
+            tabName: tabName,
+            columnKey: columnKey
+        });
+    };
+
+    const AchievementBySourcingColumns = useMemo<TableColumn[]>(() => [
         {
             key: 'EmployeeName',
             label: 'Employee Name',
@@ -151,7 +189,7 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
             fixed: 'left',
             align: 'left',
             render: (value) => (
-                <span className="text-blue-600 font-semibold">
+                <span className="text-black-400">
                     {value}
                 </span>
             )
@@ -164,13 +202,40 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
             align: 'left',
             render: value => value || ''
         },
+        
         {
             key: 'WalkinsByCP',
             label: 'Walkins By CP',
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'SOURCING', 'WALKINS BY CP')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'FreshVisits',
@@ -178,7 +243,33 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'SOURCING', 'FRESH VISITS')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'Revisits',
@@ -186,7 +277,33 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'SOURCING', 'REVISITS')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
 
         {
@@ -195,31 +312,138 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#FBF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickBooking(row, 'SOURCING', 'TOTAL BOOKING')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
+
         {
             key: 'TotalRevenue',
             label: 'Total Revenue (₹)',
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+             theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#FBF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickBooking(row, 'SOURCING', 'TOTAL REVENUE')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'TotalOBMFreshVisits',
-            label: 'Total OBM (Fresh Visits)',
+            label: 'OBM (Fresh Visits)',
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#F0FDF4'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickIbmObm(row, 'SOURCING', 'TOTAL OBM FRESH VISITS')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
+
         },
         {
             key: 'TotalOBMRevisits',
-            label: 'Total OBM (Revisits)',
+            label: 'OBM (Revisits)',
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#F0FDF4'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickIbmObm(row, 'SOURCING', 'TOTAL OBM REVISITS')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
+
         },
         {
             key: 'TotalMeetings',
@@ -227,18 +451,72 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#F0FDF4'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickIbmObm(row, 'SOURCING', 'TOTAL MEETING')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
+
         },
         {
             key: 'TotalIBM',
-            label: 'Total IBM',
+            label: 'IBM',
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#f8ecdd'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickIbmObm(row, 'SOURCING', 'IBM')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
+
         },
 
-    ];
+    ], [handleColumnClickWalkingRevisit, handleColumnClickBooking, handleColumnClickIbmObm]);
 
     const AchievementBySourcingPaginationInfo: PaginationInfo = useMemo(
         () => ({
@@ -338,6 +616,77 @@ export const AchievementBySourcing: React.FC<Props> = ({ filterType, fromDate, t
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}
             />
+
+            {selectedColumnClickWalkingRevisit && (
+                <Modal
+                    isOpen={!!selectedColumnClickWalkingRevisit}
+                    onClose={() => setSelectedColumnClickWalkingRevisit(null)}
+                    title={
+                        <div className="flex flex-col">
+
+                            <span className="font-semibold text-base">
+                                {selectedColumnClickWalkingRevisit.employeeName || ""}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                {selectedColumnClickWalkingRevisit.tabName ? `  Tab: ${selectedColumnClickWalkingRevisit.tabName}` : ""}
+                                {selectedColumnClickWalkingRevisit.columnKey ? ` | Column: ${selectedColumnClickWalkingRevisit.columnKey}` : ""}
+                            </span>
+
+                        </div>
+                    }
+                    size="large-half"
+                >
+                    <AchievementWalkinsRevisitReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={projectId} employeeId={selectedColumnClickWalkingRevisit?.employeeId} tabName={selectedColumnClickWalkingRevisit?.tabName} columnKey={selectedColumnClickWalkingRevisit?.columnKey} />
+                </Modal>
+            )}
+
+            {selectedColumnClickBooking && (
+                <Modal
+                    isOpen={!!selectedColumnClickBooking}
+                    onClose={() => setSelectedColumnClickBooking(null)}
+                    title={
+                        <div className="flex flex-col">
+
+                            <span className="font-semibold text-base">
+                                {selectedColumnClickBooking.employeeName || ""}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                {selectedColumnClickBooking.tabName ? `  Tab: ${selectedColumnClickBooking.tabName}` : ""}
+                                {selectedColumnClickBooking.columnKey ? ` | Column: ${selectedColumnClickBooking.columnKey}` : ""}
+                            </span>
+
+                        </div>
+                    }
+                    size="large-half"
+                >
+                    <AchievementBookingReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={projectId} employeeId={selectedColumnClickBooking?.employeeId} tabName={selectedColumnClickBooking?.tabName} columnKey={selectedColumnClickBooking?.columnKey} />
+                </Modal>
+            )}
+
+
+            {selectedColumnClickIbmObm && (
+                <Modal
+                    isOpen={!!selectedColumnClickIbmObm}
+                    onClose={() => setSelectedColumnClickIbmObm(null)}
+                    title={
+                        <div className="flex flex-col">
+
+                            <span className="font-semibold text-base">
+                                {selectedColumnClickIbmObm.employeeName || ""}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                {selectedColumnClickIbmObm.tabName ? `  Tab: ${selectedColumnClickIbmObm.tabName}` : ""}
+                                {selectedColumnClickIbmObm.columnKey ? ` | Column: ${selectedColumnClickIbmObm.columnKey}` : ""}
+                            </span>
+
+                        </div>
+                    }
+                    size="large-half"
+                >
+                    <AchievementIbmObmReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={projectId} employeeId={selectedColumnClickIbmObm?.employeeId} tabName={selectedColumnClickIbmObm?.tabName} columnKey={selectedColumnClickIbmObm?.columnKey} />
+                </Modal>
+            )}
+
         </div>
     );
 };

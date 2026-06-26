@@ -13,9 +13,14 @@ import { achievementReportService } from "@/features/achievement/services/Achiev
 import useToast from "@/core/hooks/useToast";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
 import { Modal } from "@/ui/components/Modal/Modal";
-import AchievementByClosing from "./AchievementByClosing";
+import AchievementByClosing from "@/features/achievement/components/AchievementByClosing";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
+import AchievementBySourcing from "@/features/achievement/components/AchievementBySourcing";
+import { Button } from "@/ui/components/forms";
+import AchievementWalkinsRevisitReport from "@/features/achievement/components/AchievementWalkinsRevisitReport";
+import AchievementBookingReport from "@/features/achievement/components/AchievementBookingReport";
+import AchievementIbmObmReport from "@/features/achievement/components/AchievementIbmObmReport";
 
 interface Props {
     filterType: string;
@@ -33,7 +38,13 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
     const { canExport } = useMenuPermissions();
     const { addToast } = useToast();
     const { pagination, setPagination } = usePagination(20);
-    const [selectedCell, setSelectedcell] = useState<any>(null);
+    const [selectedCellClosing, setSelectedcellClosing] = useState<any>(null);
+    const [selectedCellSourcing, setSelectedcellSourcing] = useState<any>(null);
+
+    const [selectedColumnClickWalkingRevisit, setSelectedColumnClickWalkingRevisit] = useState<any>(null);
+    const [selectedColumnClickBooking, setSelectedColumnClickBooking] = useState<any>(null);
+    const [selectedColumnClickIbmObm, setSelectedColumnClickIbmObm] = useState<any>(null);
+
     const [isShowCustomizeAchievementByProjectColumnsModal, setIsShowCustomizeAchievementByProjectColumnsModal] = useState(false);
 
     const loadAchievementByProjectData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
@@ -120,7 +131,7 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
                 const params: FilterWithPaginationAchievementRequest = {
 
                     PageNumber: 1,
-                    PageSize: pagination.pageSize,
+                    PageSize: pagination.totalRecords,
                     ProjectName: searchTerm?.trim() || undefined,
                     FilterType: filterType.trim() || undefined,
                     FromDate: fromDate ? fromDate || undefined : undefined,
@@ -144,7 +155,49 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
     const handleExportAchievementByProjectExcel = () => handleExportAchievementByProject('Excel');
     const handleExportAchievementByProjectPdf = () => handleExportAchievementByProject('PDF');
 
+    const handleCMClick = (row: ProjectAchievementData) => {
+        setSelectedcellClosing({
+            projectId: row.ProjectId,
+            project: row.ProjectName
+        });
+    };
+
+    const handleSMClick = (row: ProjectAchievementData) => {
+        setSelectedcellSourcing({
+            projectId: row.ProjectId,
+            project: row.ProjectName
+        });
+    };
+
+    const handleColumnClickWalkingRevisit = (row: ProjectAchievementData, tabName: string, columnKey: string,) => {
+        setSelectedColumnClickWalkingRevisit({
+            projectId: row.ProjectId,
+            project: row.ProjectName,
+            tabName: tabName,
+            columnKey: columnKey
+        });
+    };
+
+    const handleColumnClickBooking = (row: ProjectAchievementData, tabName: string, columnKey: string,) => {
+        setSelectedColumnClickBooking({
+            projectId: row.ProjectId,
+            project: row.ProjectName,
+            tabName: tabName,
+            columnKey: columnKey
+        });
+    };
+
+    const handleColumnClickIbmObm = (row: ProjectAchievementData, tabName: string, columnKey: string,) => {
+        setSelectedColumnClickIbmObm({
+            projectId: row.ProjectId,
+            project: row.ProjectName,
+            tabName: tabName,
+            columnKey: columnKey
+        });
+    };
+
     const AchievementByProjectColumns = useMemo<TableColumn[]>(() => [
+
         {
             key: 'ProjectName',
             label: 'Project Name',
@@ -152,22 +205,42 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
             sortable: true,
             fixed: 'left',
             align: 'left',
+            
             render: (value, row) => {
 
                 return (
-                    <span
-                        className="cursor-pointer text-blue-600 font-semibold hover:underline"
+                    <div className="flex items-center justify-between w-full gap-2">
 
-                        onClick={() => {
-                            handleOpenModal(row)
-                        }}
-                    >
-                        {value}
-                    </span>
+                        <span className="text-black-600 truncate">
+                            {value}
+                        </span>
+
+                        <div className="flex items-center gap-2 shrink-0">
+                            <Button
+                                type="button"
+                                size="sm"
+                                color="blue"
+                                variant="solid"
+                                colorMode="extraLight"
+                                onClick={() => handleCMClick(row)}
+                            >
+                                CM
+                            </Button>
+                            <Button
+                                type="button"
+                                size="sm"
+                                color="primaryLight"
+                                variant="solid"
+                                onClick={() => handleSMClick(row)}
+                            >
+                                SM
+                            </Button>
+
+                        </div>
+
+                    </div>
                 );
             }
-
-
         },
         {
             key: 'WalkinsByCP',
@@ -175,7 +248,34 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'PROJECT', 'WALKINS BY CP')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'WalkinsDirect',
@@ -183,7 +283,34 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'PROJECT', 'WALKINS DIRECT')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
+
         },
         {
             key: 'TotalWalkins',
@@ -191,32 +318,136 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
-        },
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
 
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'PROJECT', 'TOTAL WALKINS')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
+        },
+        {
+            key: 'TotalFreshVisits',
+            label: 'Fresh Visits',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'PROJECT', 'FRESH VISITS')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
+        },
         {
             key: 'Revisits',
             label: 'Revisits',
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#EEF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickWalkingRevisit(row, 'PROJECT', 'REVISITS')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
-        {
-            key: 'TotalFreshVisits',
-            label: 'Total Fresh Visits',
-            width: '15',
-            sortable: false,
-            align: 'center',
-            render: value => value || '0'
-        },
+
         {
             key: 'BookingByCP',
             label: 'Booking By CP',
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#FBF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickBooking(row, 'PROJECT', 'BOOKING BY CP')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'BookingDirect',
@@ -224,7 +455,33 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#FBF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickBooking(row, 'PROJECT', 'BOOKING DIRECT')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
         {
             key: 'TotalBooking',
@@ -232,7 +489,33 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#FBF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickBooking(row, 'PROJECT', 'TOTAL BOOKING')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
 
         {
@@ -241,11 +524,139 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
             width: '15',
             sortable: false,
             align: 'center',
-            render: value => value || '0'
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#FBF5FF'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickBooking(row, 'PROJECT', 'TOTAL REVENUE')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
+        },
+        {
+            key: 'TotalIBM',
+            label: 'IBM',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#F0FDF4'
+            },
+            render: (value, row) => {
+
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickIbmObm(row, 'PROJECT', 'IBM')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
         },
 
+        {
+            key: 'TotalOBM',
+            label: 'OBM',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#F0FDF4'
+            },
+            render: (value, row) => {
 
-    ], []);
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickIbmObm(row, 'PROJECT', 'OBM')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
+        },
+        {
+            key: 'TotalIBMOBM',
+            label: 'IBM + OBM',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            theadStyle: {
+                backgroundColor: '#FFF',
+                color: '#64748B'
+            },
+            tdStyle: {
+                backgroundColor: '#F0FDF4'
+            },
+            render: (_, row) => {
+
+                const value = Number(row.TotalIBM || 0) + Number(row.TotalOBM || 0);
+                const isClickable = (value ?? 0) > 0;
+
+                return (
+                    <span
+                        className={
+                            isClickable
+                                ? "cursor-pointer text-blue-600 hover:underline"
+                                : "text-gray-400 cursor-not-allowed"
+                        }
+                        onClick={() => {
+                            if (!isClickable) return;
+                            handleColumnClickIbmObm(row, 'PROJECT', 'IBM + OBM')
+                        }}
+                    >
+                        {value ?? "0"}
+                    </span>
+                );
+            }
+        },
+    ], [handleCMClick, handleSMClick, handleColumnClickWalkingRevisit, handleColumnClickBooking, handleColumnClickIbmObm]);
 
 
     const AchievementByProjectPaginationInfo: PaginationInfo = useMemo(
@@ -290,13 +701,7 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
         [AchievementByProjectColumns, selectedAchievementByProjectColumnKeys]
     );
 
-    const handleOpenModal = (row: ProjectAchievementData) => {
 
-        setSelectedcell({
-            projectId: row.ProjectId,
-            project: row.ProjectName
-        });
-    };
 
     return (
         <div className="pt-5">
@@ -356,22 +761,110 @@ export const AchievementByProject: React.FC<Props> = ({ filterType, fromDate, to
                 title="Customize Table Columns"
             />
 
-            {selectedCell && (
+            {selectedCellClosing && (
                 <Modal
-                    isOpen={!!selectedCell}
-                    onClose={() => setSelectedcell(null)}
+                    isOpen={!!selectedCellClosing}
+                    onClose={() => setSelectedcellClosing(null)}
                     title={
                         <div className="flex flex-col">
 
                             <span className="font-semibold text-base">
-                                {selectedCell.project || ""}
+                                {selectedCellClosing.project || ""}
                             </span>
 
                         </div>
                     }
                     size="large-half"
                 >
-                    <AchievementByClosing filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={selectedCell?.projectId} />
+                    <AchievementByClosing filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={selectedCellClosing?.projectId} />
+                </Modal>
+            )}
+
+            {selectedCellSourcing && (
+                <Modal
+                    isOpen={!!selectedCellSourcing}
+                    onClose={() => setSelectedcellSourcing(null)}
+                    title={
+                        <div className="flex flex-col">
+
+                            <span className="font-semibold text-base">
+                                {selectedCellSourcing.project || ""}
+                            </span>
+
+                        </div>
+                    }
+                    size="large-half"
+                >
+                    <AchievementBySourcing filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={selectedCellSourcing?.projectId} />
+                </Modal>
+            )}
+
+            {selectedColumnClickWalkingRevisit && (
+                <Modal
+                    isOpen={!!selectedColumnClickWalkingRevisit}
+                    onClose={() => setSelectedColumnClickWalkingRevisit(null)}
+                    title={
+                        <div className="flex flex-col">
+
+                            <span className="font-semibold text-base">
+                                {selectedColumnClickWalkingRevisit.project || ""}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                {selectedColumnClickWalkingRevisit.tabName ? `  Tab: ${selectedColumnClickWalkingRevisit.tabName}` : ""}
+                                {selectedColumnClickWalkingRevisit.columnKey ? ` | Column: ${selectedColumnClickWalkingRevisit.columnKey}` : ""}
+                            </span>
+
+                        </div>
+                    }
+                    size="large-half"
+                >
+                    <AchievementWalkinsRevisitReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={selectedColumnClickWalkingRevisit?.projectId} tabName={selectedColumnClickWalkingRevisit?.tabName} columnKey={selectedColumnClickWalkingRevisit?.columnKey} />
+                </Modal>
+            )}
+
+            {selectedColumnClickBooking && (
+                <Modal
+                    isOpen={!!selectedColumnClickBooking}
+                    onClose={() => setSelectedColumnClickBooking(null)}
+                    title={
+                        <div className="flex flex-col">
+
+                            <span className="font-semibold text-base">
+                                {selectedColumnClickBooking.project || ""}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                {selectedColumnClickBooking.tabName ? `  Tab: ${selectedColumnClickBooking.tabName}` : ""}
+                                {selectedColumnClickBooking.columnKey ? ` | Column: ${selectedColumnClickBooking.columnKey}` : ""}
+                            </span>
+
+                        </div>
+                    }
+                    size="large-half"
+                >
+                    <AchievementBookingReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={selectedColumnClickBooking?.projectId} tabName={selectedColumnClickBooking?.tabName} columnKey={selectedColumnClickBooking?.columnKey} />
+                </Modal>
+            )}
+
+            {selectedColumnClickIbmObm && (
+                <Modal
+                    isOpen={!!selectedColumnClickIbmObm}
+                    onClose={() => setSelectedColumnClickIbmObm(null)}
+                    title={
+                        <div className="flex flex-col">
+
+                            <span className="font-semibold text-base">
+                                {selectedColumnClickIbmObm.project || ""}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                                {selectedColumnClickIbmObm.tabName ? `  Tab: ${selectedColumnClickIbmObm.tabName}` : ""}
+                                {selectedColumnClickIbmObm.columnKey ? ` | Column: ${selectedColumnClickIbmObm.columnKey}` : ""}
+                            </span>
+
+                        </div>
+                    }
+                    size="large-half"
+                >
+                    <AchievementIbmObmReport filterType={filterType} fromDate={fromDate} toDate={toDate} projectId={selectedColumnClickIbmObm?.projectId} tabName={selectedColumnClickIbmObm?.tabName} columnKey={selectedColumnClickIbmObm?.columnKey} />
                 </Modal>
             )}
 

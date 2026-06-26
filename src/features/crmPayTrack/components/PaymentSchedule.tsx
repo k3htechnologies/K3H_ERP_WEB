@@ -16,12 +16,14 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import DataTableExpandable, { type DataTableExpandableRef } from '@/ui/components/DataTable/DataTableExpandable';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 
 export const PaymentSchedule: React.FC = () => {
     const [paymentScheduleCrmList, setPaymentScheduleCrmList] = useState<PaymentScheduleModelData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const { canAction,canExport } = useMenuPermissions('/paymentSchedule');
 
     const dtRef = useRef<DataTableExpandableRef | null>(null);
 
@@ -29,7 +31,7 @@ export const PaymentSchedule: React.FC = () => {
     const { projectId } = useProject();
 
     const { listState } = usePayTrackBookingListState();
-    const { bookingId } = listState;
+    const { bookingId, bookingApprovalStatus } = listState;
 
     useEffect(() => {
         if (projectId && bookingId) {
@@ -72,14 +74,19 @@ export const PaymentSchedule: React.FC = () => {
 
     const handleSearchChange = (value: string) => {
         setSearchTerm(value);
-        loadPaymentScheduleCrmDetails(value)
+
+        if (!value.trim()) {
+            loadPaymentScheduleCrmDetails('');
+            return;
+        }
+
+        loadPaymentScheduleCrmDetails(value);
     };
 
     const handleClearSearch = () => {
         setSearchTerm('');
         loadPaymentScheduleCrmDetails('')
     }
-
 
     const handleExportPayTrackPaymentScheduleExcel = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
@@ -190,7 +197,7 @@ export const PaymentSchedule: React.FC = () => {
         return [
             {
                 key: "Name",
-                label: 'Name',
+                label: 'Stage (Milestone)',
                 width: '14',
                 align: 'left',
                 render: (_value, row) => {
@@ -358,21 +365,27 @@ export const PaymentSchedule: React.FC = () => {
                 align: 'center',
                 render: (_value, row) => {
 
-                    const isLocked = !(row?.BookingPaymentScheduleId > 0) || !row?.DemandType?.trim();
+                    const isLocked =
+                        !(row?.BookingPaymentScheduleId > 0) ||
+                        !row?.DemandType?.trim();
 
-                    if (isLocked) return null;
+                    const isDisabled =
+                        isLocked ||
+                        bookingApprovalStatus?.toUpperCase() !== 'APPROVED';
+
+                    if (!canAction ||isLocked) return null;
 
                     return (
                         <div className="flex items-center justify-center">
 
                             <Button
                                 size="sm"
-                                disabled={isLocked}
+                                disabled={isDisabled}
                                 color="blue"
                                 onClick={(e) => {
                                     e.preventDefault()
                                     e.stopPropagation()
-                                    if (isLocked) return;
+                                    if (isDisabled) return;
                                     handleGenerateDemand(row)
                                 }}>
                                 {row.DemandType}
@@ -449,7 +462,7 @@ export const PaymentSchedule: React.FC = () => {
                 onSearchChange={handleSearchChange}
                 onClearSearch={handleClearSearch}
                 // EXPORT
-                isShowExportButton={dataWithTotal.length > 0}
+                isShowExportButton={canExport && dataWithTotal.length > 0}
                 onExportExcel={handleExportPayTrackPaymentScheduleExcelFile}
                 onExportPdf={handleExportPayTrackPaymentSchedulePdfFile}
                 exportLoading={isLoading}

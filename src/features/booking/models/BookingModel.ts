@@ -63,6 +63,8 @@ export interface BookingData {
     EnquiryId: number | null;
     SystemGeneratedCode: string | null;
     ApplicantName: string | null;
+    ApplicantMobileNumberCountryCode: string | null;
+    ApplicantMobileNumber: string | null;
     BookingType: string | null;
     Flat: string | null;
     ParkingData?: ParkingData[] | null;
@@ -79,6 +81,7 @@ export interface BookingData {
     BookingApplicantData?: BookingApplicantData[] | null;
     PermanentAddress: string | null;
     CommunicationAddress: string | null;
+    Source: string | null;
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
 
@@ -124,6 +127,11 @@ export interface BookingData {
     ModifiedById: number | null;
     ModifiedBy: string | null;
     ModifiedDate: string | null;
+
+    CancelledById: number | null;
+    CancelledBy: string | null;
+    CancelledDate: string | null;
+
     IsApproval: boolean;
     ApprovalStatus: string | null;
     ProjectId: number | null;
@@ -140,6 +148,7 @@ export interface BookingData {
     TransferFlat: string | null;
     TenantId: number | null;
     LedgerCount: number | null;
+    IsApplicableOtherCharge:boolean | null;
 }
 
 export interface BookingApplicantData {
@@ -251,6 +260,7 @@ export interface AddUpdateBookingRequest {
     OtherRemark: string | null;
     TermsAndConditionsDescription: string | null;
     BookingType: string | null;
+    IsApplicableOtherCharge:boolean | null;
     OtherChargesDetailJSON: string | null;
     PaymentScheduleSchemeMasterId: number | null;
     PaymentScheduleDetailJSON: string | null;

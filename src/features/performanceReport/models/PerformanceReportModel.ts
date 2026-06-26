@@ -65,10 +65,6 @@ export interface PerformanceReportSourcingData {
     ActualBookings: number | null
     PerformanceBookings: number | null
 
-    TotalMeetings: number | null
-    ActualTotalMeetings: number | null
-    PerformanceTotalMeetings: number | null
-
     TotalOBM: number | null
     ActualTotalOBM: number | null
     PerformanceTotalOBM: number | null

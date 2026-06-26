@@ -27,16 +27,22 @@ export const fetchSpecificationMasterDropdown = (levelType: string, parentLevelI
 
             const data = responseEither.right.Data || [];
 
+            const searchText = params?.value?.trim().toLowerCase();
+
+            const finalData = searchText
+                ? data.filter(item =>
+                    item.CategoryName?.toLowerCase().includes(searchText)
+                )
+                : data;
+
             return {
-                totalNumberOfRecord: data.length,
-                itemList: data
-                    .filter((item) => item.CategoryName)
-                    .map((item) => ({
-                        label: item.CategoryName!,
-                        value: String(item.SpecificationMasterId),
-                        uom: item.Uom,
-                        uomMasterId: item.UomMasterId,
-                    }))
+                totalNumberOfRecord: finalData.length,
+                itemList: finalData.map(item => ({
+                    label: item.CategoryName!,
+                    value: String(item.SpecificationMasterId),
+                    uom: item.Uom,
+                    uomMasterId: item.UomMasterId,
+                })),
             };
         } catch (err) {
             console.error("FETCH SPECIFICATION MASTER DROPDOWN ERROR", err);

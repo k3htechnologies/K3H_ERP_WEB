@@ -711,7 +711,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
       apiCallback: ChannelPartnerService.apiCallPullChannelPartner,
 
-      extraParams: { MobileNumberCountryCode: countryCode }
+      extraParams: { MobileNumberCountryCode: countryCode}
     });
 
     if (isDuplicate) {
@@ -778,7 +778,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
                     handleFieldChange("MobileNumber", value);
 
-                    await checkDuplicateMobileNumber(value, formData.MobileNumberCountryCode);
+                    await checkDuplicateMobileNumber(value, formData.MobileNumberCountryCode|| "+91");
                   }}
                   onCountryCodeChange={(value) =>
                     handleFieldChange("MobileNumberCountryCode", value)

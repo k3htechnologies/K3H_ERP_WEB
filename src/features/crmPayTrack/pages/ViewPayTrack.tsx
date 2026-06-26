@@ -17,13 +17,14 @@ import type { ModulesApprovalStatusRequest } from '@/features/modulesWorkflowApp
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 import type { PayTrackBookingData } from "@/features/crmPayTrack/models/PayTrackBookingModel";
 import SnagChecklist from "@/features/crmPayTrack/components/SnagChecklist";
-import FlatHandoverChecklist from "../components/FlatHandoverChecklist";
+import FlatHandoverChecklist from "@/features/crmPayTrack/components/FlatHandoverChecklist";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 export const ViewPayTrack: React.FC = () => {
 
   const navigate = useNavigate();
-  
+
   const { listState, updateListState } = usePayTrackBookingListState();
-  const { bookingName, bookingType, flat,bookingData } = listState;
+  const { bookingName, bookingType, flat, bookingData, bookingApprovalStatus } = listState;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [welcome, setWelcome] = useState<string>("");
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
@@ -32,26 +33,56 @@ export const ViewPayTrack: React.FC = () => {
 
   const { projectId } = useProject();
 
-  const bookingTabList = [
-    { id: 'BookingForm', label: 'Overview' },
-    { id: 'BankLoans', label: 'Bank Loans' },
-    { id: 'Account', label: 'Account' },
-    { id: 'ModifiedRequest', label: 'Modified Request' },
-    { id: 'SnagChecklist', label: 'Snag Checklist' },
-    { id: 'FlatHandoverChecklist', label: 'Flat Handover Checklist' },
-    { id: 'FlatHandover', label: 'Flat Handover' },
-    { id: 'Files', label: 'Files' },
-    { id: 'Call Log', label: 'Call Logs' },
-  ];
+  const { canView: canOverviewView } = useMenuPermissions('/bookingPayTrack');
 
-  const [activeTab, setActiveTab] = useState<string>(listState.activeTab || bookingTabList[0].id);
+  const { canView: canBankLoansView } = useMenuPermissions('/bankLoan');
+
+  const { canView: canPaymentLedgerView } = useMenuPermissions('/paymentLedger');
+
+  const { canView: canPaymentScheduleView } = useMenuPermissions('/paymentSchedule');
+
+  const { canView: canModifiedRequestView } = useMenuPermissions('/modificationRequest');
+
+  const { canView: canSnagChecklistView } = useMenuPermissions('/snagChecklist');
+
+  const { canView: canFlatHandoverChecklistView } = useMenuPermissions('/flatHandoverChecklist');
+
+  const { canView: canFlatHandoverView } = useMenuPermissions('/flatHandover');
+
+  const { canView: canFilesView } = useMenuPermissions('/files');
+
+  const { canView: canCallLogsView } = useMenuPermissions('/payTrackCallLog');
+
+  const bookingTabList: { id: string; label: string }[] = [
+    canOverviewView ? { id: 'BookingForm', label: 'Overview' } : null,
+
+    canBankLoansView ? { id: 'BankLoans', label: 'Bank Loans' } : null,
+
+    (canPaymentLedgerView || canPaymentScheduleView) ? { id: 'Account', label: 'Account' } : null,
+
+    canModifiedRequestView ? { id: 'ModifiedRequest', label: 'Modified Request' } : null,
+
+    canSnagChecklistView ? { id: 'SnagChecklist', label: 'Snag Checklist' } : null,
+
+    canFlatHandoverChecklistView ? { id: 'FlatHandoverChecklist', label: 'Flat Handover Checklist' } : null,
+
+    canFlatHandoverView ? { id: 'FlatHandover', label: 'Flat Handover' } : null,
+
+    canFilesView ? { id: 'Files', label: 'Files' } : null,
+
+    canCallLogsView ? { id: 'Call Log', label: 'Call Logs' } : null,
+
+  ].filter(Boolean) as { id: string; label: string }[];
+
+
+   const [activeTab, setActiveTab] = useState<string>((listState.activeTab || bookingTabList?.[0]?.id) ?? '');
 
   useEffect(() => {
     if (listState.activeTab && listState.activeTab !== activeTab) {
       setActiveTab(listState.activeTab);
     }
   }, [listState.activeTab]);
-  
+
 
   const handleApprovalLog = (row: PayTrackBookingData) => {
 
@@ -69,16 +100,17 @@ export const ViewPayTrack: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
-     
+
       <div className="flex items-center justify-between pb-4">
         <div className="flex-1">
           <HeaderActionBar
             titleText={`Booking Details : ${bookingName}`}
             subTitleText={bookingType ?? ""}
             subSubTitleText={flat ?? ""}
+            subSubSubTitleText={bookingApprovalStatus ?? ""}
             cancelText="Back"
-            EditText="Edit"
-            canAction={activeTab === "BookingForm" ? true : false}
+            EditText="Update Registration Date & Parking"
+            canAction={activeTab === "BookingForm" && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
             onEdit={() => {
               setIsModalOpen(true);
             }}
@@ -90,11 +122,11 @@ export const ViewPayTrack: React.FC = () => {
             ExtraButtontitleTextIcon={Mail}
             ExtraButtonText="Message"
             onExtraButton={() => setWelcome('Message')}
-            canActionExtraButtonText={activeTab === "BookingForm" ? true : false}
+            canActionExtraButtonText={activeTab === "BookingForm" && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
 
             ExtraExtraButtonText="Send E-Mail"
             onExtraExtraButton={() => setWelcome('E-Mail')}
-            canActionExtraExtraButton={activeTab === "BookingForm" ? true : false}
+            canActionExtraExtraButton={activeTab === "BookingForm" && bookingApprovalStatus?.toUpperCase() === 'APPROVED' ? true : false}
           />
         </div>
 
@@ -139,7 +171,7 @@ export const ViewPayTrack: React.FC = () => {
         onClose={() => setIsApprovalLogModalOpen(false)}
         request={approvalLogRequest}
       />
-     
+
     </div>
   )
 }

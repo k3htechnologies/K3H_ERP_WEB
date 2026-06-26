@@ -33,6 +33,7 @@ export interface BookingApplicantModificationDataRequest {
     NomineeFormURL: string;
     StatementOfSourceOfFundsURL: string;
     PaymentProofURL: string;
+    ProofOfDocumentURL: string;
     IsApproval: boolean;
     ApprovalStatus: string;
     VersionNumber: string;
@@ -42,7 +43,6 @@ export interface BookingApplicantModificationDataRequest {
     ModifiedById: number;
     ModifiedBy: string;
     ModifiedDate: string | null;
-    BookingApplicantModificationDocumentUploadURL: string;
 
 }
 
@@ -99,8 +99,10 @@ export interface BookingApplicantModificationRequest {
 
     PaymentProofURL?: File[] | null;
     RemovePaymentProofURL?: string;
-    BookingApplicantModificationDocumentUploadURL?: File[] | null;
-    RemoveBookingApplicantModificationDocumentUploadURL?: string;
+
+    ProofOfDocumentURL?: File[] | null;
+    RemoveProofOfDocumentURL?: string;
+    
     ModifiedBy?:string | null;
     CreatedBy?:string | null;
 

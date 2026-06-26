@@ -409,10 +409,13 @@ export const AddUpdatePayTrackRent: React.FC = () => {
   //#endregion
 
   const fetchProjectBankList = useCallback(
-    async (page: number) => {
-      return fetchProjectBankDropdown(page, {
-        projectId: Number(projectId)
+    async (pageNumber: number, params?: { value?: string }) => {
+
+      return fetchProjectBankDropdown(pageNumber, {
+        projectId: projectId || 0,
+        bankName: params?.value || ""
       });
+
     },
     [projectId]
   );

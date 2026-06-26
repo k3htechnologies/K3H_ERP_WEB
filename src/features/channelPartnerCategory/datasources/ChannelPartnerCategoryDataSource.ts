@@ -17,8 +17,10 @@ export class ChannelPartnerCategoryImpl implements ChannelPartnerCategoryDatasou
         try {
 
             const queryParams = new URLSearchParams({
-                ProjectId: String(params.ProjectId ?? 10),
+                ProjectId: String(params.ProjectId ?? 20),
             });
+
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${ChannelPartnerCategoryApi.PULL}?${queryParams.toString()}`, { signal }

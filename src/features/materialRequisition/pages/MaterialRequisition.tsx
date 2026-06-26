@@ -248,7 +248,7 @@ export const MaterialRequisition: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: (value: string, row: any) => {
+            render: (_value: string, row: any) => {
                 const urls = parseDocumentUrls(row.PurchaseOrderURL);
 
                 if (!urls || urls.length === 0) {

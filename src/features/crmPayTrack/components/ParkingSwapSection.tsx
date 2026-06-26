@@ -1,6 +1,6 @@
 import { runApiWithLoader } from "@/core/utils";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import type { ParkingModificationDetailsData, FilterWithPaginationParkingModificationDetails } from '@/features/crmPayTrack/models/ParkingModificationModel';
+import type { ParkingModificationDetailsData, FilterWithPaginationParkingModificationDetails, DeleteParkingModificationRequest } from '@/features/crmPayTrack/models/ParkingModificationModel';
 import { fetchParkingDropdown } from "@/features/parking/parkingDropDown";
 import type { AddUpdateParkingModificationRequest } from '@/features/crmPayTrack/models/ParkingModificationModel';
 import { parkingModificationService } from '@/features/crmPayTrack/services/ParkingModificationService';
@@ -17,7 +17,7 @@ import { type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { Loader } from "@/core/utils/loader";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button, Input } from "@/ui/components/forms";
-import { Plus } from "lucide-react";
+import { Edit, Plus, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
@@ -27,6 +27,7 @@ import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 const initialFormState = (): AddUpdateParkingModificationRequest => ({
     ParkingModificationRequestId: 0,
@@ -72,12 +73,49 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
     const [RemoveProofOfDocumentUrls, setRemoveProofOfDocumentUrls] = useState<string[]>([]);
     const [proofOfDocumentURL, setProofOfDocumentURL] = useState<string>();
 
+    const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+    const [editingParkingModificationRequestData, setEditingParkingModificationRequestData] = useState<ParkingModificationDetailsData | null>(null);
+    const [deleteParkingModificationRequestData, setDeleteParkingModificationRequestData] = useState<ParkingModificationDetailsData | null>(null)
+
     useEffect(() => {
         if (!projectId || !bookingId) return;
 
         fetchParkingModificationRequest();
 
     }, [projectId, bookingId]);
+
+    useEffect(() => {
+        if (isAddUpdateParkingSwapModalOpen) {
+            if (editingParkingModificationRequestData) {
+                setFormData({
+                    ParkingModificationRequestId: editingParkingModificationRequestData.ParkingModificationRequestId || 0,
+                    Uniquekey: editingParkingModificationRequestData.UniqueKey || initialFormState().Uniquekey,
+                    BookingId: editingParkingModificationRequestData.BookingId || 0,
+                    ProjectId: editingParkingModificationRequestData.ProjectId || 0,
+                    ParkingId: editingParkingModificationRequestData.ParkingId || '',
+                    ProofOfDocumentURL: null,
+                    RemoveProofOfDocumentURL: ''
+                });
+
+                setSwapParkingFormData({
+                    ParkingId: editingParkingModificationRequestData.ParkingId || ''
+                });
+
+                setProofOfDocumentFiles([]);
+                setProofOfDocumentURL(editingParkingModificationRequestData.ProofOfDocumentURL || '');
+            } else {
+                setFormData({
+                    ...initialFormState(),
+                    ProjectId: Number(projectId),
+                });
+
+                setSwapParkingFormData({});
+                setProofOfDocumentFiles([]);
+                setProofOfDocumentURL('');
+            }
+            setErrors({});
+        }
+    }, [isAddUpdateParkingSwapModalOpen, editingParkingModificationRequestData, projectId]);
 
     const fetchParkingModificationRequest = async (page: number = pagination.currentPage) => {
         await loadParkingModificationRequest(page);
@@ -144,7 +182,56 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
         return bookingData?.ParkingData || [];
     }, [parkingModificationData, bookingData]);
 
+    const handleEditParkingModificationRequest = useCallback((row: ParkingModificationDetailsData) => {
+        setEditingParkingModificationRequestData({
+            ...row,
+            ProofOfDocumentURL: row.ProofOfDocumentURL,
+            parkingData: row.parkingData,
+        })
+        setIsAddUpdateParkingSwapModalOpen(true);
+    }, [])
 
+    const validateAddParkingSwapForm = (): {
+        isValid: boolean;
+        errors: { [k: string]: string };
+    } => {
+        const errors: { [k: string]: string } = {};
+
+        if (!hasAnyDocumentFile(proofOfDocumentFiles, proofOfDocumentURL, RemoveProofOfDocumentUrls)) {
+            errors.ProofOfDocument = "Proof of Document is required.";
+        }
+
+        if (!swapParkingFormData.ParkingId) {
+            errors.ParkingId = "Parking is required";
+        }
+
+        return {
+            isValid: Object.keys(errors).length === 0,
+            errors,
+        };
+    };
+
+
+    const PushParkingModificationFormData = (): FormData => {
+        const fd = new FormData();
+
+        fd.append("ParkingModificationRequestId", String(formData.ParkingModificationRequestId)),
+            fd.append("Uniquekey", formData.Uniquekey ?? "7b14cc10-2533-f111-854a-c7681b271aa8"),
+            fd.append("BookingId", String(bookingId)),
+            fd.append("ProjectId", String(projectId)),
+            fd.append("ParkingId", swapParkingFormData.ParkingId)
+
+        proofOfDocumentFiles.forEach((file) => {
+            if (file instanceof File) {
+                fd.append("ProofOfDocumentURL", file);
+            }
+        });
+
+        fd.append("RemoveProofOfDocumentURL", RemoveProofOfDocumentUrls.join(","));
+
+        return fd;
+
+    };
 
     const handleParkingApprovalSubmit = async (remark: string) => {
 
@@ -189,49 +276,6 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
             undefined,
             approvalParkingActionType === "approve" ? "Approving Parking Modification" : "Rejecting Parking Modification"
         );
-    };
-
-
-    const validateAddParkingSwapForm = (): {
-        isValid: boolean;
-        errors: { [k: string]: string };
-    } => {
-        const errors: { [k: string]: string } = {};
-
-        if (!hasAnyDocumentFile(proofOfDocumentFiles, proofOfDocumentURL, RemoveProofOfDocumentUrls)) {
-            errors.ProofOfDocument = "Proof of Document is required.";
-        }
-
-        if (!swapParkingFormData.ParkingId) {
-            errors.ParkingId = "Parking is required";
-        }
-
-        return {
-            isValid: Object.keys(errors).length === 0,
-            errors,
-        };
-    };
-
-
-    const PushParkingModificationFormData = (): FormData => {
-        const fd = new FormData();
-
-        fd.append("ParkingModificationRequestId", String(formData.ParkingModificationRequestId)),
-            fd.append("Uniquekey", formData.Uniquekey ?? "7b14cc10-2533-f111-854a-c7681b271aa8"),
-            fd.append("BookingId", String(bookingId)),
-            fd.append("ProjectId", String(projectId)),
-            fd.append("ParkingId", swapParkingFormData.ParkingId)
-
-        proofOfDocumentFiles.forEach((file) => {
-            if (file instanceof File) {
-                fd.append("ProofOfDocumentURL", file);
-            }
-        });
-
-        fd.append("RemoveProofOfDocumentURL", RemoveProofOfDocumentUrls.join(","));
-
-        return fd;
-
     };
 
     const handleAddUpdateParkingSwap = async (e: React.FormEvent) => {
@@ -325,6 +369,74 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
         setIsParkingApprovalActionModalOpen(true);
     };
 
+    const handleConfirmationDialogBoxOpen = useCallback((row: ParkingModificationDetailsData) => {
+        setDeleteParkingModificationRequestData(row)
+        setIsConfirmationDialogBoxOpen(true)
+    }, [])
+
+    const handleDeleteDialogClose = useCallback(() => {
+        setIsConfirmationDialogBoxOpen(false);
+        setDeleteParkingModificationRequestData(null);
+    }, [setIsConfirmationDialogBoxOpen, setDeleteParkingModificationRequestData]);
+
+
+    const handleDeleteParkingModificationRequest = async () => {
+        setIsConfirmationDialogBoxOpen(false);
+        if (!deleteParkingModificationRequestData) return
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: DeleteParkingModificationRequest = {
+                    BookingId: bookingId ?? 0,
+                    ProjectId: projectId ?? 0,
+                    Uniquekey: parkingModificationData?.UniqueKey || '',
+                    ParkingModificationRequestId: deleteParkingModificationRequestData.ParkingModificationRequestId,
+                }
+                const response = await parkingModificationService.apiCallDeleteParkingModificationRequest(params);
+
+                if (E.isRight(response)) {
+
+                    const newTotalRecords = pagination.totalRecords - 1;
+
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    else if (pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
+                    setPagination({
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
+                    });
+                    await fetchParkingModificationRequest();
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+                    setIsConfirmationDialogBoxOpen(false);
+                    setDeleteParkingModificationRequestData(null);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                    setIsConfirmationDialogBoxOpen(false);
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Delete Parking Modification Request'
+        )
+    }
+
     const parkingColumns = useMemo<TableColumn[]>(
         () => [
             {
@@ -403,8 +515,68 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
                     />
                 )
             },
+            {
+                key: 'Actions',
+                label: 'Actions',
+                width: '20',
+                align: 'center',
+
+                render: (_value, row) => {
+
+                    const isDisabled = row.ApprovalStatus !== "Pending";
+
+                    return (
+                        <div className="flex items-center justify-center">
+                            {canAction && (
+                                <>
+                                    <Button
+                                        color="transparent"
+                                        size="sm"
+                                        style={{
+                                            color: (!isDisabled) ? 'blue' : '#9CA3AF',
+                                            cursor: (!isDisabled) ? 'pointer' : 'not-allowed',
+                                            opacity: (!isDisabled) ? 1 : 0.5
+                                        }}
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            handleEditParkingModificationRequest(row)
+                                        }}
+                                        leftIcon={<Edit className="h-4 w-4" />}
+                                        disabled={isDisabled}
+                                    />
+
+                                    <Button
+                                        color="transparent"
+                                        size="sm"
+                                        style={{
+                                            color: (!isDisabled) ? 'red' : '#9CA3AF',
+                                            cursor: (!isDisabled) ? 'pointer' : 'not-allowed',
+                                            opacity: (!isDisabled) ? 1 : 0.5
+                                        }}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleConfirmationDialogBoxOpen(row);
+                                        }}
+                                        leftIcon={<Trash2 className="h-4 w-4" />}
+                                        disabled={isDisabled}
+                                    />
+
+
+
+                                </>
+                            )}
+
+                        </div>
+
+                    );
+                },
+
+
+            }
         ],
-        [canAction, handleParkingApprovalLog, handleParkingApproveRejectDocument]
+        [canAction, handleParkingApprovalLog, handleParkingApproveRejectDocument, handleEditParkingModificationRequest, handleConfirmationDialogBoxOpen]
     )
 
 
@@ -463,6 +635,7 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
                     setRemoveProofOfDocumentUrls([]);
                     setSwapParkingErrors({});
                     setFormData(initialFormState());
+                    setEditingParkingModificationRequestData(null);
                     setErrors({});
                 }}
                 onCancel={() => {
@@ -473,9 +646,10 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
                     setRemoveProofOfDocumentUrls([]);
                     setSwapParkingErrors({});
                     setFormData(initialFormState());
+                    setEditingParkingModificationRequestData(null);
                     setErrors({});
                 }}
-                title="Swap Parking"
+                title={editingParkingModificationRequestData ? 'Update Parking Modification Request' : 'Add Parking Modification Request'}
                 saveText="Save"
                 onSubmit={handleAddUpdateParkingSwap}
                 loading={isLoading}
@@ -522,6 +696,14 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
                     </div>
                 </div>
             </Modal>
+
+            <DeleteDialog
+                isOpen={isConfirmationDialogBoxOpen}
+                onClose={handleDeleteDialogClose}
+                onConfirm={handleDeleteParkingModificationRequest}
+                loading={isLoading}
+                pageName='Parking Modification'
+            />
 
             <ApprovalLogModal
                 isOpen={isParkingApprovalLogModalOpen}

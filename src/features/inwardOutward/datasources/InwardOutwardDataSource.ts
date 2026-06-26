@@ -29,9 +29,11 @@ export class InwardAndOutWardDatasourceImpl implements InwardAndOutWardDatasourc
             if (params.DocumentType?.trim()) queryParams.append('DocumentType', params.DocumentType.trim());
             if (params.DeliveryStatus?.trim()) queryParams.append('DeliveryStatus', params.DeliveryStatus.trim());
             if (params.DocumentTitle?.trim()) queryParams.append('DocumentTitle', params.DocumentTitle.trim());
-            if (params.SenderMobileNo?.trim()) queryParams.append('SenderMobileNo', params.SenderMobileNo.trim());
-            if (params.ReceiverMobileNo?.trim()) queryParams.append('ReceiverMobileNo', params.ReceiverMobileNo.trim());
+            if (params.SenderMobileNumber?.trim()) queryParams.append('SenderMobileNumber', params.SenderMobileNumber.trim());
+            if (params.ReceiverMobileNumber?.trim()) queryParams.append('ReceiverMobileNumber', params.ReceiverMobileNumber.trim());
             if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
+            if (params.FromDate) queryParams.append('FromDate', params.FromDate.toString());
+            if (params.ToDate) queryParams.append('ToDate', params.ToDate.toString());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

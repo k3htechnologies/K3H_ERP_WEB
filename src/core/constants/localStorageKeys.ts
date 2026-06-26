@@ -102,6 +102,10 @@ export const LOCAL_STORAGE_KEYS = {
     //TAX TRACKER
      NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
 
+     //ESTIMATION AND BUDGET
+    BUDGET_SELECTED_COLUMNS: 'budget.selectedColumns',
+
+
 
 } as const
 

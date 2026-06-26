@@ -110,5 +110,12 @@ export interface BookingApplicantModificationRequest {
 
 }
 
+export interface DeleteBookingApplicantModificationModelRequest {
+    BookingApplicantModificationRequestId: number;
+    BookingId: number
+    ProjectId: number;
+}
+
 export type BookingApplicantModificationListResponse = ApiResponse<BookingApplicantModificationDataRequest[]>;
 export type BookingApplicantModificationSaveReponse = ApiResponse<BookingApplicantModificationDataRequest[]>;
+export type BookingApplicantModificationDeleteReponse = ApiResponse<number>;

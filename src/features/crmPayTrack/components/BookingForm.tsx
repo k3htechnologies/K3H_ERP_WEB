@@ -1209,7 +1209,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                         <div className="p-4 bg-white">
 
                             <div className="grid grid-cols-1 gap-4">
-                                <FieldItem label="Remarks" value={getSafeString(bookingData.FlatAlterationRemark)} />
+                                <FieldItem label="" value={getSafeString(bookingData.FlatAlterationRemark)} />
                             </div>
                         </div>
                     </section>
@@ -1225,7 +1225,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                         <div className="p-4 bg-white">
 
                             <div className="grid grid-cols-1 gap-4">
-                                <FieldItem label="Remarks" value={getSafeString(bookingData.PaymentRemark)} />
+                                <FieldItem label="" value={getSafeString(bookingData.PaymentRemark)} />
                             </div>
                         </div>
                     </section>
@@ -1241,7 +1241,7 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                         <div className="p-4 bg-white">
 
                             <div className="grid grid-cols-1 gap-4">
-                                <FieldItem label="Remarks" value={getSafeString(bookingData.OtherRemark)} />
+                                <FieldItem label="" value={getSafeString(bookingData.OtherRemark)} />
                             </div>
                         </div>
                     </section>

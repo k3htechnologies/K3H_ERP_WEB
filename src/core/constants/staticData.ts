@@ -610,6 +610,8 @@ export const MASTER_DATA = {
 
   noticeType: ['Income Tax', 'GST'],
 
+  budgetLevelType: ["L1", "L2", "L3"],
+
 } as const;
 
 // ============================================================================
@@ -731,6 +733,8 @@ export const IBM_OBM_RANGE_FILTER_OPTIONS = toOptions(MASTER_DATA.ibmObmRangeFil
 export const CHANNEL_PARTNER_CATEGORY_OPTIONS= toOptions(MASTER_DATA.channelPartnerCategory);
 export const IBM_OBM_REPORT_STAGE_OPTIONS = toOptions(MASTER_DATA.ibmObmReportStage);
 export const NOTICE_TYPE_OPTIONS = toOptions(MASTER_DATA.noticeType);
+export const BUDGET_LEVEL_TYPE = toOptions(MASTER_DATA.budgetLevelType);
+
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)
 // ============================================================================

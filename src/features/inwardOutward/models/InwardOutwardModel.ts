@@ -10,8 +10,10 @@ export interface FilterWithPaginationInwardAndOutWardRequest {
     DocumentType?: string
     DocumentTitle?: string;
     DeliveryStatus?: string;
-    SenderMobileNo?: string;
-    ReceiverMobileNo?: string;
+    SenderMobileNumber?: string;
+    ReceiverMobileNumber?: string;
+    FromDate?: string
+    ToDate?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -27,8 +29,8 @@ export interface InwardAndOutWardData {
     DocumentURL: string,
     Amount: number | 0,
     DeliveryType: string | null,
-    ReceiversSignature: string,
-    ReceivedBy: string | null,
+    AcknowledgementSignatureURL: string,
+    AcknowledgementBy: string | null,
     ChequeNo: string | null,
     Priority: string | null,
     DocumentDescription: string | null,
@@ -46,15 +48,17 @@ export interface InwardAndOutWardData {
 
     SenderName: string | null,
     SenderEmailId: string | null,
-    SenderMobileNo: string | null,
+    SenderMobileNumber: string | null,
+    SenderMobileNumberCountryCode: string | null
     SenderAddress: string | null,
 
     ReceiverName: string | null,
     ReceiverEmailId: string | null,
-    ReceiverMobileNo: string | null
+    ReceiverMobileNumber: string | null
+    ReceiverMobileNumberCountryCode: string | null
     ReceiverAddress: string | null
+
     InwardOutwardRevertHistory: InwardOutwardRevertHistory[];
-    InwardOutwardDocumentHistory: InwardOutwardDocumentHistory[];
 
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -64,7 +68,6 @@ export interface InwardAndOutWardData {
     ModifiedDate: string | null
     LastModifiedBy: string | ''
     LastModifiedDate: string | null
-
 }
 
 export interface AddUpdateInwardAndOutWardRequest {
@@ -78,9 +81,9 @@ export interface AddUpdateInwardAndOutWardRequest {
     RemoveDocumentURL: string | ''
     Amount: number | 0,
     DeliveryType: string | null,
-    ReceiversSignature: File[] | null,
-    RemoveReceiversSignature: string | ''
-    ReceivedBy: string | null,
+    AcknowledgementSignatureURL: File[] | null,
+    RemoveAcknowledgementSignatureURL: string | ''
+    AcknowledgementBy: string | null,
     ChequeNo: string | null,
     Priority: string | null,
     DocumentDescription: string | null,
@@ -98,19 +101,20 @@ export interface AddUpdateInwardAndOutWardRequest {
 
     SenderName: string | null,
     SenderEmailId: string | null,
-    SenderMobileNo: string | null,
+    SenderMobileNumber: string | null,
+    SenderMobileNumberCountryCode: string | null
     SenderAddress: string | null,
 
     ReceiverName: string | null,
     ReceiverEmailId: string | null,
-    ReceiverMobileNo: string | null
+    ReceiverMobileNumber: string | null
+    ReceiverMobileNumberCountryCode: string | null
     ReceiverAddress: string | null
 }
 
 export interface DeleteInwardAndOutWardRequest {
     UniqueKey: string
     InwardOutwardId: number
-
 }
 
 export interface InwardOutwardRevertHistory {
@@ -122,10 +126,6 @@ export interface InwardOutwardRevertHistory {
     RevertDocumentURL: string | null
 }
 
-export interface InwardOutwardDocumentHistory {
-    DeliveryStatus: string | null
-    DeliveryDate: string | null
-}
 
 export interface AddRevertInwardOutwardData {
     InwardOutwardRevertId: number | 0,

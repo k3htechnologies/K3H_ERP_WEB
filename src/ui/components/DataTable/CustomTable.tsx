@@ -17,6 +17,7 @@ export interface TableColumn {
   children?: TableColumn[]
   theadStyle?: React.CSSProperties
   tdStyle?: React.CSSProperties
+
 }
 
 export interface PaginationInfo {
@@ -46,6 +47,8 @@ interface Props {
   onSort?: (sort: SortInfo) => void
   theadStyle?: React.CSSProperties;
   tdStyle?: React.CSSProperties;
+  rowStyle?: (row: any) => React.CSSProperties;
+
 }
 
 export const CustomTable: React.FC<Props> = ({
@@ -60,7 +63,8 @@ export const CustomTable: React.FC<Props> = ({
   recordsPerPage = 10,
   sortInfo,
   onSort,
-  theadStyle
+  theadStyle,
+  rowStyle
 }) => {
   const scrollRef = useHorizontalScroll();
 
@@ -266,7 +270,7 @@ export const CustomTable: React.FC<Props> = ({
             ) : (
               data.map((row, i) => (
 
-                <tr key={i} className="hover:bg-gray-50">
+                  <tr key={i} className="hover:bg-gray-50" style={rowStyle?.(row)}>
 
                   {leafColumns.map(col => {
 
@@ -276,7 +280,10 @@ export const CustomTable: React.FC<Props> = ({
 
                     return (
                       <td key={col.key}
-                        className={`px-4 py-2 text-gray-900 border border-gray-200  ${col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'} ${col.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100' : col.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100' : ''}`}
+                        className={`px-4 py-2 text-gray-900 border border-gray-200 
+                           ${col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'} 
+                           ${col.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100' : col.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100' : ''}`}
+
                         style={{
                           ...(col.width ? { width: col.width } : {}),
                           fontSize: '14px',
@@ -285,8 +292,10 @@ export const CustomTable: React.FC<Props> = ({
                           letterSpacing: '0%',
                           minHeight: '40px',
                           verticalAlign: 'middle',
+                          backgroundColor: rowStyle?.(row)?.backgroundColor,
                           ...col.tdStyle
                         }}>
+                          
                         <div className={`${col.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`} style={{ maxWidth: col.maxWidth || col.width, lineHeight: '1.5' }}>
                           {value}
                         </div>

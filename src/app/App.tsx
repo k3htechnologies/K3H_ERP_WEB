@@ -193,6 +193,9 @@ import CollectionReport from '@/features/collectionReport/pages/CollectionReport
 import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
 import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
 import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
+import Budget from '@/features/budget/pages/Budget';
+import SummaryMIS from '@/features/summaryMIS/SummaryMIS';
+import SpecificationMaster from '@/features/specificationMaster/pages/SpecificationMaster';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -487,6 +490,12 @@ function App() {
 
             {/* TAX TRACKER */}
             <Route path="noticeSection" element={<NoticeSectionMaster />} />
+
+              {/* ESTIMATION AND BUDGET */}
+            <Route path='budget' element={<Budget />} />
+            <Route path='summaryMis' element={<SummaryMIS />} />
+            <Route path='specificationMaster' element={<SpecificationMaster />} />
+
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

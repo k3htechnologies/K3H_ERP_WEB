@@ -1,9 +1,10 @@
 import { runApiWithLoader } from "@/core/utils";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import type {
     FilterWithPaginationFlatAlterationRequest,
     FlatAlterationRequestData,
     AddUpdateFlatAlterationRequest,
+    DeleteFlatAlterationRequest,
 } from "@/features/crmPayTrack/models/FlatAlterationRequestModel";
 import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
@@ -13,7 +14,7 @@ import {  type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { usePayTrackBookingListState } from "@/features/crmPayTrack/context/PayTrackBookingListStateContext";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button } from "@/ui/components/forms";
-import { Plus } from "lucide-react";
+import { Edit, Plus, Trash2 } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { flatAlterationService } from "@/features/crmPayTrack/services/FlatAlterationService";
 import usePagination from "@/core/hooks/usePagination";
@@ -31,6 +32,7 @@ import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 
 const initialFormStateForFlatAlterationRequest = (): AddUpdateFlatAlterationRequest => ({
     FlatAlterationRequestId: 0,
@@ -70,53 +72,56 @@ export const FlatAlteration: React.FC = () => {
     const [RemoveProofOfDocumentUrls, setRemoveProofOfDocumentUrls] = useState<string[]>([]);
     const [proofOfDocumentURL, setProofOfDocumentURL] = useState<string>();
 
+    const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+    const [editingFlatAlterationData, setEditingFlatAlterationData] = useState<FlatAlterationRequestData | null>(null);
+    const [deleteFlatAlterationData, setDeleteFlatAlterationData] = useState<FlatAlterationRequestData | null>(null);
     useEffect(() => {
         if (!projectId || !bookingId) return;
         fetchFlatAlterationRequest();
     }, [projectId, bookingId]);
+
+    useEffect(() => {
+        if (isAddUpdateFlatAlterationModalOpen) {
+            if (editingFlatAlterationData) {
+                setFormDataForFlatAlteration({
+                    FlatAlterationRequestId: editingFlatAlterationData.FlatAlterationRequestId || 0,
+                    UniqueKey: editingFlatAlterationData.UniqueKey || initialFormStateForFlatAlterationRequest().UniqueKey,
+                    BookingId: editingFlatAlterationData.BookingId || 0,
+                    ProjectId: editingFlatAlterationData.ProjectId || 0,
+                    FlatAlterationRemark: editingFlatAlterationData.FlatAlterationRemark || '',
+                    ProofOfDocumentURL: null,
+                    RemoveProofOfDocumentURL: ''
+                });
+                setProofOfDocumentFiles([]);
+                setProofOfDocumentURL(editingFlatAlterationData.ProofOfDocumentURL || '');
+                // setRemoveMarketingContentUrls([]);
+            } else {
+                setFormDataForFlatAlteration({
+                    ...initialFormStateForFlatAlterationRequest(),
+                    ProjectId: Number(projectId),
+                });
+                setProofOfDocumentFiles([]);
+                setProofOfDocumentURL('');
+                // setRemoveMarketingContentUrls([]);
+            }
+            setErrors({});
+        }
+    }, [isAddUpdateFlatAlterationModalOpen, editingFlatAlterationData, projectId]);
+
+     const handleEditFlatAlterationRequest = useCallback((row: FlatAlterationRequestData) => {
+        setEditingFlatAlterationData({
+            ...row,
+            FlatAlterationRemark: row.FlatAlterationRemark,
+            ProofOfDocumentURL: row.ProofOfDocumentURL,
+        })
+        setIsAddUpdateFlatAlterationModalOpen(true);
+    }, [])
 
     const handleFieldChange = (field: keyof AddUpdateFlatAlterationRequest, value: any) => {
         setFormDataForFlatAlteration((prev) => ({ ...prev, [field]: value }));
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
-    };
-
-    const handleFlatAlterationApprovalSubmit = async (remark: string) => {
-        if (!approvalFlatAlterationRowData) return;
-
-        const payload: UpdateModulesWorkflowApprovalRequest = {
-            ModuleName: "FLAT ALTERATION APPROVAL",
-            Id: bookingId ?? 0,
-            ProjectId: projectId ?? 0,
-            IsApproved: approvalFlatAlterationActionType === "approve",
-            Remarks: remark ?? null,
-            SubId: approvalFlatAlterationRowData.FlatAlterationRequestId ?? 0,
-        };
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
-
-                if (E.isRight(response)) {
-                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
-                    setIsFlatAlterationApprovalActionModalOpen(false);
-                    await fetchFlatAlterationRequest();
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            approvalFlatAlterationActionType === "approve" ? "Approving Flat Alteration" : "Rejecting Flat Alteration",
-        );
     };
 
     const validateAddFlatAlterationForm = (): {
@@ -267,6 +272,71 @@ export const FlatAlteration: React.FC = () => {
     };
 
 
+     const handleConfirmationDialogBoxOpen = useCallback((row: FlatAlterationRequestData) => {
+        setDeleteFlatAlterationData(row)
+        setIsConfirmationDialogBoxOpen(true)
+    }, []);
+
+    const handleDeleteFlatAlterationRequest = async () => {
+        setIsConfirmationDialogBoxOpen(false);
+        if (!deleteFlatAlterationData) return
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: DeleteFlatAlterationRequest = {
+                    BookingId: bookingId ?? 0,
+                    ProjectId: projectId ?? 0,
+                    Uniquekey: deleteFlatAlterationData.UniqueKey,
+                    FlatAlterationRequestId: deleteFlatAlterationData.FlatAlterationRequestId,
+                }
+                const response = await flatAlterationService.apiCallDeleteFlatAlterationRequest(params);
+
+                if (E.isRight(response)) {
+
+                    const newTotalRecords = pagination.totalRecords - 1;
+
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    else if (pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
+                    setPagination({
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
+                    });
+
+                    await fetchFlatAlterationRequest();
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+                    setIsConfirmationDialogBoxOpen(false);
+
+                    setDeleteFlatAlterationData(null);
+                    
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                    setIsConfirmationDialogBoxOpen(false);
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Delete Flat Alteration Requests'
+        )
+    }
+
     const handleFlatAlterationApprovalLog = (row: FlatAlterationRequestData) => {
         const request: ModulesApprovalStatusRequest = {
             ModuleName: "FLAT ALTERATION APPROVAL",
@@ -276,6 +346,43 @@ export const FlatAlteration: React.FC = () => {
         };
         setApprovalFlatAlterationLogRequest(request);
         setIsFlatAlterationApprovalLogModalOpen(true);
+    };
+
+    const handleFlatAlterationApprovalSubmit = async (remark: string) => {
+        if (!approvalFlatAlterationRowData) return;
+
+        const payload: UpdateModulesWorkflowApprovalRequest = {
+            ModuleName: "FLAT ALTERATION APPROVAL",
+            Id: bookingId ?? 0,
+            ProjectId: projectId ?? 0,
+            IsApproved: approvalFlatAlterationActionType === "approve",
+            Remarks: remark ?? null,
+            SubId: approvalFlatAlterationRowData.FlatAlterationRequestId ?? 0,
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+                if (E.isRight(response)) {
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+                    setIsFlatAlterationApprovalActionModalOpen(false);
+                    await fetchFlatAlterationRequest();
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            approvalFlatAlterationActionType === "approve" ? "Approving Flat Alteration" : "Rejecting Flat Alteration",
+        );
     };
 
     const handleFlatAlterationApproveRejectDocument = (row: FlatAlterationRequestData, approvalType: "approve" | "reject") => {
@@ -301,7 +408,62 @@ export const FlatAlteration: React.FC = () => {
                     );
                 },
             },
+             {
+                key: 'Actions',
+                label: 'Actions',
+                width: '10',
+                align: 'center',
+                render: (_value, row) => {
 
+                    const isDisabled = row.ApprovalStatus !== "Pending";
+
+                    return (
+                        <div className="flex items-center justify-center">
+                            {canAction && (
+                                <>
+                                    <Button
+                                        color="transparent"
+                                        size="sm"
+                                        style={{
+                                            color: (!isDisabled) ? 'blue' : '#9CA3AF',
+                                            cursor: (!isDisabled) ? 'pointer' : 'not-allowed',
+                                            opacity: (!isDisabled) ? 1 : 0.5
+                                        }}
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            e.stopPropagation()
+                                            handleEditFlatAlterationRequest(row)
+                                        }}
+                                        leftIcon={<Edit className="h-4 w-4" />}
+                                        disabled={isDisabled}
+                                    />
+
+                                    <Button
+                                        color="transparent"
+                                        size="sm"
+                                        style={{
+                                            color: (!isDisabled) ? 'red' : '#9CA3AF',
+                                            cursor: (!isDisabled) ? 'pointer' : 'not-allowed',
+                                            opacity: (!isDisabled) ? 1 : 0.5
+                                        }}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            handleConfirmationDialogBoxOpen(row);
+                                        }}
+                                        leftIcon={<Trash2 className="h-4 w-4" />}
+                                        disabled={isDisabled}
+                                    />
+
+                                </>
+                            )}
+
+                        </div>
+
+                    );
+                },
+
+            },
             {
                 key: "ApprovalStatus",
                 label: "Approval Status",
@@ -320,7 +482,7 @@ export const FlatAlteration: React.FC = () => {
                 ),
             },
         ],
-        [canAction, handleFlatAlterationApprovalLog, handleFlatAlterationApproveRejectDocument],
+        [canAction, handleFlatAlterationApprovalLog, handleFlatAlterationApproveRejectDocument,handleEditFlatAlterationRequest,handleConfirmationDialogBoxOpen],
     );
 
     const handleCreateRequestFlatSpecificationModal = () => {
@@ -332,6 +494,11 @@ export const FlatAlteration: React.FC = () => {
 
     };
 
+     const handleDeleteDialogClose = useCallback(() => {
+        setIsConfirmationDialogBoxOpen(false);
+        setDeleteFlatAlterationData(null);
+    }, [setIsConfirmationDialogBoxOpen, setDeleteFlatAlterationData]);
+
     return (
         <div>
             <Loader loading={isLoading} title={loadingMessage}> <div></div></Loader>
@@ -339,7 +506,7 @@ export const FlatAlteration: React.FC = () => {
                 <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden  justify-between">
                     <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
                         <h4 className="text-sm font-semibold text-[#1D1D1D]">
-                            Unit / Modulation / Customization Remark
+                            Unit / Modulation / Customization Details
                         </h4>
 
                         {canAction && bookingApprovalStatus?.toUpperCase() === "APPROVED" && (
@@ -386,6 +553,7 @@ export const FlatAlteration: React.FC = () => {
                     setProofOfDocumentFiles([]);
                     setProofOfDocumentURL("");
                     setRemoveProofOfDocumentUrls([]);
+                    setEditingFlatAlterationData(null);
                     setErrors({});
                 }}
                 onCancel={() => {
@@ -394,10 +562,11 @@ export const FlatAlteration: React.FC = () => {
                     setProofOfDocumentFiles([]);
                     setProofOfDocumentURL("");
                     setRemoveProofOfDocumentUrls([]);
+                    setEditingFlatAlterationData(null);
                     setErrors({});
                 }}
-                title="Unit / Modulation / Customization Remark"
-                saveText="Add"
+                title={editingFlatAlterationData ? "Update Unit / Modulation / Customization Remark" : "Add Unit / Modulation / Customization Remark"}
+                saveText="Save"
                 onSubmit={(e) => {
                     if (e) e.preventDefault();
                     handleAddUpdateFlatAlteration();
@@ -433,6 +602,14 @@ export const FlatAlteration: React.FC = () => {
                     />
                 </div>
             </Modal>
+
+             <DeleteDialog
+                isOpen={isConfirmationDialogBoxOpen}
+                onClose={handleDeleteDialogClose}
+                onConfirm={handleDeleteFlatAlterationRequest}
+                loading={isLoading}
+                pageName='Unit / Modulation / Customization Remark'
+            />
 
             <ApprovalLogModal
                 isOpen={isFlatAlterationApprovalLogModalOpen}

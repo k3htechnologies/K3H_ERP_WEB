@@ -1,7 +1,7 @@
 
 import { runApiWithLoader } from "@/core/utils";
-import React, { useEffect, useMemo, useState } from "react";
-import type { FilterWithPaginationBookingApplicantModificationRequest, BookingApplicantModificationDataRequest, BookingApplicantModificationRequest } from '@/features/crmPayTrack/models/BookingApplicantModificationModel';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import type { FilterWithPaginationBookingApplicantModificationRequest, BookingApplicantModificationDataRequest, BookingApplicantModificationRequest, DeleteBookingApplicantModificationModelRequest } from '@/features/crmPayTrack/models/BookingApplicantModificationModel';
 import { APPLICANT_TYPE } from "@/core/constants";
 import { useToast } from '@/core/hooks/useToast';
 import { Loader } from '@/core/utils/loader';
@@ -13,7 +13,7 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button, Input } from "@/ui/components/forms";
-import { IdCardIcon, Plus, Trash2 } from "lucide-react";
+import { IdCardIcon, Plus, Trash2,Edit } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { bookingApplicantModificationService } from '@/features/crmPayTrack/services/BookingApplicantModelCrmService';
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
@@ -27,6 +27,8 @@ import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApprov
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import usePagination from "@/core/hooks/usePagination";
 
 const initialFormStateForDetailsRequest = (): BookingApplicantModificationRequest => ({
     BookingApplicantModificationRequestId: 0,
@@ -171,12 +173,14 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
     const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
     const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
     const [approvalRowData, setApprovalRowData] = useState<BookingApplicantModificationDataRequest | null>(null);
+    const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
 
     const { canAction } = useMenuPermissions("/modificationRequest");
     const { addToast } = useToast();
     const { projectId } = useProject();
     const { listState } = usePayTrackBookingListState();
     const { bookingId, bookingData, bookingApprovalStatus } = listState;
+    const { pagination, setPagination } = usePagination(20);
 
     const isBookingCancelled = bookingData?.ApprovalStatus == 'Cancel' || bookingData?.ApprovalStatus == 'Refund';
 
@@ -203,6 +207,78 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
 
     }, [projectId, bookingId]);
 
+    const handleEditLocalApplicant = (row: RequestBookingApplicantWithFiles, index: number) => {
+        setEditingApplicantData({ row, index });
+        setFormDataDetails({
+            BookingApplicantModificationRequestId: row.BookingApplicantModificationRequestId ?? 0,
+            ApplicantType: row.ApplicantType ?? '',
+            ApplicantName: row.ApplicantName ?? '',
+            ApplicantMobileNumber: row.ApplicantMobileNumber ?? '',
+            ApplicantMobileNumberCountryCode: row.ApplicantMobileNumberCountryCode ?? '+91',
+            ApplicantEmailId: row.ApplicantEmailId ?? '',
+            AadharCardNumber: row.AadharCardNumber ?? '',
+            PanNumber: row.PanNumber ?? '',
+            PassportNumber: row.PassportNumber ?? '',
+            DrivingLicenseNumber: row.DrivingLicenseNumber ?? '',
+            VotingIdNumber: row.VotingIdNumber ?? '',
+            GSTNumber: row.GSTNumber ?? '',
+            RemovePhotoURL: row.RemovePhotoURL ?? '',
+            RemoveAadharCardURL: row.RemoveAadharCardURL ?? '',
+            RemovePanCardURL: row.RemovePanCardURL ?? '',
+            RemovePassportURL: row.RemovePassportURL ?? '',
+            RemoveDrivingLicenseURL: row.RemoveDrivingLicenseURL ?? '',
+            RemoveVotingIdURL: row.RemoveVotingIdURL ?? '',
+            RemoveGSTNumberURL: row.RemoveGSTNumberURL ?? '',
+            RemoveProofOfDocumentURL: row.RemoveProofOfDocumentURL ?? '',
+            PhotoURL: [],
+            AadharCardURL: [],
+            PanCardURL: [],
+            PassportURL: [],
+            DrivingLicenseURL: [],
+            VotingIdURL: [],
+            GSTNumberURL: [],
+            CancelledChequeURL: [],
+            POAURL: [],
+            IncomeForm16ITRURL: [],
+            NreNroBankDetailsURL: [],
+            NomineeFormURL: [],
+            StatementOfSourceOfFundsURL: [],
+            PaymentProofURL: [],
+            ProofOfDocumentURL: [],
+        });
+        setApplicantPhotoFiles(row._photoFiles ?? []);
+        setAadharCardFiles(row._aadharFiles ?? []);
+        setPanCardFiles(row._panFiles ?? []);
+        setPassportFiles(row._passportFiles ?? []);
+        setDrivingLicenseFiles(row._drivingFiles ?? []);
+        setVotingIdFiles(row._votingFiles ?? []);
+        setGstFiles(row._gstFiles ?? []);
+        setCancelledChequeFiles(row._cancelledChequeFiles ?? []);
+        setPOAFiles(row._pOAFiles ?? []);
+        setIncomeForm16ITRFiles(row._incomeForm16ITRFiles ?? []);
+        setNreNroBankDetailsFiles(row._nreNroBankDetailsFiles ?? []);
+        setNomineeFormFiles(row._nomineeFormFiles ?? []);
+        setStatementOfSourceOfFundsFiles(row._statementOfSourceOfFundsFiles ?? []);
+        setPaymentProofFiles(row._paymentProofFiles ?? []);
+        setProofOfDocumentFiles(row._proofOfDocumentFiles ?? []);
+        setRemovedApplicantPhotoURLs([]);
+        setRemovedAadharCardURLs([]);
+        setRemovedPanCardURLs([]);
+        setRemovedPassportURLs([]);
+        setRemovedDrivingLicenseURLs([]);
+        setRemovedVotingIdURLs([]);
+        setRemovedGstURLs([]);
+        setRemovedCancelledChequeURLs([]);
+        setRemovedPOAURLs([]);
+        setRemovedIncomeForm16ITRURLs([]);
+        setRemovedNreNroBankDetailsURLs([]);
+        setRemovedNomineeFormURLs([]);
+        setRemovedStatementOfSourceOfFundsURLs([]);
+        setRemovedPaymentProofURLs([]);
+        setRemovedProofOfDocumentURLs([]);
+        setErrorsBookingApplicant({});
+        setIsAddUpdateApplicantDetailsModalOpen(true);
+    };
 
     const handleFieldChangeBookingApplicantDetails = (field: keyof BookingApplicantModificationRequest, value: any) => {
 
@@ -212,52 +288,6 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-
-    const handleApprovalSubmit = async (remark: string) => {
-
-        if (!approvalRowData) return;
-
-        const payload: UpdateModulesWorkflowApprovalRequest = {
-            ModuleName: "BOOKING APPLICANT MODIFICATION APPROVAL",
-            Id: bookingId ?? 0,
-            ProjectId: projectId ?? 0,
-            IsApproved: approvalActionType === "approve",
-            Remarks: remark ?? null,
-            SubId: approvalRowData.BookingApplicantModificationRequestId ?? 0
-        };
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-
-                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
-
-                if (E.isRight(response)) {
-
-                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
-
-                    setIsApprovalActionModalOpen(false);
-
-                    await fetchBookingApplicantModificationList();
-
-                } else {
-
-                    addToast({ type: "error", title: response.left.message });
-
-                }
-
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
-        );
-    };
-
 
     const validateAddApplicantForm = (): {
         isValid: boolean;
@@ -702,6 +732,11 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
         );
     };
 
+    const handleConfirmationDialogBoxOpen = useCallback((row: BookingApplicantModificationDataRequest) => {
+        setBookingApplicantModificationData([row])
+        setIsConfirmationDialogBoxOpen(true)
+    }, [])
+
     const summaryColumns = useMemo<TableColumn[]>(
         () => [
             {
@@ -955,8 +990,41 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                     );
                 }
             },
+            {
+                key: 'Actions',
+                label: 'Actions',
+                width: '15',
+                align: 'center',
+                render: (_value, row) => {
+
+                    const isDisabled = row.ApprovalStatus !== "Pending";
+
+                    return (
+                        <div>
+                            <Button
+                                color="transparent"
+                                size="sm"
+                                style={{
+                                    color: (!isDisabled) ? 'red' : '#9CA3AF',
+                                    cursor: (!isDisabled) ? 'pointer' : 'not-allowed',
+                                    opacity: (!isDisabled) ? 1 : 0.5
+                                }}
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleConfirmationDialogBoxOpen(row);
+                                }}
+                                leftIcon={<Trash2 className="h-4 w-4" />}
+                                disabled={isDisabled}
+                            />
+
+                        </div>
+
+                    )
+                }
+            }
         ],
-        [bookingApplicantModificationData, canAction]
+        [bookingApplicantModificationData, canAction, handleConfirmationDialogBoxOpen]
     )
 
     const pendingColumns = useMemo<TableColumn[]>(
@@ -970,8 +1038,17 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                 width: "10",
                 sortable: false,
                 align: "center" as const,
-                render: (_v: any, _row: any, index: number) => (
-                    <div className="flex justify-center">
+                render: (_v: any, row: RequestBookingApplicantWithFiles, index: number) => (
+                    <div className="flex justify-center gap-1">
+                        <Button
+                            onClick={() => handleEditLocalApplicant(row, index)}
+                            variant="outline"
+                            color="transparent"
+                            size="sm"
+                            title="Edit"
+                        >
+                            <Edit className="h-4 w-4 text-blue-700" />
+                        </Button>
                         <Button
                             onClick={() => setApplicantList((prev) => prev.filter((_, i) => i !== index))}
                             variant="outline"
@@ -984,9 +1061,74 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                     </div>
                 ),
             },
+
         ],
-        [summaryColumns]
+        [summaryColumns, handleEditLocalApplicant]
     );
+
+    const handleDeleteDialogClose = useCallback(() => {
+        setIsConfirmationDialogBoxOpen(false);
+        setBookingApplicantModificationData([]);
+    }, [setIsConfirmationDialogBoxOpen, setBookingApplicantModificationData]);
+
+
+
+    const handleDeleteBookingApplicantRequest = async () => {
+        setIsConfirmationDialogBoxOpen(false);
+        if (!bookingApplicantModificationData) return
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: DeleteBookingApplicantModificationModelRequest = {
+                    BookingId: bookingId ?? 0,
+                    ProjectId: projectId ?? 0,
+                    BookingApplicantModificationRequestId: bookingApplicantModificationData[0].BookingApplicantModificationRequestId,
+
+                }
+                const response = await bookingApplicantModificationService.apiCallDeleteBookingApplicantModificationRequest(params);
+
+                if (E.isRight(response)) {
+
+                    const newTotalRecords = pagination.totalRecords - 1;
+
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    }
+
+                    else if (applicantModificationList.length === 1 && pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
+                    setPagination({
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages
+                    });
+                    await fetchBookingApplicantModificationList();
+
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+                    
+                    setIsConfirmationDialogBoxOpen(false);
+                    setBookingApplicantModificationData([]);
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                    setIsConfirmationDialogBoxOpen(false);
+                }
+                return response
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Delete Applicant Requests'
+        )
+    }
 
     const handleApprovalLog = (row: BookingApplicantModificationDataRequest) => {
         const request: ModulesApprovalStatusRequest = {
@@ -1007,6 +1149,53 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
         setApprovalActionType(approvalType);
         setIsApprovalActionModalOpen(true);
     };
+
+    const handleApprovalSubmit = async (remark: string) => {
+
+        if (!approvalRowData) return;
+
+        const payload: UpdateModulesWorkflowApprovalRequest = {
+            ModuleName: "BOOKING APPLICANT MODIFICATION APPROVAL",
+            Id: bookingId ?? 0,
+            ProjectId: projectId ?? 0,
+            IsApproved: approvalActionType === "approve",
+            Remarks: remark ?? null,
+            SubId: approvalRowData.BookingApplicantModificationRequestId ?? 0
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsApprovalActionModalOpen(false);
+
+                    await fetchBookingApplicantModificationList();
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
+
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            approvalActionType === "approve" ? "Approving Booking" : "Rejecting Booking"
+        );
+    };
+
+
 
     return (
         <div>
@@ -1161,8 +1350,8 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                     setRemovedProofOfDocumentURLs([]);
                 }}
 
-                title="Add Applicant"
-                saveText="Add"
+                title={editingApplicantData ? "Edit Applicant" : "Add Applicant"}
+                saveText={editingApplicantData ? "Update" : "Add"}
                 cancelText="Cancel"
                 onSubmit={handleAddUpdateBookingApplicant}
                 loading={isLoading}
@@ -1280,6 +1469,13 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                 </div>
             </Modal>
 
+           <DeleteDialog
+                isOpen={isConfirmationDialogBoxOpen}
+                onClose={handleDeleteDialogClose}
+                onConfirm={handleDeleteBookingApplicantRequest}
+                loading={isLoading}
+                pageName='Booking Applicant'
+            />
             <ApprovalLogModal
                 isOpen={isApprovalLogModalOpen}
                 title='Applicant Details '

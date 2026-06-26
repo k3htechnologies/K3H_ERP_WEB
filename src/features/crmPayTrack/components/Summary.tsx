@@ -410,7 +410,7 @@ export const Summary: React.FC = () => {
                                     const isLast = index === (bookingData.ParkingData?.length ?? 0) - 1;
 
                                     return (
-                                        <div key={parking.ParkingId || index} className="pt-4">
+                                        <div key={parking.ParkingId || index}>
                                             <h3 className="text-sm font-semibold text-gray-500">
                                                 Parking {index + 1}
                                             </h3>

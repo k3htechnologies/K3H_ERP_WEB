@@ -121,7 +121,12 @@ export const InwardOutward: React.FC = () => {
                     ReceiverName: filterParams.ReceiverName ?? undefined,
                     SenderName: filterParams.SenderName ?? undefined,
                     DocumentType: DocumentType ?? filterParams.DocumentType?.trim() ?? undefined,
-                    SortBy: getSortByParam(sort ?? null, InwardOutwardDataColumns),
+                    DocumentTitle: filterParams.DocumentTitle ?? undefined,
+                    DeliveryStatus: filterParams.DeliveryStatus ?? undefined,
+                    SenderMobileNumber: filterParams.SenderMobileNumber ?? undefined,
+                    ReceiverMobileNumber: filterParams.ReceiverMobileNumber ?? undefined,
+                    FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
+                    ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined, SortBy: getSortByParam(sort ?? null, InwardOutwardDataColumns),
                 }
 
                 const response = await inwardOutwardService.apiCallPullInwardOutward(params);
@@ -209,10 +214,8 @@ export const InwardOutward: React.FC = () => {
         })
         return fd;
     };
-    //#endregion
-    // ============================================================= [VALIDATION FUNCTION] =============================================================================================
 
-    const validateUpdateCallLogForm = (): {
+    const validateUpdateRevertForm = (): {
         isValid: boolean;
         errors: { [key: string]: string };
     } => {
@@ -224,6 +227,18 @@ export const InwardOutward: React.FC = () => {
 
         if (!formData.RevertDate) {
             newErrors.RevertDate = "Revert Date is required";
+
+        } else if (formData.RevertDate) {
+
+            const selectedDate = new Date(formData.RevertDate as string);
+            const today = new Date();
+
+            selectedDate.setHours(0, 0, 0, 0);
+            today.setHours(0, 0, 0, 0);
+
+            if (selectedDate < today) {
+                newErrors.RevertDate = "Revert Date Can't be in the Past"
+            }
         }
 
         if (!revertDocumentURLFiles || revertDocumentURLFiles.length === 0) {
@@ -240,7 +255,7 @@ export const InwardOutward: React.FC = () => {
         e.preventDefault();
 
         setErrors({})
-        const validation = validateUpdateCallLogForm()
+        const validation = validateUpdateRevertForm()
 
         if (!validation.isValid) {
             setErrors(validation.errors)
@@ -437,12 +452,12 @@ export const InwardOutward: React.FC = () => {
             render: value => value || '-'
         },
         {
-            key: 'SenderMobileNo',
+            key: 'SenderMobileNumber',
             label: 'Sender Mobile No',
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value ? `+91 ${value}` : '-'
+            render: (value, row) => value ? `${row.SenderMobileNumberCountryCode} ${value}` : '-'
         },
         {
             key: 'SenderAddress',
@@ -469,12 +484,12 @@ export const InwardOutward: React.FC = () => {
             render: value => value || '-'
         },
         {
-            key: 'ReceiverMobileNo',
+            key: 'ReceiverMobileNumber',
             label: 'Receiver Mobile No',
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value ? `+91 ${value}` : '-'
+            render: (value, row) => value ? `${row.ReceiverMobileNumberCountryCode} ${value}` : '-'
         },
         {
             key: 'ReceiverAddress',
@@ -541,8 +556,8 @@ export const InwardOutward: React.FC = () => {
             render: value => value || '-'
         },
         {
-            key: 'ReceivedBy',
-            label: 'Received By',
+            key: 'AcknowledgementBy',
+            label: 'Acknowledged By',
             width: '15',
             sortable: false,
             align: 'left',
@@ -601,19 +616,19 @@ export const InwardOutward: React.FC = () => {
                         <Button
                             color="transparent"
                             size="sm"
-                            disabled={!showDelete}
+                            disabled={!canAction}
 
                             style={{
-                                color: showDelete ? 'green' : '#9CA3AF',
-                                cursor: showDelete ? 'pointer' : 'not-allowed',
-                                opacity: showDelete ? 1 : 0.5
+                                color: canAction ? 'green' : '#9CA3AF',
+                                cursor: canAction ? 'pointer' : 'not-allowed',
+                                opacity: canAction ? 1 : 0.5
                             }}
                             title="Revert Inward Outward"
 
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
-                                if (!showDelete) return;
+                                if (!canAction) return;
                                 handleRevert(row)
                             }}
                             leftIcon={<RotateCw className="h-4 w-4" />}
@@ -857,19 +872,19 @@ export const InwardOutward: React.FC = () => {
                 title="Customize Table Columns"
             />
 
-            {/* ADD REVERT MODAL */}
-
             <Modal
                 isOpen={isAddUpdateModalOpen}
                 onClose={() => {
                     setIsAddUpdateModalOpen(false);
                     setFormData(initialFormState());
                     setErrors({});
+                    setRevertDocumentURLFiles([]);
                 }}
                 onCancel={() => {
                     setIsAddUpdateModalOpen(false);
                     setFormData(initialFormState());
                     setErrors({});
+                    setRevertDocumentURLFiles([]);
                 }}
                 title="Revert"
                 saveText="Save"
@@ -918,8 +933,6 @@ export const InwardOutward: React.FC = () => {
                 </div>
             </Modal>
 
-            {/* FILTER INWARD OUTWARD MODAL */}
-
             <Modal
                 isOpen={showFilterPopup}
                 onClose={() => setShowFilterPopup(false)}
@@ -957,12 +970,15 @@ export const InwardOutward: React.FC = () => {
                     </div>
 
                     <div>
-                        <Input type="text"
-                            label='Document Type'
-                            value={tempFilters?.DocumentType ?? ''}
-                            onChange={e => handleFilterChange('DocumentType', e.target.value)}
-                            placeholder="Enter Document Type" />
+                        {activeTab === "All" && (
+                            <Input type="text"
+                                label='Document Type'
+                                value={tempFilters?.DocumentType ?? ''}
+                                onChange={e => handleFilterChange('DocumentType', e.target.value)}
+                                placeholder="Enter Document Type" />
+                        )}
                     </div>
+
                     <div>
                         <Input type="text"
                             label='Document Title'
@@ -981,30 +997,38 @@ export const InwardOutward: React.FC = () => {
                     <div>
                         <Input type="text"
                             label='Sender Mobile No'
-                            value={tempFilters?.SenderMobileNo ?? ''}
-                            onChange={e => handleFilterChange('SenderMobileNo', e.target.value)}
+                            value={tempFilters?.SenderMobileNumber ?? ''}
+                            onChange={e => handleFilterChange('SenderMobileNumber', e.target.value)}
                             placeholder="Enter Sender Mobile No" />
                     </div>
 
                     <div>
                         <Input type="text"
                             label='Receiver Mobile No'
-                            value={tempFilters?.ReceiverMobileNo ?? ''}
-                            onChange={e => handleFilterChange('ReceiverMobileNo', e.target.value)}
+                            value={tempFilters?.ReceiverMobileNumber ?? ''}
+                            onChange={e => handleFilterChange('ReceiverMobileNumber', e.target.value)}
                             placeholder="Enter Receiver Mobile No" />
                     </div>
 
                     <div>
                         <DatePickerInput
-                            label="Created Date"
-                            value={formatDate_dd_mm_yyyy(tempFilters?.CreatedDate ?? '')}
-                            onChange={(val) => handleFilterChange('CreatedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val) ?? '')}
+                            label='From Date'
+                            value={tempFilters.FromDate || ''}
+                            onChange={(value) => handleFilterChange('FromDate', value || '')}
                         />
                     </div>
+
+                    <div>
+                        <DatePickerInput
+                            label='To Date'
+                            value={tempFilters.ToDate || ''}
+                            onChange={(value) => handleFilterChange('ToDate', value || '')}
+                        />
+                    </div>
+
                 </div>
             </Modal>
 
-            {/* DATA TABLE */}
             <div className="pt-5">
                 <DataTable
                     data={InwardOutwardDataForTable}
@@ -1018,8 +1042,6 @@ export const InwardOutward: React.FC = () => {
                     onSort={handleSortColumn}
                 />
             </div>
-
-            {/* DELETE CONFIRMATION INWARD OUTWARD MODAL */}
 
             <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}

@@ -35,5 +35,13 @@ export interface AddUpdateFlatAlterationRequest {
     RemoveProofOfDocumentURL?: string;
 }
 
+export interface DeleteFlatAlterationRequest {
+    FlatAlterationRequestId: number;
+    Uniquekey: string;
+    BookingId: number;
+    ProjectId: number;
+}
+
 export type FlatAlterationRequestListResponse = ApiResponse<FlatAlterationRequestData[]>;
 export type FlatAlterationRequestSaveReponse = ApiResponse<FlatAlterationRequestData[]>;
+export type FlatAlterationRequestDeleteReponse = ApiResponse<number>;

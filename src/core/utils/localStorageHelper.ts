@@ -1360,6 +1360,28 @@ export const LocalStorageHelper = {
     return null;
   },
 
+  //ESTIMATION AND BUDGET
+   storeBudgetTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Budget Columns Details:', error)
+    }
+  },
+
+  getBudgetTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Budget Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+
 
   //#region CLEAR LOCAL STORAGE
   clearLocalStorageData: (): void => {
@@ -1416,6 +1438,7 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.TICKET_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS);
 
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);

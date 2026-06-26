@@ -64,7 +64,7 @@ export const ClassificationParameterViewModal: React.FC<ClassificationParameterV
 
                 <FieldItem label="Location" value={data.VillageName} isRow withBorder={true} />
 
-                <FieldItem label="TimeLine" value={data.TimeLine} isRow withBorder={true} />
+                <FieldItem label="Timeline Of Purchase" value={data.TimeLine} isRow withBorder={true} />
 
 
                 <h4 className="text-lg font-semibold pb-2">

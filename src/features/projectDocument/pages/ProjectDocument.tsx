@@ -797,9 +797,7 @@ const ProjectDocument: React.FC = () => {
     }
 
     if (
-      formData.ProjectDocumentStatus?.toUpperCase() === "ISSUED" &&
-      !hasAnyDocumentFile(projectDocumentFiles, projectDocumentURL, RemoveProjectDocumentUrls)
-    ) {
+      formData.ProjectDocumentStatus?.toUpperCase() === "ISSUED" && !hasAnyDocumentFile(projectDocumentFiles, projectDocumentURL, RemoveProjectDocumentUrls)) {
       newErrors.ProjectDocumentURL = "File is required.";
     }
 
@@ -1371,7 +1369,6 @@ const ProjectDocument: React.FC = () => {
               availableFilesURL={projectDocumentURL ?? ""}
               allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
               maxFiles={5}
-              maxSizeMB={10}
               error={errors.ProjectDocumentURL}
               onRemoveExisting={(url) => {
                 setRemoveProjectDocumentUrls((prev) => [...prev, url]);

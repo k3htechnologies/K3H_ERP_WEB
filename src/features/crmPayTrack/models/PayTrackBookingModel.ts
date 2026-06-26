@@ -1,9 +1,12 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
+import type { BookingApplicantData, BookingOtherChargesData } from "@/features/booking/models/BookingModel";
+import type { ParkingData } from "@/features/parking/models/ParkingModel";
 
 export interface FilterWithPaginationPayTrackBooking {
     PageNumber: number;
     PageSize: number;
     IsCheckPermission?: boolean;
+    IsFinalRegistrationCompleted?: string | '';
     ProjectId?: number;
     FromDate?: string | null;
     ToDate?: string | null;
@@ -13,12 +16,14 @@ export interface FilterWithPaginationPayTrackBooking {
     Floor?: string
     Configuration?: string
     ApplicantMobileNumber?: string
+    AgreementValue?: number;
+    BookingType?: string;
     SortBy?: string;
     BookingId?: number;
     ExportType?: "PDF" | "Excel";
 }
 
-    
+
 export type PayTrackRow = {
     type: string;
     total: number;
@@ -27,6 +32,7 @@ export type PayTrackRow = {
     isTotal?: boolean;
 };
 export interface PayTrackBookingData {
+
     BookingId: number | null;
     ProjectName: string | null;
     ProjectId: number | null;
@@ -34,20 +40,27 @@ export interface PayTrackBookingData {
     SystemGeneratedCode: string | null;
     ApplicantName: string | null;
     ApplicantMobileNumber: string | null;
+    ApplicantMobileNumberCountryCode: string | null;
     BookingType: string | null;
+    ParkingData: ParkingData[] | null;
 
     InventoryFlatId: number | null;
     BuildingNumber: string | null;
     Wing: string | null;
     Floor: string | null;
     Flat: string | null;
+    NumberOfParking:number;
     ParkingNumber: string | null;
     FlatType: string | null;
     RERACarpetAreaSqFt: number | null;
     FlatConfiguration: string | null;
     
     RegistrationDate: string | null;
-
+    FinalRegistrationDate: string | null;
+    IsFinalRegistrationCompleted:boolean;
+    FinalRegistrationURL: string | null;
+    
+    FlatAlterationRemark: string | null;
     AgreementValue: number | null;
     ReceivedAgreementValue: number | null;
 
@@ -69,6 +82,8 @@ export interface PayTrackBookingData {
     OtherChargesGSTAmount: number | null;
     ReceivedOtherChargesGSTAmount: number | null;
 
+    BookingApprovalStatus: string | null;
+
     ApprovalStatus: string | null;
     
     TotalAmountReceivedAgainstBooking: number | null;
@@ -81,8 +96,10 @@ export interface PayTrackBookingData {
     ParkingModificationRequestApprovalStatus: string | null;
     BookingApplicantModificationRequestIsApproval: boolean;
     BookingApplicantModificationRequestApprovalStatus: string | null;
-
     TenantId: number | null;
+    LedgerCount: number | null;
+    BookingOtherChargesData?: BookingOtherChargesData[] | null;
+    BookingApplicantData?: BookingApplicantData[] | null;
 }
 
 export interface PayTrackBookingApplicantData {

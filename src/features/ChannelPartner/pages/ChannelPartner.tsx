@@ -15,7 +15,7 @@ import { handleExportFile } from '@/core/utils/exportFile';
 import { Loader } from '@/core/utils/loader';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import {  Input } from '@/ui/components/forms';
+import { Button, Input } from '@/ui/components/forms';
 import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { useDebouncedCallback } from '@/core/hooks/useDebouncedCallback';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
@@ -25,14 +25,18 @@ import { ChannelPartnerService } from '@/features/ChannelPartner/services/Channe
 import { updateFilter } from '@/core/utils/filterHelper';
 import type { FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
 import { technicalService } from '@/features/technical/services/TechnicalService';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Copy } from 'lucide-react';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { useChannelPartnerListState } from '@/features/ChannelPartner/context/ChannelPartnerListStateContext';
-import { isChannelPartnerComplete } from '@/features/ChannelPartner/utils/channelPartnerUtils';
+import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
+import { copyToClipboard } from '@/core/utils/comman';
+import { filterNumbers } from '@/core/utils/fileValidation';
+import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
+import { IBM_OBM_RANGE_FILTER_OPTIONS } from '@/core/constants';
 
 
 export const ChannelPartner: React.FC = () => {
@@ -42,16 +46,12 @@ export const ChannelPartner: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
-  // USE NAVIGATE
   const navigate = useNavigate();
 
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
-  // TOAST
   const { addToast } = useToast();
 
-  // CONTEXT STATE
   const { listState, updateListState } = useChannelPartnerListState();
   const { searchTerm, filters, sortInfo } = listState;
 
@@ -59,34 +59,24 @@ export const ChannelPartner: React.FC = () => {
     searchChannelPartner(value)
   }, 350);
 
-  //FILTER STATES
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  //DELETE ChannelPartner MASTER
   const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
   const [deleteChannelPartnerDetailsData, setDeleteChannelPartnerDetailsData] = useState<ChannelPartnerData | null>(null)
 
-  //EXCEL IMPORT 
   const [showImportModal, setShowImportModal] = useState(false);
 
-
-  //CUSTOMIZE COLUMN MODAL
   const [isShowCustomizeChannelPartnerColumnsModal, setIsShowCustomizeChannelPartnerColumnsModal] = useState(false);
 
-  //#region MENU PERMISSIONS
   const { canAction, canExport } = useMenuPermissions();
-  //#endregion
 
   const location = useLocation() as any;
-  //#endregion
 
-  //#region INIT
   useEffect(() => {
-    // Sync pagination with context state
+
     setPagination({ currentPage: listState.page });
 
-    // Load channel partners with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
       loadChannelPartner(listState.page, { Name: String(listState.searchTerm).trim() }, listState.sortInfo);
     } else {
@@ -94,15 +84,12 @@ export const ChannelPartner: React.FC = () => {
     }
   }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
-  //#region CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
+
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
     }
   }, [debouncedSearch])
-  //#endregion
-
-  //#region DATA LOADING | FETCH |  LOAD | SEARCH 
 
   const fetchChannelPartnerList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadChannelPartner(page, filters, sort);
@@ -132,6 +119,10 @@ export const ChannelPartner: React.FC = () => {
           Speciality: filterParams.Speciality?.trim() || undefined,
           CityName: filterParams.CityName?.trim() || undefined,
           VillageName: filterParams.VillageName?.trim() || undefined,
+          NoOfIBM: filterParams.NoOfIBM?.trim() || undefined,
+          NoOfOBM: filterParams.NoOfOBM?.trim() || undefined,
+          SystemGeneratedCode: filterParams.SystemGeneratedCode?.trim() || undefined,
+
           SortBy: getSortByParam(sortInfo ?? null, ChannelPartnerColumns)
 
         };
@@ -222,6 +213,9 @@ export const ChannelPartner: React.FC = () => {
           Speciality: filters.Speciality?.trim() || undefined,
           CityName: filters.CityName?.trim() || undefined,
           VillageName: filters.VillageName?.trim() || undefined,
+          NoOfIBM: filters.NoOfIBM?.trim() || undefined,
+          NoOfOBM: filters.NoOfOBM?.trim() || undefined,
+          SystemGeneratedCode: filters.SystemGeneratedCode?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, ChannelPartnerColumns),
           ExportType: exportType
         };
@@ -316,8 +310,7 @@ export const ChannelPartner: React.FC = () => {
   //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback((page: number) => {
     updateListState({ page });
-    fetchChannelPartnerList(page);
-  }, [updateListState]);
+  }, [sortInfo, updateListState]);
 
   //#region TABLE SORT COLUMN
 
@@ -379,7 +372,6 @@ export const ChannelPartner: React.FC = () => {
       fixed: 'left',
       align: 'left',
       render: (value, row) => {
-        const complete = isChannelPartnerComplete(row)
 
         return (
           <div className="flex items-center justify-center gap-2">
@@ -391,10 +383,33 @@ export const ChannelPartner: React.FC = () => {
               tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
             />
 
-            {!complete && (
+            {row.VerifiedNonVerified !== 'Verified' && (
               <span title="Channel Partner Profile Incomplete">
                 <AlertTriangle className="w-4 h-4 text-amber-500 cursor-pointer" />
               </span>
+            )}
+
+            {value && (
+              <Button
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  const success = await copyToClipboard(value);
+                  if (success) {
+                    addToast({ type: 'success', title: `${value} Copied!` });
+                  }
+                }}
+                color="transparent"
+                size="sm"
+                style={{
+                  padding: '2px 6px',
+                  color: '#6B7280',
+                  cursor: 'pointer'
+                }}
+                title="Copy"
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
             )}
 
           </div>
@@ -416,7 +431,30 @@ export const ChannelPartner: React.FC = () => {
         />
       )
     },
-
+    {
+      key: 'NoOfIbm',
+      label: 'No of IBM',
+      width: '15',
+      sortable: true,
+      align: 'left',
+      render: (value) => value || '0'
+    },
+    {
+      key: 'NoOfObm',
+      label: 'No of OBM',
+      width: '15',
+      sortable: true,
+      align: 'left',
+      render: (value) => value || '0'
+    },
+    {
+      key: "DateOfBirth",
+      label: "DOB",
+      width: "14",
+      sortable: false,
+      align: "center",
+      render: (value) => (value ? formatDate_dd_MonthName_yy(value) : "-"),
+    },
 
     {
       key: 'Designation',
@@ -473,7 +511,7 @@ export const ChannelPartner: React.FC = () => {
       width: '15',
       sortable: false,
       align: 'left',
-      render: (value) => value ? `+91 ${value}` : '-'
+      render: (value, row) => value ? `${row.MobileNumberCountryCode || "+91"} ${value}` : '-'
     },
     {
       key: 'PanNumber',
@@ -800,6 +838,14 @@ export const ChannelPartner: React.FC = () => {
 
         size="small-half">
         <div className="space-y-6">
+
+          <div>
+            <Input type="text"
+              label='CP Code'
+              value={tempFilters?.SystemGeneratedCode ?? ''}
+              onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
+              placeholder="Enter CP Code" />
+          </div>
           <div>
             <Input type="text"
               label='Full Name'
@@ -840,7 +886,7 @@ export const ChannelPartner: React.FC = () => {
             <Input type="text"
               label='Mobile Number'
               value={tempFilters?.MobileNumber ?? ''}
-              onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+              onChange={e => handleFilterChange('MobileNumber', filterNumbers(e.target.value))}
               placeholder="Enter Mobile Number" />
           </div>
           <div>
@@ -896,13 +942,37 @@ export const ChannelPartner: React.FC = () => {
             />
           </div>
           <div>
-
             <Input
               label='Village'
               type="text"
               value={tempFilters.VillageName || ''}
               onChange={e => handleFilterChange('VillageName', e.target.value)}
               placeholder="Enter Village"
+            />
+          </div>
+          <div>
+            <SinglePageSelection
+              label="No of IBM"
+              placeholder="Select No of IBM"
+              value={tempFilters.NoOfIBM || ''}
+              onChange={e => handleFilterChange('NoOfIBM', String(e))}
+              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
+                label: opt.name,
+                value: opt.id
+              }))}
+            />
+          </div>
+
+          <div>
+            <SinglePageSelection
+              label="No of OBM"
+              placeholder="Select No of OBM"
+              value={tempFilters.NoOfOBM || ''}
+              onChange={e => handleFilterChange('NoOfOBM', String(e))}
+              options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
+                label: opt.name,
+                value: opt.id
+              }))}
             />
           </div>
         </div>

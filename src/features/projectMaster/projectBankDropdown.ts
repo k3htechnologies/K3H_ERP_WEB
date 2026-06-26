@@ -6,19 +6,20 @@ export interface ProjectBankDropdownItem {
   value: string;
   BeneficiaryAccountHolderName: string;
   BankListMasterId: number;
+  ProjectWithBankDetailsId: number;
   BankName: string;
   AccountNumber: string;
   Branch: string;
   IFSCCode: string;
   AcType: string;
+  NatureOfAccount:string;
 }
 
-export const fetchProjectBankDropdown = async (_pageNumber: number, params?: { projectId?: number }): Promise<{ totalNumberOfRecord: number; itemList: ProjectBankDropdownItem[]; }> => {
+export const fetchProjectBankDropdown = async (_pageNumber: number, params?: { projectId?: number, bankName?: string, isCheckPermission?: boolean }): Promise<{ totalNumberOfRecord: number; itemList: ProjectBankDropdownItem[]; }> => {
+
   try {
-    const responseEither =
-      await projectMasterService.apiCallPullProjectMasterWithBankDetails(
-        params?.projectId ?? 0
-      );
+
+    const responseEither = await projectMasterService.apiCallPullProjectMasterWithBankDetails(params?.projectId ?? 0, params?.bankName ?? "", params?.isCheckPermission ?? false);
 
     if (E.isLeft(responseEither)) {
       return { totalNumberOfRecord: 0, itemList: [] };
@@ -31,14 +32,16 @@ export const fetchProjectBankDropdown = async (_pageNumber: number, params?: { p
       (d: any) => ({
 
         label: d.BankName,
-        value: String(d.BankListMasterId),
+        value: String(d.ProjectWithBankDetailsId),
+        ProjectWithBankDetailsId: d.ProjectWithBankDetailsId ?? 0,
         BeneficiaryAccountHolderName: d.BeneficiaryAccountHolderName ?? "",
         BankListMasterId: d.BankListMasterId ?? 0,
         BankName: d.BankName ?? "",
         AccountNumber: d.AccountNumber ?? "",
         Branch: d.Branch ?? "",
         IFSCCode: d.IFSCCode ?? "",
-        AcType: d.AcType ?? ""
+        AcType: d.AcType ?? "",
+        NatureOfAccount:d.NatureOfAccount ?? ""
       })
     );
 
@@ -58,7 +61,7 @@ export const fetchProjectBankDropdown = async (_pageNumber: number, params?: { p
 
 export const fetchProjectBankDropdownById = async (projectId: number) => {
 
-  const responseEither = await projectMasterService.apiCallPullProjectMasterWithBankDetails( projectId);
+  const responseEither = await projectMasterService.apiCallPullProjectMasterWithBankDetails(projectId);
 
   if (E.isLeft(responseEither)) return null;
 

@@ -8,6 +8,7 @@ export interface FilterWithPaginationEnquiryRequest {
     EnquiryId?: number;
     SystemGeneratedCode?: string;
     Name?: string;
+    MobileNumberCountryCode?: string;
     MobileNumber?: string;
     Budget?: string;
     RequirementType?: string;
@@ -29,6 +30,7 @@ export interface FilterWithPaginationEnquiryRequest {
     TimeDimension?: string;
     EnquiryFollowUpDays?: string;
     FinalStage?: string;
+    NotCheckFinalStage?: string;
     SortBy?: string;
     ExportType?: "Excel" | "PDF";
 }
@@ -44,6 +46,8 @@ export interface EnquiryData {
 
     Name: string | null;
     EmailId: string | null;
+
+    MobileNumberCountryCode: string | null;
     MobileNumber: string | null;
     DateOfBirth: string | null;
 
@@ -85,7 +89,10 @@ export interface EnquiryData {
     EmployeeReferenceMobileNumber: string | null;
 
     ChannelPartnerId: number | null;
+    ChannelPartnerCode: number | null;
     ChannelPartnerName: string | null;
+    ChannelPartnerEmailId: string | null;
+    ChannelPartnerMobileNumberCountryCode: string | null;
     ChannelPartnerMobileNumber: number | null;
     ChannelPartnerCompany: string | null;
     ChannelPartnerFirmsType: string | null;
@@ -95,6 +102,8 @@ export interface EnquiryData {
     ChannelPartnerTeamMemberId: number;
     ChannelPartnerTeamMemberName: string | null;
     ChannelPartnerTeamMemberMobileNumber: string | null;
+    ChannelPartnerTeamMemberMobileNumberCountryCode: string | null;
+    ChannelPartnerTeamMemberEmailId: string | null;
 
     FinalStage: string | null;
     FinalStageDetail: string | null;
@@ -158,6 +167,7 @@ export interface AddUpdateEnquiryRequest {
     EnquiryTimeOut?: string | null;
 
     Name: string | null;
+    MobileNumberCountryCode: string | null;
     MobileNumber: string | null;
     EmailId: string | null;
     DateOfBirth: string | null;
@@ -183,6 +193,8 @@ export interface AddUpdateEnquiryRequest {
     ChannelPartnerTeamMemberId?: number | null;
     ChannelPartnerTeamMemberName?: string | null;
     ChannelPartnerTeamMemberMobileNumber?: string | null;
+    ChannelPartnerTeamMemberMobileNumberCountryCode?: string | null;
+    ChannelPartnerTeamMemberEmailId?:string |null;
 
     Nationality?: string | null;
     CountryOfResidence?: string | null;

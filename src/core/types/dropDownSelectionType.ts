@@ -59,4 +59,5 @@ export interface SinglePageSelectionProps {
     fontSize: Record<string, string>;
   };
   isShowClearSelection?: boolean
+  isBorderRadius?: boolean
 }

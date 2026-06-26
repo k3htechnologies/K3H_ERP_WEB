@@ -34,7 +34,7 @@ export abstract class ProjectMasterDatasource {
     abstract addUpdateProjectMasterWithCompany(params: AddUpdateProjectMasterWithCompanyRequest): Promise<ProjectMasterWithCompanySaveResponse>
 
 
-    abstract pullProjectMasterWithBankDetails(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse>;
+    abstract pullProjectMasterWithBankDetails(ProjectId: number, BankName?: string,IsCheckPermission?: boolean, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse>;
     abstract addUpdateProjectMasterWithBankDetails(params: AddUpdateProjectMasterWithBankDetailsRequest): Promise<ProjectMasterWithBankDetailsSaveResponse>;
     abstract deleteProjectMasterWithBankDetails(params: DeleteProjectMasterWithBankDetailsRequest): Promise<ProjectMasterWithBankDetailsDeleteResponse>
 }
@@ -61,7 +61,7 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             if (params.ProjectStatus?.trim()) queryParams.append('ProjectStatus', params.ProjectStatus.trim());
             if (params.VillageName?.trim()) queryParams.append('VillageName', params.VillageName.trim());
-            if (params.ArchitectName?.trim()) queryParams.append('ArchitectName', params.ArchitectName.trim());
+            if (params.LiasoningArchitectName?.trim()) queryParams.append('LiasoningArchitectName', params.LiasoningArchitectName.trim());
             if (params.RERANumber?.trim()) queryParams.append('RERANumber', params.RERANumber.trim());
             if (params.ProjectScheme?.trim()) queryParams.append('ProjectScheme', params.ProjectScheme.trim());
             if (params.ProjectSubScheme?.trim()) queryParams.append('ProjectSubScheme', params.ProjectSubScheme.trim());
@@ -253,15 +253,16 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
         }
     }
 
-    async pullProjectMasterWithBankDetails(ProjectId: number, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse> {
+    async pullProjectMasterWithBankDetails(ProjectId: number, BankName?: string, IsCheckPermission?: boolean, signal?: AbortSignal): Promise<ProjectMasterWithBankDetailsResponse> {
+      
         try {
             const queryParams = new URLSearchParams({
-                ProjectId: (ProjectId ?? 0).toString()
+                ProjectId: (ProjectId ?? 0).toString(),
+                BankName: BankName ?? "",
+                IsCheckPermission: (IsCheckPermission ?? true).toString()
             })
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
-                `${ProjectMasterApi.PULL_PROJECT_WITH_BANK_DETAILS}?${queryParams.toString()}`, { signal }
-            )
-            return response;
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${ProjectMasterApi.PULL_PROJECT_WITH_BANK_DETAILS}?${queryParams.toString()}`, { signal })
+
 
         } catch (error: any) {
 
@@ -269,7 +270,7 @@ export class ProjectMasterDatasourceImpl implements ProjectMasterDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.pullProjectMasterWithBankDetails(Number(ProjectId));
+                return await this.pullProjectMasterWithBankDetails(Number(ProjectId), BankName);
             }
 
             throw error

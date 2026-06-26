@@ -409,10 +409,13 @@ export const AddUpdatePayTrackRent: React.FC = () => {
   //#endregion
 
   const fetchProjectBankList = useCallback(
-    async (page: number) => {
-      return fetchProjectBankDropdown(page, {
-        projectId: Number(projectId)
+    async (pageNumber: number, params?: { value?: string }) => {
+
+      return fetchProjectBankDropdown(pageNumber, {
+        projectId: projectId || 0,
+        bankName: params?.value || ""
       });
+
     },
     [projectId]
   );
@@ -581,7 +584,6 @@ export const AddUpdatePayTrackRent: React.FC = () => {
                     availableFilesURL={transactionChequeDemandURL ?? ""}
                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                     maxFiles={5}
-                    maxSizeMB={10}
                     onRemoveExisting={(url) => {
                       setRemovedTransactionChequeDemandUrls((prev) => [...prev, url])
                     }}
@@ -599,7 +601,6 @@ export const AddUpdatePayTrackRent: React.FC = () => {
                     availableFilesURL={paymentReceiptURL ?? ""}
                     allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                     maxFiles={5}
-                    maxSizeMB={10}
                     onRemoveExisting={(url) => {
                       setRemovedPaymentReceiptUrls((prev) => [...prev, url])
                     }}

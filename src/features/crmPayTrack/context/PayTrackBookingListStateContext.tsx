@@ -2,6 +2,8 @@ import { createContext, useContext, useState, useEffect, useCallback, useMemo, t
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
 import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
+import type { BookingOtherChargesData } from "@/features/booking/models/BookingModel";
+import type { PayTrackBookingData } from "@/features/crmPayTrack/models/PayTrackBookingModel";
 
 export type PayTrackBookingListState = {
   page: number;
@@ -12,7 +14,17 @@ export type PayTrackBookingListState = {
   bookingId: number;
   bookingName: string;
   bookingType: string;
+  bookingOtherChargesData?: BookingOtherChargesData[];
+  bookingData?: PayTrackBookingData | null;
+  parkingNumber:string;
+  isFinalRegistrationCompleted:boolean;
+  totalUnitCost: number;
+  bookingApprovalStatus: string;
+  totalAmountRefundedAgainstBooking:number
   flat: string;
+  activeTab?: string;
+  activeSubTab?: string;
+  refreshKey: number;
 };
 
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.PAY_TRACK_BOOKING;
@@ -28,7 +40,17 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
       bookingId: 0,
       bookingName: "",
       bookingType: "",
+      bookingOtherChargesData: [],
+      bookingData: null,
+      parkingNumber:"",
+      isFinalRegistrationCompleted:false,
+      totalUnitCost: 0,
+      bookingApprovalStatus:"",
+      totalAmountRefundedAgainstBooking:0,
       flat: "",
+      activeTab: undefined,
+      activeSubTab: undefined,
+      refreshKey: 0,
     };
   }
 
@@ -44,6 +66,16 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
           bookingName: parsed.state.bookingName || "",
           bookingType: parsed.state.bookingType || "",
           flat: parsed.state.flat || "",
+          totalUnitCost: parsed.state.totalUnitCost || 0,
+          bookingApprovalStatus:parsed.state.bookingApprovalStatus || "",
+          totalAmountRefundedAgainstBooking:parsed.state.totalAmountRefundedAgainstBooking || 0,
+          bookingOtherChargesData: parsed.state.bookingOtherChargesData || [],
+          bookingData: parsed.state.bookingData || null,
+          parkingNumber:parsed.state.parkingNumber || "",
+          isFinalRegistrationCompleted:parsed.state.isFinalRegistrationCompleted || false,
+          activeTab: parsed.state.activeTab,
+          activeSubTab: parsed.state.activeSubTab,
+          refreshKey: 0,
         };
       }
     }
@@ -61,6 +93,16 @@ const getInitialState = (projectId: number | null): PayTrackBookingListState => 
     bookingName: "",
     bookingType: "",
     flat: "",
+    totalUnitCost: 0,
+    bookingApprovalStatus:"",
+    totalAmountRefundedAgainstBooking:0,
+    bookingOtherChargesData: [],
+    bookingData: null,
+    parkingNumber:"",
+    isFinalRegistrationCompleted:false,
+    activeTab: undefined,
+    activeSubTab: undefined,
+    refreshKey: 0,
   };
 };
 
@@ -69,8 +111,9 @@ type PayTrackBookingListStateContextType = {
   updateListState: (updates: Partial<PayTrackBookingListState>) => void;
   resetFilters: () => void;
   resetToDefault: () => void;
-  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string) => void;
+  setPayTrackBookingContext: (bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number,bookingApprovalStatus:string,totalAmountRefundedAgainstBooking:number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData,parkingNumber?:string,isFinalRegistrationCompleted?:boolean) => void;
   clearPayTrackBookingContext: () => void;
+  triggerRefresh: () => void;
 };
 
 const PayTrackBookingListStateContext = createContext<PayTrackBookingListStateContextType | null>(null);
@@ -92,6 +135,16 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
         bookingName: "",
         bookingType: "",
         flat: "",
+        totalUnitCost: 0,
+        bookingApprovalStatus:"",
+        totalAmountRefundedAgainstBooking:0,
+        bookingOtherChargesData: [],
+        bookingData: null,
+        parkingNumber:"",
+        isFinalRegistrationCompleted:false,
+        activeTab: undefined,
+        activeSubTab: undefined,
+        refreshKey: 0,
       };
       setListState(defaultState);
       try {
@@ -142,17 +195,37 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       bookingName: "",
       bookingType: "",
       flat: "",
+      totalUnitCost: 0,
+      bookingApprovalStatus:"",
+      totalAmountRefundedAgainstBooking:0,
+      bookingOtherChargesData: [],
+      bookingData: null,
+      parkingNumber:"",
+      isFinalRegistrationCompleted:false,
+      activeTab: undefined,
+      activeSubTab: undefined,
+      refreshKey: 0,
     };
     setListState(defaultState);
   }, []);
 
-  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string,bookingType: string, flat: string) => {
+  const setPayTrackBookingContext = useCallback((bookingId: number, bookingName: string, bookingType: string, flat: string, totalUnitCost: number,bookingApprovalStatus:string,totalAmountRefundedAgainstBooking:number, bookingOtherChargesData?: BookingOtherChargesData[], bookingData?: PayTrackBookingData,parkingNumber?:string,isFinalRegistrationCompleted?:boolean) => {
     setListState((prev) => ({
       ...prev,
       bookingId,
       bookingName,
       bookingType,
-      flat
+      flat,
+      totalUnitCost,
+      bookingApprovalStatus,
+      totalAmountRefundedAgainstBooking,
+      bookingOtherChargesData: bookingOtherChargesData || [],
+      bookingData: bookingData || null,
+      parkingNumber:parkingNumber ||"",
+      isFinalRegistrationCompleted:isFinalRegistrationCompleted ||false,
+      activeTab: undefined,
+      activeSubTab: undefined,
+      refreshKey: 0,
     }));
   }, []);
 
@@ -163,7 +236,21 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       bookingName: "",
       bookingType: "",
       flat: "",
+      totalUnitCost: 0,
+      bookingApprovalStatus:"",
+      totalAmountRefundedAgainstBooking:0,
+      bookingOtherChargesData: [],
+      bookingData: null,
+      parkingNumber:"",
+      isFinalRegistrationCompleted:false,
+      activeTab: undefined,
+      activeSubTab: undefined,
+      refreshKey: 0,
     }));
+  }, []);
+
+  const triggerRefresh = useCallback(() => {
+    setListState((prev) => ({ ...prev, refreshKey: (prev.refreshKey || 0) + 1 }));
   }, []);
 
   const contextValue = useMemo<PayTrackBookingListStateContextType>(
@@ -174,8 +261,9 @@ export const PayTrackBookingListStateProvider = ({ children }: { children: React
       resetToDefault,
       setPayTrackBookingContext,
       clearPayTrackBookingContext,
+      triggerRefresh,
     }),
-    [listState, updateListState, resetFilters, resetToDefault, setPayTrackBookingContext, clearPayTrackBookingContext]
+    [listState, updateListState, resetFilters, resetToDefault, setPayTrackBookingContext, clearPayTrackBookingContext, triggerRefresh]
   );
 
   return (
@@ -192,4 +280,6 @@ export const usePayTrackBookingListState = () => {
   }
   return ctx;
 };
+
+
 

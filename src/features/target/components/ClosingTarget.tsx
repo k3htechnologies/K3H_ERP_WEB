@@ -14,7 +14,6 @@ import ExportImport from "@/ui/components/ExcelImport/ExcelImport";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
 import type { FilterWithPaginationClosingTargetRequest, ClosingTargetData } from "@/features/target/models/ClosingTargetModel";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import { Button } from "@/ui/components/forms";
 import { closingTargetService } from "../services/ClosingTargetService";
 import MonthPicker from "@/ui/components/forms/MonthPicker";
 
@@ -53,11 +52,12 @@ export const ClosingTarget: React.FC = () => {
     }, [debouncedSearch]);
 
     useEffect(() => {
-        if (!projectId) return;
+
+        if (!monthYear || !projectId) return;
 
         loadClosingTarget(1, sortInfo, searchTerm?.trim());
 
-    }, [projectId]);
+    }, [projectId, monthYear]);
 
     //#endregion
 
@@ -329,20 +329,11 @@ export const ClosingTarget: React.FC = () => {
                 <MonthPicker
                     label="Select Month"
                     value={monthYear || ""}
-                    onChange={(val) => setMonthYear(val)}
+                    onChange={(val) => {
+                        setMonthYear(val);
+                    }}
                 />
 
-                {monthYear && projectId && (
-                    <div className="pt-6">
-                        <Button
-                            color="blue"
-                            size="md"
-                            onClick={() => loadClosingTarget(1, sortInfo, searchTerm)}
-                        >
-                            Search
-                        </Button>
-                    </div>
-                )}
             </div>
             <div className="pt-5">
                 <DataTable

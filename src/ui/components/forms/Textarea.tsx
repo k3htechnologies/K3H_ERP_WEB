@@ -1,7 +1,7 @@
-import { forwardRef, useEffect, useRef } from 'react'
+import { forwardRef, useEffect, useRef, useState } from 'react'
 import { THEME } from '@/core/constants/theme'
 import type { TextAreaProps } from '@/core/types/form.types'
-import { InfoIcon } from 'lucide-react'
+import { InfoIcon, Mic, MicOff } from 'lucide-react'
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
   (
@@ -28,6 +28,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
   ) => {
     const theme = THEME
     const internalRef = useRef<HTMLTextAreaElement | null>(null)
+    const recognitionRef = useRef<any>(null);
+    const [isListening, setIsListening] = useState(false);
 
     const sizeConfig = {
       sm: {
@@ -58,8 +60,8 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
         padding: leftIcon
           ? `${currentSize.padding.split(' ')[0]} ${currentSize.padding.split(' ')[1]} ${currentSize.padding.split(' ')[0]} 50px`
           : rightIcon
-          ? `${currentSize.padding.split(' ')[0]} 40px ${currentSize.padding.split(' ')[0]} ${currentSize.padding.split(' ')[1]}`
-          : currentSize.padding,
+            ? `${currentSize.padding.split(' ')[0]} 40px ${currentSize.padding.split(' ')[0]} ${currentSize.padding.split(' ')[1]}`
+            : currentSize.padding,
         fontSize: currentSize.fontSize,
         fontWeight: theme.fontWeight.normal,
         borderRadius: theme.borderRadius.lg,
@@ -133,6 +135,81 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       }
     }, [autoResize])
 
+    // =========================
+    // VOICE RECOGNITION
+    // =========================
+
+    const handleVoiceRecognition = () => {
+      const SpeechRecognition =
+        (window as any).SpeechRecognition ||
+        (window as any).webkitSpeechRecognition
+
+      if (!SpeechRecognition) {
+        alert(
+          "Speech Recognition not supported"
+        )
+        return
+      }
+
+      // STOP
+      if (isListening && recognitionRef.current) {
+        recognitionRef.current.stop()
+        setIsListening(false)
+        return
+      }
+
+      // START
+      const recognition =
+        new SpeechRecognition()
+
+      recognition.lang = "en-IN"
+
+      // CONTINUOUS SPEAKING
+      recognition.continuous = true
+
+      // LIVE TEXT TYPING
+      recognition.interimResults = true
+
+      recognition.onstart = () => {
+        setIsListening(true)
+      }
+
+      recognition.onend = () => {
+        setIsListening(false)
+      }
+
+      recognition.onerror = () => {
+        setIsListening(false)
+      }
+
+      // LIVE TEXT UPDATE
+      recognition.onresult = (
+        event: any
+      ) => {
+        let transcript = ""
+
+        for (
+          let i = 0;
+          i < event.results.length;
+          i++
+        ) {
+          transcript +=
+            event.results[i][0]
+              .transcript + " "
+        }
+
+        props.onChange?.({
+          target: {
+            value: transcript,
+          },
+        } as React.ChangeEvent<HTMLTextAreaElement>)
+      }
+
+      recognitionRef.current = recognition
+
+      recognition.start()
+    }
+
     return (
       <div
         style={{
@@ -154,31 +231,73 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
           </label>
         )}
 
-        <textarea
-          ref={(node) => {
-            internalRef.current = node
-            if (typeof ref === 'function') ref(node)
-            else if (ref)
-              (ref as React.MutableRefObject<HTMLTextAreaElement | null>).current =
-                node
-          }}
-          rows={rows}
-          disabled={disabled || loading}
-          style={{
-            ...textAreaStyles,
-            ...style,
-          }}
-          className={className}
-          onFocus={(e) => {
-            Object.assign(e.target.style, focusStyles)
-            props.onFocus?.(e)
-          }}
-          onBlur={(e) => {
-            Object.assign(e.target.style, textAreaStyles)
-            props.onBlur?.(e)
-          }}
-          {...props}
-        />
+        <div style={{ position: "relative", }}>
+          <textarea
+            ref={(node) => {
+              internalRef.current = node
+              if (typeof ref === 'function') ref(node)
+              else if (ref)
+                (ref as React.MutableRefObject<HTMLTextAreaElement | null>).current =
+                  node
+            }}
+            rows={rows}
+            disabled={disabled || loading}
+            style={{
+              ...textAreaStyles,
+              ...style,
+            }}
+            className={className}
+            onFocus={(e) => {
+              Object.assign(e.target.style, focusStyles)
+              props.onFocus?.(e)
+            }}
+            onBlur={(e) => {
+              Object.assign(e.target.style, textAreaStyles)
+              props.onBlur?.(e)
+            }}
+            {...props}
+          />
+          
+          <button
+            type="button"
+            onClick={
+              handleVoiceRecognition
+            }
+            disabled={ disabled || loading}
+            style={{
+              position: "absolute",
+
+              right: "10px",
+
+              top: "12px",
+
+              border: "none",
+
+              background: "transparent",
+
+              cursor: "pointer",
+
+              display: "flex",
+
+              alignItems: "center",
+
+              justifyContent: "center",
+            }}
+          >
+            {isListening ? (
+              <MicOff
+                size={18}
+                color={
+                  theme.colors.error
+                }
+              />
+            ) : (
+              <Mic size={18} />
+            )}
+          </button>
+
+        </div>
+
 
         {(error || helperText) && (
           <div
@@ -195,7 +314,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
               style={{
                 fontSize: theme.fontSize.xs,
                 color: error ? theme.colors.error : theme.colors.textSecondary,
-                height:14
+                height: 14
               }}
             />
 

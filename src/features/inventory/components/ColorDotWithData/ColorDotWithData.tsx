@@ -2,11 +2,14 @@ interface ColorDotWithDataProps {
     data: number;
     color: string;
     title?: string;
+    onClick?: () => void;
+    isSelected?: boolean;
 }
 
-export const ColorDotWithData = ({ data, color, title }: ColorDotWithDataProps) => {
+export const ColorDotWithData = ({ data, color, title, onClick, isSelected }: ColorDotWithDataProps) => {
     return (
-        <div className="flex items-center gap-3" title={title}>
+        <div className={`flex items-center gap-3 
+                      ${onClick ? "cursor-pointer hover:opacity-80" : ""}`} title={title} onClick={onClick}>
             <div
                 style={{
                     backgroundColor: color,
@@ -15,9 +18,12 @@ export const ColorDotWithData = ({ data, color, title }: ColorDotWithDataProps) 
                 }}
                 className="rounded-full"
             />
-              <span className="text-gray-500">
+            <span className={` ${isSelected ? "font-semibold" : "text-gray-500"} `}
+                style={{ color: isSelected ? color : "" }} >
                 {title}{" "}
-                <span className="text-black font-medium">
+
+                <span className={` ${isSelected ? "font-semibold" : "text-black font-medium"} `}
+                    style={{ color: isSelected ? color : "" }} >
                     {data}
                 </span>
             </span>

@@ -55,16 +55,17 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/event': '/event',
         '/approvalcategory': '/approvalCategory',
         '/approvaldocument': '/approvalDocument',
-        '/channelpartner': '/channelPartner',
-        '/enquiry': '/enquiry',
+
+
         '/resignation': '/resignation',
         '/payrollreport': '/payrollReport',
         '/attendancecalendar': '/attendanceCalendar',
         '/compoff': '/compOff',
         '/redevelopmentdashboard': '/redevelopmentDashboard',
-        '/inventorydashboard': '/inventoryDashboard',
+
         '/approvedbank': '/approvedBank',
         '/content': '/content',
+
         '/sourcing': '/sourcing',
         '/booking': '/booking',
         '/materialRequisition': '/materialRequisition',
@@ -72,6 +73,18 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/othercharges': '/otherCharges',
         '/settingdashboard': '/settingDashboard',
         '/payrolldashboard': '/payrollDashboard',
+
+        //LEGAL
+        '/litigation': '/litigation',
+        '/legaldashboard': '/legalDashboard',
+
+        //SALES
+        '/saledashboard': '/saleDashboard',
+        '/enquiry': '/enquiry',
+        '/enquiryreport': '/enquiryReport',
+        '/cpenquiryreport': '/cpEnquiryReport',
+        '/ibmobmreport': '/ibmObmReport',
+        '/classificationparameter': '/classificationParameter',
         '/saledashboard': '/saleDashboard',
         '/enquiryreport': '/enquiryReport',
         '/cpenquiryreport': '/cpEnquiryReport',
@@ -84,6 +97,47 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/legaldashboard': '/legalDashboard',
         '/classificationparameter': '/classificationParameter',
         '/performance': '/performance',
+        '/achievement': '/achievement',
+        '/sourcing': '/sourcing',
+        '/booking': '/booking',
+        '/calltracker': '/callTracker',
+        '/othercharges': '/otherCharges',
+        '/paymentschedulescheme': '/paymentScheduleScheme',
+        '/target': '/target',
+        '/incentivereport': '/incentiveReport',
+        '/paymentschedulereport': '/paymentScheduleReport',
+        '/paymentschedule': '/paymentSchedule',
+        '/channelpartnercategory' :'/channelPartnerCategory',
+
+
+        // INVENTORY
+        '/inventorydashboard': '/inventoryDashboard',
+        '/inventory': '/inventory',
+        '/parking': '/parking',
+        '/inventoryparkingoverallreport': '/inventoryParkingOverallReport',
+
+        //CHANNEL PARTNER
+        '/channelpartnerdashboard': '/channelPartnerDashboard',
+        '/channelpartner': '/channelPartner',
+        '/cpuniverse': '/cpUniverse',
+
+        // CRM
+        '/crmdashboard': '/crmDashboard',
+        '/paytrack': '/payTrack',
+        '/paytrackreport': '/payTrackReport',
+        '/brokerage': '/brokerage',
+        '/collectionreport': '/collectionReport',
+         '/dailycollectionreport': '/dailyCollectionReport',
+
+        //MORE
+        '/inwardoutward': '/inwardOutward',
+        '/ticket': '/ticket',
+
+        //SETTING EXTRA
+        '/companypolicy': '/companyPolicy',
+
+        //TAX TRACKER
+        '/noticesection': '/noticeSection',
         '/channelpartnerdashboard': '/channelPartnerDashboard',
         '/companypolicy': '/companyPolicy',
         '/paytrack': '/payTrack',

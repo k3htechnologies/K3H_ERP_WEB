@@ -25,6 +25,12 @@ import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Loader } from "@/core/utils/loader";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { fetchVillageDropdown } from "@/features/technical/villageDropDown";
+import { BUDGET_TYPE_OPTIONS, CALL_STATUS_OPTIONS, COMMERCIAL_FLAT_CONFIGURATION, REQUIREMENT_TYPE_OPTIONS, RESIDENTIAL_FLAT_CONFIGURATION } from "@/core/constants";
+import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
+import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
+import { filterNumbers } from "@/core/utils/fileValidation";
 
 const initialFormState = (): UpdateCallLogRequest => ({
     CallLogId: 0,
@@ -32,52 +38,51 @@ const initialFormState = (): UpdateCallLogRequest => ({
     ProjectId: 0,
     RescheduleDate: '',
     Remark: '',
+    Status: '',
+    SiteVisitProposedDate: null,
+    Budget: '',
+    Requirement: '',
+    RequirementType: '',
+    VillageMasterId: ''
 });
 
 export const CallLog: React.FC = () => {
 
-    // STATE
     const [callLogList, setCallLogList] = useState<CallLogData[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [sortInfo, setSortInfo] = useState<SortInfo>();
 
-    //DELETE CALL LOG DATA
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteCallLogData, setDeleteCallLogData] = useState<CallLogData | null>(null)
 
-    // EDIT CALL LOG DATA
     const [editingCallLogData, setEditingCallLogData] = useState<CallLogData | null>(null);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [formData, setFormData] = useState<UpdateCallLogRequest>(() => initialFormState());
 
-    //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [filters, setFilters] = useState<FilterInfo>({});
 
-    //CUSTOMIZE COLUMN MODAL
     const [isShowCustomizeCallLogColumnsModal, setIsShowCustomizeCallLogColumnsModal] = useState(false);
 
-    //#region MENU PERMISSIONS
     const { canExport, canAction } = useMenuPermissions();
-    //#endregion
 
-    // PAGINATION
     const { pagination, setPagination } = usePagination(20);
 
-    //#region PROJECT SELECTION GET ID
     const { projectId } = useProject();
-    //#endregion
-
-    // TOAST
     const { addToast } = useToast();
 
-    //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
+    const [selectedVillageValues, setSelectedVillageValues] = useState<string | number | null>(null);
 
-    //#region DATA LOADING | FETCH |  LOAD | SEARCH
+    const villageDropdown = useMultiSelectDropdown({
+        value: selectedVillageValues,
+        fetchCallback: fetchVillageDropdown,
+        autoFetchOptions: true,
+    });
+
     const loadCallLogData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
 
         await runApiWithLoader(
@@ -89,7 +94,7 @@ export const CallLog: React.FC = () => {
                     PageSize: pagination.pageSize,
                     CallLogId: filterParams.CallLogId ? Number(filterParams.CallLogId) : undefined,
                     ProjectId: Number(projectId),
-                    Name: searchText?.trim() || undefined,
+                    Name: searchText || filterParams.Name?.trim() || undefined,
                     MobileNumber: filterParams.MobileNumber ? Number(filterParams.MobileNumber) : undefined,
                     RescheduleDateFromDate: filterParams.RescheduleDateFromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.RescheduleDateFromDate) || undefined : undefined,
                     RescheduleDateToDate: filterParams.RescheduleDateToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.RescheduleDateToDate) || undefined : undefined,
@@ -117,16 +122,13 @@ export const CallLog: React.FC = () => {
         );
     },
         [projectId, pagination.currentPage, pagination.pageSize, addToast, setPagination,]);
-    //#endregion
 
-    //#region INIT
     useEffect(() => {
         if (!projectId) return;
 
         setPagination({ currentPage: 1 });
         loadCallLogData(1, filters, sortInfo, searchTerm);
     }, [projectId]);
-    //#endregion
 
     useEffect(() => {
         if (isAddUpdateModalOpen) {
@@ -137,23 +139,28 @@ export const CallLog: React.FC = () => {
                     Remark: editingCallLogData.Remark ?? '',
                     RescheduleDate: editingCallLogData.RescheduleDate ?? '',
                     ProjectId: Number(projectId),
+                    Status: editingCallLogData.Status ?? '',
+                    SiteVisitProposedDate: editingCallLogData.SiteVisitProposedDate ?? '',
+                    Budget: editingCallLogData.Budget ?? '',
+                    Requirement: editingCallLogData.Requirement ?? '',
+                    RequirementType: editingCallLogData.RequirementType ?? '',
+                    VillageMasterId: editingCallLogData.VillageMasterId ?? ''
                 });
+                setSelectedVillageValues(editingCallLogData.VillageMasterId || "");
+
             } else {
                 setFormData(initialFormState());
             }
             setErrors({});
         }
     }, [isAddUpdateModalOpen, editingCallLogData, projectId]);
-    //#endregion
 
-    //#region SEARCH HANDLERS
     const handleSearchChange = (value: string) => {
         setSearchTerm(value);
         setPagination({ currentPage: 1 });
         loadCallLogData(1, filters, sortInfo, value)
     };
 
-    //#region CLEAR HANDLERS
     const handleClearSearch = () => {
         setSearchTerm('');
         setPagination({ currentPage: 1 });
@@ -164,17 +171,13 @@ export const CallLog: React.FC = () => {
         setPagination({ currentPage: page });
         loadCallLogData(page, filters, sortInfo, searchTerm);
     };
-    //#endregion
 
-    //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
         loadCallLogData(1, filters, sort, searchTerm);
     }, [searchTerm]);
-    //#endregion
 
-    //#region EXPORT / IMPORT EXCEL AND PDF
     const handleExportCallLog = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -207,14 +210,12 @@ export const CallLog: React.FC = () => {
 
     const handleExportCallLogExcel = () => handleExportCallLog('Excel')
     const handleExportCallLogPdf = () => handleExportCallLog('PDF')
-    //#endregion
 
-    //#region CONFIRMATION DIALOG BOX
     const handleConfirmationDialogBoxOpen = useCallback((row: CallLogData) => {
         setDeleteCallLogData(row)
         setIsConfirmationDialogBoxOpen(true)
     }, [])
-    //#endregion
+
 
     const handleFieldChange = (field: keyof UpdateCallLogRequest, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
@@ -222,9 +223,7 @@ export const CallLog: React.FC = () => {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
     };
-    //#endregion
 
-    //#region EDIT CALL LOG
     const handleEditCallLog = useCallback((row: CallLogData) => {
         setEditingCallLogData({
             ...row,
@@ -249,12 +248,16 @@ export const CallLog: React.FC = () => {
         const callingDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(editingCallLogData?.CallDate ? new Date(editingCallLogData.CallDate) : undefined);
         const rescheduleDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.RescheduleDate ? new Date(formData.RescheduleDate) : undefined);
 
-        if (
-            editingCallLogData?.CallDate &&
-            formData.RescheduleDate &&
-            !isToDateGreaterOrEqualFromDate(callingDate, rescheduleDate)
-        ) {
+        if (!formData.Status) {
+            newErrors.Status = "Status is required";
+        }
+
+        if (editingCallLogData?.CallDate && formData.RescheduleDate && !isToDateGreaterOrEqualFromDate(callingDate, rescheduleDate)) {
             newErrors.RescheduleDate = "Reschedule Date must be After Call Date";
+        }
+
+        if (formData.Requirement?.trim() !== "" && formData.RequirementType?.trim() === "") {
+            newErrors.RequirementType = `${formData.Requirement} Type is required`;
         }
 
         return {
@@ -263,7 +266,6 @@ export const CallLog: React.FC = () => {
         };
     };
 
-    // PUSH FORM DATA
     const PushCallLogFormData = (): UpdateCallLogRequest => {
         return {
             CallLogId: formData.CallLogId,
@@ -271,10 +273,15 @@ export const CallLog: React.FC = () => {
             Remark: formData.Remark,
             RescheduleDate: formData.RescheduleDate === "" ? null : formData.RescheduleDate,
             ProjectId: Number(projectId),
+            Status: formData.Status,
+            SiteVisitProposedDate: formData.SiteVisitProposedDate === "" ? null : formData.SiteVisitProposedDate,
+            Budget: formData.Budget ?? "",
+            Requirement: formData.Requirement ?? "",
+            RequirementType: formData.RequirementType ?? "",
+            VillageMasterId: formData.VillageMasterId ?? ""
         };
     };
 
-    // UPDATE CALL LOG DATA
     const handleAddEditCallLog = async (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -376,7 +383,7 @@ export const CallLog: React.FC = () => {
         },
         {
             key: 'CallDate',
-            label: 'Call Time',
+            label: 'Call DateTime',
             width: '15',
             sortable: false,
             align: 'center',
@@ -398,6 +405,52 @@ export const CallLog: React.FC = () => {
             align: 'center',
             render: value => value || '-'
         },
+        {
+            key: 'VillageName',
+            label: 'Location',
+            width: '30',
+            align: 'left',
+             render: (value) => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="180px"
+                    tooltipThreshold={18}
+                />
+            )
+        },
+        {
+            key: 'Budget',
+            label: 'Budget (In CR)',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'Requirement',
+            label: 'Requirement',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'RequirementType',
+            label: 'Requirement Type',
+            width: '14',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'SiteVisitProposedDate',
+            label: 'Site Visit Proposed Date',
+            width: '15',
+            sortable: false,
+            align: 'center',
+            render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : '-'
+        },
+
         {
             key: 'Status',
             label: 'Status',
@@ -442,7 +495,7 @@ export const CallLog: React.FC = () => {
             align: 'center',
             render: (_value, row) => {
 
-                const isLocked = !canAction || !!row.RescheduleDate || !!row.Remark;
+                const isLocked = !canAction || !row.IsEditable ;
 
                 return (
                     <div className="flex items-center justify-center">
@@ -624,9 +677,7 @@ export const CallLog: React.FC = () => {
             "Deleting Call Log"
         );
     };
-    //#endregion
 
-    //#region
     return (
         <div>
 
@@ -727,7 +778,7 @@ export const CallLog: React.FC = () => {
                             type="text"
                             label="Mobile Number"
                             value={tempFilters?.MobileNumber ?? ''}
-                            onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+                            onChange={e => handleFilterChange('MobileNumber', filterNumbers(e.target.value))}
                             placeholder="Enter Mobile Number"
                         />
                     </div>
@@ -766,7 +817,7 @@ export const CallLog: React.FC = () => {
                     setFormData(initialFormState());
                     setErrors({});
                 }}
-                title={editingCallLogData ? 'Update' : 'Add '}
+                title={editingCallLogData ? 'Update Call Log' : 'Add Call Log'}
                 onSubmit={handleAddEditCallLog}
                 saveText={editingCallLogData ? 'Update ' : 'Add '}
                 loading={isLoading}
@@ -774,6 +825,108 @@ export const CallLog: React.FC = () => {
             >
                 <div className="space-y-10 p-6 bg-blue-100">
                     <div className="space-y-4" >
+                        <div>
+
+                            <SinglePageSelection
+                                label="Call Status"
+                                placeholder="Select Call Status"
+                                required
+                                value={formData.Status ?? ""}
+                                onChange={(e) => handleFieldChange("Status", String(e))}
+                                options={CALL_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                error={errors.Status} />
+                        </div>
+                        <div>
+
+                            <SinglePageSelection
+                                label="Budget (In Cr)"
+                                placeholder="Select Budget"
+                                value={formData.Budget ?? ""}
+                                onChange={(value) => handleFieldChange("Budget", value)}
+                                options={BUDGET_TYPE_OPTIONS.map((opt) => ({
+                                    label: opt.name,
+                                    value: opt.id,
+                                }))}
+                                error={errors.Budget}
+                            />
+
+                        </div>
+                        <div>
+                            <SinglePageSelection
+                                label="Requirement"
+                                placeholder="Select Requirement"
+                                value={formData.Requirement ?? ""}
+
+                                onChange={(item) => {
+
+                                    if (!item) {
+                                        handleFieldChange("Requirement", "");
+                                        handleFieldChange("RequirementType", "");
+                                        return;
+                                    }
+
+                                    handleFieldChange("Requirement", item)
+                                    handleFieldChange("RequirementType", "");
+
+                                }}
+
+                                options={REQUIREMENT_TYPE_OPTIONS.map((opt) => ({
+                                    label: opt.name,
+                                    value: opt.id,
+                                }))}
+                                error={errors.Requirement}
+                            />
+                        </div>
+
+                        {formData.Requirement && (
+                            <div>
+                                <SinglePageSelection
+                                    label={formData.Requirement === "Residential" ? "Residential Type" : formData.Requirement === "Commercial" ? "Commercial Type" : "Commercial Leasing Type"}
+                                    placeholder={`Select ${formData.Requirement === "Residential" ? "Residential Type" : formData.Requirement === "Commercial" ? "Commercial Type" : "Commercial Leasing Type"}`}
+                                    required
+                                    value={formData.RequirementType ?? ""}
+                                    onChange={(value) => handleFieldChange("RequirementType", value)}
+                                    options={
+                                        formData.Requirement === "Residential"
+                                            ? RESIDENTIAL_FLAT_CONFIGURATION.map((opt) => ({
+                                                label: opt.name,
+                                                value: opt.id,
+                                            }))
+                                            : formData.Requirement === "Commercial" || formData.Requirement === "Commercial Leasing"
+                                                ? COMMERCIAL_FLAT_CONFIGURATION.map((opt) => ({
+                                                    label: opt.name,
+                                                    value: opt.id,
+                                                }))
+                                                : []
+                                    }
+                                    error={errors.RequirementType}
+                                />
+                            </div>
+                        )}
+
+                        <div>
+                            <MultiSelectPagination
+                                label="Location"
+                                dataFetchCallBack={fetchVillageDropdown}
+
+                                selectedValues={villageDropdown.selectedValues}
+                                options={villageDropdown.initialOptions}
+                                onChange={(values) => {
+                                    const { idsString } = villageDropdown.handleChange(values);
+                                    handleFieldChange("VillageMasterId", idsString || null);
+                                }}
+                                error={errors.VillageMasterId}
+                            />
+                        </div>
+
+                        <div>
+                            <DatePickerInput
+                                label="Site Visit Proposed Date"
+                                value={formatDate_dd_mm_yyyy(formData.SiteVisitProposedDate)}
+                                onChange={(val) => handleFieldChange('SiteVisitProposedDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                error={errors.SiteVisitProposedDate}
+                            />
+                        </div>
 
                         <div>
                             <TextArea
@@ -794,6 +947,8 @@ export const CallLog: React.FC = () => {
                                 error={errors.RescheduleDate}
                             />
                         </div>
+
+
 
                     </div>
                 </div>

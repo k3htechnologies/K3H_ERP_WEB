@@ -23,7 +23,7 @@ export interface FilterWithPaginationBookingRequest {
     AgreementValue?: number;
     BookingType?: string;
     SortBy?: string;
-    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF' | 'BOOKING FORM PDF ON MAIL';
+    ExportType?: 'Excel' | 'PDF' | 'BOOKING FORM PDF' | 'BOOKING FORM PDF ON MAIL' | "" | "WELCOME MESSAGE ON MAIL" | "WELCOME MESSAGE";
 }
 
 export interface FilterWithPaginationChannelPartnerBookingRequest {
@@ -60,9 +60,12 @@ export interface BookingData {
     BookingId: number | null;
     Uniquekey: string | null;
     ProjectName: string | null;
+    ProjectId: number | null;
     EnquiryId: number | null;
     SystemGeneratedCode: string | null;
     ApplicantName: string | null;
+    ApplicantMobileNumberCountryCode: string | null;
+    ApplicantMobileNumber: string | null;
     BookingType: string | null;
     Flat: string | null;
     ParkingData?: ParkingData[] | null;
@@ -79,6 +82,7 @@ export interface BookingData {
     BookingApplicantData?: BookingApplicantData[] | null;
     PermanentAddress: string | null;
     CommunicationAddress: string | null;
+    Source: string | null;
     BrokeragePercentage: number | null;
     BrokerageAmount: number | null;
 
@@ -92,14 +96,21 @@ export interface BookingData {
     EmployeeReferenceAmount: number | null;
 
     RegistrationDate: string | null;
+    FinalRegistrationDate: string | null;
+    IsFinalRegistrationCompleted:boolean;
+    FinalRegistrationURL: string | null;
+    
     AgreementValue: number | null;
     AgreementValueTDS: number | null;
     AgreementValueGSTPercentage: number | null;
     AgreementValueGSTAmount: number | null;
     StampDutyPercentage: number | null;
     StampDutyAmount: number | null;
+
     RegistrationFees: number | null;
+    
     ParkingId: string | null;
+
     NumberOfParking: number | null;
     HandoverType: string | null;
     SourceOfFunding: string | null;
@@ -116,33 +127,45 @@ export interface BookingData {
     PaymentScheduleSchemeMasterId: number | null;
     PaymentScheduleScheme: string | null;
     BookingPaymentScheduleData?: BookingPaymentScheduleData[] | null;
+
     CreatedById: number | null;
     CreatedBy: string | null;
     CreatedDate: string | null;
     ModifiedById: number | null;
     ModifiedBy: string | null;
     ModifiedDate: string | null;
+
+    CancelledById: number | null;
+    CancelledBy: string | null;
+    CancelledDate: string | null;
+
     IsApproval: boolean;
     ApprovalStatus: string | null;
-    ProjectId: number | null;
+
     TotalAmountReceivedAgainstBooking: number | null;
     TotalAmountRefundedAgainstBooking: number | null;
     RefundedAmountOnTillDate: number | null;
+
     FlatAlterationRequestIsApproval: boolean;
     FlatAlterationRequestApprovalStatus: string | null;
+
     ParkingModificationRequestIsApproval: boolean;
-    ParkingModificationRequestApprovalStatus: string | null;
+    ParkingModificationRequestApprovalStatus: string | null
+    ;
     BookingApplicantModificationRequestIsApproval: boolean;
     BookingApplicantModificationRequestApprovalStatus: string | null;
+
     TransferBookingId: number | null;
     TransferFlat: string | null;
     TenantId: number | null;
+    IsApplicableOtherCharge:boolean | null;
 }
 
 export interface BookingApplicantData {
     BookingApplicantId: number | null;
     ApplicantType: string | null;
     ApplicantName: string | null;
+    ApplicantMobileNumberCountryCode: string | null;
     ApplicantMobileNumber: string | null;
     ApplicantEmailId: string | null;
     PhotoURL: string | null;
@@ -247,6 +270,7 @@ export interface AddUpdateBookingRequest {
     OtherRemark: string | null;
     TermsAndConditionsDescription: string | null;
     BookingType: string | null;
+    IsApplicableOtherCharge:boolean | null;
     OtherChargesDetailJSON: string | null;
     PaymentScheduleSchemeMasterId: number | null;
     PaymentScheduleDetailJSON: string | null;
@@ -263,6 +287,7 @@ export interface AddUpdateBookingApplicantRequest {
     BookingApplicantId: number | null;
     ApplicantType: string | null;
     ApplicantName: string | null;
+    ApplicantMobileNumberCountryCode: string | null;
     ApplicantMobileNumber: string | null;
     ApplicantEmailId: string | null;
     PhotoURL?: File[] | null;
@@ -346,6 +371,7 @@ export interface PaymentScheduleStagesData {
     Message?: string | null;
     TotalRecords?: number | null;
 }
+
 
 //=============================================================
 // [ API RESPONSE TYPES ]

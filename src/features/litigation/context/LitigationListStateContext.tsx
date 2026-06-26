@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, type ReactNode } from "react";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { FilterInfo, SortInfo } from "@/ui/components/DataTable/DataTable";
 import { LOCAL_STORAGE_FOR_STATE_KEYS } from "@/core/constants";
 
@@ -9,42 +8,33 @@ export type LitigationListState = {
   searchTerm: string;
   filters: FilterInfo;
   sortInfo: SortInfo | undefined;
-  projectId: number | null;
+  projectId: number;
   LitigationId: number;
   Title: string;
-  
 };
 
 const STORAGE_KEY = LOCAL_STORAGE_FOR_STATE_KEYS.LITIGATION;
 
-const getInitialState = (currentProjectId: number | null): LitigationListState => {
-  if (!currentProjectId) {
-    return {
-      page: 1,
-      pageSize: 20,
-      searchTerm: "",
-      filters: {},
-      sortInfo: undefined,
-      projectId: currentProjectId,
-      LitigationId: 0,
-      Title: '',
-    };
-  }
+const getInitialState = (): LitigationListState => {
 
   try {
+
     const stored = localStorage.getItem(STORAGE_KEY);
+
     if (stored) {
-      const parsed = JSON.parse(stored) as { projectId: number; state: LitigationListState };
-      if (parsed.projectId === currentProjectId) {
-        return {
-          ...parsed.state,
-          LitigationId: parsed.state.LitigationId || 0,
-          Title: parsed.state.Title || "",
-          projectId: currentProjectId,
-        };
-      }
+
+      const parsed = JSON.parse(stored) as LitigationListState;
+
+      return {
+        ...parsed,
+        LitigationId: parsed.LitigationId || 0,
+        Title: parsed.Title || "",
+        projectId: parsed.projectId || 0
+
+      };
     }
   } catch (error) {
+
     console.error('Error loading Litigation list state:', error);
   }
 
@@ -54,79 +44,85 @@ const getInitialState = (currentProjectId: number | null): LitigationListState =
     searchTerm: "",
     filters: {},
     sortInfo: undefined,
-    projectId: currentProjectId,
+    projectId: 0,
     LitigationId: 0,
     Title: '',
   };
 };
 
+
 type Ctx = {
   listState: LitigationListState;
   updateListState: (newState: Partial<LitigationListState>) => void;
   resetFilters: () => void;
+  resetToDefault: () => void;
   clearLitigationContext: () => void;
 };
 
 const LitigationListStateContext = createContext<Ctx | null>(null);
 
 export const LitigationListStateProvider = ({ children }: { children: ReactNode }) => {
-  const { projectId: currentProjectId } = useProject();
-  const [listState, setListState] = useState<LitigationListState>(() => getInitialState(currentProjectId));
+
+  const [listState, setListState] = useState<LitigationListState>(() => getInitialState());
 
   useEffect(() => {
-    setListState(getInitialState(currentProjectId));
-  }, [currentProjectId]);
 
-  useEffect(() => {
-    if (listState.projectId === currentProjectId && currentProjectId) {
-      try {
-        const stateToStore = {
-          projectId: currentProjectId,
-          state: listState,
-        };
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToStore));
-      } catch (error) {
-        console.error('Error saving Litigation list state:', error);
-      }
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(listState));
+    } catch (error) {
+      console.error('Error saving employee list state:', error);
     }
-  }, [listState, currentProjectId]);
 
-  const updateListState = useCallback((newState: Partial<LitigationListState>) => {
-    setListState(prev => {
-      const updated = { ...prev, ...newState };
-      if (updated.projectId !== currentProjectId) {
-        updated.projectId = currentProjectId;
-      }
-      return updated;
-    });
-  }, [currentProjectId]);
+  }, [listState]);
+
+  const updateListState = useCallback((updates: Partial<LitigationListState>) => {
+    setListState((prev) => ({ ...prev, ...updates }));
+  }, []);
 
   const resetFilters = useCallback(() => {
-    updateListState({
+    setListState((prev) => ({
+      ...prev,
+      filters: {},
+      searchTerm: "",
+      sortInfo: undefined,
       page: 1,
-      searchTerm: '',
+    }));
+  }, []);
+
+
+  const resetToDefault = useCallback(() => {
+    const defaultState: LitigationListState = {
+      page: 1,
+      pageSize: 20,
+      searchTerm: "",
       filters: {},
       sortInfo: undefined,
       LitigationId: 0,
-      Title: ''
-    });
-  }, [updateListState]);
+      Title: "",
+      projectId: 0,
+    };
+    setListState(defaultState);
+  }, []);
 
   const clearLitigationContext = useCallback(() => {
-    setListState(getInitialState(currentProjectId));
-  }, [currentProjectId]);
+    setListState((prev) => ({
+      ...prev,
+      LitigationId: 0,
+      projectId: 0,
+      Title: "",
+    }));
+  }, []);
 
   const contextValue = useMemo(() => ({
     listState,
     updateListState,
     resetFilters,
+    resetToDefault,
     clearLitigationContext
-  }), [listState, updateListState, resetFilters, clearLitigationContext]);
+  }), [listState, updateListState, resetFilters, resetToDefault, clearLitigationContext]);
 
   return (
-    <LitigationListStateContext.Provider value={contextValue}>
-      {children}
-    </LitigationListStateContext.Provider>
+    <LitigationListStateContext.Provider value={contextValue}> {children} </LitigationListStateContext.Provider>
   );
 };
 

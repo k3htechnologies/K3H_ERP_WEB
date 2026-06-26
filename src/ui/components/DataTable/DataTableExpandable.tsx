@@ -12,6 +12,7 @@ interface ExpandableConfig {
   renderRow: (data: any, row: any) => React.ReactNode
   expandButton?: { openText?: string; closeText?: string }
   alwaysFetchOnOpen?: boolean
+  rowExpandable?: (row: any) => boolean
 }
 
 interface DataTableProps {
@@ -28,6 +29,8 @@ interface DataTableProps {
   onSort?: (sortInfo: SortInfo) => void
   expandable?: ExpandableConfig
   alwaysFetchOnOpen?: boolean
+  rowExpandable?: true
+
 }
 
 export interface DataTableExpandableRef {
@@ -265,21 +268,20 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
                       column.align === 'right' ? 'text-right' : 'text-left'}
                     ${column.width ? `w-${column.width}` : ''}
                     ${column.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
-                    ${column.fixed === 'left' ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]' :
-                      column.fixed === 'right' ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]' : ''}
-                  `}
-                  style={{
-                    ...(column.width ? { width: column.width } : {}),
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    lineHeight: '1.4',
-                    letterSpacing: '0%',
-                    backgroundColor: '#E4F0FF',
-                    borderBottom: '1px solid #D1D5DB',
-                    borderRight: '1px solid #D1D5DB',
-                  }}
-                  onClick={() => column.sortable && handleSort(column.key)}
-                >
+                    ${column.fixed === 'left' ? 'sticky z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]' : column.fixed === 'right' ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]' : ''}
+               `}
+                    style={{
+                      ...(column.width ? { width: column.width } : {}),
+                      ...(column.fixed === 'left' ? { left: cIndex === 0 ? '0px' : '30px' } : {}),
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      lineHeight: '1.4',
+                      backgroundColor: '#E4F0FF',
+                      borderBottom: '1px solid #D1D5DB',
+                      borderRight: '1px solid #D1D5DB',
+                    }}
+                    onClick={() => column.sortable && handleSort(column.key)}
+                  >
 
                   <div className={`flex items-center space-x-1 ${column.align === 'center' ? 'justify-center' : column.align === 'right' ? 'justify-end' : 'justify-start'}`}>
                     <span className="truncate">{column.label}</span>
@@ -308,11 +310,24 @@ export const DataTableExpandable = forwardRef<DataTableExpandableRef, DataTableP
                     <tr className="hover:bg-gray-50 h-10 border-b border-gray-200">
                       {effectiveColumns.map((column) => {
                         // special-case the injected expand column
+
                         if (expandable && column.key === '__expand') {
+                          const canExpand = typeof expandable.rowExpandable === "function" ? expandable.rowExpandable(row) : true;
+
+                          if (!canExpand) {
+                            return (
+                              <td
+                                key={column.key}
+                                className="px-4 py-2 text-center sticky left-0 bg-white z-30"
+                                style={{ minWidth: '30px', verticalAlign: 'middle' }}
+                              />
+                            );
+                          }
+
                           const state = expandedMap[rowKey]
                           const isOpen = !!state?.open
                           return (
-                            <td key={column.key} className="px-4 py-2 text-center" style={{ minWidth: '40px', verticalAlign: 'middle' }}>
+                            <td key={column.key} className="px-4 py-2 text-center sticky left-0 bg-white z-30" style={{ minWidth: '30px', verticalAlign: 'middle' }}>
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation()

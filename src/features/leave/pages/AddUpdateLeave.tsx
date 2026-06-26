@@ -359,7 +359,6 @@ export const AddUpdateLeave: React.FC = () => {
                                     availableFilesURL={leaveDocumentURL ?? ""}
                                     allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                                     maxFiles={5}
-                                    maxSizeMB={10}
                                     onRemoveExisting={(url) => {
                                         setRemovedLeaveUrls((prev) => [...prev, url]);
                                     }}

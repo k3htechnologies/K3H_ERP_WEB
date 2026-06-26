@@ -44,7 +44,7 @@ const Company: React.FC = () => {
   //#endregion
 
   //#region MENU PERMISSIONS
-  const { canAction } = useMenuPermissions('/projectMaster');
+  const { canAction } = useMenuPermissions('/projectMasterSetCompany');
   //#endregion
 
 
@@ -57,34 +57,13 @@ const Company: React.FC = () => {
 
   const [companyMasterForProject, setCompanyMasterForProject] = useState<CompanyMasterData[]>([]);
 
-  const [selectedCompanyIds, setSelectedCompanyIds] = useState<number[]>([]);
+ const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
 
   const toggleCompanySelection = (id?: number) => {
-    if (!id) return;
-    setSelectedCompanyIds(prev => {
-      if (prev.includes(id)) return prev.filter(x => x !== id);
-      return [...prev, id];
-    });
+  if (!id) return;
 
-  };
-
-  const visibleCompanyIds = companyMasterForProject.map(e => e.CompanyId).filter(Boolean) as number[];
-
-  const isAllCompanyVisibleSelected = visibleCompanyIds.length > 0 && visibleCompanyIds.every(id => selectedCompanyIds.includes(id));
-
-
-  const toggleCompanySelectAllVisible = () => {
-    setSelectedCompanyIds(prev => {
-      if (isAllCompanyVisibleSelected) {
-
-        return prev.filter(id => !visibleCompanyIds.includes(id));
-      } else {
-
-        const set = new Set<number>([...prev, ...visibleCompanyIds]);
-        return Array.from(set);
-      }
-    });
-  };
+  setSelectedCompanyId(prev => (prev === id ? null : id));
+};
 
   // SINGLE SEARCH TEXT BOX
   const [searchTermForCompany, setSearchTermForCompany] = useState('')
@@ -133,9 +112,8 @@ const Company: React.FC = () => {
 
     setCompanyMasterList(data);
 
-    const assignedIds = data.map(e => e.CompanyId).filter(Boolean) as number[];
-
-    setSelectedCompanyIds(assignedIds);
+    const assignedId = data?.[0]?.CompanyId ?? null;
+setSelectedCompanyId(assignedId);
   };
 
   //#endregion
@@ -280,10 +258,9 @@ const Company: React.FC = () => {
     });
 
 
-    const assignedIds = (companyMasterList || [])
-      .map(e => e.CompanyId)
-      .filter(Boolean) as number[];
-    setSelectedCompanyIds(assignedIds);
+    const assignedId = companyMasterList?.[0]?.CompanyId ?? null;
+    
+    setSelectedCompanyId(assignedId);
 
     fetchCompanyList(1);
 
@@ -300,7 +277,7 @@ const Company: React.FC = () => {
     return {
       ProjectId: projectId,
       Uniquekey: uniquekey,
-      CompanyId: selectedCompanyIds.join(',')
+      CompanyId: selectedCompanyId ? selectedCompanyId.toString() : ''
     };
 
   };
@@ -308,7 +285,7 @@ const Company: React.FC = () => {
   const handleAddUpdateProjectMasterWithCompany = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (selectedCompanyIds.join(',') === "") {
+    if (!selectedCompanyId) {
 
       addToast({ type: "error", title: "At least one company is required" });
       return
@@ -329,8 +306,6 @@ const Company: React.FC = () => {
           syncCompanySelection(response.right.Data);
 
           setIsOpenAddProjectMasterWithCompany(false);
-
-          setSelectedCompanyIds([]);
 
           setSearchTermForCompany("");
 
@@ -431,13 +406,7 @@ const Company: React.FC = () => {
           <div className="px-2 py-2">
             <div className="flex items-center gap-3 w-full">
 
-              {/* Select ALL */}
-              <Checkbox
-
-                id="select-all-company"
-                checked={isAllCompanyVisibleSelected}
-                onChange={() => toggleCompanySelectAllVisible()}
-              />
+             
               <div className="relative min-w-0 w-[526px]">
                 <Input
                   type="text"
@@ -453,10 +422,7 @@ const Company: React.FC = () => {
                 />
               </div>
 
-              <span className="text-sm text-gray-600 whitespace-nowrap ml-auto">
-                {selectedCompanyIds.length} selected
-              </span>
-
+              
 
             </div>
           </div>
@@ -472,7 +438,7 @@ const Company: React.FC = () => {
                 companyMasterForProject.map((n, i) => {
 
                   const id = n.CompanyId ?? i;
-                  const checked = selectedCompanyIds.includes(id);
+                  const checked = selectedCompanyId === id;;
 
                   return (
                     <div key={id}

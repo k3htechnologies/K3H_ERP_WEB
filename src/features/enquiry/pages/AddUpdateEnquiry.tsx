@@ -8,13 +8,13 @@ import { useCallback, useEffect, useState } from "react";
 import React from "react";
 import type { AddUpdateEnquiryRequest, FilterWithPaginationEnquiryRequest } from "@/features/enquiry//models/EnquiryModel";
 import { DatePickerInput } from "@/ui/components/forms/Datepicker";
-import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { convert_date_yy_mm_dd_To_dd_mm_yyyy, convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { EnquiryService } from "@/features/enquiry/services/EnquiryServices";
-import { filterEmail, filterMobile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
-import { Mail, Phone, Search } from "lucide-react";
+import { filterEmail, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
+import { Mail, Search } from "lucide-react";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import {
   ACCOMODATION_TYPE_OPTIONS,
@@ -42,11 +42,10 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { fetchEmployeeMasterById, fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
 import RadioPill from "@/ui/components/forms/RadioPill";
-import { RangeSelector } from "@/ui/components/forms/RangeSelector";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { calculateAge, isDateWithinPastDays, isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
-import { fetchChannelPartnerByMobileNumber, fetchChannelPartnerTeamMemberDropdown } from "@/features/ChannelPartner/channelPartnerDropDown";
+import { fetchChannelPartnerByChannelPartnerCode, fetchChannelPartnerTeamMemberDropdown } from "@/features/ChannelPartner/channelPartnerDropDown";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { fetchVillageDropdown } from "@/features/technical/villageDropDown";
@@ -59,6 +58,10 @@ import { fetchInventoryFlatDetails, fetchPaginatedInventoryFlatDropdown } from "
 import type { EmployeeMasterData } from "@/features/employeeMaster/models/EmployeeMasterModel";
 import type { InventoryFlatData } from "@/features/inventory/models/InventoryMasterModel";
 import { fetchPaginationProjectWithEmployeeDropdown } from "@/features/projectMaster/projectWiseEmployeeDropdown";
+import { checkDuplicateField } from "@/core/utils/duplicateValidation";
+import { ChannelPartnerService } from "@/features/ChannelPartner/services/ChannelPartnerService";
+import { toUpperCase } from "fp-ts/lib/string";
+import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
 
 const initialFormState = (): AddUpdateEnquiryRequest => ({
   EnquiryId: 0,
@@ -68,6 +71,7 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
   EnquiryTimeOut: "00:00",
 
   Name: "",
+  MobileNumberCountryCode: "+91",
   MobileNumber: "",
   EmailId: "",
   DateOfBirth: "",
@@ -78,21 +82,24 @@ const initialFormState = (): AddUpdateEnquiryRequest => ({
   Source: "",
   SubSource: "",
   SubSubSource: "",
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+  // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS REFERENCE]=========================
   ReferralProjectId: 0,
   ReferralInventoryFlatId: 0,
 
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+  // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS LOTALTY]=========================
 
   LoyaltyProjectId: 0,
   LoyaltyInventoryFlatId: 0,
-  // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+  // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
 
   EmployeeReferenceEmployeeId: 0,
 
   ChannelPartnerTeamMemberId: 0,
+
   ChannelPartnerTeamMemberMobileNumber: "",
   ChannelPartnerTeamMemberName: "",
+  ChannelPartnerTeamMemberEmailId: "",
+  ChannelPartnerTeamMemberMobileNumberCountryCode: "+91",
 
   Nationality: "",
   CountryOfResidence: "",
@@ -133,13 +140,12 @@ export const AddUpdateEnquiry: React.FC = () => {
   const [formData, setFormData] = useState<AddUpdateEnquiryRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
-  const [channelPartnerSearchByMobileNumber, setChannelPartnerSearchByMobileNumber] = useState<string>();
+  const [channelPartnerSearchByChannelPartnerCode, setChannelPartnerSearchByChannelPartnerCode] = useState<string>();
   const [channelPartnerId, setChannelPartnerId] = useState<number>();
   const [calculatedAge, setCalculatedAge] = useState<string>();
   const [selectedVillageValues, setSelectedVillageValues] = useState<string | number | null>(null);
 
-  //SET CHANNEL PARTNER DETAILS
-
+  const [channelPartnerCode, setChannelPartnerCode] = useState<string>();
   const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
   const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
   const [channelPartnerFirmsType, setChannelPartnerFirmsType] = useState<string>();
@@ -147,24 +153,21 @@ export const AddUpdateEnquiry: React.FC = () => {
   const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] = useState<string>();
   const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] = useState<string>();
   const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<string>();
+  const [channelPartnerMobileNumberCountryCode, setChannelPartnerMobileNumberCountryCode] = useState<string>();
   const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
   const [channelPartnerType, setChannelPartnerType] = useState<string>();
+  const [channelPartnerEmailId, setChannelPartnerEmailId] = useState<string>();
 
-  //SET EMPLOYEE MASTER DETAILS
   const [employeeDetails, setEmployeeDetails] = useState<EmployeeMasterData | null>(null);
 
-  //SET EMPLOYEE MASTER DETAILS
   const [referelInventoryFlatData, setReferralInventoryFlatData] = useState<InventoryFlatData | null>(null);
   const [loyaltyInventoryFlatData, setLoyaltyInventoryFlatData] = useState<InventoryFlatData | null>(null);
-
-  //COMPLETE VERIFICATION
 
   const [otp, setOtp] = useState("");
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [isOtpVerified, setIsOtpVerified] = useState(false);
   const [showOtpSection, setShowOtpSection] = useState(false);
 
-  // NAVIGATE
   const navigate = useNavigate();
 
   const { EnquiryId } = useParams<{ EnquiryId?: string }>();
@@ -180,7 +183,6 @@ export const AddUpdateEnquiry: React.FC = () => {
   const { canAction } = useMenuPermissions("/enquiry");
 
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  //#endregion
 
   const [dropdownLabels, setDropdownLabels] = useState<{
     channelPartnerName?: string;
@@ -196,7 +198,6 @@ export const AddUpdateEnquiry: React.FC = () => {
     employeeReferenceEmployeeName?: string;
   }>({});
 
-  //#region HANDLE FIELD CHANGE EVENT
   const handleFieldChange = (field: keyof AddUpdateEnquiryRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
@@ -204,9 +205,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
-  //#endregion
 
-  //#region FETCH EMPLOYEE DROPDOWN WITH DEPARTMENT
   const fetchEmployeeDropdown = useCallback(
     async (pageNumber: number, params?: { value?: string }) => {
       return fetchPaginationProjectWithEmployeeDropdown(pageNumber, {
@@ -217,9 +216,7 @@ export const AddUpdateEnquiry: React.FC = () => {
     },
     [projectId]
   );
-  //#endregion
 
-  //#region INITIALIZATION
   useEffect(() => {
     if (!isAddMode) {
       fetchEnquiryDetails();
@@ -233,9 +230,6 @@ export const AddUpdateEnquiry: React.FC = () => {
     }
   }, []);
 
-  //#endregion
-
-  //#region FETCH ENQUIRY  MASTER DETAILS
   const fetchEnquiryDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -264,6 +258,7 @@ export const AddUpdateEnquiry: React.FC = () => {
               ProjectId: Number(projectId),
               Name: e.Name ?? prev.Name,
               EmailId: e.EmailId ?? prev.EmailId,
+              MobileNumberCountryCode: e.MobileNumberCountryCode ?? prev.MobileNumberCountryCode,
               MobileNumber: e.MobileNumber ?? prev.MobileNumber,
               DateOfBirth: e.DateOfBirth ?? prev.DateOfBirth,
 
@@ -282,15 +277,15 @@ export const AddUpdateEnquiry: React.FC = () => {
               SubSource: e.SubSource ?? prev.SubSource,
               SubSubSource: e.SubSubSource ?? prev.SubSubSource,
 
-              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+              // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS REFERENCE]=========================
               ReferralProjectId: e.ReferralProjectId ?? prev.ReferralProjectId,
               ReferralInventoryFlatId: e.ReferralInventoryFlatId ?? prev.ReferralInventoryFlatId,
 
-              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+              // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS LOTALTY]=========================
               LoyaltyProjectId: e.LoyaltyProjectId ?? prev.LoyaltyProjectId,
               LoyaltyInventoryFlatId: e.LoyaltyInventoryFlatId ?? prev.LoyaltyInventoryFlatId,
 
-              // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+              // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
               EmployeeReferenceEmployeeId: e.EmployeeReferenceEmployeeId ?? prev.EmployeeReferenceEmployeeId,
 
               ChannelPartnerTeamMemberId: e.ChannelPartnerTeamMemberId ?? prev.ChannelPartnerTeamMemberId,
@@ -298,6 +293,10 @@ export const AddUpdateEnquiry: React.FC = () => {
               ChannelPartnerTeamMemberMobileNumber: Number(e.ChannelPartnerTeamMemberId) > 0 ? "" : (e.ChannelPartnerTeamMemberMobileNumber ?? prev.ChannelPartnerTeamMemberMobileNumber),
 
               ChannelPartnerTeamMemberName: Number(e.ChannelPartnerTeamMemberId) > 0 ? "" : (e.ChannelPartnerTeamMemberName ?? prev.ChannelPartnerTeamMemberName),
+
+              ChannelPartnerTeamMemberMobileNumberCountryCode: Number(e.ChannelPartnerTeamMemberId) > 0 ? "" : (e.ChannelPartnerTeamMemberMobileNumberCountryCode ?? prev.ChannelPartnerTeamMemberMobileNumberCountryCode),
+
+              ChannelPartnerTeamMemberEmailId: Number(e.ChannelPartnerTeamMemberId) > 0 ? "" : (e.ChannelPartnerTeamMemberEmailId ?? prev.ChannelPartnerTeamMemberEmailId),
 
               FinalStage: e.FinalStage ?? prev.FinalStage,
               FinalStageDetail: e.FinalStageDetail ?? prev.FinalStageDetail,
@@ -363,7 +362,7 @@ export const AddUpdateEnquiry: React.FC = () => {
 
             if (e.Source === "Channel Partner") {
             }
-            setChannelPartnerSearchByMobileNumber(e.ChannelPartnerMobileNumber ? e.ChannelPartnerMobileNumber.toString() : "");
+            setChannelPartnerSearchByChannelPartnerCode(e.ChannelPartnerCode ? e.ChannelPartnerCode.toString() : "");
           }
         } else {
           addToast({ type: "error", title: response.left.message });
@@ -382,6 +381,55 @@ export const AddUpdateEnquiry: React.FC = () => {
   //#endregion
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
+  const checkDuplicateMobileNumber = async (mobileNumber: string, countryCode: string, showToast: boolean = false): Promise<boolean> => {
+
+    if (Number(formData.EnquiryId) > 0) {
+      return false;
+    }
+
+    if (!isValidMobile(mobileNumber, countryCode)) {
+
+      setErrors((prev) => ({
+        ...prev,
+        MobileNumber: ""
+      }));
+
+      return false;
+    }
+
+    const isDuplicate = await checkDuplicateField({
+      fieldName: "MobileNumber",
+      fieldValue: mobileNumber,
+      apiCallback: EnquiryService.apiCallPullEnquiry,
+      extraParams: {
+        MobileNumberCountryCode: countryCode || "+91",
+        ProjectId: Number(projectId),
+        NotCheckFinalStage: 'LOST,BOOKING DONE'
+      }
+    });
+
+    if (isDuplicate) {
+
+      setErrors((prev) => ({
+        ...prev,
+        MobileNumber: "Mobile number already exists"
+      }));
+
+      if (showToast) {
+        addToast({ type: "error", title: "Mobile number already exists" });
+      }
+
+      return true;
+    }
+
+    setErrors((prev) => ({
+      ...prev,
+      MobileNumber: ""
+    }));
+
+    return false;
+  };
+
   const validateAddEnquiryForm = (): {
     isValid: boolean;
 
@@ -397,14 +445,18 @@ export const AddUpdateEnquiry: React.FC = () => {
 
     if (!formData.MobileNumber) {
       newErrors.MobileNumber = "Mobile Number is required";
-    } else if (!isValidMobile(formData.MobileNumber.trim())) {
-      newErrors.MobileNumber = "Enter a valid 10-Digit Mobile Number";
+    } else if (!isValidMobile(formData.MobileNumber.trim(), formData.MobileNumberCountryCode!)) {
+      newErrors.MobileNumber = "Enter a valid Mobile Number";
     }
 
     if (formData.EmailId !== "") {
       if (!isValidEmail(formData.EmailId!.trim())) {
         newErrors.EmailId = "Enter a Valid E-mail Id";
       }
+    }
+
+    if (formData.MobileNumberCountryCode !== "+91" && formData.EmailId!.trim() === "") {
+      newErrors.EmailId = "E-mail Id is mandatory";
     }
 
     if (!formData.Accommodation) {
@@ -415,9 +467,6 @@ export const AddUpdateEnquiry: React.FC = () => {
       newErrors.OccupationType = "Occupation Type is required";
     }
 
-    if (!formData.Source) {
-      newErrors.Source = "Source is required";
-    }
 
     if (formData.Nationality === "NRI") {
       if (!formData.CountryOfResidence) {
@@ -429,24 +478,33 @@ export const AddUpdateEnquiry: React.FC = () => {
       }
     }
 
+    if (!formData.Source) {
+      newErrors.Source = "Source is required";
+    }
+
     if (formData.Source?.toUpperCase() === "CHANNEL PARTNER") {
       if (!channelPartnerId) {
-        newErrors.ChannelPartnerId = "Channel Partner is required";
+        newErrors.ChannelPartnerId = "Channel Partner Code is required";
       }
 
-      if (!formData.SubSource) {
+      if (!formData.SubSource?.trim()) {
         newErrors.SubSource = "Sub Source is required";
+      }
+
+    }
+
+    if (!formData.SubSource?.trim()) {
+      newErrors.SubSource = "Sub Source is required";
+    }
+
+    if (formData.SubSource?.toUpperCase() === "ADVERTISEMENT") {
+      if (!formData.SubSubSource) {
+        newErrors.SubSubSource = "Sub Source is required";
       }
     }
 
-    if (formData.Source?.toUpperCase() === "ADVERTISEMENT") {
-      if (!formData.SubSource) {
-        newErrors.SubSource = "Sub Source is required";
-      }
-    }
-
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
-    if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE") {
+    // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS REFERENCE]=========================
+    if (formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "REFERENCE") {
       if (!formData.ReferralProjectId) {
         newErrors.ReferralProjectId = "Referral Project Name is required";
       }
@@ -458,8 +516,8 @@ export const AddUpdateEnquiry: React.FC = () => {
       }
     }
 
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
-    if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "LOYALTY") {
+    // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS LOTALTY]=========================
+    if (formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "LOYALTY") {
       if (!formData.LoyaltyProjectId) {
         newErrors.LoyaltyProjectId = "Loyalty Existing Project Name is required";
       }
@@ -472,8 +530,8 @@ export const AddUpdateEnquiry: React.FC = () => {
       }
     }
 
-    // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
-    if (formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE") {
+    // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+    if (formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE") {
       if (!formData.EmployeeReferenceEmployeeId) {
         newErrors.EmployeeReferenceEmployeeId = "Employee Name is required";
       }
@@ -488,16 +546,26 @@ export const AddUpdateEnquiry: React.FC = () => {
     // =====================[CHANNEL PARTNER]=========================
     const name = formData.ChannelPartnerTeamMemberName?.trim() || "";
     const mobile = formData.ChannelPartnerTeamMemberMobileNumber?.trim() || "";
-    if (mobile && !name) {
+    const emailId = formData.ChannelPartnerTeamMemberEmailId?.trim() || "";
+
+    if (mobile && !name && !emailId) {
       newErrors.ChannelPartnerTeamMemberName = "Channel Partner Team Member Name is required";
     }
 
-    if (name && !mobile) {
+    if (name && !mobile && !emailId) {
       newErrors.ChannelPartnerTeamMemberMobileNumber = "Mobile Number is required";
     }
 
-    if (mobile && !isValidMobile(mobile)) {
-      newErrors.ChannelPartnerTeamMemberMobileNumber = "Enter a valid 10-digit mobile number";
+    if (mobile && !isValidMobile(mobile, formData.ChannelPartnerTeamMemberMobileNumberCountryCode!)) {
+      newErrors.ChannelPartnerTeamMemberMobileNumber = "Enter a valid mobile number";
+    }
+
+    if (formData.ChannelPartnerTeamMemberMobileNumberCountryCode !== "+91" && (mobile || name) && !emailId) {
+      newErrors.ChannelPartnerTeamMemberEmailId = "E-mail Id is mandatory";
+    }
+
+    if (emailId && !isValidEmail(emailId)) {
+      newErrors.ChannelPartnerTeamMemberEmailId = "Enter a valid E-mail Id";
     }
 
     if (Number(formData.EnquiryDate) === 0 && !formData.EnquiryDate) {
@@ -539,15 +607,13 @@ export const AddUpdateEnquiry: React.FC = () => {
   const PushEnquiryFormData = (): AddUpdateEnquiryRequest => {
     const villageIdsString = villageDropdown.selectedValues.length > 0 ? villageDropdown.selectedValues.join(",") : "";
 
+    // =====================[DIRECT WALKIN → REFERENCE]=========================
+    const isDirectReference = formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "REFERENCE";
+    // =====================[DIRECT WALKIN → LOYALTY]=========================
+    const isDirectLoyalty = formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "LOYALTY";
 
-
-    // =====================[DIRECT WALKING → REFERENCE]=========================
-    const isDirectReference = formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "REFERENCE";
-    // =====================[DIRECT WALKING → LOYALTY]=========================
-    const isDirectLoyalty = formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "LOYALTY";
-
-    // =====================[DIRECT WALKING → EMPLOYEE REFERENCE]=========================
-    const isEmployeeReference = formData.Source?.toUpperCase() === "DIRECT WALKING" && formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE";
+    // =====================[DIRECT WALKIN → EMPLOYEE REFERENCE]=========================
+    const isEmployeeReference = formData.Source?.toUpperCase() === "DIRECT WALKIN" && formData.SubSource?.toUpperCase() === "EMPLOYEE REFERENCE";
 
     const isIndian = formData.Nationality === "" || formData.Nationality?.toUpperCase() === "Indian";
 
@@ -559,6 +625,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       EnquiryTimeOut: formData.EnquiryTimeOut,
 
       Name: formData.Name,
+      MobileNumberCountryCode: formData.MobileNumberCountryCode,
       MobileNumber: formData.MobileNumber,
       EmailId: formData.EmailId,
       DateOfBirth: formData.DateOfBirth === "" ? null : formData.DateOfBirth,
@@ -570,15 +637,15 @@ export const AddUpdateEnquiry: React.FC = () => {
       SubSource: formData.SubSource,
       SubSubSource: formData.Source?.toUpperCase() === "CHANNEL PARTNER" ? String(channelPartnerId) : formData.SubSubSource,
 
-      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS REFERENCE]=========================
+      // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS REFERENCE]=========================
       ReferralProjectId: isDirectReference ? formData.ReferralProjectId : 0,
       ReferralInventoryFlatId: isDirectReference ? formData.ReferralInventoryFlatId : 0,
 
-      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS LOTALTY]=========================
+      // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS LOTALTY]=========================
       LoyaltyProjectId: isDirectLoyalty ? formData.LoyaltyProjectId : 0,
       LoyaltyInventoryFlatId: isDirectLoyalty ? formData.LoyaltyInventoryFlatId : 0,
 
-      // =====================[SOURCE IS DIRECT WALKING AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
+      // =====================[SOURCE IS DIRECT WALKIN AND SUB SOURCE IS EMPLOYEE REFERENCE]=========================
       EmployeeReferenceEmployeeId: isEmployeeReference ? formData.EmployeeReferenceEmployeeId : 0,
 
       ChannelPartnerTeamMemberId: formData.ChannelPartnerTeamMemberId,
@@ -586,6 +653,10 @@ export const AddUpdateEnquiry: React.FC = () => {
       ChannelPartnerTeamMemberName: Number(formData.ChannelPartnerTeamMemberId) > 0 ? "" : formData.ChannelPartnerTeamMemberName,
 
       ChannelPartnerTeamMemberMobileNumber: Number(formData.ChannelPartnerTeamMemberId) > 0 ? "" : formData.ChannelPartnerTeamMemberMobileNumber,
+
+      ChannelPartnerTeamMemberMobileNumberCountryCode: Number(formData.ChannelPartnerTeamMemberId) > 0 ? "" : formData.ChannelPartnerTeamMemberMobileNumberCountryCode,
+
+      ChannelPartnerTeamMemberEmailId: Number(formData.ChannelPartnerTeamMemberId) > 0 ? "" : formData.ChannelPartnerTeamMemberEmailId,
 
       Nationality: isIndian ? "Indian" : formData.Nationality,
       CountryOfResidence: isIndian ? "" : formData.CountryOfResidence,
@@ -597,7 +668,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       PossessionType: formData.PossessionType,
       AreaPreferred: formData.AreaPreferred,
       DesiredFloorBand: formData.DesiredFloorBand,
-      Budget: formData.Budget === "" ? "<1" : formData.Budget,
+      Budget: formData.Budget,
 
       Requirement: formData.Requirement,
       RequirementType: formData.RequirementType || null,
@@ -608,7 +679,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       Timeline: formData.Timeline,
 
       FinalStage: formData.FinalStage,
-      FinalStageDetail: formData.FinalStageDetail,
+      FinalStageDetail: toUpperCase(formData.FinalStage ?? "") === "LOST" ? formData.FinalStageDetail : "",
 
       EnquiryDate: formData.EnquiryDate,
       NextFollowUpDate: formData.NextFollowUpDate === "" ? null : formData.NextFollowUpDate,
@@ -624,9 +695,6 @@ export const AddUpdateEnquiry: React.FC = () => {
     };
   };
 
-  //#endregion
-
-  //#region HANDLE ADD AND UPDATE Enquiry  MASTER
   const handleAddUpdateEnquiry = async () => {
     setErrors({});
 
@@ -641,11 +709,47 @@ export const AddUpdateEnquiry: React.FC = () => {
       return;
     }
 
-    if (formData.EnquiryId === 0 && !isOtpVerified) {
+    const isDuplicate = await checkDuplicateMobileNumber(formData.MobileNumber!, formData.MobileNumberCountryCode!, true);
+    if (isDuplicate) {
+      return;
+    }
+
+    if (formData.EnquiryId === 0 && formData.ChannelPartnerTeamMemberMobileNumber !== "") {
+
+      const isDuplicate = await checkDuplicateField({
+        fieldName: "MobileNumber",
+        fieldValue: formData.ChannelPartnerTeamMemberMobileNumber || "",
+        extraParams: {
+          MobileNumberCountryCode: formData.ChannelPartnerTeamMemberMobileNumberCountryCode,
+
+        },
+        apiCallback: ChannelPartnerService.apiCallPullChannelPartner,
+        setIsLoading,
+        setLoadingMessage,
+        loadingMessage: "Checking Team Member Mobile Number..."
+      });
+
+      if (isDuplicate) {
+        setErrors(prev => ({
+          ...prev,
+          ChannelPartnerTeamMemberMobileNumber: "Team Member Mobile number already exists"
+        }));
+
+        addToast({ type: "error", title: "Team Member Mobile number already exists" });
+
+        return;
+      }
+    }
+
+    if (formData.EnquiryId === 0 && formData.MobileNumberCountryCode!.trim() === "+91" && !isOtpVerified) {
       if (!isOtpSent) {
         const sent = await sendOTP({
+
           mobileNumber: formData.MobileNumber || "",
           module: "ENQUIRY",
+          name: formData.Name || "",
+          projectName: (LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).find(p => p.ProjectId === Number(projectId))?.ProjectName || "",
+          source: formData.Source || "",
           setIsLoading,
           setLoadingMessage,
           addToast,
@@ -695,10 +799,11 @@ export const AddUpdateEnquiry: React.FC = () => {
   //#region HANDLE SEARCH CHANGE EVENT CHANNEL PARTNER
 
   const handleSearchByChannelPartner = (searchValue: string) => {
-    setChannelPartnerSearchByMobileNumber(searchValue);
+    setChannelPartnerSearchByChannelPartnerCode(searchValue);
   };
 
   const clearChannelPartnerDetails = () => {
+    setChannelPartnerCode("");
     setChannelPartnerFullName("");
     setChannelPartnerCompanyName("");
     setChannelPartnerFirmsType("");
@@ -707,29 +812,31 @@ export const AddUpdateEnquiry: React.FC = () => {
     setChannelPartnerRERANUmber("");
     setChannelPartnerDesignation("");
     setChannelPartnerMobileNumber("");
+    setChannelPartnerMobileNumberCountryCode("");
     setChannelPartnerType("");
+    setChannelPartnerEmailId("");
     setChannelPartnerId(0);
     handleFieldChange("ChannelPartnerTeamMemberId", 0);
   };
 
   const clearChannelPartnerAll = () => {
-    setChannelPartnerSearchByMobileNumber("");
+    setChannelPartnerSearchByChannelPartnerCode("");
     clearChannelPartnerDetails();
   };
 
   useEffect(() => {
-    const mobile = channelPartnerSearchByMobileNumber?.trim() || "";
+    const channelPartnerCode = channelPartnerSearchByChannelPartnerCode?.trim() || "";
 
-    if (mobile.length !== 10) {
+    if (channelPartnerCode.length !== 18) {
       clearChannelPartnerDetails();
       return;
     }
 
-    fetchChannelPartnerByMobileNumber(mobile).then((channelPartner) => {
+    fetchChannelPartnerByChannelPartnerCode(channelPartnerCode).then((channelPartner) => {
       if (!channelPartner) return;
 
       setChannelPartnerId(Number(channelPartner.ChannelPartnerId));
-
+      setChannelPartnerCode(channelPartner.SystemGeneratedCode ?? "")
       setChannelPartnerFullName(channelPartner.Name ?? "");
       setChannelPartnerFirmsType(channelPartner.FirmsType ?? "");
       setChannelPartnerCompanyName(channelPartner.CompanyName ?? "");
@@ -738,9 +845,11 @@ export const AddUpdateEnquiry: React.FC = () => {
       setChannelPartnerRERANUmber(channelPartner.RERANumber ?? "");
       setChannelPartnerDesignation(channelPartner.Designation ?? "");
       setChannelPartnerMobileNumber(channelPartner.MobileNumber ?? "");
+      setChannelPartnerMobileNumberCountryCode(channelPartner.MobileNumberCountryCode ?? "");
       setChannelPartnerType(channelPartner.Type ?? "");
+      setChannelPartnerEmailId(channelPartner.EmailId ?? "");
     });
-  }, [channelPartnerSearchByMobileNumber]);
+  }, [channelPartnerSearchByChannelPartnerCode]);
 
   //#endregion
 
@@ -796,11 +905,8 @@ export const AddUpdateEnquiry: React.FC = () => {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-      {/* Loader */}
 
-      <Loader loading={isLoading} title={loadingMessage}>
-        {" "}
-        <div></div>{" "}
+      <Loader loading={isLoading} title={loadingMessage}>{" "}<div></div>{" "}
       </Loader>
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
@@ -819,23 +925,23 @@ export const AddUpdateEnquiry: React.FC = () => {
               </div>
 
               <div>
-                <Input
-                  type="text"
+                <MobileNumberInput
+                  mobileNumber={formData.MobileNumber ?? ""}
+                  countryCode={formData.MobileNumberCountryCode ?? "+91"}
+                  disabled={Number(formData.EnquiryId) > 0}
                   required
-                  label="Mobile Number"
-                  disabled={Number(formData.EnquiryId) > 0 ? true : false}
-                  leftIcon="+91"
-                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                  value={formData.MobileNumber ?? ""}
-                  onChange={(e) => {
-                    const mobile = filterMobile(e.target.value);
-                    handleFieldChange("MobileNumber", mobile);
-                  }}
-                  placeholder="Enter Mobile Number"
-                  maxLength={10}
                   error={errors.MobileNumber}
+                  onMobileChange={async (value) => {
+                    handleFieldChange("MobileNumber", value);
+                    await checkDuplicateMobileNumber(value, formData.MobileNumberCountryCode || "+91");
+                  }}
+                  onCountryCodeChange={async (value) => {
+                    handleFieldChange("MobileNumberCountryCode", value)
+                    await checkDuplicateMobileNumber(formData.MobileNumber!, value || "+91");
+                  }}
                 />
               </div>
+
               <div>
                 <Input
                   label="E-mail ID"
@@ -908,6 +1014,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     name="Nationality"
                     label="Indian"
                     value="Indian"
+                    disabled={Number(formData.EnquiryId) > 0 ? true : false}
                     checked={formData.Nationality === "Indian"}
                     onChange={() => {
                       setNationality("Indian");
@@ -919,6 +1026,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     name="Nationality"
                     label="NRI"
                     value="NRI"
+                    disabled={Number(formData.EnquiryId) > 0 ? true : false}
                     checked={formData.Nationality === "NRI"}
                     onChange={() => {
                       setNationality("NRI");
@@ -951,6 +1059,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     required
                     placeholder="Select Source"
                     value={formData.Source ?? ""}
+                    disabled={Number(formData.EnquiryId) > 0 && formData.Source !== "" ? true : false}
                     onChange={(e) => {
                       handleFieldChange("Source", e);
                       handleFieldChange("SubSource", "");
@@ -973,12 +1082,13 @@ export const AddUpdateEnquiry: React.FC = () => {
                   />
                 </div>
 
-                {formData.Source === "Direct Walking" && (
+                {formData.Source === "Direct Walkin" && (
                   <div>
                     <SinglePageSelection
                       label="Sub Source"
-                      required={formData.Source === "Direct Walking" ? true : false}
+                      required={formData.Source === "Direct Walkin" ? true : false}
                       placeholder="Select Sub Source"
+                      disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                       value={formData.SubSource ?? ""}
                       onChange={(e) => {
                         handleFieldChange("SubSource", e);
@@ -998,12 +1108,13 @@ export const AddUpdateEnquiry: React.FC = () => {
                   </div>
                 )}
 
-                {formData.Source === "Direct Walking" && formData.SubSource === "Advertisement" && (
+                {formData.Source === "Direct Walkin" && formData.SubSource === "Advertisement" && (
                   <div>
                     <SinglePageSelection
                       label="Sub Sub Source"
-                      required={formData.Source === "Direct Walking" && formData.SubSource === "Advertisement" ? true : false}
+                      required={formData.Source === "Direct Walkin" && formData.SubSource === "Advertisement" ? true : false}
                       placeholder="Select Sub Sub Source"
+                      disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                       value={formData.SubSubSource ?? ""}
                       onChange={(value) => handleFieldChange("SubSubSource", String(value))}
                       options={SUB_SUB_SOURCE_TYPE_OPTIONS.map((opt) => ({
@@ -1015,7 +1126,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                   </div>
                 )}
 
-                {formData.Source === "Direct Walking" && formData.SubSource === "Reference" && (
+                {formData.Source === "Direct Walkin" && formData.SubSource === "Reference" && (
                   <>
                     <div>
                       <SingleSelectDropdownWithPagination
@@ -1024,7 +1135,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                         title="Select Project"
                         size="lg"
                         dataFetchCallBack={fetchProjectDropdown}
-
+                        disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                         onSelected={(item) => {
                           if (!item) {
                             handleFieldChange("ReferralProjectId", 0);
@@ -1057,6 +1168,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                           label="Unit Number"
                           required
                           title="Select Unit Number"
+                          disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                           size="lg"
                           dataFetchCallBack={fetchReferralInventoryFlats}
                           onSelected={(item) => {
@@ -1075,13 +1187,14 @@ export const AddUpdateEnquiry: React.FC = () => {
                     </div>
                   </>
                 )}
-                {formData.Source === "Direct Walking" && formData.SubSource === "Loyalty" && (
+                {formData.Source === "Direct Walkin" && formData.SubSource === "Loyalty" && (
                   <>
                     <div>
                       <SingleSelectDropdownWithPagination
                         label="Project"
                         required
                         title="Select Project"
+                        disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                         size="lg"
                         dataFetchCallBack={fetchProjectDropdown}
                         onSelected={(item) => {
@@ -1113,6 +1226,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                       <SingleSelectDropdownWithPagination
                         key={`unit-${formData.LoyaltyProjectId}`}
                         label="Unit Number"
+                        disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                         required
                         title="Select Unit Number"
                         size="lg"
@@ -1134,13 +1248,14 @@ export const AddUpdateEnquiry: React.FC = () => {
                   </>
                 )}
 
-                {formData.Source === "Direct Walking" && formData.SubSource === "Employee Reference" && (
+                {formData.Source === "Direct Walkin" && formData.SubSource === "Employee Reference" && (
                   <>
                     <div>
                       <SingleSelectDropdownWithPagination
                         label="Employee Reference Name"
                         required
                         title="Select Employee Reference Name"
+                        disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                         size="lg"
                         dataFetchCallBack={fetchEmployeeMasterDropdown}
                         onSelected={(item) => {
@@ -1165,6 +1280,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     <SinglePageSelection
                       label="Sub Source"
                       required={formData.Source === "Channel Partner" ? true : false}
+                      disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                       placeholder="Select Sub Source"
                       value={formData.SubSource ?? ""}
                       onChange={(value) => handleFieldChange("SubSource", String(value))}
@@ -1178,25 +1294,27 @@ export const AddUpdateEnquiry: React.FC = () => {
                       <Input
                         type="text"
                         required
-                        label="Channel Partner"
-                        value={channelPartnerSearchByMobileNumber}
-                        maxLength={10}
+                        label="Channel Partner Code"
+                        disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
+                        value={channelPartnerSearchByChannelPartnerCode}
+                        maxLength={18}
                         onChange={(e) => {
                           handleSearchByChannelPartner(e.target.value);
-                          setChannelPartnerSearchByMobileNumber(e.target.value);
+                          setChannelPartnerSearchByChannelPartnerCode(e.target.value);
                         }}
-                        placeholder="Search By Mobile Number"
+                        placeholder="Search By Channel Partner Code"
                         leftIcon={<Search className="h-4 w-4 text-gray-400" />}
                         error={errors.ChannelPartnerId}
                       />
                     </div>
                     {channelPartnerFullName != "" && (
                       <>
-                        {formData.ChannelPartnerTeamMemberName === "" && formData.ChannelPartnerTeamMemberMobileNumber === "" && (
+                        {formData.ChannelPartnerTeamMemberName === "" && formData.ChannelPartnerTeamMemberMobileNumber === "" && formData.ChannelPartnerTeamMemberEmailId === "" && (
                           <div>
                             <SingleSelectDropdownWithPagination
                               label="Team Member"
                               title="Select Team Member"
+                              disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
                               size="lg"
                               initialValue={createDropdownInitialValue(formData.ChannelPartnerTeamMemberId, dropdownLabels.ChannelPartnerTeamMemberName)}
                               dataFetchCallBack={fetchChannelPartnerTeamMember}
@@ -1205,6 +1323,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                                   handleFieldChange("ChannelPartnerTeamMemberId", 0);
                                   handleFieldChange("ChannelPartnerTeamMemberName", "");
                                   handleFieldChange("ChannelPartnerTeamMemberMobileNumber", "");
+                                  handleFieldChange("ChannelPartnerTeamMemberEmailId", "");
                                   return;
                                 }
 
@@ -1218,12 +1337,50 @@ export const AddUpdateEnquiry: React.FC = () => {
                         {!formData.ChannelPartnerTeamMemberId && (
                           <>
                             <div>
-                              <Input type="text" label="Team Member Name" value={formData.ChannelPartnerTeamMemberName ?? ""} onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberName", e.target.value)} placeholder="Enter Team Member Name" maxLength={100} error={errors.ChannelPartnerTeamMemberName} />
+                              <Input
+                                type="text"
+                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) || (formData.ChannelPartnerTeamMemberEmailId?.length ?? 0) ? true : false}
+                                label="Team Member Name"
+                                value={formData.ChannelPartnerTeamMemberName ?? ""}
+                                disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
+                                onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberName", e.target.value)}
+                                placeholder="Enter Team Member Name"
+                                maxLength={100}
+                                error={errors.ChannelPartnerTeamMemberName} />
+                            </div>
+                            <div>
+                              <MobileNumberInput
+                                label="Team Member Mobile Number"
+                                mobileNumber={formData.ChannelPartnerTeamMemberMobileNumber ?? ""}
+                                disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
+                                countryCode={formData.ChannelPartnerTeamMemberMobileNumberCountryCode ?? "+91"}
+                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) || (formData.ChannelPartnerTeamMemberEmailId?.length ?? 0) ? true : false}
+                                error={errors.ChannelPartnerTeamMemberMobileNumber}
+                                onMobileChange={(value) =>
+                                  handleFieldChange("ChannelPartnerTeamMemberMobileNumber", value)
+                                }
+                                onCountryCodeChange={(value) =>
+                                  handleFieldChange("ChannelPartnerTeamMemberMobileNumberCountryCode", value)
+                                }
+                              />
+                            </div>
+                            <div>
+                              <Input
+                                label="E-mail ID"
+                                type="text"
+                                required={(formData.ChannelPartnerTeamMemberMobileNumber?.length ?? 0) || (formData.ChannelPartnerTeamMemberName?.length ?? 0) || (formData.ChannelPartnerTeamMemberEmailId?.length ?? 0) ? true : false}
+                                disabled={Number(formData.EnquiryId) > 0 && formData.Source || "" !== "" ? true : false}
+                                value={formData.ChannelPartnerTeamMemberEmailId ?? ""}
+                                error={errors.ChannelPartnerTeamMemberEmailId}
+                                rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
+                                onChange={(e) => {
+                                  const emailId = filterEmail(e.target.value);
+                                  handleFieldChange("ChannelPartnerTeamMemberEmailId", emailId);
+                                }}
+                                placeholder="Enter Valid E-mail Id"
+                              />
                             </div>
 
-                            <div>
-                              <Input label="Team Member Mobile Number" type="text" maxLength={10} value={formData.ChannelPartnerTeamMemberMobileNumber ?? ""} leftIcon="+91" rightIcon={<Phone className="h-4 w-4 text-gray-400" />} onChange={(e) => handleFieldChange("ChannelPartnerTeamMemberMobileNumber", filterMobile(e.target.value))} placeholder="Enter Team Member Mobile Number" error={errors.ChannelPartnerTeamMemberMobileNumber} />
-                            </div>
                           </>
                         )}
                       </>
@@ -1232,18 +1389,23 @@ export const AddUpdateEnquiry: React.FC = () => {
                 )}
               </div>
 
-              {formData.Source?.toUpperCase() === "CHANNEL PARTNER" && channelPartnerSearchByMobileNumber?.length === 10 && (
+              {formData.Source?.toUpperCase() === "CHANNEL PARTNER" && channelPartnerSearchByChannelPartnerCode?.length === 18 && (
                 <>
                   {channelPartnerId ? (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+
+                        {channelPartnerCode && <FieldItem label="Channel Partner Code" value={channelPartnerCode} />}
+
                         {channelPartnerFullName && <FieldItem label="Full Name" value={channelPartnerFullName} />}
+
+                        {channelPartnerEmailId && <FieldItem label="E-mail ID" value={channelPartnerEmailId} />}
 
                         {channelPartnerCompanyName && <FieldItem label="Company Name" value={channelPartnerCompanyName} />}
 
                         {channelPartnerFirmsType && <FieldItem label="Firms Type" value={channelPartnerFirmsType} />}
 
-                        {channelPartnerMobileNumber && <FieldItem label="Mobile Number" value={channelPartnerMobileNumber} />}
+                        {channelPartnerMobileNumber && <FieldItem label="Mobile Number" value={`${channelPartnerMobileNumberCountryCode || "+91"} ${channelPartnerMobileNumber}`} />}
 
                         {channelPartnerDesignation && <FieldItem label="Designation" value={channelPartnerDesignation} />}
 
@@ -1289,7 +1451,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     <FieldItem label="Status" value={referelInventoryFlatData?.FlatStatus || "-"} />
                     <FieldItem label="Owner Name" value={referelInventoryFlatData?.OwnerName || "-"} />
                     <FieldItem label="Booked By" value={referelInventoryFlatData?.BookingCreatedBy || "-"} />
-                    <FieldItem label="Booking Date" value={referelInventoryFlatData?.BookingCreatedDate ? new Date(referelInventoryFlatData?.BookingCreatedDate).toLocaleDateString() : "-"} />
+                    <FieldItem label="Booking Date" value={formatDate_dd_MonthName_yy(referelInventoryFlatData?.BookingCreatedDate ?? '')} />
                   </div>
                 </div>
               )}
@@ -1308,7 +1470,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     <FieldItem label="Status" value={loyaltyInventoryFlatData?.FlatStatus || "-"} />
                     <FieldItem label="Owner Name" value={loyaltyInventoryFlatData?.OwnerName || "-"} />
                     <FieldItem label="Booked By" value={loyaltyInventoryFlatData?.BookingCreatedBy || "-"} />
-                    <FieldItem label="Booking Date" value={loyaltyInventoryFlatData?.BookingCreatedDate ? new Date(loyaltyInventoryFlatData?.BookingCreatedDate).toLocaleDateString() : "-"} />
+                    <FieldItem label="Booking Date" value={formatDate_dd_MonthName_yy(loyaltyInventoryFlatData?.BookingCreatedDate ?? '')} />
                   </div>
                 </div>
               )}
@@ -1329,7 +1491,19 @@ export const AddUpdateEnquiry: React.FC = () => {
                   <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Property Preferences</h3>
                   <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
                     <div>
-                      <RangeSelector label="Budget (In Cr)" value={formData.Budget ?? ""} onChange={(v) => handleFieldChange("Budget", v)} options={BUDGET_TYPE_OPTIONS} error={errors.Budget} />
+
+                      <SinglePageSelection
+                        label="Budget (In Cr)"
+                        placeholder="Select Budget"
+                        value={formData.Budget ?? ""}
+                        onChange={(value) => handleFieldChange("Budget", value)}
+                        options={BUDGET_TYPE_OPTIONS.map((opt) => ({
+                          label: opt.name,
+                          value: opt.id,
+                        }))}
+                        error={errors.Budget}
+                      />
+
                     </div>
                     <div>
                       <SinglePageSelection
@@ -1416,8 +1590,8 @@ export const AddUpdateEnquiry: React.FC = () => {
                     </div>
                     <div>
                       <SinglePageSelection
-                        label="Timeline"
-                        placeholder="Select Timeline"
+                        label="Timeline Of Purchase"
+                        placeholder="Select Timeline Of Purchase"
                         value={formData.Timeline ?? ""}
                         onChange={(value) => handleFieldChange("Timeline", value)}
                         options={ENQUIRY_TIMELINE.map((opt) => ({
@@ -1522,7 +1696,14 @@ export const AddUpdateEnquiry: React.FC = () => {
                     </div>
                     {formData.FinalStage === "Lost" && (
                       <div>
-                        <SinglePageSelection label="Final Stage Detail" placeholder="Select Final Stage Detail" value={formData.FinalStageDetail ?? ""} onChange={(value) => handleFieldChange("FinalStageDetail", value)} options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} error={errors.FinalStageDetail} disabled={Number(formData.EnquiryId) > 0 ? true : false} />
+                        <SinglePageSelection
+                          required
+                          label="Final Stage Detail"
+                          placeholder="Select Final Stage Detail"
+                          value={formData.FinalStageDetail ?? ""}
+                          onChange={(value) => handleFieldChange("FinalStageDetail", value)}
+                          options={FINAL_STAGE_DETAILS_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                          error={errors.FinalStageDetail} disabled={Number(formData.EnquiryId) > 0 ? true : false} />
                       </div>
                     )}
                   </div>
@@ -1534,39 +1715,51 @@ export const AddUpdateEnquiry: React.FC = () => {
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Follow Up Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-3  gap-6">
                 <div>
-                  <DatePickerInput label="Enquiry Date" required isDisplayCurrentDate={true} value={formatDate_dd_mm_yyyy(formData.EnquiryDate)} onChange={(val) => handleFieldChange("EnquiryDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} error={errors.EnquiryDate} disabled={Number(formData.EnquiryId) > 0 ? true : false} />
+                  <DatePickerInput
+                    label="Enquiry Date"
+                    required
+                    isDisplayCurrentDate={true}
+                    value={formatDate_dd_mm_yyyy(formData.EnquiryDate)}
+                    onChange={(val) => handleFieldChange("EnquiryDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                    error={errors.EnquiryDate}
+                    minDate={new Date(new Date().setDate(new Date().getDate() - 2))}
+                    disabled={Number(formData.EnquiryId) > 0 ? true : false} />
                 </div>
 
                 {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
                   <div>
-                    <DatePickerInput label="Next Follow-Up Date" value={formatDate_dd_mm_yyyy(formData.NextFollowUpDate)} onChange={(val) => handleFieldChange("NextFollowUpDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} error={errors.NextFollowUpDate} disabled={Number(formData.EnquiryId) > 0 ? true : false} />
+                    <DatePickerInput
+                      label="Next Follow-Up Date"
+                      value={formatDate_dd_mm_yyyy(formData.NextFollowUpDate)}
+                      onChange={(val) => handleFieldChange("NextFollowUpDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                      error={errors.NextFollowUpDate}
+                      disabled={Number(formData.EnquiryId) > 0 ? true : false} />
                   </div>
                 )}
               </div>
             </div>
           </div>
 
-          {LocalStorageHelper.getStoredEmployeeData()?.Designation !== "GRE" && (
-            <div className="space-y-4 pb-3">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2"> Sales Details</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <SingleSelectDropdownWithPagination label="Sales Advisor" title="Select Advisor" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.SalesAdvisor)} error={errors.SalesAdvisorId} />
-                </div>
-
-                <div>
-                  <SingleSelectDropdownWithPagination label="Sourcing Manager" title="Select Sourcing Manager" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.SourcingManager)} error={errors.SourcingManagerId} />
-                </div>
-                <div>
-                  <TimePicker label="Customer Time Out" size="md" format={24} value={formData.EnquiryTimeOut || ""} onChange={(val) => handleFieldChange("EnquiryTimeOut", val)} error={errors.EnquiryTimeOut} />
-                </div>
+          <div className="space-y-4 pb-3">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2"> Sales Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div>
+                <SingleSelectDropdownWithPagination label="Sales Advisor" title="Select Advisor" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SalesAdvisorId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SalesAdvisorId, dropdownLabels.SalesAdvisor)} error={errors.SalesAdvisorId} />
               </div>
 
               <div>
-                <TextArea label="Remarks" className="thin-scroll" value={formData.Remark ?? ""} placeholder="Enter Remarks" onChange={(e) => handleFieldChange("Remark", e.target.value)} error={errors.Remark} />
+                <SingleSelectDropdownWithPagination label="Sourcing Manager" title="Select Sourcing Manager" size="lg" dataFetchCallBack={fetchEmployeeDropdown} onSelected={(item) => handleFieldChange("SourcingManagerId", Number(item?.value))} initialValue={createDropdownInitialValue(formData.SourcingManagerId, dropdownLabels.SourcingManager)} error={errors.SourcingManagerId} />
+              </div>
+              <div>
+                <TimePicker label="Customer Time Out" size="md" format={24} value={formData.EnquiryTimeOut || ""} onChange={(val) => handleFieldChange("EnquiryTimeOut", val)} error={errors.EnquiryTimeOut} />
               </div>
             </div>
-          )}
+
+            <div>
+              <TextArea label="Remarks" className="thin-scroll" value={formData.Remark ?? ""} placeholder="Enter Remarks" onChange={(e) => handleFieldChange("Remark", e.target.value)} error={errors.Remark} />
+            </div>
+          </div>
+
         </form>
       </div>
 

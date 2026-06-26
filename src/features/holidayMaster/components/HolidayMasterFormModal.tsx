@@ -56,7 +56,6 @@ export const HolidayMasterFormModal: React.FC<HolidayMasterFormModalProps> = ({
               onChange={setHolidayFiles}
               allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
               maxFiles={1}
-              maxSizeMB={10}
               onRemoveExisting={(url) => {
                 setRemovedHolidayUrls([...removedHolidayUrls, url]);
               }}

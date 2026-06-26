@@ -17,7 +17,7 @@ import { Button } from "@/ui/components/forms/Button";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import RadioPill from "@/ui/components/forms/RadioPill";
-import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { Edit, Trash2 } from "lucide-react";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { Tabs, type TabItem } from "@/ui/components/Tab/Tab";
@@ -25,6 +25,7 @@ import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { SUPPORT_TYPE_OPTIONS } from "@/core/constants";
 import { isDateWithinPastDays } from "@/core/utils/comman";
+import type { ChannelPartnerData } from "@/features/ChannelPartner/models/ChannelPartnerModel";
 
 const initialFormState = (): AddUpdateChannelPartnerSourcingRequest => ({
   ChannelPartnerSourcingId: 0,
@@ -45,6 +46,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
+  const [editChannelPartnerData, setEditChannelPartnerData] = useState<ChannelPartnerData | null>(null);
 
   const [sourcingDataList, setSourcingDataList] = useState<ChannelPartnerSourcingData[]>([]);
   const [activeTab, setActiveTab] = useState<"ALL" | "IBM" | "OBM">("ALL");
@@ -63,36 +65,6 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
   const { projectId } = useProject();
 
-  //SET CHANNEL PARTNER DETAILS
-  const [channelPartnerId, setChannelPartnerId] = useState<number>();
-  const [channelPartnerFullName, setChannelPartnerFullName] = useState<string>();
-  const [channelPartnerMobileNumber, setChannelPartnerMobileNumber] = useState<string>();
-  const [channelPartnerCompanyName, setChannelPartnerCompanyName] = useState<string>();
-  const [channelPartnerFirmsType, setChannelPartnerFirmsType] = useState<string>();
-  const [channelPartnerPanNumber, setChannelPartnerPanNumber] = useState<string>();
-  const [channelPartnerPanURL, setChannelPartnerPanURL] = useState<string>();
-  const [channelPartnerAadhaarCardNumber, setChannelPartnerAadhaarCardNumber] = useState<string>();
-  const [channelPartnerAadhaarCardURL, setChannelPartnerAadhaarCardURL] = useState<string>();
-  const [channelPartnerRERANUmber, setChannelPartnerRERANUmber] = useState<string>();
-  const [channelPartnerSystemGeneratedCode, setChannelPartnerSystemGeneratedCode] = useState<string>();
-  const [channelPartnerDesignation, setChannelPartnerDesignation] = useState<string>();
-  // Channel Partner – Additional Details
-  const [channelPartnerType, setChannelPartnerType] = useState<string>();
-  const [channelPartnerGSTNumber, setChannelPartnerGSTNumber] = useState<string>();
-  const [channelPartnerGSTURL, setChannelPartnerGSTURL] = useState<string>();
-  const [channelPartnerOfficeAddress, setChannelPartnerOfficeAddress] = useState<string>();
-
-  // Location Details
-  const [channelPartnerCountryName, setChannelPartnerCountryName] = useState<string>();
-  const [channelPartnerStateName, setChannelPartnerStateName] = useState<string>();
-  const [channelPartnerDistrictName, setChannelPartnerDistrictName] = useState<string>();
-  const [channelPartnerCityName, setChannelPartnerCityName] = useState<string>();
-  const [channelPartnerVillageName, setChannelPartnerVillageName] = useState<string>();
-
-  // Professional Details
-  const [channelPartnerSpeciality, setChannelPartnerSpeciality] = useState<string>();
-
-
   useEffect(() => {
     if (listState.channelPartnerId) {
       loadSourcingDetails();
@@ -103,38 +75,11 @@ const ViewChannelPartnerSourcing: React.FC = () => {
     const channelPartnerId = listState.channelPartnerId || 0;
 
 
-    fetchChannelPartnerById(Number(channelPartnerId)).then(channelPartner => {
+    fetchChannelPartnerById(Number(channelPartnerId), Number(projectId)).then(channelPartner => {
 
       if (!channelPartner) return;
 
-      setChannelPartnerId(Number(channelPartner.ChannelPartnerId));
-
-      setChannelPartnerFullName(channelPartner.Name ?? "");
-      setChannelPartnerMobileNumber(channelPartner.MobileNumber ?? "");
-      setChannelPartnerFirmsType(channelPartner.FirmsType ?? "");
-      setChannelPartnerCompanyName(channelPartner.CompanyName ?? "");
-      setChannelPartnerPanNumber(channelPartner.PanNumber ?? "");
-      setChannelPartnerPanURL(channelPartner.PanCardURL ?? "");
-      setChannelPartnerAadhaarCardNumber(channelPartner.AadharCardNumber ?? "");
-      setChannelPartnerAadhaarCardURL(channelPartner.AadharCardURL ?? "");
-      setChannelPartnerRERANUmber(channelPartner.RERANumber ?? "");
-      setChannelPartnerGSTNumber(channelPartner.GSTNumber ?? '');
-      setChannelPartnerGSTURL(channelPartner.GSTCertificateURL ?? "");
-      setChannelPartnerSystemGeneratedCode(channelPartner.SystemGeneratedCode ?? '');
-      setChannelPartnerDesignation(channelPartner.Designation ?? '');
-      // Type & Address
-      setChannelPartnerType(channelPartner.Type ?? '');
-      setChannelPartnerOfficeAddress(channelPartner.OfficeAddress ?? '');
-
-      // Location Details
-      setChannelPartnerCountryName(channelPartner.CountryName ?? '');
-      setChannelPartnerStateName(channelPartner.StateName ?? '');
-      setChannelPartnerDistrictName(channelPartner.DistrictName ?? '');
-      setChannelPartnerCityName(channelPartner.CityName ?? '');
-      setChannelPartnerVillageName(channelPartner.VillageName ?? '');
-
-      // Professional Details
-      setChannelPartnerSpeciality(channelPartner.Speciality ?? '');
+      setEditChannelPartnerData(channelPartner);
     });
 
   }, [listState.channelPartnerId]);
@@ -258,6 +203,8 @@ const ViewChannelPartnerSourcing: React.FC = () => {
 
     if (!formData.SourcingRemark?.trim()) {
       errors.SourcingRemark = "Remark is required";
+    } else if (formData.SourcingRemark.trim().length < 25) {
+      errors.SourcingRemark = "Remark must be at least 25 characters";
     }
 
     if (!formData.IBM_OBM?.trim()) {
@@ -289,7 +236,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
         const params: AddUpdateChannelPartnerSourcingRequest = {
           ChannelPartnerSourcingId: formData.ChannelPartnerSourcingId,
           Uniquekey: formData.Uniquekey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-          ChannelPartnerId: channelPartnerId || 0,
+          ChannelPartnerId: editChannelPartnerData?.ChannelPartnerId || 0,
           ProjectId: projectId || 0,
           SourcingRemark: formData.SourcingRemark?.trim() || "",
           Support: formData.Support?.trim() || "",
@@ -370,7 +317,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
       <HeaderActionBar
         titleText="Channel Partner : "
         subTitleText={listState.channelPartnerName || ''}
-        subSubTitleText={channelPartnerSystemGeneratedCode || ''}
+        subSubTitleText={editChannelPartnerData?.SystemGeneratedCode || ''}
         cancelText="Back"
         EditText="Edit"
         onCancel={handleBackToList}
@@ -391,7 +338,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                   </span>
                   <span className="text-gray-500 font-medium text-sm px-2">:</span>
                   <span className="text-black text-sm break-all">
-                    {channelPartnerCompanyName || '-'}
+                    {editChannelPartnerData?.CompanyName || '-'}
                   </span>
                 </div>
 
@@ -401,7 +348,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                   </span>
                   <span className="text-gray-500 font-medium text-sm px-2">:</span>
                   <span className="text-black text-sm break-all">
-                    {channelPartnerFirmsType || '-'}
+                    {editChannelPartnerData?.FirmsType || '-'}
                   </span>
                 </div>
 
@@ -414,12 +361,25 @@ const ViewChannelPartnerSourcing: React.FC = () => {
                 Basic Details
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FieldItem label="CP Code" value={channelPartnerSystemGeneratedCode || '-'} />
-                <FieldItem label="Full Name" value={channelPartnerFullName || '-'} />
-                <FieldItem label="Mobile No" value={channelPartnerMobileNumber ? `+91 ${channelPartnerMobileNumber}` : '-'} />
-                <FieldItem label="Designation" value={channelPartnerDesignation || '-'} />
-                <FieldItem label="Speciality" value={channelPartnerSpeciality || '-'} />
-                <FieldItem label="CP Type" value={channelPartnerType || '-'} />
+                <FieldItem label="CP Code" value={editChannelPartnerData?.SystemGeneratedCode || '-'} />
+                <FieldItem label="Full Name" value={editChannelPartnerData?.Name || '-'} />
+                <FieldItem label="E-mail Id" value={editChannelPartnerData?.EmailId || '-'} />
+                <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(editChannelPartnerData?.DateOfBirth ?? "-")} />
+                <FieldItem label="Mobile No" value={!editChannelPartnerData?.MobileNumber ? "-" :  `${editChannelPartnerData?.MobileNumberCountryCode ?? "+91"}  ${editChannelPartnerData?.MobileNumber}`} />
+                
+                <FieldItem label="Designation" value={editChannelPartnerData?.Designation || '-'} />
+                <FieldItem label="Speciality" value={editChannelPartnerData?.Speciality || '-'} />
+                <FieldItem label="CP Type" value={editChannelPartnerData?.Type || '-'} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pb-4 pt-4">
+                <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+                  Website URL
+                </div>
+                {editChannelPartnerData?.WebsiteURL !== "" ?
+                  <span className="text-blue-600 underline cursor-pointer break-all whitespace-normal"
+                    onClick={() => window.open(editChannelPartnerData?.WebsiteURL, "_blank")}>
+                    {editChannelPartnerData?.WebsiteURL}
+                  </span> : "-"}
               </div>
             </section>
 
@@ -434,11 +394,11 @@ const ViewChannelPartnerSourcing: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FieldItem
                   label="Available RERA Number"
-                  value={channelPartnerRERANUmber ? 'Yes' : 'No'}
+                  value={editChannelPartnerData?.RERANumber != "" ? 'Yes' : 'No'}
                 />
                 <FieldItem
                   label="RERA Number"
-                  value={channelPartnerRERANUmber || '-'}
+                  value={editChannelPartnerData?.RERANumber || '-'}
                 />
               </div>
             </section>
@@ -446,40 +406,78 @@ const ViewChannelPartnerSourcing: React.FC = () => {
             <hr className="border-t border-gray-200" />
 
             {/* ADDRESS DETAILS */}
-            <section className="p-4">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                Address
-              </h4>
+            
+              <section className="p-4">
+                <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                  Address
+                </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <FieldItem label="Country" value={channelPartnerCountryName || '-'} />
-                <FieldItem label="State" value={channelPartnerStateName || '-'} />
-                <FieldItem label="District" value={channelPartnerDistrictName || '-'} />
-                <FieldItem label="City" value={channelPartnerCityName || '-'} />
-                <FieldItem label="Village" value={channelPartnerVillageName || '-'} />
-              </div>
-
-              <div className="grid grid-cols-1 pt-5">
-                <FieldItem
-                  label="Office Address"
-                  value={channelPartnerOfficeAddress || '-'}
-                />
-              </div>
-            </section>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                  <FieldItem label="Country" value={editChannelPartnerData?.CountryName ?? '-'} />
+                  <FieldItem label="State" value={editChannelPartnerData?.StateName ?? '-'} />
+                  <FieldItem label="District" value={editChannelPartnerData?.DistrictName ?? '-'} />
+                  <FieldItem label="City" value={editChannelPartnerData?.CityName ?? '-'} />
+                  <FieldItem label="Village" value={editChannelPartnerData?.VillageName ?? '-'} />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
+                  <FieldItem label="Office Address" value={editChannelPartnerData?.OfficeAddress} />
+                </div>
+              </section>
 
             <hr className="border-t border-gray-200" />
 
-            {/* DOCUMENT DETAILS */}
             <section className="p-4">
               <h4 className="text-lg font-semibold text-gray-900 mb-4">
                 Document Details
               </h4>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                  <FieldItem label="PAN Number" value={editChannelPartnerData?.PanNumber} urls={editChannelPartnerData?.PanCardURL} isIcon />
+                  <FieldItem label="Aadhaar Number" value={editChannelPartnerData?.AadharCardNumber} urls={editChannelPartnerData?.AadharCardURL} isIcon />
+                  <FieldItem label="GST Number" value={editChannelPartnerData?.GSTNumber} urls={editChannelPartnerData?.GSTCertificateURL} isIcon />
+                </div>
+            </section>
 
-                <FieldItem label="PAN Number" value={channelPartnerPanNumber || '-'} urls={channelPartnerPanURL} isIcon />
-                <FieldItem label="Aadhaar Number" value={channelPartnerAadhaarCardNumber || '-'} urls={channelPartnerAadhaarCardURL} isIcon />
-                <FieldItem label="GST Number" value={channelPartnerGSTNumber || '-'} urls={channelPartnerGSTURL} isIcon />
+            <hr className="border-t border-gray-200" />
+            <section className="p-4">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                IBM & OBM  Details
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                <FieldItem label="No Of IBM" value={editChannelPartnerData?.NoOfIbm} />
+                <FieldItem label="No Of OBM" value={editChannelPartnerData?.NoOfObm} />
+              </div>
+            </section>
+
+            <hr className="border-t border-gray-200" />
+            <section className="p-4">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Primary & Secondary Project Portfolio
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4">
+                <FieldItem label="Primary" value={editChannelPartnerData?.PrimaryProjectPortfolio} />
+                <FieldItem label="Secondary" value={editChannelPartnerData?.SecondaryProjectPortfolio} />
+                <FieldItem label="Micromarket Proximity" value={editChannelPartnerData?.MicromarketProximity} />
+              </div>
+            </section>
+
+            <hr className="border-t border-gray-200" />
+            <section className="p-4">
+              <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                Action Details
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                <FieldItem label="Created By" value={editChannelPartnerData?.CreatedBy} />
+                <FieldItem label="Created Date" value={editChannelPartnerData?.CreatedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.CreatedDate) : ""} />
+                {editChannelPartnerData?.ModifiedBy && (
+                  <>
+                    <FieldItem label="Modified By" value={editChannelPartnerData?.ModifiedBy} />
+                    <FieldItem label="Modified Date" value={editChannelPartnerData?.ModifiedDate ? formatDate_dd_MonthName_yy_hh_mm(editChannelPartnerData?.ModifiedDate) : ""} />
+                  </>
+                )}
               </div>
             </section>
 
@@ -687,28 +685,28 @@ const ViewChannelPartnerSourcing: React.FC = () => {
             />
 
           </div>
-          
-            <TextArea
-              label="Remark"
-              placeholder="Enter Remark"
-              required
-              className='thin-scroll'
-              value={formData.SourcingRemark}
-              onChange={(e) => handleFieldChange("SourcingRemark", e.target.value)}
-              error={errors.SourcingRemark} />
-         
-          
 
-            <SinglePageSelection
-              label='Support'
-              placeholder="Select Support"
-              error={errors.Support}
-              value={formData.Support}
-              onChange={(e) => {
-                handleFieldChange('Support', String(e))
-              }}
+          <TextArea
+            label="Remark"
+            placeholder="Enter Remark"
+            required
+            className='thin-scroll'
+            value={formData.SourcingRemark}
+            onChange={(e) => handleFieldChange("SourcingRemark", e.target.value)}
+            error={errors.SourcingRemark} />
 
-              options={SUPPORT_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
+
+
+          <SinglePageSelection
+            label='Support'
+            placeholder="Select Support"
+            error={errors.Support}
+            value={formData.Support}
+            onChange={(e) => {
+              handleFieldChange('Support', String(e))
+            }}
+
+            options={SUPPORT_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} />
 
         </div>
       </Modal>

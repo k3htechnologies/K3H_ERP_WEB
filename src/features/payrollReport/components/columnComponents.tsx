@@ -43,44 +43,108 @@ export const StatusBadge: React.FC<{ value: any }> = ({ value }) => {
   );
 };
 
-export const MapLink: React.FC<{ value: any }> = ({ value }) => {
-  const generateMapUrl = (): string => {
-    if (!value) return "#";
 
-    try {
-      const decoded = polyline.decode(value) as [number, number][];
-      if (!decoded.length) return "#";
+export const MapLink: React.FC<{
+  value?: string;
+  punchInLat?: number;
+  punchInLng?: number;
+  punchOutLat?: number;
+  punchOutLng?: number;
+}> = ({
+  value,
+  punchInLat,
+  punchInLng,
+  punchOutLat,
+  punchOutLng,
+}) => {
+    const generateMapUrl = (polylineValue: string): string => {
+      try {
+        const decoded = polyline.decode(polylineValue) as [number, number][];
 
-      const origin = decoded[0];
-      const destination = decoded[decoded.length - 1];
+        if (!decoded.length) return "#";
 
-      const maxWaypoints = 20;
-      const step = Math.ceil(decoded.length / maxWaypoints);
+        const origin = decoded[0];
+        const destination = decoded[decoded.length - 1];
 
-      const waypoints = decoded
-        .filter((_, index) => index % step === 0)
-        .map(([lat, lng]) => `${lat},${lng}`)
-        .join("|");
+        const maxWaypoints = 20;
+        const step = Math.ceil(decoded.length / maxWaypoints);
 
-      return `https://www.google.com/maps/dir/?api=1&origin=${origin[0]},${origin[1]}&destination=${destination[0]},${destination[1]}&waypoints=${waypoints}&travelmode=driving`;
-    } catch {
-      return "#";
+        const waypoints = decoded
+          .filter((_, index) => index % step === 0)
+          .map(([lat, lng]) => `${lat},${lng}`)
+          .join("|");
+
+        return `https://www.google.com/maps/dir/?api=1&origin=${origin[0]},${origin[1]}&destination=${destination[0]},${destination[1]}&waypoints=${waypoints}&travelmode=driving`;
+      } catch {
+        return "#";
+      }
+    };
+
+    const hasPunchIn =
+      punchInLat != null &&
+      punchInLng != null &&
+      !(punchInLat === 0 && punchInLng === 0);
+
+    const hasPunchOut =
+      punchOutLat != null &&
+      punchOutLng != null &&
+      !(punchOutLat === 0 && punchOutLng === 0);
+
+    if (value) {
+      const url = generateMapUrl(value);
+
+      if (url !== "#") {
+        return (
+          <a
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline font-medium"
+          >
+            View Map
+          </a>
+        );
+      }
     }
+
+    if (hasPunchIn && hasPunchOut) {
+      return (
+        <a
+          href={`https://www.google.com/maps/dir/${punchInLat},${punchInLng}/${punchOutLat},${punchOutLng}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-600 hover:underline font-medium"
+        >
+          View Map
+        </a>
+      );
+    }
+
+    // if (hasPunchIn) {
+    //   return (
+    //     <a
+    //       href={`https://www.google.com/maps?q=${punchInLat},${punchInLng}`}
+    //       target="_blank"
+    //       rel="noopener noreferrer"
+    //       className="text-blue-600 hover:underline font-medium"
+    //     >
+    //       View Map
+    //     </a>
+    //   );
+    // }
+
+    // if (hasPunchOut) {
+    //   return (
+    //     <a
+    //       href={`https://www.google.com/maps?q=${punchOutLat},${punchOutLng}`}
+    //       target="_blank"
+    //       rel="noopener noreferrer"
+    //       className="text-blue-600 hover:underline font-medium"
+    //     >
+    //       View Map
+    //     </a>
+    //   );
+    // }
+
+    return <>-</>;
   };
-
-  if (!value) return <>-</>;
-
-  const url = generateMapUrl();
-  if (url === "#") return <>-</>;
-
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-blue-600 hover:underline font-medium"
-    >
-      View Map
-    </a>
-  );
-};

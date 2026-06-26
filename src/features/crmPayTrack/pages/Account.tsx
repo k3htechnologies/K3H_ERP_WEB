@@ -1,16 +1,25 @@
 import { useState } from "react";
 import Tabs from "@/ui/components/Tab/Tab";
-import PaymentScheduleCrm from "@/features/crmPayTrack/components/PaymentScheduleCrm";
-import PaymentLedgerCrm from "@/features/crmPayTrack/components/PaymentLedgerCrm";
+import PaymentSchedule from "@/features/crmPayTrack/components/PaymentSchedule";
+import PaymentLedger from "@/features/crmPayTrack/components/PaymentLedger";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 export const Account: React.FC = () => {
 
-    const AccountTabList = [
-        { id: 'PaymentSchedule', label: 'Payment Schedule' },
-        { id: 'PaymentLedger', label: 'Payment Ledger' },
-    ];
+    const { canView: canPaymentLedgerView } = useMenuPermissions('/paymentLedger');
 
-    const [activeTab, setActiveTab] = useState(AccountTabList[0].id);
+    const { canView: canPaymentScheduleView } = useMenuPermissions('/paymentSchedule');
+
+    const AccountTabList: { id: string; label: string }[] = [
+        
+        canPaymentScheduleView ? { id: 'PaymentSchedule', label: 'Payment Schedule' } : null,
+
+        canPaymentLedgerView ? { id: 'PaymentLedger', label: 'Payment Ledger' } : null
+
+    ].filter(Boolean) as { id: string; label: string }[];
+
+
+    const [activeTab, setActiveTab] = useState<string>(AccountTabList?.[0]?.id ?? '');
 
     return (
         <div>

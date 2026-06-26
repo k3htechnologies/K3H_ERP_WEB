@@ -12,7 +12,7 @@ import type {
 } from "@/features/ChannelPartner/models/ChannelPartnerModel";
 import { ChannelPartnerService } from "@/features/ChannelPartner/services/ChannelPartnerService";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import { IdCard, Mail, Phone } from "lucide-react";
+import { Globe, IdCard, Mail, Phone } from "lucide-react";
 import {
   filterAadhaar,
   filterEmail,
@@ -20,12 +20,15 @@ import {
   filterMobile,
   filterPAN,
   filterRERA,
+  filterWebsiteUrl,
   hasAnyDocumentFile,
   isValidAadhaar,
+  isValidEmail,
   isValidGST,
   isValidMobile,
   isValidPAN,
   isValidRERA,
+  isValidWebsiteUrl,
 } from "@/core/utils/fileValidation";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import {
@@ -49,11 +52,21 @@ import CompleteVerificationSection from "@/ui/components/TwoWayVerification/Comp
 import { Modal } from "@/ui/components/Modal/Modal";
 import { sendOTP } from "@/features/technical/services/OTPService";
 import { getChannelPartnerVerificationSteps } from "@/features/ChannelPartner/utils/channelPartnerVerificationSteps";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import { fetchProjectDropdown } from "@/features/projectMaster/projectDropdown";
+import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
+import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
+import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
+import { checkDuplicateField } from "@/core/utils/duplicateValidation";
+import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
 
 const initialFormState = (): AddUpdateChannelPartnerRequest => ({
   ChannelPartnerId: 0,
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
   Name: "",
+  DateOfBirth: null,
+  WebsiteURL: "",
   CompanyName: "",
 
   FirmsType: "",
@@ -61,6 +74,7 @@ const initialFormState = (): AddUpdateChannelPartnerRequest => ({
   Type: "",
   CompanyType: "",
 
+  MobileNumberCountryCode: "+91",
   MobileNumber: "",
   AlternativeMobileNumber: "",
   EmailId: "",
@@ -86,14 +100,14 @@ const initialFormState = (): AddUpdateChannelPartnerRequest => ({
   StateMasterId: null,
   CityMasterId: null,
   VillageMasterId: null,
+  PrimaryProjectPortfolioId: 0,
+  SecondaryProjectPortfolioId: "",
   OTP: "",
 });
 
 export const AddUpdateChannelPartner: React.FC = () => {
   //#region STATE MANAGEMENT
-  const [formData, setFormData] = useState<AddUpdateChannelPartnerRequest>(() =>
-    initialFormState(),
-  );
+  const [formData, setFormData] = useState<AddUpdateChannelPartnerRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
 
@@ -138,18 +152,12 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
   const [isReadOnly, setIsReadOnly] = useState<boolean>();
 
-  // TOASTs
   const { addToast } = useToast();
 
-  // ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
-  //#endregion
 
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions("/channelPartner");
-  //#endregion
 
-  //#region COUNTRY STATE CITY DISTRICT
   const {
     isLoading: isLocationLoading,
     countries,
@@ -209,31 +217,34 @@ export const AddUpdateChannelPartner: React.FC = () => {
       }))
       : [];
 
-  //#endregion
+  const [dropdownLabels, setDropdownLabels] = useState<{
+    primaryProjectPortfolio?: string;
+  }>({});
 
-  //#region HANDLE FIELD CHANGE EVENT
-  const handleFieldChange = (
-    field: keyof AddUpdateChannelPartnerRequest,
-    value: any,
-  ) => {
+  const [selectedSecondaryProjectValues, setSelectedSecondaryProjectValues] = useState<string | number | null>(null);
+
+  const secondaryProjectDropdown = useMultiSelectDropdown({
+    value: selectedSecondaryProjectValues,
+    fetchCallback: fetchProjectDropdown,
+    autoFetchOptions: true,
+  });
+
+
+  const handleFieldChange = (field: keyof AddUpdateChannelPartnerRequest, value: any,) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
 
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
-  //#endregion
 
-  //#region INITIALIZATION
   useEffect(() => {
     if (!isAddMode) {
       fetchChannelPartnerDetails();
     }
   }, [ChannelPartnerId]);
 
-  //#endregion
 
-  //#region FETCH CHANNEL PARTNER MASTER DETAILS
   const fetchChannelPartnerDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -261,14 +272,16 @@ export const AddUpdateChannelPartner: React.FC = () => {
               ChannelPartnerId: e.ChannelPartnerId ?? prev.ChannelPartnerId,
               Uniquekey: e.Uniquekey ?? prev.Uniquekey,
               Name: e.Name ?? prev.Name,
+              DateOfBirth: e.DateOfBirth ?? prev.DateOfBirth,
+              WebsiteURL: e.WebsiteURL ?? prev.WebsiteURL,
               CompanyName: e.CompanyName ?? prev.CompanyName,
               FirmsType: e.FirmsType ?? prev.FirmsType ?? "",
               Type: e.Type ?? prev.Type ?? "",
               Designation: e.Designation ?? prev.Designation ?? "",
               EmailId: e.EmailId ?? prev.EmailId,
+              MobileNumberCountryCode: e.MobileNumberCountryCode ?? prev.MobileNumberCountryCode,
               MobileNumber: e.MobileNumber ?? prev.MobileNumber,
-              AlternativeMobileNumber:
-                e.AlternativeMobileNumber ?? prev.AlternativeMobileNumber,
+              AlternativeMobileNumber: e.AlternativeMobileNumber ?? prev.AlternativeMobileNumber,
               AadharCardNumber: e.AadharCardNumber ?? prev.AadharCardNumber,
               PanNumber: e.PanNumber ?? prev.PanNumber,
               AadharCardURL: null,
@@ -285,6 +298,8 @@ export const AddUpdateChannelPartner: React.FC = () => {
               DistrictMasterId: e.DistrictMasterId ?? prev.DistrictMasterId,
               CityMasterId: e.CityMasterId ?? prev.CityMasterId,
               VillageMasterId: e.VillageMasterId ?? prev.VillageMasterId,
+              PrimaryProjectPortfolioId: e.PrimaryProjectPortfolioId ?? prev.PrimaryProjectPortfolioId,
+              SecondaryProjectPortfolioId: e.SecondaryProjectPortfolioId ?? prev.SecondaryProjectPortfolioId,
             }));
             setPanCardURLFiles([]);
             setPanCardURL(e.PanCardURL);
@@ -305,7 +320,14 @@ export const AddUpdateChannelPartner: React.FC = () => {
             setSelectedVillageId(e.VillageMasterId ?? null);
 
             setIsReadOnly(e.Designation === "Owner" ? false : true);
+
+            setDropdownLabels({
+              primaryProjectPortfolio: e.PrimaryProjectPortfolio || ""
+            });
+
+            setSelectedSecondaryProjectValues(e.SecondaryProjectPortfolioId || "");
           }
+          
         } else {
           addToast({ type: "error", title: response.left.message });
         }
@@ -320,7 +342,6 @@ export const AddUpdateChannelPartner: React.FC = () => {
       "Loading Channel Partner",
     );
   };
-  //#endregion
 
   // ============================================================= [VALIDATION FUNCTION] =============================================================================================
   const validateAddChannelPartnerForm = (): {
@@ -334,16 +355,37 @@ export const AddUpdateChannelPartner: React.FC = () => {
       newErrors.Name = "Full Name is required";
     }
 
+    if (formData.DateOfBirth !== "") {
+      const dob = new Date(formData.DateOfBirth as unknown as string);
+      const today = new Date();
+      if (dob > today) {
+        newErrors.DateOfBirth = "Date of Birth cannot be in the future";
+      }
+    }
+
+    if (formData.WebsiteURL?.trim() !== "" && !isValidWebsiteUrl(formData.WebsiteURL.trim())) {
+      newErrors.WebsiteURL = 'Enter a valid Website URL'
+    }
+
     if (!formData.MobileNumber?.trim()) {
       newErrors.MobileNumber = "Mobile Number is required";
-    } else if (!isValidMobile(formData.MobileNumber.trim())) {
-      newErrors.MobileNumber = "Enter a Valid 10-digit mobile number";
+    } else if (!isValidMobile(formData.MobileNumber.trim(), formData.MobileNumberCountryCode!)) {
+      newErrors.MobileNumber = "Enter a Valid mobile number";
+    }
+
+    if (formData.EmailId !== "") {
+      if (!isValidEmail(formData.EmailId!.trim())) {
+        newErrors.EmailId = "Enter a Valid E-mail Id";
+      }
+    }
+
+    if (formData.MobileNumberCountryCode !== "+91" && formData.EmailId.trim() === "") {
+      newErrors.EmailId = "E-mail Id is mandatory";
     }
 
     if (formData.AlternativeMobileNumber?.trim()) {
       if (!isValidMobile(formData.AlternativeMobileNumber.trim())) {
-        newErrors.AlternativeMobileNumber =
-          "Enter a valid 10-digit Alternative Mobile Number";
+        newErrors.AlternativeMobileNumber = "Enter a valid 10-digit Alternative Mobile Number";
       }
     }
 
@@ -358,6 +400,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
     if (!formData.Speciality) {
       newErrors.Speciality = "Speciality is required";
     }
+
     if (!formData.Designation) {
       newErrors.Designation = "Designation is required";
     }
@@ -371,7 +414,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     if (formData.IsRERANumber === 1 && !formData.RERANumber) {
       newErrors.RERANumber = " RERA Number is required";
-    } else if ( formData.IsRERANumber === 1 && !isValidRERA(formData.RERANumber.trim())) {
+    } else if (formData.IsRERANumber === 1 && !isValidRERA(formData.RERANumber.trim())) {
       newErrors.RERANumber = "Enter a valid RERA Number";
     }
 
@@ -391,7 +434,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
     }
 
     const hasPanNumber = !!formData.PanNumber?.trim();
-    const hasPanFile = hasAnyDocumentFile( panCardURLFiles,panCardURL,removePanCardUrls);
+    const hasPanFile = hasAnyDocumentFile(panCardURLFiles, panCardURL, removePanCardUrls);
 
     if (hasPanNumber && !hasPanFile) {
       newErrors.PanCardURL = "PAN card file is required.";
@@ -406,7 +449,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
     }
 
     const hasGSTNumber = !!formData.GSTNumber?.trim();
-    const hasGSTFile = hasAnyDocumentFile(gSTCertificateURLFiles,gSTCertificateURL,removeGSTCertificateUrls);
+    const hasGSTFile = hasAnyDocumentFile(gSTCertificateURLFiles, gSTCertificateURL, removeGSTCertificateUrls);
 
     if (hasGSTNumber && !hasGSTFile) {
       newErrors.GSTCertificateURL = "GST Certificate file is required.";
@@ -441,37 +484,38 @@ export const AddUpdateChannelPartner: React.FC = () => {
       errors: newErrors,
     };
   };
-  //#endregion
 
-  //#region PUSH DATA
   const PushChannelPartnerFormData = (): FormData => {
+
+    const secondaryProjectIdsString = secondaryProjectDropdown.selectedValues.length > 0 ? secondaryProjectDropdown.selectedValues.join(",") : "";
     const fd = new FormData();
 
     fd.append("ChannelPartnerId", String(formData.ChannelPartnerId ?? 0));
     fd.append("Uniquekey", formData.Uniquekey ?? "");
     fd.append("Name", formData.Name ?? "");
+    fd.append("DateOfBirth", formData.DateOfBirth ?? "");
+    fd.append("WebsiteURL", formData.WebsiteURL ?? "");
     fd.append("CompanyName", formData.CompanyName ?? "");
     fd.append("FirmsType", formData.FirmsType ?? "");
     fd.append("Type", formData.Type ?? "");
     fd.append("Designation", formData.Designation ?? "");
     fd.append("EmailId", formData.EmailId ?? "");
+    fd.append("MobileNumberCountryCode", formData.MobileNumberCountryCode ?? "");
     fd.append("MobileNumber", formData.MobileNumber ?? "");
-    fd.append(
-      "AlternativeMobileNumber",
-      formData.AlternativeMobileNumber ?? "",
-    );
+    fd.append("AlternativeMobileNumber", formData.AlternativeMobileNumber ?? "");
     fd.append("AadharCardNumber", formData.AadharCardNumber ?? "");
     fd.append("PanNumber", formData.PanNumber ?? "");
     fd.append("RERANumber", formData.RERANumber ?? "");
     fd.append("GSTNumber", formData.GSTNumber ?? "");
     fd.append("OfficeAddress", formData.OfficeAddress ?? "");
     fd.append("Speciality", formData.Speciality ?? "");
-
     fd.append("CountryMasterId", String(formData.CountryMasterId ?? 0));
     fd.append("DistrictMasterId", String(formData.DistrictMasterId ?? 0));
     fd.append("StateMasterId", String(formData.StateMasterId ?? 0));
     fd.append("CityMasterId", String(formData.CityMasterId ?? 0));
     fd.append("VillageMasterId", String(formData.VillageMasterId ?? 0));
+    fd.append("PrimaryProjectPortfolioId", String(formData.PrimaryProjectPortfolioId ?? 0));
+    fd.append("SecondaryProjectPortfolioId", secondaryProjectIdsString);
     fd.append("OTP", otp?.trim() ?? "");
 
     panCardURLFiles.forEach((file) => {
@@ -500,27 +544,52 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
     return fd;
   };
-  //#endregion
 
-  //#region HANDLE ADD AND UPDATE CHANNEL PARTNER MASTER
   const handleAddUpdateChannelPartner = async () => {
+
     setErrors({});
 
     const validation = validateAddChannelPartnerForm();
 
     if (!validation.isValid) {
+
       setErrors(validation.errors);
 
       addToast({ type: "error", title: "Please fill the required filed" });
 
       return;
     }
+    if (formData.ChannelPartnerId === 0) {
+      const isDuplicate = await checkDuplicateField({
+        fieldName: "MobileNumber",
+        fieldValue: formData.MobileNumber,
+        apiCallback: ChannelPartnerService.apiCallPullChannelPartner,
+        setIsLoading,
+        setLoadingMessage,
+        loadingMessage: "Checking mobile number..."
+      });
 
-    if (formData.ChannelPartnerId === 0 && !isOtpVerified) {
+      if (isDuplicate) {
+        setErrors(prev => ({
+          ...prev,
+          MobileNumber: "Mobile number already exists"
+        }));
+
+        addToast({ type: "error", title: "Mobile number already exists" });
+
+        return;
+      }
+    }
+
+    if (formData.ChannelPartnerId === 0 && formData.MobileNumberCountryCode === "+91" && !isOtpVerified) {
+
       if (!isOtpSent) {
+
         const sent = await sendOTP({
           mobileNumber: formData.MobileNumber || "",
           module: "CHANNEL PARTNER",
+          name: formData.Name || "",
+          companyName: formData.CompanyName || "",
           setIsLoading,
           setLoadingMessage,
           addToast,
@@ -533,26 +602,27 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
         return;
       }
+
     }
 
     await runApiWithLoader(
+
       setIsLoading,
 
       setLoadingMessage,
 
       async () => {
+
         const payload = PushChannelPartnerFormData();
 
-        const response =
-          await ChannelPartnerService.apiCallAddUpdateChannelPartner(payload);
+        const response = await ChannelPartnerService.apiCallAddUpdateChannelPartner(payload);
 
         if (E.isRight(response)) {
-          addToast({
-            type: "success",
-            title: response.right.SuccessMessage[0],
-          });
+
+          addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
           navigate("/channelPartner");
+
         } else {
           addToast({ type: "error", title: response.left?.message });
         }
@@ -567,7 +637,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
       isAddMode ? "Add" : "Update",
     );
   };
-  //#endregion
+
 
   const applyExistingCompanyData = (channelPartner: any) => {
 
@@ -623,9 +693,45 @@ export const AddUpdateChannelPartner: React.FC = () => {
       setRemoveGSTCertificateUrls([]));
   };
 
+  const checkDuplicateMobileNumber = async (mobileNumber: string, countryCode: string) => {
+
+    if (Number(formData.ChannelPartnerId) > 0) {
+      return;
+    }
+
+    if (!isValidMobile(mobileNumber, countryCode)) {
+      return;
+    }
+
+    const isDuplicate = await checkDuplicateField({
+
+      fieldName: "MobileNumber",
+
+      fieldValue: mobileNumber,
+
+      apiCallback: ChannelPartnerService.apiCallPullChannelPartner,
+
+      extraParams: { MobileNumberCountryCode: countryCode}
+    });
+
+    if (isDuplicate) {
+
+      setErrors((prev) => ({
+        ...prev,
+        MobileNumber: "Mobile number already exists"
+      }));
+
+    } else {
+
+      setErrors((prev) => ({
+        ...prev,
+        MobileNumber: ""
+      }));
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-      {/* Loader */}
 
       <Loader loading={isLoading} title={loadingMessage}>
         {" "}
@@ -634,7 +740,6 @@ export const AddUpdateChannelPartner: React.FC = () => {
 
       <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll ">
         <form onSubmit={handleAddUpdateChannelPartner}>
-          {/* Basic ChannelPartner Details */}
 
           <div className="space-y-4">
             <h3 className="text-lg font-medium text-gray-900 border-b pb-2">
@@ -654,6 +759,32 @@ export const AddUpdateChannelPartner: React.FC = () => {
                   error={errors.Name}
                 />
               </div>
+              <div>
+                <DatePickerInput
+                  label="DOB"
+                  value={formatDate_dd_mm_yyyy(formData.DateOfBirth)}
+                  onChange={(val) => handleFieldChange("DateOfBirth", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                  error={errors.DateOfBirth} />
+              </div>
+
+              <div>
+                <MobileNumberInput
+                  mobileNumber={formData.MobileNumber ?? ""}
+                  countryCode={formData.MobileNumberCountryCode ?? "+91"}
+                  disabled={Number(formData.ChannelPartnerId) > 0}
+                  required
+                  error={errors.MobileNumber}
+                  onMobileChange={async (value) => {
+
+                    handleFieldChange("MobileNumber", value);
+
+                    await checkDuplicateMobileNumber(value, formData.MobileNumberCountryCode|| "+91");
+                  }}
+                  onCountryCodeChange={(value) =>
+                    handleFieldChange("MobileNumberCountryCode", value)
+                  }
+                />
+              </div>
 
               <div>
                 <Input
@@ -670,27 +801,7 @@ export const AddUpdateChannelPartner: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <Input
-                  leftIcon="+91"
-                  label=" Mobile Number"
-                  required
-                  maxLength={10}
-                  disabled={
-                    Number(formData.ChannelPartnerId) > 0 ? true : false
-                  }
-                  value={formData.MobileNumber}
-                  rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
-                  onChange={(e) =>
-                    handleFieldChange(
-                      "MobileNumber",
-                      filterMobile(e.target.value),
-                    )
-                  }
-                  placeholder="Enter Mobile Number"
-                  error={errors.MobileNumber}
-                />
-              </div>
+              
               <div>
                 <Input
                   leftIcon="+91"
@@ -851,6 +962,17 @@ export const AddUpdateChannelPartner: React.FC = () => {
                     label: opt.name,
                     value: opt.id,
                   }))}
+                />
+              </div>
+              <div>
+                <Input
+                  label="Website URL"
+                  type="text"
+                  value={formData.WebsiteURL}
+                  onChange={e => handleFieldChange('WebsiteURL', filterWebsiteUrl(e.target.value))}
+                  rightIcon={<Globe className="w-4 h-4" />}
+                  error={errors.WebsiteURL}
+                  placeholder="Enter Website URL"
                 />
               </div>
             </div>
@@ -1214,6 +1336,58 @@ export const AddUpdateChannelPartner: React.FC = () => {
               />
             </div>
           </div>
+
+          <div className="space-y-4 pt-5">
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
+              Primary & Secondary Project Portfolio Details
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+              <div>
+
+                <SingleSelectDropdownWithPagination
+                  label="Primary Project"
+                  title="Select Project"
+                  size="lg"
+                  dataFetchCallBack={fetchProjectDropdown}
+
+                  onSelected={(item) => {
+                    if (!item) {
+                      handleFieldChange("PrimaryProjectPortfolioId", 0);
+                      return;
+                    }
+                    handleFieldChange("PrimaryProjectPortfolioId", Number(item.value));
+                  }}
+
+                  initialValue={createDropdownInitialValue(formData.PrimaryProjectPortfolioId, dropdownLabels.primaryProjectPortfolio)}
+                  error={errors.PrimaryProjectPortfolioId}
+                />
+              </div>
+
+              <div>
+                <MultiSelectPagination
+                  label="Secondary Project"
+                  dataFetchCallBack={fetchProjectDropdown}
+                  selectedValues={secondaryProjectDropdown.selectedValues}
+                  options={secondaryProjectDropdown.initialOptions}
+                  onChange={(values) => {
+
+                    const { idsString } = secondaryProjectDropdown.handleChange(values);
+
+                    setSelectedSecondaryProjectValues(idsString || null);
+
+                    if (errors.SecondaryProjectPortfolioId) {
+                      setErrors((prev) => ({
+                        ...prev,
+                        SecondaryProjectPortfolioId: "",
+                      }));
+                    }
+                  }}
+                />
+              </div>
+            </div>
+
+          </div>
         </form>
       </div>
 
@@ -1254,11 +1428,9 @@ export const AddUpdateChannelPartner: React.FC = () => {
         <CompleteVerificationSection
           steps={getChannelPartnerVerificationSteps({
             formData,
-
             panCardURLFiles,
             aadharCardURLFiles,
             gSTCertificateURLFiles,
-
             panCardURL,
             aadharCardURL,
             gSTCertificateURL,

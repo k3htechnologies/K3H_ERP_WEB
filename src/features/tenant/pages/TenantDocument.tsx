@@ -868,7 +868,6 @@ export const TenantDocument: React.FC = () => {
                 availableFilesURL={documentURL ?? ""}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={5}
-                maxSizeMB={10}
                 onRemoveExisting={(url) => {
                   setRemovedDocumentURLs((prev) => [...prev, url])
                 }}

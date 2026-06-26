@@ -1,5 +1,8 @@
 // ----------------------------------
 // 🔹 FILTER ONLY NUMBERS
+
+import { countryList } from "@/ui/components/forms/MobileNumberInput";
+
 // ----------------------------------
 export const filterNumbers = (value: string): string =>
   value.replace(/[^0-9]/g, "");
@@ -22,9 +25,27 @@ export const filterAlphaNumeric = (value: string): string =>
 export const filterMobile = (value: string): string =>
   value.replace(/[^0-9]/g, "").slice(0, 10);
 
-export const isValidMobile = (mobile: string): boolean => {
+// export const isValidMobile = (mobile: string): boolean => {
+//   if (!mobile) return false;
+//   const regex = /^[6-9]\d{9}$/;
+//   return regex.test(mobile.trim());
+// };
+
+export const isValidMobile = ( mobile: string, countryCode?: string): boolean => {
+
+  if(!countryCode){
+
+    countryCode = "+91";
+  }
+
   if (!mobile) return false;
-  const regex = /^[6-9]\d{9}$/;
+
+  const country = countryList.find( (x) => x.code === countryCode);
+
+  if (!country) return false;
+  
+  const regex = country.regex || new RegExp( `^\\d{${country.mobileLength}}$`);
+
   return regex.test(mobile.trim());
 };
 
@@ -286,6 +307,32 @@ export const isValidGoogleMapsUrl = (url: string): boolean => {
   return googleMapsRegex.test(url);
 };
 
+
+// ----------------------------------
+// 🔹 FILTER WEBSITE URL
+// ----------------------------------
+export const filterWebsiteUrl = (value: string): string => {
+  // remove spaces
+  value = value.replace(/\s+/g, '');
+
+  // allow only URL-safe characters
+  value = value.replace(/[^a-zA-Z0-9/:.?&=_\-#%]/g, '');
+
+  return value;
+};
+
+
+export const isValidWebsiteUrl = (url: string): boolean => {
+
+  if (!url) return false;
+
+  const urlRegex =
+    /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/i;
+
+  return urlRegex.test(url);
+  
+};
+
 // ----------------------------------
 // 🔹 FILTER ACCOUNT NUMBER
 // ----------------------------------
@@ -495,6 +542,20 @@ export const isValidTAN = (tan: string): boolean => {
   if (!tan) return false;
   const value = tan.toUpperCase().trim();
   const regex = /^[A-Z]{4}[0-9]{5}[A-Z]{1}$/;
+  return regex.test(value);
+};
+
+// Allowed: A-Z, 0-9, -, / | Max Length = 20
+export const filterAPF = (value: string): string =>
+  value.replace(/[^A-Za-z0-9\-\/]/g, "").toUpperCase().slice(0, 20);
+
+export const isValidAPF = (apf: string): boolean => {
+  if (!apf) return false;
+
+  const value = apf.toUpperCase().trim();
+
+  const regex = /^[A-Z0-9\-\/]{6,20}$/;
+
   return regex.test(value);
 };
 

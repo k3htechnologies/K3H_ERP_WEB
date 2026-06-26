@@ -23,6 +23,16 @@ export interface CallLogData {
     Remark: string | null
     RescheduleDate: string | null
     CallDate: string | null
+
+    CallStatus: string | null
+    SiteVisitProposedDate: string | null
+    Budget?: string | null;
+    Requirement?: string;
+    RequirementType?: string;
+    VillageMasterId: string | null;
+    VillageName?: string
+    
+    IsEditable: boolean
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -40,11 +50,16 @@ export interface AddCallLogRequest {
 
 export interface UpdateCallLogRequest {
     CallLogId: number | 0
-    ProjectId: number | 0
     Uniquekey: string | null
+    ProjectId: number | 0
+    Status: string | null
     Remark: string | null
-
     RescheduleDate: string | null
+    SiteVisitProposedDate: string | null
+    Budget?: string | null;
+    Requirement?: string;
+    RequirementType?: string;
+    VillageMasterId: string | null;
 }
 
 export interface DeleteCallLogRequest {

@@ -18,6 +18,7 @@ export interface LitigationDocumentData {
     ProjectId: number | 0
     DocumentName: string | null
     DocumentURL: string | ''
+    LitigationHearingId: number | 0
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

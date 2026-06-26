@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "./Button";
-import { ChevronLeft, ChevronRight, FileText } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface HeaderActionBarProps {
     titleText?: string;
     subTitleText?: string;
     subSubTitleText?: string;
+    subSubSubTitleText?: string;
 
     cancelText?: string;
     onCancel?: () => void;
@@ -14,6 +15,9 @@ interface HeaderActionBarProps {
     onEdit?: () => void;
     canAction?: boolean;
 
+
+    ExtraButtontitleText?: string;
+    ExtraButtontitleTextIcon?: React.ElementType;
     ExtraButtonText?: string;
     onExtraButton?: () => void;
     canActionExtraButtonText?: boolean;
@@ -29,8 +33,12 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
     titleText,
     subTitleText,
     subSubTitleText,
+    subSubSubTitleText,
     EditText = "Edit",
 
+
+    ExtraButtontitleText,
+    ExtraButtontitleTextIcon,
     ExtraButtonText = "",
     onCancel,
     onEdit,
@@ -47,6 +55,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
     const [isGenerateOpen, setIsGenerateOpen] = useState(false);
     const generateRef = useRef<HTMLDivElement | null>(null);
+    const Icon = ExtraButtontitleTextIcon;
 
     useEffect(() => {
         function handleClickOutside(e: MouseEvent) {
@@ -74,6 +83,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
 
             <div className="flex items-center gap-2">
+
                 {onCancel && (
                     <Button
                         color="primary"
@@ -87,9 +97,11 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                 )}
 
                 <h2 className={`text-lg font-semibold text-gray-900 flex items-center gap-2 ${onCancel ? 'pl-3' : 'pl-0'}`}>
+
                     {titleText && <span>{titleText}</span>}
 
                     {subTitleText && (
+
                         <span className="flex items-center gap-2 text-lg font-medium text-[#00000080]">
                             {subTitleText}
                             {subSubTitleText && (
@@ -99,7 +111,16 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                                     {subSubTitleText}
                                 </>
                             )}
+
+                            {subSubSubTitleText && (
+                                <>
+                                    <ChevronRight className="h-5 w-5 text-gray-800" />
+
+                                    {subSubSubTitleText}
+                                </>
+                            )}
                         </span>
+
                     )}
 
                 </h2>
@@ -109,7 +130,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
 
 
             <div className="flex items-center gap-2">
-                {(onExtraButton || onExtraExtraButton ) && canActionExtraButtonText && canActionExtraExtraButton && (
+                {(onExtraButton || onExtraExtraButton) && canActionExtraButtonText && canActionExtraExtraButton && (
                     <div className="relative" ref={generateRef}>
                         <Button
                             type="button"
@@ -120,20 +141,20 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                             }}
                             color="blue"
                             colorMode="gradient_light"
-                            size="mxs"
+                            size="sm"
                             defineWidth
-                            title="PDF"
+                            title={ExtraButtontitleText}
                             aria-haspopup="menu"
                             style={{ width: '95px' }}
-                            leftIcon={<FileText className="h-4 w-4" />}
+                            leftIcon={Icon ? <Icon className="h-4 w-4" /> : undefined}
                         >
-                            PDF
+                            {ExtraButtontitleText}
                         </Button>
 
                         {isGenerateOpen && (
                             <div className="absolute right-0 mt-2 min-w-[168px] bg-white rounded-md shadow-lg border border-gray-200 transition-all duration-150 z-100">
 
-                                {onExtraButton &&  canActionExtraButtonText &&(
+                                {onExtraButton && canActionExtraButtonText && (
 
                                     <Button
                                         onClick={(e) => {
@@ -147,7 +168,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                                         fullWidth
                                         isborderRadius
                                         size="sm"
-                                        title="Generate PDF"
+                                        title={ExtraButtonText}
                                         style={{ justifyContent: "left" }}
                                     >
                                         {ExtraButtonText}
@@ -170,7 +191,7 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                                         fullWidth
                                         isborderRadius
                                         size="sm"
-                                        title="Send E-Mail"
+                                        title={ExtraExtraButtonText}
                                         style={{ justifyContent: "left" }}
                                     >
 
@@ -187,13 +208,15 @@ const HeaderActionBar: React.FC<HeaderActionBarProps> = ({
                     <Button
                         color="blue"
                         size="sm"
-                        title="Edit Info"
+                        title={EditText}
                         onClick={onEdit}
                         disabled={isLoading}
                     >
                         {EditText}
                     </Button>
                 )}
+
+                
             </div>
 
         </div>

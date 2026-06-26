@@ -1661,7 +1661,6 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={setApplicantPhotoFiles}
                 allowedTypes={['image/jpeg', 'image/png']}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) => setRemovedApplicantPhotoURLs((prev) => [...prev, url])}
               />
             </div>
@@ -1692,7 +1691,6 @@ const AddUpdateTenant: React.FC = () => {
                   'application/pdf',
                 ]}
                 maxFiles={2}
-                maxSizeMB={10}
                 onRemoveExisting={(url) =>
                   setRemovedAadharCardURLs((prev) => [...prev, url])}
               />
@@ -1727,7 +1725,6 @@ const AddUpdateTenant: React.FC = () => {
                   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 ]}
                 maxFiles={2}
-                maxSizeMB={10}
                 onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])}
               />
 
@@ -1755,7 +1752,6 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={setPassportFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
-                maxSizeMB={10}
                 onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])}
               />
             </div>
@@ -1782,7 +1778,6 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={setDrivingLicenseFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
-                maxSizeMB={10}
                 onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])}
               />
             </div>
@@ -1809,7 +1804,6 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={setVotingIdFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={3}
-                maxSizeMB={10}
                 onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])}
               />
             </div>
@@ -1836,7 +1830,6 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={setGstFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={5}
-                maxSizeMB={10}
                 onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])}
               />
             </div>
@@ -1884,7 +1877,6 @@ const AddUpdateTenant: React.FC = () => {
                 onChange={setChequeFiles}
                 allowedTypes={['image/jpeg', 'image/png', 'application/pdf']}
                 maxFiles={2}
-                maxSizeMB={10}
                 onRemoveExisting={(url) => setRemovedChequeURLs((prev) => [...prev, url])}
               />
             </div>

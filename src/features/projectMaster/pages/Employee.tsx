@@ -46,7 +46,7 @@ const Employee: React.FC = () => {
   //#endregion
 
   //#region MENU PERMISSIONS
-  const { canAction } = useMenuPermissions('/projectMaster');
+  const { canAction } = useMenuPermissions('/projectMasterAssignEmployee');
   //#endregion
 
 
@@ -385,13 +385,17 @@ const Employee: React.FC = () => {
   const handleEmployeeListScrollInProjectMasterWithEmployee = (e: React.UIEvent<HTMLDivElement>) => {
 
     const el = e.currentTarget;
-    const threshold = 60; // how close to bottom before loading next page
+    
+    const threshold = 60; 
 
     if (el.scrollHeight - el.scrollTop <= el.clientHeight + threshold) {
 
       if (employeePagination.currentPage < (employeePagination.totalPages || 0) && !isFetchingMoreEmployee) {
+
         const nextPage = employeePagination.currentPage + 1;
+
         setIsFetchingMoreEmployee(true);
+
         fetchEmployeeList(nextPage).finally(() => setIsFetchingMoreEmployee(false));
       }
     }
@@ -612,7 +616,7 @@ const Employee: React.FC = () => {
         />
       </div>
 
-      {/* IN PROJECT MASTER WTTH EMPLOYEE MODAL */}
+      
       <Modal
         isOpen={isOpenAddProjectMasterWithEmployee}
         onClose={() => setIsOpenAddProjectMasterWithEmployee(false)}
@@ -628,13 +632,11 @@ const Employee: React.FC = () => {
 
             <div className="flex items-center gap-3 w-full">
 
-              {/* Select ALL */}
-              <Checkbox
-
-                id="select-all-employees"
+              <Checkbox id="select-all-employees"
                 checked={isAllEmployeeVisibleSelected}
                 onChange={() => toggleEmployeeSelectAllVisible()}
               />
+
               <div className="relative min-w-0 w-[526px]">
                 <Input
                   type="text"
@@ -657,15 +659,13 @@ const Employee: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <div
-              className="flex-1 min-h-0 overflow-auto thin-scroll divide-y divide-gray-200"
-              onScroll={handleEmployeeListScrollInProjectMasterWithEmployee}
-              style={{ maxHeight: '55vh' }}>
+            <div className="flex-1 min-h-0 overflow-auto thin-scroll divide-y divide-gray-200" onScroll={handleEmployeeListScrollInProjectMasterWithEmployee} style={{ maxHeight: '55vh' }}>
               {employeeForProject.length > 0 ? (
 
                 employeeForProject.map((n, i) => {
 
                   const id = n.EmployeeId ?? i;
+
                   const checked = selectedEmployeeIds.includes(id);
 
                   return (
@@ -674,6 +674,7 @@ const Employee: React.FC = () => {
                         if ((ev.target as HTMLElement).tagName.toLowerCase() === 'input') return;
                         toggleEmployeeSelection(id);
                       }}>
+
                       <div className="flex items-center">
 
                         <Checkbox

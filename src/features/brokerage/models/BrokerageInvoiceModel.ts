@@ -4,9 +4,11 @@ export interface FilterWithPaginationBrokerageBookingRequest {
     PageSize: number
     PageNumber: number
     ProjectId?: number
-    ApplicantMobileNumber?: string
     ChannelPartnerName?: string
+    ChannelPartnerCompanyName?: string | null
+    ChannelPartnerMobileNumber?: string | null
     ApplicantName?: string
+    ApplicantMobileNumber?: string
     FromDate?: string
     ToDate?: string
     Wing?: string
@@ -14,6 +16,7 @@ export interface FilterWithPaginationBrokerageBookingRequest {
     Floor?: string
     Source?: string
     AgreementValue?: number
+    BookingType?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -21,8 +24,11 @@ export interface FilterWithPaginationBrokerageBookingRequest {
 export interface BrokerageBookingData {
     ProjectId: number | 0
     BookingId: number | 0
+    SystemGeneratedCode: string | null
     ApplicantMobileNumber: number | 0
     ChannelPartnerName: string | null
+    ChannelPartnerCompany: string | null
+    ChannelPartnerMobileNumber: string | null
     ApplicantName: string | null
     FromDate: string | null
     ToDate: string | null
@@ -32,6 +38,9 @@ export interface BrokerageBookingData {
     Source: string | null
     AgreementValue: number | 0
     BrokerageAmount: number | 0
+    BrokeragePercentage: number | 0
+    InvoiceAmount: number | 0
+    PaymentPaidAmount: number | 0
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -48,27 +57,30 @@ export interface FilterWithPaginationBrokerageInvoiceRequest {
     ProjectId?: number
     BookingId?: number
     BrokerageInvoiceId?: number
+    InvoiceNumber?:string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
 
 export interface BrokerageInvoiceData {
-    ProjectId: number | 0
-    Uniquekey: string | null
-    BookingId: number | 0
     BrokerageInvoiceId: number | 0
-    InvoiceNumber: number | 0
+    Uniquekey: string | null
+    ProjectId: number | 0
+    BookingId: number | 0
+    InvoiceNumber: string | ''
     InvoiceDate: string | null
-    UploadInvoiceURL: string | null
-    RemoveUploadInvoiceURL: string | ''
+    UploadInvoiceURL: string
     BankListMasterId: number | 0
     AccountName: string | null
-    AccountNumber: number | 0
+    AccountNumber: string 
     IFSCCode: string | null
     InvoiceAmount: number | 0
+    PaymentAmount: number | 0
     DueDate: string | null
     Remark: string | null
     BankName: string | null
+    ApprovalStatus: string;
+    IsApproval: boolean;
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -84,14 +96,14 @@ export interface AddUpdateBrokerageInvoiceRequest {
     Uniquekey: string | null
     BookingId: number | 0
     BrokerageInvoiceId: number | 0
-    InvoiceNumber: number | 0
+    InvoiceNumber: string| ''
     InvoiceDate: string | ''
     UploadInvoiceURL: string | null
     RemoveUploadInvoiceURL: string | ''
     BankListMasterId: number | 0
     BankName: string | ''
     AccountName: string | ''
-    AccountNumber: number | 0
+    AccountNumber: string 
     IFSCCode: string | ''
     InvoiceAmount: number | 0
     DueDate: string | ''

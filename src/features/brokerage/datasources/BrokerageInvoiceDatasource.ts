@@ -35,6 +35,8 @@ export class BrokerageInvoiceDatasourceImpl implements BrokerageInvoiceDatasourc
             if (params.ApplicantMobileNumber) queryParams.append('ApplicantMobileNumber', params.ApplicantMobileNumber.toString());
             if (params.ApplicantName?.trim()) queryParams.append("ApplicantName", params.ApplicantName.trim());
             if (params.ChannelPartnerName?.trim()) queryParams.append("ChannelPartnerName", params.ChannelPartnerName.trim());
+            if (params.ChannelPartnerMobileNumber?.trim()) queryParams.append("ChannelPartnerMobileNumber", params.ChannelPartnerMobileNumber.trim());
+            if (params.ChannelPartnerCompanyName?.trim()) queryParams.append("ChannelPartnerCompanyName", params.ChannelPartnerCompanyName.trim());
             if (params.Floor?.trim()) queryParams.append("Floor", params.Floor.trim());
             if (params.Wing?.trim()) queryParams.append("Wing", params.Wing.trim());
             if (params.Flat?.trim()) queryParams.append("Flat", params.Flat.trim());
@@ -42,6 +44,7 @@ export class BrokerageInvoiceDatasourceImpl implements BrokerageInvoiceDatasourc
             if (params.AgreementValue) queryParams.append("AgreementValue", params.AgreementValue.toString());
             if (params.FromDate) queryParams.append('FromDate', params.FromDate.toString());
             if (params.ToDate) queryParams.append('ToDate', params.ToDate.toString());
+            if (params.BookingType?.trim()) queryParams.append("BookingType", params.BookingType.trim());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 
@@ -72,6 +75,7 @@ export class BrokerageInvoiceDatasourceImpl implements BrokerageInvoiceDatasourc
             if (params.ProjectId) queryParams.append("ProjectId", params.ProjectId.toString());
             if (params.BookingId) queryParams.append('BookingId', params.BookingId.toString());
             if (params.BrokerageInvoiceId) queryParams.append('BrokerageInvoiceId', params.BrokerageInvoiceId.toString());
+            if (params.InvoiceNumber?.trim()) queryParams.append("InvoiceNumber", params.InvoiceNumber.trim());
             if (params.SortBy?.trim()) queryParams.append("SortBy", params.SortBy.trim());
             if (params.ExportType) queryParams.append("ExportType", params.ExportType);
 

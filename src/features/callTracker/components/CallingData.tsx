@@ -21,45 +21,55 @@ import { callingDataService } from "@/features/callTracker/services/CallingDataS
 import * as E from 'fp-ts/Either';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
-import { Input } from "@/ui/components/forms";
-
+import { Button, Input } from "@/ui/components/forms";
+import type { AddUpdateCallingDataRequest } from "@/features/callTracker/models/CallingDataModel";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { SUBSOURCE_TYPE_OPTIONS } from "@/core/constants";
+import { TextArea } from "@/ui/components/forms/Textarea";
+import { Edit, Mail, Phone } from "lucide-react";
+import { filterEmail, filterMobile, filterNumbers, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
 
 export const CallingData: React.FC = () => {
 
+    const initialFormStateForCallingData = (): AddUpdateCallingDataRequest => ({
+        ProjectId: 0,
+        CallingDataId: 0,
+        Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        Name: '',
+        MobileNumber: '',
+        EmailId: '',
+        Address: '',
+        Source: ''
+    })
+
     // STATE
     const [callingDataList, setCallingDataList] = useState<CallingDataData[]>([]);
+    const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [searchTerm, setSearchTerm] = useState('');
     const [sortInfo, setSortInfo] = useState<SortInfo>();
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
+    const [isAddUpdateCallingDataModalOpen, setIsAddUpdateCallingDataModalOpen] = useState(false);
+    const [formData, setFormData] = useState<AddUpdateCallingDataRequest>(() => initialFormStateForCallingData());
+    const [editingCallingData, setEditingCallingData] = useState<CallingDataData | null>(null);
 
-    //FILTER STATES
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [filters, setFilters] = useState<FilterInfo>({});
 
-    //#region MENU PERMISSIONS
     const { canExport, canAction } = useMenuPermissions();
-    //#endregion
 
-    //EXCEL IMPORT 
     const [showImportModal, setShowImportModal] = useState(false);
 
-    // PAGINATION
     const { pagination, setPagination } = usePagination(20);
 
-    //#region PROJECT SELECTION GET ID
     const { projectId } = useProject();
-    //#endregion
 
-    // TOAST
     const { addToast } = useToast();
 
-
-    //CUSTOMIZE COLUMN MODAL
     const [isShowCustomizeCallingDataColumnsModal, setIsShowCustomizeCallingDataColumnsModal] = useState(false);
 
-    //#region DATA LOADING | FETCH |  LOAD | SEARCH
+
     const fetchCallingData = async (page: number = pagination.currentPage) => {
         return await loadCallingData(page, filters);
     };
@@ -78,6 +88,7 @@ export const CallingData: React.FC = () => {
                     FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
                     ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
                     MobileNumber: filterParams.MobileNumber ?? undefined,
+                    Source: filterParams.Source ?? undefined,
                     SortBy: getSortByParam(sort ?? null, CallingDataColumns),
                 };
 
@@ -111,30 +122,25 @@ export const CallingData: React.FC = () => {
         setPagination({ currentPage: 1 });
         loadCallingData(1, filters, sortInfo, searchTerm);
     }, [projectId]);
-    //#endregion
 
-    //#region SEARCH HANDLERS
     const handleSearchChange = (value: string) => {
         setSearchTerm(value);
         setPagination({ currentPage: 1 });
         loadCallingData(1, filters, sortInfo, value);
     };
 
-    //#region CLEAR HANDLERS
     const handleClearSearch = () => {
         setSearchTerm('');
         setPagination({ currentPage: 1 });
         loadCallingData(1, filters, sortInfo, '');
     };
-    //#endregion
+
 
     const handlePageChange = (page: number) => {
         setPagination({ currentPage: page });
         loadCallingData(page, filters, sortInfo, searchTerm);
     };
-    //#endregion
 
-    //#region TABLE SORT COLUMN
     const handleSortColumn = useCallback((sort: SortInfo) => {
 
         setSortInfo(sort);
@@ -143,9 +149,157 @@ export const CallingData: React.FC = () => {
 
     }, [searchTerm]);
 
-    //#endregion
 
-    //#region EXPORT / IMPORT EXCEL AND PDF
+    const handleFieldChange = (field: keyof AddUpdateCallingDataRequest, value: any) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
+
+    const handleEditCallingData = useCallback((row: CallingDataData) => {
+        setEditingCallingData({
+            ...row,
+            Name: row.Name
+        })
+        setIsAddUpdateCallingDataModalOpen(true);
+    }, [])
+
+
+    useEffect(() => {
+        if (isAddUpdateCallingDataModalOpen) {
+            if (editingCallingData) {
+                setFormData({
+                    CallingDataId: editingCallingData.CallingDataId ?? 0,
+                    Uniquekey: editingCallingData.Uniquekey ?? initialFormStateForCallingData().Uniquekey,
+                    Name: editingCallingData.Name ?? '',
+                    MobileNumber: editingCallingData.MobileNumber ?? '',
+                    EmailId: editingCallingData.EmailId ?? '',
+                    Address: editingCallingData.Address ?? '',
+                    Source: editingCallingData.Source ?? '',
+                    ProjectId: Number(projectId) || 0
+                });
+
+            } else {
+                setFormData(initialFormStateForCallingData());
+            }
+            setErrors({});
+        }
+    }, [isAddUpdateCallingDataModalOpen, editingCallingData, projectId]);
+
+    const PushCallingDataRequest = (): AddUpdateCallingDataRequest => {
+        return {
+            CallingDataId: formData.CallingDataId,
+            ProjectId: projectId || 0,
+            Uniquekey: formData.Uniquekey || '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+            Name: formData.Name,
+            MobileNumber: formData.MobileNumber,
+            EmailId: formData.EmailId,
+            Address: formData.Address,
+            Source: formData.Source
+        };
+    };
+
+    const validationAddUpdateCallingData = (): {
+        isValid: boolean
+        errors: { [key: string]: string }
+    } => {
+        const newErrors: { [key: string]: string } = {}
+
+        if (!formData.Name || formData.Name.trim() === "") {
+            newErrors.Name = "Name is required";
+        }
+
+        if (!formData.MobileNumber) {
+            newErrors.MobileNumber = "Mobile Number is required";
+        } else if (!isValidMobile(formData.MobileNumber)) {
+            newErrors.MobileNumber = "Enter a valid 10-digit mobile number";
+        }
+
+        if (formData.EmailId !== "" && !isValidEmail(formData.EmailId!.trim())) {
+            newErrors.EmailId = "Enter a Valid E-mail Id";
+
+        }
+
+        if (!formData.Source || formData.Source.trim() === "") {
+            newErrors.Source = "Source is required";
+        }
+
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors
+        }
+    }
+
+    const handleAddCallingData = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErrors({})
+
+        const validation = validationAddUpdateCallingData();
+
+        if (!validation.isValid) {
+            setErrors(validation.errors)
+            return
+        }
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const payload = PushCallingDataRequest();
+
+                const response = await callingDataService.apiCallAddUpdateCallingData(payload);
+
+                if (E.isRight(response)) {
+
+                    setIsAddUpdateCallingDataModalOpen(false);
+
+                    const isAdd = formData.CallingDataId === 0;
+
+                    if (isAdd) {
+
+                        const newRecord = response.right.Data?.[0] as CallingDataData
+                        setCallingDataList(prevData => [newRecord, ...prevData]);
+
+                        setPagination({
+                            currentPage: pagination.currentPage,
+                            totalRecords: pagination.totalRecords + 1,
+                            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+                        });
+                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+
+                    }
+                    else {
+                        const updatedRecord = response.right.Data[0] as CallingDataData;
+
+                        setCallingDataList(prevData =>
+                            prevData.map(item =>
+                                item.CallingDataId === formData.CallingDataId
+                                    ? updatedRecord
+                                    : item
+                            )
+                        )
+                        addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+                    }
+                    setFormData(initialFormStateForCallingData())
+                    setEditingCallingData(null);
+                } else {
+
+                    addToast({ type: "error", title: response.left?.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message })
+            },
+            undefined,
+            'Calling Data Added Successfully'
+        )
+    }
+
     const handleExportCallingData = async (exportType: 'Excel' | 'PDF') => {
         await runApiWithLoader(
             setIsLoading,
@@ -176,9 +330,7 @@ export const CallingData: React.FC = () => {
 
     const handleExportCallingDataExcel = () => handleExportCallingData('Excel')
     const handleExportCallingDataPdf = () => handleExportCallingData('PDF')
-    //#endregion
 
-    //#region IMPORT EXCEL | DOWNLOAD
     const uploadExcel = async (file: File, mergeExisting: string) => {
 
         await runApiWithLoader(
@@ -239,9 +391,7 @@ export const CallingData: React.FC = () => {
         )
     }
     const handleDownloadExcelSampleCallingData = () => downloadExcelSampleCallingData()
-    //#endregion
 
-    //#region CALLIING DATA TABLE COLUMNS
     const CallingDataColumns = useMemo<TableColumn[]>(() => [
 
         {
@@ -264,19 +414,44 @@ export const CallingData: React.FC = () => {
         },
         {
             key: 'EmailId',
-            label: 'E-mail ID',
+            label: 'E-mail Id',
             width: '15',
             sortable: false,
             align: 'left',
             render: value => value || '-'
         },
         {
-            key: 'CreatedDate',
-            label: 'Last Modified Date',
-            width: '33',
+            key: 'Designation',
+            label: 'Designation',
+            width: '15',
             sortable: false,
-            align: 'center',
-            render: (value, row) => value ? formatDate_dd_MonthName_yy(row.CreatedDate) : '-'
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: "ModifiedDate",
+            label: "Last Modified Date",
+            width: "33",
+            sortable: false,
+            align: "left",
+            render: (value, row) =>
+                value ? formatDate_dd_MonthName_yy(value) : row.CreatedDate ? formatDate_dd_MonthName_yy(row.CreatedDate) : "-",
+        },
+        {
+            key: 'Source',
+            label: 'Source',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
+            key: 'NoOfTimeCalling',
+            label: 'No. of Time Calling',
+            width: '15',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
         },
         {
             key: 'Address',
@@ -286,11 +461,47 @@ export const CallingData: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
-    ], []);
-    //#endregion
+        {
+            key: 'Actions',
+            label: 'Actions',
+            width: '12',
+            fixed: 'right',
+            align: 'center',
+            render: (_value, row) => {
 
-    //#region CALLING DATA COLUMN CUSTOMIZATION
-    const requiredCallingDataColumnKeys: string[] = ['Name'];
+                const isLocked = canAction && Number(row.NoOfTimeCalling) === 0;
+
+
+                return (
+                    <div className="flex items-center justify-center">
+
+                        <Button
+                            color="transparent"
+                            size="sm"
+                            disabled={!isLocked}
+                            onClick={(e) => {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                if (!isLocked) return;
+                                handleEditCallingData(row)
+                            }}
+                            style={{
+                                color: !isLocked ? '#9CA3AF' : '',
+                                padding: '4px 8px',
+                                cursor: !isLocked ? 'not-allowed' : 'pointer',
+                                opacity: !isLocked ? 0.5 : 1
+                            }}
+                            leftIcon={<Edit className="h-4 w-4" />}
+                        />
+
+
+                    </div>
+                )
+            }
+        },
+    ], [handleEditCallingData]);
+
+    const requiredCallingDataColumnKeys: string[] = ['Name', 'Actions'];
 
     const allCallingDataColumnKeys: string[] = CallingDataColumns.map(c => c.key);
 
@@ -346,6 +557,13 @@ export const CallingData: React.FC = () => {
     }
     //#endregion
 
+    //#region HANDLE ADD
+    const handleAddCallingDataModal = () => {
+        setIsAddUpdateCallingDataModalOpen(true);
+        setFormData(initialFormStateForCallingData());
+    }
+    //#endregion
+
     //#region CALLING DATA TABLE PAGINATION INFO
     const CallingDataPaginationInfo: PaginationInfo = useMemo(
         () => ({
@@ -379,6 +597,10 @@ export const CallingData: React.FC = () => {
                     setTempFilters(filters);
                     setShowFilterPopup(true);
                 }}
+
+                isShowAddButton={canAction && Number(projectId) > 0 ? true : false}
+                addTitle="Add"
+                onAdd={handleAddCallingDataModal}
 
                 isShowCustomizeButton
                 onCustomize={() => {
@@ -459,6 +681,7 @@ export const CallingData: React.FC = () => {
                             value={tempFilters.Name || ''}
                             onChange={e => handleFilterChange('Name', e.target.value)}
                             placeholder="Enter Name"
+                            maxLength={100}
                         />
                     </div>
                     <div>
@@ -467,8 +690,9 @@ export const CallingData: React.FC = () => {
                             type="text"
                             label='Mobile Number'
                             value={tempFilters.MobileNumber || ''}
-                            onChange={e => handleFilterChange('MobileNumber', e.target.value)}
+                            onChange={e => handleFilterChange('MobileNumber', filterNumbers(e.target.value))}
                             placeholder="Enter Mobile Number"
+                            maxLength={13}
                         />
                     </div>
                     <div>
@@ -487,6 +711,16 @@ export const CallingData: React.FC = () => {
                         />
                     </div>
 
+                    <div>
+                        <Input
+                            type="text"
+                            label='Source'
+                            value={tempFilters.Source || ''}
+                            onChange={e => handleFilterChange('Source', e.target.value)}
+                            placeholder="Enter Source"
+                        />
+                    </div>
+
                 </div>
             </Modal>
 
@@ -498,6 +732,95 @@ export const CallingData: React.FC = () => {
                     uploadExcel(file, mergeExisting);
                 }}
             />
+
+            {/* ADD MODAL FOR CALLING DATA */}
+            <Modal
+                isOpen={isAddUpdateCallingDataModalOpen}
+                onClose={() => {
+                    setIsAddUpdateCallingDataModalOpen(false);
+                    setEditingCallingData(null);
+                    setFormData(initialFormStateForCallingData());
+                    setErrors({});
+                }}
+                onCancel={() => {
+                    setIsAddUpdateCallingDataModalOpen(false);
+                    setFormData(initialFormStateForCallingData());
+                    setErrors({});
+                }}
+                title="Add Calling Data"
+                saveText="Add"
+                onSubmit={handleAddCallingData}
+                size='xl'
+            >
+                <div className="space-y-4 p-6 bg-blue-100">
+                    <div>
+                        <Input
+                            type="text"
+                            label='Name'
+                            value={formData.Name || ''}
+                            onChange={e => handleFieldChange("Name", e.target.value)}
+                            placeholder="Enter Name"
+                            maxLength={70}
+                            required
+                            error={errors.Name}
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            type="text"
+                            label='Mobile Number'
+                            value={formData.MobileNumber || ''}
+                            onChange={(e) => {
+                                const mobile = filterMobile(e.target.value);
+                                handleFieldChange("MobileNumber", mobile);
+                            }}
+                            placeholder="Enter Mobile Number"
+                            required
+                            leftIcon="+91"
+                            rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                            error={errors.MobileNumber}
+                            maxLength={10}
+                        />
+                    </div>
+                    <div>
+                        <Input
+                            type="text"
+                            label='Email Id'
+                            value={formData.EmailId || ''}
+                            error={errors.EmailId}
+                            maxLength={250}
+                            rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
+                            onChange={(e) => {
+                                const emailId = filterEmail(e.target.value);
+                                handleFieldChange("EmailId", emailId);
+                            }}
+                            placeholder="Enter Valid E-mail Id"
+                        />
+                    </div>
+                    <div>
+                        <TextArea
+                            label='Address'
+                            value={formData.Address || ''}
+                            onChange={e => handleFieldChange("Address", e.target.value)}
+                            placeholder="Enter Address"
+                        />
+                    </div>
+
+                    <div>
+                        <SinglePageSelection
+                            label="Source"
+                            required
+                            placeholder='Select Source'
+                            value={formData.Source || ''}
+                            onChange={(e) => {
+                                handleFieldChange('Source', String(e));
+                            }}
+                            options={SUBSOURCE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                            error={errors.Source}
+                        />
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 }

@@ -204,20 +204,16 @@ export const useUomMaster = () => {
   const handleExportUomPdf = () => handleExportUoms('PDF')
   //#endregion
 
-  //#region HANDLE PAGE CHANGE EVENT
-  const handlePageChange = (page: number) => {
-    fetchUomList(page);
-  };
-  //#endregion
-
-  //#region TABLE SORT COLUMN
+  
+  const handlePageChange = useCallback((page: number) => {
+    loadUoms(page, filters, sortInfo, searchTerm || undefined);
+  }, [sortInfo, searchTerm]);
+  
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
     loadUoms(1, filters, sort, searchTerm || undefined);
   }, [filters, searchTerm]);
-  //#endregion
-
-  //#region CUSTOMIZE TABLE COLUMNS
+  
   const requiredUomMasterColumnKeys: string[] = REQUIRED_COLUMN_KEYS;
 
   const allUomMasterColumnKeys: string[] = uomMasterColumns.map(c => c.key)

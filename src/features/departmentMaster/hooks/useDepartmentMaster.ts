@@ -216,15 +216,11 @@ export const useDepartmentMaster = () => {
 
   const handleExportDepartmentExcel = () => handleExportDepartments('Excel')
   const handleExportDepartmentPdf = () => handleExportDepartments('PDF')
-  //#endregion
 
-  //#region HANDLE PAGE CHANGE EVENT
-  const handlePageChange = (page: number) => {
-    fetchDepartmentList(page);
-  };
-  //#endregion
+  const handlePageChange = useCallback((page: number) => {
+    loadDepartments(page, filters, sortInfo, searchTerm || undefined);
+  }, [sortInfo, searchTerm]);
 
-  //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sort);
@@ -233,9 +229,7 @@ export const useDepartmentMaster = () => {
 
   }, [filters, searchTerm]);
 
-  //#endregion
-
-  //#region CUSTOMIZE TABLE COLUMNS
+  
   const requiredDepartmentMasterColumnKeys: string[] = REQUIRED_COLUMN_KEYS;
 
   const allDepartmentMasterColumnKeys: string[] = departmentMasterColumns.map(c => c.key)
@@ -410,7 +404,7 @@ export const useDepartmentMaster = () => {
             addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
           } else {
-            
+
             const updatedRecord = response.right.Data[0] as DepartmentMasterData;
             setLastUpdatedRow(updatedRecord.DepartmentMasterId);
 

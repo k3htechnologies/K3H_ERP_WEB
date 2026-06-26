@@ -9,6 +9,7 @@ export interface FilterWithPaginationPaymentScheduleMasterRequest {
   InventoryBuildingId?: number;
   InventoryFlatFloorBasementPodiumWingId?: number;
   Stage?: string;
+  IsCheckPermission?: boolean;
   SortBy?: string;
   ExportType?: "Excel" | "PDF";
 }

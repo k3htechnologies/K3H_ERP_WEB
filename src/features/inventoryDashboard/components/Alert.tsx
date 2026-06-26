@@ -7,7 +7,7 @@ interface Props {
   alertsData: Table3[];
 }
 
-const AlertsPanel: React.FC<Props> = ({ alertsData}) => {
+const AlertsPanel: React.FC<Props> = ({ alertsData }) => {
   return (
     <div className="space-y-3">
 
@@ -32,26 +32,26 @@ const AlertsPanel: React.FC<Props> = ({ alertsData}) => {
               key={i}
               className="relative bg-orange-50 rounded-lg p-3 border border-orange-100"
             >
-              
+
               {/* Left Accent */}
               <span className="absolute left-0 top-0 h-full w-1 bg-orange-400 rounded-l-lg" />
 
               <div className="flex gap-3">
 
-                {/* Icon */}
-                <div className="pt-1">
+                <div className="pt-1 flex-shrink-0">
                   <AlertTriangle size={18} className="text-orange-500" />
                 </div>
 
-                {/* Content */}
-                <div>
-                  <p className="text-sm font-semibold text-orange-800">
+                <div className="min-w-0 flex-1">
+
+                  <p className="text-sm font-semibold text-orange-800 break-all whitespace-normal">
                     {alert.BuildingName || "-"}
                   </p>
 
-                  <p className="text-sm text-orange-700 mt-1">
+                  <p className="text-sm text-orange-700 mt-1 break-words whitespace-normal">
                     {alert.Issue || "-"}
                   </p>
+
                 </div>
 
               </div>

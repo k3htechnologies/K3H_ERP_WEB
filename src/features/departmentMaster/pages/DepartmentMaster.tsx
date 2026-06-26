@@ -82,6 +82,7 @@ export const DepartmentMaster: React.FC = () => {
   } = useDepartmentMaster();
 
   const departmentListForTable = useMemo(() => departmentMasterList, [departmentMasterList]);
+  
 
   const departmentMasterPaginationInfo = useMemo(
     () => ({

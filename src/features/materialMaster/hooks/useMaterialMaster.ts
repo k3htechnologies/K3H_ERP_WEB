@@ -61,13 +61,9 @@ export const useMaterialMaster = () => {
   //EXCEL IMPORT 
   const [showImportModal, setShowImportModal] = useState(false);
 
-  //#endregion
-
-  //#region MENU PERMISSIONS
+  
   const { canAction, canExport } = useMenuPermissions();
-  //#endregion
-
-  //#region INITIALIZATION
+  
 
   const hasFetchedInitialMaterials = useRef(false)
 
@@ -77,7 +73,6 @@ export const useMaterialMaster = () => {
     fetchMaterialList()
   }, [])
 
-  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.()
@@ -100,17 +95,13 @@ export const useMaterialMaster = () => {
     }
   }, [isAddUpdateModalOpen, editingMaterialMasterData]);
 
-  //#endregion
-
-  //#region TABLE COLUMN DEFINITION
+ 
 
   const materialMasterColumns = useMemo<TableColumn[]>(
     () => getMaterialMasterColumns(),
     []
   )
-  //#endregion
-
-  //#region DATA LOADING | FETCH |  LOAD | SEARCH 
+  
 
   const fetchMaterialList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadMaterials(page, filters, sort ?? sortInfo);
@@ -154,9 +145,7 @@ export const useMaterialMaster = () => {
       'Loading Material'
     )
   }
-  //#endregion
-
-  //#region SEARCH MATERIAL 
+  
   const searchMaterials = async (searchValue: string) => {
 
     setSearchTerm(searchValue);
@@ -168,17 +157,13 @@ export const useMaterialMaster = () => {
 
     await loadMaterials(1, filters, sortInfo, searchValue)
   }
-  //#endregion
-
-  //#region CLEAR SEARCH MATERIAL 
+  
   const clearsearchMaterials = () => {
     setSearchTerm('');
     debouncedSearch.cancel?.();
     loadMaterials(1, { MaterialName: '' }, sortInfo, undefined);
   }
-  //#endregion
-
-  //#region EXPORT EXCEL | PDF
+  
   const handleExportMaterials = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -208,16 +193,11 @@ export const useMaterialMaster = () => {
 
   const handleExportMaterialExcel = () => handleExportMaterials('Excel')
   const handleExportMaterialPdf = () => handleExportMaterials('PDF')
-  //#endregion
-
-  //#region HANDLE PAGE CHANGE EVENT
-  const handlePageChange = (page: number) => {
-    fetchMaterialList(page);
-  };
-  //#endregion
-
-  //#region TABLE SORT COLUMN
-
+ 
+  const handlePageChange = useCallback((page: number) => {
+    loadMaterials(page, filters, sortInfo, searchTerm || undefined);
+  }, [sortInfo, searchTerm]);
+  
   const handleSortColumn = useCallback((sort: SortInfo) => {
 
     setSortInfo(sort);
@@ -226,9 +206,7 @@ export const useMaterialMaster = () => {
 
   }, [filters, searchTerm]);
 
-  //#endregion
-
-  //#region CUSTOMIZE TABLE COLUMNS
+  
   const requiredMaterialMasterColumnKeys: string[] = REQUIRED_COLUMN_KEYS;
 
   const allMaterialMasterColumnKeys: string[] = materialMasterColumns.map(c => c.key)

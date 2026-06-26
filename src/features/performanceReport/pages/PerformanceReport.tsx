@@ -35,8 +35,9 @@ export const PerformanceReport: React.FC = () => {
     const [filters, setFilters] = useState<FilterInfo>({});
 
     const TargetTabList = [
-        { id: 'Sourcing', label: 'Sourcing Target' },
         { id: 'Closing', label: 'Closing Target' },
+        { id: 'Sourcing', label: 'Sourcing Target' },
+
     ];
 
     const [targetActiveTab, setTargetActiveTab] = useState(TargetTabList[0].id);
@@ -60,8 +61,19 @@ export const PerformanceReport: React.FC = () => {
     useEffect(() => {
         if (!projectId) return;
 
-        loadPerformanceReport(1, filters, sortInfo, searchTerm);
-    }, [targetActiveTab]);
+        const range = getWeekToDateRange();
+
+        const defaultFilters = {
+            FromDate: formatDate(range.fromDate),
+            ToDate: formatDate(range.toDate),
+        };
+
+        setFilters(defaultFilters);
+        setTempFilters(defaultFilters);
+
+        loadPerformanceReport(1, defaultFilters, sortInfo, searchTerm, "WTD");
+    }, [projectId]);
+
 
     const loadPerformanceReport = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string, periodType?: string) => {
 
@@ -246,6 +258,51 @@ export const PerformanceReport: React.FC = () => {
             ]
         },
         {
+            key: "TotalWalkinsGroup",
+            label: "Total Walkins",
+            align: "center",
+            children: [
+                {
+                    key: "TotalWalkins",
+                    label: "T",
+                    align: "center",
+                    render: (_: number, row: any) =>
+                        (row.WalkinsByCP || 0) +
+                        (row.WalkinsDirect || 0)
+                },
+                {
+                    key: "ActualTotalWalkins",
+                    label: "A",
+                    align: "center",
+                    render: (_: number, row: any) =>
+                        (row.ActualWalkinsByCP || 0) +
+                        (row.ActualWalkinsDirect || 0)
+                },
+                {
+                    key: "PerformanceTotalWalkins",
+                    label: "P",
+                    align: "center",
+                    render: (_: number, row: any) => {
+
+                        const target =
+                            (row.WalkinsByCP || 0) +
+                            (row.WalkinsDirect || 0);
+
+                        const actual =
+                            (row.ActualWalkinsByCP || 0) +
+                            (row.ActualWalkinsDirect || 0);
+
+                        const percentage =
+                            target > 0
+                                ? ((actual / target) * 100).toFixed(0)
+                                : 0;
+
+                        return `${percentage}%`;
+                    }
+                }
+            ]
+        },
+        {
             key: "FreshVisitsGroup",
             label: "Fresh Visits",
             align: "center",
@@ -284,6 +341,51 @@ export const PerformanceReport: React.FC = () => {
                 { key: "BookingDirect", label: "T", align: "center", render: (v: number) => v || 0 },
                 { key: "ActualBookingDirect", label: "A", align: "center", render: (v: number) => v || 0 },
                 { key: "PerformanceBookingDirect", label: "P", align: "center", render: (v: number) => `${v}%` || "0%" }
+            ]
+        },
+        {
+            key: "TotalBookingGroup",
+            label: "Total Booking",
+            align: "center",
+            children: [
+                {
+                    key: "TotalBooking",
+                    label: "T",
+                    align: "center",
+                    render: (_: number, row: any) =>
+                        (row.BookingByCP || 0) +
+                        (row.BookingDirect || 0)
+                },
+                {
+                    key: "ActualTotalBooking",
+                    label: "A",
+                    align: "center",
+                    render: (_: number, row: any) =>
+                        (row.ActualBookingByCP || 0) +
+                        (row.ActualBookingDirect || 0)
+                },
+                {
+                    key: "PerformanceTotalBooking",
+                    label: "P",
+                    align: "center",
+                    render: (_: number, row: any) => {
+
+                        const target =
+                            (row.BookingByCP || 0) +
+                            (row.BookingDirect || 0);
+
+                        const actual =
+                            (row.ActualBookingByCP || 0) +
+                            (row.ActualBookingDirect || 0);
+
+                        const percentage =
+                            target > 0
+                                ? ((actual / target) * 100).toFixed(0)
+                                : 0;
+
+                        return `${percentage}%`;
+                    }
+                }
             ]
         }
 
@@ -355,17 +457,6 @@ export const PerformanceReport: React.FC = () => {
                 { key: "PerformanceBookings", label: "P", align: "center", render: (v: number) => `${v}%` }
             ]
         },
-        {
-            key: "TotalMeetingsGroup",
-            label: "Total Meetings",
-            align: "center",
-            children: [
-                { key: "TotalMeetings", label: "T", align: "center", render: (v: number) => v || 0 },
-                { key: "ActualTotalMeetings", label: "A", align: "center", render: (v: number) => v || 0 },
-                { key: "PerformanceTotalMeetings", label: "P", align: "center", render: (v: number) => `${v}%` }
-            ]
-        },
-
         {
             key: "TotalOBMGroup",
             label: "Total OBM",
@@ -471,7 +562,7 @@ export const PerformanceReport: React.FC = () => {
 
         return `${year}-${month}-${day}`;
     };
-    
+
     const handleTabChange = (tabId: string) => {
 
         setActiveTab(tabId);

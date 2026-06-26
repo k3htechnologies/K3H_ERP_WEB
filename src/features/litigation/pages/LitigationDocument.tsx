@@ -23,7 +23,6 @@ import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
-import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import type {
   AddUpdateLitigationDocumentRequest,
@@ -52,87 +51,54 @@ const initialFormState = (): AddUpdateLitigationDocumentRequest => ({
 });
 
 export const LitigationDocument: React.FC = () => {
-  //#region STATE MANAGEMENT
-  const [litigationData, setLitigationData] = useState<LitigationData | null>(
-    null,
-  );
-  const [LitigationDocumentList, setLitigationDocumentList] = useState<
-    LitigationDocumentData[]
-  >([]);
+
+  const [litigationData, setLitigationData] = useState<LitigationData | null>(null);
+  const [LitigationDocumentList, setLitigationDocumentList] = useState<LitigationDocumentData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
 
-  // PAGINATION STATE
   const { pagination, setPagination } = usePagination(20);
 
-  //TABLE SORT INFO
   const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
 
-  // TOAST
   const { addToast } = useToast();
 
-  // SINGLE SEARCH TEXT BOX
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearch = useDebouncedCallback((value: string) => {
     searchLitigationDocuments(value);
   }, 350);
 
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  // EDIT LITIGATION DOCUMENT
-  const [editingLitigationDocumentData, setEditingLitigationDocumentData] =
-    useState<LitigationDocumentData | null>(null);
+  const [editingLitigationDocumentData, setEditingLitigationDocumentData] = useState<LitigationDocumentData | null>(null);
   const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
 
-  //ADD UPDATE LITIGATION DOCUMENT
-  const [formData, setFormData] = useState<AddUpdateLitigationDocumentRequest>(
-    () => initialFormState(),
-  );
+  const [formData, setFormData] = useState<AddUpdateLitigationDocumentRequest>(() => initialFormState());
 
-  //DELETE LITIGATION DOCUMENT STATES
-  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] =
-    useState(false);
-  const [
-    deleteLitigationDocumentDetailsData,
-    setDeleteLitigationDocumentDetailsData,
-  ] = useState<LitigationDocumentData | null>(null);
+  const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
+  const [deleteLitigationDocumentDetailsData, setDeleteLitigationDocumentDetailsData] = useState<LitigationDocumentData | null>(null);
 
-  //FILE STATES
   const [documentFiles, setDocumentFiles] = useState<(File | string)[]>([]);
   const [removedDocumentURLs, setRemovedDocumentURLs] = useState<string[]>([]);
   const [documentURL, setDocumentURL] = useState<string>();
 
-  // NAVIGATION
   const navigate = useNavigate();
-  //#endregion
-
-  //#region PROJECT SELECTION GET ID
-  const { projectId } = useProject();
-  //#endregion
 
   const { LitigationId } = useParams<{ LitigationId?: string }>();
   const { listState } = useLitigationListState();
-  const currentLitigationId = LitigationId
-    ? Number(LitigationId)
-    : listState.LitigationId;
-
+  const currentLitigationId = LitigationId ? Number(LitigationId) : listState.LitigationId;
+  const projectId = listState.projectId;
   const litigationStatus = litigationData?.Status;
-  const canModifyDocument =
-    litigationStatus === "Open" || litigationStatus === "Reopen";
+  const canModifyDocument = litigationStatus === "Open" || litigationStatus === "Reopen";
 
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions();
-  //#endregion
 
-  //#region INIT
   useEffect(() => {
     if (!projectId) return;
     fetchLitigationDocumentList();
     fetchLitigationDetails();
   }, [projectId, currentLitigationId]);
 
-  //CLEANUP PENDING DEBOUNCED CALLBACK ON UNMOUNT
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.();
@@ -169,9 +135,7 @@ export const LitigationDocument: React.FC = () => {
       setErrors({});
     }
   }, [isAddUpdateModalOpen, editingLitigationDocumentData, projectId]);
-  //#endregion
 
-  //#region DATA LOADING | FETCH |  LOAD | SEARCH LITIGATION DOCUMENT
   const fetchLitigationDocumentList = async (
     page: number = pagination.currentPage,
     sort?: SortInfo,
@@ -222,9 +186,7 @@ export const LitigationDocument: React.FC = () => {
       "Loading Litigation Document",
     );
   };
-  //#endregion
 
-  //#region FETCH LITIGATION DETAILS
   const fetchLitigationDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -256,22 +218,17 @@ export const LitigationDocument: React.FC = () => {
     );
   };
 
-  //#region SERACH LITIGATION DOCUMENT
   const searchLitigationDocuments = async (searchValue: string) => {
     setSearchTerm(searchValue);
     await loadLitigationDocument(1, sortInfo, searchValue);
   };
-  //#endregion
 
-  //#region CLEAR SERACH LITIGATION DOCUMENT
   const clearsearchLitigationDocuments = () => {
     setSearchTerm("");
     debouncedSearch.cancel?.();
     loadLitigationDocument(1, sortInfo, "");
   };
-  //#endregion
 
-  //#region EXPORT EXCEL | PDF
   const handleExportLitigationDocument = async (
     exportType: "Excel" | "PDF",
   ) => {
@@ -309,25 +266,19 @@ export const LitigationDocument: React.FC = () => {
     handleExportLitigationDocument("Excel");
   const handleExportLitigationDocumentPdf = () =>
     handleExportLitigationDocument("PDF");
-  //#endregion
 
-  //#region HANDLE PAGE CHNAGE EVENT
   const handlePageChange = useCallback(
     (page: number) => {
       loadLitigationDocument(page, sortInfo, searchTerm);
     },
     [searchTerm, sortInfo],
   );
-  //#endregion
 
-  //#region TABLE SORT COLUMN
   const handleSortColumn = (sortInfo: SortInfo) => {
     setSortInfo(sortInfo);
     loadLitigationDocument(1, sortInfo, searchTerm);
   };
-  //#endregion
 
-  //#region TABLE PAGINATION INFO
   const LitigationDocumentPaginationInfo: PaginationInfo = useMemo(
     () => ({
       currentPage: pagination.currentPage,
@@ -350,9 +301,7 @@ export const LitigationDocument: React.FC = () => {
     () => LitigationDocumentList,
     [LitigationDocumentList],
   );
-  //#endregion
 
-  //#region EDIT LITIGATION DOCUMENT
   const handleEditLitigationDocument = useCallback(
     (row: LitigationDocumentData) => {
       setEditingLitigationDocumentData({
@@ -373,9 +322,7 @@ export const LitigationDocument: React.FC = () => {
     },
     [],
   );
-  //#endregion
 
-  //#region TABLE COLUMN
   const LitigationDocumentColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -436,7 +383,7 @@ export const LitigationDocument: React.FC = () => {
         render: (_value, row) => {
           return (
             <div className="flex justify-between items-center">
-              {canModifyDocument && (
+              {canModifyDocument && Number(row.LitigationHearingId) === 0 && (
                 <>
                   <Button
                     color="transparent"
@@ -475,9 +422,7 @@ export const LitigationDocument: React.FC = () => {
       handleConfirmationDialogBoxOpen,
     ],
   );
-  //#endregion
 
-  //#region ADD UPDATE LITIGATION DOCUMENT
   const handleFieldChange = (
     field: keyof AddUpdateLitigationDocumentRequest,
     value: any,
@@ -527,7 +472,6 @@ export const LitigationDocument: React.FC = () => {
     };
   };
 
-  //#region PUSH FORM DATA
   const PushLitigationDocumentFormData = (): FormData => {
     const fd = new FormData();
 
@@ -559,7 +503,6 @@ export const LitigationDocument: React.FC = () => {
     return fd;
   };
 
-  //#region ADD UPDATE LITIGATION DOCUMENT
   const handleAddUpdateLitigationDocument = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrors({});
@@ -609,15 +552,10 @@ export const LitigationDocument: React.FC = () => {
         addToast({ type: "error", title: error.message });
       },
       undefined,
-      formData.LitigationDocumentId === null ||
-        formData.LitigationDocumentId === 0
-        ? "Add Litigation Document"
-        : "Update Litigation Document",
+      formData.LitigationDocumentId === null || formData.LitigationDocumentId === 0  ? "Add Litigation Document" : "Update Litigation Document",
     );
   };
-  //#endregion
 
-  //#region DELETE LITIGATION DOCUMENT
   const handleDeleteLitigationDocument = async () => {
     setIsConfirmationDialogBoxOpen(false);
 
@@ -628,8 +566,7 @@ export const LitigationDocument: React.FC = () => {
       setLoadingMessage,
       async () => {
         const params: DeleteLitigationDocumentRequest = {
-          LitigationDocumentId:
-            deleteLitigationDocumentDetailsData.LitigationDocumentId,
+          LitigationDocumentId:  deleteLitigationDocumentDetailsData.LitigationDocumentId,
           Uniquekey: deleteLitigationDocumentDetailsData.Uniquekey || "",
           LitigationId: currentLitigationId,
           ProjectId: deleteLitigationDocumentDetailsData.ProjectId || 0,
@@ -687,28 +624,18 @@ export const LitigationDocument: React.FC = () => {
       "Delete Litigation Document",
     );
   };
-  //#endregion
 
-  //#region BACK LITIGATION PAGE
   const handleBackToListLITIGATION = () => {
     navigate("/litigation");
   };
-  //#endregion
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
-      {/* ============================================================================
-          COMMAN LOADER FOR PAGE
-           ============================================================================ */}
 
       <Loader loading={isLoading} title={loadingMessage}>
         {" "}
         <div></div>{" "}
       </Loader>
-
-      {/* ============================================================================
-          COMBINED SEARCH BAR, FILTER IMPORT , EXPORT ROW
-           ============================================================================ */}
 
       <TableActionToolbar
         isShowSearchBar
@@ -735,7 +662,9 @@ export const LitigationDocument: React.FC = () => {
 
       <div className="flex items-center gap-3 mb-5">
         <HeaderActionBar
-          titleText="Litigation Document"
+          titleText={`Litigation Document - ${litigationData?.ProjectName ?? ""} :`}
+          subTitleText={litigationData?.Title ?? ""}
+          subSubTitleText={litigationData?.Status ?? ""}
           cancelText="Cancel"
           EditText=""
           onCancel={() => handleBackToListLITIGATION()}
@@ -744,7 +673,6 @@ export const LitigationDocument: React.FC = () => {
         />
       </div>
 
-      {/* DATA TABLE LITIGATION DOCUMENT */}
       <DataTable
         data={LitigationDocumentListForTable}
         columns={LitigationDocumentColumns}
@@ -757,8 +685,6 @@ export const LitigationDocument: React.FC = () => {
         onSort={handleSortColumn}
         loading={isLoading}
       />
-
-      {/*  ADD EDIT UPDATE LITIGATION DOCUMENT MODAL */}
 
       <Modal
         isOpen={isAddUpdateModalOpen}
@@ -816,9 +742,12 @@ export const LitigationDocument: React.FC = () => {
                 value={documentFiles}
                 onChange={setDocumentFiles}
                 availableFilesURL={documentURL ?? ""}
-                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                allowedTypes={["image/jpeg", 
+                              "image/png", 
+                              "application/pdf",
+                              "application/vnd.ms-excel",
+                              "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]}
                 maxFiles={5}
-                maxSizeMB={10}
                 onRemoveExisting={(url) => {
                   setRemovedDocumentURLs((prev) => [...prev, url]);
                 }}
@@ -827,8 +756,6 @@ export const LitigationDocument: React.FC = () => {
           </div>
         </div>
       </Modal>
-
-      {/* DELETE CONFIRMATION LITIGATION DOCUMENT MODAL */}
 
       <DeleteDialog
         isOpen={isConfirmationDialogBoxOpen}

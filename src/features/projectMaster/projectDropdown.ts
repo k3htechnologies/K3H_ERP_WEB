@@ -6,6 +6,7 @@ export const fetchProjectDropdown = async (pageNumber: number, params?: { value?
         const responseEither = await projectMasterService.apiCallPullProjectMaster({
             PageSize: 20,
             PageNumber: pageNumber,
+            ProjectName:params?.value,
             ProjectId: params?.projectId,
             IsProjectAccess: false
         });

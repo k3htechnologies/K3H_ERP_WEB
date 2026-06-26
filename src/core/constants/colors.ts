@@ -22,7 +22,6 @@ export const COLORS = {
   primary1: '#135BEC',
   green: '#8d99ba1f',
   red_light: '#FAD1D1',
-
 } as const
 
 export type ColorType = keyof typeof COLORS
@@ -80,6 +79,15 @@ export const COLOR_MAP = {
         hover: { color: '#b036da' },
       }
     },
+  },
+  primaryLight: {
+    solid: {
+      backgroundColor: COLORS.primaryLight,
+      color: 'white',
+      border: `1px solid ${COLORS.primaryLight}`,
+      hover: { backgroundColor: COLORS.primaryLight },
+    },
+   
   },
   error: {
     solid: {
@@ -283,7 +291,8 @@ export const COLOR_MAP = {
 
     },
   },
- red_light: {
+
+  red_light: {
     solid: {
       light: {
         backgroundColor: '#FAD1D1',
@@ -299,6 +308,7 @@ export const COLOR_MAP = {
       },
     },
   },
+
   pink: {
     solid: {
       light: {

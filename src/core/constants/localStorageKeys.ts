@@ -69,6 +69,7 @@ export const LOCAL_STORAGE_KEYS = {
 
     // CHANNEL PARTNER
     CHANNEL_PARTNER_SELECTED_COLUMNS: 'channelPartnerMaster.selectedColumns',
+    CHANNEL_PARTNER_UNIVERSE_SELECTED_COLUMNS: 'channelPartnerUniverse.selectedColumns',
 
     // SALES
     CALLING_DATA_SELECTED_COLUMNS: 'callTracker.selectedColumns',
@@ -78,9 +79,34 @@ export const LOCAL_STORAGE_KEYS = {
     BOOKING_SELECTED_COLUMNS: 'booking.selectedColumns',
     INCENTIVE_REPORT_COLUMNS: 'incentive_report.selectedColumns',
     PAYMENT_SCHEDULE_SCHEME_MASTER_COLUMNS: 'paymentScheduleSchemeMaster.selectedColumns',
+    ACHIEVEMENT_BY_PROJECT_COLUMNS: 'achievementByProject.selectedColumns',
+    ACHIEVEMENT_BY_CLOSING_COLUMNS: 'achievementByClosing.selectedColumns',
+    ACHIEVEMENT_BY_SOURCING_COLUMNS: 'achievementBySourcing.selectedColumns',
+    ACHIEVEMENT_BY_WALKINS_REVISIT_COLUMNS: 'achievementByWalkinsRevisit.selectedColumns',
+    ACHIEVEMENT_BY_BOOKING_COLUMNS: 'achievementByBooking.selectedColumns',
+    ACHIEVEMENT_BY_IBMOBM_COLUMNS: 'achievementByIbmObm.selectedColumns',
+
 
     //CRM
+    PAY_TRACK_BOOKING_SELECTED_COLUMNS: 'payTrackBooking.selectedColumns',
+    PAY_TRACK_REPORT_SELECTED_COLUMNS: 'payTrackReport.selectedColumns',
     BROKERAGE_BOOKING_SELECTED_COLUMNS: 'brokerage.selectedColumns',
+    PAY_TRACK_CALL_LOG_SELECTED_COLUMNS: 'payTrackCallLog.selectedColumns',
+    DAILY_COLLECTION_REPORT_SELECTED_COLUMNS: 'dailyCollectionReport.selectedColumns',
+
+    //MORE
+    INWARD_OUTWARD_SELECTED_COLUMNS: 'inwardOutward.selectedColumns',
+
+
+    //TICKET MASTER
+    TICKET_MASTER_SELECTED_COLUMNS: 'ticket.selectedColumns',
+
+    //TAX TRACKER
+     NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
+
+     //ESTIMATION AND BUDGET
+    BUDGET_SELECTED_COLUMNS: 'budget.selectedColumns',
+
 
     //STOCK MANAGEMENT
     STOCK_MANAGEMENT_SELECTED_COLUMNS: 'stock.selectedColumns'
@@ -103,9 +129,15 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     OUTDOOR: 'outdoor.listState',
     CHANNEL_PARTNER: 'channelPartner.listState',
     CHANNEL_PARTNER_SOURCING: 'channelPartnerSourcing.listState',
+    CHANNEL_PARTNER_UNIVERSE: 'channelPartnerUniverse.listState',
     INCENTIVE_REPORT: 'incentive_report.listState',
     BOOKING: 'booking.listState',
     PAY_TRACK_BOOKING: 'payTrackBooking.listState',
+    PAY_TRACK_REPORT: 'payTrackReport.listState',
+    INWARD_OUTWARD: 'inwardOutward.listState',
+    BOOKING_Brokerage: 'bookingBrokerage.listState',
+    TICKET: 'ticket.listState',
+
     STOCK_MANAGEMENT: 'stock.listState',
     MATERIAL_REQUISITION: 'materialRequisition.listState'
     

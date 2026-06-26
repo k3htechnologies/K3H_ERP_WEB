@@ -45,9 +45,12 @@ export const RichTextEditor: React.FC<RichTextEditorProps> = ({
 
     quillRef.current = quill
 
-    // ✅ SET INITIAL VALUE
     if (value) {
-      quill.clipboard.dangerouslyPasteHTML(cleanHtml(value))
+      quill.setContents(
+        quill.clipboard.convert({ html: cleanHtml(value) }),
+        'silent'
+      )
+      quill.blur()
     }
 
     // ✅ DEBOUNCED CHANGE HANDLER

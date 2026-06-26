@@ -15,6 +15,9 @@ export interface TableColumn {
   truncate?: boolean
   maxWidth?: string
   children?: TableColumn[]
+  theadStyle?: React.CSSProperties
+  tdStyle?: React.CSSProperties
+
 }
 
 export interface PaginationInfo {
@@ -42,6 +45,10 @@ interface Props {
   recordsPerPage?: number
   sortInfo?: SortInfo
   onSort?: (sort: SortInfo) => void
+  theadStyle?: React.CSSProperties;
+  tdStyle?: React.CSSProperties;
+  rowStyle?: (row: any) => React.CSSProperties;
+
 }
 
 export const CustomTable: React.FC<Props> = ({
@@ -55,7 +62,9 @@ export const CustomTable: React.FC<Props> = ({
   maxHeight = useViewportHeight(255, 350, 900),
   recordsPerPage = 10,
   sortInfo,
-  onSort
+  onSort,
+  theadStyle,
+  rowStyle
 }) => {
   const scrollRef = useHorizontalScroll();
   
@@ -116,53 +125,62 @@ export const CustomTable: React.FC<Props> = ({
   const renderPagination = () => {
     if (!pagination) return null
 
-    const { currentPage, totalPages, totalRecords, pageSize, onPageChange } =
-      pagination
-
-    const startRecord =
-      totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
-
+    const { currentPage, totalPages, totalRecords, pageSize, onPageChange } = pagination
+    const startRecord = totalRecords === 0 ? 0 : (currentPage - 1) * pageSize + 1
     const endRecord = Math.min(currentPage * pageSize, totalRecords)
 
     return (
       <div className="flex flex-col sm:flex-row items-center justify-between gap-2 px-4 py-2 bg-white border-t border-gray-200">
-
         <div className="text-sm text-gray-700">
           Showing {startRecord} to {endRecord} of {totalRecords} entries
         </div>
-
         <div className="flex items-center space-x-2">
-
           <button
+            type="button"
             onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="p-2 border border-gray-200 rounded"
+            disabled={totalRecords === 0 ? true : currentPage === 1}
+            className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft className="h-4 w-4" />
           </button>
 
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => onPageChange(i + 1)}
-              className={`px-3 py-1 rounded ${
-                currentPage === i + 1
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-100"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+          <div className="flex items-center space-x-1">
+            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+              let pageNum
+              if (totalPages <= 5) {
+                pageNum = i + 1
+              } else if (currentPage <= 3) {
+                pageNum = i + 1
+              } else if (currentPage >= totalPages - 2) {
+                pageNum = totalPages - 4 + i
+              } else {
+                pageNum = currentPage - 2 + i
+              }
+
+              return (
+                <button
+                  type="button"
+                  key={pageNum}
+                  onClick={() => onPageChange(pageNum)}
+                  className={`px-3 py-1 text-sm rounded-md transition-colors duration-200 ${currentPage === pageNum
+                    ? 'bg-blue-500 text-white'
+                    : 'text-gray-700 hover:bg-gray-100'
+                    }`}
+                >
+                  {pageNum}
+                </button>
+              )
+            })}
+          </div>
 
           <button
+            type="button"
             onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="p-2 border border-gray-200 rounded"
+            disabled={totalRecords === 0 ? true : currentPage === totalPages}
+            className="p-2 rounded-md border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
           >
-            <ChevronRight size={16} />
+            <ChevronRight className="h-4 w-4" />
           </button>
-
         </div>
       </div>
     )
@@ -201,7 +219,23 @@ export const CustomTable: React.FC<Props> = ({
                     key={cIndex}
                     colSpan={col.colSpan}
                     rowSpan={col.rowSpan}
-                    className="border border-gray-300 px-3 py-2 text-center text-sm font-medium"
+                    className={`px-4 py-2 text-gray-800 tracking-wider whitespace-nowrap
+                    ${col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'}
+                    ${col.width ? `w-${col.width}` : ''}
+                    ${col.sortable ? 'cursor-pointer hover:bg-gray-200' : ''}
+                    ${col.fixed === 'left' ? 'sticky left-0 z-40 shadow-[2px_0_4px_rgba(0,0,0,0.1)]' : col.fixed === 'right' ? 'sticky right-0 z-40 shadow-[-2px_0_4px_rgba(0,0,0,0.1)]' : ''}
+               `}
+                    style={{
+                      ...(col.width ? { width: col.width } : {}),
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      lineHeight: '1.4',
+                      backgroundColor: col.theadStyle?.backgroundColor || theadStyle?.backgroundColor || '#E4F0FF',
+                      color: col.theadStyle?.color || theadStyle?.color || '#000',
+                      borderBottom: '1px solid #D1D5DB',
+                      borderRight: '1px solid #D1D5DB',
+
+                    }}
                     onClick={() => col.sortable && handleSort(col.key)}
                   >
 
@@ -236,7 +270,7 @@ export const CustomTable: React.FC<Props> = ({
             ) : (
               data.map((row, i) => (
 
-                <tr key={i} className="hover:bg-gray-50">
+                  <tr key={i} className="hover:bg-gray-50" style={rowStyle?.(row)}>
 
                   {leafColumns.map(col => {
 
@@ -245,11 +279,26 @@ export const CustomTable: React.FC<Props> = ({
                       : row[col.key]
 
                     return (
-                      <td
-                        key={col.key}
-                        className="border border-gray-200 px-3 py-2 text-sm text-center"
-                      >
-                        {value ?? 0}
+                      <td key={col.key}
+                        className={`px-4 py-2 text-gray-900 border border-gray-200 
+                           ${col.align === 'center' ? 'text-center' : col.align === 'right' ? 'text-right' : 'text-left'} 
+                           ${col.fixed === 'left' ? 'sticky left-0 bg-white z-20 shadow-[2px_0_4px_rgba(0,0,0,0.1)] border-r-2 border-r-gray-100' : col.fixed === 'right' ? 'sticky right-0 bg-white z-20 shadow-[-2px_0_4px_rgba(0,0,0,0.1)] border-l-2 border-l-gray-100' : ''}`}
+
+                        style={{
+                          ...(col.width ? { width: col.width } : {}),
+                          fontSize: '14px',
+                          fontWeight: '400',
+                          lineHeight: '1.5',
+                          letterSpacing: '0%',
+                          minHeight: '40px',
+                          verticalAlign: 'middle',
+                          backgroundColor: rowStyle?.(row)?.backgroundColor,
+                          ...col.tdStyle
+                        }}>
+                          
+                        <div className={`${col.truncate !== false ? 'truncate whitespace-nowrap' : ''} max-w-full`} style={{ maxWidth: col.maxWidth || col.width, lineHeight: '1.5' }}>
+                          {value}
+                        </div>
                       </td>
                     )
                   })}

@@ -168,6 +168,28 @@ import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
 import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
 import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
 import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
+import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/BookingBrokerageListStateContext';
+import { ChannelPartnerUniverseListStateProvider } from '@/features/channelPartnerUniverse/context/ChannelPartnerUniverseListStateContext';
+import ChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ChannelPartnerUniverse';
+import ViewChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ViewChannelPartnerUniverse';
+import CrmDashboard from '@/features/crmDashboard/pages/CrmDashboard';
+import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
+import AchievementReport from '@/features/achievement/pages/AchievementReport';
+import { PayTrackReportListStateProvider } from '@/features/crmPayTrackReport/context/PayTrackReportListStateContext';
+import PayTrackReport from '@/features/crmPayTrackReport/pages/PayTrackReport';
+import AddRefundDetails from '@/features/crmPayTrack/pages/AddRefundDetails';
+import Ticket from '@/features/ticket/pages/Ticket';
+import ViewTicket from '@/features/ticket/pages/ViewTicket';
+import { TicketListStateProvider } from '@/features/ticket/context/TicketListStateContext';
+import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
+import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
+import CollectionReport from '@/features/collectionReport/pages/CollectionReport';
+import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
+import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
+import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
+import Budget from '@/features/budget/pages/Budget';
+import SummaryMIS from '@/features/summaryMIS/SummaryMIS';
+import SpecificationMaster from '@/features/specificationMaster/pages/SpecificationMaster';
 // import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/materialRequisitionListStateContext';
 import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/MaterialRequisitionListStateContext';
 import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
@@ -203,6 +225,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/sign-in" replace />
   }
 
+
   return <>{children}</>
 }
 
@@ -221,10 +244,14 @@ function App() {
   return (
     <CountryStateCityDistrictVillage>
       <Suspense fallback={<LoadingSpinner />}>
+
         <Routes>
           {/* Public Routes */}
+
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
+          <Route path="/" element={<ProtectedRoute> <Layout /></ProtectedRoute>}/>
+
 
           <Route
             path="/"
@@ -343,6 +370,7 @@ function App() {
             <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
+            <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
@@ -355,6 +383,11 @@ function App() {
             {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
 
+           
+            <Route path='ticket' element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
+            <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
+            <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
+
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />
 
@@ -363,6 +396,9 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
+
+            <Route path="cpUniverse" element={<ChannelPartnerUniverseListStateProvider><ChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
+            <Route path="cpUniverse/view" element={<ChannelPartnerUniverseListStateProvider><ViewChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
 
             <Route path="sourcing" element={<ChannelPartnerSourcingListStateProvider><ChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
             <Route path="sourcing/view" element={<ChannelPartnerSourcingListStateProvider><ViewChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
@@ -387,9 +423,14 @@ function App() {
 
             <Route path="enquiryReport" element={<EnquiryReport />} />
             <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
+            <Route path="ibmObmReport" element={<IbmObmReport />} />
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
 
             <Route path="performance" element={<PerformanceReport />} />
+            <Route path="achievement" element={<AchievementReport />} />
+
+            <Route path='channelPartnerCategory' element={<ChannelPartnerCategory />} />
+
 
             {/* REDEVELOPMENT */}
 
@@ -441,9 +482,29 @@ function App() {
             <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
 
             {/* CRM */}
-
+            <Route path="crmDashboard" element={<CrmDashboard />} />
             <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
+            <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
+            <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
+            {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
+            <Route path="collectionReport" element={<CollectionReport />} />
+            <Route path="dailyCollectionReport" element={<DailyCollectionReport />} />
+
+
+            <Route path="brokerage" element={<BookingBrokerageListStateProvider><Brokerage /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/brokerageInvoice/view" element={<BookingBrokerageListStateProvider><ViewBrokerageInvoice /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/brokerageInvoice/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdateBrokerageInvoice /></BookingBrokerageListStateProvider>} />
+            <Route path="brokerage/PaidBrokerageBooking/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdatePaidBrokerageBooking /></BookingBrokerageListStateProvider>} />
+
+            {/* TAX TRACKER */}
+            <Route path="noticeSection" element={<NoticeSectionMaster />} />
+
+              {/* ESTIMATION AND BUDGET */}
+            <Route path='budget' element={<Budget />} />
+            <Route path='summaryMis' element={<SummaryMIS />} />
+            <Route path='specificationMaster' element={<SpecificationMaster />} />
+
 
             <Route path="brokerage" element={<Brokerage />} />
             <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />

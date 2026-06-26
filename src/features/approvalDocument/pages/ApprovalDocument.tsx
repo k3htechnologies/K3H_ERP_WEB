@@ -1502,7 +1502,6 @@ const ApprovalDocument: React.FC = () => {
               availableFilesURL={approvalDocumentURL ?? ""}
               allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
               maxFiles={5}
-              maxSizeMB={10}
               error={errors.ApprovalDocumentURL}
               onRemoveExisting={(url) => {
                 setRemoveApprovalDocumentUrls((prev) => [...prev, url])

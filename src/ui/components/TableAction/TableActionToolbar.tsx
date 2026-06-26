@@ -169,6 +169,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
             onChange={(e) => onSearchChange?.(e.target.value)}
             placeholder={searchPlaceholder}
             leftIcon={<Search className="h-4 w-4 text-gray-400" />}
+            maxLength={40}
             rightIcon={
               <div className={`flex items-center space-x-1 ${searchTerm && isShowFilterButton ? 'pr-8' : 'pr-2'}`}>
                 {/* CLEAR SEARCH */}

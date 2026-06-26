@@ -3,9 +3,11 @@ import type { ApiResponse } from "@/core/api/ApiResponse"
 export interface FilterWithPaginationChannelPartnerRequest {
     PageSize: number
     PageNumber: number
+    ProjectId?: number
     IsCheckPermission?: boolean
     ChannelPartnerId?: number
     ChannelPartnerName?: string
+    MobileNumberCountryCode?: string
     MobileNumber?: string
     CompanyName?: string
     Designation?: string
@@ -19,6 +21,9 @@ export interface FilterWithPaginationChannelPartnerRequest {
     Speciality?: string
     CityName?: string;
     VillageName?: string;
+    SystemGeneratedCode?: string;
+    NoOfIBM?: string;
+    NoOfOBM?: string;
     Status?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
@@ -29,12 +34,15 @@ export interface ChannelPartnerData {
     Uniquekey: string
     SystemGeneratedCode: string
     Name: string
+    DateOfBirth: string | null
+    WebsiteURL:string 
     CompanyName: string
 
     FirmsType: string
     Designation: string
     Type: string
 
+    MobileNumberCountryCode:string
     MobileNumber: string
     EmailId: string
     OfficeAddress: string
@@ -66,6 +74,20 @@ export interface ChannelPartnerData {
     Speciality: string
 
     Status: string
+
+    PrimaryProjectPortfolioId:number
+    PrimaryProjectPortfolio: string | ''
+
+    SecondaryProjectPortfolioId: string;  
+    SecondaryProjectPortfolio: string;   
+    
+    MicromarketProximity: string; 
+
+    VerifiedNonVerified: string
+
+    NoOfIbm:number | 0
+    NoOfObm:number | 0
+
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -88,10 +110,13 @@ export interface ChannelPartnerTeamData {
     ChannelPartnerId: number
     Uniquekey: string
     Name: string
+    DateOfBirth: string | null
+    WebsiteURL:string 
     CompanyName: string
     FirmsType: string
     Designation: string
     Type: string
+    MobileNumberCountryCode:string
     MobileNumber: string
     EmailId: string
     OfficeAddress: string
@@ -127,6 +152,15 @@ export interface ChannelPartnerTeamData {
     Speciality: string
 
     Status: string
+
+    PrimaryProjectPortfolioId:number
+    PrimaryProjectPortfolio: string | ''
+
+    SecondaryProjectPortfolioId: string;  
+    SecondaryProjectPortfolio: string;
+    
+    MicromarketProximity: string;
+
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -141,11 +175,14 @@ export interface AddUpdateChannelPartnerRequest {
     ChannelPartnerId?: number | 0
     Uniquekey: string | null
     Name: string
+    DateOfBirth: string | null
+    WebsiteURL:string
     CompanyName: string
     FirmsType: string
     Designation: string
     Type: string
     CompanyType: string
+    MobileNumberCountryCode:string
     MobileNumber: string
     AlternativeMobileNumber: string
     EmailId: string
@@ -167,6 +204,9 @@ export interface AddUpdateChannelPartnerRequest {
     StateMasterId: number | null;
     CityMasterId: number | null;
     VillageMasterId: number | null;
+    PrimaryProjectPortfolioId:number
+    SecondaryProjectPortfolioId: string; 
+    
     OTP?: string | null;
 }
 

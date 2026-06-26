@@ -4,6 +4,7 @@ import { Button } from '@/ui/components/forms';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import type { OtherChargesData } from '@/features/otherCharges/models/OtherChargesModel';
+import { formatCurrency } from '@/core/utils/comman';
 
 interface OtherChargesViewModalProps {
   isOpen: boolean;
@@ -53,7 +54,7 @@ export const OtherChargesViewModal: React.FC<OtherChargesViewModalProps> = ({
     >
       <div className="space-y-6">
         <div className="space-y-4">
-          
+
           <FieldItem
             label="Charges"
             value={data.ChargeName}
@@ -63,7 +64,7 @@ export const OtherChargesViewModal: React.FC<OtherChargesViewModalProps> = ({
           />
           <FieldItem
             label="Value"
-            value={data.Value ? `₹ ${data.Value}` : '-'}
+            value={formatCurrency(data.Value ?? '0')}
             isRow
             withBorder={true}
           />
@@ -81,13 +82,13 @@ export const OtherChargesViewModal: React.FC<OtherChargesViewModalProps> = ({
           />
           <FieldItem
             label="GST Value"
-            value={data.GSTValue ? `₹ ${data.GSTValue}` : '-'}
+            value={formatCurrency(data.GSTValue ?? '0')}
             isRow
             withBorder={true}
           />
           <FieldItem
             label="Value + GST Value"
-            value={data.Value + data.GSTValue ? `₹ ${data.Value + data.GSTValue}` : '-'}
+            value={formatCurrency(data.Value + data.GSTValue) ?? '0'}
             isRow
           />
         </div>

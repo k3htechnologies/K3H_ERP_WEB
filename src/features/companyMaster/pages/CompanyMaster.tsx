@@ -32,6 +32,7 @@ import { Trash2 } from 'lucide-react';
 import ExportImport from '@/ui/components/ExcelImport/ExcelImport';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { getSortByParam } from '@/core/constants/sortingColumnDetails';
+import { filterNumbers } from '@/core/utils/fileValidation';
 
 export const CompanyMaster: React.FC = () => {
     //#region STATE
@@ -786,8 +787,9 @@ export const CompanyMaster: React.FC = () => {
                                 label='Mobile Number'
                                 type="text"
                                 value={tempFilters.MobileNumber || ''}
-                                onChange={(e) => handleFilterChange('MobileNumber', e.target.value)}
+                                onChange={(e) => handleFilterChange('MobileNumber', filterNumbers(e.target.value))}
                                 placeholder="Enter Mobile Number"
+                                maxLength={13}
                             />
                         </div>
                         <div>

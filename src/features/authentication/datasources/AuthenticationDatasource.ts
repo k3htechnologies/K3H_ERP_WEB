@@ -52,11 +52,18 @@ export class AuthenticationDatasourceImpl implements AuthenticationDatasource {
         }
     }
 
-    async sendOTPMobileNumberAndModule(mobileNumber: string, module: string): Promise<ApiResponse<string>> {
+    async sendOTPMobileNumberAndModule(mobileNumber: string, module: string, name?: string, companyName?: string, projectName?: string, source?: string): Promise<ApiResponse<string>> {
 
         try {
 
-            const queryParams = new URLSearchParams({ MobileNumber: mobileNumber.trim() ?? '', Module: module.trim() ?? '' })
+            const queryParams = new URLSearchParams({
+                MobileNumber: mobileNumber.trim() ?? '',
+                Module: module.trim() ?? '',
+                Name: name?.trim() ?? '',
+                CompanyName: companyName?.trim() ?? '',
+                ProjectName: projectName?.trim() ?? '',
+                Source: source?.trim() ?? ''
+            })
 
             const response = await this.k3hHttpClient.getRequestWithoutAuthentication(`${AuthenticationApi.SEND_OTP}?${queryParams.toString()}`);
 

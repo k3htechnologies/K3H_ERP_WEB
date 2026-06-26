@@ -19,6 +19,8 @@ export interface BankDocumentsPayTrackBookingFilesData {
     FileName: string;
     FileType: string;
     PayTrackBookingFilesURL: string;
+    ApprovalStatus: string;
+    IsApproval: boolean;
     CreatedById: number;
     CreatedBy: string;
     CreatedDate: string | null;

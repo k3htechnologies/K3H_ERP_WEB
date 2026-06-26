@@ -271,8 +271,14 @@ export const TncMaster: React.FC = () => {
   //#region TABLE SORT COLUMN
   const handleSortColumn = useCallback((sort: SortInfo) => {
     setSortInfo(sort);
-    loadTnc(1, filters, sort, searchTerm || undefined);
-  }, [filters, searchTerm]);
+
+    const updatedFilters = {
+      ...filters,
+      ModuleName: filters.ModuleName || activeTab
+    };
+
+    loadTnc(1, updatedFilters, sort, searchTerm || undefined);
+  }, [filters, searchTerm, activeTab]);
   //#endregion
 
   //#region TABLE PAGINATION INFO
@@ -779,7 +785,7 @@ export const TncMaster: React.FC = () => {
             ...filters,
             ModuleName: t.id,
           };
-
+          setFilters(newFilters);
           loadTnc(1, newFilters, sortInfo);
 
         }}

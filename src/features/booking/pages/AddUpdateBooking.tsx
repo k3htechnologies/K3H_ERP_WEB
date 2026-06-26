@@ -12,7 +12,7 @@ import { TextArea } from "@/ui/components/forms/Textarea";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { bookingService } from "@/features/booking/services/BookingService";
-import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterLetters, filterMobile, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidDrivingLicenseNumber, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
+import { allowPercentage, calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterAadhaar, filterDrivingLicenseNumber, filterEmail, filterGST, filterLetters, filterNumbers, filterNumbersWithDecimal, filterPAN, filterPassportNumber, filterVoterId, isValidAadhaar, isValidDrivingLicenseNumber, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidPassportNumber, isValidVoterId, mergeFiles } from "@/core/utils/fileValidation";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { useBookingListState } from "@/features/booking/context/BookingListStateContext";
@@ -50,9 +50,13 @@ import { mapOtherChargesToBookingOtherCharges } from "@/features/booking/utils/M
 import { fetchPaymentScheduleSchemeMasterDropDown } from "@/features/paymentScheduleSchemeMaster/PaymentScheduleSchemeMasterDropdown";
 import type { FilterWithPaginationPaymentScheduleMasterRequest } from "@/features/paymentScheduleMaster/models/PaymentScheduleMasterModel";
 import { paymentScheduleMasterService } from "@/features/paymentScheduleMaster/services/PaymentScheduleMasterService";
-import { mapPaymentScheduleToBookingPaymentSchedule } from "../utils/MapPaymentSchedule";
+import { mapPaymentScheduleToBookingPaymentSchedule } from "@/features/booking/utils/MapPaymentSchedule";
 import type { EnquiryData } from "@/features/enquiry/models/EnquiryModel";
 import { DataTableDraggable } from "@/ui/components/DataTable/DataTableDraggable";
+import { formatCurrency } from "@/core/utils/comman";
+import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import ToggleSwitch from "@/ui/components/forms/ToggleSwitch";
 
 const initialFormState = (): AddUpdateBookingRequest => ({
   BookingId: 0,
@@ -100,12 +104,14 @@ const initialFormState = (): AddUpdateBookingRequest => ({
   TransferBookingId: 0,
   TenantId: 0,
   OTP: "",
+  IsApplicableOtherCharge: false,
 });
 
 const initialFormStateApplicantDetails = (): AddUpdateBookingApplicantRequest => ({
   BookingApplicantId: 0,
   ApplicantType: "",
   ApplicantName: "",
+  ApplicantMobileNumberCountryCode: "+91",
   ApplicantMobileNumber: "",
   ApplicantEmailId: "",
   PhotoURL: null,
@@ -551,6 +557,7 @@ export const AddUpdateBooking: React.FC = () => {
               BankListMasterId: booking.BankListMasterId ?? 0,
               TransferBookingId: booking.TransferBookingId ?? 0,
               TenantId: booking.TenantId ?? 0,
+              IsApplicableOtherCharge: booking.IsApplicableOtherCharge ?? false,
             });
 
             setEnquiryUniqueCode(booking.SystemGeneratedCode ?? "");
@@ -638,17 +645,19 @@ export const AddUpdateBooking: React.FC = () => {
 
             loadPaymentSchedule();
 
-            const otherChargesMapped: AddUpdateBookingOtherChargesRequest[] = (booking?.BookingOtherChargesData || []).map((charge) => ({
-              BookingOtherChargesId: charge.BookingOtherChargesId ?? 0,
-              Uniquekey: charge.Uniquekey ?? null,
-              ChargeName: charge.ChargeName ?? null,
-              CalculatedOn: charge.CalculatedOn ?? null,
-              Value: charge.Value ?? 0,
-              GSTPercentage: charge.GSTPercentage ?? 0,
-              GSTValue: charge.GSTValue ?? 0,
-            }));
+            if (booking.IsApplicableOtherCharge) {
+              const otherChargesMapped: AddUpdateBookingOtherChargesRequest[] = (booking?.BookingOtherChargesData || []).map((charge) => ({
+                BookingOtherChargesId: charge.BookingOtherChargesId ?? 0,
+                Uniquekey: charge.Uniquekey ?? null,
+                ChargeName: charge.ChargeName ?? null,
+                CalculatedOn: charge.CalculatedOn ?? null,
+                Value: charge.Value ?? 0,
+                GSTPercentage: charge.GSTPercentage ?? 0,
+                GSTValue: charge.GSTValue ?? 0,
+              }));
 
-            setOtherCharges(otherChargesMapped);
+              setOtherCharges(otherChargesMapped);
+            }
           }
         } else {
           addToast({ type: "error", title: response.left.message });
@@ -681,6 +690,7 @@ export const AddUpdateBooking: React.FC = () => {
       BookingApplicantId: row.BookingApplicantId ?? 0,
       ApplicantType: row.ApplicantType || "",
       ApplicantName: row.ApplicantName || "",
+      ApplicantMobileNumberCountryCode: row.ApplicantMobileNumberCountryCode || "",
       ApplicantMobileNumber: row.ApplicantMobileNumber || "",
       ApplicantEmailId: row.ApplicantEmailId || "",
       RemovePhotoURL: "",
@@ -784,7 +794,7 @@ export const AddUpdateBooking: React.FC = () => {
         width: "15",
         sortable: false,
         align: "center",
-        render: (value) => value || "-",
+        render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
       },
       {
         key: "ApplicantEmailId",
@@ -1021,7 +1031,7 @@ export const AddUpdateBooking: React.FC = () => {
       },
       {
         key: "Date",
-        label: "Date / Stage",
+        label: "Date / Stage (Milestone)",
         sortable: false,
         align: "center",
 
@@ -1056,33 +1066,35 @@ export const AddUpdateBooking: React.FC = () => {
       },
       {
         key: "PaymentScheduleAmount",
-        label: "Amount (₹)",
+        label: "Amount Without TDS (₹)",
         sortable: false,
         align: "right",
-        render: (value) => {
-          if (!value) return "-";
-          return `₹${Number(value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        },
+        render: (value) => formatCurrency(value) || "0",
       },
       {
         key: "PaymentScheduleGSTAmount",
         label: "GST Amount (₹)",
         sortable: false,
         align: "right",
-        render: (value) => {
-          if (!value) return "-";
-          return `₹${Number(value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        },
+        render: (value) => formatCurrency(value) || "0",
       },
       {
         key: "PaymentScheduleTDSAmount",
         label: "TDS Amount (₹)",
         sortable: false,
         align: "right",
-        render: (value) => {
-          if (!value) return "-";
-          return `₹${Number(value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        },
+        render: (value) => formatCurrency(value) || "0",
+      },
+      {
+        key: "PaymentScheduleTotalAmount",
+        label: "Total Amount With TDS (₹)",
+        sortable: false,
+        align: "right",
+        render: (_, row) =>
+          formatCurrency(
+            (row?.PaymentScheduleAmount || 0) +
+            (row?.PaymentScheduleTDSAmount || 0)
+          ) || "0",
       },
       ...(Number(formData.PaymentScheduleSchemeMasterId) !== 0 ? [] : [
         {
@@ -1167,10 +1179,7 @@ export const AddUpdateBooking: React.FC = () => {
         width: "18",
         sortable: false,
         align: "right",
-        render: (value) => {
-          if (!value) return "-";
-          return `₹${Number(value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        },
+        render: (value) => formatCurrency(value) || "0",
       },
       {
         key: "GSTPercentage",
@@ -1186,10 +1195,7 @@ export const AddUpdateBooking: React.FC = () => {
         width: "18",
         sortable: false,
         align: "right",
-        render: (value) => {
-          if (!value) return "-";
-          return `₹${Number(value).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        },
+        render: (value) => formatCurrency(value) || "0",
       },
     ],
     [canAction],
@@ -1226,15 +1232,12 @@ export const AddUpdateBooking: React.FC = () => {
     if (!formData.AgreementValue || formData.AgreementValue === 0) {
       newErrors.AgreementValue = "Agreement Value is required";
     }
-    if (!formData.AgreementValueGSTPercentage) {
-      newErrors.AgreementValueGSTPercentage = "Agreement GST (%) is required";
-    } else if (formData.AgreementValueGSTPercentage === 0) {
+
+    if (!formData.AgreementValueGSTPercentage === null || formData.AgreementValueGSTPercentage === undefined) {
       newErrors.AgreementValueGSTPercentage = "Agreement GST (%) is required";
     }
 
-    if (!formData.StampDutyPercentage) {
-      newErrors.StampDutyPercentage = "Stamp Duty (%) is required";
-    } else if (formData.StampDutyPercentage === 0) {
+    if (!formData.StampDutyPercentage === null || formData.StampDutyPercentage === undefined) {
       newErrors.StampDutyPercentage = "Stamp Duty (%) is required";
     }
 
@@ -1254,6 +1257,18 @@ export const AddUpdateBooking: React.FC = () => {
       newErrors.RegistrationDate = "Registration Date is required";
     }
 
+    if (!formData.FlatAlterationRemark?.trim()) {
+      newErrors.FlatAlterationRemark = "Unit / Modulation / Customization Remark is required";
+    }
+
+    if (!formData.PaymentRemark?.trim()) {
+      newErrors.PaymentRemark = "Payment Related Remark is required";
+    }
+
+    if (!formData.TermsAndConditionsDescription?.trim()) {
+      newErrors.TermsAndConditionsDescription = "Terms and Conditions Description is required";
+    }
+
     if (applicantList.length === 0) {
       addToast({ type: "error", title: "At least one applicant is required" });
       return { isValid: false, errors: newErrors };
@@ -1263,6 +1278,8 @@ export const AddUpdateBooking: React.FC = () => {
       addToast({ type: "error", title: "Payment schedule is required" });
       return { isValid: false, errors: newErrors };
     }
+
+    
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -1286,12 +1303,15 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (!formDataForApplicant.ApplicantMobileNumber?.trim()) {
       newErrorsBookingApplicant.ApplicantMobileNumber = "Mobile Number is required";
-    } else if (!isValidMobile(formDataForApplicant.ApplicantMobileNumber.trim())) {
-      newErrorsBookingApplicant.ApplicantMobileNumber = "Enter a valid 10-Digit Mobile Number";
+    } else if (!isValidMobile(formDataForApplicant.ApplicantMobileNumber.trim(), formDataForApplicant.ApplicantMobileNumberCountryCode!.trim())) {
+      newErrorsBookingApplicant.ApplicantMobileNumber = "Enter a valid Mobile Number";
     }
 
-    if (formDataForApplicant.ApplicantEmailId?.trim() && !isValidEmail(formDataForApplicant.ApplicantEmailId.trim())) {
-      newErrorsBookingApplicant.ApplicantEmailId = "Enter a valid Email Id";
+    if (!formDataForApplicant.ApplicantEmailId?.trim()) {
+      newErrorsBookingApplicant.ApplicantEmailId = "E-mail Id is required";
+    }
+    else if (!isValidEmail(formDataForApplicant.ApplicantEmailId.trim())) {
+      newErrorsBookingApplicant.ApplicantEmailId = "Enter a Valid E-mail Id";
     }
 
     const mergedPhotoFiles = editingApplicantData ? calculateMergedFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs) : applicantPhotoFiles.slice();
@@ -1486,6 +1506,7 @@ export const AddUpdateBooking: React.FC = () => {
       BookingApplicantId: editingApplicantData?.row.BookingApplicantId ?? 0,
       ApplicantType: formDataForApplicant.ApplicantType || "",
       ApplicantName: formDataForApplicant.ApplicantName || "",
+      ApplicantMobileNumberCountryCode: formDataForApplicant.ApplicantMobileNumberCountryCode!.trim() || "",
       ApplicantMobileNumber: formDataForApplicant.ApplicantMobileNumber || "",
       ApplicantEmailId: formDataForApplicant.ApplicantEmailId || "",
       PhotoURL: createFileUrlString(mergedPhotoFiles),
@@ -1612,9 +1633,17 @@ export const AddUpdateBooking: React.FC = () => {
       addToast({ type: 'error', title: "Atleast one applicant is required" });
       return
     }
+
     else if (countPrimaryApplicants() === 0) {
 
       addToast({ type: 'error', title: "In Applicant List - One Applicant is required" });
+      return
+
+    }
+
+    else if (countPrimaryApplicants() > 1) {
+
+      addToast({ type: 'error', title: "In Applicant List - Only One Applicant is required" });
       return
 
     }
@@ -1650,13 +1679,16 @@ export const AddUpdateBooking: React.FC = () => {
       return;
     }
 
-    if (formData.BookingId === 0 && !isOtpVerified) {
+    if (formData.BookingId === 0 && applicantList.find((x) => x.ApplicantType === "Applicant")?.ApplicantMobileNumberCountryCode === "+91" && !isOtpVerified) {
 
       if (!isOtpSent) {
 
         const sent = await sendOTP({
           mobileNumber: applicantList.find((x) => x.ApplicantType === "Applicant")?.ApplicantMobileNumber || "",
           module: "BOOKING",
+          name: applicantList.find((x) => x.ApplicantType === "Applicant")?.ApplicantName || "",
+          projectName: (LocalStorageHelper.getStoredEmployeeData?.()?.ProjectData ?? []).find(p => p.ProjectId === Number(projectId))?.ProjectName || "",
+          source: enquiryList?.Source || "",
           setIsLoading,
           setLoadingMessage,
           addToast,
@@ -1716,12 +1748,13 @@ export const AddUpdateBooking: React.FC = () => {
 
         formDataToSend.append("BookingType", formData.BookingType ?? "");
 
-        // Convert other charges to JSON
-        const otherChargesJSON = otherCharges.length > 0 ? JSON.stringify(otherCharges) : "";
+        formDataToSend.append("IsApplicableOtherCharge", String(formData.IsApplicableOtherCharge ?? false));
+
+        const otherChargesJSON = formData.IsApplicableOtherCharge && otherCharges.length > 0 ? JSON.stringify(otherCharges) : "";
         formDataToSend.append("OtherChargesDetailJSON", otherChargesJSON);
 
-        // Convert payment schedules to JSON
         formDataToSend.append("PaymentScheduleSchemeMasterId", String(formData.PaymentScheduleSchemeMasterId ?? 0));
+
         const paymentScheduleJSON = paymentSchedules.length > 0 ? JSON.stringify(paymentSchedules) : "";
         formDataToSend.append("PaymentScheduleDetailJSON", paymentScheduleJSON);
         formDataToSend.append("BookingAmount", String(formData.BookingAmount ?? 0));
@@ -1732,7 +1765,6 @@ export const AddUpdateBooking: React.FC = () => {
         formDataToSend.append("TenantId", String(formData.TenantId ?? 0));
         formDataToSend.append("OTP", otp?.trim());
 
-        // Helper function to add files with existing
         const addFilesWithExisting = (fdLocal: FormData, prefix: string, fileArray: (File | string)[] | undefined, fieldKey: string) => {
           if (!fileArray || fileArray.length === 0) return;
 
@@ -1759,6 +1791,7 @@ export const AddUpdateBooking: React.FC = () => {
           formDataToSend.append(`${prefix}.BookingApplicantId`, String(app.BookingApplicantId ?? 0));
           formDataToSend.append(`${prefix}.ApplicantType`, app.ApplicantType ?? "");
           formDataToSend.append(`${prefix}.ApplicantName`, app.ApplicantName ?? "");
+          formDataToSend.append(`${prefix}.ApplicantMobileNumberCountryCode`, app.ApplicantMobileNumberCountryCode ?? "");
           formDataToSend.append(`${prefix}.ApplicantMobileNumber`, app.ApplicantMobileNumber ?? "");
           formDataToSend.append(`${prefix}.ApplicantEmailId`, app.ApplicantEmailId ?? "");
           formDataToSend.append(`${prefix}.AadharCardNumber`, app.AadharCardNumber ?? "");
@@ -1937,13 +1970,14 @@ export const AddUpdateBooking: React.FC = () => {
           PaymentScheduleSchemeMasterId: schemeId,
           InventoryBuildingId: buildingId,
           InventoryFlatFloorBasementPodiumWingId: wingId,
+          IsCheckPermission: false
         };
 
         const response = await paymentScheduleMasterService.apiCallPullPaymentScheduleMaster(params);
 
         if (E.isRight(response)) {
 
-          const mappedPaymentSchedule = mapPaymentScheduleToBookingPaymentSchedule(response.right.Data, Number(formData.AgreementValue), Number(formData.AgreementValueGSTPercentage));
+          const mappedPaymentSchedule = mapPaymentScheduleToBookingPaymentSchedule(response.right.Data, Number(formData.AgreementValue), Number(formData.AgreementValueGSTPercentage), Number((formData.AgreementValue || 0) - Number((formData.AgreementValueTDS || 0))));
 
           setPaymentSchedules(mappedPaymentSchedule);
         } else {
@@ -1996,7 +2030,7 @@ export const AddUpdateBooking: React.FC = () => {
               value={enquiryUniqueCode}
               onChange={(e) => {
                 setEnquiryMasterList(null);
-                setEnquiryUniqueCode(e.target.value);
+                setEnquiryUniqueCode((e.target.value).toUpperCase());
                 setEnquiryId(0);
 
               }}
@@ -2017,8 +2051,10 @@ export const AddUpdateBooking: React.FC = () => {
                   <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-3 gap-3">
                       <FieldItem label="Enquiry Code" value={enquiryUniqueCode || "-"} />
+                      <FieldItem label="E-Mail ID" value={enquiryList?.EmailId || '-'} />
                       <FieldItem label="Name" value={enquiryList?.Name || "-"} />
-                      <FieldItem label="Mobile No" value={enquiryList?.MobileNumber ? `+91 ${enquiryList?.MobileNumber}` : "-"} />
+                      <FieldItem label="Nationality" value={enquiryList?.Nationality || "-"} />
+                      <FieldItem label="Mobile No" value={!enquiryList?.MobileNumber ? "-" : `${enquiryList?.MobileNumberCountryCode ?? "+91"}  ${enquiryList?.MobileNumber}`} />
                       <FieldItem label="Source" value={enquiryList?.Source || "-"} />
                       <FieldItem label="Sub Source" value={enquiryList?.SubSource || "-"} />
                       {enquiryList?.Source?.toUpperCase() !== "CHANNEL PARTNER" && !!enquiryList?.SubSubSource?.trim() && <FieldItem label="Sub Sub Source" value={enquiryList?.SubSubSource || "-"} />}
@@ -2032,10 +2068,11 @@ export const AddUpdateBooking: React.FC = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-1 gap-3 pt-5">
                       <FieldItem label="Current Location" value={enquiryList?.CurrentLocation || "-"} />
                     </div>
+
                   </div>
 
                   {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
+                  {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Reference" && (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                         <FieldItem label="Referral Name" value={enquiryList?.ReferralUnitOwnerName || "-"} />
@@ -2046,7 +2083,7 @@ export const AddUpdateBooking: React.FC = () => {
                   )}
 
                   {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Loyalty" && (
+                  {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Loyalty" && (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                         <FieldItem label="Existing Project" value={enquiryList?.LoyaltyExistingProjectName || "-"} />
@@ -2056,7 +2093,7 @@ export const AddUpdateBooking: React.FC = () => {
                   )}
 
                   {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-                  {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Employee Reference" && (
+                  {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Employee Reference" && (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                         <FieldItem label="Employee Name" value={enquiryList?.EmployeeReferenceName || "-"} />
@@ -2069,10 +2106,14 @@ export const AddUpdateBooking: React.FC = () => {
                   {enquiryList?.Source?.toUpperCase() === "CHANNEL PARTNER" && (
                     <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                        <FieldItem label="Channel Partner" value={enquiryList?.ChannelPartnerName || "-"} />
-                        <FieldItem label="CP Mobile" value={enquiryList?.ChannelPartnerMobileNumber ? `+91 ${enquiryList?.ChannelPartnerMobileNumber}` : "-"} />
+                        <FieldItem label="CP Code" value={enquiryList?.ChannelPartnerCode || "-"} />
+                        <FieldItem label="CP Name" value={enquiryList?.ChannelPartnerName || "-"} />
+                        <FieldItem label="CP Mobile Number" value={enquiryList?.ChannelPartnerMobileNumber ? `${enquiryList?.ChannelPartnerMobileNumberCountryCode} ${enquiryList?.ChannelPartnerMobileNumber}` : "-"} />
+                        <FieldItem label="CP E-Mail ID" value={enquiryList?.ChannelPartnerEmailId || '-'} />
+
                         <FieldItem label="CP Team Member" value={enquiryList?.ChannelPartnerTeamMemberName || "-"} />
-                        <FieldItem label="CP Team Mobile" value={enquiryList?.ChannelPartnerTeamMemberMobileNumber || "-"} />
+                        <FieldItem label="CP Team Mobile Number" value={enquiryList?.ChannelPartnerMobileNumber ? `${enquiryList?.ChannelPartnerTeamMemberMobileNumberCountryCode} ${enquiryList?.ChannelPartnerTeamMemberMobileNumber}` : "-"} />
+                        <FieldItem label="CP Team E-Mail ID" value={enquiryList?.ChannelPartnerTeamMemberEmailId || '-'} />
                       </div>
                     </div>
                   )}
@@ -2153,8 +2194,25 @@ export const AddUpdateBooking: React.FC = () => {
           <div className="space-y-4 pt-5">
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Address Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
-              <TextArea label="Permanent Address" required value={formData.PermanentAddress ?? ""} onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)} placeholder="Enter Permanent Address" error={errors.PermanentAddress} />
-              <TextArea label="Communication Address" required value={formData.CommunicationAddress ?? ""} onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)} placeholder="Enter Communication Address" error={errors.CommunicationAddress} />
+
+              <TextArea
+                label="Permanent Address"
+                maxLength={500}
+                required
+                value={formData.PermanentAddress ?? ""}
+                onChange={(e) => handleFieldChange("PermanentAddress", e.target.value)}
+                placeholder="Enter Permanent Address"
+                error={errors.PermanentAddress} />
+
+              <TextArea
+                label="Communication Address"
+                maxLength={500}
+                required
+                value={formData.CommunicationAddress ?? ""}
+                onChange={(e) => handleFieldChange("CommunicationAddress", e.target.value)}
+                placeholder="Enter Communication Address"
+                error={errors.CommunicationAddress} />
+
             </div>
           </div>
 
@@ -2300,44 +2358,38 @@ export const AddUpdateBooking: React.FC = () => {
                   handleFieldChange("EmployeeReferenceAmount", employeeReferenceAMount.toFixed(2));
 
                   // ================= RECALCULATE PAYMENT SCHEDULE AMOUNTS =================
+                  const agreementValueWithoutTDS = Number(agreementValue || 0) - Number(tdsAmount || 0);
+
                   if (paymentSchedules.length > 0) {
                     setPaymentSchedules((prev) =>
                       prev.map((schedule) => ({
                         ...schedule,
-                        PaymentScheduleAmount: (agreementValue * (schedule.PaymentSchedulePercentage || 0)) / 100,
+
+                        PaymentScheduleAmount: Number(((agreementValueWithoutTDS * (schedule.PaymentSchedulePercentage || 0)) / 100).toFixed(2)),
+
+                        PaymentScheduleGSTAmount: Number(((((agreementValue * (schedule.PaymentSchedulePercentage || 0)) / 100) * (formData.AgreementValueGSTPercentage || 0)) / 100).toFixed(2)),
+
+                        PaymentScheduleTDSAmount: agreementValue > 4999999.99 ? Number((((agreementValue * (schedule.PaymentSchedulePercentage || 0)) / 100) * 1 / 100).toFixed(2)) : 0,
+
                       })),
                     );
                   }
+                  if (Boolean(formData.IsApplicableOtherCharge)) {
 
-                  // ================= RECALCULATE PAYMENT SCHEDULE GST AMOUNTS =================
-                  if (paymentSchedules.length > 0) {
-                    setPaymentSchedules((prev) =>
-                      prev.map((schedule) => ({
-                        ...schedule,
-                        PaymentScheduleGSTAmount: (agreementValue * (formData.AgreementValueGSTPercentage || 0)) / 100,
-                      })),
-                    );
-                  }
+                    if (otherCharges.length === 0) {
+                      loadOtherCharges();
+                    }
 
-                  // ================= RECALCULATE PAYMENT SCHEDULE TDS AMOUNTS =================
-                  if (paymentSchedules.length > 0) {
-                    setPaymentSchedules((prev) =>
-                      prev.map((schedule) => ({
-                        ...schedule,
-                        PaymentScheduleTDSAmount: (agreementValue * (formData.AgreementValueGSTPercentage || 0)) / 100,
-                      })),
-                    );
-                  }
+                    else {
 
-                  if (otherCharges.length === 0) {
-                    loadOtherCharges();
-                  }
-                  else {
-                    const flatDataFromState = (location.state as any)?.flatData;
+                      const flatDataFromState = (location.state as any)?.flatData;
 
-                    const rERACarpetAreaSqFt = flatDataFromState?.RERACarpetAreaSqFt ?? selectedFlatData?.RERACarpetAreaSqFt ?? 0;
-                    const mappedCharges = mapOtherChargesToBookingOtherCharges(Number(rERACarpetAreaSqFt), otherChargesData);
-                    setOtherCharges(mappedCharges);
+                      const rERACarpetAreaSqFt = flatDataFromState?.RERACarpetAreaSqFt ?? selectedFlatData?.RERACarpetAreaSqFt ?? 0;
+                      const mappedCharges = mapOtherChargesToBookingOtherCharges(Number(rERACarpetAreaSqFt), otherChargesData);
+
+                      setOtherCharges(mappedCharges);
+
+                    }
                   }
                 }}
                 placeholder="Agreement Value"
@@ -2362,14 +2414,25 @@ export const AddUpdateBooking: React.FC = () => {
                 required
                 onChange={(e) => {
                   const val = allowPercentage(e.target.value);
+
                   if (val !== null) {
+
                     const percentage = filterNumbersWithDecimal(e.target.value);
                     handleFieldChange("AgreementValueGSTPercentage", percentage);
 
-                    // Calculate CST Amount
                     const agreementValue = formData.AgreementValue || 0;
 
                     const cstAmount = (agreementValue * Number(percentage)) / 100;
+
+                    // ================= RECALCULATE PAYMENT SCHEDULE AMOUNTS =================
+                    if (paymentSchedules.length > 0) {
+                      setPaymentSchedules((prev) =>
+                        prev.map((schedule) => ({
+                          ...schedule,
+                          PaymentScheduleGSTAmount: Number(((((agreementValue * (schedule.PaymentSchedulePercentage || 0)) / 100) * (Number(percentage) || 0)) / 100).toFixed(2)),
+                        })),
+                      );
+                    }
 
                     handleFieldChange("AgreementValueGSTAmount", cstAmount.toFixed(2));
                   }
@@ -2437,7 +2500,7 @@ export const AddUpdateBooking: React.FC = () => {
           )}
 
           {/* ===================== DIRECT WALKING → REFERENCE ===================== */}
-          {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Reference" && (
+          {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Reference" && (
             <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Referral Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2469,7 +2532,7 @@ export const AddUpdateBooking: React.FC = () => {
           )}
 
           {/* ===================== DIRECT WALKING → LOYALTY ===================== */}
-          {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Loyalty" && (
+          {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Loyalty" && (
             <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Loyalty Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2501,7 +2564,7 @@ export const AddUpdateBooking: React.FC = () => {
           )}
 
           {/* ===================== DIRECT WALKING → EMPLOYEE REFERENCE ===================== */}
-          {enquiryList?.Source === "Direct Walking" && enquiryList?.SubSource === "Employee Reference" && (
+          {enquiryList?.Source === "Direct Walkin" && enquiryList?.SubSource === "Employee Reference" && (
             <div className="space-y-4 pt-5">
               <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Employee Reference Details</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2584,10 +2647,11 @@ export const AddUpdateBooking: React.FC = () => {
                   loadPaymentScheduleByPaymentScheduleSchemeId(schemeId);
                 }
               }}
-              initialValue={createDropdownInitialValue(formData.PaymentScheduleSchemeMasterId, dropdownLabels.paymentScheduleScheme)}
+              initialValue={createDropdownInitialValue(bookingId > 0 ? String(formData.PaymentScheduleSchemeMasterId) : '', dropdownLabels.paymentScheduleScheme)}
               error={errors.PaymentScheduleSchemeMasterId}
             />
           </div>
+
 
           {/* ============================================================= [PAYMENT SCHEDULE TABLE] ============================================================================================= */}
           <div className="space-y-4 pt-5">
@@ -2645,8 +2709,48 @@ export const AddUpdateBooking: React.FC = () => {
           {/* ============================================================= [OTHER CHARGES TABLE] ============================================================================================= */}
           <div className="space-y-4 pt-5">
             <div className="flex items-center justify-between border-b border-gray-300 pb-2">
-              <div className="flex items-center gap-4">
-                <h3 className="text-lg font-semibold text-gray-900">Other Charges</h3>
+
+              <h3 className="text-lg font-semibold text-gray-900">
+                Other Charges
+              </h3>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Applicable</span>
+
+                <ToggleSwitch
+                  label=""
+                  name="IsApplicableOtherCharge"
+                  value={formData.IsApplicableOtherCharge ?? false}
+                  onChange={(_, value) => {
+
+                    handleFieldChange("IsApplicableOtherCharge", Boolean(value));
+
+                    if (value) {
+
+                      if (otherCharges.length === 0) {
+
+                        loadOtherCharges();
+
+                      } else {
+
+                        const flatDataFromState = (location.state as any)?.flatData;
+
+                        const rERACarpetAreaSqFt = flatDataFromState?.RERACarpetAreaSqFt ?? selectedFlatData?.RERACarpetAreaSqFt ?? 0;
+
+                        const mappedCharges = mapOtherChargesToBookingOtherCharges(Number(rERACarpetAreaSqFt), otherChargesData);
+
+                        setOtherCharges(mappedCharges);
+                      }
+
+                    } else {
+
+                      setOtherCharges([]);
+
+                      handleFieldChange("OtherChargesDetailJSON", null);
+
+                    }
+                  }}
+                />
               </div>
             </div>
             {otherCharges.length > 0 ? (
@@ -2700,16 +2804,23 @@ export const AddUpdateBooking: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300">Additional Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-5">
               <div>
-                <TextArea className='thin-scroll' label="Unit / Modulation / Customization Remark" value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
+                <TextArea required className='thin-scroll' label="Unit / Modulation / Customization Remark" value={formData.FlatAlterationRemark ?? ""} onChange={(e) => handleFieldChange("FlatAlterationRemark", e.target.value)} placeholder="Enter Unit / Modulation / Customization" error={errors.FlatAlterationRemark} />
               </div>
               <div>
-                <TextArea className='thin-scroll' label="Payment Related Remark" value={formData.PaymentRemark ?? ""} onChange={(e) => handleFieldChange("PaymentRemark", e.target.value)} placeholder="Enter Payment Related Remark" error={errors.PaymentRemark} />
+                <TextArea required className='thin-scroll' label="Payment Related Remark" value={formData.PaymentRemark ?? ""} onChange={(e) => handleFieldChange("PaymentRemark", e.target.value)} placeholder="Enter Payment Related Remark" error={errors.PaymentRemark} />
               </div>
               <div>
                 <TextArea className='thin-scroll' label="Other Remark" value={formData.OtherRemark ?? ""} onChange={(e) => handleFieldChange("OtherRemark", e.target.value)} placeholder="Enter Other Remark" error={errors.OtherRemark} />
               </div>
               <div>
-                <SingleSelectDropdownWithPagination label="Term & Condition" title="Term & Condition" size="lg" dataFetchCallBack={fetchTncByModuleName("Booking")} onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)} />
+                <SingleSelectDropdownWithPagination
+                  label="Term & Condition"
+                  title="Term & Condition"
+                  required
+                  size="lg"
+                  dataFetchCallBack={fetchTncByModuleName("Booking")}
+                  onSelected={(item) => handleFieldChange("TermsAndConditionsDescription", item?.value)}
+                  error={errors.TermsAndConditionsDescription} />
               </div>
               <div>
                 <RichTextEditor value={formData.TermsAndConditionsDescription ?? ""} onChange={(html) => handleFieldChange("TermsAndConditionsDescription", html)} readOnly />
@@ -2826,44 +2937,64 @@ export const AddUpdateBooking: React.FC = () => {
             <div>
               <Input label="Applicant Name" required error={errorsBookingApplicant.ApplicantName} value={formDataForApplicant.ApplicantName ?? ""} maxLength={50} onChange={(e) => handleFieldChangeBookingApplicant("ApplicantName", filterLetters(e.target.value))} placeholder="Enter Applicant Name" />
             </div>
+
             <div>
-              <Input label="Mobile Number" required error={errorsBookingApplicant.ApplicantMobileNumber} type="text" value={formDataForApplicant.ApplicantMobileNumber ?? ""} maxLength={10} leftIcon="+91" onChange={(e) => handleFieldChangeBookingApplicant("ApplicantMobileNumber", filterMobile(e.target.value))} placeholder="Enter Mobile Number" />
+              <MobileNumberInput
+                mobileNumber={formDataForApplicant.ApplicantMobileNumber ?? ""}
+                countryCode={formDataForApplicant.ApplicantMobileNumberCountryCode ?? "+91"}
+                disabled={Number(formDataForApplicant.BookingApplicantId) > 0 && Number(formData.BookingId) > 0}
+                required
+                error={errorsBookingApplicant.ApplicantMobileNumber}
+                onMobileChange={(value) =>
+                  handleFieldChangeBookingApplicant("ApplicantMobileNumber", value)
+                }
+                onCountryCodeChange={(value) =>
+                  handleFieldChangeBookingApplicant("ApplicantMobileNumberCountryCode", value)
+                }
+              />
+            </div>
+
+            <div>
+              <Input
+                label="Email Id"
+                required
+                error={errorsBookingApplicant.ApplicantEmailId}
+                type="text" value={formDataForApplicant.ApplicantEmailId ?? ""}
+                onChange={(e) => handleFieldChangeBookingApplicant("ApplicantEmailId", filterEmail(e.target.value))}
+                placeholder="Enter Email Id" />
             </div>
             <div>
-              <Input label="Email Id" error={errorsBookingApplicant.ApplicantEmailId} type="text" value={formDataForApplicant.ApplicantEmailId ?? ""} onChange={(e) => handleFieldChangeBookingApplicant("ApplicantEmailId", filterEmail(e.target.value))} placeholder="Enter Email Id" />
-            </div>
-            <div>
-              <MultiFilePicker label="Photo" placeholder="Select Photo" required error={errorsBookingApplicant.PhotoURL} value={applicantPhotoFiles} onChange={setApplicantPhotoFiles} allowedTypes={["image/jpeg", "image/png"]} maxFiles={1} maxSizeMB={5} onRemoveExisting={(url) => setRemovedApplicantPhotoURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="Photo" placeholder="Select Photo" required error={errorsBookingApplicant.PhotoURL} value={applicantPhotoFiles} onChange={setApplicantPhotoFiles} allowedTypes={["image/jpeg", "image/png"]} maxFiles={1} onRemoveExisting={(url) => setRemovedApplicantPhotoURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="Aadhaar Number" error={errorsBookingApplicant.AadharCardNumber} required type="text" value={formDataForApplicant.AadharCardNumber ?? ""} maxLength={12} onChange={(e) => handleFieldChangeBookingApplicant("AadharCardNumber", filterAadhaar(e.target.value))} placeholder="Enter Aadhaar Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="Aadhaar Card" required placeholder="Select Aadhaar Card" error={errorsBookingApplicant.AadharCardURL} value={aadharCardFiles} onChange={setAadharCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={2} maxSizeMB={10} onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="Aadhaar Card" required placeholder="Select Aadhaar Card" error={errorsBookingApplicant.AadharCardURL} value={aadharCardFiles} onChange={setAadharCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={2} onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="PAN Number" required error={errorsBookingApplicant.PanNumber} type="text" value={formDataForApplicant.PanNumber ?? ""} maxLength={10} onChange={(e) => handleFieldChangeBookingApplicant("PanNumber", filterPAN(e.target.value).toUpperCase())} placeholder="Enter PAN Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="PAN Card" required placeholder="Select PAN Card" error={errorsBookingApplicant.PanCardURL} value={panCardFiles} onChange={setPanCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]} maxFiles={2} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="PAN Card" required placeholder="Select PAN Card" error={errorsBookingApplicant.PanCardURL} value={panCardFiles} onChange={setPanCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]} maxFiles={2} onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="Passport Number" error={errorsBookingApplicant.PassportNumber} type="text" value={formDataForApplicant.PassportNumber ?? ""} maxLength={8} onChange={(e) => handleFieldChangeBookingApplicant("PassportNumber", filterPassportNumber(e.target.value.toUpperCase()))} placeholder="Enter Passport Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="Passport" placeholder="Select Passport" error={errorsBookingApplicant.PassportURL} value={passportFiles} onChange={setPassportFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="Passport" placeholder="Select Passport" error={errorsBookingApplicant.PassportURL} value={passportFiles} onChange={setPassportFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="Driving License Number" error={errorsBookingApplicant.DrivingLicenseNumber} type="text" value={formDataForApplicant.DrivingLicenseNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicant("DrivingLicenseNumber", filterDrivingLicenseNumber(e.target.value.toUpperCase()))} placeholder="Enter Driving License Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="Driving License" placeholder="Select Driving License" error={errorsBookingApplicant.DrivingLicenseURL} value={drivingLicenseFiles} onChange={setDrivingLicenseFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="Driving License" placeholder="Select Driving License" error={errorsBookingApplicant.DrivingLicenseURL} value={drivingLicenseFiles} onChange={setDrivingLicenseFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="Voting ID Number" error={errorsBookingApplicant.VotingIdNumber} type="text" value={formDataForApplicant.VotingIdNumber ?? ""} maxLength={10} onChange={(e) => handleFieldChangeBookingApplicant("VotingIdNumber", filterVoterId(e.target.value.toUpperCase()))} placeholder="Enter Voting ID Number" rightIcon={<IdCardIcon />} />
             </div>
             <div>
-              <MultiFilePicker label="Voting ID" placeholder="Select Voting ID" error={errorsBookingApplicant.VotingIdURL} value={votingIdFiles} onChange={setVotingIdFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])} />
+              <MultiFilePicker label="Voting ID" placeholder="Select Voting ID" error={errorsBookingApplicant.VotingIdURL} value={votingIdFiles} onChange={setVotingIdFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])} />
             </div>
             <div>
               <Input label="GST Number" error={errorsBookingApplicant.GSTNumber} type="text" value={formDataForApplicant.GSTNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicant("GSTNumber", filterGST(e.target.value.toUpperCase()))} placeholder="Enter GST Number" rightIcon={<IdCardIcon />} />
@@ -2903,7 +3034,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setPOAFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedPOAURLs((prev) => [...prev, url])
                 }
@@ -2918,7 +3048,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setIncomeFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedIncomeURLs((prev) => [...prev, url])
                 }
@@ -2933,7 +3062,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setNreNroFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedNreNroURLs((prev) => [...prev, url])
                 }
@@ -2948,7 +3076,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setNomineeFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedNomineeURLs((prev) => [...prev, url])
                 }
@@ -2963,7 +3090,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setSourceOfFundsFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedSourceOfFundsURLs((prev) => [...prev, url])
                 }
@@ -2978,7 +3104,6 @@ export const AddUpdateBooking: React.FC = () => {
                 onChange={setPaymentProofFiles}
                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                 maxFiles={1}
-                maxSizeMB={5}
                 onRemoveExisting={(url) =>
                   setRemovedPaymentProofURLs((prev) => [...prev, url])
                 }
@@ -3058,6 +3183,7 @@ export const AddUpdateBooking: React.FC = () => {
           }
 
           const agreementValue = formData.AgreementValue || 0;
+          const agreementValueMinusTDS = Number(formData.AgreementValue || 0) - Number(formData.AgreementValueTDS || 0);
           const percentage = Number(paymentSchedulePercentage);
 
           // Calculate new total percentage
@@ -3077,13 +3203,15 @@ export const AddUpdateBooking: React.FC = () => {
 
           const amount = (agreementValue * percentage) / 100;
 
+          const amountMinusTDS = (agreementValueMinusTDS * percentage) / 100;
+
           const newSchedule: AddUpdateBookingPaymentScheduleRequest = {
             BookingPaymentScheduleId: editingPaymentScheduleIndex !== null ? (paymentSchedules[editingPaymentScheduleIndex]?.BookingPaymentScheduleId ?? 0) : 0,
             Type: paymentScheduleType,
             Name: scheduleName,
             Date: scheduleDate,
             PaymentSchedulePercentage: percentage,
-            PaymentScheduleAmount: amount,
+            PaymentScheduleAmount: amountMinusTDS,
             PaymentScheduleGSTAmount: (amount * Number(formData.AgreementValueGSTPercentage)) / 100,
             PaymentScheduleTDSAmount: agreementValue > 4999999.99 ? (amount * 1) / 100 : 0,
           };

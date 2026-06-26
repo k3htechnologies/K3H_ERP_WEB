@@ -41,6 +41,9 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
     const [, setLoadingMessage] = useState('');
 
     const handleAddFlat = () => {
+
+        sessionStorage.setItem("scrollFloorId", floor.InventoryFloorId.toString());
+
         const newFlatData = {
             InventoryFlatId: 0,
             Uniquekey: '',
@@ -72,7 +75,9 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
         });
     };
 
+
     const handleParkingClick = (e: React.MouseEvent) => {
+        sessionStorage.setItem("scrollFloorId", floor.InventoryFloorId.toString());
         e.stopPropagation();
         if (canAction && !approvalStatus?.toUpperCase().includes("APPROVED")) {
             setIsParkingModalOpen(true);
@@ -135,15 +140,18 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
 
     return (
         <div className="pt-2">
+            <div id={`floor-${floor.InventoryFloorId}`}>
             <ExpandableCard
                 key={floor.InventoryFloorId}
                 title={floor.Floor}
+                subTitle={floor.InventoryFlatData.length > 0 ? floor.InventoryFlatData.length : ""}
                 showline={true}
                 defaultOpen={true}
                 customizedIcon={
                     <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">{`Slab Height: ${slabHeight} ft`}</span>
 
+                        <span className="text-sm text-gray-600">{`Slab Height: ${slabHeight} ft`}</span>
+                        
                         <div
                             className="flex items-center gap-1 cursor-pointer hover:bg-gray-100 rounded px-2 py-1 transition-colors"
                             onClick={handleParkingClick}
@@ -151,6 +159,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                             <span className="text-[#135BEC] font-medium text-sm">{floor.ParkingCount || 0}</span>
                             <Car className="text-[#135BEC]" size={20} />
                         </div>
+                         
                         {canAction && (
                             <>
                                 {!approvalStatus?.toUpperCase().includes("APPROVED") && (
@@ -184,24 +193,25 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                 child={
                     <div className="flex flex-1 gap-5 thin-scroll">
                         {floor.InventoryFlatData?.map((flat, flatIndex) => (
-                            <FlatCard
-                                key={flatIndex}
-                                flat={flat}
-                                projectId={projectId}
-                                onDelete={onDelete}
-                                wing={wing.Wing}
-                                floor={floor.Floor}
-                                buildingNumber={building?.BuildingNumber ?? ""}
-                                canAction={canAction}
-                                canBookingAction={canBookingAction}
-                                approvalStatus={approvalStatus}
-                            />
+                            
+                                <FlatCard
+                                    key={flatIndex}
+                                    flat={flat}
+                                    projectId={projectId}
+                                    onDelete={onDelete}
+                                    wing={wing.Wing}
+                                    floor={floor.Floor}
+                                    buildingNumber={building?.BuildingNumber ?? ""}
+                                    canAction={canAction}
+                                    canBookingAction={canBookingAction}
+                                    approvalStatus={approvalStatus}
+                                />
+                            
                         ))}
                     </div>
                 }
             />
 
-            {/* Parking Count Update Modal */}
             <Modal
                 isOpen={isParkingModalOpen}
                 onClose={() => {
@@ -232,6 +242,7 @@ export const FloorCard = ({ floor, slabHeight, projectId, building, wing, onDele
                     />
                 </div>
             </Modal>
+            </div>
         </div>
     );
 };

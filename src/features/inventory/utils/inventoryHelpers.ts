@@ -8,21 +8,23 @@ export const countFlatsByStatus = (
 
     if (!inventory || inventory.length === 0) return 0;
 
-    const building = inventory.find(
-        b => b.InventoryBuildingId === inventoryBuildingId
-    );
+    const building = inventory.find( b => b.InventoryBuildingId === inventoryBuildingId);
 
     if (!building) return 0;
 
-    return building.InventoryFlatFloorBasementPodiumWingData.reduce(
-        (wingTotal, wing) => {
+    return building.InventoryFlatFloorBasementPodiumWingData.reduce((wingTotal, wing) => {
 
-            const wingFlats = wing.InventoryFloorData.reduce(
-                (floorTotal, floor) => {
+            const wingFlats = wing.InventoryFloorData.reduce((floorTotal, floor) => {
 
-                    const count = floor.InventoryFlatData.filter(
-                        flat => flat.FlatStatus === status
-                    ).length;
+                      const count = floor.InventoryFlatData.filter(flat => {
+
+                        if (!status) {
+                            return true;
+                        }
+
+                        return flat.FlatStatus === status;
+
+                    }).length;
 
                     return floorTotal + count;
 
@@ -46,9 +48,16 @@ export const countWingWiseFlatStatus = (
 
     return wing.InventoryFloorData.reduce((total, floor) => {
 
-        const count = floor.InventoryFlatData.filter(
-            flat => flat.FlatStatus === status
-        ).length;
+           const count = floor.InventoryFlatData.filter(flat => {
+
+            if (!status) {
+                return true;
+            }
+
+            return flat.FlatStatus === status;
+
+        }).length;
+
         return total + count;
     }, 0);
 };

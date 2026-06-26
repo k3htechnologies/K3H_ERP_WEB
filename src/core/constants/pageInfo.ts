@@ -332,6 +332,19 @@ export const getPageInfo = (path: string) => {
                 title: 'Event',
                 description: 'Profile',
             }
+
+        case 'inwardOutward':
+            return {
+                title: 'Inward Outward',
+                description: 'Inward Outward',
+            }
+
+        case 'ticket':
+            return {
+                title: 'Ticket',
+                description: 'Ticket',
+            }
+
             {/* INVENTORY */ }
 
         case 'inventoryDashboard':
@@ -349,6 +362,12 @@ export const getPageInfo = (path: string) => {
                 title: "Parking Management",
                 description: "Track parking availability across buildings and projects",
             }
+        case 'inventoryParkingOverallReport':
+            return {
+                title: "Inventory and Parking Overall Report",
+                description: "Comprehensive report for inventory and parking management with real-time insights and actionable data",
+            }
+
 
             {/* SALES */ }
         case 'saleDashboard':
@@ -365,6 +384,11 @@ export const getPageInfo = (path: string) => {
             return {
                 title: "Channel Partner Dashboard",
                 description: "Centralized enquiry management for faster response",
+            }
+        case 'cpUniverse':
+            return {
+                title: "Channel Partner Universe",
+                description: "Single source of truth for channel partner information",
             }
 
         case 'channelPartner':
@@ -414,6 +438,11 @@ export const getPageInfo = (path: string) => {
                 title: "Enquiry Report",
                 description: "Turn Enquiries into Opportunities",
             }
+        case 'ibmObmReport':
+            return {
+                title: "IBM OBM Report",
+                description: "Turn Enquiries into Opportunities",
+            }
         case 'cpEnquiryReport':
             return {
                 title: "Channel Partner Enquiry Report",
@@ -438,6 +467,16 @@ export const getPageInfo = (path: string) => {
             return {
                 title: "Performance",
                 description: "Track Team Progress Against Every Target",
+            }
+        case 'achievement':
+            return {
+                title: "Achievement",
+                description: "Recognize and Reward Top Performers",
+            }
+        case 'channelPartnerCategory':
+            return {
+                title: "Channel Partner Category",
+                description: "Channel Partner Category",
             }
         case 'channelPartnerCategory':
             return {
@@ -473,10 +512,49 @@ export const getPageInfo = (path: string) => {
             }
 
         //CRM  
+
+        case 'crmDashboard':
+            return {
+                title: "CRM Dashboard",
+                description: "Secure your unit by completing the booking process",
+            }
+
         case 'payTrack':
             return {
                 title: "Pay Track",
                 description: "Secure your unit by completing the booking process",
+            }
+
+        case 'payTrackreport':
+            return {
+                title: "Pay Track Report",
+                description: "Secure your unit by completing the booking process",
+            }
+
+        case 'collectionReport':
+            return {
+                title: "Collection Report",
+                description: "Comprehensive report for collection management with real-time insights and actionable data",
+            }
+
+        case 'dailyCollectionReport':
+            return {
+                title: "Daily Collection Report",
+                description: "Comprehensive report for collection management with real-time insights and actionable data",
+            }
+
+
+        case 'brokerage':
+            return {
+                title: "Brokerage",
+                description: "Brokerage",
+            }
+
+        //TAX TRACKER
+        case 'noticeSection':
+            return {
+                title: 'Notice Section Master',
+                description: 'Centralized management of notice sections for real estate projects',
             }
 
         //STOCK MANAGEMENT

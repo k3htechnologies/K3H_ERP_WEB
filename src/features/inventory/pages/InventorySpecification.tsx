@@ -373,7 +373,7 @@ const InventorySpecification: React.FC = () => {
             InventoryBuildingId: flatContext.InventoryBuildingId,
             InventoryFlatFloorBasementPodiumWingId: flatContext.InventoryFlatFloorBasementPodiumWingId,
             InventoryFlatId: formDataInventoryFlat.InventoryFlatId,
-            Flat: formDataInventoryFlat.Flat.match(/\d+$/)?.[0],
+            Flat: formDataInventoryFlat.Flat.match(/[\d,]+$/)?.[0],
             FlatType: formDataInventoryFlat.FlatType,
             RERACarpetAreaSqFt: totalUnitArea ?? 0,
             FlatConfiguration: formDataInventoryFlat.FlatConfiguration,
@@ -509,15 +509,17 @@ const InventorySpecification: React.FC = () => {
 
   const isFlatLocked = ["Alloted", "Booked"].includes(formDataInventoryFlat.FlatStatus);
 
-  const canFullEdit = canAction && !isFlatLocked && !approvalStatus?.toUpperCase().includes("APPROVED");
+  const isApproved = approvalStatus?.toUpperCase().includes("APPROVED");
 
-  const canStatusEditOnly = !canAction && canBookingAction && !isFlatLocked;
+  const canFullEdit = canAction && !isFlatLocked && !isApproved;
+
+  const canStatusEditOnly = canBookingAction && isApproved && !isFlatLocked;
 
   const isChange = canFullEdit;
 
   const disabled = !canFullEdit;
 
-  const statusDisabled = !(canFullEdit || canStatusEditOnly);
+  const statusDisabled = (canFullEdit) ? false : !canStatusEditOnly;
 
   return (
     <>
@@ -546,8 +548,8 @@ const InventorySpecification: React.FC = () => {
                 label="Unit"
                 placeholder="Enter Unit"
                 required
-                maxLength={10}
-                value={formDataInventoryFlat.Flat.match(/\d+$/)?.[0] || ""}
+                maxLength={500}
+                value={formDataInventoryFlat.Flat.match(/[\d,]+$/)?.[0] || ""}
                 onChange={(e) => handleFieldChangeInventoryFlat("Flat", e.target.value)}
                 disabled={disabled}
                 error={errorsInventoryFlat.Flat}
@@ -675,7 +677,7 @@ const InventorySpecification: React.FC = () => {
               recordsPerPage={20}
             />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-6 hidden">
               <div className="space-y-4 pb-4">
                 <Checkbox
                   label="Apply the same flat specifications for all units in the inventory with the same RERA carpet area?"

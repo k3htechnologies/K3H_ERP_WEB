@@ -1,7 +1,9 @@
 import type { Failure } from '@/core/api/FailureResponse';
 import { PayTrackParkingModificationDatasourceImpl } from '@/features/crmPayTrack/datasources/PayTrackParkingModificationDatasource'
 import type {
+    DeleteParkingModificationRequest,
     FilterWithPaginationParkingModificationDetails,
+    ParkingModificationDetailsDeleteReponse,
     ParkingModificationDetailsListResponse,
     ParkingModificationDetailsSaveReponse
 } from '@/features/crmPayTrack/models/ParkingModificationModel';
@@ -35,5 +37,20 @@ export const parkingModificationService = {
 
         }
     },
+
+
+    apiCallDeleteParkingModificationRequest: async (params: DeleteParkingModificationRequest): Promise<E.Either<Failure, ParkingModificationDetailsDeleteReponse>> => {
+        try {
+
+            return E.right(await payTrackParkingModificationDatasource.deleteParkingModificationRequest(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+
 
 }

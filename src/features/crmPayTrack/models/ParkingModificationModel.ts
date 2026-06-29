@@ -10,7 +10,7 @@ export interface FilterWithPaginationParkingModificationDetails {
 
 export interface ParkingModificationDetailsData {
 
-    Uniquekey: string | null;
+    UniqueKey: string | null;
     BookingId: number;
     ProjectId: number;
     ParkingId: string;
@@ -39,5 +39,13 @@ export interface AddUpdateParkingModificationRequest {
     ParkingData?: ParkingData[] | null;
 }
 
+export interface DeleteParkingModificationRequest {
+    ParkingModificationRequestId: number;
+    Uniquekey: string;
+    BookingId: number;
+    ProjectId: number;
+}
+
 export type ParkingModificationDetailsListResponse = ApiResponse<ParkingModificationDetailsData[]>;
 export type ParkingModificationDetailsSaveReponse = ApiResponse<ParkingModificationDetailsData[]>;
+export type ParkingModificationDetailsDeleteReponse = ApiResponse<number>;

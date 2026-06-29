@@ -97,9 +97,9 @@ export interface BookingData {
 
     RegistrationDate: string | null;
     FinalRegistrationDate: string | null;
-    IsFinalRegistrationCompleted:boolean;
+    IsFinalRegistrationCompleted: boolean;
     FinalRegistrationURL: string | null;
-    
+
     AgreementValue: number | null;
     AgreementValueTDS: number | null;
     AgreementValueGSTPercentage: number | null;
@@ -108,7 +108,7 @@ export interface BookingData {
     StampDutyAmount: number | null;
 
     RegistrationFees: number | null;
-    
+
     ParkingId: string | null;
 
     NumberOfParking: number | null;
@@ -158,7 +158,9 @@ export interface BookingData {
     TransferBookingId: number | null;
     TransferFlat: string | null;
     TenantId: number | null;
-    IsApplicableOtherCharge:boolean | null;
+    IsApplicableOtherCharge: boolean | null;
+    CancelRemark: string | null;
+    ProofOfDocumentURL: string | null;
 }
 
 export interface BookingApplicantData {
@@ -270,7 +272,7 @@ export interface AddUpdateBookingRequest {
     OtherRemark: string | null;
     TermsAndConditionsDescription: string | null;
     BookingType: string | null;
-    IsApplicableOtherCharge:boolean | null;
+    IsApplicableOtherCharge: boolean | null;
     OtherChargesDetailJSON: string | null;
     PaymentScheduleSchemeMasterId: number | null;
     PaymentScheduleDetailJSON: string | null;
@@ -361,6 +363,9 @@ export interface CancelBookingRequest {
     ProjectId: number | null;
     InventoryFlatId: number | null;
     ParkingId: string | null;
+    CancelRemark: string | null;
+    ProofOfDocumentURL?: File[] | null;
+    RemoveProofOfDocumentURL?: string;
 }
 
 //=============================================================

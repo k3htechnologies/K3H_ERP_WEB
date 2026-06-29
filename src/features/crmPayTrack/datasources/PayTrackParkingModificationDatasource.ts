@@ -1,11 +1,12 @@
 import baseClient from "@/core/config/baseClient";
-import type { FilterWithPaginationParkingModificationDetails, ParkingModificationDetailsListResponse, ParkingModificationDetailsSaveReponse } from "@/features/crmPayTrack/models/ParkingModificationModel";
+import type { DeleteParkingModificationRequest, FilterWithPaginationParkingModificationDetails, ParkingModificationDetailsDeleteReponse, ParkingModificationDetailsListResponse, ParkingModificationDetailsSaveReponse } from "@/features/crmPayTrack/models/ParkingModificationModel";
 import { PayTrackParkingModificationApi } from "@/features/crmPayTrack/api/PayTrackParkingModificationApi";
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 
 export abstract class PayTrackParkingModificationDatasource {
     abstract pullParkingModificationDetails(params: FilterWithPaginationParkingModificationDetails, signal?: AbortSignal): Promise<ParkingModificationDetailsListResponse>;
     abstract addUpdateParkingModificationDetails(formData: FormData): Promise<ParkingModificationDetailsSaveReponse>;
+    abstract deleteParkingModificationRequest(params: DeleteParkingModificationRequest): Promise<ParkingModificationDetailsDeleteReponse>;
 }
 
 export class PayTrackParkingModificationDatasourceImpl implements PayTrackParkingModificationDatasource {
@@ -54,11 +55,44 @@ export class PayTrackParkingModificationDatasourceImpl implements PayTrackParkin
             console.error('ERROR: ADD UPDATE PARKING MODIFICATION DETAILS :', error)
 
             if (error instanceof TokenExpiredException) {
-                
+
                 return await this.addUpdateParkingModificationDetails(formData);
             }
             throw error
         }
     }
+
+    async deleteParkingModificationRequest(params: DeleteParkingModificationRequest): Promise<ParkingModificationDetailsDeleteReponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                ParkingModificationRequestId: (params.ParkingModificationRequestId ?? 0).toString(),
+                Uniquekey: params.Uniquekey ?? '1e7d00f7-7a70-f111-8575-74563c524328',
+                BookingId: (params.BookingId ?? 0).toString(),
+                ProjectId: (params.ProjectId ?? 0).toString(),
+            })
+
+            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${PayTrackParkingModificationApi.DELETE}?${queryParams.toString()}`
+            )
+
+            return response
+
+        } catch (error) {
+
+            console.error('ERROR: DELETE PARKING MODIFICATION REQUEST :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteParkingModificationRequest(params);
+
+            }
+
+            throw error
+        }
+    }
+
+
+
+
 
 }

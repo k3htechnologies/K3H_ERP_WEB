@@ -24,6 +24,7 @@ export class PayTrackParkingModificationDatasourceImpl implements PayTrackParkin
 
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
             if (params.BookingId) queryParams.append('BookingId', params.BookingId.toString());
+            if (params.TabName) queryParams.append('TabName', params.TabName);
 
             const response = await this.k3hHttpClient.getRequestWithAuthentication(
                 `${PayTrackParkingModificationApi.PULL}?${queryParams.toString()}`, { signal }

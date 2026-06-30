@@ -746,11 +746,10 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         title={editingShiftingPaymentStageData ? 'Update Shifting Payment Stage' : 'Add Shifting Payment Stage'}
         onSubmit={handleAddUpdateShiftingPaymentStage}
         saveText={editingShiftingPaymentStageData ? 'Update' : 'Add'}
-        cancelText="Cancel"
         loading={isLoading}
         size='lg'
       >
-        <div className="space-y-6">
+        <div className="space-y-6 p-6 bg-blue-100">
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <SinglePageSelection

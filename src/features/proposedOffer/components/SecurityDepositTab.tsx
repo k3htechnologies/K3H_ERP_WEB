@@ -570,11 +570,10 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
         title={editingSecurityDepositPaymentStageData ? 'Update Security Deposit Payment Stage' : 'Add Security Deposit Payment Stage'}
         onSubmit={handleAddUpdateSecurityDepositPaymentStage}
         saveText={editingSecurityDepositPaymentStageData ? 'Update' : 'Save'}
-        cancelText="Cancel"
         loading={isLoading}
         size='lg'
       >
-        <div className="space-y-6">
+        <div className="space-y-6 p-6 bg-blue-100">
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <SinglePageSelection

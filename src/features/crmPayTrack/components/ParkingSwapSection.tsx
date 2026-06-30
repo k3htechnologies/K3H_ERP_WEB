@@ -132,6 +132,7 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
                     PageSize: 100,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
+                    TabName:"REQUESTS",
 
                 };
 

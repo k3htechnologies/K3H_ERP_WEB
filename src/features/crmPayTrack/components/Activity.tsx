@@ -42,15 +42,14 @@ export const Activity: React.FC = () => {
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
+                    TabName:"ACTIVITY",
                 };
 
                 const response = await bookingApplicantModificationService.apiCallPullBookingApplicantModification(params);
 
                 if (E.isRight(response)) {
 
-                    const allApprovalStatusData = response.right.Data;
-                    const allApprovalStatusDataHere = allApprovalStatusData.filter(item => item.ApprovalStatus === 'Approved');
-                    setBookingApplicantModificationLst(allApprovalStatusDataHere);
+                    setBookingApplicantModificationLst(response.right.Data);
 
                     setPagination({
                         currentPage: page,
@@ -81,6 +80,7 @@ export const Activity: React.FC = () => {
                     PageSize: pagination.pageSize,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
+                    TabName:"ACTIVITY",
                 };
 
                 const response = await parkingModificationService.apiCallPullParkingModificationDetails(params);
@@ -117,15 +117,15 @@ export const Activity: React.FC = () => {
                     PageSize: 100,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
+                    TabName:"ACTIVITY",
                 };
 
                 const response = await flatAlterationService.apiCallPullFlatAlterationRequest(params);
 
                 if (E.isRight(response)) {
 
-                    const allFlatAlterationData = response.right.Data;
-                    const allFlatAlterationDataHere = allFlatAlterationData.filter(item => item.ApprovalStatus === 'Approved');
-                    setFlatAlterationList(allFlatAlterationDataHere);
+                    setFlatAlterationList(response.right.Data);
+
                     setPagination({
                         currentPage: page,
                         totalRecords: response.right.TotalNumberOfRecord,

@@ -207,6 +207,44 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
 
     }, [projectId, bookingId]);
 
+
+    const fetchBookingApplicantModificationList = async () => {
+        await loadBookingApplicantModificationRequest();
+        onLoaded?.();
+    };
+
+    const loadBookingApplicantModificationRequest = async () => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationBookingApplicantModificationRequest = {
+                    PageNumber: 1,
+                    PageSize: 10,
+                    ProjectId: Number(projectId),
+                    BookingId: Number(bookingId),
+                    TabName:"REQUESTS",
+                };
+
+                const response = await bookingApplicantModificationService.apiCallPullBookingApplicantModification(params);
+
+                if (E.isRight(response)) {
+                    setBookingApplicantModificationData(response.right.Data);
+
+                } else {
+                    addToast({ type: 'error', title: response.left.message });
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: 'error', title: error.message });
+            },
+            undefined,
+            'Loading Booking Applicant Modification Request'
+        );
+    };
+
     const handleEditLocalApplicant = (row: RequestBookingApplicantWithFiles, index: number) => {
         setEditingApplicantData({ row, index });
         setFormDataDetails({
@@ -571,42 +609,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
         setProofOfDocumentFiles([]);
     };
 
-    const fetchBookingApplicantModificationList = async () => {
-        await loadBookingApplicantModificationRequest();
-        onLoaded?.();
-    };
-
-    const loadBookingApplicantModificationRequest = async () => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationBookingApplicantModificationRequest = {
-                    PageNumber: 1,
-                    PageSize: 10,
-                    ProjectId: Number(projectId),
-                    BookingId: Number(bookingId),
-
-                };
-
-                const response = await bookingApplicantModificationService.apiCallPullBookingApplicantModification(params);
-
-                if (E.isRight(response)) {
-                    setBookingApplicantModificationData(response.right.Data);
-
-                } else {
-                    addToast({ type: 'error', title: response.left.message });
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message });
-            },
-            undefined,
-            'Loading Booking Applicant Modification Request'
-        );
-    };
+    
 
     const handleSaveApplicantRequests = async () => {
         if (applicantList.length === 0) return;
@@ -1030,7 +1033,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
     const pendingColumns = useMemo<TableColumn[]>(
         () => [
             ...summaryColumns.filter(
-                (col) => col.key !== "ApprovalStatus" && col.key !== "VersionNumber"
+                (col) => col.key !== "ApprovalStatus" && col.key !== "VersionNumber" && col.key!=="Actions"
             ),
             {
                 key: "actions",

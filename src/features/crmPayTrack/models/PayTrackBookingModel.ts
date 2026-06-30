@@ -101,6 +101,10 @@ export interface PayTrackBookingData {
     LedgerCount: number | null;
     BookingOtherChargesData?: BookingOtherChargesData[] | null;
     BookingApplicantData?: BookingApplicantData[] | null;
+
+    CancelRemark: string | null;
+    CancelBookingIsApproval:boolean;
+    CancelBookingApprovalStatus: string | null;
 }
 
 export interface PayTrackBookingApplicantData {

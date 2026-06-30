@@ -191,7 +191,7 @@ export const SnagChecklist: React.FC = () => {
                     <div className="flex justify-center">
                         <Checkbox
                             checked={row.IsCheck === true}
-                            disabled={!canAction}
+                            disabled={!canAction || bookingApprovalStatus?.toUpperCase() !== 'APPROVED'}
                             onChange={(e) => {
                                 const checked = e.target.checked;
 

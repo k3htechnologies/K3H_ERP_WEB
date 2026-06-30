@@ -248,6 +248,7 @@ export const MASTER_DATA = {
     "Re - Visit Proposed",
     "Re - Visit Scheduled",
     "Re - Visit",
+    "Repeat Re - Visit",
     "Negotiation",
     "Unit Selection / Blocked",
     "Booking Done",

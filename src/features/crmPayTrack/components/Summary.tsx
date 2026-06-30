@@ -11,17 +11,18 @@ import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { formatCurrency, getSafeString } from '@/core/utils/comman';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
 import { Button, Input } from "@/ui/components/forms";
-import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import { Modal } from "@/ui/components/Modal/Modal";
 import type { AddUpdateRefundAmountData } from "@/features/crmPayTrack/models/InitialRefundAmountModel";
 import { initialRefundAmountService } from "@/features/crmPayTrack/services/InitialRefundAmountService";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { useNavigate } from 'react-router-dom';
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
+import { filterNumbersWithDecimal, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import type { FilterWithPaginationPayTrackBooking, PayTrackBookingData } from "@/features/crmPayTrack/models/PayTrackBookingModel";
 import { payTrackBookingService } from "@/features/crmPayTrack/services/PayTrackBookingService";
 import Checkbox from "@/ui/components/forms/Checkbox";
+import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
+import { TextArea } from "@/ui/components/forms/Textarea";
 
 const initialFormStateForInitialAmountRefundRequest = (): AddUpdateRefundAmountData => ({
     BookingId: 0,
@@ -30,12 +31,22 @@ const initialFormStateForInitialAmountRefundRequest = (): AddUpdateRefundAmountD
     TotalAmountRefundedAgainstBooking: 0,
 });
 
+const initialFormStateForCancelBooking = (): CancelBookingRequest => ({
+    BookingId: 0,
+    Uniquekey: "7b14cc10-2533-f111-854a-c7681b271aa8",
+    ProjectId: 0,
+    InventoryFlatId: 0,
+    ParkingId: null,
+    CancelRemark: null,
+    ProofOfDocumentURL: [],
+    RemoveProofOfDocumentURL: "",
+});
+
 export const Summary: React.FC = () => {
 
     const [bookingData, setBookingData] = useState<BookingData | null>(null);
     const [payTrackList, setPayTrackList] = useState<PayTrackBookingData | null>(null);
     const [initiateRefund, setInitiateRefund] = useState(false);
-    const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [addUpdateInitialAmountRefundRequest, setAddUpdateInitialAmountRefundRequest] = useState<AddUpdateRefundAmountData>(() => initialFormStateForInitialAmountRefundRequest());
@@ -49,11 +60,20 @@ export const Summary: React.FC = () => {
 
     const applicantData = bookingData?.BookingApplicantData;
 
-    const isBookingCancel = bookingData?.ApprovalStatus === 'Cancel';
+    const isBookingCancel = bookingData?.CancelRemark !== '';
 
     const isRefundStatus = bookingData?.ApprovalStatus === 'Refund';
 
     const { canAction } = useMenuPermissions('/modificationRequest');
+
+    const [cancelBookingFormData, setCancelBookingFormData] = useState<CancelBookingRequest>(() => initialFormStateForCancelBooking(),);
+    const [isCancelBookingReasonModalOpen, setIsCancelBookingReasonModalOpen] = useState(false);
+
+    const [proofOfDocumentFiles, setProofOfDocumentFiles] = useState<(File | string)[]>([]);
+    const [removeProofOfDocumentUrls, setRemoveProofOfDocumentUrls] = useState<string[]>([]);
+    const [proofOfDocumentURL, setProofOfDocumentURL] = useState<string>();
+
+    const [isCancelBookingConfirmed, setIsCancelBookingConfirmed] = useState(false);
 
     useEffect(() => {
         if (!projectId || !bookingId) return;
@@ -176,8 +196,6 @@ export const Summary: React.FC = () => {
         };
     };
 
-
-
     const PushInitialAmountRefundFormData = (): AddUpdateRefundAmountData => {
         return {
             BookingId: bookingData?.BookingId ?? 0,
@@ -210,7 +228,6 @@ export const Summary: React.FC = () => {
 
                     updateListState({ totalAmountRefundedAgainstBooking: addUpdateInitialAmountRefundRequest.TotalAmountRefundedAgainstBooking || 0 });
 
-
                     setInitiateRefund(false);
 
                     setIsInitialRefundClause(false);
@@ -235,54 +252,110 @@ export const Summary: React.FC = () => {
         );
     };
 
-    const loadCancelBooking = async () => {
+    const handleFieldChangeForCancelBooking = (field: keyof CancelBookingRequest, value: any) => {
+
+        setCancelBookingFormData((prev) => ({ ...prev, [field]: value }));
+
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
+
+    const validateCancelBookingForm = (): {
+        isValid: boolean;
+        errors: { [k: string]: string };
+    } => {
+        const errors: { [k: string]: string } = {};
+
+        if (!hasAnyDocumentFile(proofOfDocumentFiles, proofOfDocumentURL, removeProofOfDocumentUrls)) {
+            errors.ProofOfDocument = "Proof of Document is required.";
+        }
+
+        if (!cancelBookingFormData.CancelRemark) {
+            errors.CancelRemark = "Remark is required";
+        }
+
+        return {
+            isValid: Object.keys(errors).length === 0,
+            errors,
+        };
+    };
+
+    const PushCancelBookingFormData = (): FormData => {
+        const fd = new FormData();
+
+        fd.append("BookingId", String(bookingId)),
+            fd.append("ProjectId", String(projectId)),
+            fd.append("CancelRemark", cancelBookingFormData?.CancelRemark || ""),
+            fd.append("InventoryFlatId", String(bookingData?.InventoryFlatId || 0)),
+            fd.append("ParkingId", bookingData?.ParkingId || ''),
+            fd.append("Uniquekey", bookingData?.Uniquekey || ''),
+
+            proofOfDocumentFiles.forEach((file) => {
+                if (file instanceof File) {
+                    fd.append("ProofOfDocumentURL", file);
+                }
+            });
+
+        fd.append("RemoveProofOfDocumentURL", removeProofOfDocumentUrls.join(","));
+
+        return fd;
+
+    }
+
+    const handleCancelBookingSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setErrors({});
 
         if (!bookingId) return;
+
+        const validation = validateCancelBookingForm();
+
+        if (!validation.isValid) {
+            setErrors(validation.errors);
+            return;
+        }
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
 
-                const params: CancelBookingRequest = {
-                    BookingId: bookingId,
-                    ProjectId: Number(projectId),
-                    Uniquekey: bookingData?.Uniquekey || '',
-                    InventoryFlatId: bookingData?.InventoryFlatId || 0,
-                    ParkingId: bookingData?.ParkingId || '',
-                };
+                const payload = PushCancelBookingFormData()
 
-                const response = await bookingService.apiCallCancelBooking(params);
+                const response = await bookingService.apiCallCancelBooking(payload);
 
                 if (E.isRight(response)) {
 
-                    const booking = response.right.Data;
-
-                    const item = Array.isArray(booking) ? booking[0] : booking;
-
-                    setBookingData(item);
+                    setIsCancelBookingReasonModalOpen(false);
 
                     triggerRefresh();
 
-                    loadPaytrackBookingForSummary();
+                    await loadBookingForSummary();
 
-                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-                }
-                else {
+                    addToast({ type: "success", title: response.right.SuccessMessage[0] });
 
-                    addToast({ type: 'error', title: response.left.message });
+                    setCancelBookingFormData(initialFormStateForCancelBooking());
 
+                    setProofOfDocumentFiles([]);
+
+                    setRemoveProofOfDocumentUrls([]);
+
+                } else {
+
+                    addToast({ type: "error", title: response.left.message });
                 }
 
                 return response;
             },
             undefined,
-            (error: any) => {
-                addToast({ type: 'error', title: error.message });
-            },
+
+            (error: any) => addToast({ type: "error", title: error.message }),
+
             undefined,
-            'Cancelling Booking'
+
         );
-    };
+    }
 
     return (
         <div>
@@ -291,10 +364,10 @@ export const Summary: React.FC = () => {
             </Loader>
             <div className="absolute top-5 right-2 z-10  gap-2">
 
-                {canAction && bookingData && (!isBookingCancel && !isRefundStatus) && (
+                {canAction && bookingData  && (!isBookingCancel && !isRefundStatus)  && (
                     <Button
                         onClick={() => {
-                            setIsConfirmationDialogBoxOpen(true);
+                            setIsCancelBookingReasonModalOpen(true);
                         }}
                         variant="solid"
                         color="red_light"
@@ -306,9 +379,9 @@ export const Summary: React.FC = () => {
                     </Button>
                 )}
 
-                {canAction && bookingData && isBookingCancel && (
+                {canAction && bookingData && !isRefundStatus && isBookingCancel && bookingData.CancelBookingApprovalStatus?.toUpperCase()==="APPROVED"  && (
                     <>
-                        <div className="flex justify-end items-center gap-3">
+                        <div className="flex justify-end items-center gap-3"> 
 
                             <Button
                                 onClick={async () => {
@@ -327,7 +400,7 @@ export const Summary: React.FC = () => {
                     </>
                 )}
 
-                {canAction && bookingData && isRefundStatus && Number(bookingData?.TotalAmountRefundedAgainstBooking || 0) > Number(bookingData?.RefundedAmountOnTillDate || 0) && (
+                {canAction && bookingData && isRefundStatus   && Number(bookingData?.TotalAmountRefundedAgainstBooking || 0) > Number(bookingData?.RefundedAmountOnTillDate || 0) && (
                     <>
 
                         <div className="flex justify-end items-center gap-3">
@@ -449,7 +522,7 @@ export const Summary: React.FC = () => {
 
                     <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE]">
                         <h4 className="text-sm font-semibold text-[#1D1D1D]">
-                          Unit / Modulation / Customization Remark
+                            Unit / Modulation / Customization Remark
                         </h4>
                     </div>
                     <div className="p-4 bg-white">
@@ -476,6 +549,8 @@ export const Summary: React.FC = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <FieldItem label="Cancelled Date" value={formatDate_dd_MonthName_yy(bookingData?.CancelledDate ?? '')} />
                                 <FieldItem label="Cancelled By" value={getSafeString(bookingData?.CancelledBy)} />
+                                <FieldItem label="Remark" value={getSafeString(bookingData?.CancelRemark)} />
+                                <FieldItem label="Proof of Document" value={getSafeString(bookingData?.ProofOfDocumentURL)} urls={bookingData?.ProofOfDocumentURL} isIcon isSetValue={false} />
                             </div>
                         </div>
                     </section>
@@ -496,7 +571,7 @@ export const Summary: React.FC = () => {
                         <div className="p-4 bg-white">
 
                             <div className="grid grid-cols-3 gap-4">
-                               <FieldItem label="Total Refunded (₹)" value={formatCurrency(bookingData?.TotalAmountRefundedAgainstBooking) || "-"} />
+                                <FieldItem label="Total Refunded (₹)" value={formatCurrency(bookingData?.TotalAmountRefundedAgainstBooking) || "-"} />
                                 <FieldItem label="Paid (₹)" value={formatCurrency(bookingData?.RefundedAmountOnTillDate) || "-"} />
                                 <FieldItem label="Pending (₹)" value={`${formatCurrency((bookingData?.TotalAmountRefundedAgainstBooking || 0) - (bookingData?.RefundedAmountOnTillDate || 0))}`} />
                                 <FieldItem label="Refund Status" value={bookingData?.ApprovalStatus || "-"} />
@@ -507,21 +582,80 @@ export const Summary: React.FC = () => {
 
             )}
 
-            <ConfirmationDialogBox
-                isOpen={isConfirmationDialogBoxOpen}
+
+            <Modal
+                isOpen={isCancelBookingReasonModalOpen}
                 onClose={() => {
-                    setIsConfirmationDialogBoxOpen(false)
+                    setIsCancelBookingReasonModalOpen(false)
+                    setProofOfDocumentURL("");
+                    setProofOfDocumentFiles([]);
+                    setRemoveProofOfDocumentUrls([]);
+                    setCancelBookingFormData(initialFormStateForCancelBooking());
+                    setErrors({});
+                    setIsCancelBookingConfirmed(false);
                 }}
-                onConfirm={() => {
-                    setIsConfirmationDialogBoxOpen(false);
-                    loadCancelBooking();
+                onCancel={() => {
+                    setIsCancelBookingReasonModalOpen(false)
+                    setProofOfDocumentURL("");
+                    setProofOfDocumentFiles([]);
+                    setRemoveProofOfDocumentUrls([]);
+                    setCancelBookingFormData(initialFormStateForCancelBooking());
+                    setErrors({});
+                    setIsCancelBookingConfirmed(false);
                 }}
-                title="Are you sure you want to cancel this booking?"
-                message="Ensure that all required approvals are completed before proceeding.Once cancelled, this booking cannot be restored"
-                confirmText="Yes"
-                cancelText="No"
-                loading={false}
-            />
+                title="Cancel Booking"
+                saveText={isCancelBookingConfirmed ? "Cancel Booking" : ""}
+
+                onSubmit={handleCancelBookingSubmit}
+                loading={isLoading}
+                size="lg"
+            >
+
+                <div className="space-y-10 p-6 bg-blue-100">
+                    <div>
+                        <div>
+                            <MultiFilePicker
+                                label="Proof of  Document"
+                                placeholder="Select Proof Of Document"
+                                required
+                                value={proofOfDocumentFiles}
+                                onChange={setProofOfDocumentFiles}
+                                allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
+                                maxFiles={5}
+                                maxSizeMB={10}
+                                onRemoveExisting={(url) => setRemoveProofOfDocumentUrls((prev) => [...prev, url])}
+                                error={errors.ProofOfDocument} />
+
+                        </div>
+
+                        <div className="mt-5">
+                            <TextArea
+                                label="Remark"
+                                placeholder="Remark"
+                                className='thin-scroll'
+                                required
+                                value={cancelBookingFormData.CancelRemark || ''}
+                                onChange={(e) => handleFieldChangeForCancelBooking("CancelRemark", e.target.value)}
+                                error={errors.CancelRemark}
+                            />
+                        </div>
+
+                        <div className="mt-5">
+                            <Checkbox
+                                label="Cancelled bookings cannot be restored."
+                                checked={isCancelBookingConfirmed}
+                                onChange={(e) => {
+                                    const checked = e.target.checked;
+                                    setIsCancelBookingConfirmed(checked);
+                                }}
+                            />
+                        </div>
+                        <p className="text-sm text-[#00000080] pt-3">By selecting this option, the <b>Booking</b>  will be  <b>cancelled</b>  and cannot be changed later.</p>
+
+                    </div>
+                </div>
+
+            </Modal>
 
             <Modal
                 isOpen={initiateRefund}

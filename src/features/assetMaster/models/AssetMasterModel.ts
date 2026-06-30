@@ -9,6 +9,7 @@ export interface FilterWithPaginationAssetMasterRequest {
     AssetModel?: string | null
     AssetBrand?: string | null
     SerialNumber?: string | null
+    EmployeeName?: string | null
     Status?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'

@@ -25,8 +25,13 @@ import PaginationCard from "@/ui/components/Card/PaginationCard";
 import { formatCurrency } from "@/core/utils/comman";
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 import { getStatusColor } from "@/features/modulesWorkflowApproval/utils/Status";
-import { ExternalLink, Phone } from "lucide-react";
+import { ChevronRight, ExternalLink, Phone } from "lucide-react";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
+import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
 
 const PayTrack: React.FC = () => {
   const [payTrackList, setPayTrackList] = useState<PayTrackBookingData[]>([]);
@@ -50,6 +55,19 @@ const PayTrack: React.FC = () => {
   const { listState, updateListState, resetFilters, clearPayTrackBookingContext } = usePayTrackBookingListState();
 
   const { page, filters, sortInfo, searchTerm } = listState;
+
+  // APPROVAL LOG MODAL
+  const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+  const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+  const [ownerName, setOwnerName] = useState<string | null>("");
+  const [wing, setwing] = useState<string | null>("");
+  const [unitNumber, setUnitNumber] = useState<string | null>("");
+
+  // APPROVAL ACTION MODAL
+  const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
+  const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
+  const [approvalRowData, setApprovalRowData] = useState<PayTrackBookingData | null>(null);
+
 
   const loadPayTrackList = async (pageNum: number, filterParams: FilterInfo) => {
     await runApiWithLoader(
@@ -341,6 +359,76 @@ const PayTrack: React.FC = () => {
     },
   ], []);
 
+  const handleApprovalLog = (row: PayTrackBookingData) => {
+    const request: ModulesApprovalStatusRequest = {
+      ModuleName: "CANCEL BOOKING APPROVAL",
+      Id: row.BookingId ?? 0,
+      ProjectId: row.ProjectId ?? 0,
+    };
+    setOwnerName(row.ApplicantName);
+    setwing(row?.Wing)
+    setUnitNumber(row?.Flat);
+
+    setApprovalLogRequest(request);
+    setIsApprovalLogModalOpen(true);
+  };
+
+  const handleApproveRejectDocument = (row: PayTrackBookingData, approvalType: "approve" | "reject") => {
+
+    setApprovalRowData(row);
+    setOwnerName(row.ApplicantName);
+    setwing(row?.Wing)
+    setUnitNumber(row?.Flat);
+    setApprovalActionType(approvalType);
+    setIsApprovalActionModalOpen(true);
+
+  };
+
+  const handleApprovalSubmit = async (remark: string) => {
+
+    if (!approvalRowData) return;
+
+    const payload: UpdateModulesWorkflowApprovalRequest = {
+      ModuleName: "CANCEL BOOKING APPROVAL",
+      Id: approvalRowData.BookingId ?? 0,
+      ProjectId: approvalRowData.ProjectId ?? 0,
+      IsApproved: approvalActionType === "approve",
+      Remarks: remark ?? null
+    };
+
+    await runApiWithLoader(
+      setIsLoading,
+      setLoadingMessage,
+      async () => {
+
+        const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+        if (E.isRight(response)) {
+
+          addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+          setIsApprovalActionModalOpen(false);
+
+          await loadPayTrackList(page, filters);
+
+        } else {
+
+          addToast({ type: "error", title: response.left.message });
+
+        }
+
+        return response;
+      },
+      undefined,
+      (error: any) => {
+        addToast({ type: "error", title: error.message });
+      },
+      undefined,
+      approvalActionType === "approve" ? "Approving Cancel Booking Process" : "Rejecting Cancel Booking Process"
+    );
+  };
+
+
 
   return (
     <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
@@ -401,34 +489,64 @@ const PayTrack: React.FC = () => {
                       {row.ApplicantName}
                     </span>
 
-                    <span className="mt-3 text-xs px-2 py-1 rounded-full font-medium bg-[#DBEAFE] text-[#1D1D1D]">
-                      {row.SystemGeneratedCode}
-                    </span>
 
+                    <div className="flex items-center gap-2 mt-3">
+                      <span className={`px-4 py-1 rounded-full text-xs font-medium ${getStatusColor(row.TenantId === 0 ? "Booked" : "Alloted")}`}>
+                        {row.TenantId === 0 ? "Booked" : "Alloted"}
+                      </span>
 
+                      {["CANCEL", "REFUND"].includes(row.BookingApprovalStatus?.toUpperCase()) && (
+                        <>
+                          <ChevronRight size={18} className="text-gray-400" />
+
+                          <span className={`px-4 py-1 rounded-full text-xs font-medium ${getStatusColor(row.BookingApprovalStatus)}`}>
+                            {row.BookingApprovalStatus}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                    {row.CancelRemark && row.BookingApprovalStatus.toUpperCase() !== 'REFUND' && (
+                      <span className="font-medium mt-3 text-sm text-gray-500">
+                        Cancellation Status :
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex flex-col">
 
-                    <span className={`text-xs px-2 py-1 rounded-full font-medium ${getStatusColor(row.BookingApprovalStatus ?? "")}}`}>
-                      {row.BookingApprovalStatus}
-                    </span>
-
-                    <span className="mt-3 font-medium text-sm text-[#1E293B]">
+                    <span className="font-medium text-sm text-end text-[#1E293B]">
                       {row.Flat}
                     </span>
+                    <span className="font-medium mt-8 text-sm text-gray-500">
+                      {""}
+                    </span>
+
+                    {row.CancelRemark && row.BookingApprovalStatus.toUpperCase() !== 'REFUND' && (
+                      <span className="mt-3">
+                        <ApprovalActions
+                          approvalStatus={row.CancelBookingApprovalStatus || "-"}
+                          showApproval={row.CancelBookingIsApproval}
+                          isIcons={true}
+                          onHistory={() => handleApprovalLog(row)}
+                          onApprove={() => handleApproveRejectDocument(row, "approve")}
+                          onReject={() => handleApproveRejectDocument(row, "reject")}
+                        />
+                      </span>
+                    )}
+
 
                   </div>
+
                 </div>
               )}
             />
           </div>
+
           {selectedBooking && (
-            
+
             <div className="col-span-12 lg:col-span-8">
               <div className="bg-white rounded-2xl overflow-hidden">
 
-                {/* Header */}
                 <div className="p-6">
 
                   <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
@@ -747,6 +865,27 @@ const PayTrack: React.FC = () => {
           </div>
         </div>
       </Modal>
+
+      <ApprovalLogModal
+        isOpen={isApprovalLogModalOpen}
+        title='Cancel Booking'
+        titleText={ownerName ?? ""}
+        subTitleText={wing ?? ""}
+        subSubTitleText={unitNumber ?? ""}
+        onClose={() => setIsApprovalLogModalOpen(false)}
+        request={approvalLogRequest} />
+
+      <ApprovalActionModal
+        title="Cancel Booking"
+        isOpen={isApprovalActionModalOpen}
+        onClose={() => setIsApprovalActionModalOpen(false)}
+        actionType={approvalActionType}
+        titleText={ownerName ?? ""}
+        subTitleText={wing ?? ""}
+        subSubTitleText={unitNumber ?? ""}
+        onSubmit={handleApprovalSubmit}
+        loading={isLoading}
+      />
     </div>
   );
 };

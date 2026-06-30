@@ -24,7 +24,7 @@ export const ViewPayTrack: React.FC = () => {
   const navigate = useNavigate();
 
   const { listState, updateListState } = usePayTrackBookingListState();
-  const { bookingName, bookingType, flat, bookingData, bookingApprovalStatus,isFinalRegistrationCompleted } = listState;
+  const { bookingName, bookingType, flat, bookingData, bookingApprovalStatus, isFinalRegistrationCompleted } = listState;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [welcome, setWelcome] = useState<string>("");
   const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
@@ -99,9 +99,9 @@ export const ViewPayTrack: React.FC = () => {
 
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
+   <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
 
-      <div className="flex items-center justify-between pb-4">
+      <div className="flex items-center justify-between">
         <div className="flex-1">
           <HeaderActionBar
             titleText={`Booking Details : ${bookingName}`}

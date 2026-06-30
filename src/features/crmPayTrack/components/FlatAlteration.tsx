@@ -75,10 +75,54 @@ export const FlatAlteration: React.FC = () => {
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [editingFlatAlterationData, setEditingFlatAlterationData] = useState<FlatAlterationRequestData | null>(null);
     const [deleteFlatAlterationData, setDeleteFlatAlterationData] = useState<FlatAlterationRequestData | null>(null);
+    
     useEffect(() => {
         if (!projectId || !bookingId) return;
         fetchFlatAlterationRequest();
     }, [projectId, bookingId]);
+
+    const fetchFlatAlterationRequest = async (page: number = pagination.currentPage) => {
+        return await loadFlatAlterationRequest(page);
+    };
+
+    const loadFlatAlterationRequest = async (page: number) => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationFlatAlterationRequest = {
+                    PageNumber: page,
+                    PageSize: 100,
+                    ProjectId: Number(projectId),
+                    BookingId: bookingId,
+                    TabName:"REQUESTS",
+                };
+
+                const response = await flatAlterationService.apiCallPullFlatAlterationRequest(params);
+
+                if (E.isRight(response)) {
+                    if (response.right.Data && response.right.Data.length > 0) {
+                        const latestDataIndex = response.right.Data.length - 1;
+                        setFlatAlterationData(response.right.Data[latestDataIndex]);
+                    } else {
+                        setFlatAlterationData(null);
+                    }
+
+                    setPagination({
+                        currentPage: page,
+                        totalRecords: response.right.TotalNumberOfRecord,
+                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
+                    });
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+            },
+            undefined,
+            (error: any) => addToast({ type: "error", title: error.message }),
+            undefined,
+            "Loading Flat Alteration Data",
+        );
+    };
 
     useEffect(() => {
         if (isAddUpdateFlatAlterationModalOpen) {
@@ -229,47 +273,7 @@ export const FlatAlteration: React.FC = () => {
         );
     };
 
-    const fetchFlatAlterationRequest = async (page: number = pagination.currentPage) => {
-        return await loadFlatAlterationRequest(page);
-    };
-
-    const loadFlatAlterationRequest = async (page: number) => {
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationFlatAlterationRequest = {
-                    PageNumber: page,
-                    PageSize: 100,
-                    ProjectId: Number(projectId),
-                    BookingId: bookingId,
-                };
-
-                const response = await flatAlterationService.apiCallPullFlatAlterationRequest(params);
-
-                if (E.isRight(response)) {
-                    if (response.right.Data && response.right.Data.length > 0) {
-                        const latestDataIndex = response.right.Data.length - 1;
-                        setFlatAlterationData(response.right.Data[latestDataIndex]);
-                    } else {
-                        setFlatAlterationData(null);
-                    }
-
-                    setPagination({
-                        currentPage: page,
-                        totalRecords: response.right.TotalNumberOfRecord,
-                        totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
-                    });
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-                }
-            },
-            undefined,
-            (error: any) => addToast({ type: "error", title: error.message }),
-            undefined,
-            "Loading Flat Alteration Data",
-        );
-    };
+    
 
 
      const handleConfirmationDialogBoxOpen = useCallback((row: FlatAlterationRequestData) => {

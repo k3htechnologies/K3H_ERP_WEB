@@ -397,9 +397,10 @@ export const BankDetails: React.FC = () => {
 
                             <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden  justify-between">
 
-                                <div className="bg-[#E6FFE6] px-3 py-0.5 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
 
-                                    <h4 className="text-sm font-semibold text-[#00A800]">
+                                <div className="bg-[#E7F2FF] px-3 py-0.5 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
+
+                                    <h4 className="text-sm font-semibold text-[#1D4ED8]">
                                         Active Bank
                                     </h4>
 
@@ -440,9 +441,9 @@ export const BankDetails: React.FC = () => {
 
                                 <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden  justify-between">
 
-                                    <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
+                                    <div className="bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
 
-                                        <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                                        <h4 className="text-sm font-semibold text-[#1D4ED8]">
                                             Active Bank
                                         </h4>
 

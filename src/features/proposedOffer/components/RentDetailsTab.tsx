@@ -551,11 +551,10 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
         title={editingRentDetailsData ? 'Update Rent Details' : 'Add Rent Details'}
         onSubmit={handleAddUpdateRentDetails}
         saveText={editingRentDetailsData ? 'Update' : 'Add'}
-        cancelText="Cancel"
         loading={isLoading}
         size='lg'
       >
-        <div className="space-y-6">
+        <div className="space-y-6 p-6 bg-blue-100">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-center">
               <Checkbox

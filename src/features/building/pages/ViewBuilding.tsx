@@ -27,7 +27,7 @@ export const ViewBuilding: React.FC = () => {
     const [buildingData, setBuildingData] = useState<BuildingData | null>(null);
     const [buildingDocumentList, setBuildingDocumentList] = useState<BuildingDocumentData[]>([]);
     const [docFilesMap, setDocFilesMap] = useState<Record<number, BuildingDocumentData[]>>({});
-    
+
     const accordionItems = buildingDocumentList
         .filter(d => d.UploadedBuildingDocumentCount !== 0)
         .map(d => ({
@@ -371,70 +371,82 @@ export const ViewBuilding: React.FC = () => {
                     <div className="lg:col-span-3 space-y-6">
 
                         {/* ================= HEADER / BASIC DETAILS ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Building Details
-                            </h4>
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
-                                <FieldItem label="Building Name" value={buildingData?.BuildingName ?? '-'} />
-                                <FieldItem label="CTS Number" value={buildingData?.CTSNumber ?? '-'} />
-                                <FieldItem label="Road Width" value={buildingData?.RoadWidth ?? '-'} />
+                            <div className="bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                    Building Details
+                                </h4>
                             </div>
+                            <div className="p-4 bg-white">
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
-                                <FieldItem label="Land Ownership" value={buildingData?.LandOwnershipType ?? '-'} />
-
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pt-4 ">
-                                <div className="text-sm font-medium text-[#1D1D1D80] truncate">
-                                    Google Location
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                    <FieldItem label="Building Name" value={buildingData?.BuildingName ?? '-'} />
+                                    <FieldItem label="CTS Number" value={buildingData?.CTSNumber ?? '-'} />
+                                    <FieldItem label="Road Width" value={buildingData?.RoadWidth ?? '-'} />
                                 </div>
-                                {buildingData?.GoogleLocation !== "" ?
-                                    <span className="text-blue-600 underline cursor-pointer break-all whitespace-normal"
-                                        onClick={() => window.open(buildingData?.GoogleLocation, "_blank")}>
-                                        {buildingData?.GoogleLocation}
-                                    </span> : "-"}
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                    <FieldItem label="Land Ownership" value={buildingData?.LandOwnershipType ?? '-'} />
+
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pt-4 ">
+                                    <div className="text-sm font-medium text-[#1D1D1D80] truncate">
+                                        Google Location
+                                    </div>
+                                    {buildingData?.GoogleLocation !== "" ?
+                                        <span className="text-blue-600 text-sm underline cursor-pointer break-all whitespace-normal"
+                                            onClick={() => window.open(buildingData?.GoogleLocation, "_blank")}>
+                                            {buildingData?.GoogleLocation}
+                                        </span> : "-"}
+                                </div>
                             </div>
                         </section>
 
                         {/* ================= PROPERTY INFORMATION ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Property Information
-                            </h4>
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
-                                <FieldItem label="Total Plot Area (SqFt)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} />
-                                <FieldItem label="Utilized Units Area (SqFt)" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} />
-                                <FieldItem label="Total Units" value={buildingData?.TotalNumberOfUnits ?? '-'} />
-
+                            <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#C2410C]">
+                                    Property Information
+                                </h4>
                             </div>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                    <FieldItem label="Total Plot Area (SqFt)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} />
+                                    <FieldItem label="Utilized Units Area (SqFt)" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} />
+                                    <FieldItem label="Total Units" value={buildingData?.TotalNumberOfUnits ?? '-'} />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
-                                <FieldItem label="Number Of Floors" value={buildingData?.NumberOfFloors ?? '-'} />
+                                </div>
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                                    <FieldItem label="Number Of Floors" value={buildingData?.NumberOfFloors ?? '-'} />
+
+                                </div>
                             </div>
                         </section>
 
                         {/* ================= LOCATION DETAILS ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Location Details
-                            </h4>
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
-                                <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} />
-                                <FieldItem label="State" value={buildingData?.StateName ?? '-'} />
-                                <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} />
-
+                            <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#13367A]">
+                                    Location Details
+                                </h4>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
-                                <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
-                                <FieldItem label="Village" value={buildingData?.VillageName ?? '-'} />
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                    <FieldItem label="Country" value={buildingData?.CountryName ?? '-'} />
+                                    <FieldItem label="State" value={buildingData?.StateName ?? '-'} />
+                                    <FieldItem label="District" value={buildingData?.DistrictName ?? '-'} />
 
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                                    <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
+                                    <FieldItem label="Village" value={buildingData?.VillageName ?? '-'} />
+
+                                </div>
                             </div>
-
                         </section>
 
 
@@ -443,83 +455,105 @@ export const ViewBuilding: React.FC = () => {
                     {/* ================= RIGHT SIDE (1/3) ================= */}
                     <div className="lg:col-span-2 space-y-6">
 
-
-
                         {/* ================= GARDERN INFORMATION ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Garden Information
-                            </h4>
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Garden" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
-                                <FieldItem label="Garden Area (SqFt)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
+                             <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                    <h4 className="text-sm font-semibold text-[#13367A]">
+                                    Garden Information
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Garden" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
+                                    <FieldItem label="Garden Area (SqFt)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
+
+                                </div>
                             </div>
 
                         </section>
 
                         {/* ================= GARDERN INFORMATION ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Religious Information
-                            </h4>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
-                                <FieldItem label="Structure Area (SqFt)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
+                             <div className="bg-[#EAFCFF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#12A3DD]">
+                                    Religious Information
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
+                                    <FieldItem label="Structure Area (SqFt)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
+
+                                </div>
                             </div>
 
                         </section>
 
                         {/* ================= FSI / TDR INFORMATION ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                FSI / TDR Information
-                            </h4>
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="FSI / TDR Utilization (SqFt)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
-                                <FieldItem label="Property Age (Years)" value={buildingData?.PropertyAgeYears ?? '-'} />
+                            <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#7B6B28]">
+                                    FSI / TDR Information
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="FSI / TDR Utilization (SqFt)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
+                                    <FieldItem label="Property Age (Years)" value={buildingData?.PropertyAgeYears ?? '-'} />
+
+                                </div>
                             </div>
 
                         </section>
 
                         {/* ================= GARDERN INFORMATION ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Litigation
-                            </h4>
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                <FieldItem label="Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} />
-                                <FieldItem label="Litigation Remarks" value={buildingData?.LitigationRemarks ?? '-'} />
+                            <div className="bg-[#E6FFE6] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#00A800]">
+                                    Litigation
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Litigation" value={buildingData?.IsLitigation ? 'Yes' : 'No'} />
+                                    <FieldItem label="Litigation Remarks" value={buildingData?.LitigationRemarks ?? '-'} />
+
+                                </div>
                             </div>
 
                         </section>
                         {/* ================= QUICK ACTIONS ================= */}
-                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Action Details
-                            </h4>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
-                                <FieldItem label="Created By" value={buildingData?.CreatedBy ?? '-'} />
-                                <FieldItem
-                                    label="Created Date"
-                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.CreatedDate ?? '-')}
-                                />
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+                            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#333333]">
+                                    Action Details
+                                </h4>
                             </div>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                                    <FieldItem label="Created By" value={buildingData?.CreatedBy ?? '-'} />
+                                    <FieldItem
+                                        label="Created Date"
+                                        value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.CreatedDate ?? '-')}
+                                    />
+                                </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
-                                <FieldItem label="Modified By" value={buildingData?.ModifiedBy ?? '-'} />
-                                <FieldItem
-                                    label="Modified Date"
-                                    value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.ModifiedDate ?? '-')}
-                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                                    <FieldItem label="Modified By" value={buildingData?.ModifiedBy ?? '-'} />
+                                    <FieldItem
+                                        label="Modified Date"
+                                        value={formatDate_dd_MonthName_yy_hh_mm(buildingData?.ModifiedDate ?? '-')}
+                                    />
+                                </div>
                             </div>
                         </section>
 
@@ -558,8 +592,6 @@ export const ViewBuilding: React.FC = () => {
 
                             return (
                                 <div>
-
-                                    {/* HEADER */}
                                     <div
                                         className="flex justify-between items-center px-4 py-3"
                                         onClick={async () => {
@@ -580,7 +612,7 @@ export const ViewBuilding: React.FC = () => {
                                                 const urls = parseDocumentUrls(d.DocumentURL ?? "");
 
                                                 return (
-                                                    <div key={d.Uniquekey} className="border border-gray-200 rounded-lg mb-3 shadow-sm  ">
+                                                    <div key={d.Uniquekey} className="border border-gray-200 rounded-lg mb-3">
 
                                                         <div className="flex items-start justify-between p-2 gap-2">
                                                             <span className="line-clamp-2 break-words font-medium text-gray-900">
@@ -630,97 +662,108 @@ export const ViewBuilding: React.FC = () => {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
                     <div className="lg:col-span-3 space-y-6">
 
-                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Building Plot Area
-                            </h4>
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem
-                                            label="Gross Plot Area (SqMt)"
-                                            value={buildingDetailsList?.[0]?.GrossPlotAreaSqFt ?? 0}
-                                        />
-
-                                        <FieldItem
-                                            label="Physical Survey Area (SqMt)"
-                                            value={buildingDetailsList?.[0]?.PlotAreaPhysicalSurveySqFt ?? 0}
-                                        />
-
-                                        <FieldItem
-                                            label="Old Approved Plan Area (SqMt)"
-                                            value={buildingDetailsList?.[0]?.PlotAreaOldApprovedPlanSqFt ?? 0}
-                                        />
-                                    </div>
-                                </div>
-
-
-                                <div className="lg:col-span-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
-                                        <FieldItem
-                                            label="Conveyance Area (SqMt)"
-                                            value={buildingDetailsList?.[0]?.PlotAreaConveyanceSqFt ?? 0}
-                                        />
-
-                                        <FieldItem
-                                            label="PR Card Area (SqMt)"
-                                            value={buildingDetailsList?.[0]?.PlotAreaPRCardSqFt ?? 0}
-                                        />
-
-                                    </div>
-                                </div>
-
+                            <div className="bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                    Building Plot Area
+                                </h4>
                             </div>
-                        </section>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem
+                                                label="Gross Plot Area (SqMt)"
+                                                value={buildingDetailsList?.[0]?.GrossPlotAreaSqFt ?? 0}
+                                            />
 
-                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Building Construction Details
-                            </h4>
+                                            <FieldItem
+                                                label="Physical Survey Area (SqMt)"
+                                                value={buildingDetailsList?.[0]?.PlotAreaPhysicalSurveySqFt ?? 0}
+                                            />
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Total Built Up Area (SqFt)" value={buildingDetailsList?.[0]?.TotalBuiltUpAreaSqFt ?? 0} />
-                                        <FieldItem label="Total Residential Units" value={buildingDetailsList?.[0]?.TotalResidentialUnits ?? 0} />
-                                        <FieldItem label="Residential Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalResidentialCarpetAreaSqFt ?? 0} />
+                                            <FieldItem
+                                                label="Old Approved Plan Area (SqMt)"
+                                                value={buildingDetailsList?.[0]?.PlotAreaOldApprovedPlanSqFt ?? 0}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div className="lg:col-span-3 ">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        <FieldItem label="Total Commercial Units" value={buildingDetailsList?.[0]?.TotalCommercialUnits ?? 0} />
-                                        <FieldItem label="Commercial Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalCommercialCarpetAreaSqFt ?? 0} />
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] pt-5">
-                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                Building Key Contact Details
-                            </h4>
-
-                            <div className="space-y-4">
 
 
-                                {contactDetailsList.map((contact, index) => (
-                                    <div
-                                        key={index}
-                                        className="border-b border-[#135bec2e] pb-4 space-y-3"
-                                    >
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                    <div className="lg:col-span-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
 
-                                            <FieldItem label="Contact Type" value={contact.ContactType} />
-                                            <FieldItem label="Contact Name" value={contact.ContactName} />
-                                            <FieldItem label="Mobile Number" value={contact?.MobileNumber ? `+91 ${contact.MobileNumber}` : ''} />
-                                            <FieldItem label="E-mail Id" value={contact.EmailId} />
+                                            <FieldItem
+                                                label="Conveyance Area (SqMt)"
+                                                value={buildingDetailsList?.[0]?.PlotAreaConveyanceSqFt ?? 0}
+                                            />
+
+                                            <FieldItem
+                                                label="PR Card Area (SqMt)"
+                                                value={buildingDetailsList?.[0]?.PlotAreaPRCardSqFt ?? 0}
+                                            />
 
                                         </div>
                                     </div>
-                                ))}
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                            <div className="bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                    Building Construction Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Total Built Up Area (SqFt)" value={buildingDetailsList?.[0]?.TotalBuiltUpAreaSqFt ?? 0} />
+                                            <FieldItem label="Total Residential Units" value={buildingDetailsList?.[0]?.TotalResidentialUnits ?? 0} />
+                                            <FieldItem label="Residential Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalResidentialCarpetAreaSqFt ?? 0} />
+                                        </div>
+                                    </div>
+
+                                    <div className="lg:col-span-3 ">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Total Commercial Units" value={buildingDetailsList?.[0]?.TotalCommercialUnits ?? 0} />
+                                            <FieldItem label="Commercial Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalCommercialCarpetAreaSqFt ?? 0} />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                            <div className="bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#1D4ED8]">
+                                    Building Key Contact Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                <div className="space-y-4">
+
+
+                                    {contactDetailsList.map((contact, index) => (
+                                        <div
+                                            key={index}
+                                            className="border-b border-[#135bec2e] pb-4 space-y-3"
+                                        >
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                                                <FieldItem label="Contact Type" value={contact.ContactType} />
+                                                <FieldItem label="Contact Name" value={contact.ContactName} />
+                                                <FieldItem label="Mobile Number" value={contact?.MobileNumber ? `+91 ${contact.MobileNumber}` : ''} />
+                                                <FieldItem label="E-mail Id" value={contact.EmailId} />
+
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </section>
                     </div>

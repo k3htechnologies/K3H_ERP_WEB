@@ -6,6 +6,7 @@ export interface FilterWithPaginationParkingModificationDetails {
     PageNumber: number;
     ProjectId: number;
     BookingId: number;
+    TabName?:string;
 }
 
 export interface ParkingModificationDetailsData {

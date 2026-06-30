@@ -11,9 +11,10 @@ export const getStatusColor = (status: string = "") => {
     "Re - Visit Scheduled": { bg: "#D1FAE5", text: "#065F46" },
     "Re - Visit Proposed": { bg: "#FFA5004A", text: "#FF6600" },
     "Re - Visit": { bg: "#1AA0DB57", text: "#087DB0" },
+    "Repeat Re - Visit": { bg: "#DBEAFE", text: "#1D4ED8" },
     "Follow - Up": { bg: "#FFDEC7", text: "#7E4604" },
     "Site Visit": { bg: "#FECACA", text: "#7F1D1D" },
-    "Unit Selection / Blocked": { bg: "#FECACA", text: "#7F1D1D" },
+    "Unit Selection / Blocked": { bg: "#E9D5FF", text: "#6B21A8" },
   };
 
   return map[status] ?? { bg: "#F3F4F6", text: "#111827" };

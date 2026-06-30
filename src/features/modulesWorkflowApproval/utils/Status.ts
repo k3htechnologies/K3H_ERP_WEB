@@ -27,6 +27,12 @@ export const getStatusColor = (status: string): string => {
       case "yes":
       return "bg-[#2E844A1A] text-[#2E844A]  !important";
 
+      case "alloted":
+      return "bg-[#561F6433] text-[#561F64]  !important";
+
+      case "booked":
+      return "bg-[#51E5514A] text-[#48C848]  !important";
+
     default:
       return "bg-gray-100 text-gray-700";
   }

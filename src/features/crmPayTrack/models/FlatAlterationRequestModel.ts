@@ -5,6 +5,7 @@ export interface FilterWithPaginationFlatAlterationRequest {
     PageNumber: number;
     ProjectId: number;
     BookingId: number;
+    TabName?:string;
 }
 
 export interface FlatAlterationRequestData {

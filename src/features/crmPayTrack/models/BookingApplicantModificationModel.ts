@@ -5,6 +5,7 @@ export interface FilterWithPaginationBookingApplicantModificationRequest {
     PageNumber: number;
     ProjectId: number;
     BookingId: number;
+    TabName?:string;
 }
 
 export interface BookingApplicantModificationDataRequest {

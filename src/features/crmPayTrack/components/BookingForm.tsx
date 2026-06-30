@@ -13,7 +13,7 @@ import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import RichTextEditor from "@/ui/components/forms/RichTextEditor";
 import { usePayTrackBookingListState } from "../context/PayTrackBookingListStateContext";
-import {  type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { formatCurrency, getSafeString } from "@/core/utils/comman";
 import type { CallLogData, FilterWithPaginationCallLogRequest } from "../models/CallLogModel";
 import { callLogService } from "../services/CallLogService";
@@ -27,6 +27,9 @@ import Checkbox from "@/ui/components/forms/Checkbox";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import type { ModulesApprovalStatusRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
 
 interface BookingProps {
     modalOpen: boolean;
@@ -65,6 +68,9 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
         FinalRegistrationURL: '',
         RemoveFinalRegistrationURL: ''
     });
+
+    const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+    const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
 
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -647,6 +653,17 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
         );
     };
 
+    const handleApprovalLog = () => {
+        const request: ModulesApprovalStatusRequest = {
+            ModuleName: "CANCEL BOOKING APPROVAL",
+            Id: bookingId ?? 0,
+            ProjectId: Number(projectId),
+        };
+
+        setApprovalLogRequest(request);
+        setIsApprovalLogModalOpen(true);
+    };
+
     if (!bookingData) {
         return (
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -657,6 +674,10 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
         );
     }
 
+
+    const isBookingCancel = bookingData?.ApprovalStatus === 'Cancel';
+
+    const isRefundStatus = bookingData?.ApprovalStatus === 'Refund';
 
     return (
         <div className="">
@@ -1266,6 +1287,65 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                     </section>
                 </div>
 
+                {(isBookingCancel || isRefundStatus) && (
+
+                    <div className="pt-5">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                            <div className="bg-[#FBF9F9] px-3 py-1 border-b border-[#D0D7DE] flex items-center justify-between overflow-hidden">
+
+                                <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                                    Cancellation Summary
+                                </h4>
+
+                                <div className="flex items-center gap-2">
+
+                                    <ApprovalActions
+                                        approvalStatus={bookingData.CancelBookingApprovalStatus || "-"}
+                                        isIcons={true}
+                                        onHistory={() => handleApprovalLog()}
+                                    />
+
+                                </div>
+
+                            </div>
+                            <div className="p-4 bg-white">
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <FieldItem label="Cancelled Date" value={formatDate_dd_MonthName_yy(bookingData?.CancelledDate ?? '')} />
+                                    <FieldItem label="Cancelled By" value={getSafeString(bookingData?.CancelledBy)} />
+                                    <FieldItem label="Remark" value={getSafeString(bookingData?.CancelRemark)} />
+                                    <FieldItem label="Proof of Document" value={getSafeString(bookingData?.ProofOfDocumentURL)} urls={bookingData?.ProofOfDocumentURL} isIcon isSetValue={false} />
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                )}
+
+                {isRefundStatus && (
+
+                    <div className="pt-5">
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                            <div className="bg-[#FBF9F9] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#1D1D1D]">
+                                    Refund Amount Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+
+                                <div className="grid grid-cols-3 gap-4">
+                                    <FieldItem label="Total Refunded (₹)" value={formatCurrency(bookingData?.TotalAmountRefundedAgainstBooking) || "-"} />
+                                    <FieldItem label="Paid (₹)" value={formatCurrency(bookingData?.RefundedAmountOnTillDate) || "-"} />
+                                    <FieldItem label="Pending (₹)" value={`${formatCurrency((bookingData?.TotalAmountRefundedAgainstBooking || 0) - (bookingData?.RefundedAmountOnTillDate || 0))}`} />
+                                    <FieldItem label="Refund Status" value={bookingData?.ApprovalStatus || "-"} />
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                )}
 
                 <div className='pt-5'>
                     <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
@@ -1369,6 +1449,12 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
                 </div>
 
             </Modal>
+
+            <ApprovalLogModal
+                isOpen={isApprovalLogModalOpen}
+                title='Cancel Booking'
+                onClose={() => setIsApprovalLogModalOpen(false)}
+                request={approvalLogRequest} />
 
         </div>
     )

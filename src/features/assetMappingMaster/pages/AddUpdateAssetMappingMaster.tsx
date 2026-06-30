@@ -46,6 +46,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
   const [employeeDetails, setEmployeeDetails] = useState<EmployeeMasterData | null>(null);
   const [joiningDate, setJoiningDate] = useState<string>();
+  const [purchaseDate, setPurchaseDate] = useState<string>();
 
   const [isReturnAsset, setIsReturnAsset] = useState(false);
 
@@ -132,6 +133,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
               fetchAssetById(e.AssetMasterId ?? 0).then((assetMaster) => {
                 if (!assetMaster) return;
                 setAssetMasterData(assetMaster);
+                setPurchaseDate(formatDate_dd_mm_yyyy(assetMaster.PurchaseDate?? ""));
               });
 
             }
@@ -197,6 +199,10 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
     if (formData.AssignedDate && !isToDateGreaterOrEqualFromDate(joiningDate!, v_assignedDate!)) {
       newErrors.AssignedDate = "Assigned Date must be greater than or equal to Joining Date";
+    }
+
+    if (formData.AssignedDate && !isToDateGreaterOrEqualFromDate(purchaseDate!, v_assignedDate!)) {
+      newErrors.AssignedDate = "Assigned Date must be greater than or equal to Purchase Date";
     }
 
     if (isReturnAsset === true && formData.ReturnDate && !isToDateGreaterOrEqualFromDate(v_assignedDate!, v_returnDate)) {
@@ -318,6 +324,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                     <FieldItem label="Asset Model" value={assetMasterData?.AssetModel || "-"} />
                     <FieldItem label="Asset Brand" value={assetMasterData?.AssetBrand || "-"} />
                     <FieldItem label="Serial Number" value={assetMasterData?.SerialNumber || "-"} />
+                    <FieldItem label="Purchase Date" value={formatDate_dd_mm_yyyy(assetMasterData?.PurchaseDate || "-")}  />
                   </div>
                 </div>
               )}

@@ -20,7 +20,7 @@ export type PayTrackBookingListState = {
   isFinalRegistrationCompleted:boolean;
   totalUnitCost: number;
   bookingApprovalStatus: string;
-  totalAmountRefundedAgainstBooking:number
+  totalAmountRefundedAgainstBooking:number;
   flat: string;
   activeTab?: string;
   activeSubTab?: string;

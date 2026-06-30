@@ -156,7 +156,8 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
                 parkingData: parkingModificationData.parkingData
             }));
         }
-        return bookingData?.ParkingData || [];
+        // return bookingData?.ParkingData || [];
+        return [];
     }, [parkingModificationData, bookingData]);
 
 

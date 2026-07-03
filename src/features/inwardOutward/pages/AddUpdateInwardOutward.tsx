@@ -594,19 +594,21 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             onMobileChange={(value) => {
                                 handleFieldChange("SenderMobileNumber", value);
 
-                                fetchSenderReceiverByMobileNoData(value, "sender");
-                                setFormData(prev => ({
-                                    ...prev,
-                                    SenderName: "",
-                                    SenderEmailId: "",
-                                    SenderAddress: ""
-                                }));
+                                if (isValidMobile(value, formData.SenderMobileNumberCountryCode!)) {
+                                    fetchSenderReceiverByMobileNoData(value, "sender");
+                                } else {
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        SenderName: "",
+                                        SenderEmailId: "",
+                                        SenderAddress: ""
+                                    }));
+                                }
                             }}
                             onCountryCodeChange={(value) =>
                                 handleFieldChange("SenderMobileNumberCountryCode", value)
                             }
                             error={errors.SenderMobileNumber}
-
                         />
                     </div>
 
@@ -662,13 +664,16 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             onMobileChange={(value) => {
                                 handleFieldChange("ReceiverMobileNumber", value);
 
-                                fetchSenderReceiverByMobileNoData(value, "receiver");
-                                setFormData(prev => ({
-                                    ...prev,
-                                    ReceiverName: "",
-                                    ReceiverEmailId: "",
-                                    ReceiverAddress: ""
-                                }));
+                                if (isValidMobile(value, formData.ReceiverMobileNumberCountryCode!)) {
+                                    fetchSenderReceiverByMobileNoData(value, "receiver");
+                                } else {
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        ReceiverName: "",
+                                        ReceiverEmailId: "",
+                                        ReceiverAddress: ""
+                                    }));
+                                }
                             }}
                             onCountryCodeChange={(value) =>
                                 handleFieldChange("ReceiverMobileNumberCountryCode", value)

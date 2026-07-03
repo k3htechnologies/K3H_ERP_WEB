@@ -26,6 +26,7 @@ import ConfirmationDialogBox from "@/core/utils/confirmationDialogBox";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { filterNumbers } from "@/core/utils/fileValidation";
 import { ModuleAction, useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { TextArea } from "@/ui/components/forms/Textarea";
 
 export const ViewMaterialRequisition: React.FC = () => {
 
@@ -69,6 +70,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
     useEffect(() => {
         if (!projectId || !currentMaterialRequisitionId || currentMaterialRequisitionId === 0) return;
+
         loadMaterialRequisition()
     }, [projectId, currentMaterialRequisitionId, addToast]);
 
@@ -96,7 +98,6 @@ export const ViewMaterialRequisition: React.FC = () => {
                 }))
             )
         );
-
         return fd;
     };
 
@@ -105,7 +106,6 @@ export const ViewMaterialRequisition: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: FilterWithPaginationMaterialRequisition = {
                     PageNumber: 1,
                     PageSize: 1,
@@ -142,6 +142,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
             const dateString = item.RequiredDate.split("T")[0];
             const date = new Date(dateString + "T00:00:00");
+
             return isPreviousDate(date);
         });
 
@@ -156,7 +157,6 @@ export const ViewMaterialRequisition: React.FC = () => {
             addToast({ type: 'error', title: 'Required Date is required.' });
             return;
         }
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -191,19 +191,48 @@ export const ViewMaterialRequisition: React.FC = () => {
     }
 
     const handleOpenRequisitionModal = () => {
+
         setEditableDetails(matrialRequisitionDetailData);
         setEditIsModalOpen(true);
     }
 
+    const RemarkEditor = ({ value, onChange, }: {
+        value?: string; onChange: (value: string) => void;
+    }) => {
+
+        const [showTextArea, setShowTextArea] = useState(false);
+
+        return showTextArea ? (
+            <TextArea
+                className="w-full border rounded px-2 py-1"
+                value={value ?? ""}
+                onChange={(e) => onChange(e.target.value)}
+                rows={3}
+                autoResize={false}
+                autoFocus
+                placeholder="Enter Remark"
+                onBlur={() => setShowTextArea(false)}
+            />
+        ) : (
+            <Input
+                className="w-full border rounded px-2 py-1"
+                value={value ?? ""}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder="Enter Remark"
+                onClick={() => setShowTextArea(true)}
+            />
+        );
+    };
+
     const columns: EditableTableColumn[] = useMemo(() => [
         {
             key: "MaterialName",
-            label: "Material Name",
+            label: "Material",
             width: "15",
             sortable: false,
             editable: false,
             align: "left",
-            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: (value?: string) => (
                 <TooltipText
                     text={value || "-"}
@@ -214,12 +243,12 @@ export const ViewMaterialRequisition: React.FC = () => {
         },
         {
             key: "SubMaterialName",
-            label: "Sub-Material Name",
+            label: "Sub-Material",
             width: "15",
             editable: false,
             sortable: false,
             align: "left",
-            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: (value?: string) => (
                 <TooltipText
                     text={value || "-"}
@@ -234,7 +263,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             width: "15",
             sortable: true,
             align: "left",
-            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: (value?: string) => value || "-",
         },
         {
@@ -244,13 +273,14 @@ export const ViewMaterialRequisition: React.FC = () => {
             sortable: false,
             editable: true,
             align: "left",
-            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: (value?: string) => value || "-",
             renderEditor: (value?: string, onChange?: any) => (
                 <Input
                     className="w-full border rounded px-2 py-1"
                     value={value ?? ""}
                     onChange={(e) => onChange(filterNumbers(e.target.value))}
+                    maxLength={10}
                 />
             )
         },
@@ -262,7 +292,7 @@ export const ViewMaterialRequisition: React.FC = () => {
             editable: true,
             align: "left",
             type: 'datetime',
-            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
             renderEditor: (value?: string, onChange?: any) => (
                 <DatePickerInput
@@ -279,28 +309,24 @@ export const ViewMaterialRequisition: React.FC = () => {
             sortable: false,
             editable: true,
             align: "left",
-            headerClassName: "bg-[#1E3A5F] text-white tracking-[1px]",
+            headerClassName: "bg-[#E4F0FF] text-sm font-medium leading-[1.4] tracking-normal border-b border-r border-gray-300",
             render: (value?: string) => value || "-",
             renderEditor: (value?: string, onChange?: any) => (
-                <Input
-                    className="w-full border rounded px-2 py-1"
-                    value={value ?? ""}
-                    onChange={(e) => onChange((e.target.value))}
-                    placeholder="Enter Remark"
+                <RemarkEditor
+                    value={value}
+                    onChange={onChange}
                 />
-            )
-        },
+            ),
+        }
     ], [])
 
     const handleCloseRequisition = async () => {
-
         if (!selectedMaterialRequisitionItem) return;
 
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const payload: DeleteMaterialRequisitionRequest = {
                     MaterialRequisitionId: selectedMaterialRequisitionItem.MaterialRequisitionId,
                     Uniquekey: selectedMaterialRequisitionItem.Uniquekey,
@@ -321,7 +347,7 @@ export const ViewMaterialRequisition: React.FC = () => {
 
                 } else {
                     addToast({ type: "error", title: response.left.message });
-                    setIsCloseRequisitionDialogOpen(false)
+                    setIsCloseRequisitionDialogOpen(false);
                 }
                 return response;
             },

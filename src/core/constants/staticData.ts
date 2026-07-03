@@ -217,7 +217,7 @@ export const MASTER_DATA = {
   ],
 
   accomodation: ["Rented", "Self-Owned"],
-  
+
   requirement: ["Commercial", "Commercial Leasing", "Residential"],
 
   possessionType: ["RTMI", "Under 1 Year", "1 Years To 2 Years", "2 Years To 3 Years", "3 Years & Above"],
@@ -316,9 +316,9 @@ export const MASTER_DATA = {
 
   nationality: ["Indian", "NRI"],
 
-  materialRequisitionStages : [' Get Quotation','Finalize Vendor','Get Purchase Order','Add GRN','Add Invoice'],
+  materialRequisitionStages: [' Get Quotation', 'Finalize Vendor', 'Get Compare', 'Generate Purchase Order', 'Add GRN', 'Add Invoice', 'Make Payments'],
 
-  materialRequisitionStatus: ['Pending', 'Approved', 'Rejected', 'Completed', 'Cancelled'],
+  materialRequisitionStatus: ['Pending', 'Approved', 'Rejected', 'Completed', 'Cancelled', 'Ongoing'],
 
   reasonsOfJobLeaving: [
     "Better career growth opportunity",
@@ -737,11 +737,11 @@ export const MODULE_OPTIONS = toOptions(MASTER_DATA.module);
 export const ASSIGN_STATUS_TYPE_OPTIONS = toOptions(MASTER_DATA.assignStatusType);
 export const HANDOVER_STATUS = toOptions(MASTER_DATA.handOverStatus);
 export const IBM_OBM_RANGE_FILTER_OPTIONS = toOptions(MASTER_DATA.ibmObmRangeFilter);
-export const CHANNEL_PARTNER_CATEGORY_OPTIONS= toOptions(MASTER_DATA.channelPartnerCategory);
+export const CHANNEL_PARTNER_CATEGORY_OPTIONS = toOptions(MASTER_DATA.channelPartnerCategory);
 export const IBM_OBM_REPORT_STAGE_OPTIONS = toOptions(MASTER_DATA.ibmObmReportStage);
 export const NOTICE_TYPE_OPTIONS = toOptions(MASTER_DATA.noticeType);
 export const BUDGET_LEVEL_TYPE = toOptions(MASTER_DATA.budgetLevelType);
-export const MATERIAL_REQUISITION_STAGES_OPTIONS =toOptions(MASTER_DATA.materialRequisitionStages)
+export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages)
 export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus)
 
 

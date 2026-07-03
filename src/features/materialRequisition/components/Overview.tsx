@@ -20,8 +20,10 @@ import type { FilterWithPaginationVendorForSelectedEnquiryRequest, SelectedVendo
 import { vendorFinalizationService } from "@/features/materialRequisition/services/VendorFinalizationService";
 import type { MaterialRequisitionQuotationDetailsTermsData } from "@/features/materialRequisition/models/MaterialRequisitionQuotationModel";
 import { computeBaseTotal, computeLinesTotal, computeTaxTotal } from "@/features/materialRequisition/utils/finalizeVendorUtils";
+import { formatCurrency } from "@/core/utils/comman";
 
 export const Overview: React.FC = () => {
+
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
@@ -38,6 +40,7 @@ export const Overview: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
+
         fetchMaterialRequisitiondata();
         fetchVendorData();
         fetchInvoiceData();
@@ -260,7 +263,7 @@ export const Overview: React.FC = () => {
                                         <FieldItem label="Received Quantity" value={item.MaterialReceivedQuantityTillDate ?? ''} />
 
                                         <div className="col-span-1 md:col-span-4 mt-1">
-                                            <FieldItem label="Remark" value={<TooltipText text={item.Remark ?? ''} />} />
+                                            <FieldItem label="Remark" value={item.Remark ?? ''} />
                                         </div>
                                     </div>
                                 ))}
@@ -270,7 +273,7 @@ export const Overview: React.FC = () => {
 
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 overflow-y-auto thin-scroll h-[426px]">
                         <div className="overflow-y-auto thin-scroll h-[400px]">
-                            
+
                             <section className="bg-white px-4 pt-1 pb-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Invoice Details</h4>
                                 {MaterialRequisitionInvoiceData.length === 0 ? (
@@ -282,7 +285,7 @@ export const Overview: React.FC = () => {
                                         {MaterialRequisitionInvoiceData.map((item, index) => (
                                             <div key={index} className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-8 bg-gray-200 px-4 rounded-lg p-2 mt-2 ">
                                                 <FieldItem label="Invoice Number" value={item.InvoiceNumber} />
-                                                <FieldItem label="Invoice Amount" value={`₹ ${item.InvoiceAmount ?? ''}`} />
+                                                <FieldItem label="Invoice Amount" value={` ${formatCurrency(item.InvoiceAmount ?? '')}`} />
                                                 <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(item.InvoiceDueDate ?? '')} />
 
                                             </div>

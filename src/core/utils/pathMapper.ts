@@ -85,28 +85,13 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/cpenquiryreport': '/cpEnquiryReport',
         '/ibmobmreport': '/ibmObmReport',
         '/classificationparameter': '/classificationParameter',
-        '/saledashboard': '/saleDashboard',
-        '/enquiryreport': '/enquiryReport',
-        '/cpenquiryreport': '/cpEnquiryReport',
         '/paymentschedulereport': '/paymentScheduleReport',
         '/paymentschedule': '/paymentSchedule',
-        '/litigation': '/litigation',
         '/target': '/target',
         '/incentivereport': '/incentiveReport',
         '/paymentschedulescheme': '/paymentScheduleScheme',
-        '/legaldashboard': '/legalDashboard',
-        '/classificationparameter': '/classificationParameter',
         '/performance': '/performance',
         '/achievement': '/achievement',
-        '/sourcing': '/sourcing',
-        '/booking': '/booking',
-        '/calltracker': '/callTracker',
-        '/othercharges': '/otherCharges',
-        '/paymentschedulescheme': '/paymentScheduleScheme',
-        '/target': '/target',
-        '/incentivereport': '/incentiveReport',
-        '/paymentschedulereport': '/paymentScheduleReport',
-        '/paymentschedule': '/paymentSchedule',
         '/channelpartnercategory' :'/channelPartnerCategory',
 
 
@@ -138,9 +123,6 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //TAX TRACKER
         '/noticesection': '/noticeSection',
-        '/channelpartnerdashboard': '/channelPartnerDashboard',
-        '/companypolicy': '/companyPolicy',
-        '/paytrack': '/payTrack',
         '/stock': '/Stock',
         '/channelPartnerCategory': '/ChannelPartnerCategory'
     }

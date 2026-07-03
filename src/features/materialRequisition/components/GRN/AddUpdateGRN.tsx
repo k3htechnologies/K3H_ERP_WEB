@@ -53,6 +53,7 @@ const initialFormState = (): MaterialRequisitionDetailGRN => ({
     IsTolerant: false,
     TolerancePercentage: 0,
 })
+
 export const AddUpdateGRN = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -85,9 +86,7 @@ export const AddUpdateGRN = () => {
         if (!MaterialRequisitionId) return;
         (async () => {
             await loadGRNData();
-
-        })
-            ();
+        })();
     }, [MaterialRequisitionId]);
 
     useEffect(() => {
@@ -97,7 +96,6 @@ export const AddUpdateGRN = () => {
     }, [addMaterialPopUp]);
 
     useEffect(() => {
-
         const materialdata = [
             ...new Map(
                 (detailData || []).map(x => [
@@ -112,11 +110,10 @@ export const AddUpdateGRN = () => {
                 value: String(x.MaterialMasterId)
             }))
         );
-
     }, [detailData]);
 
-
     const loadGRNData = async () => {
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -174,7 +171,6 @@ export const AddUpdateGRN = () => {
                                 };
                             })
                         );
-
                         setuploadChallanURL(e.UploadChallanURL ?? undefined);
                         setUploadChallanFiles([]);
                         setRemovedUploadChallanUrls([]);
@@ -183,7 +179,6 @@ export const AddUpdateGRN = () => {
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
-
                 return response;
             },
             undefined,
@@ -253,14 +248,12 @@ export const AddUpdateGRN = () => {
             )
         },
         {
-
             key: "MaterialQuantity",
             label: "Quantity",
             align: "left"
 
         },
         {
-
             key: "UomCode",
             label: "UOM",
             align: "left"
@@ -310,22 +303,19 @@ export const AddUpdateGRN = () => {
                             leftIcon={<Edit className="h-4 w-4" />}
                             title="Edit Material Requisition"
                         />
+
                         <Button
-
                             onClick={(e) => {
-
                                 e.preventDefault();
                                 e.stopPropagation();
                                 setMaterialList(prev =>
                                     prev.filter((_, i) => i !== index)
-
                                 );
                             }}
                             disabled={formData.MaterialRequisitionGRNId > 0}
                             color="transparent"
                             isborderRadius
                             size="sm"
-
                             style={{
                                 color: "red",
                                 padding: "4px 8px",
@@ -454,7 +444,6 @@ export const AddUpdateGRN = () => {
         });
 
         form.append('RemoveUploadChallanURL', removedUploadChallanUrls.join(','));
-
         return form;
     };
 
@@ -493,7 +482,6 @@ export const AddUpdateGRN = () => {
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
-
                 return response;
             },
             undefined,
@@ -633,107 +621,105 @@ export const AddUpdateGRN = () => {
                 <Loader loading={isLoading} title={loadingMessage}> <div /> </Loader>
 
                 <div className="flex-1 space-y-2 px-6 py-3 overflow-y-auto thin-scroll">
-                    <form onSubmit={(e) => { e.preventDefault(); void handleSave(); }}>
 
-                        <div className="space-y-6">
-                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">GRN Details </h3>
-                            <div className="flex items-center justify-between">
+                    <div className="space-y-6">
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">GRN Details </h3>
+                        <div className="flex items-center justify-between">
 
-                                <h3 className="text-md font-medium text-gray-500">
-                                    Material Details
-                                </h3>
+                            <h3 className="text-md font-medium text-gray-500">
+                                Material Details
+                            </h3>
 
-                                <Button
-                                    type="button"
-                                    color="blue"
-                                    size="sm"
-                                    onClick={handleAddMaterial}
-                                    leftIcon={<Plus className="h-4 w-4" />}
-                                >
-                                    Add Material
-                                </Button>
-
-                            </div>
-
-                            {materialList.length > 0 && (
-                                <div className="pb-2">
-                                    <DataTable
-                                        data={materialList}
-                                        columns={MaterialRequisitionColumns}
-                                        className="flex-1"
-                                        emptyMessage="No GRN"
-                                    />
-                                </div>
-                            )}
-
-                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
-
-                            <div className="flex grid grid-cols-3 gap-4">
-                                <Input
-                                    type="text"
-                                    label="Vehicle No."
-                                    placeholder="Enter Vehicle No."
-                                    value={formData.VehicleNumber ?? ""}
-                                    onChange={(e) =>
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            VehicleNumber: e.target.value
-                                        }))
-                                    }
-                                    error={errors.VehicleNumber}
-                                    required
-                                />
-
-                                <Input
-                                    type="text"
-                                    label="Challan No."
-                                    placeholder="Challan No."
-                                    value={formData.ChallanNumber}
-                                    onChange={(e) =>
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            ChallanNumber: e.target.value
-                                        }))
-                                    }
-                                    error={errors.ChallanNumber}
-                                    required
-                                />
-
-                                <MultiFilePicker
-                                    label="Upload Document"
-                                    placeholder="Upload Document"
-                                    value={uploadChallanFiles}
-                                    onChange={setUploadChallanFiles}
-                                    availableFilesURL={uploadChallanURL ?? ""}
-                                    allowedTypes={["image/jpeg", "image/png"]}
-                                    maxFiles={1}
-                                    maxSizeMB={5}
-                                    onRemoveExisting={(url) =>
-                                        setRemovedUploadChallanUrls(prev => [...prev, url])
-                                    }
-                                    error={errors.UploadChallanFiles}
-                                    required
-                                />
-                            </div>
-
-                            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Remark</h3>
-
-                            <div className="flex items-center justify-between pb-3">
-                                <TextArea label="Remark" className="thin-scroll" value={formData.Remarks}
-                                    onChange={(e) =>
-                                        setFormData(prev => ({
-                                            ...prev,
-                                            Remarks: e.target.value
-                                        }))
-                                    }
-                                    placeholder="Enter Remark"
-                                    error={errors.Remarks}
-                                    required
-                                />
-                            </div>
+                            <Button
+                                type="button"
+                                color="blue"
+                                size="sm"
+                                onClick={handleAddMaterial}
+                                leftIcon={<Plus className="h-4 w-4" />}
+                            >
+                                Add Material
+                            </Button>
 
                         </div>
-                    </form>
+
+                        {materialList.length > 0 && (
+                            <div className="pb-2">
+                                <DataTable
+                                    data={materialList}
+                                    columns={MaterialRequisitionColumns}
+                                    className="flex-1"
+                                    emptyMessage="No GRN Data Found"
+                                />
+                            </div>
+                        )}
+
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
+
+                        <div className="flex grid grid-cols-3 gap-4">
+                            <Input
+                                type="text"
+                                label="Vehicle No."
+                                placeholder="Enter Vehicle No."
+                                value={formData.VehicleNumber ?? ""}
+                                onChange={(e) =>
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        VehicleNumber: e.target.value
+                                    }))
+                                }
+                                error={errors.VehicleNumber}
+                                required
+                            />
+
+                            <Input
+                                type="text"
+                                label="Challan No."
+                                placeholder="Challan No."
+                                value={formData.ChallanNumber}
+                                onChange={(e) =>
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        ChallanNumber: e.target.value
+                                    }))
+                                }
+                                error={errors.ChallanNumber}
+                                required
+                            />
+
+                            <MultiFilePicker
+                                label="Upload Document"
+                                placeholder="Upload Document"
+                                value={uploadChallanFiles}
+                                onChange={setUploadChallanFiles}
+                                availableFilesURL={uploadChallanURL ?? ""}
+                                allowedTypes={["image/jpeg", "image/png"]}
+                                maxFiles={1}
+                                maxSizeMB={5}
+                                onRemoveExisting={(url) =>
+                                    setRemovedUploadChallanUrls(prev => [...prev, url])
+                                }
+                                error={errors.UploadChallanFiles}
+                                required
+                            />
+                        </div>
+
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Remark</h3>
+
+                        <div className="flex items-center justify-between pb-3">
+                            <TextArea label="Remark" className="thin-scroll" value={formData.Remarks}
+                                onChange={(e) =>
+                                    setFormData(prev => ({
+                                        ...prev,
+                                        Remarks: e.target.value
+                                    }))
+                                }
+                                placeholder="Enter Remark"
+                                error={errors.Remarks}
+                                required
+                            />
+                        </div>
+
+                    </div>
                 </div>
 
                 <BottomActionBar
@@ -745,7 +731,7 @@ export const AddUpdateGRN = () => {
                     })}
                     canAction={canAction}
                     onSave={() => {
-                        void handleSave();
+                        handleSave();
                     }}
                     isLoading={isLoading}
                 />
@@ -817,7 +803,6 @@ export const AddUpdateGRN = () => {
                                 IsTolerant: selected.IsTolerant ?? selectedUOM?.IsTolerant ?? false,
                                 TolerancePercentage: selected.TolerancePercentage ?? selected.Tolerance ?? selectedUOM?.MaterialTolerant ?? 0,
                             }));
-
                             setDropdownSubMaterialResetKey(p => p + 1);
                         }}
                         error={errors.MaterialMasterId}
@@ -923,7 +908,6 @@ export const AddUpdateGRN = () => {
                 </div>
             </Modal >
         </>
-
     )
 }
 

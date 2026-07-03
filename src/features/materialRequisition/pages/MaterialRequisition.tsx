@@ -64,6 +64,7 @@ export const MaterialRequisition: React.FC = () => {
     const handleFilterChange = (key: string, value: string) => {
         setTempFilters(prev => updateFilter(prev, key, value));
     }
+
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchMaterialRequisition(value)
     }, 350);
@@ -79,12 +80,14 @@ export const MaterialRequisition: React.FC = () => {
         updateListState({ filters, page: 1, searchTerm: searchValue });
         await loadDetailsdata(1, filters, sortInfo, searchValue);
     };
+
     const handleConfirmationDialogBoxOpen = useCallback((row: MaterialRequisitionData) => {
         setDeleteData(row);
         setIsConfirmationDialogBoxOpen(true);
     }, []);
 
     const handleNavigateToView = useCallback((row: MaterialRequisitionData) => {
+
         updateListState({ MaterialRequisitionId: row.MaterialRequisitionId ?? 0, MaterialRequisitionStage: row.MaterialRequisitionStage ?? "", MaterialRequisitionStatus: row.MaterialRequisitionStatus ?? "", SystemGeneratedCode: row.SystemGeneratedCode ?? "", Uniquekey: row.Uniquekey ?? "" });
         navigate('/materialRequisition/view');
     }, [navigate, updateListState],);
@@ -97,7 +100,6 @@ export const MaterialRequisition: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const payload: DeleteMaterialRequisitionRequest = {
                     MaterialRequisitionId: deleteData.MaterialRequisitionId,
                     Uniquekey: deleteData.Uniquekey,
@@ -167,9 +169,7 @@ export const MaterialRequisition: React.FC = () => {
             totalRecords: pagination.totalRecords,
             pageSize: pagination.pageSize,
             onPageChange: handlePageChange
-        }),
-        [pagination, handlePageChange]
-    );
+        }), [pagination, handlePageChange]);
 
     const MaterialRequisitionColumns = useMemo<TableColumn[]>(() => [
         {
@@ -368,6 +368,7 @@ export const MaterialRequisition: React.FC = () => {
 
         [MaterialRequisitionColumns, selectedMaterialRequisitionColumnKeys],
     );
+
     const handleSortColumn = useCallback((sort: SortInfo) => {
 
         updateListState({ sortInfo: sort, page: 1 });
@@ -378,7 +379,9 @@ export const MaterialRequisition: React.FC = () => {
         if (!projectId) return;
 
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
+
             loadDetailsdata(listState.page, { SystemGeneratedCode: String(listState.searchTerm).trim() }, listState.sortInfo);
+
         } else {
             loadDetailsdata(listState.page, listState.filters, listState.sortInfo);
         }
@@ -393,7 +396,6 @@ export const MaterialRequisition: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: FilterWithPaginationMaterialRequisition = {
                     PageNumber: page,
                     PageSize: pagination.pageSize,
@@ -404,7 +406,6 @@ export const MaterialRequisition: React.FC = () => {
                     FromDate: filterParams?.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
                     ToDate: filterParams?.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined,
                     SortBy: getSortByParam(sortInfo ?? null, MaterialRequisitionColumns)
-
                 };
 
                 const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
@@ -442,11 +443,11 @@ export const MaterialRequisition: React.FC = () => {
     };
 
     const handleAddMaterialRequisitionModal = useCallback(() => {
+
         navigate('/materialRequisition/add');
     }, [navigate]);
 
     const getMaterialRequisition = async (filterParams: FilterWithPaginationMaterialRequisition) => {
-
         return await materialRequisitionService.apiCallPullMaterialRequisition(filterParams);
     }
 
@@ -520,7 +521,7 @@ export const MaterialRequisition: React.FC = () => {
                 data={materialRequisitionData}
                 columns={visibleMaterialRequisitionColumns}
                 pagination={MaterialRequisitionPaginationInfo}
-                emptyMessage="No Material Requisition Off Found"
+                emptyMessage="No Material Requisition Found"
                 fixedHeight
                 recordsPerPage={20}
                 className="flex-1"
@@ -614,11 +615,11 @@ export const MaterialRequisition: React.FC = () => {
                             placeholder="DD/MM/YYYY"
                         />
                     </div>
+
                 </div>
             </Modal>
 
         </div>
     )
 }
-
 export default MaterialRequisition;

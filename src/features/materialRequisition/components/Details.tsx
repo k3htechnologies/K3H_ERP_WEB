@@ -39,6 +39,7 @@ export const Details: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
+
         fetchDetailsData();
     }, [projectId, currentMaterialRequisitionId])
 
@@ -57,6 +58,7 @@ export const Details: React.FC = () => {
                 const response = await materialRequisitionService.apiCallPullMaterialRequisition(params);
 
                 if (E.isRight(response)) {
+
                     const data = response.right.Data;
 
                     setMaterialRequisitionData(Array.isArray(data) ? (data[0] ?? null) : data);
@@ -79,8 +81,8 @@ export const Details: React.FC = () => {
     };
 
     const PushSplitMaterialRequisitionFormData = (): FormData => {
-        const fd = new FormData();
 
+        const fd = new FormData();
         fd.append("ProjectId", Number(projectId).toString());
         fd.append("MaterialRequisitionId", currentMaterialRequisitionId.toString());
         fd.append("Uniquekey", currentUniquekey);
@@ -98,7 +100,6 @@ export const Details: React.FC = () => {
                 SubMaterialMasterId: item.SubMaterialMasterId,
             }))
         ));
-
         return fd;
     };
 
@@ -156,7 +157,6 @@ export const Details: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const payload: DeleteMaterialRequisitionRequest = {
                     MaterialRequisitionId: deleteData.MaterialRequisitionId,
                     Uniquekey: deleteData.Uniquekey,
@@ -176,7 +176,7 @@ export const Details: React.FC = () => {
                     fetchDetailsData();
                 } else {
                     addToast({ type: 'error', title: response.left.message });
-                    setIsDeleteRequisitionDialogOpen(false)
+                    setIsDeleteRequisitionDialogOpen(false);
                 }
                 setDeleteData(null)
                 return response;
@@ -193,6 +193,8 @@ export const Details: React.FC = () => {
     const selectedMaterials = matrialRequisitionDetailData.filter(item =>
         selectedIds.includes(item.MaterialRequisitionDetailId)
     );
+
+    const ShowSplitButton = matrialRequisitionData?.IsSplit && active !== true
 
     return (
         <div className="justify-center">
@@ -224,14 +226,12 @@ export const Details: React.FC = () => {
                 <div className="flex justify-between">
                     <h1 className="text-lg font-semibold text-gray-900 pb-2">Material Details</h1>
 
-                    {matrialRequisitionData?.IsSplit && (
+                    {ShowSplitButton && (
                         <Button
                             size="md"
-                            color="transparent"
+                            color="blue"
                             style={{
-                                color: '#FFFFFF',
-                                padding: '4px 8px',
-                                backgroundColor: '#135BEC'
+                                padding: '2px 16px',
                             }}
                             onClick={() => setActive(true)}
                         >
@@ -242,8 +242,8 @@ export const Details: React.FC = () => {
 
                 <div className="lg:col-span-5 pb-3 overflow-y-auto thin-scroll h-[250px]">
                     {matrialRequisitionDetailData.map((item, index) => (
-                        <div key={index} className="flex items-center gap-4 bg-gray-200 rounded-lg p-2 mt-2"
-                        >
+                        <div key={index} className="flex items-center gap-4 bg-gray-200 rounded-lg p-2 mt-2">
+
                             {active && (
                                 <Checkbox size="sm"
                                     checked={selectedIds.includes(item.MaterialRequisitionDetailId)}
@@ -268,26 +268,39 @@ export const Details: React.FC = () => {
                     ))}
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex justify-end gap-2">
                     {active && (
-                        <Button
-                            size="md"
-                            color="transparent"
-                            style={{
-                                color: '#FFFFFF',
-                                padding: '4px 8px',
-                                backgroundColor: '#135BEC'
-                            }}
-                            onClick={() => {
-                                if (selectedIds.length === 0) {
-                                    addToast({ type: "error", title: "Please select at least one material" });
-                                    return;
-                                }
-                                setIsAddUpdateModalOpen(true);
-                            }}
-                        >
-                            Save Split
-                        </Button>
+                        <>
+                            <Button
+                                color="transparent"
+                                variant="transparent_border"
+                                size="md"
+                                onClick={() => {
+                                    setActive(false);
+                                    setSelectedIds([]);
+                                }}
+                            >
+                                Cancel Split
+                            </Button>
+
+                            <Button
+                                size="md"
+                                color="blue"
+                                style={{
+                                    padding: '4px 8px',
+                                }}
+                                onClick={() => {
+                                    if (selectedIds.length === 0) {
+                                        addToast({ type: "error", title: "Please select at least one material" });
+                                        return;
+                                    }
+                                    setIsAddUpdateModalOpen(true);
+                                }}
+                            >
+                                Save Split
+                            </Button>
+
+                        </>
                     )}
                 </div>
             </div>
@@ -315,7 +328,7 @@ export const Details: React.FC = () => {
                     color="transparent"
                     style={{
                         color: '#1D1D1D',
-                        padding: '4px 8px',
+                        padding: '4px 12px',
                         backgroundColor: '#D0D7DE'
                     }}
                     onClick={() => {
@@ -337,13 +350,12 @@ export const Details: React.FC = () => {
                 }}
                 title={'Split Material Entry'}
                 onSubmit={handleSplitMaterialRequisition}
-                saveText={'Move To New Entry '}
+                saveText={'Move To New Entry'}
                 loading={isLoading}
                 cancelText="cancel"
                 size="xl"
             >
                 <div className="max-h-[400px] overflow-y-auto">
-
                     {selectedMaterials.map((item) => (
                         <div key={item.MaterialRequisitionDetailId} className="flex items-center gap-x-4">
                             <Checkbox

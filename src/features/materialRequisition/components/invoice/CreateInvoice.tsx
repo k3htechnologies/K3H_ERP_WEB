@@ -17,7 +17,7 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { TextArea } from "@/ui/components/forms/Textarea";
-import { filterNumbers, hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterNumbersWithDecimal, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 import type { FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRNData, MaterialRequisitionGRNData } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import type { TableColumn } from "@/ui/components/DataTable/DataTable";
@@ -74,6 +74,7 @@ const CreateInvoice: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return;
+
         loadMaterialRequisitionGRNData();
     }, [projectId, currentMaterialRequisitionId, MaterialRequisitionGRNId])
 
@@ -150,7 +151,6 @@ const CreateInvoice: React.FC = () => {
 
     const handleFieldChange = (field: keyof AddUpdateMaterialRequisitionInvoice, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }));
-
         if (errors[field]) {
             setErrors((prev) => ({ ...prev, [field]: "" }));
         }
@@ -159,14 +159,12 @@ const CreateInvoice: React.FC = () => {
     const validateAddInvoiceForm = (): {
         isValid: boolean
         errors: { [key: string]: string }
-
     } => {
         const newErrors: { [key: string]: string } = {};
 
         if (!formData.Remarks) {
             newErrors.Remarks = ' Remarks is required.';
         }
-
         if (!formData.InvoiceAmount) {
             newErrors.InvoiceAmount = ' Invoice Amount is required.';
         } else if (Number(formData.InvoiceAmount) <= 0) {
@@ -234,7 +232,6 @@ const CreateInvoice: React.FC = () => {
         });
 
         fd.append("RemoveMeasurementReportURL", removeMeasurementReportUrls.join(","));
-
         return fd;
     };
 
@@ -264,11 +261,9 @@ const CreateInvoice: React.FC = () => {
                     navigate("/materialRequisition/view", {
                         state: { activeTab: "Invoice" }
                     });
-
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');
                     setMeasurementReportURL('');
-
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -282,7 +277,6 @@ const CreateInvoice: React.FC = () => {
             'Create Invoice'
         );
     };
-
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
@@ -307,7 +301,6 @@ const CreateInvoice: React.FC = () => {
                         <FieldItem label="Date" value={formatDate_dd_MonthName_yy(materialRequisitionGRNData?.CreatedDate ?? '')} />
                         <FieldItem label="Challan No." value={materialRequisitionGRNData?.ChallanNumber} />
                         <FieldItem label="Vehicle No." value={materialRequisitionGRNData?.VehicleNumber} />
-
                     </div>
                 </div>
 
@@ -334,7 +327,7 @@ const CreateInvoice: React.FC = () => {
                                 value={formData.InvoiceNumber ?? ""}
                                 onChange={(e) => handleFieldChange("InvoiceNumber", e.target.value)}
                                 placeholder="Enter Invoice number"
-                                maxLength={250}
+                                maxLength={15}
                                 error={errors.InvoiceNumber}
                             />
                         </div>
@@ -355,9 +348,9 @@ const CreateInvoice: React.FC = () => {
                                 required
                                 label='Invoice Amount'
                                 value={formData.InvoiceAmount ?? ""}
-                                onChange={(e) => handleFieldChange("InvoiceAmount", filterNumbers(e.target.value))}
+                                onChange={(e) => handleFieldChange("InvoiceAmount", filterNumbersWithDecimal(e.target.value))}
                                 placeholder="Enter Invoice Amount"
-                                maxLength={250}
+                                maxLength={15}
                                 error={errors.InvoiceAmount}
                             />
                         </div>
@@ -454,7 +447,6 @@ const CreateInvoice: React.FC = () => {
                 }}
                 isLoading={isLoading}
             />
-
         </div>
     )
 }

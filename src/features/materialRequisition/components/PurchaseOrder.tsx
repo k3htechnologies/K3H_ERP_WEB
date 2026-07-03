@@ -11,7 +11,7 @@ import { Loader } from "@/core/utils/loader";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
-import { FileText, Maximize2, Minimize2, X } from "lucide-react";
+import { FileText, Maximize2, Minimize2 } from "lucide-react";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
 import { fetchTncMasterDropdown } from "@/features/tnc/tncDropDown";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
@@ -40,14 +40,14 @@ export const PurchaseOrder: React.FC = () => {
     const [loadingMessage, setLoadingMessage] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
-    const [materialRequisitionPurchaseOrder, setMaterialRequisitionPurchaseOrder] = useState<MaterialRequisitionPurchaseOrderData[]>([])
+    const [materialRequisitionPurchaseOrder, setMaterialRequisitionPurchaseOrder] = useState<MaterialRequisitionPurchaseOrderData | null>(null);
     const [formData, setFormData] = useState<GenerateMaterialRequisitionPurchaseOrderPdfData>(() => initialFormState());
     const [uploadData,] = useState<AddUpdateMaterialRequisitionPurchaseOrder>(() => InitialFormState());
     const { projectId } = useProject();
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
-    const [deleteGeneratePurchaseOrderData, setDeleteGeneratePurchaseOrderData] = useState<MaterialRequisitionPurchaseOrderData | null>(null)
+    const [deleteGeneratePurchaseOrderData, setDeleteGeneratePurchaseOrderData] = useState<MaterialRequisitionPurchaseOrderData | null>(null);
     const { MaterialRequisitionId: listMaterialRequisitionId } = useParams<{ MaterialRequisitionId?: string }>();
     const { listState } = useMaterialRequisitionListState();
     const currentMaterialRequisitionId = listMaterialRequisitionId ? Number(listMaterialRequisitionId) : listState.MaterialRequisitionId;
@@ -58,10 +58,12 @@ export const PurchaseOrder: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return
+
         loadPurchaseOrder();
     }, [projectId, currentMaterialRequisitionId])
 
     const loadPurchaseOrder = async () => {
+        
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -73,11 +75,15 @@ export const PurchaseOrder: React.FC = () => {
                     MaterialRequisitionId: currentMaterialRequisitionId,
                     Uniquekey: currentUniquekey
                 }
+
                 const response = await materialRequisitionPurchaseOrderService.apiCallPullMaterialRequisitionPurchaseOrder(params);
 
                 if (E.isRight(response)) {
 
-                    setMaterialRequisitionPurchaseOrder(response.right.Data);
+                    const data = response.right.Data;
+
+                    setMaterialRequisitionPurchaseOrder(Array.isArray(data) ? (data[0] ?? null) : data);
+
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }
@@ -115,7 +121,6 @@ export const PurchaseOrder: React.FC = () => {
     }
 
     const validateGeneratePurchaseOrderForm = (): {
-
         isValid: boolean
         errors: { [key: string]: string }
     } => {
@@ -125,7 +130,6 @@ export const PurchaseOrder: React.FC = () => {
         if (!formData.Remarks?.trim()) {
             newErrors.Remarks = "Remarks is required.";
         }
-
         if (!formData.TermsCondition?.trim()) {
             newErrors.TermsCondition = "Terms & Condition is required.";
         }
@@ -155,7 +159,6 @@ export const PurchaseOrder: React.FC = () => {
             setErrors(validation.errors)
             return
         }
-
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -171,7 +174,7 @@ export const PurchaseOrder: React.FC = () => {
 
                     loadPurchaseOrder()
 
-                    addToast({ type: 'success', title: response.right.SuccessMessage[0] })
+                    addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -180,7 +183,7 @@ export const PurchaseOrder: React.FC = () => {
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: error.message })
+                addToast({ type: 'error', title: error.message });
             },
             undefined,
             'Generate Purchase Order'
@@ -231,7 +234,6 @@ export const PurchaseOrder: React.FC = () => {
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: DeleteMaterialRequisitionPurchaseOrder = {
                     MaterialRequisitionId: deleteGeneratePurchaseOrderData.MaterialRequisitionId || 0,
                     MaterialRequisitionPurchaseOrderId: deleteGeneratePurchaseOrderData.MaterialRequisitionPurchaseOrderId || 0,
@@ -268,9 +270,7 @@ export const PurchaseOrder: React.FC = () => {
         setIsConfirmationDialogBoxOpen(true);
     }
 
-    const hasPurchaseOrder = materialRequisitionPurchaseOrder.length > 0 &&
-        !!materialRequisitionPurchaseOrder[0];
-
+    const hasPurchaseOrder = !!materialRequisitionPurchaseOrder?.PurchaseOrderURL;
     const isPdf = (url: string) => url.toLowerCase().includes(".pdf") || url.startsWith("blob:");
 
     return (
@@ -312,23 +312,23 @@ export const PurchaseOrder: React.FC = () => {
                     </>
                 )}
             </div>
-            
+
             {hasPurchaseOrder && (
                 <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mt-1 mb-4 ">
+
                     <div className="flex justify-between">
                         <h2 className="text-lg font-semibold mb-2">Purchase Order File</h2>
                         <button
                             onClick={() => setIsMaximized(true)}
-                            className="px-2 py-2 mb-2 hover:bg-gray-100 rounded"
-                        >
+                            className="px-2 py-2 mb-2 hover:bg-gray-100 rounded">
                             <Maximize2 className="h-5 w-5 text-gray-700" />
                         </button>
                     </div>
 
                     <div className="h-[400px]">
-                        {isPdf(materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? '') && (
+                        {isPdf(materialRequisitionPurchaseOrder?.PurchaseOrderURL ?? '') && (
                             <iframe
-                                src={materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? ''}
+                                src={materialRequisitionPurchaseOrder?.PurchaseOrderURL ?? ''}
                                 className="w-full h-full"
                                 title="pdf-preview"
                             />
@@ -337,9 +337,9 @@ export const PurchaseOrder: React.FC = () => {
 
                     <div className="text-sm text-gray-600 mt-2">
                         <span className="font-medium">
-                            Created By {materialRequisitionPurchaseOrder[0].CreatedBy || "-"} on{" "}
-                            {materialRequisitionPurchaseOrder[0].CreatedDate
-                                ? formatDate_dd_MonthName_yy(materialRequisitionPurchaseOrder[0].CreatedDate)
+                            Created By {materialRequisitionPurchaseOrder?.CreatedBy || "-"} on{" "}
+                            {materialRequisitionPurchaseOrder?.CreatedDate
+                                ? formatDate_dd_MonthName_yy(materialRequisitionPurchaseOrder?.CreatedDate)
                                 : "-"}
                         </span>
                     </div>
@@ -349,7 +349,7 @@ export const PurchaseOrder: React.FC = () => {
                             color="red"
                             variant="solid"
                             onClick={() =>
-                                handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder[0])
+                                handleConfirmationDialogBoxOpen(materialRequisitionPurchaseOrder as MaterialRequisitionPurchaseOrderData)
                             }
                             className="px-4 py-2 rounded-md"
                         >
@@ -368,23 +368,15 @@ export const PurchaseOrder: React.FC = () => {
                             <div className="flex justify-end gap-1">
                                 <button
                                     onClick={() => setIsMaximized(false)}
-                                    className="px-2 py-2 hover:bg-gray-100 rounded"
-                                >
+                                    className="px-2 py-2 hover:bg-gray-100 rounded" >
                                     <Minimize2 className="h-5 w-5 text-gray-700" />
-                                </button>
-
-                                <button
-                                    onClick={() => setIsMaximized(false)}
-                                    className="px-2 py-2 hover:bg-gray-100 rounded"
-                                >
-                                    <X className="h-5 w-5 text-gray-700" />
                                 </button>
                             </div>
                         </div>
 
                         <div className="flex-1">
                             <iframe
-                                src={materialRequisitionPurchaseOrder[0].PurchaseOrderURL ?? ''}
+                                src={materialRequisitionPurchaseOrder?.PurchaseOrderURL ?? ''}
                                 className="w-full h-full"
                                 title="pdf-preview"
                             />

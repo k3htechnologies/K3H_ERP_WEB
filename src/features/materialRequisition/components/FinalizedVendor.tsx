@@ -68,6 +68,7 @@ export const FinalizedVendor: React.FC = () => {
 
     useEffect(() => {
         if (!projectId) return
+
         loadSelectedVendor()
         loadFinalizedVendor()
     }, [projectId])
@@ -81,33 +82,43 @@ export const FinalizedVendor: React.FC = () => {
     }, [materialRequisitionVendorSelectedList])
 
     const loadFinalizedVendor = async () => {
-        await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
-            const params: FilterWithPaginationVendorForEnquiryRequest = {
-                MaterialRequisitionId: Number(currentMaterialRequisitionId),
-                Uniquekey: currentUniquekey ?? '',
-                ProjectId: Number(projectId),
-            }
-            const response = await vendorFinalizationService.apiCallpullVendorsForEnquiry(params)
-            if (E.isRight(response)) {
-                setMaterialRequisitionVendorFinalizedList(response.right.Data)
-            }
-            return response
-        })
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationVendorForEnquiryRequest = {
+                    MaterialRequisitionId: Number(currentMaterialRequisitionId),
+                    Uniquekey: currentUniquekey ?? '',
+                    ProjectId: Number(projectId),
+                }
+
+                const response = await vendorFinalizationService.apiCallpullVendorsForEnquiry(params);
+
+                if (E.isRight(response)) {
+                    setMaterialRequisitionVendorFinalizedList(response.right.Data)
+                }
+                return response
+            })
     }
 
     const loadSelectedVendor = async () => {
-        await runApiWithLoader(setIsLoading, setLoadingMessage, async () => {
-            const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
-                MaterialRequisitionId: Number(currentMaterialRequisitionId),
-                Uniquekey: currentUniquekey ?? '',
-                ProjectId: Number(projectId),
-            }
-            const response = await vendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params)
-            if (E.isRight(response)) {
-                setMaterialRequisitionVendorSelectedList(response.right.Data)
-            }
-            return response
-        })
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
+                    MaterialRequisitionId: Number(currentMaterialRequisitionId),
+                    Uniquekey: currentUniquekey ?? '',
+                    ProjectId: Number(projectId),
+                }
+                const response = await vendorFinalizationService.apiCallPullSelectedVendorForEnquiry(params);
+
+                if (E.isRight(response)) {
+                    setMaterialRequisitionVendorSelectedList(response.right.Data)
+                }
+                return response
+            })
     }
 
     const toggleVendor = (id: number) => {
@@ -160,12 +171,9 @@ export const FinalizedVendor: React.FC = () => {
                     await loadSelectedVendor();
 
                 } else {
-
                     addToast({ type: "error", title: response.left.message });
                 }
-
                 return response;
-
             },
             undefined,
             (error: any) => {
@@ -177,6 +185,7 @@ export const FinalizedVendor: React.FC = () => {
     };
 
     const finalizeVendor = async (vendorId: string) => {
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -198,9 +207,7 @@ export const FinalizedVendor: React.FC = () => {
                 }
                 else {
                     addToast({ type: "error", title: response.left.message })
-
                 }
-
                 return response
             }
         )
@@ -253,11 +260,7 @@ export const FinalizedVendor: React.FC = () => {
         )
     };
 
-    const buildPayload = (
-        vendor: any,
-        term: any,
-        lines: any[]
-    ): AddUpdateMaterialRequestQuotation => ({
+    const buildPayload = (vendor: any, term: any, lines: any[]): AddUpdateMaterialRequestQuotation => ({
         MaterialRequisitionId: Number(currentMaterialRequisitionId),
         Uniquekey: currentUniquekey || "",
         MaterialRequisitionQuotationTermsId: term.MaterialRequisitionQuotationTermsId,
@@ -287,11 +290,15 @@ export const FinalizedVendor: React.FC = () => {
     }
 
     const handleCompareVendor = async (exportType: 'VENDOR COMPARISON CHART') => {
+
+        if (materialRequisitionVendorSelectedList.length !== 2) {
+            addToast({ type: "error", title: "Please select atleast two vendors to compare." })
+            return;
+        }
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-
                 const params: FilterWithPaginationVendorForSelectedEnquiryRequest = {
                     MaterialRequisitionId: Number(currentMaterialRequisitionId),
                     Uniquekey: currentUniquekey ?? '',
@@ -324,7 +331,6 @@ export const FinalizedVendor: React.FC = () => {
             Id: currentMaterialRequisitionId ?? 0,
             ProjectId: projectId ?? 0,
         };
-
         setApprovalLogRequest(request);
         setIsApprovalLogModalOpen(true);
     };
@@ -340,7 +346,6 @@ export const FinalizedVendor: React.FC = () => {
             addToast({ type: "warning", title: "Select vendor to finalize" })
             return
         }
-
         await finalizeVendor(String(checkedFinalVendor))
     }
 
@@ -352,7 +357,6 @@ export const FinalizedVendor: React.FC = () => {
 
             <div className="flex justify-end gap-2">
                 {isAnyFinalized && canfinalizeVendor && (
-
                     <ApprovalActions
                         approvalStatus={finalizedVendor?.VendorFinalizationApproval}
                         onApprove={() => handleApproveRejectVendor("approve")}
@@ -367,6 +371,7 @@ export const FinalizedVendor: React.FC = () => {
                 {isAnyFinalized &&
                     <ApprovalLogModal
                         isOpen={isApprovalLogModalOpen}
+                        titleText={finalizedVendor?.VendorName}
                         title='Finalized Vendor'
                         onClose={() => setIsApprovalLogModalOpen(false)}
                         request={approvalLogRequest}
@@ -387,13 +392,12 @@ export const FinalizedVendor: React.FC = () => {
                         }}
                         leftIcon={<Scale size={20} />}
                         onClick={() => handleExportCompareVendorExcel()}
-
                     >
                         Compare
-                    </Button>)}
+                    </Button>
+                )}
 
                 {!isAnyFinalized && canfinalizeVendor && (
-
                     <Button
                         size="sm"
                         style={{
@@ -417,7 +421,7 @@ export const FinalizedVendor: React.FC = () => {
                     isOpen={isApprovalActionModalOpen}
                     onClose={() => setIsApprovalActionModalOpen(false)}
                     actionType={approvalActionType}
-                    titleText={"Finalized Vendor"}
+                    titleText={finalizedVendor?.VendorName}
                     subTitleText={""}
                     onSubmit={handleApprovalSubmit}
                     loading={isLoading}
@@ -439,8 +443,8 @@ export const FinalizedVendor: React.FC = () => {
                         onClick={() => setQuotationAvailable(true)}
                     >
                         Get Quotation
-                    </Button>)}
-
+                    </Button>
+                )}
             </div>
 
             {materialRequisitionVendorSelectedList.length === 0
@@ -456,7 +460,6 @@ export const FinalizedVendor: React.FC = () => {
                             showline
                             height={70}
                             expandedheight={400}
-
                             title={
                                 <div className="grid grid-cols-12 gap-4">
 
@@ -467,8 +470,7 @@ export const FinalizedVendor: React.FC = () => {
                                             onChange={() =>
                                                 canAction && setCheckedFinalVendor(
                                                     checkedFinalVendor === vendor.VendorId
-                                                        ? null
-                                                        : vendor.VendorId
+                                                        ? null : vendor.VendorId
                                                 )
                                             }
                                             onClick={(e) => e.stopPropagation()}
@@ -493,7 +495,6 @@ export const FinalizedVendor: React.FC = () => {
                                                 addToast({ type: "success", title: "Email ID copied to clipboard", })
                                             }}
                                         />
-
                                     </div>
 
                                     <div className="col-span-9 grid grid-cols-4 gap-4">
@@ -504,7 +505,6 @@ export const FinalizedVendor: React.FC = () => {
                                     </div>
                                 </div>
                             }
-
                             child={
                                 <div className="p-2 space-y-4">
                                     {(vendor.MaterialRequisitionQuotationTermsData?.length
@@ -542,6 +542,7 @@ export const FinalizedVendor: React.FC = () => {
                                                     <span>Grand Total</span>
                                                     <span>{grandTotal.toFixed(2)}</span>
                                                 </div>
+
                                             </div>
                                         )
                                     })}
@@ -610,7 +611,6 @@ export const FinalizedVendor: React.FC = () => {
                                             className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer"
                                             onClick={() => canAction && toggleVendor(vendor.VendorId)}
                                         >
-
                                             <Checkbox
                                                 checked={checked}
                                                 disabled={!canAction}

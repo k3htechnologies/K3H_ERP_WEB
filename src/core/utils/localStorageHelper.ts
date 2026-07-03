@@ -1359,9 +1359,8 @@ export const LocalStorageHelper = {
     }
     return null;
   },
-
   //ESTIMATION AND BUDGET
-   storeBudgetTableColumns: (columns: string): void => {
+  storeBudgetTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS, columns);
     } catch (error) {
@@ -1381,8 +1380,28 @@ export const LocalStorageHelper = {
     }
     return null
   },
+  //#region MATERIAL REQUISITION
 
-
+  storeMaterialRequisitionTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Material Requisition Columns Details:", error);
+    }
+  },
+  getMaterialRequisitionTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Material Requisition Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+  //#endregion
   //#region CLEAR LOCAL STORAGE
   clearLocalStorageData: (): void => {
     try {

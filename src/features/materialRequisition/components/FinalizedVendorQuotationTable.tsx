@@ -75,7 +75,7 @@ export const FinalizedVendorQuotationTable: React.FC<Props> = ({
     const GROUPS: EditableColumnGroup[] = [
         { label: "ITEM INFORMATION", keys: ["MaterialOrService", "MaterialQuantity"], background: "#0F2744" },
         { label: "PRICING", keys: ["MaterialPerUnit", "Amount"], background: "#1A3560" },
-        { label: "TAX BREAKDOWN (%)", keys: ["CGST", "SGST", "UGST", "IGST"], background: "#1E3A5F", color: "#FDE68A" },
+        { label: "TAX BREAKDOWN (%)", keys: ["CGST", "SGST", "UGST", "TGST"], background: "#1E3A5F", color: "#FDE68A" },
         { label: "SUMMARY", keys: ["Total"], background: "#0F2744" }
     ]
 

@@ -58,7 +58,6 @@ export const SpecificationMaster: React.FC = () => {
     const SpecificationMasterTabsList = [
         { id: "L1", label: "L1" },
         { id: "L2", label: "L2" },
-        { id: "L3", label: "L3" },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(SpecificationMasterTabsList[0].id);
@@ -100,7 +99,6 @@ export const SpecificationMaster: React.FC = () => {
             },
             undefined,
             (error: any) =>
-
                 addToast({ type: 'error', title: error.message }),
             undefined,
             'Loading Specification Master'
@@ -384,12 +382,6 @@ export const SpecificationMaster: React.FC = () => {
                     LevelId1: row.SpecificationMasterId,
                     LevelId2: 0,
                 };
-
-            case "L3":
-                return {
-                    LevelId1: row.LevelId1,
-                    LevelId2: row.SpecificationMasterId,
-                };
         }
     };
 
@@ -620,7 +612,6 @@ export const SpecificationMaster: React.FC = () => {
         );
     };
 
-
     const handleExportSpecificationmasterExcel = () => handleExportSpecificationMaster("Excel");
     const habndleExportSpecificationmasterPdf = () => handleExportSpecificationMaster("PDF");
 
@@ -731,7 +722,6 @@ export const SpecificationMaster: React.FC = () => {
                 loading={isLoading}
                 size="xl"
             >
-
                 <div className="space-y-10 p-6 bg-blue-100">
                     {parentPath && (
                         <div className="mb-4 text-lg font-medium text-gray-500">

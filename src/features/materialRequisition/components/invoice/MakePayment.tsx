@@ -453,6 +453,7 @@ const MakePayment: React.FC<{ totalAmount?: number; editData?: any }> = ({
                         value={formData.TransactionNumber}
                         onChange={(e) => handleFieldChange("TransactionNumber", e.target.value)}
                         error={errors.TransactionNumber}
+                        required
                     />
 
                     <MultiFilePicker

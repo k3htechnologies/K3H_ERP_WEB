@@ -81,6 +81,7 @@ const InvoicePayment: React.FC = () => {
     };
 
     const loadmaterialRequisitionGRNData = async () => {
+        
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -272,7 +273,7 @@ const InvoicePayment: React.FC = () => {
 
     const amountPaid = invoiceData?.InvoiceAmountPaidTillDate ? Number(invoiceData.InvoiceAmountPaidTillDate) : 0;
 
-    const PendingAmount = Math.max(0, InvoiceAmount - amountPaid);
+    const PendingAmount = Math.max(InvoiceAmount - amountPaid);
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
@@ -319,25 +320,26 @@ const InvoicePayment: React.FC = () => {
                     </div>
 
                     <div className="flex justify-between gap-2 pb-4">
-                        <ApprovalActions
-                            approvalStatus={invoiceData?.InvoiceStatus}
-                            onApprove={() => handleApproveRejectInvoice(invoiceData as MaterialRequisitionInvoiceData, "approve")}
-                            onReject={() => handleApproveRejectInvoice(invoiceData as MaterialRequisitionInvoiceData, "reject")}
-                            showApproval={invoiceData?.IsApproval}
-                            isIcons={true}
-                            onHistory={() => handleApprovalLog(invoiceData as MaterialRequisitionInvoiceData)}
-                        />
+                        <div>
+                            <ApprovalActions
+                                approvalStatus={invoiceData?.InvoiceStatus}
+                                onApprove={() => handleApproveRejectInvoice(invoiceData as MaterialRequisitionInvoiceData, "approve")}
+                                onReject={() => handleApproveRejectInvoice(invoiceData as MaterialRequisitionInvoiceData, "reject")}
+                                showApproval={invoiceData?.IsApproval}
+                                isIcons={true}
+                                onHistory={() => handleApprovalLog(invoiceData as MaterialRequisitionInvoiceData)}
+                            />
+                        </div>
 
                         {PendingAmount === 0 ? (
                             <div>
-                                <span className="border border-green-300 bg-green-100 text-green-600 font-semibold px-4 py-2 rounded-md inline-block">Paid</span>
+                                <span className="border border-green-300 bg-green-100 text-green-600 font-semibold px-2 py-2 rounded-md inline-block">Paid</span>
                             </div>
                         ) : (
                             <Button
                                 size="mxs"
                                 color="transparent"
                                 onClick={() => handleMakePayment(invoiceData as MaterialRequisitionInvoiceData)}
-
                                 style={{
                                     color: '#FFFFFF',
                                     padding: '4px 8px',
@@ -346,7 +348,6 @@ const InvoicePayment: React.FC = () => {
                                 Make Payment
                             </Button>
                         )}
-
                     </div>
                 </div>
 
@@ -421,6 +422,7 @@ const InvoicePayment: React.FC = () => {
                             <FieldItem label="Payment Type" value={item.PaymentType ?? ''} />
                             <FieldItem label="Payment Mode" value={item.PaymentMode ?? ''} />
                             <FieldItem label="Transaction Number" value={item.TransactionNumber ?? ''} />
+                            
                             <div>
                                 <p className="text-gray-500">Transaction Receipt</p>
                                 <MultiImageViewer

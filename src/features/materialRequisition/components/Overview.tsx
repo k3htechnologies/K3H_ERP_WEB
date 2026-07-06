@@ -122,6 +122,7 @@ export const Overview: React.FC = () => {
     };
 
     const fetchInvoiceData = async () => {
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -157,14 +158,11 @@ export const Overview: React.FC = () => {
     const Vendoramount = firstTerm?.MaterialRequisitionQuotationData || []
 
     const amountPaid = MaterialRequisitionInvoiceData.reduce(
-        (sum, item) => sum + Number(item.InvoiceAmountPaidTillDate ?? 0),
-        0
-    );
+        (sum, item) => sum + Number(item.InvoiceAmountPaidTillDate ?? 0), 0);
 
     return (
         <div className="bg-white p-1">
             <Loader loading={isLoading} title={loadingMessage}> {" "} <div></div>{" "} </Loader>
-
             <div className="grid grid-cols-12 gap-5 pt-1">
 
                 <div className="col-span-6">
@@ -251,12 +249,12 @@ export const Overview: React.FC = () => {
 
                 <div className="col-span-6">
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4 overflow-y-auto thin-scroll h-[495px]">
-                        <div className="overflow-y-auto thin-scroll h-[476px]">
+                        <div className="overflow-y-auto thin-scroll h-[480px]">
 
                             <section className="bg-white px-4 pt-1 pb-4">
                                 <h4 className="text-lg font-semibold text-gray-900 mb-4">Material Details</h4>
                                 {matrialRequisitionDetailData.map((item, index) => (
-                                    <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-2 mb-3 border-b border-gray-300 last:border-b-0 last:pb-0 pb-2">
+                                    <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-x-6 gap-y-2 mb-3 border-b border-gray-300 last:border-b-0 last:pb-0 pb-4">
                                         <FieldItem label="Name" value={item.MaterialName} />
                                         <FieldItem label="Sub-Material" value={<TooltipText text={item.SubMaterialName ?? ''} />} />
                                         <FieldItem label="Quantity" value={item.MaterialQuantity} />
@@ -268,6 +266,7 @@ export const Overview: React.FC = () => {
                                     </div>
                                 ))}
                             </section>
+                            
                         </div>
                     </div>
 
@@ -293,6 +292,7 @@ export const Overview: React.FC = () => {
                                     </div>
                                 )}
                             </section>
+
                         </div>
                     </div>
 

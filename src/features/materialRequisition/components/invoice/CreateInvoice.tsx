@@ -79,6 +79,7 @@ const CreateInvoice: React.FC = () => {
     }, [projectId, currentMaterialRequisitionId, MaterialRequisitionGRNId])
 
     const loadMaterialRequisitionGRNData = async () => {
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -167,7 +168,7 @@ const CreateInvoice: React.FC = () => {
         }
         if (!formData.InvoiceAmount) {
             newErrors.InvoiceAmount = ' Invoice Amount is required.';
-        } else if (Number(formData.InvoiceAmount) <= 0) {
+        } else if (Number(formData.InvoiceAmount) === 0) {
             newErrors.InvoiceAmount = ' Invoice Amount must be greater than zero.';
         }
         if (!formData.InvoiceDate) {
@@ -179,8 +180,12 @@ const CreateInvoice: React.FC = () => {
         } else if (formData.InvoiceDate != null && formData.InvoiceDate !== "" && !isToDateGreaterOrEqualFromDate(formData.InvoiceDate, formData.InvoiceDueDate)) {
             newErrors.InvoiceDueDate = "Due Date must be greater than Invoice Date";
         }
-        if (!formData.InvoiceNumber) {
-            newErrors.InvoiceNumber = ' Invoice Number is required.';
+        if (!formData.InvoiceNumber?.trim()) {
+            newErrors.InvoiceNumber = "Invoice Number is required.";
+        } else if (Number(formData.InvoiceNumber) === 0) {
+            newErrors.InvoiceNumber = "Invoice Number must be greater than zero.";
+        } else if (formData.InvoiceNumber.length !== 15) {
+            newErrors.InvoiceNumber = "Invoice Number must be 15 characters long.";
         }
         if (!hasAnyDocumentFile(uploadInvoiceURLFiles, uploadInvoiceURL, removeUploadInvoiceUrls)) {
             newErrors.UploadInvoiceURL = "File is required.";
@@ -198,6 +203,7 @@ const CreateInvoice: React.FC = () => {
     };
 
     const PushAddUpdateInvoiceData = (): FormData => {
+
         const fd = new FormData();
         fd.append("MaterialRequisitionInvoiceId", formData.MaterialRequisitionInvoiceId.toString());
         fd.append("MaterialRequisitionId", Number(currentMaterialRequisitionId).toString());
@@ -209,6 +215,7 @@ const CreateInvoice: React.FC = () => {
         fd.append("InvoiceAmount", formData.InvoiceAmount.toString());
         fd.append("Remarks", formData.Remarks ?? "");
         fd.append("MaterialRequisitionGRNId", Number(MaterialRequisitionGRNId)!.toString());
+
         uploadInvoiceURLFiles.forEach((file) => {
             if (file instanceof File) {
                 fd.append("UploadInvoiceURL", file);
@@ -239,9 +246,7 @@ const CreateInvoice: React.FC = () => {
         setErrors({});
 
         const validation = validateAddInvoiceForm();
-
         if (!validation.isValid) {
-
             setErrors(validation.errors);
             return;
         }
@@ -261,6 +266,7 @@ const CreateInvoice: React.FC = () => {
                     navigate("/materialRequisition/view", {
                         state: { activeTab: "Invoice" }
                     });
+
                     setPerformaInvoiceURLL('');
                     setUploadInvoiceURL('');
                     setMeasurementReportURL('');
@@ -326,7 +332,7 @@ const CreateInvoice: React.FC = () => {
                                 label='Invoice Number'
                                 value={formData.InvoiceNumber ?? ""}
                                 onChange={(e) => handleFieldChange("InvoiceNumber", e.target.value)}
-                                placeholder="Enter Invoice number"
+                                placeholder="Enter Invoice Number"
                                 maxLength={15}
                                 error={errors.InvoiceNumber}
                             />

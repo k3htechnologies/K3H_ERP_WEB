@@ -22,7 +22,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import type { AddUpdateMaterialRequisitionGRNRequest, FilterWithPaginationMaterialRequisitionGRN, MaterialRequisitionDetailGRN } from "@/features/materialRequisition/models/MaterialRequisitionGRNModel";
 import { materialRequisitionGRNService } from "@/features/materialRequisition/services/MaterialRequisitionGRNService";
 import { useMaterialRequisitionListState } from "@/features/materialRequisition/context/MaterialRequisitionListStateContext";
-import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { filterChallanNumber, hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 const initialFormStateMaterialRequisition = (): AddUpdateMaterialRequisitionGRNRequest => ({
     MaterialRequisitionId: 0,
@@ -152,7 +152,6 @@ export const AddUpdateGRN = () => {
                                         d.MaterialName === x.MaterialName &&
                                         d.SubMaterialName === x.SubMaterialName
                                 );
-
                                 return {
                                     MaterialRequisitionDetailGRNId: x.MaterialRequisitionDetailGRNId,
                                     MaterialRequisitionDetailId: matched?.MaterialRequisitionDetailId ?? 0,
@@ -404,6 +403,8 @@ export const AddUpdateGRN = () => {
 
         if (!formData.ChallanNumber) {
             newErrors.ChallanNumber = ' Challan Number is required.';
+        } else if (formData.ChallanNumber.length !== 15) {
+            newErrors.ChallanNumber = ' Challan Number must be 15 characters long.';
         }
         if (!hasAnyDocumentFile(uploadChallanFiles, uploadChallanURL, removedUploadChallanUrls)) {
             newErrors.UploadChallanFiles = "File is required.";
@@ -432,10 +433,8 @@ export const AddUpdateGRN = () => {
                 QualityAnalystRemark: x.QualityAnalystRemark,
             }));
 
-        form.append(
-            'MaterialRequisitionDetailGRNJSON',
-            JSON.stringify(filtered)
-        ); form.append("ProjectId", projectId!.toString());
+        form.append('MaterialRequisitionDetailGRNJSON', JSON.stringify(filtered));
+        form.append("ProjectId", projectId!.toString());
 
         uploadChallanFiles.forEach(file => {
             if (file instanceof File) {
@@ -593,7 +592,7 @@ export const AddUpdateGRN = () => {
             });
             return;
         }
-
+        
         const newItem: MaterialRequisitionDetailGRN = {
             ...materialData
         };
@@ -606,10 +605,8 @@ export const AddUpdateGRN = () => {
             } else {
                 updated.push(newItem);
             }
-
             return updated;
         });
-
         setAddMaterialPopUp(false);
         setEditIndex(null);
         setMaterialData(initialFormState());
@@ -667,6 +664,7 @@ export const AddUpdateGRN = () => {
                                         VehicleNumber: e.target.value
                                     }))
                                 }
+                                maxLength={10}
                                 error={errors.VehicleNumber}
                                 required
                             />
@@ -679,9 +677,10 @@ export const AddUpdateGRN = () => {
                                 onChange={(e) =>
                                     setFormData(prev => ({
                                         ...prev,
-                                        ChallanNumber: e.target.value
+                                        ChallanNumber: filterChallanNumber(e.target.value)
                                     }))
                                 }
+                                maxLength={15}
                                 error={errors.ChallanNumber}
                                 required
                             />
@@ -724,8 +723,7 @@ export const AddUpdateGRN = () => {
 
                 <BottomActionBar
                     cancelText="Cancel"
-                    saveText={formData.MaterialRequisitionId && formData.MaterialRequisitionId > 0 ? "Update" : "Add"
-                    }
+                    saveText={formData.MaterialRequisitionId && formData.MaterialRequisitionId > 0 ? "Update" : "Add"}
                     onCancel={() => navigate("/materialRequisition/view", {
                         state: { activeTab: "GRN" }
                     })}
@@ -789,7 +787,6 @@ export const AddUpdateGRN = () => {
 
                             setMaterialData(prev => ({
                                 ...prev,
-
                                 MaterialMasterId: selected.MaterialMasterId,
                                 MaterialName: selected.MaterialName,
                                 SubMaterialMasterId: selected.SubMaterialMasterId,
@@ -852,7 +849,10 @@ export const AddUpdateGRN = () => {
 
                     <Input type="text" disabled label="UOM"
                         value={materialData.UomCode}
-                        placeholder="UOM" maxLength={250} error={errors.UomMasterId} />
+                        placeholder="UOM"
+                        maxLength={250}
+                        error={errors.UomMasterId}
+                    />
 
                     <Input
                         type="text"
@@ -880,7 +880,6 @@ export const AddUpdateGRN = () => {
                         value={materialData.TotalReceivedMaterialQuantity}
                         onChange={(e) => {
                             const value = e.target.value;
-
                             setMaterialData(prev => ({
                                 ...prev,
                                 TotalReceivedMaterialQuantity: value === "" ? 0 : Number(value)
@@ -889,7 +888,6 @@ export const AddUpdateGRN = () => {
                         placeholder="Quantity"
                         min={0}
                         step="0.01"
-
                         error={errors.TotalReceivedMaterialQuantity}
                     />
 

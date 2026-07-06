@@ -254,7 +254,6 @@ export const MaterialRequisition: React.FC = () => {
                 if (!urls || urls.length === 0) {
                     return <span>-</span>;
                 }
-
                 return (
                     <div className="flex items-center justify-between gap-2 w-full">
                         <MultiImageViewer
@@ -419,7 +418,6 @@ export const MaterialRequisition: React.FC = () => {
                         totalRecords: response.right.TotalNumberOfRecord,
                         totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
                     });
-
                 } else {
                     addToast({ type: "error", title: response.left.message });
                 }

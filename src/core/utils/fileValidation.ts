@@ -31,20 +31,20 @@ export const filterMobile = (value: string): string =>
 //   return regex.test(mobile.trim());
 // };
 
-export const isValidMobile = ( mobile: string, countryCode?: string): boolean => {
+export const isValidMobile = (mobile: string, countryCode?: string): boolean => {
 
-  if(!countryCode){
+  if (!countryCode) {
 
     countryCode = "+91";
   }
 
   if (!mobile) return false;
 
-  const country = countryList.find( (x) => x.code === countryCode);
+  const country = countryList.find((x) => x.code === countryCode);
 
   if (!country) return false;
-  
-  const regex = country.regex || new RegExp( `^\\d{${country.mobileLength}}$`);
+
+  const regex = country.regex || new RegExp(`^\\d{${country.mobileLength}}$`);
 
   return regex.test(mobile.trim());
 };
@@ -330,7 +330,7 @@ export const isValidWebsiteUrl = (url: string): boolean => {
     /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/i;
 
   return urlRegex.test(url);
-  
+
 };
 
 // ----------------------------------
@@ -559,5 +559,7 @@ export const isValidAPF = (apf: string): boolean => {
   return regex.test(value);
 };
 
-
+// VALIDATE CHALLAN NUMBER 
+export const filterChallanNumber = (value: string): string =>
+  value.replace(/[^A-Za-z0-9/-]/g, "").toUpperCase().slice(0, 15);
 

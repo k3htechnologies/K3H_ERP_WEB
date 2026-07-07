@@ -9,6 +9,7 @@ import type {
 } from '@/features/ChannelPartner/models/ChannelPartnerModel';
 
 import * as E from 'fp-ts/Either';
+import type { ChannelPartnerAOPListResponse, FilterWithPaginationChannelPartnerAOPRequest } from '@/features/ChannelPartner/models/ChannelPartnerAOPModel';
 
 const channelPartnerDatasource = new ChannelPartnerDatasourceImpl();
 
@@ -56,6 +57,19 @@ export const ChannelPartnerService = {
         try {
 
             return E.right(await channelPartnerDatasource.pullChannelPartnerCompany(params, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallPullChannelPartnerAOP: async (params: FilterWithPaginationChannelPartnerAOPRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ChannelPartnerAOPListResponse>> => {
+
+        try {
+
+            return E.right(await channelPartnerDatasource.pullChannelPartnerAOP(params, options?.signal));
 
         } catch (error: any) {
 

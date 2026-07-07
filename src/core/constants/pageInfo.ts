@@ -472,7 +472,11 @@ export const getPageInfo = (path: string) => {
                 title: "Channel Partner Category",
                 description: "Channel Partner Category",
             }
-
+        case 'aopAchievement':
+            return {
+                title: "AOP Achievement",
+                description: "Recognize and Reward Top Performers",
+            }
 
 
         // MARKETING

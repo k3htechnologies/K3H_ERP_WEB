@@ -92,6 +92,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/paymentschedulereport': '/paymentScheduleReport',
         '/paymentschedule': '/paymentSchedule',
         '/channelpartnercategory' :'/channelPartnerCategory',
+        '/aopachievement': '/aopAchievement',
 
 
         // INVENTORY

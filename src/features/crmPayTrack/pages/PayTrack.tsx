@@ -94,6 +94,7 @@ const PayTrack: React.FC = () => {
         const response = await payTrackBookingService.apiCallPullPayTrackBooking(params);
 
         if (E.isRight(response)) {
+
           setPayTrackList(response.right.Data);
 
           if (response.right.Data.length > 0) {
@@ -107,6 +108,7 @@ const PayTrack: React.FC = () => {
             totalRecords: response.right.TotalNumberOfRecord,
             totalPages: Math.ceil(response.right.TotalNumberOfRecord / pagination.pageSize),
           });
+
         } else {
           addToast({ type: "error", title: response.left.message });
         }
@@ -432,10 +434,7 @@ const PayTrack: React.FC = () => {
 
   return (
     <div className="bg-[#F9FAFB] rounded-lg shadow-sm border border-gray-200 p-5">
-      <Loader loading={isLoading} title={loadingMessage}>
-        {" "}
-        <div></div>{" "}
-      </Loader>
+      <Loader loading={isLoading} title={loadingMessage}> {" "}<div></div>{" "}</Loader>
 
       <TableActionToolbar
         isShowSearchBar
@@ -468,7 +467,7 @@ const PayTrack: React.FC = () => {
         :
         <div className="grid grid-cols-12 gap-4">
 
-          <div className="col-span-12 lg:col-span-4">
+          <div className="bg-white col-span-12 lg:col-span-4 p-3 rounded-2xl">
 
             <PaginationCard
               key={searchTerm}
@@ -545,7 +544,8 @@ const PayTrack: React.FC = () => {
           {selectedBooking && (
 
             <div className="col-span-12 lg:col-span-8">
-              <div className="bg-white rounded-2xl overflow-hidden">
+
+                <div className="bg-white rounded-2xl h-[calc(100vh-190px)] overflow-y-auto thin-scroll">
 
                 <div className="p-6">
 

@@ -26,9 +26,11 @@ export interface BrokerageBookingData {
     BookingId: number | 0
     SystemGeneratedCode: string | null
     ApplicantMobileNumber: number | 0
+    ApplicantMobileNumberCountryCode: string | null
     ChannelPartnerName: string | null
     ChannelPartnerCompany: string | null
     ChannelPartnerMobileNumber: string | null
+    ChannelPartnerMobileNumberCountryCode: string | null
     ApplicantName: string | null
     FromDate: string | null
     ToDate: string | null

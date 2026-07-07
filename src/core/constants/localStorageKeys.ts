@@ -84,6 +84,11 @@ export const LOCAL_STORAGE_KEYS = {
     ACHIEVEMENT_BY_BOOKING_COLUMNS: 'achievementByBooking.selectedColumns',
     ACHIEVEMENT_BY_IBMOBM_COLUMNS: 'achievementByIbmObm.selectedColumns',
 
+    //AOP ACHIEVEMENT
+    ACHIEVEMENT_BY_CHANNEL_PARTNER_COLUMNS: 'achievementByChannelPartner.selectedColumns',
+    ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS: 'achievementByChannelPartnerWalkinsRevisit.selectedColumns',
+    ACHIEVEMENT_BY_CHANNEL_PARTNER_BOOKING_COLUMNS: 'achievementByChannelPartnerBooking.selectedColumns',
+    ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS: 'achievementByChannelPartnerIbmObm.selectedColumns',
 
     //CRM
     PAY_TRACK_BOOKING_SELECTED_COLUMNS: 'payTrackBooking.selectedColumns',

@@ -613,6 +613,8 @@ export const MASTER_DATA = {
 
   budgetLevelType: ["L1", "L2", "L3"],
 
+  aopStatus: ["AOP", "NON - AOP", "EXPIRED","EXPIRE SOON"],
+
 } as const;
 
 // ============================================================================
@@ -735,6 +737,7 @@ export const CHANNEL_PARTNER_CATEGORY_OPTIONS= toOptions(MASTER_DATA.channelPart
 export const IBM_OBM_REPORT_STAGE_OPTIONS = toOptions(MASTER_DATA.ibmObmReportStage);
 export const NOTICE_TYPE_OPTIONS = toOptions(MASTER_DATA.noticeType);
 export const BUDGET_LEVEL_TYPE = toOptions(MASTER_DATA.budgetLevelType);
+export const AOP_STATUS = toOptions(MASTER_DATA.aopStatus);
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

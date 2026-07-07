@@ -218,7 +218,7 @@ export const PerformanceReport: React.FC = () => {
             key: 'EmployeeName',
             label: 'Employee Name',
             width: '15',
-            sortable: true,
+            sortable: false,
             fixed: 'left',
             align: 'left',
             render: (value) => (
@@ -396,7 +396,7 @@ export const PerformanceReport: React.FC = () => {
         {
             key: 'EmployeeName',
             label: 'Employee Name',
-            sortable: true,
+            sortable: false,
             width: '15',
             fixed: 'left',
             align: 'left',

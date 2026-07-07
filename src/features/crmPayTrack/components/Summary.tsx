@@ -148,7 +148,7 @@ export const Summary: React.FC = () => {
                         bookingData: booking,
 
                         bookingApprovalStatus: booking.BookingApprovalStatus || "Pending"
-                    })
+                    });
 
                     setPayTrackList(booking);
 

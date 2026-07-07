@@ -871,6 +871,7 @@ export const PaymentLedger: React.FC = () => {
                   const showDelete = canAction && !row.IsBookingAmount && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !row.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
 
                   return (
+                    
                     <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                       <div className="flex justify-between items-center">
                         <div className="text-sm text-gray-700">

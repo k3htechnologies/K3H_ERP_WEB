@@ -14,6 +14,7 @@ export interface ParkingModificationDetailsData {
     UniqueKey: string | null;
     ProjectId: number;
     ParkingId: string;
+    ParkingIds: string;
     parkingData?: ParkingData[] | null;
     IsApproval: boolean;
     ApprovalStatus: string;

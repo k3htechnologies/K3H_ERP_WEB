@@ -285,8 +285,21 @@ export const RefundPaymentLegger: React.FC = () => {
                                     </div>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm pt-5">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm pt-5 border-b border-gray-200 pb-3">
 
+                                    <div className="space-y-3">
+                                        <h3 className="font-semibold text-gray-900 mb-2">Payment Details</h3>
+
+
+
+                                        <FieldItem label="Payment Mode" value={getSafeString(data.PaymentMode ?? '-')} />
+                                        <FieldItem label="Refunded Amount (₹)" value={formatCurrency(data.RefundedAmount ?? '0')} />
+
+                                        <FieldItem label="Transaction / Cheque / Demand Draft No." value={getSafeString(data.TransactionChequeDemandDraftNumber ?? '-')} urls={data.TransactionChequeDemandDraftURL} isIcon />
+                                        <FieldItem label="Transaction / Cheque / Demand Draft Date" value={formatDate_dd_MonthName_yy(data.TransactionChequeDemandDraftDate ?? '') || '-'} />
+
+
+                                    </div>
                                     <div className="space-y-3">
                                         <h3 className="font-semibold text-gray-900 mb-2">Developers Bank Details</h3>
                                         <FieldItem label="Project Bank name" value={getSafeString(data.ProjectBankName ?? '-')} isRow={false} />
@@ -305,26 +318,16 @@ export const RefundPaymentLegger: React.FC = () => {
 
                                     </div>
 
-                                    <div className="space-y-3">
-                                        <h3 className="font-semibold text-gray-900 mb-2">Action Details</h3>
 
-                                        <FieldItem label="Created By" value={data?.CreatedBy ?? "-"} />
-                                        <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(data?.CreatedDate ?? "-")} />
-                                        <FieldItem label="Modified By" value={data?.ModifiedBy ?? "-"} />
-                                        <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(data?.ModifiedDate ?? "-")} />
-
-                                    </div>
                                 </div>
 
-                                <h3 className="font-semibold text-gray-900 pt-5 text-sm">Payment Details</h3>
+                                <h3 className="font-semibold text-gray-900 pt-5 text-sm">Action Details</h3>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm pt-2">
-                                    <FieldItem label="Payment Mode" value={getSafeString(data.PaymentMode ?? '-')} isRow={false} />
-                                    <FieldItem label="Refunded Amount (₹)" value={formatCurrency(data.RefundedAmount ?? '0')} isRow={false} />
-
-                                    <FieldItem label="Transaction / Cheque / Demand Draft No." value={getSafeString(data.TransactionChequeDemandDraftNumber ?? '-')} urls={data.TransactionChequeDemandDraftURL} isRow={false} isIcon />
-                                    <FieldItem label="Transaction / Cheque / Demand Draft Date" value={formatDate_dd_MonthName_yy(data.TransactionChequeDemandDraftDate ?? '') || '-'} isRow={false} />
-
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-sm pt-2">
+                                    <FieldItem label="Created By" value={data?.CreatedBy ?? "-"} isRow={false} />
+                                    <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(data?.CreatedDate ?? "-")} isRow={false} />
+                                    <FieldItem label="Modified By" value={data?.ModifiedBy ?? "-"} isRow={false} />
+                                    <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(data?.ModifiedDate ?? "-")} isRow={false} />
                                 </div>
                             </div>
                         )
@@ -332,10 +335,10 @@ export const RefundPaymentLegger: React.FC = () => {
 
 
                 ) : (
-                   
+
                     <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
-                            <NoDataView message='No refunded amount details history found' />
-                        </section>
+                        <NoDataView message='No refunded amount details history found' />
+                    </section>
                 )}
 
             </div>

@@ -10,7 +10,7 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import * as E from "fp-ts/Either";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
-import {  type TableColumn } from "@/ui/components/DataTable/DataTable";
+import { type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { usePayTrackBookingListState } from "@/features/crmPayTrack/context/PayTrackBookingListStateContext";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button } from "@/ui/components/forms";
@@ -75,7 +75,7 @@ export const FlatAlteration: React.FC = () => {
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
     const [editingFlatAlterationData, setEditingFlatAlterationData] = useState<FlatAlterationRequestData | null>(null);
     const [deleteFlatAlterationData, setDeleteFlatAlterationData] = useState<FlatAlterationRequestData | null>(null);
-    
+
     useEffect(() => {
         if (!projectId || !bookingId) return;
         fetchFlatAlterationRequest();
@@ -95,15 +95,19 @@ export const FlatAlteration: React.FC = () => {
                     PageSize: 100,
                     ProjectId: Number(projectId),
                     BookingId: bookingId,
-                    TabName:"REQUESTS",
+                    TabName: "REQUESTS",
                 };
 
                 const response = await flatAlterationService.apiCallPullFlatAlterationRequest(params);
 
                 if (E.isRight(response)) {
+
                     if (response.right.Data && response.right.Data.length > 0) {
+
                         const latestDataIndex = response.right.Data.length - 1;
+
                         setFlatAlterationData(response.right.Data[latestDataIndex]);
+
                     } else {
                         setFlatAlterationData(null);
                     }
@@ -152,7 +156,7 @@ export const FlatAlteration: React.FC = () => {
         }
     }, [isAddUpdateFlatAlterationModalOpen, editingFlatAlterationData, projectId]);
 
-     const handleEditFlatAlterationRequest = useCallback((row: FlatAlterationRequestData) => {
+    const handleEditFlatAlterationRequest = useCallback((row: FlatAlterationRequestData) => {
         setEditingFlatAlterationData({
             ...row,
             FlatAlterationRemark: row.FlatAlterationRemark,
@@ -273,10 +277,10 @@ export const FlatAlteration: React.FC = () => {
         );
     };
 
-    
 
 
-     const handleConfirmationDialogBoxOpen = useCallback((row: FlatAlterationRequestData) => {
+
+    const handleConfirmationDialogBoxOpen = useCallback((row: FlatAlterationRequestData) => {
         setDeleteFlatAlterationData(row)
         setIsConfirmationDialogBoxOpen(true)
     }, []);
@@ -325,7 +329,7 @@ export const FlatAlteration: React.FC = () => {
                     setIsConfirmationDialogBoxOpen(false);
 
                     setDeleteFlatAlterationData(null);
-                    
+
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     setIsConfirmationDialogBoxOpen(false);
@@ -398,21 +402,30 @@ export const FlatAlteration: React.FC = () => {
     const flatAlterationColumns = useMemo<TableColumn[]>(
         () => [
             {
+                key: "ProofOfDocumentURL",
+                label: "Proof of Document",
+                width: "15",
+                align: "center",
+                render: (_value: string, row: any) => {
+                    return (
+                        <MultiImageViewer
+                            images={parseDocumentUrls(row.ProofOfDocumentURL)}
+                            title="Proof of Document"
+                            triggerLabel="-"
+                            isIcon={false}
+                            isWrap={false}
+                        />
+                    );
+                },
+            },
+            {
                 key: "FlatAlterationRemark",
                 label: "Unit / Modulation / Customization Remark",
                 sortable: false,
                 align: "left",
-                render: (value: string, row: any) => {
-                    return (
-                        <div className="flex items-center justify-between w-full">
-                            <div className="truncate max-w-[400px]">
-                                <MultiImageViewer images={parseDocumentUrls(row.ProofOfDocumentURL)} title="Proof Of Document" triggerLabel={value || "-"} />
-                            </div>
-                        </div>
-                    );
-                },
+                render: (value) => value || "-",
             },
-             {
+            {
                 key: 'Actions',
                 label: 'Actions',
                 width: '10',
@@ -486,10 +499,11 @@ export const FlatAlteration: React.FC = () => {
                 ),
             },
         ],
-        [canAction, handleFlatAlterationApprovalLog, handleFlatAlterationApproveRejectDocument,handleEditFlatAlterationRequest,handleConfirmationDialogBoxOpen],
+        [canAction, handleFlatAlterationApprovalLog, handleFlatAlterationApproveRejectDocument, handleEditFlatAlterationRequest, handleConfirmationDialogBoxOpen],
     );
 
     const handleCreateRequestFlatSpecificationModal = () => {
+        setEditingFlatAlterationData(null);
         setIsAddUpdateFlatAlterationModalOpen(true);
         setProofOfDocumentFiles([]);
         setProofOfDocumentURL("");
@@ -498,7 +512,7 @@ export const FlatAlteration: React.FC = () => {
 
     };
 
-     const handleDeleteDialogClose = useCallback(() => {
+    const handleDeleteDialogClose = useCallback(() => {
         setIsConfirmationDialogBoxOpen(false);
         setDeleteFlatAlterationData(null);
     }, [setIsConfirmationDialogBoxOpen, setDeleteFlatAlterationData]);
@@ -513,7 +527,7 @@ export const FlatAlteration: React.FC = () => {
                             Unit / Modulation / Customization Details
                         </h4>
 
-                        {canAction && bookingApprovalStatus?.toUpperCase() === "APPROVED" && (
+                        {canAction && bookingApprovalStatus?.toUpperCase() === "APPROVED" && !flatAlterationData && (
                             <Button
                                 onClick={handleCreateRequestFlatSpecificationModal}
                                 color="blue"
@@ -607,7 +621,7 @@ export const FlatAlteration: React.FC = () => {
                 </div>
             </Modal>
 
-             <DeleteDialog
+            <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
                 onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteFlatAlterationRequest}

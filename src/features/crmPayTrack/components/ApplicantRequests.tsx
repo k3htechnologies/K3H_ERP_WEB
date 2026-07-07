@@ -29,6 +29,8 @@ import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
 import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import usePagination from "@/core/hooks/usePagination";
+import type { FilterWithPaginationPayTrackBooking } from "../models/PayTrackBookingModel";
+import { payTrackBookingService } from "../services/PayTrackBookingService";
 
 const initialFormStateForDetailsRequest = (): BookingApplicantModificationRequest => ({
     BookingApplicantModificationRequestId: 0,
@@ -178,7 +180,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
     const { canAction } = useMenuPermissions("/modificationRequest");
     const { addToast } = useToast();
     const { projectId } = useProject();
-    const { listState } = usePayTrackBookingListState();
+    const { listState, updateListState } = usePayTrackBookingListState();
     const { bookingId, bookingData, bookingApprovalStatus } = listState;
     const { pagination, setPagination } = usePagination(20);
 
@@ -825,7 +827,9 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                 width: "15",
                 sortable: false,
                 align: "center",
-                render: (value) => value || "-",
+                render: (value: string, row: any) => {
+                    return <MultiImageViewer images={parseDocumentUrls(row.VotingIdURL)} title="Voting ID Document" triggerLabel={value || "-"} isWrap={false} />;
+                },
             },
             {
                 key: "PassportNumber",
@@ -1000,6 +1004,10 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                 align: 'center',
                 render: (_value, row) => {
 
+                    if (row.ApplicantType !== "Applicant") {
+                        return "-";
+                    }
+
                     const isDisabled = row.ApprovalStatus !== "Pending";
 
                     return (
@@ -1076,9 +1084,10 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
 
 
 
-    const handleDeleteBookingApplicantRequest = async () => {
-        setIsConfirmationDialogBoxOpen(false);
-        if (!bookingApplicantModificationData) return
+     const handleDeleteBookingApplicantRequest = async () => {
+        if (!bookingApplicantModificationData || bookingApplicantModificationData.length === 0) return;
+
+        const targetId = bookingApplicantModificationData[0].BookingApplicantModificationRequestId;
 
         await runApiWithLoader(
             setIsLoading,
@@ -1087,51 +1096,50 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                 const params: DeleteBookingApplicantModificationModelRequest = {
                     BookingId: bookingId ?? 0,
                     ProjectId: projectId ?? 0,
-                    BookingApplicantModificationRequestId: bookingApplicantModificationData[0].BookingApplicantModificationRequestId,
+                    BookingApplicantModificationRequestId: targetId,
+                };
 
-                }
                 const response = await bookingApplicantModificationService.apiCallDeleteBookingApplicantModificationRequest(params);
 
                 if (E.isRight(response)) {
 
-                    const newTotalRecords = pagination.totalRecords - 1;
+                    setBookingApplicantModificationData((prevList) =>
+                        prevList.filter(item => item.BookingApplicantModificationRequestId !== targetId)
+                    );
 
+                    const newTotalRecords = Math.max(0, pagination.totalRecords - 1);
                     const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
-
                     let pageToShow = pagination.currentPage;
 
                     if (pagination.currentPage > newTotalPages) {
                         pageToShow = newTotalPages;
                     }
 
-                    else if (applicantModificationList.length === 1 && pagination.currentPage > 1) {
-                        pageToShow = pagination.currentPage - 1;
-                    }
                     setPagination({
                         currentPage: pageToShow,
                         totalRecords: newTotalRecords,
                         totalPages: newTotalPages
                     });
-                    await fetchBookingApplicantModificationList();
+
+                    await loadBookingApplicantModificationRequest();
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-                    
                     setIsConfirmationDialogBoxOpen(false);
-                    setBookingApplicantModificationData([]);
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     setIsConfirmationDialogBoxOpen(false);
+                    await loadBookingApplicantModificationRequest();
                 }
-                return response
+                return response;
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: error.message })
+                addToast({ type: 'error', title: error.message });
             },
             undefined,
             'Delete Applicant Requests'
-        )
-    }
+        );
+    };
 
     const handleApprovalLog = (row: BookingApplicantModificationDataRequest) => {
         const request: ModulesApprovalStatusRequest = {
@@ -1181,6 +1189,8 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
 
                     await fetchBookingApplicantModificationList();
 
+                    await loadPayTrackList();
+
                 } else {
 
                     addToast({ type: "error", title: response.left.message });
@@ -1199,6 +1209,39 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
     };
 
 
+     const loadPayTrackList = async () => {
+            await runApiWithLoader(
+                setIsLoading,
+                setLoadingMessage,
+                async () => {
+                    const params: FilterWithPaginationPayTrackBooking = {
+                        PageNumber: 1,
+                        PageSize: 1,
+                        ProjectId: Number(projectId),
+                        BookingId: Number(bookingId)
+                    };
+    
+                    const response = await payTrackBookingService.apiCallPullPayTrackBooking(params);
+    
+                    if (E.isRight(response)) {
+    
+                        updateListState({ bookingName: response.right.Data[0]?.ApplicantName || "-" });
+    
+    
+                    } else {
+                        addToast({ type: "error", title: response.left.message });
+                    }
+    
+                    return response;
+                },
+                undefined,
+                (error: any) => {
+                    addToast({ type: "error", title: error.message });
+                },
+                undefined,
+                "Loading Pay Track Booking",
+            );
+        };
 
     return (
         <div>
@@ -1213,7 +1256,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                             Applicant Details
                         </h4>
 
-                        {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && (
+                        {canAction && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !applicantModificationList.length && (
 
                             <div className="flex items-center gap-2">
                                 <Button
@@ -1249,6 +1292,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
 
                     {applicantList.length > 0 && (
                         <div className="p-6">
+                            
                             <DataTableWithHeaderRowDivider
                                 columns={pendingColumns}
                                 data={applicantList}
@@ -1259,6 +1303,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
 
                     {applicantModificationList.length > 0 ? (
                         <div className="p-5">
+                            
                             <DataTableWithHeaderRowDivider
                                 columns={summaryColumns}
                                 data={applicantModificationList}

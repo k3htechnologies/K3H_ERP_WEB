@@ -24,6 +24,7 @@ export interface FilterWithPaginationChannelPartnerRequest {
     SystemGeneratedCode?: string;
     NoOfIBM?: string;
     NoOfOBM?: string;
+    AOPStatus?: string;
     Status?: string
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
@@ -87,6 +88,12 @@ export interface ChannelPartnerData {
 
     NoOfIbm:number | 0
     NoOfObm:number | 0
+
+    AOPFromDate: string | null
+    AOPToDate: string | null
+    AOPDocumentURL: string
+    AOPStatus: string
+    ChannelPartnerPhotoUrl: string
 
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -161,6 +168,12 @@ export interface ChannelPartnerTeamData {
     
     MicromarketProximity: string;
 
+    AOPFromDate: string | null
+    AOPToDate: string | null
+    AOPDocumentURL: string | null
+    AOPStatus: string
+    ChannelPartnerPhotoUrl: string
+
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -206,6 +219,11 @@ export interface AddUpdateChannelPartnerRequest {
     VillageMasterId: number | null;
     PrimaryProjectPortfolioId:number
     SecondaryProjectPortfolioId: string; 
+
+    AOPFromDate: string | null
+    AOPToDate: string | null
+    AOPDocumentURL: string | null
+    RemoveAOPDocumentURL: string | null
     
     OTP?: string | null;
 }

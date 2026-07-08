@@ -13,7 +13,7 @@ import MultiImageViewer from "@/ui/components/ImageViewer/ImageViewer";
 import { parseDocumentUrls } from "@/core/utils/documentUtils";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { Button, Input } from "@/ui/components/forms";
-import { IdCardIcon, Plus, Trash2,Edit } from "lucide-react";
+import { IdCardIcon, Plus, Trash2, Edit } from "lucide-react";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { bookingApplicantModificationService } from '@/features/crmPayTrack/services/BookingApplicantModelCrmService';
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
@@ -175,6 +175,8 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
     const [approvalRowData, setApprovalRowData] = useState<BookingApplicantModificationDataRequest | null>(null);
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false);
 
+    const [applicantToDelete, setApplicantToDelete] = useState<BookingApplicantModificationDataRequest | null>(null);
+
     const { canAction } = useMenuPermissions("/modificationRequest");
     const { addToast } = useToast();
     const { projectId } = useProject();
@@ -223,7 +225,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                     PageSize: 10,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
-                    TabName:"REQUESTS",
+                    TabName: "REQUESTS",
                 };
 
                 const response = await bookingApplicantModificationService.apiCallPullBookingApplicantModification(params);
@@ -609,7 +611,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
         setProofOfDocumentFiles([]);
     };
 
-    
+
 
     const handleSaveApplicantRequests = async () => {
         if (applicantList.length === 0) return;
@@ -736,7 +738,8 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
     };
 
     const handleConfirmationDialogBoxOpen = useCallback((row: BookingApplicantModificationDataRequest) => {
-        setBookingApplicantModificationData([row])
+        // setBookingApplicantModificationData([row])
+        setApplicantToDelete(row);
         setIsConfirmationDialogBoxOpen(true)
     }, [])
 
@@ -1033,7 +1036,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
     const pendingColumns = useMemo<TableColumn[]>(
         () => [
             ...summaryColumns.filter(
-                (col) => col.key !== "ApprovalStatus" && col.key !== "VersionNumber" && col.key!=="Actions"
+                (col) => col.key !== "ApprovalStatus" && col.key !== "VersionNumber" && col.key !== "Actions"
             ),
             {
                 key: "actions",
@@ -1071,14 +1074,73 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
 
     const handleDeleteDialogClose = useCallback(() => {
         setIsConfirmationDialogBoxOpen(false);
-        setBookingApplicantModificationData([]);
+        // setBookingApplicantModificationData([]);
+        setApplicantToDelete(null);
     }, [setIsConfirmationDialogBoxOpen, setBookingApplicantModificationData]);
 
 
 
+    // const handleDeleteBookingApplicantRequest = async () => {
+    //     setIsConfirmationDialogBoxOpen(false);
+    //     if (!bookingApplicantModificationData) return
+
+    //     await runApiWithLoader(
+    //         setIsLoading,
+    //         setLoadingMessage,
+    //         async () => {
+    //             const params: DeleteBookingApplicantModificationModelRequest = {
+    //                 BookingId: bookingId ?? 0,
+    //                 ProjectId: projectId ?? 0,
+    //                 BookingApplicantModificationRequestId: bookingApplicantModificationData[0].BookingApplicantModificationRequestId,
+
+    //             }
+    //             const response = await bookingApplicantModificationService.apiCallDeleteBookingApplicantModificationRequest(params);
+
+    //             if (E.isRight(response)) {
+
+    //                 const newTotalRecords = pagination.totalRecords - 1;
+
+    //                 const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+    //                 let pageToShow = pagination.currentPage;
+
+    //                 if (pagination.currentPage > newTotalPages) {
+    //                     pageToShow = newTotalPages;
+    //                 }
+
+    //                 else if (applicantModificationList.length === 1 && pagination.currentPage > 1) {
+    //                     pageToShow = pagination.currentPage - 1;
+    //                 }
+    //                 setPagination({
+    //                     currentPage: pageToShow,
+    //                     totalRecords: newTotalRecords,
+    //                     totalPages: newTotalPages
+    //                 });
+    //                 await fetchBookingApplicantModificationList();
+
+    //                 addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+    //                 setIsConfirmationDialogBoxOpen(false);
+    //                 setBookingApplicantModificationData([]);
+    //             } else {
+    //                 addToast({ type: 'error', title: response.left.message });
+    //                 setIsConfirmationDialogBoxOpen(false);
+    //             }
+    //             return response
+    //         },
+    //         undefined,
+    //         (error: any) => {
+    //             addToast({ type: 'error', title: error.message })
+    //         },
+    //         undefined,
+    //         'Delete Applicant Requests'
+    //     )
+    // }
+
     const handleDeleteBookingApplicantRequest = async () => {
-        setIsConfirmationDialogBoxOpen(false);
-        if (!bookingApplicantModificationData) return
+        if (!applicantToDelete) return;
+
+        const targetId = applicantToDelete.BookingApplicantModificationRequestId;
 
         await runApiWithLoader(
             setIsLoading,
@@ -1087,51 +1149,52 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                 const params: DeleteBookingApplicantModificationModelRequest = {
                     BookingId: bookingId ?? 0,
                     ProjectId: projectId ?? 0,
-                    BookingApplicantModificationRequestId: bookingApplicantModificationData[0].BookingApplicantModificationRequestId,
+                    BookingApplicantModificationRequestId: targetId,
+                };
 
-                }
                 const response = await bookingApplicantModificationService.apiCallDeleteBookingApplicantModificationRequest(params);
 
                 if (E.isRight(response)) {
+                    // Deletion successful hone ke BAAD local state se filter out karo
+                    setBookingApplicantModificationData((prevList) =>
+                        prevList.filter(item => item.BookingApplicantModificationRequestId !== targetId)
+                    );
 
-                    const newTotalRecords = pagination.totalRecords - 1;
-
+                    const newTotalRecords = Math.max(0, pagination.totalRecords - 1);
                     const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
-
                     let pageToShow = pagination.currentPage;
 
                     if (pagination.currentPage > newTotalPages) {
                         pageToShow = newTotalPages;
                     }
 
-                    else if (applicantModificationList.length === 1 && pagination.currentPage > 1) {
-                        pageToShow = pagination.currentPage - 1;
-                    }
                     setPagination({
                         currentPage: pageToShow,
                         totalRecords: newTotalRecords,
                         totalPages: newTotalPages
                     });
-                    await fetchBookingApplicantModificationList();
+
+                    await loadBookingApplicantModificationRequest();
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-                    
                     setIsConfirmationDialogBoxOpen(false);
-                    setBookingApplicantModificationData([]);
+                    setApplicantToDelete(null);
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                     setIsConfirmationDialogBoxOpen(false);
+                    setApplicantToDelete(null);
                 }
-                return response
+                return response;
             },
             undefined,
             (error: any) => {
-                addToast({ type: 'error', title: error.message })
+                addToast({ type: 'error', title: error.message });
+                setApplicantToDelete(null);
             },
             undefined,
             'Delete Applicant Requests'
-        )
-    }
+        );
+    };
 
     const handleApprovalLog = (row: BookingApplicantModificationDataRequest) => {
         const request: ModulesApprovalStatusRequest = {
@@ -1267,9 +1330,9 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                         </div>
                     ) : (
                         applicantList.length === 0 && (
-                            <section className="md:col-span-4 bg-white rounded-xl p-6">
+                            <div className="p-6">
                                 <NoDataView message="No Applicant Found" />
-                            </section>
+                            </div>
                         )
                     )}
 
@@ -1472,7 +1535,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                 </div>
             </Modal>
 
-           <DeleteDialog
+            <DeleteDialog
                 isOpen={isConfirmationDialogBoxOpen}
                 onClose={handleDeleteDialogClose}
                 onConfirm={handleDeleteBookingApplicantRequest}

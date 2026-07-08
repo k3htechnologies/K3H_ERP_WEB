@@ -132,7 +132,7 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
                     PageSize: 100,
                     ProjectId: Number(projectId),
                     BookingId: Number(bookingId),
-                    TabName:"REQUESTS",
+                    TabName: "REQUESTS",
 
                 };
 
@@ -170,18 +170,24 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
     };
 
     const tableData = useMemo(() => {
-        if (parkingModificationData && parkingModificationData.parkingData && parkingModificationData.parkingData.length > 0) {
-            return parkingModificationData.parkingData.map(item => ({
+        if (
+            parkingModificationData &&
+            parkingModificationData.parkingData &&
+            parkingModificationData.parkingData.length > 0
+        ) {
+            return parkingModificationData.parkingData.map((item, index) => ({
                 ...item,
                 ProofOfDocumentURL: parkingModificationData.ProofOfDocumentURL,
                 ApprovalStatus: parkingModificationData.ApprovalStatus,
                 IsApproval: parkingModificationData.IsApproval,
                 ParkingModificationRequestId: parkingModificationData.ParkingModificationRequestId,
-                parkingData: parkingModificationData.parkingData
+                parkingData: parkingModificationData.parkingData,
+                showApprovalAction: index === 0, // <-- only first row
             }));
         }
-        return bookingData?.ParkingData || [];
-    }, [parkingModificationData, bookingData]);
+
+        return [];
+    }, [parkingModificationData]);
 
     const handleEditParkingModificationRequest = useCallback((row: ParkingModificationDetailsData) => {
         setEditingParkingModificationRequestData({
@@ -501,19 +507,19 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
             {
                 key: "ApprovalStatus",
                 label: "Approval Status",
-                sortable: false,
-                align: "left",
-                fixed: "left",
                 render: (value, row) => (
-
-                    <ApprovalActions
-                        approvalStatus={value || "-"}
-                        showApproval={row.IsApproval}
-                        isIcons={true}
-                        onHistory={() => handleParkingApprovalLog(row)}
-                        onApprove={() => handleParkingApproveRejectDocument(row, "approve")}
-                        onReject={() => handleParkingApproveRejectDocument(row, "reject")}
-                    />
+                    row.showApprovalAction ? (
+                        <ApprovalActions
+                            approvalStatus={value || "-"}
+                            showApproval={row.IsApproval}
+                            isIcons={true}
+                            onHistory={() => handleParkingApprovalLog(row)}
+                            onApprove={() => handleParkingApproveRejectDocument(row, "approve")}
+                            onReject={() => handleParkingApproveRejectDocument(row, "reject")}
+                        />
+                    ) : (
+                        <span>-</span>
+                    )
                 )
             },
             {
@@ -661,7 +667,6 @@ export const ParkingSwapSection: React.FC<Props> = ({ onLoaded }) => {
                         <div>
                             <Input label="Current Parking Number" value={bookingParkingNumber || "-"} disabled />
                         </div>
-
 
                         <MultiFilePicker
                             label="Proof of Document"

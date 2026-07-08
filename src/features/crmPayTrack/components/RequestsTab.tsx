@@ -8,13 +8,13 @@ export const RequestsTab: React.FC = () => {
 
     return (
         <div>
-            <ApplicantRequests onLoaded={() => setStep(2)} />
+            <ApplicantRequests onLoaded={() => setStep((prev) => Math.max(prev, 2))} />
 
             {step >= 2 && (
-                <ParkingSwapSection  onLoaded={() => setStep(3)} />
+                <ParkingSwapSection onLoaded={() => setStep((prev) => Math.max(prev, 3))} />
             )}
 
-            {step >= 3 && ( <FlatAlteration /> )}
+            {step >= 3 && (<FlatAlteration />)}
         </div>
     );
 };

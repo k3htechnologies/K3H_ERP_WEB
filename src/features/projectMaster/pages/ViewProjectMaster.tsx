@@ -65,15 +65,15 @@ export const ViewProjectMaster: React.FC = () => {
 
     const TabList: { id: string; label: string }[] = [
 
-        canProjectView  ? { id: "Project Overview", label: "Project Overview" } : null,
+        canProjectView ? { id: "Project Overview", label: "Project Overview" } : null,
 
         canAssignEmployeeView ? { id: "Employee", label: "Employee" } : null,
 
         canBankView ? { id: "Bank Details", label: "Bank Details" } : null,
 
-        canCompanyView  ? { id: "Company", label: "Company" } : null,
+        canCompanyView ? { id: "Company", label: "Company" } : null,
 
-        canApprovalView  ? { id: "Approval", label: "Approval" } : null
+        canApprovalView ? { id: "Approval", label: "Approval" } : null
 
     ].filter(Boolean) as { id: string; label: string }[];
 
@@ -167,7 +167,7 @@ export const ViewProjectMaster: React.FC = () => {
         await loadProjectMasterWithEmployee(editProjectData!.ProjectId, searchValue);
 
     }
-    
+
     const clearsearchForEmployeeName = async () => {
         setSearchTermForEmployeeName('');
         debouncedSearchForEmployeeName.cancel?.();
@@ -278,32 +278,32 @@ export const ViewProjectMaster: React.FC = () => {
     const handleBackToListProjectMaster = () => {
         navigate('/projectMaster');
     };
-    
+
     const handleEditProjectMaster = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate(`/projectMaster/add/${row.ProjectId}`);
     };
-    
+
     const handleEditProjectMasterWithEmployee = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/employee');
     };
-    
+
     const handleEditProjectMasterWithCompany = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/company');
     };
-    
+
     const handleEditProjectMasterWithBank = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/bank');
     };
-    
+
     const handleEditApproval = (row: ProjectMasterData) => {
         if (!row?.ProjectId) return;
         navigate('/projectMaster/approval');
     };
-    
+
 
     useEffect(() => {
         if (activeTabForModulesWorkflowApproval.length > 0 && !activeModuleTab) {
@@ -328,11 +328,11 @@ export const ViewProjectMaster: React.FC = () => {
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListProjectMaster()}
-                canAction={activeTab === "Project Overview" ? canProjectAction 
-                         : activeTab === 'Employee' ? canAssignEmployeeAction 
-                         : activeTab === 'Bank Details' ? canBankAction 
-                         : activeTab === 'Company' ? canCompanyAction 
-                         : canApprovalAction}
+                canAction={activeTab === "Project Overview" ? canProjectAction
+                    : activeTab === 'Employee' ? canAssignEmployeeAction
+                        : activeTab === 'Bank Details' ? canBankAction
+                            : activeTab === 'Company' ? canCompanyAction
+                                : canApprovalAction}
                 onEdit={() => {
 
                     if (activeTab === "Project Overview") {
@@ -402,83 +402,113 @@ export const ViewProjectMaster: React.FC = () => {
 
 
                                 </section>
-                                {editProjectData?.Category.toUpperCase() !== "TENDER" && (
-                                    <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                            Project Category
-                                        </h4>
 
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Category" value={editProjectData?.Category ?? '-'} />
+                                <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                                    <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                        Project Category
+                                    </h4>
 
-                                        </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        <FieldItem label="Category" value={editProjectData?.Category ?? '-'} />
 
-
-                                    </section>
-                                )}
-                                {editProjectData?.Category.toUpperCase() === "TENDER" && (
-                                    <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
-                                        <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                            Project Category
-                                        </h4>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
-                                            <FieldItem label="Category" value={editProjectData?.Category ?? '-'} />
-
-                                            <FieldItem label="Amount" value={formatCurrency(editProjectData?.TenderAmount)} />
-                                            <FieldItem label="EMD Amount" value={formatCurrency(editProjectData?.TenderEMDAmount)} />
-
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
-                                            <FieldItem
-                                                label="Purchase Start Date"
-                                                value={
-                                                    editProjectData?.TenderPurchaseStartDate
-                                                        ? formatDate_dd_MonthName_yy(editProjectData.TenderPurchaseStartDate)
-                                                        : '-'
-                                                }
-                                            />
-
-                                            <FieldItem
-                                                label="Purchase End Date"
-                                                value={
-                                                    editProjectData?.TenderPurchaseEndDate
-                                                        ? formatDate_dd_MonthName_yy(editProjectData.TenderPurchaseEndDate)
-                                                        : '-'
-                                                }
-                                            />
-                                            <FieldItem label="Cheque Number" value={editProjectData?.TenderChequeNumber ?? '-'} urls={editProjectData?.TenderChequeNumberURL ?? '-'} isIcon />
-
-                                        </div>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
-
-                                            <FieldItem
-                                                label="Submission Date"
-                                                value={
-                                                    editProjectData?.TenderSubmissionDate
-                                                        ? formatDate_dd_MonthName_yy(editProjectData.TenderSubmissionDate)
-                                                        : '-'
-                                                }
-                                            />
-
-                                            <FieldItem
-                                                label="Issue Date"
-                                                value={
-                                                    editProjectData?.TenderIssueDate
-                                                        ? formatDate_dd_MonthName_yy(editProjectData.TenderIssueDate)
-                                                        : '-'
-                                                }
-                                            />
-                                        </div>
-
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 pt-5">
-
-                                            <FieldItem label="Payorder Remark" value={editProjectData?.TenderPayorderRemark ?? '-'} />
-                                        </div>
+                                    </div>
 
 
-                                    </section>
+                                </section>
+
+                                {editProjectData?.Category?.toUpperCase() === "TENDER" && (
+                                    <>
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
+                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                Tender Amount Details
+                                            </h4>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                                <FieldItem label="Amount" value={formatCurrency(editProjectData?.TenderAmount)} />
+
+                                                <FieldItem
+                                                    label="Purchase Start Date"
+                                                    value={
+                                                        editProjectData?.TenderPurchaseStartDate
+                                                            ? formatDate_dd_MonthName_yy(editProjectData.TenderPurchaseStartDate)
+                                                            : "-"
+                                                    }
+                                                />
+
+                                                <FieldItem
+                                                    label="Purchase End Date"
+                                                    value={
+                                                        editProjectData?.TenderPurchaseEndDate
+                                                            ? formatDate_dd_MonthName_yy(editProjectData.TenderPurchaseEndDate)
+                                                            : "-"
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
+                                                <FieldItem
+                                                    label="Payment Mode"
+                                                    value={editProjectData?.TenderAmountPaymentMode ?? "-"}
+                                                />
+
+                                                <FieldItem
+                                                    label="Transaction / Cheque / Demand Draft No"
+                                                    value={editProjectData?.TenderAmountChequeNumber ?? "-"}
+                                                    urls={editProjectData?.TenderAmountChequeNumberURL ?? ""}
+                                                    isIcon
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-4 pt-5">
+                                                <FieldItem
+                                                    label="Payorder Remark"
+                                                    value={editProjectData?.TenderAmountPayorderRemark ?? "-"}
+                                                />
+                                            </div>
+                                        </section>
+                                        <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f] mt-6">
+                                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                                                Tender EMD Details
+                                            </h4>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                                <FieldItem
+                                                    label="EMD Amount"
+                                                    value={formatCurrency(editProjectData?.TenderEMDAmount)}
+                                                />
+
+                                                <FieldItem
+                                                    label="Submission Date"
+                                                    value={
+                                                        editProjectData?.TenderSubmissionDate
+                                                            ? formatDate_dd_MonthName_yy(editProjectData.TenderSubmissionDate)
+                                                            : "-"
+                                                    }
+                                                />
+
+                                                <FieldItem
+                                                    label="Payment Mode"
+                                                    value={editProjectData?.TenderEMDPaymentMode ?? "-"}
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-5">
+                                                <FieldItem
+                                                    label="Transaction / Cheque / Demand Draft No"
+                                                    value={editProjectData?.TenderEMDChequeNumber ?? "-"}
+                                                    urls={editProjectData?.TenderEMDChequeNumberURL ?? ""}
+                                                    isIcon
+                                                />
+                                            </div>
+
+                                            <div className="grid grid-cols-1 gap-4 pt-5">
+                                                <FieldItem
+                                                    label="Payorder Remark"
+                                                    value={editProjectData?.TenderEMDPayorderRemark ?? "-"}
+                                                />
+                                            </div>
+                                        </section>
+                                    </>
                                 )}
 
                                 <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
@@ -562,7 +592,7 @@ export const ViewProjectMaster: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="Project Scope" value={editProjectData?.ProjectScope ?? '-'} />
                                         <FieldItem label="Project Scheme" value={editProjectData?.ProjectScheme ?? '-'} />
-                                        <FieldItem label="Project Sub Scheme" value={editProjectData?.ProjectSubScheme ?? '-'} />
+                                        <FieldItem label="Project Sub Scheme" value={editProjectData?.ProjectSubScheme?.replace(/,/g, " + ") ?? "-"} />
 
                                     </div>
                                 </section>
@@ -586,10 +616,10 @@ export const ViewProjectMaster: React.FC = () => {
                                         />
 
                                         <FieldItem
-                                            label="RERA Completion Date"
+                                            label="RERA Possession Date"
                                             value={
-                                                editProjectData?.RERAComplitionDate
-                                                    ? formatDate_dd_MonthName_yy(editProjectData.RERAComplitionDate)
+                                                editProjectData?.RERAPossessionDate
+                                                    ? formatDate_dd_MonthName_yy(editProjectData.RERAPossessionDate)
                                                     : '-'
                                             }
                                         />
@@ -662,23 +692,50 @@ export const ViewProjectMaster: React.FC = () => {
                                 {/* ================= CONTACT INFORMATION ================= */}
                                 <section className="bg-white rounded-xl shadow-sm p-6 border border-[#3333334f]">
                                     <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                                        Contact Information
+                                       Site Contact Information
                                     </h4>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  border-b border-[#135bec2e] pb-4 gap-4">
                                         <FieldItem
-                                            label="Site Contact Name"
+                                            label=" Name"
                                             value={editProjectData?.SiteContactName ?? '-'}
                                         />
                                         <FieldItem
-                                            label="Site Contact Mobile Number"
-                                            value={editProjectData?.SiteContactMobileNumber ?? '-'}
+                                            label="Mobile Number"
+                                            value={editProjectData?.SiteContactMobileNumber ? `+91 ${editProjectData?.SiteContactMobileNumber}` : '-'}
                                         />
+
+                                        <div></div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  border-b border-[#135bec2e] pb-4 gap-4 pt-5">
+                                        <FieldItem
+                                            label="Name 2"
+                                            value={editProjectData?.SiteContact2Name ?? '-'}
+                                        />
+
+                                        <FieldItem
+                                            label="Mobile Number 2"
+                                            value={editProjectData?.SiteContact2MobileNumber ? `+91 ${editProjectData?.SiteContact2MobileNumber}` : '-'}
+                                        />
+                                        <div></div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  border-b border-[#135bec2e] pb-4 gap-4 pt-5">
+                                        <FieldItem
+                                            label="Name 3"
+                                            value={editProjectData?.SiteContact3Name ?? '-'}
+                                        />
+                                        <FieldItem
+                                            label="Mobile Number 3"
+                                            value={editProjectData?.SiteContact3MobileNumber ? `+91 ${editProjectData?.SiteContact3MobileNumber}` : '-'}
+                                        />
+                                        <div></div>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4  pt-5">
                                         <FieldItem
                                             label="Project Status"
                                             value={editProjectData?.ProjectStatus ?? '-'}
                                         />
-                                        
+
                                     </div>
                                 </section>
 

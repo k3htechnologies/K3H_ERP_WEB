@@ -6,7 +6,7 @@ import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { Loader } from "@/core/utils/loader";
-import { BUSINESS_CATEGORY, PROJECT_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME_BMC, PROJECT_SUB_SCHEME_MHADA, PROJECT_SUB_SCHEME_SRA } from "@/core/constants/staticData";
+import { BUSINESS_CATEGORY, PROJECT_CATEGORY, PROJECT_SCHEME, PROJECT_STATUS_OPTIONS, PROJECT_SUB_SCHEME_BMC, PROJECT_SUB_SCHEME_MHADA, PROJECT_SUB_SCHEME_SRA, TENDER_PAYMENT_MODE } from "@/core/constants/staticData";
 import { useEffect, useState } from "react";
 import { useCountryStateCityDistrictVillageData } from "@/core/hooks/useCountryStateCityDistrictVillage";
 import React from "react";
@@ -21,6 +21,7 @@ import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { IndianRupee, MapPin, Phone } from "lucide-react";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
+import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
 
 const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ProjectId: 0,
@@ -41,19 +42,21 @@ const initialFormState = (): AddUpdateProjectMasterRequest => ({
     Category: '',
 
     TenderAmount: 0,
-    TenderEMDAmount: 0,
-
     TenderPurchaseStartDate: null,
     TenderPurchaseEndDate: null,
+    TenderAmountPaymentMode: '',
+    TenderAmountChequeNumber: '',
+    TenderAmountChequeNumberURL: null,
+    RemoveTenderAmountChequeNumberURL: '',
+    TenderAmountPayorderRemark: '',
 
-    TenderChequeNumber: '',
-    TenderChequeNumberURL: null,
-    RemoveTenderChequeNumberURL: '',
-
+    TenderEMDAmount: 0,
     TenderSubmissionDate: null,
-    TenderIssueDate: null,
-
-    TenderPayorderRemark: '',
+    TenderEMDPaymentMode: '',
+    TenderEMDChequeNumber: '',
+    TenderEMDChequeNumberURL: null,
+    RemoveTenderEMDChequeNumberURL: '',
+    TenderEMDPayorderRemark: '',
 
     BussinessCategory: '',
     ProjectShortName: '',
@@ -73,11 +76,15 @@ const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ExecutionStartDate: null,
     SiteContactMobileNumber: '',
     SiteContactName: '',
+    SiteContact2MobileNumber: '',
+    SiteContact2Name: '',
+    SiteContact3MobileNumber: '',
+    SiteContact3Name: '',
     ProjectStatus: '',
     RERANumber: '',
     APFNumber: '',
     RERACertificateDate: null,
-    RERAComplitionDate: null,
+    RERAPossessionDate: null,
     ProjectScheme: '',
     ProjectSubScheme: '',
     GoogleLocation: ''
@@ -94,9 +101,13 @@ const AddUpdateProjectMaster: React.FC = () => {
     const [removedProjectPhotoUrls, setRemovedProjectPhotoUrls] = useState<string[]>([]);
     const [projectPhotoURL, setProjectPhotoURL] = useState<string>();
 
-    const [tenderChequeNumberFiles, setTenderChequeNumberFiles] = useState<(File | string)[]>([]);
-    const [removedTenderChequeNumberUrls, setRemovedTenderChequeNumberUrls] = useState<string[]>([]);
-    const [tenderChequeNumberURL, setTenderChequeNumberURL] = useState<string>();
+    const [tenderAmountChequeNumberFiles, setTenderAmountChequeNumberFiles] = useState<(File | string)[]>([]);
+    const [removedTenderAmountChequeNumberUrls, setRemovedTenderAmountChequeNumberUrls] = useState<string[]>([]);
+    const [tenderAmountChequeNumberURL, setTenderAmountChequeNumberURL] = useState<string>();
+
+    const [tenderEMDChequeNumberFiles, setTenderEMDChequeNumberFiles] = useState<(File | string)[]>([]);
+    const [removedTenderEMDChequeNumberUrls, setRemovedTenderEMDChequeNumberUrls] = useState<string[]>([]);
+    const [tenderEMDChequeNumberURL, setTenderEMDChequeNumberURL] = useState<string>();
 
     // NAVIGATE
     const navigate = useNavigate();
@@ -240,20 +251,23 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                             Category: row.Category ?? prev.Category ?? '',
 
-                            TenderAmount: row.TenderAmount ?? prev.TenderAmount ?? 0,
-                            TenderEMDAmount: row.TenderEMDAmount ?? prev.TenderEMDAmount ?? 0,
 
+                            TenderAmount: row.TenderAmount ?? prev.TenderAmount ?? 0,
                             TenderPurchaseStartDate: row.TenderPurchaseStartDate ?? prev.TenderPurchaseStartDate,
                             TenderPurchaseEndDate: row.TenderPurchaseEndDate ?? prev.TenderPurchaseEndDate,
+                            TenderAmountPaymentMode: row.TenderAmountPaymentMode ?? prev.TenderAmountPaymentMode ?? '',
+                            TenderAmountChequeNumber: row.TenderAmountChequeNumber ?? prev.TenderAmountChequeNumber ?? '',
+                            TenderAmountChequeNumberURL: null,
+                            RemoveTenderAmountChequeNumberURL: '',
+                            TenderAmountPayorderRemark: row.TenderAmountPayorderRemark ?? prev.TenderAmountPayorderRemark ?? '',
 
-                            TenderChequeNumber: row.TenderChequeNumber ?? prev.TenderChequeNumber ?? '',
-                            TenderChequeNumberURL: null,
-                            RemoveTenderChequeNumberURL: '',
-
+                            TenderEMDAmount: row.TenderEMDAmount ?? prev.TenderEMDAmount ?? 0,
                             TenderSubmissionDate: row.TenderSubmissionDate ?? prev.TenderSubmissionDate,
-                            TenderIssueDate: row.TenderIssueDate ?? prev.TenderIssueDate,
-
-                            TenderPayorderRemark: row.TenderPayorderRemark ?? prev.TenderPayorderRemark ?? '',
+                            TenderEMDPaymentMode: row.TenderEMDPaymentMode ?? prev.TenderEMDPaymentMode ?? '',
+                            TenderEMDChequeNumber: row.TenderEMDChequeNumber ?? prev.TenderEMDChequeNumber ?? '',
+                            TenderEMDChequeNumberURL: null,
+                            RemoveTenderEMDChequeNumberURL: '',
+                            TenderEMDPayorderRemark: row.TenderEMDPayorderRemark ?? prev.TenderEMDPayorderRemark ?? '',
 
                             BussinessCategory: row.BussinessCategory ?? prev.BussinessCategory ?? '',
                             ProjectShortName: row.ProjectShortName ?? prev.ProjectShortName ?? '',
@@ -273,11 +287,15 @@ const AddUpdateProjectMaster: React.FC = () => {
                             ExecutionStartDate: row.ExecutionStartDate ?? prev.ExecutionStartDate,
                             SiteContactMobileNumber: row.SiteContactMobileNumber ?? prev.SiteContactMobileNumber ?? '',
                             SiteContactName: row.SiteContactName ?? prev.SiteContactName ?? '',
+                            SiteContact2MobileNumber: row.SiteContact2MobileNumber ?? prev.SiteContact2MobileNumber ?? '',
+                            SiteContact2Name: row.SiteContact2Name ?? prev.SiteContact2Name ?? '',
+                            SiteContact3MobileNumber: row.SiteContact3MobileNumber ?? prev.SiteContact3MobileNumber ?? '',
+                            SiteContact3Name: row.SiteContact3Name ?? prev.SiteContact3Name ?? '',
                             ProjectStatus: row.ProjectStatus ?? prev.ProjectStatus ?? '',
                             RERANumber: row.RERANumber ?? prev.RERANumber ?? '',
                             APFNumber: row.APFNumber ?? prev.APFNumber ?? '',
                             RERACertificateDate: row.RERACertificateDate ?? prev.RERACertificateDate,
-                            RERAComplitionDate: row.RERAComplitionDate ?? prev.RERAComplitionDate,
+                            RERAPossessionDate: row.RERAPossessionDate ?? prev.RERAPossessionDate,
                             ProjectScheme: row.ProjectScheme ?? prev.ProjectScheme ?? '',
                             ProjectSubScheme: row.ProjectSubScheme ?? prev.ProjectSubScheme ?? '',
                             GoogleLocation: row.GoogleLocation ?? prev.GoogleLocation ?? ''
@@ -286,9 +304,13 @@ const AddUpdateProjectMaster: React.FC = () => {
                         setProjectPhotoURL(row.ProjectPhotoURL)
                         setRemovedProjectPhotoUrls([]);
 
-                        setTenderChequeNumberFiles([]);
-                        setTenderChequeNumberURL(row.TenderChequeNumberURL)
-                        setRemovedTenderChequeNumberUrls([]);
+                        setTenderAmountChequeNumberFiles([]);
+                        setTenderAmountChequeNumberURL(row.TenderAmountChequeNumberURL)
+                        setRemovedTenderAmountChequeNumberUrls([]);
+
+                        setTenderEMDChequeNumberFiles([]);
+                        setTenderEMDChequeNumberURL(row.TenderEMDChequeNumberURL)
+                        setRemovedTenderEMDChequeNumberUrls([]);
 
 
                         setSelectedCountryId(row.CountryMasterId ?? null);
@@ -378,6 +400,14 @@ const AddUpdateProjectMaster: React.FC = () => {
             newErrors.SiteContactMobileNumber = "Enter a valid 10-digit mobile number.";
         }
 
+        if (formData.SiteContact2MobileNumber && !isValidMobile(formData.SiteContact2MobileNumber)) {
+            newErrors.SiteContact2MobileNumber = "Enter a valid 10-digit mobile number.";
+        }
+
+        if (formData.SiteContact3MobileNumber && !isValidMobile(formData.SiteContact3MobileNumber)) {
+            newErrors.SiteContact3MobileNumber = "Enter a valid 10-digit mobile number.";
+        }
+
         if (formData.RERANumber && !isValidRERA(formData.RERANumber)) {
             newErrors.RERANumber = "Enter a valid RERA Number.";
         }
@@ -427,17 +457,18 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('Category', formData.Category ?? '');
 
         fd.append('TenderAmount', isTender ? String(formData.TenderAmount ?? 0) : "0");
-        fd.append('TenderEMDAmount', isTender ? String(formData.TenderEMDAmount ?? 0) : "0");
-
         fd.append('TenderPurchaseStartDate', isTender ? (formData.TenderPurchaseStartDate ?? '') : "");
         fd.append('TenderPurchaseEndDate', isTender ? (formData.TenderPurchaseEndDate ?? '') : "");
+        fd.append('TenderAmountPaymentMode', isTender ? (formData.TenderAmountPaymentMode ?? '') : "");
+        fd.append('TenderAmountChequeNumber', isTender ? (formData.TenderAmountChequeNumber ?? '') : "");
+        fd.append('TenderAmountPayorderRemark', isTender ? (formData.TenderAmountPayorderRemark ?? '') : "");
 
-        fd.append('TenderChequeNumber', isTender ? (formData.TenderChequeNumber ?? '') : "");
-
+        // Tender EMD Details
+        fd.append('TenderEMDAmount', isTender ? String(formData.TenderEMDAmount ?? 0) : "0");
         fd.append('TenderSubmissionDate', isTender ? (formData.TenderSubmissionDate ?? '') : "");
-        fd.append('TenderIssueDate', isTender ? (formData.TenderIssueDate ?? '') : "");
-
-        fd.append('TenderPayorderRemark', isTender ? (formData.TenderPayorderRemark ?? '') : "");
+        fd.append('TenderEMDPaymentMode', isTender ? (formData.TenderEMDPaymentMode ?? '') : "");
+        fd.append('TenderEMDChequeNumber', isTender ? (formData.TenderEMDChequeNumber ?? '') : "");
+        fd.append('TenderEMDPayorderRemark', isTender ? (formData.TenderEMDPayorderRemark ?? '') : "");
 
 
         fd.append('BussinessCategory', formData.BussinessCategory ?? '');
@@ -458,11 +489,18 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('ExecutionStartDate', formData.ExecutionStartDate ?? '');
         fd.append('SiteContactMobileNumber', formData.SiteContactMobileNumber ?? '');
         fd.append('SiteContactName', formData.SiteContactName ?? '');
+
+        fd.append('SiteContact2MobileNumber', formData.SiteContact2MobileNumber ?? '');
+        fd.append('SiteContact2Name', formData.SiteContact2Name ?? '');
+
+        fd.append('SiteContact3MobileNumber', formData.SiteContact3MobileNumber ?? '');
+        fd.append('SiteContact3Name', formData.SiteContact3Name ?? '');
+
         fd.append('ProjectStatus', formData.ProjectStatus ?? '');
         fd.append('RERANumber', formData.RERANumber ?? '');
         fd.append('APFNumber', formData.APFNumber ?? '');
         fd.append('RERACertificateDate', formData.RERACertificateDate ?? '');
-        fd.append('RERAComplitionDate', formData.RERAComplitionDate ?? '');
+        fd.append('RERAPossessionDate', formData.RERAPossessionDate ?? '');
         fd.append('ProjectScheme', formData.ProjectScheme ?? '');
         fd.append('ProjectSubScheme', formData.ProjectSubScheme ?? '');
         fd.append('GoogleLocation', formData.GoogleLocation ?? '');
@@ -477,13 +515,22 @@ const AddUpdateProjectMaster: React.FC = () => {
 
         if (isTender) {
 
-            tenderChequeNumberFiles.forEach(file => {
+            tenderAmountChequeNumberFiles.forEach(file => {
                 if (file instanceof File) {
-                    fd.append('TenderChequeNumberURL', file);
+                    fd.append('TenderAmountChequeNumberURL', file);
                 }
             });
+
+            tenderEMDChequeNumberFiles.forEach(file => {
+                if (file instanceof File) {
+                    fd.append('TenderEMDChequeNumberURL', file);
+                }
+            });
+
         }
-        fd.append('RemoveTenderChequeNumberURL', isTender ? removedTenderChequeNumberUrls.join(',') : "");
+
+        fd.append('RemoveTenderAmountChequeNumberURL', isTender ? removedTenderAmountChequeNumberUrls.join(',') : "");
+        fd.append('RemoveTenderEMDChequeNumberURL', isTender ? removedTenderEMDChequeNumberUrls.join(',') : "");
 
         return fd;
     }
@@ -650,44 +697,54 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                                             handleFieldChange('Category', '');
                                             handleFieldChange('TenderAmount', 0);
-                                            handleFieldChange('TenderEMDAmount', 0);
                                             handleFieldChange('TenderPurchaseStartDate', null);
                                             handleFieldChange('TenderPurchaseEndDate', null);
-                                            handleFieldChange('TenderChequeNumber', "");
-
-
-                                            if (tenderChequeNumberURL) {
-                                                setRemovedTenderChequeNumberUrls(prev => [...prev, tenderChequeNumberURL]);
+                                            handleFieldChange('TenderAmountPaymentMode', "");
+                                            handleFieldChange('TenderAmountChequeNumber', "");
+                                            if (tenderAmountChequeNumberURL) {
+                                                setRemovedTenderAmountChequeNumberUrls(prev => [...prev, tenderAmountChequeNumberURL]);
                                             }
+                                            setTenderAmountChequeNumberFiles([]);
+                                            setTenderAmountChequeNumberURL("");
+                                            handleFieldChange('TenderAmountPayorderRemark', "");
 
-                                            setTenderChequeNumberFiles([]);
-                                            setTenderChequeNumberURL("");
-
+                                            handleFieldChange('TenderEMDAmount', 0);
                                             handleFieldChange('TenderSubmissionDate', null);
-                                            handleFieldChange('TenderIssueDate', null);
-                                            handleFieldChange('TenderPayorderRemark', "");
+                                            handleFieldChange('TenderEMDPaymentMode', "");
+                                            handleFieldChange('TenderEMDChequeNumber', "");
+                                            if (tenderEMDChequeNumberURL) {
+                                                setRemovedTenderEMDChequeNumberUrls(prev => [...prev, tenderEMDChequeNumberURL]);
+                                            }
+                                            setTenderEMDChequeNumberFiles([]);
+                                            setTenderEMDChequeNumberURL("");
+                                            handleFieldChange('TenderEMDPayorderRemark', "");
 
                                             return;
                                         }
 
                                         handleFieldChange('Category', String(item));
                                         handleFieldChange('TenderAmount', 0);
-                                        handleFieldChange('TenderEMDAmount', 0);
                                         handleFieldChange('TenderPurchaseStartDate', null);
                                         handleFieldChange('TenderPurchaseEndDate', null);
-                                        handleFieldChange('TenderChequeNumber', "");
-
-
-                                        if (tenderChequeNumberURL) {
-                                            setRemovedTenderChequeNumberUrls(prev => [...prev, tenderChequeNumberURL]);
+                                        handleFieldChange('TenderAmountPaymentMode', "");
+                                        handleFieldChange('TenderAmountChequeNumber', "");
+                                        if (tenderAmountChequeNumberURL) {
+                                            setRemovedTenderAmountChequeNumberUrls(prev => [...prev, tenderAmountChequeNumberURL]);
                                         }
+                                        setTenderAmountChequeNumberFiles([]);
+                                        setTenderAmountChequeNumberURL("");
+                                        handleFieldChange('TenderAmountPayorderRemark', "");
 
-                                        setTenderChequeNumberFiles([]);
-                                        setTenderChequeNumberURL("");
-
+                                        handleFieldChange('TenderEMDAmount', 0);
                                         handleFieldChange('TenderSubmissionDate', null);
-                                        handleFieldChange('TenderIssueDate', null);
-                                        handleFieldChange('TenderPayorderRemark', "");
+                                        handleFieldChange('TenderEMDPaymentMode', "");
+                                        handleFieldChange('TenderEMDChequeNumber', "");
+                                        if (tenderEMDChequeNumberURL) {
+                                            setRemovedTenderEMDChequeNumberUrls(prev => [...prev, tenderEMDChequeNumberURL]);
+                                        }
+                                        setTenderEMDChequeNumberFiles([]);
+                                        setTenderEMDChequeNumberURL("");
+                                        handleFieldChange('TenderEMDPayorderRemark', "");
 
                                     }}
 
@@ -695,24 +752,24 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 />
 
                             </div>
-                            {formData.Category?.toUpperCase() === "TENDER" && (
-                                <>
+
+                        </div>
+
+                    </div>
+
+                    {formData.Category?.toUpperCase() === "TENDER" && (
+                        <>
+                            <div className="space-y-4 pt-5">
+                                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Tender Amount Details</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
                                     <div>
                                         <Input
-                                            label="Tender Amount (₹)"
+                                            label="Amount (₹)"
                                             type="text"
                                             value={formData.TenderAmount || ''}
                                             onChange={(e) => handleFieldChange('TenderAmount', filterNumbersWithDecimal(e.target.value) || 0)}
-                                            placeholder="Enter Tender Amount (₹)"
-                                        />
-                                    </div>
-                                    <div>
-                                        <Input
-                                            label="Tender EMD Amount (₹)"
-                                            type="text"
-                                            value={formData.TenderEMDAmount || ''}
-                                            onChange={(e) => handleFieldChange('TenderEMDAmount', filterNumbersWithDecimal(e.target.value) || 0)}
-                                            placeholder="Enter Tender EMD Amount (₹)"
+                                            placeholder="Enter Amount (₹)"
                                         />
                                     </div>
                                     <div>
@@ -722,6 +779,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                             onChange={(val) => handleFieldChange('TenderPurchaseStartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                         />
                                     </div>
+
                                     <div>
                                         <DatePickerInput
                                             label="Purchase End Date"
@@ -731,29 +789,68 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         />
                                     </div>
                                     <div>
+
+                                        <SinglePageSelection
+                                            label="Payment Mode"
+                                            placeholder="Select Payment Mode"
+                                            value={formData.TenderAmountPaymentMode}
+                                            onChange={(val) => handleFieldChange('TenderAmountPaymentMode', String(val))}
+                                            options={TENDER_PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
+                                        />
+                                    </div>
+                                    <div>
                                         <Input
                                             type="text"
-                                            label='Cheque Number'
-                                            value={formData.TenderChequeNumber ?? ""}
-                                            onChange={(e) => handleFieldChange("TenderChequeNumber", e.target.value)}
-                                            placeholder="Enter Cheque Number"
+                                            label='Transaction / Cheque / Demand Draft No'
+                                            value={formData.TenderAmountChequeNumber ?? ""}
+                                            onChange={(e) => handleFieldChange("TenderAmountChequeNumber", e.target.value)}
+                                            placeholder="Enter Transaction / Cheque / Demand Draft No"
                                             maxLength={15}
-                                            error={errors.TendorChequeNumber}
+                                            error={errors.TenderAmountChequeNumber}
                                         />
                                     </div>
                                     <div>
                                         <MultiFilePicker
-                                            label="Cheque Photo"
-                                            placeholder="Select Cheque Photo"
-                                            error={errors.TenderChequeNumberURL}
-                                            value={tenderChequeNumberFiles}
-                                            onChange={setTenderChequeNumberFiles}
-                                            availableFilesURL={tenderChequeNumberURL ?? ""}
+                                            label="Transaction / Cheque / Demand Draft Image"
+                                            placeholder="Select Transaction / Cheque / Demand Draft Image"
+                                            error={errors.TenderAmountChequeNumberURL}
+                                            value={tenderAmountChequeNumberFiles}
+                                            onChange={setTenderAmountChequeNumberFiles}
+                                            availableFilesURL={tenderAmountChequeNumberURL ?? ""}
                                             allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                                             maxFiles={5}
                                             onRemoveExisting={(url) => {
-                                                setRemovedTenderChequeNumberUrls((prev) => [...prev, url])
+                                                setRemovedTenderAmountChequeNumberUrls((prev) => [...prev, url])
                                             }}
+                                        />
+                                    </div>
+
+
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                                    <div>
+                                        <TextArea
+                                            label="Payorder Remark"
+                                            placeholder="Enter Payorder Remark"
+                                            className="thin-scroll"
+                                            value={formData.TenderAmountPayorderRemark}
+                                            onChange={(e) => handleFieldChange("TenderAmountPayorderRemark", e.target.value)}
+                                            error={errors.TenderAmountPayorderRemark} />
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div className="space-y-4 pt-5">
+                                <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Tender EMD Details</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    <div>
+                                        <Input
+                                            label="EMD Amount (₹)"
+                                            type="text"
+                                            value={formData.TenderEMDAmount || ''}
+                                            onChange={(e) => handleFieldChange('TenderEMDAmount', filterNumbersWithDecimal(e.target.value) || 0)}
+                                            placeholder="Enter Tender EMD Amount (₹)"
                                         />
                                     </div>
 
@@ -765,33 +862,57 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         />
                                     </div>
                                     <div>
-                                        <DatePickerInput
-                                            label="Issue Date"
-                                            value={formatDate_dd_mm_yyyy(formData.TenderIssueDate)}
-                                            onChange={(val) => handleFieldChange('TenderIssueDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+
+                                        <SinglePageSelection
+                                            label="Payment Mode"
+                                            placeholder="Select Payment Mode"
+                                            value={formData.TenderEMDPaymentMode}
+                                            onChange={(val) => handleFieldChange('TenderEMDPaymentMode', String(val))}
+                                            options={TENDER_PAYMENT_MODE.map(opt => ({ label: opt.name, value: opt.id }))}
                                         />
                                     </div>
-                                </>
-                            )}
-
-
-
-                        </div>
-                        {formData.Category?.toUpperCase() === "TENDER" && (
-                            <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
-                                <div>
-                                    <TextArea
-                                        label="Payorder Remark"
-                                        placeholder="Enter Payorder Remark"
-                                        className="thin-scroll"
-                                        value={formData.TenderPayorderRemark}
-                                        onChange={(e) => handleFieldChange("TenderPayorderRemark", e.target.value)}
-                                        error={errors.TenderPayorderRemark} />
+                                    <div>
+                                        <Input
+                                            type="text"
+                                            label='Transaction / Cheque / Demand Draft No'
+                                            value={formData.TenderEMDChequeNumber ?? ""}
+                                            onChange={(e) => handleFieldChange("TenderEMDChequeNumber", e.target.value)}
+                                            placeholder="Enter Transaction / Cheque / Demand Draft No"
+                                            maxLength={15}
+                                            error={errors.TendorEMDChequeNumber}
+                                        />
+                                    </div>
+                                    <div>
+                                        <MultiFilePicker
+                                            label="Transaction / Cheque / Demand Draft Image"
+                                            placeholder="Select Transaction / Cheque / Demand Draft Image"
+                                            error={errors.TenderEMDChequeNumberURL}
+                                            value={tenderEMDChequeNumberFiles}
+                                            onChange={setTenderEMDChequeNumberFiles}
+                                            availableFilesURL={tenderEMDChequeNumberURL ?? ""}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            maxFiles={5}
+                                            onRemoveExisting={(url) => {
+                                                setRemovedTenderEMDChequeNumberUrls((prev) => [...prev, url])
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                                 <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                                    <div>
+                                        <TextArea
+                                            label="Payorder Remark"
+                                            placeholder="Enter Payorder Remark"
+                                            className="thin-scroll"
+                                            value={formData.TenderEMDPayorderRemark}
+                                            onChange={(e) => handleFieldChange("TenderEMDPayorderRemark", e.target.value)}
+                                            error={errors.TenderEMDPayorderRemark} />
+                                    </div>
                                 </div>
                             </div>
-                        )}
-                    </div>
+                        </>
 
+                    )}
                     {/* Scheme & Scope Details */}
                     <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Liasoning Architect</h3>
@@ -1117,13 +1238,11 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                <div>
-                                    <SinglePageSelection
-                                        label="Project Sub Scheme"
-                                        placeholder="Select Project Sub Scheme"
-                                        value={formData.ProjectSubScheme}
-                                        onChange={(val) => handleFieldChange('ProjectSubScheme', String(val))}
-                                        options={
+                                
+                                <MultiSelectDropdown
+                                            label="Project Sub Scheme"
+                                            placeholder="Select Project Sub Scheme"
+                                           options={
                                             formData.ProjectScheme === 'BMC'
                                                 ? PROJECT_SUB_SCHEME_BMC.map(opt => ({ label: opt.name, value: opt.id }))
                                                 : formData.ProjectScheme === 'MHADA'
@@ -1132,9 +1251,14 @@ const AddUpdateProjectMaster: React.FC = () => {
                                                         ? PROJECT_SUB_SCHEME_SRA.map(opt => ({ label: opt.name, value: opt.id }))
                                                         : []
                                         }
-                                        disabled={!formData.ProjectScheme}
-                                    />
-                                </div>
+                                            selectedValues={formData.ProjectSubScheme ? formData.ProjectSubScheme.split(",") : []}
+                                            onChange={(values) => handleFieldChange("ProjectSubScheme", values.join(","))}
+                                            error={errors.ProjectSubScheme}
+                                            disabled={!formData.ProjectScheme}
+                                            />
+            
+                                    
+                               
 
                             </div>
                         </div>
@@ -1173,9 +1297,9 @@ const AddUpdateProjectMaster: React.FC = () => {
                             </div>
                             <div>
                                 <DatePickerInput
-                                    label="RERA Completion Date"
-                                    value={formatDate_dd_mm_yyyy(formData.RERAComplitionDate)}
-                                    onChange={(val) => handleFieldChange('RERAComplitionDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                    label="RERA Possession Date"
+                                    value={formatDate_dd_mm_yyyy(formData.RERAPossessionDate)}
+                                    onChange={(val) => handleFieldChange('RERAPossessionDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                 />
                             </div>
                         </div>
@@ -1273,6 +1397,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             <div>
                                 <Input
                                     label="Site Contact Mobile Number"
+                                    leftIcon="+91"
                                     error={errors.SiteContactMobileNumber}
                                     type="text"
                                     value={formData.SiteContactMobileNumber}
@@ -1282,6 +1407,55 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     placeholder="Enter Mobile Number"
                                 />
                             </div>
+                            <div></div>
+                            <div>
+                                <Input
+                                    label="Site Contact2 Name"
+                                    type="text"
+                                    maxLength={250}
+                                    value={formData.SiteContact2Name}
+                                    onChange={(e) => handleFieldChange('SiteContact2Name', e.target.value)}
+                                    placeholder="Enter Site Contact2 Name"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Site Contact Mobile2 Number"
+                                    leftIcon="+91"
+                                    error={errors.SiteContact2MobileNumber}
+                                    type="text"
+                                    value={formData.SiteContact2MobileNumber}
+                                    rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                    maxLength={10}
+                                    onChange={(e) => handleFieldChange('SiteContact2MobileNumber', filterMobile(e.target.value))}
+                                    placeholder="Enter Mobile Number"
+                                />
+                            </div>
+<div></div>
+                            <div>
+                                <Input
+                                    label="Site Contact Name"
+                                    type="text"
+                                    maxLength={250}
+                                    value={formData.SiteContact3Name}
+                                    onChange={(e) => handleFieldChange('SiteContact3Name', e.target.value)}
+                                    placeholder="Enter Site Contact3 Name"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Site Contact3 Mobile Number"
+                                    leftIcon="+91"
+                                    error={errors.SiteContact3MobileNumber}
+                                    type="text"
+                                    value={formData.SiteContact3MobileNumber}
+                                    rightIcon={<Phone className="h-4 w-4 text-gray-400" />}
+                                    maxLength={10}
+                                    onChange={(e) => handleFieldChange('SiteContact3MobileNumber', filterMobile(e.target.value))}
+                                    placeholder="Enter Mobile Number"
+                                />
+                            </div>
+                            <div></div>
                             <div>
                                 <SinglePageSelection
                                     label="Project Status"
@@ -1293,6 +1467,8 @@ const AddUpdateProjectMaster: React.FC = () => {
                             </div>
                         </div>
                     </div>
+
+                    
 
 
                 </form>

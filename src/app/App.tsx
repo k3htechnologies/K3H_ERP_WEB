@@ -438,7 +438,7 @@ function App() {
 
             <Route path="tenant" element={<TenantListStateProvider><Tenant /></TenantListStateProvider>} />
             <Route path="tenant/view" element={<TenantListStateProvider><ViewTenant /></TenantListStateProvider>} />
-            <Route path="tenant/add/:tenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
+            <Route path="tenant/add/:TenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
             <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
 
             <Route path="rent" element={<RentListStateProvider><Rent /></RentListStateProvider>} />

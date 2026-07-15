@@ -613,8 +613,45 @@ export const MASTER_DATA = {
 
   budgetLevelType: ["L1", "L2", "L3"],
 
-  aopStatus: ["AOP", "NON - AOP", "EXPIRED","EXPIRE SOON"],
+  aopStatus: ["AOP", "NON - AOP", "EXPIRED", "EXPIRE SOON"],
 
+  tenderPaymentMode: ["Cheque", "Cash", "Demand Draft", "IMPS", "NEFT", "Pay Order", "RTGS", "UPI"],
+
+  tenantDocumentTypes: [
+    "33 (38) Notice",
+    "79 / A Consent",
+    "Additional Document (If Any)",
+    "Affidavit",
+    "Assessment Bill",
+    "Consent For Cluster (If Applicable)",
+    "Developer Format Consent",
+    "Electric NOC",
+    "Electricity Bill",
+    "Eligible / Non Eligible (Form 3 & 4)",
+    "Extra Area Purchase Letter",
+    "Extra Purchase Payment Schedule",
+    "Gas Bill",
+    "Maintenance Bill",
+    "MGL NOC",
+    "MHADA Verified Consent",
+    "Notarized Kararnama",
+    "PAAA Floor Plan",
+    "Photo Pass",
+    "Photo Pass Receipt",
+    "POA (Admission)",
+    "Ration Card (If Applicable)",
+    "Registered PAAA",
+    "Rent Receipt (If Applicable)",
+    "Repossession Letter",
+    "Repossession Undertaking",
+    "Sales Agreement",
+    "Share Certificate",
+    "Transfer Documents",
+    "Unit Plan",
+    "Vacant Possession Letter",
+    "Vacating Consent Letter",
+    "Yadi Slip"
+  ],
 } as const;
 
 // ============================================================================
@@ -733,11 +770,13 @@ export const MODULE_OPTIONS = toOptions(MASTER_DATA.module);
 export const ASSIGN_STATUS_TYPE_OPTIONS = toOptions(MASTER_DATA.assignStatusType);
 export const HANDOVER_STATUS = toOptions(MASTER_DATA.handOverStatus);
 export const IBM_OBM_RANGE_FILTER_OPTIONS = toOptions(MASTER_DATA.ibmObmRangeFilter);
-export const CHANNEL_PARTNER_CATEGORY_OPTIONS= toOptions(MASTER_DATA.channelPartnerCategory);
+export const CHANNEL_PARTNER_CATEGORY_OPTIONS = toOptions(MASTER_DATA.channelPartnerCategory);
 export const IBM_OBM_REPORT_STAGE_OPTIONS = toOptions(MASTER_DATA.ibmObmReportStage);
 export const NOTICE_TYPE_OPTIONS = toOptions(MASTER_DATA.noticeType);
 export const BUDGET_LEVEL_TYPE = toOptions(MASTER_DATA.budgetLevelType);
 export const AOP_STATUS = toOptions(MASTER_DATA.aopStatus);
+export const TENDER_PAYMENT_MODE = toOptions(MASTER_DATA.tenderPaymentMode);
+export const TENANT_DOCUMENT_TYPE = toOptions(MASTER_DATA.tenantDocumentTypes);
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

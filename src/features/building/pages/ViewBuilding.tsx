@@ -413,14 +413,17 @@ export const ViewBuilding: React.FC = () => {
                             </div>
                             <div className="p-4 bg-white">
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4">
+                                    <FieldItem label="Total Plot Area (SqMt)" value={buildingData?.TotalPlotAreaSqMt ?? '-'} />
                                     <FieldItem label="Total Plot Area (SqFt)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} />
                                     <FieldItem label="Utilized Units Area (SqFt)" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} />
-                                    <FieldItem label="Total Units" value={buildingData?.TotalNumberOfUnits ?? '-'} />
+                                    
 
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
+                                    <FieldItem label="Total Units" value={buildingData?.TotalNumberOfUnits ?? '-'} />
                                     <FieldItem label="Number Of Floors" value={buildingData?.NumberOfFloors ?? '-'} />
+                                    <FieldItem label="Number Of Wings" value={buildingData?.NumberOfWings ?? '-'} />
 
                                 </div>
                             </div>
@@ -721,7 +724,7 @@ export const ViewBuilding: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                     <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <FieldItem label="Total Built Up Area (SqFt)" value={buildingDetailsList?.[0]?.TotalBuiltUpAreaSqFt ?? 0} />
+                                            <FieldItem label="Total Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalCarpetAreaSqFt ?? 0} />
                                             <FieldItem label="Total Residential Units" value={buildingDetailsList?.[0]?.TotalResidentialUnits ?? 0} />
                                             <FieldItem label="Residential Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalResidentialCarpetAreaSqFt ?? 0} />
                                         </div>

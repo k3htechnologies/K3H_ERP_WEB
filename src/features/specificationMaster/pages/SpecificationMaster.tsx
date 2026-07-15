@@ -727,7 +727,7 @@ export const SpecificationMaster: React.FC = () => {
                     setParentPath("");
                 }}
                 saveText={editSpecificationMasterData ? "Update " : "Add"}
-                title={editSpecificationMasterData ? "Update " : "Add"}
+                title={editSpecificationMasterData ? "Update Specification" : "Add Specification"}
                 loading={isLoading}
                 size="xl"
             >

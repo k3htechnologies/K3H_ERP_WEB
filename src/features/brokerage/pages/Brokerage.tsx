@@ -309,6 +309,14 @@ export const Brokerage: React.FC = () => {
             align: "center",
             children: [
                 {
+                    key: 'BookingType',
+                    label: 'Booking Type',
+                    width: '25',
+                    sortable: false,
+                    align: 'left',
+                    render: value => value || '-'
+                },
+                {
                     key: 'BuildingNumber',
                     label: 'Building',
                     width: '25',

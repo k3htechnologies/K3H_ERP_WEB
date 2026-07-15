@@ -53,6 +53,7 @@ export interface AddUpdateBudget {
     LevelId2: number | 0
     LevelId3: number | 0
     OrderBy: number | 0
+    UomMasterId: number | 0
     InventoryFlatId: string | null
     Quantity: number | 0
     LabourCost: number | 0

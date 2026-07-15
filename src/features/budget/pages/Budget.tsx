@@ -42,6 +42,7 @@ const initialFormState = (): AddUpdateBudget => ({
     LevelId2: 0,
     LevelId3: 0,
     OrderBy: 0,
+    UomMasterId: 0,
     InventoryFlatId: "",
     Quantity: "" as any,
     LabourCost: "" as any,
@@ -149,6 +150,7 @@ export const Budget: React.FC = () => {
                     LevelId1: editBudgetData.LevelId1,
                     LevelId2: editBudgetData.LevelId2,
                     LevelId3: editBudgetData.LevelId3,
+                    UomMasterId: editBudgetData.UomMasterId,
                     OrderBy: editBudgetData.OrderBy,
                     InventoryFlatId: editBudgetData.InventoryFlatId,
                     Quantity: editBudgetData.Quantity,
@@ -227,12 +229,13 @@ export const Budget: React.FC = () => {
             LevelId2: formData.LevelId2,
             LevelId3: formData.LevelId3,
             OrderBy: formData.OrderBy,
+            UomMasterId: formData.UomMasterId,
             InventoryFlatId: formData.InventoryFlatId,
-            Quantity: formData.Quantity,
-            LabourCost: formData.LabourCost,
-            MaterialCost: formData.MaterialCost,
-            PMCost: formData.PMCost,
-            BudgetAmount: budget,
+            Quantity: Number(formData.Quantity) || 0,
+            LabourCost: Number(formData.LabourCost) || 0,
+            MaterialCost: Number(formData.MaterialCost) || 0,
+            PMCost: Number(formData.PMCost) || 0,
+            BudgetAmount: Number(budget) || 0,
             Remark: formData.Remark
         };
     };
@@ -1033,4 +1036,3 @@ export const Budget: React.FC = () => {
     )
 }
 export default Budget;
-

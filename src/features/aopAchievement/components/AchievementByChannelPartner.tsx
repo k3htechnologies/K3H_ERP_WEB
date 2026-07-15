@@ -18,6 +18,10 @@ import AchievementBookingReport from "@/features/aopAchievement/components/Achie
 import AchievementIbmObmReport from "@/features/aopAchievement/components/AchievementIbmObmReport";
 import type { ChannelPartnerAOPAchievementData, FilterWithPaginationAopAchievementRequest } from "../models/AopAchievementReportModel";
 import { aopAchievementReportService } from "../services/AopAchievementReportService";
+import { Button } from "@/ui/components/forms";
+import { copyToClipboard } from "@/core/utils/comman";
+import { Copy } from "lucide-react";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 interface Props {
     filterType: string;
@@ -198,6 +202,56 @@ export const AchievementByChannelPartner: React.FC<Props> = ({ filterType, fromD
                     </div>
                 );
             }
+        },
+        {
+            key: 'SystemGeneratedCode',
+            label: 'CP Code',
+            sortable: false,
+            align: 'left',
+            render: (value) => {
+                return (
+                    <div className="flex items-center gap-2">
+
+                        <TooltipText
+                            text={value || '-'}
+                            maxWidth="150px"
+                            tooltipThreshold={20}
+                            tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+                        />
+
+                        {value && (
+                            <Button
+                                onClick={async (e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    const success = await copyToClipboard(value);
+                                    if (success) {
+                                        addToast({ type: 'success', title: `${value} Copied!` });
+                                    }
+                                }}
+                                color="transparent"
+                                size="sm"
+                                style={{
+                                    padding: '2px 6px',
+                                    color: '#6B7280',
+                                    cursor: 'pointer'
+                                }}
+                                title="Copy"
+                            >
+                                <Copy className="h-3.5 w-3.5" />
+                            </Button>
+                        )}
+                    </div>
+                );
+            }
+        },
+        {
+            key: 'Type',
+            label: 'Type',
+            width: '25',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
         },
         {
             key: 'WalkinsByCP',

@@ -58,7 +58,7 @@ export interface ProjectData {
   ProjectStatus: string
   RERANumber: string
   RERACertificateDate: string | null
-  RERAComplitionDate: string | null
+  RERAPossessionDate: string | null
   ProjectScheme: string
   ProjectSubScheme: string
   GoogleLocation: string

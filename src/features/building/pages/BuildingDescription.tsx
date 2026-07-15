@@ -23,7 +23,7 @@ const initialFormState = (): AddUpdateBuildingDetailsRequest => ({
   PlotAreaOldApprovedPlanSqFt: undefined,
   PlotAreaConveyanceSqFt: undefined,
   PlotAreaPRCardSqFt: undefined,
-  TotalBuiltUpAreaSqFt: 0,
+  TotalCarpetAreaSqFt: 0,
   TotalResidentialUnits: undefined,
   TotalResidentialCarpetAreaSqFt: undefined,
   TotalCommercialUnits: undefined,
@@ -116,7 +116,7 @@ const BuildingDescription: React.FC = () => {
               PlotAreaOldApprovedPlanSqFt: row.PlotAreaOldApprovedPlanSqFt ?? prev.PlotAreaOldApprovedPlanSqFt,
               PlotAreaConveyanceSqFt: row.PlotAreaConveyanceSqFt ?? prev.PlotAreaConveyanceSqFt,
               PlotAreaPRCardSqFt: row.PlotAreaPRCardSqFt ?? prev.PlotAreaPRCardSqFt,
-              TotalBuiltUpAreaSqFt: row.TotalBuiltUpAreaSqFt ?? prev.TotalBuiltUpAreaSqFt ?? 0,
+              TotalCarpetAreaSqFt: row.TotalCarpetAreaSqFt ?? prev.TotalCarpetAreaSqFt ?? 0,
               TotalResidentialUnits: row.TotalResidentialUnits ?? prev.TotalResidentialUnits,
               TotalResidentialCarpetAreaSqFt: row.TotalResidentialCarpetAreaSqFt ?? prev.TotalResidentialCarpetAreaSqFt,
               TotalCommercialUnits: row.TotalCommercialUnits ?? prev.TotalCommercialUnits,
@@ -176,8 +176,8 @@ const BuildingDescription: React.FC = () => {
       newErrors.GrossPlotAreaSqFt = "Gross Plot Area is required.";
     }
 
-    if (formData.TotalBuiltUpAreaSqFt === null || formData.TotalBuiltUpAreaSqFt === undefined || formData.TotalBuiltUpAreaSqFt <= 0) {
-      newErrors.TotalBuiltUpAreaSqFt = "Total Built Up Area is required.";
+    if (formData.TotalCarpetAreaSqFt === null || formData.TotalCarpetAreaSqFt === undefined || formData.TotalCarpetAreaSqFt <= 0) {
+      newErrors.TotalCarpetAreaSqFt = "Total Carpet Area is required.";
     }
 
     return {
@@ -210,7 +210,7 @@ const BuildingDescription: React.FC = () => {
       PlotAreaOldApprovedPlanSqFt: formData.PlotAreaOldApprovedPlanSqFt ?? undefined,
       PlotAreaConveyanceSqFt: formData.PlotAreaConveyanceSqFt ?? undefined,
       PlotAreaPRCardSqFt: formData.PlotAreaPRCardSqFt ?? undefined,
-      TotalBuiltUpAreaSqFt: formData.TotalBuiltUpAreaSqFt ?? 0,
+      TotalCarpetAreaSqFt: formData.TotalCarpetAreaSqFt ?? 0,
       TotalResidentialUnits: formData.TotalResidentialUnits ?? undefined,
       TotalResidentialCarpetAreaSqFt: formData.TotalResidentialCarpetAreaSqFt ?? undefined,
       TotalCommercialUnits: formData.TotalCommercialUnits ?? undefined,
@@ -352,12 +352,12 @@ const BuildingDescription: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <div>
                 <Input
-                  label="Total Built Up Area (SqFt)"
+                  label="Total Carpet Area (SqFt)"
                   required
-                  error={errors.TotalBuiltUpAreaSqFt}
+                  error={errors.TotalCarpetAreaSqFt}
                   type="text"
-                  value={formData.TotalBuiltUpAreaSqFt || ''}
-                  onChange={(e) => handleFieldChange('TotalBuiltUpAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  value={formData.TotalCarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('TotalCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Total Built Up Area"
                   rightIcon="SqFt"
                 />

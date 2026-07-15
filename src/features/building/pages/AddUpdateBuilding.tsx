@@ -27,6 +27,7 @@ const initialFormState = (): AddUpdateBuildingRequest => ({
   CTSNumber: "",
   GoogleLocation: "",
   TotalPlotAreaSqFt: null,
+  TotalPlotAreaSqMt:null,
   RoadWidth: "",
   CountryMasterId: 1,
   DistrictMasterId: null,
@@ -34,6 +35,7 @@ const initialFormState = (): AddUpdateBuildingRequest => ({
   CityMasterId: null,
   VillageMasterId: null,
   TotalNumberOfUnits: null,
+  
   TotalUnitsAreaUtilizedSqFt: null,
   IsGarden: null,
   TotalGardenAreaSqFt: null,
@@ -41,6 +43,7 @@ const initialFormState = (): AddUpdateBuildingRequest => ({
   TotalReligiousStructureAreaSqFt: null,
   PropertyAgeYears: null,
   NumberOfFloors: null,
+  NumberOfWings:null,
   FSI_TDR_UtilizationSqFt: null,
   LandOwnershipType: "",
   IsLitigation: null,
@@ -190,6 +193,7 @@ const AddUpdateBuilding: React.FC = () => {
               CTSNumber: e.CTSNumber ?? prev.CTSNumber,
               GoogleLocation: e.GoogleLocation ?? prev.GoogleLocation,
               TotalPlotAreaSqFt: e.TotalPlotAreaSqFt ?? prev.TotalPlotAreaSqFt,
+              TotalPlotAreaSqMt: e.TotalPlotAreaSqMt ?? prev.TotalPlotAreaSqMt,
               RoadWidth: e.RoadWidth ?? prev.RoadWidth,
               CountryMasterId: e.CountryMasterId ?? prev.CountryMasterId,
               DistrictMasterId: e.DistrictMasterId ?? prev.DistrictMasterId,
@@ -204,6 +208,7 @@ const AddUpdateBuilding: React.FC = () => {
               TotalReligiousStructureAreaSqFt: e.TotalReligiousStructureAreaSqFt ?? prev.TotalReligiousStructureAreaSqFt,
               PropertyAgeYears: e.PropertyAgeYears ?? prev.PropertyAgeYears,
               NumberOfFloors: e.NumberOfFloors ?? prev.NumberOfFloors,
+              NumberOfWings: e.NumberOfWings ?? prev.NumberOfWings,
               FSI_TDR_UtilizationSqFt: e.FSI_TDR_UtilizationSqFt ?? prev.FSI_TDR_UtilizationSqFt,
               LandOwnershipType: e.LandOwnershipType ?? prev.LandOwnershipType,
               IsLitigation: e.IsLitigation ?? prev.IsLitigation,
@@ -260,8 +265,8 @@ const AddUpdateBuilding: React.FC = () => {
       newErrors.GoogleLocation = 'Enter a valid Google Location'
     }
 
-    if (!formData.TotalPlotAreaSqFt) {
-      newErrors.TotalPlotAreaSqFt = 'Total Plot Area is required'
+    if (!formData.TotalPlotAreaSqMt) {
+      newErrors.TotalPlotAreaSqMt = 'Total Plot Area is required'
     }
 
     if (formData.IsGarden && !formData.TotalGardenAreaSqFt) {
@@ -307,6 +312,7 @@ const AddUpdateBuilding: React.FC = () => {
       CTSNumber: formData.CTSNumber,
       GoogleLocation: formData.GoogleLocation || "",
       TotalPlotAreaSqFt: formData.TotalPlotAreaSqFt || 0,
+      TotalPlotAreaSqMt: formData.TotalPlotAreaSqMt || 0,
       RoadWidth: formData.RoadWidth || "",
       CountryMasterId: formData.CountryMasterId,
       DistrictMasterId: formData.DistrictMasterId,
@@ -321,6 +327,7 @@ const AddUpdateBuilding: React.FC = () => {
       TotalReligiousStructureAreaSqFt: formData.TotalReligiousStructureAreaSqFt || 0,
       PropertyAgeYears: formData.PropertyAgeYears || 0,
       NumberOfFloors: formData.NumberOfFloors || 0,
+      NumberOfWings: formData.NumberOfWings || 0,
       FSI_TDR_UtilizationSqFt: formData.FSI_TDR_UtilizationSqFt || 0,
       LandOwnershipType: formData.LandOwnershipType || "",
       IsLitigation: formData.IsLitigation || false,
@@ -457,12 +464,22 @@ const AddUpdateBuilding: React.FC = () => {
 
               <div>
                 <Input
-                  value={formData.TotalPlotAreaSqFt ?? ''}
-                  label="Total Plot Area (SqFt)"
+                  value={formData.TotalPlotAreaSqMt ?? ''}
+                  label="Total Plot Area (SqMt)"
                   required
-                  error={errors.TotalPlotAreaSqFt}
+                  error={errors.TotalPlotAreaSqMt}
                   placeholder="Enter Total Plot Area"
                   maxLength={9}
+                  onChange={e => handleFieldChange('TotalPlotAreaSqMt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  rightIcon="SqMt"
+                />
+              </div>
+              <div>
+                <Input
+                  value={formData.TotalPlotAreaSqFt ?? ''}
+                  label="Total Plot Area (SqFt)"
+                  error={errors.TotalPlotAreaSqFt}
+                  placeholder="Enter Total Plot Area"
                   onChange={e => handleFieldChange('TotalPlotAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   rightIcon="SqFt"
                 />
@@ -473,7 +490,6 @@ const AddUpdateBuilding: React.FC = () => {
                   label="Utilized Units Area (SqFt)"
                   placeholder="Enter Utilized Units Area"
                   rightIcon="SqFt"
-                  maxLength={9}
                   error={errors.TotalUnitsAreaUtilizedSqFt}
                   onChange={e => handleFieldChange('TotalUnitsAreaUtilizedSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                 />
@@ -496,6 +512,16 @@ const AddUpdateBuilding: React.FC = () => {
                   placeholder="Enter Number Of Floors"
                   error={errors.NumberOfFloors}
                   onChange={e => handleFieldChange('NumberOfFloors', Number(filterNumbers(e.target.value) || 0))}
+                />
+              </div>
+              <div>
+                <Input
+                  value={formData.NumberOfWings ?? ''}
+                  label="Number Of Wings"
+                  maxLength={9}
+                  placeholder="Enter Number Of Wings"
+                  error={errors.NumberOfWings}
+                  onChange={e => handleFieldChange('NumberOfWings', Number(filterNumbers(e.target.value) || 0))}
                 />
               </div>
             </div>

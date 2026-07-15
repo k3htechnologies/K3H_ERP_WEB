@@ -38,6 +38,7 @@ export interface BrokerageBookingData {
     Flat: string | null
     Floor: string | null
     Source: string | null
+    BookingType: string | null
     AgreementValue: number | 0
     BrokerageAmount: number | 0
     BrokeragePercentage: number | 0

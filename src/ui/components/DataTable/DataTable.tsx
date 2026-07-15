@@ -14,7 +14,7 @@ export interface TableColumn {
   align?: 'left' | 'center' | 'right'
   truncate?: boolean
   maxWidth?: string
-    children?: TableColumn[]
+  children?: TableColumn[]
 }
 
 export interface PaginationInfo {

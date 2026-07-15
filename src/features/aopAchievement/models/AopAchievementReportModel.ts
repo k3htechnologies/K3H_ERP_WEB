@@ -31,6 +31,8 @@ export interface FilterWithPaginationClickAchievementRequest {
 export interface ChannelPartnerAOPAchievementData {
     ChannelPartnerId: number | 0
     Name: string | null
+    SystemGeneratedCode: string
+    Type: string
     WalkinsByCP: number | null
     TotalFreshVisits: number | null
     Revisits: number | null

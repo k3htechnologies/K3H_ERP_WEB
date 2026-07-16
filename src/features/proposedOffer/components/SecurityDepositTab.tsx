@@ -24,6 +24,7 @@ import {
   initialFormStateSecurityDepositPaymentStage,
 } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface SecurityDepositTabProps {
   projectId: number | null;
@@ -98,6 +99,8 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
               BuildingId: buildingId,
               ProjectId: Number(projectId),
               SecurityDepositToSocietyAmount: data.SecurityDepositToSocietyAmount ?? 0,
+              InterestAmount : data.InterestAmount ?? 0,
+              Remark : data.Remark ?? "",
               SecurityDepositToSocietyWithPaymentStageJSON: ''
             });
 
@@ -211,6 +214,8 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
           BuildingId: buildingId,
           ProjectId: Number(projectId),
           SecurityDepositToSocietyAmount: formDataSecurityDepositDetails.SecurityDepositToSocietyAmount,
+          InterestAmount : formDataSecurityDepositDetails.InterestAmount ?? 0,
+          Remark : formDataSecurityDepositDetails.Remark ?? "",
           SecurityDepositToSocietyWithPaymentStageJSON: paymentStageJSON
         };
 
@@ -515,23 +520,42 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
                 disabled={securityDepositPaymentStageList.length > 0 ? true : false}
               />
             </div>
+            <div>
+              <Input
+                label="Interest Amount (₹)"
+                type="text"
+                value={formDataSecurityDepositDetails.InterestAmount || ''}
+                onChange={(e) => handleFieldChangeSecurityDepositDetails('InterestAmount', filterNumbersWithDecimal(e.target.value))}
+                error={errorsSecurityDepositDetails.InterestAmount}
+                placeholder="Enter Interest Amount"
+                rightIcon="₹"
+              />
+            </div>
+          </div>
+          <div>
+            <TextArea
+              label="Remarks"
+              className='thin-scroll'
+              value={formDataSecurityDepositDetails.Remark ?? ""}
+              placeholder="Enter Remarks"
+              onChange={(e) => handleFieldChangeSecurityDepositDetails("Remark", e.target.value)}
+            />
           </div>
         </div>
 
-        {/* Security Deposit List Section */}
         <div className="space-y-4 pb-5">
-           <div className="flex items-center justify-between border-b border-gray-300 pb-2">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Security Deposit List
-              </h3>
+          <div className="flex items-center justify-between border-b border-gray-300 pb-2">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Security Deposit List
+            </h3>
             {canAction && buildingId > 0 && (
               <Button
                 onClick={handleAddSecurityDepositPaymentStageModal}
-               color="blue"
+                color="blue"
                 variant="solid"
                 colorMode="extraLight"
                 style={{ width: '35px', height: '35px' }}
-                centerIcon={<Plus className="h-4 w-4" /> }>
+                centerIcon={<Plus className="h-4 w-4" />}>
               </Button>
             )}
           </div>
@@ -583,7 +607,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
                 value={formDataSecurityDepositPaymentStage.Type || ''}
                 onChange={(e) => handleFieldChangeSecurityDepositPaymentStage('Type', String(e))}
                 options={FLAT_UNIT_TYPE
-                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .filter(opt => opt.id === 'Commercial' || opt.id === 'Residential')
                   .map(opt => ({
                     label: opt.name,
                     value: opt.id
@@ -618,6 +642,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
                 rightIcon="₹"
               />
             </div>
+
           </div>
         </div>
       </Modal>

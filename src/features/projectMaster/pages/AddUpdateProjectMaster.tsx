@@ -76,10 +76,13 @@ const initialFormState = (): AddUpdateProjectMasterRequest => ({
     ExecutionStartDate: null,
     SiteContactMobileNumber: '',
     SiteContactName: '',
+    SiteContactDesignation: '',
     SiteContact2MobileNumber: '',
     SiteContact2Name: '',
+    SiteContact2Designation: '',
     SiteContact3MobileNumber: '',
     SiteContact3Name: '',
+    SiteContact3Designation: '',
     ProjectStatus: '',
     RERANumber: '',
     APFNumber: '',
@@ -287,10 +290,16 @@ const AddUpdateProjectMaster: React.FC = () => {
                             ExecutionStartDate: row.ExecutionStartDate ?? prev.ExecutionStartDate,
                             SiteContactMobileNumber: row.SiteContactMobileNumber ?? prev.SiteContactMobileNumber ?? '',
                             SiteContactName: row.SiteContactName ?? prev.SiteContactName ?? '',
+                            SiteContactDesignation: row.SiteContactDesignation ?? prev.SiteContactDesignation ?? '',
+
                             SiteContact2MobileNumber: row.SiteContact2MobileNumber ?? prev.SiteContact2MobileNumber ?? '',
                             SiteContact2Name: row.SiteContact2Name ?? prev.SiteContact2Name ?? '',
+                            SiteContact2Designation: row.SiteContact2Designation ?? prev.SiteContact2Designation ?? '',
+
                             SiteContact3MobileNumber: row.SiteContact3MobileNumber ?? prev.SiteContact3MobileNumber ?? '',
                             SiteContact3Name: row.SiteContact3Name ?? prev.SiteContact3Name ?? '',
+                            SiteContact3Designation: row.SiteContact3Designation ?? prev.SiteContact3Designation ?? '',
+
                             ProjectStatus: row.ProjectStatus ?? prev.ProjectStatus ?? '',
                             RERANumber: row.RERANumber ?? prev.RERANumber ?? '',
                             APFNumber: row.APFNumber ?? prev.APFNumber ?? '',
@@ -359,12 +368,29 @@ const AddUpdateProjectMaster: React.FC = () => {
             newErrors.Category = "Category is required.";
         }
 
-        const purchaseStartDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.TenderPurchaseStartDate ? new Date(formData.TenderPurchaseStartDate) : undefined);
-        const purchaseEndDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.TenderPurchaseEndDate ? new Date(formData.TenderPurchaseEndDate) : undefined);
+        if (formData.Category?.trim().toUpperCase() === "TENDER") {
 
-        if (formData?.TenderPurchaseStartDate && formData.TenderPurchaseEndDate && !isToDateGreaterOrEqualFromDate(purchaseStartDate, purchaseEndDate)) {
-            newErrors.TenderPurchaseEndDate = "Purchase Start Date must be greater than or equal to Purchase End Date";
+            if (!formData.TenderAmount) {
+                newErrors.TenderAmount = "Amount is required.";
+            }
+
+            if (!formData.TenderPurchaseStartDate) {
+                newErrors.TenderPurchaseStartDate = "Purchase Start Date is required.";
+            }
+
+            if (!formData.TenderPurchaseEndDate) {
+                newErrors.TenderPurchaseEndDate = "Purchase End Date is required.";
+            }
+
+            const purchaseStartDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.TenderPurchaseStartDate ? new Date(formData.TenderPurchaseStartDate) : undefined);
+            const purchaseEndDate = convert_date_yy_mm_dd_To_dd_mm_yyyy(formData.TenderPurchaseEndDate ? new Date(formData.TenderPurchaseEndDate) : undefined);
+
+            if (formData?.TenderPurchaseStartDate && formData.TenderPurchaseEndDate && !isToDateGreaterOrEqualFromDate(purchaseStartDate, purchaseEndDate)) {
+                newErrors.TenderPurchaseEndDate = "Purchase Start Date must be greater than or equal to Purchase End Date";
+            }
+
         }
+
 
 
         if (formData.IsRedevelopment === 0 && !formData.CTSNumber?.trim()) {
@@ -489,12 +515,15 @@ const AddUpdateProjectMaster: React.FC = () => {
         fd.append('ExecutionStartDate', formData.ExecutionStartDate ?? '');
         fd.append('SiteContactMobileNumber', formData.SiteContactMobileNumber ?? '');
         fd.append('SiteContactName', formData.SiteContactName ?? '');
+        fd.append('SiteContactDesignation', formData.SiteContactDesignation ?? '');
 
         fd.append('SiteContact2MobileNumber', formData.SiteContact2MobileNumber ?? '');
         fd.append('SiteContact2Name', formData.SiteContact2Name ?? '');
+        fd.append('SiteContact2Designation', formData.SiteContact2Designation ?? '');
 
         fd.append('SiteContact3MobileNumber', formData.SiteContact3MobileNumber ?? '');
         fd.append('SiteContact3Name', formData.SiteContact3Name ?? '');
+        fd.append('SiteContact3Designation', formData.SiteContact3Designation ?? '');
 
         fd.append('ProjectStatus', formData.ProjectStatus ?? '');
         fd.append('RERANumber', formData.RERANumber ?? '');
@@ -770,6 +799,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                             value={formData.TenderAmount || ''}
                                             onChange={(e) => handleFieldChange('TenderAmount', filterNumbersWithDecimal(e.target.value) || 0)}
                                             placeholder="Enter Amount (₹)"
+                                            error={errors.TenderAmount}
                                         />
                                     </div>
                                     <div>
@@ -777,6 +807,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                             label="Purchase Start Date"
                                             value={formatDate_dd_mm_yyyy(formData.TenderPurchaseStartDate)}
                                             onChange={(val) => handleFieldChange('TenderPurchaseStartDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                            error={errors.TenderPurchaseStartDate}
                                         />
                                     </div>
 
@@ -898,7 +929,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                                         />
                                     </div>
                                 </div>
-                                 <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                                     <div>
                                         <TextArea
                                             label="Payorder Remark"
@@ -1238,27 +1269,27 @@ const AddUpdateProjectMaster: React.FC = () => {
                                 />
                             </div>
                             <div>
-                                
+
                                 <MultiSelectDropdown
-                                            label="Project Sub Scheme"
-                                            placeholder="Select Project Sub Scheme"
-                                           options={
-                                            formData.ProjectScheme === 'BMC'
-                                                ? PROJECT_SUB_SCHEME_BMC.map(opt => ({ label: opt.name, value: opt.id }))
-                                                : formData.ProjectScheme === 'MHADA'
-                                                    ? PROJECT_SUB_SCHEME_MHADA.map(opt => ({ label: opt.name, value: opt.id }))
-                                                    : formData.ProjectScheme === 'SRA'
-                                                        ? PROJECT_SUB_SCHEME_SRA.map(opt => ({ label: opt.name, value: opt.id }))
-                                                        : []
-                                        }
-                                            selectedValues={formData.ProjectSubScheme ? formData.ProjectSubScheme.split(",") : []}
-                                            onChange={(values) => handleFieldChange("ProjectSubScheme", values.join(","))}
-                                            error={errors.ProjectSubScheme}
-                                            disabled={!formData.ProjectScheme}
-                                            />
-            
-                                    
-                               
+                                    label="Project Sub Scheme"
+                                    placeholder="Select Project Sub Scheme"
+                                    options={
+                                        formData.ProjectScheme === 'BMC'
+                                            ? PROJECT_SUB_SCHEME_BMC.map(opt => ({ label: opt.name, value: opt.id }))
+                                            : formData.ProjectScheme === 'MHADA'
+                                                ? PROJECT_SUB_SCHEME_MHADA.map(opt => ({ label: opt.name, value: opt.id }))
+                                                : formData.ProjectScheme === 'SRA'
+                                                    ? PROJECT_SUB_SCHEME_SRA.map(opt => ({ label: opt.name, value: opt.id }))
+                                                    : []
+                                    }
+                                    selectedValues={formData.ProjectSubScheme ? formData.ProjectSubScheme.split(",") : []}
+                                    onChange={(values) => handleFieldChange("ProjectSubScheme", values.join(","))}
+                                    error={errors.ProjectSubScheme}
+                                    disabled={!formData.ProjectScheme}
+                                />
+
+
+
 
                             </div>
                         </div>
@@ -1337,7 +1368,8 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     type="text"
                                     value={formData.ProjectAreaInSqft || ''}
                                     onChange={(e) => handleFieldChange('ProjectAreaInSqft', filterNumbersWithDecimal(e.target.value) || 0)}
-                                    placeholder="Enter Area in (SqFt)"
+                                    placeholder="Enter Project Area"
+                                    rightIcon="SqFt"
                                 />
                             </div>
                             <div>
@@ -1346,7 +1378,8 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     type="text"
                                     value={formData.ProjectAreaInSqmt || ''}
                                     onChange={(e) => handleFieldChange('ProjectAreaInSqmt', filterNumbersWithDecimal(e.target.value) || 0)}
-                                    placeholder="Enter Area in (SqMt)"
+                                    placeholder="Enter Project Area"
+                                    rightIcon="SqMt"
                                 />
                             </div>
                         </div>
@@ -1382,11 +1415,11 @@ const AddUpdateProjectMaster: React.FC = () => {
 
                     {/* Contact Information */}
                     <div className="space-y-4 pt-5">
-                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Contact Information</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Site Contact Information</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <div>
                                 <Input
-                                    label="Site Contact Name"
+                                    label="Name"
                                     type="text"
                                     maxLength={250}
                                     value={formData.SiteContactName}
@@ -1396,7 +1429,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             </div>
                             <div>
                                 <Input
-                                    label="Site Contact Mobile Number"
+                                    label="Mobile Number"
                                     leftIcon="+91"
                                     error={errors.SiteContactMobileNumber}
                                     type="text"
@@ -1407,10 +1440,19 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     placeholder="Enter Mobile Number"
                                 />
                             </div>
-                            <div></div>
                             <div>
                                 <Input
-                                    label="Site Contact2 Name"
+                                    label="Designation"
+                                    type="text"
+                                    maxLength={250}
+                                    value={formData.SiteContactDesignation}
+                                    onChange={(e) => handleFieldChange('SiteContactDesignation', e.target.value)}
+                                    placeholder="Enter Site Contact Designation"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Name 2"
                                     type="text"
                                     maxLength={250}
                                     value={formData.SiteContact2Name}
@@ -1420,7 +1462,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             </div>
                             <div>
                                 <Input
-                                    label="Site Contact Mobile2 Number"
+                                    label="Mobile Number 2"
                                     leftIcon="+91"
                                     error={errors.SiteContact2MobileNumber}
                                     type="text"
@@ -1431,10 +1473,19 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     placeholder="Enter Mobile Number"
                                 />
                             </div>
-<div></div>
                             <div>
                                 <Input
-                                    label="Site Contact Name"
+                                    label="Designation 2"
+                                    type="text"
+                                    maxLength={250}
+                                    value={formData.SiteContact2Designation}
+                                    onChange={(e) => handleFieldChange('SiteContact2Designation', e.target.value)}
+                                    placeholder="Enter Designation"
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Name 3"
                                     type="text"
                                     maxLength={250}
                                     value={formData.SiteContact3Name}
@@ -1444,7 +1495,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                             </div>
                             <div>
                                 <Input
-                                    label="Site Contact3 Mobile Number"
+                                    label="Mobile Number 3"
                                     leftIcon="+91"
                                     error={errors.SiteContact3MobileNumber}
                                     type="text"
@@ -1455,7 +1506,16 @@ const AddUpdateProjectMaster: React.FC = () => {
                                     placeholder="Enter Mobile Number"
                                 />
                             </div>
-                            <div></div>
+                            <div>
+                                <Input
+                                    label="Designation 3"
+                                    type="text"
+                                    maxLength={250}
+                                    value={formData.SiteContact3Designation}
+                                    onChange={(e) => handleFieldChange('SiteContact3Designation', e.target.value)}
+                                    placeholder="Enter Designation"
+                                />
+                            </div>
                             <div>
                                 <SinglePageSelection
                                     label="Project Status"
@@ -1468,7 +1528,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                         </div>
                     </div>
 
-                    
+
 
 
                 </form>

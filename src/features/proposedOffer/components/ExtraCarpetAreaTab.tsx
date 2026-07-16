@@ -15,6 +15,7 @@ import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { CARPET_AREA_TYPE } from '@/core/constants';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { initialFormStateExtraCarpetArea } from '../utils/initialStates';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface ExtraCarpetAreaTabProps {
   projectId: number | null;
@@ -64,6 +65,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
         const response = await proposedOfferService.apiCallPullExtraCarpetArea(params);
 
         if (E.isRight(response)) {
+
           const data = response.right.Data?.[0] || null;
           setExtraCarpetAreaData(data);
 
@@ -75,7 +77,8 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
               ProjectId: Number(projectId),
               ExtraCarpetAreaOfferedType: data.ExtraCarpetAreaOfferedType || '',
               ResidentialExtraCarpetPercent: data.ResidentialExtraCarpetPercent ?? 0,
-              CommercialExtraCarpetPercent: data.CommercialExtraCarpetPercent ?? 0
+              CommercialExtraCarpetPercent: data.CommercialExtraCarpetPercent ?? 0,
+              Remark:data.Remark ?? "",
             });
           } else {
             setFormDataExtraCarpetArea({
@@ -151,7 +154,8 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
           ProjectId: Number(projectId),
           ExtraCarpetAreaOfferedType: formDataExtraCarpetArea.ExtraCarpetAreaOfferedType,
           ResidentialExtraCarpetPercent: formDataExtraCarpetArea.ResidentialExtraCarpetPercent ?? 0,
-          CommercialExtraCarpetPercent: formDataExtraCarpetArea.CommercialExtraCarpetPercent ?? 0
+          CommercialExtraCarpetPercent: formDataExtraCarpetArea.CommercialExtraCarpetPercent ?? 0,
+          Remark: formDataExtraCarpetArea.Remark
         };
 
         const response = await proposedOfferService.apiCallAddUpdateExtraCarpetArea(payload);
@@ -190,7 +194,6 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
   return (
     <>
       <div className="space-y-6 pb-5">
-        {/* Basic Details Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
             Basic Details
@@ -210,7 +213,6 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
           </div>
         </div>
 
-        {/* Percentage Details Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
             Percentage Details
@@ -250,6 +252,16 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 rightIcon="%"
               />
             </div>
+
+          </div>
+          <div>
+            <TextArea
+              label="Remark"
+              className='thin-scroll'
+              value={formDataExtraCarpetArea.Remark ?? ""}
+              placeholder="Enter Remark"
+              onChange={(e) => handleFieldChangeExtraCarpetArea("Remark", e.target.value)}
+            />
           </div>
         </div>
       </div>

@@ -705,7 +705,10 @@ export const ViewProjectMaster: React.FC = () => {
                                             value={editProjectData?.SiteContactMobileNumber ? `+91 ${editProjectData?.SiteContactMobileNumber}` : '-'}
                                         />
 
-                                        <div></div>
+                                        <FieldItem
+                                            label="Designation"
+                                            value={editProjectData?.SiteContactDesignation ?? '-'}
+                                        />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  border-b border-[#135bec2e] pb-4 gap-4 pt-5">
                                         <FieldItem
@@ -717,7 +720,10 @@ export const ViewProjectMaster: React.FC = () => {
                                             label="Mobile Number 2"
                                             value={editProjectData?.SiteContact2MobileNumber ? `+91 ${editProjectData?.SiteContact2MobileNumber}` : '-'}
                                         />
-                                        <div></div>
+                                         <FieldItem
+                                            label="Designation 2"
+                                            value={editProjectData?.SiteContact2Designation ?? '-'}
+                                        />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3  border-b border-[#135bec2e] pb-4 gap-4 pt-5">
                                         <FieldItem
@@ -728,7 +734,10 @@ export const ViewProjectMaster: React.FC = () => {
                                             label="Mobile Number 3"
                                             value={editProjectData?.SiteContact3MobileNumber ? `+91 ${editProjectData?.SiteContact3MobileNumber}` : '-'}
                                         />
-                                        <div></div>
+                                        <FieldItem
+                                            label="Designation 3"
+                                            value={editProjectData?.SiteContact3Designation ?? '-'}
+                                        />
                                     </div>
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4  pt-5">
                                         <FieldItem

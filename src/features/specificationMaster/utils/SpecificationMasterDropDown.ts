@@ -40,7 +40,7 @@ export const fetchSpecificationMasterDropdown = (levelType: string, parentLevelI
                 itemList: finalData.map(item => ({
                     label: item.CategoryName!,
                     value: String(item.SpecificationMasterId),
-                    uom: item.Uom,
+                    uom: item.UomCode,
                     uomMasterId: item.UomMasterId,
                 })),
             };

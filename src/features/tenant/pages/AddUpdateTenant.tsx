@@ -1397,7 +1397,7 @@ const AddUpdateTenant: React.FC = () => {
                     handleFieldChange('UnitConfiguration', '');
                   }}
                   options={FLAT_UNIT_TYPE
-                    .filter(opt => opt.id === 'Commercial' || opt.id === 'Residential' )
+                    .filter(opt => opt.id === 'Commercial' || opt.id === 'Residential')
                     .map(opt => ({
                       label: opt.name,
                       value: opt.id

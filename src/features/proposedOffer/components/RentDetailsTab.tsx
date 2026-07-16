@@ -18,11 +18,13 @@ import { Modal } from '@/ui/components/Modal/Modal';
 import { Edit, Trash2 } from 'lucide-react';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { Checkbox } from '@/ui/components/forms/Checkbox';
-import { FLAT_UNIT_TYPE, TENURE, UNIT_SQFT_LUMPSUM } from '@/core/constants';
+import {  FLAT_UNIT_TYPE, TENURE, UNIT_SQFT_LUMPSUM } from '@/core/constants';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
-import { initialFormStateRentDetails } from '../utils/initialStates';
+import { initialFormStateRentDetails, initialFormStateRentOfferedDetails } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { TextArea } from '@/ui/components/forms/Textarea';
+import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 
 interface RentDetailsTabProps {
   projectId: number | null;
@@ -46,6 +48,10 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
   const [editingRentDetailsData, setEditingRentDetailsData] = useState<ProposedOfferRentDetailsData | null>(null);
   const [isAddUpdateRentDetailsModalOpen, setIsAddUpdateRentDetailsModalOpen] = useState(false);
   const [formDataRentDetails, setFormDataRentDetails] = useState<AddUpdateProposedOfferRentDetailsRequest>(() => initialFormStateRentDetails());
+
+  const [formDataRentOfferedDetails, setFormDataRentOfferedDetails] = useState<ProposedOfferRentDetailsData>(() => initialFormStateRentOfferedDetails());
+  const [errorsRentOfferedDetails, setErrorsRentOfferedDetails] = useState<{ [k: string]: string }>({});
+
   const [isConfirmationDialogBoxOpenRentDetails, setIsConfirmationDialogBoxOpenRentDetails] = useState(false);
   const [deleteRentDetailsData, setDeleteRentDetailsData] = useState<ProposedOfferRentDetailsData | null>(null);
   const [generateRentDetailsData, setGenerateRentDetailsData] = useState<ProposedOfferRentDetailsData | null>(null);
@@ -64,6 +70,15 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
       setErrorsRentDetails((prev) => ({ ...prev, [field]: "" }));
     }
   };
+
+  const handleFieldChangeRentOfferedDetails = (field: keyof ProposedOfferRentDetailsData, value: any) => {
+    setFormDataRentOfferedDetails((prev) => ({ ...prev, [field]: value }));
+    if (errorsRentOfferedDetails[field]) {
+      setErrorsRentOfferedDetails((prev) => ({ ...prev, [field]: "" }));
+    }
+  };
+
+
 
   const fetchRentDetailsData = async () => {
 
@@ -136,6 +151,30 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
     setIsAddUpdateRentDetailsModalOpen(true);
   }, [projectId, buildingId]);
 
+
+
+
+
+  const validateRentOfferedDetailsForm = (): {
+    isValid: boolean
+    errors: { [key: string]: string }
+  } => {
+    const newErrors: { [key: string]: string } = {}
+
+    if (!formDataRentOfferedDetails.RentOfferedToResidential) {
+      newErrors.RentOfferedToResidential = "Rent Offered To Residential (in Rs. /Sq.ft) is required "
+    }
+
+    if (!formDataRentOfferedDetails.RentOfferedToCommercial) {
+      newErrors.RentOfferedToCommercial = "Rent Offered To Commercial (in Rs. /Sq.ft) is required"
+    }
+
+    return {
+      isValid: Object.keys(newErrors).length === 0,
+      errors: newErrors
+    }
+  }
+
   const validateRentDetailsForm = (): {
     isValid: boolean
     errors: { [key: string]: string }
@@ -157,6 +196,12 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
     if (!formDataRentDetails.UnitSqFtLumsum?.trim()) {
       newErrors.UnitSqFtLumsum = "Unit / SqFt / Lumsum is required"
     }
+    if (!formDataRentDetails.Mode || formDataRentDetails.Mode?.trim() === "") {
+      newErrors.Mode = "Mode is required"
+    }
+    if (!formDataRentDetails.Brokerage) {
+      newErrors.Brokerage = "Brokerage is required"
+    }
 
     if (!formDataRentDetails.RentStartDate || formDataRentDetails.RentStartDate.trim() === "") {
       newErrors.RentStartDate = "Rent Start Date is required"
@@ -166,10 +211,25 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
       newErrors.RentEndDate = "Rent End Date is required"
     }
 
+    if (!formDataRentDetails.CarpetAreaSqFt) {
+      newErrors.CarpetAreaSqFt = "Carpet Area Sq Ft is required"
+    }
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors
     }
+  }
+
+  const handleSaveRentOfferedDetails = async () => {
+
+    const validation = validateRentOfferedDetailsForm()
+
+    if (!validation.isValid) {
+      setErrorsRentOfferedDetails(validation.errors)
+      return
+    }
+
   }
 
   const handleAddUpdateRentDetails = async (e: React.FormEvent) => {
@@ -504,11 +564,57 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
       <div className="space-y-6">
         {/* Rent Details List Section */}
         <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
+            Rent Offered Details
+          </h3>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <Input
+                label="Rent Offered To Residential (in Rs. /Sq.ft)"
+                required
+                type="text"
+                rightIcon="₹"
+                value={formDataRentOfferedDetails.RentOfferedToResidential || ''}
+                onChange={(e) => handleFieldChangeRentOfferedDetails('RentOfferedToResidential', filterNumbersWithDecimal(e.target.value))}
+                error={errorsRentOfferedDetails.RentOfferedToResidential}
+                placeholder="Enter Residential Rent Amount"
+              />
+            </div>
+
+            <div>
+              <Input
+                label="Rent Offered To Commercial (in Rs. /Sq.ft)"
+                required
+                type="text"
+                rightIcon="₹"
+                value={formDataRentOfferedDetails.RentOfferedToCommercial || ''}
+                onChange={(e) => handleFieldChangeRentOfferedDetails('RentOfferedToCommercial', filterNumbersWithDecimal(e.target.value))}
+                error={errorsRentOfferedDetails.RentOfferedToCommercial}
+                placeholder="Enter Commercial Rent Amount"
+              />
+            </div>
+          </div>
+
+          <div>
+            <TextArea
+              label="Remarks"
+              className='thin-scroll'
+              value={formDataRentOfferedDetails.Remark ?? ""}
+              placeholder="Enter Remarks"
+              onChange={(e) => handleFieldChangeRentOfferedDetails("Remark", e.target.value)}
+              error={errorsRentOfferedDetails.Remark} />
+
+          </div>
+
+
+
           <div className="flex items-center justify-between">
             <div className="flex-1 border-b border-gray-500 pb-2">
               <h3 className="text-lg font-semibold text-gray-900">
                 Rent Details List
               </h3>
+
             </div>
             {canAction && buildingId > 0 && (
               <Button
@@ -643,6 +749,7 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
                 error={errorsRentDetails.UnitSqFtLumsum}
               />
             </div>
+            
             <div>
               <Input
                 label="Carpet Area (Sq Ft)"
@@ -675,10 +782,30 @@ export const RentDetailsTab: React.FC<RentDetailsTabProps> = ({
                   onChange={(val) => handleFieldChangeRentDetails('RentEndDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                 />
               </div>
+
             </div>
+
           </div>
         </div>
       </Modal>
+
+      <div className='mt-5'>
+        <BottomActionBar
+          cancelText="Cancel"
+          saveText={(formDataRentOfferedDetails.ProposedOfferRentDetailsId && formDataRentOfferedDetails.ProposedOfferRentDetailsId > 0) ? 'Update' : 'Add'}
+          onCancel={() => {
+            setFormDataRentOfferedDetails({
+              ...initialFormStateRentOfferedDetails(),
+              ProjectId: Number(projectId)
+            });
+            setErrorsRentOfferedDetails({});
+          }}
+          canAction={canAction}
+          onSave={handleSaveRentOfferedDetails}
+          isLoading={isLoading}
+        />
+      </div>
+
 
       {/* DELETE CONFIRMATION RENT DETAILS MODAL */}
       <DeleteDialog

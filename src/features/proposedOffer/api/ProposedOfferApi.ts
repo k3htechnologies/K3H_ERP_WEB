@@ -6,11 +6,11 @@ export const ProposedOfferApi = {
     ADD_UPDATE_EXTRA_CARPET_AREA: '/ProposedOffer/AddUpdateExtraCarpetArea',
 
     //=============================================================
-    // [ CORPUS DETAILS ]
+    // [ HARSHIP DETAILS ]
     //=============================================================
-    PULL_CORPUS_DETAILS: '/ProposedOffer/PullCorpusDetails',
-    ADD_UPDATE_CORPUS_DETAILS: '/ProposedOffer/AddUpdateCorpusDetails',
-    DELETE_CORPUS_DETAILS: '/ProposedOffer/DeleteCorpusDetails',
+    PULL_HARSHIP_DETAILS: '/ProposedOffer/PullHardshipDetails',
+    ADD_UPDATE_HARSHIP_DETAILS: '/ProposedOffer/AddUpdateHardshipDetails',
+    DELETE_HARSHIP_DETAILS: '/ProposedOffer/DeleteHardshipDetails',
 
     //=============================================================
     // [ RENT DETAILS ]
@@ -67,6 +67,31 @@ export const ProposedOfferApi = {
     // [ GENERATE PROPOSED PLAN ]
     //=============================================================
     ADD_UPDATE_GENERATE_PROPOSED_PLAN: '/ProposedOffer/AddUpdateGenerateProposedOffer',
+
+    //=============================================================
+    // [ READY RECKONER ]
+    //=============================================================
+    PULL_READY_RECKONER: '/ProposedOffer/PullReadyReckoner',
+    ADD_UPDATE_READY_RECKONER: '/ProposedOffer/AddUpdateReadyReckoner',
+
+    //=============================================================
+    // [ CARPET AREA ]
+    //=============================================================
+    PULL_CARPET_AREA: '/ProposedOffer/PullCarpetArea',
+    ADD_UPDATE_CARPET_AREA: '/ProposedOffer/AddUpdateCarpetArea',
+
+    //=============================================================
+    // [ ADDITIONAL INFORMATION ]
+    //=============================================================
+    PULL_ADDITIONAL_INFORMATION: '/ProposedOffer/PullAdditionalInformation',
+    ADD_UPDATE_ADDITIONAL_INFORMATION: '/ProposedOffer/AddUpdateAdditionalInformation',
+
+    //=============================================================
+    // [ PLOT AREA ]
+    //=============================================================
+    PULL_PLOT_AREA: '/ProposedOffer/PullPlotArea',
+    ADD_UPDATE_PLOT_AREA: '/ProposedOffer/AddUpdatePlotArea',
+
 } as const
 
 

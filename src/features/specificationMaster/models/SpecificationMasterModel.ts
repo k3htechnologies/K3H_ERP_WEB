@@ -17,7 +17,7 @@ export interface SpecificationMasterData {
     UniqueKey: string | null
     CategoryName: string | null
     UomMasterId: number | 0
-    Uom: string | null
+    UomCode: string | null
     LevelType: string | null
     Level1Name: string | null
     Level2Name: string | null

@@ -550,6 +550,18 @@ export const getPageInfo = (path: string) => {
                 description: 'Centralized management of notice sections for real estate projects',
             }
 
+             //SPECIFICATION MASTER
+        case 'specificationmaster':
+            return {
+                title: "Specification Master",
+                description: 'Overview of your system and key metrics',
+            }
+            //BUDGET
+            case 'budget':
+            return {
+                title: "Budget",
+                description: 'Overview of your system and key metrics',
+            }
         default:
             return {
                 title: 'Dashboard',

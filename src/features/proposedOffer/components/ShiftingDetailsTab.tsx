@@ -25,6 +25,7 @@ import {
   initialFormStateShiftingPaymentStage,
 } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface ShiftingDetailsTabProps {
   projectId: number | null;
@@ -101,6 +102,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
               ProjectId: Number(projectId),
               ShiftingOfferedToResidentialAmount: data.ShiftingOfferedToResidentialAmount ?? 0,
               ShiftingOfferedToCommercialAmount: data.ShiftingOfferedToCommercialAmount ?? 0,
+              Remark:data.Remark ?? "",
               ShiftingDetailsWithPaymentStageJSON: ''
             });
 
@@ -242,6 +244,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
           ProjectId: Number(projectId),
           ShiftingOfferedToResidentialAmount: formDataShiftingDetails.ShiftingOfferedToResidentialAmount,
           ShiftingOfferedToCommercialAmount: formDataShiftingDetails.ShiftingOfferedToCommercialAmount,
+          Remark: formDataShiftingDetails.Remark,
           ShiftingDetailsWithPaymentStageJSON: paymentStageJSON
         };
 
@@ -688,6 +691,17 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
               />
             </div>
           </div>
+          <div>
+            <div>
+              <TextArea
+                label="Remarks"
+                className='thin-scroll'
+                value={formDataShiftingDetails.Remark ?? ""}
+                placeholder="Enter Remarks"
+                onChange={(e) => handleFieldChangeShiftingDetails("Remark", e.target.value)}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Shifting List Section */}
@@ -766,7 +780,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                   );
                 }}
                 options={FLAT_UNIT_TYPE
-                  .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
+                  .filter(opt => opt.id === 'Commercial' || opt.id === 'Residential')
                   .map(opt => ({
                     label: opt.name,
                     value: opt.id
@@ -834,6 +848,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 placeholder="Calculated Amount"
               />
             </div>
+
           </div>
         </div>
       </Modal>

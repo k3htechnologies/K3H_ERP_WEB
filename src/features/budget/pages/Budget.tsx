@@ -7,7 +7,7 @@ import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
 import usePagination from "@/core/hooks/usePagination";
 import type { TableColumn } from "@/ui/components/DataTable/DataTableWithoutBorder";
-import { type FilterInfo, type PaginationInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
+import { type FilterInfo, type SortInfo } from "@/ui/components/DataTable/DataTable";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Loader } from "@/core/utils/loader";
 import { Edit, Plus } from "lucide-react";
@@ -72,10 +72,10 @@ export const Budget: React.FC = () => {
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [addLevel, setAddLevel] = useState<"L1" | "L2" | "L3">("L1");
-    const [parentPath, setParentPath] = useState("");
     const [dropdownLabels, setDropdownLabels] = useState<{ level1Name?: string; level2Name?: string, level3Name?: string, flat?: string }>({});
     const [selectedUom, setSelectedUom] = useState("");
     const [selectFlatValues, setSelectFlatValues] = useState<string | number | null>(null);
+    const [parentData, setParentData] = useState({ category: "", subCategory: "", });
 
     useEffect(() => {
         if (!projectId) return
@@ -105,6 +105,8 @@ export const Budget: React.FC = () => {
                     BudgetId: filterParams.BudgetId ? Number(filterParams.BudgetId) : undefined,
                     CategoryName: searchText ?? filterParams.CategoryName ?? undefined,
                     LevelType: filterParams.LevelType ?? undefined,
+                    Uom: filterParams.Uom ?? undefined,
+                    Flat: filterParams.Flat ?? undefined,
                     SortBy: getSortByParam(sort ?? null, BudgetColumns),
                 }
 
@@ -317,27 +319,13 @@ export const Budget: React.FC = () => {
     const handleExportBudgetPdf = () => handleExportBudget("PDF")
 
     const handleEditBudget = useCallback((row: BudgetData) => {
-
-        const buildParentPath = (row: BudgetData) => {
-            const level1 = row.Level1Name;
-            const level2 = row.Level2Name;
-
-            if (row.LevelType === "L1") return "";
-
-            if (row.LevelType === "L2") {
-                return level1 || "";
-            }
-            if (row.LevelType === "L3") {
-                return [level1, level2]
-                    .filter(Boolean)
-                    .join(" > ");
-            }
-            return "";
-        };
-        setParentPath(buildParentPath(row));
+        setParentData({
+            category: row.Level1Name || "",
+            subCategory: row.Level2Name || "",
+        });
         setEditBudgetData({
             ...row,
-            CategoryName: row.CategoryName
+            CategoryName: row.CategoryName,
         });
         setErrors({});
         setIsAddUpdateModalOpen(true);
@@ -377,6 +365,7 @@ export const Budget: React.FC = () => {
             align: 'left',
             fixed: 'left',
             render: value => value || '-',
+
         },
         {
             key: 'CategoryName',
@@ -415,7 +404,7 @@ export const Budget: React.FC = () => {
         },
         {
             key: "Uom",
-            label: "Uom",
+            label: "UOM",
             width: '15',
             sortable: false,
             align: 'left',
@@ -527,8 +516,10 @@ export const Budget: React.FC = () => {
 
                                     if (row.LevelType === "L1") {
                                         setAddLevel("L2");
-                                        setParentPath(row.Level1Name || "");
-
+                                        setParentData({
+                                            category: row.Level1Name || "",
+                                            subCategory: "",
+                                        });
                                         setFormData({
                                             ...initialFormState(),
                                             ProjectId: Number(projectId),
@@ -539,7 +530,6 @@ export const Budget: React.FC = () => {
                                     }
 
                                     if (row.LevelType === "L2") {
-
                                         setAddLevel("L3");
                                         setFormData({
                                             ...initialFormState(),
@@ -549,11 +539,10 @@ export const Budget: React.FC = () => {
                                             LevelId3: 0,
                                         });
                                         setSelectFlatValues("");
-                                        setParentPath(
-                                            [row.Level1Name, row.Level2Name]
-                                                .filter(Boolean)
-                                                .join(" > ")
-                                        );
+                                        setParentData({
+                                            category: row.Level1Name || "",
+                                            subCategory: row.Level2Name || "",
+                                        });
                                         setIsAddUpdateModalOpen(true);
                                     }
                                     setIsAddUpdateModalOpen(true);
@@ -580,7 +569,6 @@ export const Budget: React.FC = () => {
                                 e.stopPropagation();
 
                                 const nextlevel = buildNextLevelIds(row);
-
                                 setFormData({
                                     ...initialFormState(),
                                     ProjectId: Number(projectId),
@@ -636,32 +624,20 @@ export const Budget: React.FC = () => {
 
     const BudgetForTable = useMemo(() => budgetData, [budgetData]);
 
-    const handlePageChange = (page: number) => {
-        setPagination({ currentPage: page })
-        loadBudgetData(page, filters, sortInfo, searchTerm);
-    };
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
-
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
         loadBudgetData(1, {}, sort, searchTerm)
     }, [searchTerm]);
 
-    const BudgetPaginationInfo: PaginationInfo = useMemo(() =>
-    ({
-        currentPage: pagination.currentPage,
-        totalPages: pagination.totalPages,
-        totalRecords: pagination.totalRecords,
-        pageSize: pagination.pageSize,
-        onPageChange: handlePageChange
-    }), [pagination, handlePageChange]);
-
     const handleAddUpdateModal = () => {
         setEditBudgetData(null);
         setAddLevel("L1");
-        setParentPath("");
-
+        setParentData({
+            category: "",
+            subCategory: "",
+        })
         setFormData({
             ...initialFormState(),
             ProjectId: Number(projectId),
@@ -734,18 +710,17 @@ export const Budget: React.FC = () => {
                 searchTerm={searchTerm}
                 onClearSearch={handlClearSearch}
                 onSearchChange={handleSearch}
-                searchPlaceholder="Search By WBS Code / Cost Head / Description"
-                isShowAddButton={canAction}
+                searchPlaceholder="Search By Cost Head / Description"
+                isShowAddButton={canAction && Number(projectId) > 0}
                 addTitle="Add"
                 onAdd={handleAddUpdateModal}
-
                 isShowFilterButton
                 filters={filters}
                 onOpenFilter={() => {
                     setTempFilters(filters);
                     setShowFilterPopup(true);
                 }}
-                isShowExportButton={canExport && BudgetColumns.length > 0}
+                isShowExportButton={canExport && BudgetColumns.length > 0 && Number(projectId) > 0}
                 onExportExcel={handleExportBudgetExcel}
                 onExportPdf={handleExportBudgetPdf}
                 isShowCustomizeButton
@@ -757,8 +732,6 @@ export const Budget: React.FC = () => {
             <CustomTable
                 columns={visibleBudgetColumns}
                 data={BudgetForTable}
-                pagination={BudgetPaginationInfo}
-                recordsPerPage={20}
                 loading={isLoading}
                 sortInfo={sortInfo}
                 onSort={handleSortColumn}
@@ -799,7 +772,10 @@ export const Budget: React.FC = () => {
                     setIsAddUpdateModalOpen(false);
                     setEditBudgetData(null);
                     setErrors({});
-                    setParentPath("");
+                    setParentData({
+                        category: "",
+                        subCategory: "",
+                    });
                     setSelectedUom("");
                     setSelectFlatValues("")
                 }}
@@ -807,27 +783,51 @@ export const Budget: React.FC = () => {
                     setIsAddUpdateModalOpen(false);
                     setEditBudgetData(null);
                     setErrors({});
-                    setParentPath("");
+                    setParentData({
+                        category: "",
+                        subCategory: "",
+                    });
                     setSelectedUom("");
                     setSelectFlatValues("")
                 }}
                 title={editBudgetData ? "Update Budget" : "Add Budget"}
                 saveText={editBudgetData ? "Update" : "Add"}
-                size="small50"
+                size="xl"
                 loading={isLoading}
             >
                 <div className="space-y-4" >
+                    {addLevel !== "L1" && (
+                        <Input
+                            label="Category"
+                            value={parentData.category}
+                            disabled
+                        />
+                    )}
 
-                    {parentPath && (
-                        <div className="mb-4 text-md font-medium text-gray-500">
-                            {parentPath}
-                        </div>
+                    {addLevel === "L3" && (
+                        <Input
+                            label="Sub Category"
+                            value={parentData.subCategory}
+                            disabled
+                        />
                     )}
 
                     <div>
                         <SingleSelectDropdownWithPagination
-                            label="Category Name"
-                            title="Select Category Name"
+                            label={
+                                addLevel === "L1"
+                                    ? "Category"
+                                    : addLevel === "L2"
+                                        ? "Sub Category"
+                                        : "Description"
+                            }
+                            title={
+                                addLevel === "L1"
+                                    ? "Select Category"
+                                    : addLevel === "L2"
+                                        ? "Select Sub Category"
+                                        : "Select Description"
+                            }
                             size="lg"
                             dataFetchCallBack={fetchSpecificationMasterDropdown(
                                 addLevel,
@@ -838,7 +838,23 @@ export const Budget: React.FC = () => {
                                         : formData.LevelId2
                             )}
                             onSelected={(item) => {
-                                if (!item) return;
+                                if (!item) {
+                                    switch (addLevel) {
+                                        case "L1":
+                                            handleFieldChange("LevelId1", 0);
+                                            break;
+
+                                        case "L2":
+                                            handleFieldChange("LevelId2", 0);
+                                            break;
+
+                                        case "L3":
+                                            handleFieldChange("LevelId3", 0);
+                                            setSelectedUom("");
+                                            break;
+                                    }
+                                    return;
+                                }
 
                                 switch (addLevel) {
                                     case "L1":
@@ -878,6 +894,7 @@ export const Budget: React.FC = () => {
                                 value={formData?.OrderBy}
                                 onChange={(e) => handleFieldChange("OrderBy", Number(e.target.value))}
                                 error={errors.OrderBy}
+                                maxLength={2}
                                 required
                             />
                         </div>
@@ -890,6 +907,7 @@ export const Budget: React.FC = () => {
                                     <Input
                                         label="UOM"
                                         value={selectedUom}
+                                        placeholder="UOM"
                                         disabled
                                     />
                                 </div>
@@ -901,7 +919,6 @@ export const Budget: React.FC = () => {
                                         value={formData?.Quantity ?? ""}
                                         onChange={(e) => handleFieldChange("Quantity", filterNumbersWithDecimal(e.target.value))}
                                         error={errors.Quantity}
-                                        maxLength={16}
                                         min={0}
                                         required
                                     />
@@ -914,7 +931,6 @@ export const Budget: React.FC = () => {
                                         value={formData?.LabourCost ?? ""}
                                         onChange={(e) => handleFieldChange("LabourCost", filterNumbersWithDecimal(e.target.value))}
                                         error={errors.LabourCost}
-                                        maxLength={16}
                                         min={0}
                                         required
                                     />
@@ -927,7 +943,6 @@ export const Budget: React.FC = () => {
                                         value={formData?.MaterialCost ?? ""}
                                         onChange={(e) => handleFieldChange("MaterialCost", filterNumbersWithDecimal(e.target.value))}
                                         error={errors.MaterialCost}
-                                        maxLength={16}
                                         min={0}
                                         required
                                     />
@@ -940,7 +955,6 @@ export const Budget: React.FC = () => {
                                         value={formData?.PMCost ?? ""}
                                         onChange={(e) => handleFieldChange("PMCost", filterNumbersWithDecimal(e.target.value))}
                                         error={errors.PMCost}
-                                        maxLength={16}
                                         min={0}
                                         required
                                     />
@@ -991,7 +1005,7 @@ export const Budget: React.FC = () => {
                                     className='thin-scroll'
                                     value={formData?.Remark || ""}
                                     onChange={(e) => handleFieldChange("Remark", e.target.value)}
-                                    rows={5}
+                                    rows={3}
                                     error={errors.Remark}
                                     autoResize={false}
                                 />
@@ -1026,6 +1040,36 @@ export const Budget: React.FC = () => {
                                 label: opt.name,
                                 value: opt.id
                             }))}
+                        />
+                    </div>
+
+                    <div>
+                        <Input
+                            type="text"
+                            label="Category Name"
+                            value={tempFilters?.CategoryName ?? ""}
+                            onChange={(e) => handleFilterChange("CategoryName", e.target.value)}
+                            placeholder="Enter Category Name"
+                        />
+                    </div>
+
+                    <div>
+                        <Input
+                            type="text"
+                            label="UOM"
+                            value={tempFilters?.Uom ?? ""}
+                            onChange={(e) => handleFilterChange("Uom", e.target.value)}
+                            placeholder="Enter UOM"
+                        />
+                    </div>
+
+                    <div>
+                        <Input
+                            type="text"
+                            label="Flat"
+                            value={tempFilters?.Flat ?? ""}
+                            onChange={(e) => handleFilterChange("Flat", e.target.value)}
+                            placeholder="Enter Flat"
                         />
                     </div>
 

@@ -12,10 +12,10 @@ import type {
     ProposedOfferExtraCarpetAreaSaveResponse,
 
     // CORPUS
-    FilterWithPaginationProposedOfferCorpusDetailsRequest,
-    AddUpdateProposedOfferCorpusDetailsRequest,
-    ProposedOfferCorpusDetailsListResponse,
-    ProposedOfferCorpusDetailsSaveResponse,
+    FilterWithPaginationProposedOfferHardshipDetailsRequest,
+    AddUpdateProposedOfferHardshipDetailsRequest,
+    ProposedOfferHardshipDetailsListResponse,
+    ProposedOfferHardshipDetailsSaveResponse,
 
     // RENT
     FilterWithPaginationProposedOfferRentDetailsRequest,
@@ -67,12 +67,34 @@ import type {
     ProposedOfferProposedPlanSaveResponse,
     AddUpdateGenerateProposedOfferRequest,
     GenerateProposedOfferResponse,
-    DeleteProposedOfferCorpusDetailsRequest,
-    ProposedOfferCorpusDetailsDeleteResponse,
+    DeleteProposedOfferHardshipDetailsRequest,
+    ProposedOfferHardshipDetailsDeleteResponse,
     DeleteProposedOfferShiftingDetailsRequest,
     ProposedOfferShiftingDetailsDeleteResponse,
     DeleteProposedOfferSecurityDepositDetailsRequest,
     ProposedOfferSecurityDepositDetailsDeleteResponse,
+
+    // READY RECKONER
+    FilterWithPaginationReadyReckonerRequest,
+    ReadyReckonerListResponse,
+    ReadyReckonerSaveResponse,
+    AddUpdateReadyReckonerRequest,
+
+    // CARPET AREA
+    FilterWithPaginationCarpetAreaRequest,
+    CarpetAreaListResponse,
+    AddUpdateCarpetAreaRequest,
+    CarpetAreaSaveResponse,
+
+    // ADDITIONAL INFO
+    FilterWithPaginationAdditionalInformationRequest,
+    AdditionalInformationListResponse,
+    AddUpdateAdditionalInformationRequest,
+    AdditionalInformationSaveResponse,
+    FilterWithPaginationPlotAreaRequest,
+    PlotAreaListResponse,
+    AddUpdatePlotAreaRequest,
+    PlotAreaSaveResponse,
 
 } from '@/features/proposedOffer/models/ProposedOfferModel'
 
@@ -104,25 +126,25 @@ export const proposedOfferService = {
     },
 
     //==================== CORPUS ====================
-    apiCallPullCorpusDetails: async (params: FilterWithPaginationProposedOfferCorpusDetailsRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferCorpusDetailsListResponse>> => {
+    apiCallPullHardshipDetails: async (params: FilterWithPaginationProposedOfferHardshipDetailsRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ProposedOfferHardshipDetailsListResponse>> => {
         try {
-            return E.right(await proposedOfferDatasource.pullCorpusDetails(params, options?.signal))
+            return E.right(await proposedOfferDatasource.pullHardshipDetails(params, options?.signal))
         } catch (error: any) {
             return E.left({ message: error.message, code: error.code })
         }
     },
 
-    apiCallAddUpdateCorpusDetails: async (params: AddUpdateProposedOfferCorpusDetailsRequest): Promise<E.Either<Failure, ProposedOfferCorpusDetailsSaveResponse>> => {
+    apiCallAddUpdateHardshipDetails: async (params: AddUpdateProposedOfferHardshipDetailsRequest): Promise<E.Either<Failure, ProposedOfferHardshipDetailsSaveResponse>> => {
         try {
-            return E.right(await proposedOfferDatasource.addUpdateCorpusDetails(params))
+            return E.right(await proposedOfferDatasource.addUpdateHardshipDetails(params))
         } catch (error: any) {
             return E.left({ message: error.message, code: error.code })
         }
     },
 
-    apiCallDeleteCorpusDetails: async (params: DeleteProposedOfferCorpusDetailsRequest): Promise<E.Either<Failure, ProposedOfferCorpusDetailsDeleteResponse>> => {
+    apiCallDeleteHardshipDetails: async (params: DeleteProposedOfferHardshipDetailsRequest): Promise<E.Either<Failure, ProposedOfferHardshipDetailsDeleteResponse>> => {
         try {
-            return E.right(await proposedOfferDatasource.deleteCorpusDetails(params))
+            return E.right(await proposedOfferDatasource.deleteHardshipDetails(params))
         } catch (error: any) {
             return E.left({ message: error.message, code: error.code })
         }
@@ -306,5 +328,85 @@ export const proposedOfferService = {
 
         }
     },
+
+    // ==================== READY RECKONER ====================
+    apiCallPullReadyReckoner: async (params: FilterWithPaginationReadyReckonerRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ReadyReckonerListResponse>> => {
+        try {
+
+            return E.right(await proposedOfferDatasource.pullReadyReckoner(params, options?.signal))
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code })
+
+        }
+    },
+
+    apiCallAddUpdateReadyReckoner: async (params: AddUpdateReadyReckonerRequest): Promise<E.Either<Failure, ReadyReckonerSaveResponse>> => {
+        try {
+
+            return E.right(await proposedOfferDatasource.addUpdateReadyReckoner(params))
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code })
+
+        }
+    },
+
+    // CARPET AREA 
+
+    apiCallPullCarpetArea: async (params: FilterWithPaginationCarpetAreaRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, CarpetAreaListResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.pullCarpetArea(params, options?.signal))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    apiCallAddUpdateCarpetArea: async (params: AddUpdateCarpetAreaRequest): Promise<E.Either<Failure, CarpetAreaSaveResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.addUpdateCarpetArea(params))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    // ADDITONAL INFO
+
+    apiCallPullAdditionalInformation: async (params: FilterWithPaginationAdditionalInformationRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, AdditionalInformationListResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.pullAdditionalInformation(params, options?.signal))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    apiCallAddUpdateAdditionalInformation: async (params: AddUpdateAdditionalInformationRequest): Promise<E.Either<Failure, AdditionalInformationSaveResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.addUpdateAdditionalInformation(params))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    // Plot Area
+
+    apiCallPullPlotArea: async (params: FilterWithPaginationPlotAreaRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, PlotAreaListResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.pullPlotArea(params, options?.signal))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    apiCallAddUpdatePlotArea: async (params: AddUpdatePlotAreaRequest): Promise<E.Either<Failure, PlotAreaSaveResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.addUpdatePlotArea(params))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
 
 }

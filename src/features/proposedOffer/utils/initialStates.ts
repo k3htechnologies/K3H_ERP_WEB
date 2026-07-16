@@ -1,7 +1,7 @@
 import type {
   AddUpdateProposedOfferExtraCarpetAreaRequest,
-  ProposedOfferCorpusDetailsWithPaymentStageData,
-  AddUpdateProposedOfferCorpusDetailsRequest,
+  ProposedOfferHardshipDetailsWithPaymentStageData,
+  AddUpdateProposedOfferHardshipDetailsRequest,
   ProposedOfferSecurityDepositDetailsWithPaymentStageData,
   AddUpdateProposedOfferSecurityDepositDetailsRequest,
   ProposedOfferShiftingDetailsWithPaymentStageData,
@@ -12,6 +12,14 @@ import type {
   AddUpdateProposedOfferGSTonExistingPlusFreeAreaRequest,
   AddUpdateProposedOfferProjectCompletionRequest,
   AddUpdateProposedOfferRentDetailsRequest,
+
+  // Ready Reckoner
+  AddUpdateReadyReckonerRequest,
+  // Carpet Area
+  AddUpdateCarpetAreaRequest,
+  AddUpdateAdditionalInformationRequest,
+  ProposedOfferRentDetailsData,
+  AddUpdatePlotAreaRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 
 //#region INITIAL FORM STATE - EXTRA CARPET AREA
@@ -22,25 +30,27 @@ export const initialFormStateExtraCarpetArea = (): AddUpdateProposedOfferExtraCa
   ProjectId: 0,
   ExtraCarpetAreaOfferedType: '',
   ResidentialExtraCarpetPercent: 0,
-  CommercialExtraCarpetPercent: 0
+  CommercialExtraCarpetPercent: 0,
+  Remark:""
 });
 //#endregion
 
 //#region INITIAL FORM STATE - CORPUS DETAILS
-export const initialFormStateCorpusDetails = (): AddUpdateProposedOfferCorpusDetailsRequest => ({
-  ProposedOfferCorpusDetailsId: 0,
+export const initialFormStateHardshipDetails = (): AddUpdateProposedOfferHardshipDetailsRequest => ({
+  ProposedOfferHardshipDetailsId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
-  CorpusOfferedToResidentialAmount: 0,
-  CorpusOfferedToCommercialAmount: 0,
-  CorpusDetailsWithPaymentStageJSON: ''
+  HardshipOfferedToResidentialAmount: 0,
+  HardshipOfferedToCommercialAmount: 0,
+  HardshipDetailsWithPaymentStageJSON: '',
+  Remark:""
 });
 //#endregion
 
 //#region INITIAL FORM STATE - CORPUS PAYMENT STAGE
-export const initialFormStateCorpusPaymentStage = (): ProposedOfferCorpusDetailsWithPaymentStageData => ({
-  ProposedOfferCorpusDetailsWithPaymentStageId: 0,
+export const initialFormStateHardshipPaymentStage = (): ProposedOfferHardshipDetailsWithPaymentStageData => ({
+  ProposedOfferHardshipDetailsWithPaymentStageId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
@@ -49,6 +59,8 @@ export const initialFormStateCorpusPaymentStage = (): ProposedOfferCorpusDetails
   StagePercentage: 0,
   StagePercentageText: '',
   Amount: 0,
+  UnitSqFtLumsum: '',
+  CarpetAreaSqFt:0,
   CreatedById: 0,
   CreatedBy: '',
   CreatedDate: null,
@@ -67,6 +79,8 @@ export const initialFormStateSecurityDepositDetails = (): AddUpdateProposedOffer
   BuildingId: 0,
   ProjectId: 0,
   SecurityDepositToSocietyAmount: 0,
+  InterestAmount:0,
+  Remark:"",
   SecurityDepositToSocietyWithPaymentStageJSON: ''
 });
 //#endregion
@@ -99,7 +113,8 @@ export const initialFormStateShiftingDetails = (): AddUpdateProposedOfferShiftin
   ProjectId: 0,
   ShiftingOfferedToResidentialAmount: 0,
   ShiftingOfferedToCommercialAmount: 0,
-  ShiftingDetailsWithPaymentStageJSON: ''
+  Remark:"",
+  ShiftingDetailsWithPaymentStageJSON: '',
 });
 //#endregion
 
@@ -134,7 +149,11 @@ export const initialFormStateLienToSocietyDetails = (): AddUpdateProposedOfferLi
   ResidentialAreaSqFt: 0,
   CommercialAreaSqFt: 0,
   NumberOfResidentialLienUnits: 0,
+  ResidentialInventoryFlatId:"",
   NumberOfCommercialLienUnits: 0,
+  CommercialInventoryFlatId:"",
+  Remark:"",
+
   LienToSocietyWithPaymentStageJSON: ''
 });
 //#endregion
@@ -210,4 +229,89 @@ export const initialFormStateRentDetails = (): AddUpdateProposedOfferRentDetails
   IsPayBrokerage: false
 });
 //#endregion
+
+// #region INITIAL FORM STATE - READY RECKONER
+export const initialFormStateReadyReckoner = (): AddUpdateReadyReckonerRequest => ({
+  ReadyReckonerId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  ReadyReckonerZone: '',
+  LandReadyReckonerRate: 0,
+  ResidentialReadyReckonerRate: 0,
+  GroundShopReadyReckonerRate: 0,
+  OfficeReadyReckonerRate: 0,
+  Remark: ''
+});
+
+// #region INITIAL FORM STATE - CARPET AREA
+export const initialFormStateCarpetArea = (): AddUpdateCarpetAreaRequest => ({
+  CarpetAreaId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  ExistingCarpetAreaResidentialMembersSqFt: 0,
+  ExistingCarpetAreaCommercialMembersSqFt: 0,
+  ExistingCarpetAreaOfEachGarageSqFt: 0,
+  TerraceAreaUtilizedByMembersSqFt: 0,
+  Remark: ''
+});
+//#endregion
+
+// #region INITIAL FORM STATE - ADDITIONAL INFORMATION
+export const initialFormStateAdditionalInformation = (): AddUpdateAdditionalInformationRequest => ({
+  AdditionalInformationId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  TaxAndDutiesDetails: '',
+  TaxRemark: '',
+  PurchaseOfAdditonalAreaRemark: '',
+  AdditionalRemark: ''
+});
+//#endregion
+
+// #region INITIAL FORM STATE - RENT OFFERED DETAILS
+export const initialFormStateRentOfferedDetails = (): ProposedOfferRentDetailsData => ({
+  ProposedOfferRentDetailsId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  RentOfferedToResidential: 0,
+  RentOfferedToCommercial: 0,
+  IsAdditionalRent: true,
+  Type: "",
+  Tenure: "",
+  Amount: 0,
+  UnitSqFtLumsum: "",
+  CarpetAreaSqFt: 0,
+  RentStartDate: "",
+  RentEndDate: "",
+  IsPayBrokerage: false,
+  CreatedById: 0,
+  CreatedBy: '',
+  CreatedDate: null,
+  ModifiedById: 0,
+  ModifiedBy: '',
+  ModifiedDate: null,
+  LastModifiedBy: '',
+  LastModifiedDate: null
+
+
+});
+//#endregion
+
+// #region INITIAL FORM STATE - PLOT AREA
+export const initialFormStatePlotArea = (): AddUpdatePlotAreaRequest => ({
+  PlotAreaId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  GrossPlotAreaSqFt: 0,
+  PlotAreaAsPhysicalSurveySqFt: 0,
+  PlotAreaAsPerOldApprovedPlansSqFt: 0,
+  PlotAreaAsPerConveyanceSqFt: 0,
+  PlotAreaAsPerPrCardSqFt: 0,
+  Remark: ''
+});
 

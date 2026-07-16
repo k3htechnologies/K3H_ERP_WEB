@@ -13,6 +13,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbers } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { initialFormStateProjectCompletion } from '../utils/initialStates';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface ProjectCompletionTabProps {
   projectId: number | null;
@@ -206,6 +207,16 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
                 placeholder="Enter Grace Period in Months"
               />
             </div>
+          </div>
+          <div>
+            <TextArea
+              label="Remarks"
+              className='thin-scroll'
+              value={formDataProjectCompletion.Remark ?? ""}
+              placeholder="Enter Remarks"
+              onChange={(e) => handleFieldChangeProjectCompletion("Remark", e.target.value)}
+            />
+
           </div>
         </div>
       </div>

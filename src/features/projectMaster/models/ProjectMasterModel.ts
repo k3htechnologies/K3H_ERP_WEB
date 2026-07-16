@@ -95,10 +95,13 @@ export interface ProjectMasterData {
 
     SiteContactMobileNumber: string | '';
     SiteContactName: string | '';
+    SiteContactDesignation: string | '';
     SiteContact2MobileNumber: string | '';
     SiteContact2Name: string | '';
+    SiteContact2Designation: string | '';
     SiteContact3MobileNumber: string | '';
     SiteContact3Name: string | '';
+    SiteContact3Designation: string | '';
     ProjectStatus: string | '';
     RERANumber: string | '';
     APFNumber: string | '';
@@ -211,10 +214,13 @@ export interface AddUpdateProjectMasterRequest {
 
     SiteContactMobileNumber: string | '';
     SiteContactName: string | '';
+    SiteContactDesignation: string | '';
     SiteContact2MobileNumber: string | '';
     SiteContact2Name: string | '';
+    SiteContact2Designation: string | '';
     SiteContact3MobileNumber: string | '';
     SiteContact3Name: string | '';
+    SiteContact3Designation: string | '';
     ProjectStatus: string | '';
     RERANumber: string | '';
     APFNumber: string | '';

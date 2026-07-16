@@ -7,6 +7,8 @@ export interface FilterWithPaginationBudgetRequest {
     BudgetId?: number
     LevelType?: string;
     CategoryName?: string;
+    Uom?: string;
+    Flat?: string;
     SortBy?: string
     ExportType?: "PDF" | "Excel"
 }

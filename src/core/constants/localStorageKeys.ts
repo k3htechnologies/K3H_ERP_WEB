@@ -102,14 +102,17 @@ export const LOCAL_STORAGE_KEYS = {
     TICKET_MASTER_SELECTED_COLUMNS: 'ticket.selectedColumns',
 
     //TAX TRACKER
-     NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
+    NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
 
-     //ESTIMATION AND BUDGET
+    //ESTIMATION AND BUDGET
     BUDGET_SELECTED_COLUMNS: 'budget.selectedColumns',
 
 
     //STOCK MANAGEMENT
-    STOCK_MANAGEMENT_SELECTED_COLUMNS: 'stock.selectedColumns'
+    STOCK_MANAGEMENT_SELECTED_COLUMNS: 'stock.selectedColumns',
+
+    // PROJECT PROFESSIONAL DETAILS
+    PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS: 'projectProfessionalDetails'
 
 } as const
 
@@ -139,6 +142,7 @@ export const LOCAL_STORAGE_FOR_STATE_KEYS = {
     TICKET: 'ticket.listState',
 
     STOCK_MANAGEMENT: 'stock.listState',
-    MATERIAL_REQUISITION: 'materialRequisition.listState'
-    
+    MATERIAL_REQUISITION: 'materialRequisition.listState',
+    PROJECT_PROFESSIONAL_DETAILS: 'projectProfessionalDetails.listState',
+
 } as const

@@ -618,6 +618,10 @@ export const MASTER_DATA = {
 
   budgetLevelType: ["L1", "L2", "L3"],
 
+  professionalType: ["Architect", "Engineer", "Real Estate Agent", "Advocate"],
+
+  type: ["Person /Individual", "Legal Entity / Other"],
+
 } as const;
 
 // ============================================================================
@@ -741,9 +745,10 @@ export const CHANNEL_PARTNER_CATEGORY_OPTIONS = toOptions(MASTER_DATA.channelPar
 export const IBM_OBM_REPORT_STAGE_OPTIONS = toOptions(MASTER_DATA.ibmObmReportStage);
 export const NOTICE_TYPE_OPTIONS = toOptions(MASTER_DATA.noticeType);
 export const BUDGET_LEVEL_TYPE = toOptions(MASTER_DATA.budgetLevelType);
-export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages)
-export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus)
-
+export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages);
+export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);
+export const PROJECT_PROFESSIONAL_DETAILS_STATUS_OPTIONS = toOptions(MASTER_DATA.professionalType);
+export const TYPE_STATUS_OPTIONS = toOptions(MASTER_DATA.type);
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

@@ -70,7 +70,7 @@ export const LitigationListStateProvider = ({ children }: { children: ReactNode 
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(listState));
     } catch (error) {
-      console.error('Error saving employee list state:', error);
+      console.error('Error saving Litigation  list state:', error);
     }
 
   }, [listState]);

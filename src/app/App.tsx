@@ -197,6 +197,10 @@ import MakePayment from '@/features/materialRequisition/components/invoice/MakeP
 import StockManagement from '@/features/stockManagement/pages/StockManagement';
 import ViewStockManagement from '@/features/stockManagement/pages/ViewStockManagement';
 import { StockManagementListStateProvider } from '@/features/stockManagement/context/StockManagementListStateContext';
+import ProjectProfessionalDetails from '@/features/projectProfessionalDetails/pages/ProjectProfessionalDetails';
+import { ProjectProfessionalDetailsListStateProvider } from '@/features/projectProfessionalDetails/context/ProjectProfessionalDetailsListStateContext';
+import ViewProjectProfessionalDetails from '@/features/projectProfessionalDetails/pages/ViewProjectProfessionalDetails';
+import AddUpdateProjectProfessionalDetail from '@/features/projectProfessionalDetails/pages/AddUpdateProjectProfessionalDetails';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -245,7 +249,7 @@ function App() {
 
           <Route path="sign-in" element={<SignIn />} />
           <Route path="error" element={<ErrorFallbackPage />} />
-          <Route path="/" element={<ProtectedRoute> <Layout /></ProtectedRoute>}/>
+          <Route path="/" element={<ProtectedRoute> <Layout /></ProtectedRoute>} />
 
 
           <Route
@@ -378,7 +382,7 @@ function App() {
             {/* PROFILE */}
             <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
 
-           
+
             <Route path='ticket' element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
             <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
             <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
@@ -478,7 +482,7 @@ function App() {
 
             {/* CRM */}
             <Route path="crmDashboard" element={<CrmDashboard />} />
-   
+
             {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
             <Route path="collectionReport" element={<CollectionReport />} />
             <Route path="dailyCollectionReport" element={<DailyCollectionReport />} />
@@ -492,7 +496,7 @@ function App() {
             {/* TAX TRACKER */}
             <Route path="noticeSection" element={<NoticeSectionMaster />} />
 
-              {/* ESTIMATION AND BUDGET */}
+            {/* ESTIMATION AND BUDGET */}
             <Route path='budget' element={<Budget />} />
             <Route path='summaryMis' element={<SummaryMIS />} />
             <Route path='specificationMaster' element={<SpecificationMaster />} />
@@ -516,6 +520,10 @@ function App() {
             {/* Stock Management */}
             <Route path="stock" element={<StockManagementListStateProvider><StockManagement /></StockManagementListStateProvider>} />
             <Route path="stock/view" element={<StockManagementListStateProvider><ViewStockManagement /></StockManagementListStateProvider>} />
+
+            <Route path='projectProfessionalDetails' element={<ProjectProfessionalDetailsListStateProvider><ProjectProfessionalDetails /></ProjectProfessionalDetailsListStateProvider>} />
+            <Route path='addUpdateProjectProfessionalDetails/add' element={<ProjectProfessionalDetailsListStateProvider><AddUpdateProjectProfessionalDetail /></ProjectProfessionalDetailsListStateProvider>} />
+            <Route path='viewProjectProfessionalDetails/view' element={<ProjectProfessionalDetailsListStateProvider><ViewProjectProfessionalDetails /></ProjectProfessionalDetailsListStateProvider>} />
 
           </Route>
 

@@ -136,11 +136,9 @@ export const MaterialRequisition: React.FC = () => {
                     setIsConfirmationDialogBoxOpen(false);
 
                     setDeleteData(null);
-
                 } else {
                     addToast({ type: 'error', title: response.left.message });
                 }
-
                 return response;
             },
             undefined,
@@ -254,6 +252,7 @@ export const MaterialRequisition: React.FC = () => {
                 if (!urls || urls.length === 0) {
                     return <span>-</span>;
                 }
+
                 return (
                     <div className="flex items-center justify-between gap-2 w-full">
                         <MultiImageViewer

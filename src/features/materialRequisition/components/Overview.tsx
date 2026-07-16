@@ -193,7 +193,6 @@ export const Overview: React.FC = () => {
                     <div className="bg-white rounded-lg border border-gray-300 shadow-sm p-1 mb-4">
                         <section className="bg-white px-4 pt-1 pb-4">
                             <h4 className="text-lg font-semibold text-gray-900 mb-4">Vendor And Amount Details</h4>
-
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                 <FieldItem label="Vendor Name" value={materialRequisitionVendorData?.VendorName} />
                                 <FieldItem label="Vendor Company" value={materialRequisitionVendorData?.CompanyName} />

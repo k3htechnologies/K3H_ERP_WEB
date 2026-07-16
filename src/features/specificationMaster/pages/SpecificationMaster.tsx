@@ -53,11 +53,13 @@ export const SpecificationMaster: React.FC = () => {
     const [expandedParentRow, setExpandedParentRow] = useState<any>(null);
     const [expandedParentId, setExpandedParentId] = useState<number | null>(null);
     const [childRefreshKey, setChildRefreshKey] = useState(0);
-    const [parentPath, setParentPath] = useState("");
+    const [isExpandedEdit, setIsExpandedEdit] = useState(false);
+    const [parentNames, setParentNames] = useState({ categoryName: "", subCategoryName: "", });
 
     const SpecificationMasterTabsList = [
         { id: "L1", label: "L1" },
         { id: "L2", label: "L2" },
+        { id: "L3", label: "L3" },
     ];
 
     const [activeTab, setActiveTab] = useState<string>(SpecificationMasterTabsList[0].id);
@@ -99,6 +101,7 @@ export const SpecificationMaster: React.FC = () => {
             },
             undefined,
             (error: any) =>
+
                 addToast({ type: 'error', title: error.message }),
             undefined,
             'Loading Specification Master'
@@ -117,7 +120,7 @@ export const SpecificationMaster: React.FC = () => {
                     UomMasterId: editSpecificationMasterData.UomMasterId
                 });
                 setDropdownLabels({
-                    uom: editSpecificationMasterData.Uom || "",
+                    uom: editSpecificationMasterData.UomCode || "",
                 });
             }
             setErrors({});
@@ -131,8 +134,13 @@ export const SpecificationMaster: React.FC = () => {
     } => {
         const newErrors: { [key: string]: string } = {};
 
+        const fieldName = modalLabel;
+
         if (!formData.CategoryName?.trim()) {
-            newErrors.CategoryName = "Category Name is required";
+            newErrors.CategoryName = `${fieldName} is required`;
+
+        } else if (formData.CategoryName.trim().length > 100) {
+            newErrors.CategoryName = "Category Name can't be greater than 100 characters.";
         }
         return {
             isValid: Object.keys(newErrors).length === 0,
@@ -177,12 +185,6 @@ export const SpecificationMaster: React.FC = () => {
                     if (isAdd) {
 
                         await loadSpecificationMasterData(pagination.currentPage, {}, sortInfo, searchTerm);
-
-                        setPagination({
-                            currentPage: pagination.currentPage,
-                            totalRecords: pagination.totalRecords + 1,
-                            totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
-                        });
 
                         setChildRefreshKey(prev => prev + 1);
 
@@ -259,19 +261,15 @@ export const SpecificationMaster: React.FC = () => {
     }
 
     const handleEditSpecificationMasterData = (row: SpecificationMasterData) => {
-        setParentPath(
-            [
-                row.Level1Name,
-                row.Level2Name,
-            ].filter(Boolean)
-                .join("  >  ")
-        );
+        setParentNames({
+            categoryName: row.Level1Name || "",
+            subCategoryName: row.Level2Name || "",
+        });
+
         setEditSpecificationMasterData({
             ...row,
             CategoryName: row.CategoryName,
-            SpecificationMasterId: row.SpecificationMasterId,
         });
-        setErrors({})
         setIsAddUpdateModalOpen(true);
     };
 
@@ -382,13 +380,28 @@ export const SpecificationMaster: React.FC = () => {
                     LevelId1: row.SpecificationMasterId,
                     LevelId2: 0,
                 };
+
+            case "L3":
+                return {
+                    LevelId1: row.LevelId1,
+                    LevelId2: row.SpecificationMasterId,
+                };
         }
     };
 
     const isExpandable = activeTab !== "L1";
-    const showUom = activeTab !== "L1" && activeTab !== "L2"
+    const showUom = activeTab === "L3" && (formData.LevelId2 > 0 || (editSpecificationMasterData?.LevelId2 ?? 0) > 0);
+    const showUomColumn = activeTab === "L3";
 
     const SpecificationMasterColumns = useMemo<TableColumn[]>(() => [
+        ...(isExpandable ? [{
+            key: 'LevelType',
+            label: 'Level',
+            width: '15',
+            sortable: false,
+            align: "left" as const,
+            render: (value: any) => value || "-"
+        }] : []),
         {
             key: 'CategoryName',
             label: 'Category Name',
@@ -418,20 +431,24 @@ export const SpecificationMaster: React.FC = () => {
                                         opacity: canAction ? 1 : 0.5
                                     }}
                                     disabled={!canAction}
-                                    title="Add"
+                                    title="Add Specification"
                                     onClick={(e) => {
                                         e.preventDefault();
                                         e.stopPropagation();
 
                                         const nextLevel = buildNextLevelIds(row);
-                                        setParentPath(
-                                            [
-                                                row.Level1Name,
-                                                row.Level2Name,
-                                                row.CategoryName
-                                            ].filter(Boolean)
-                                                .join(" > ")
-                                        );
+                                        if (activeTab === "L2") {
+                                            setParentNames({
+                                                categoryName: row.CategoryName,
+                                                subCategoryName: "",
+                                            });
+                                        }
+                                        else if (activeTab === "L3") {
+                                            setParentNames({
+                                                categoryName: row.Level1Name || "",
+                                                subCategoryName: row.CategoryName,
+                                            });
+                                        }
                                         setFormData({
                                             ...initialFormState(),
                                             ...nextLevel,
@@ -445,43 +462,48 @@ export const SpecificationMaster: React.FC = () => {
                             )}
                         </div>
 
-                        <Button
-                            color="transparent"
-                            isborderRadius
-                            size='sm'
-                            style={{
-                                color: canAction ? "blue" : "#9CA3AF",
-                                cursor: canAction ? "pointer" : "not-allowed",
-                                opacity: canAction ? 1 : 0.5
-                            }}
-                            disabled={!canAction}
-                            title="Edit Specification Master"
-                            onClick={(e) => {
-                                e.preventDefault()
-                                e.stopPropagation()
-                                handleEditSpecificationMasterData(row);
-                            }}
-                            leftIcon={<Edit className="h-4 w-4" />}
-                        />
+                        {activeTab === "L1" && (
+                            <Button
+                                color="transparent"
+                                isborderRadius
+                                size='sm'
+                                style={{
+                                    color: canAction ? "blue" : "#9CA3AF",
+                                    cursor: canAction ? "pointer" : "not-allowed",
+                                    opacity: canAction ? 1 : 0.5
+                                }}
+                                disabled={!canAction}
+                                title="Edit Specification"
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    setIsExpandedEdit(false);
+                                    handleEditSpecificationMasterData(row);
+                                }}
+                                leftIcon={<Edit className="h-4 w-4" />}
+                            />
+                        )}
 
-                        <Button
-                            color="transparent"
-                            isborderRadius
-                            size="sm"
-                            style={{
-                                color: canAction ? "red" : "#9CA3AF",
-                                cursor: canAction ? "pointer" : "not-allowed",
-                                opacity: canAction ? 1 : 0.5
-                            }}
-                            disabled={!canAction}
-                            title="Delete Specification Master"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleConfirmationBoxOpen(row);
-                            }}
-                            leftIcon={<Trash2 className="h-4 w-4" />}
-                        />
+                        {activeTab === "L1" && (
+                            <Button
+                                color="transparent"
+                                isborderRadius
+                                size="sm"
+                                style={{
+                                    color: canAction ? "red" : "#9CA3AF",
+                                    cursor: canAction ? "pointer" : "not-allowed",
+                                    opacity: canAction ? 1 : 0.5
+                                }}
+                                disabled={!canAction}
+                                title="Delete Specification "
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleConfirmationBoxOpen(row);
+                                }}
+                                leftIcon={<Trash2 className="h-4 w-4" />}
+                            />
+                        )}
                     </div>
                 );
             }
@@ -490,16 +512,24 @@ export const SpecificationMaster: React.FC = () => {
 
     const ExpandSpecificationMasterColumns = useMemo<TableColumn[]>(() => [
         {
+            key: 'LevelType',
+            label: 'Level',
+            width: '50',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
             key: 'CategoryName',
-            label: 'Category Name',
+            label: showUomColumn ? 'Discription' : 'Sub Category Name ',
             width: '25',
             sortable: false,
             align: 'left',
             render: value => value || '-'
         },
-        ...(showUom
+        ...(showUomColumn
             ? [{
-                key: "Uom",
+                key: "UomCode",
                 label: "UOM",
                 width: "25",
                 sortable: false,
@@ -526,10 +556,11 @@ export const SpecificationMaster: React.FC = () => {
                                 opacity: canAction ? 1 : 0.5
                             }}
                             disabled={!canAction}
-                            title="Edit Specification Master"
+                            title="Edit Specification"
                             onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
+                                setIsExpandedEdit(true);
                                 handleEditSpecificationMasterData(row);
                             }}
                             leftIcon={<Edit className="h-4 w-4" />}
@@ -545,7 +576,7 @@ export const SpecificationMaster: React.FC = () => {
                                 opacity: canAction ? 1 : 0.5
                             }}
                             disabled={!canAction}
-                            title="Delete Specification Master"
+                            title="Delete Specification"
                             onClick={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -560,13 +591,11 @@ export const SpecificationMaster: React.FC = () => {
     ], [showUom]);
 
     const handlePageChange = (page: number) => {
-
         setPagination({ currentPage: page });
         loadSpecificationMasterData(page, {}, sortInfo, searchTerm);
     };
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
-
         setSortInfo(sort);
         setPagination({ currentPage: 1 });
         loadSpecificationMasterData(1, {}, sort, searchTerm);
@@ -593,8 +622,7 @@ export const SpecificationMaster: React.FC = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     LevelType: activeTab,
-                    // IsCheckPermission: true,
-                    // IsExpandChild: true,
+                    IsExpandChild: true,
                     SortBy: getSortByParam(sortInfo ?? null, SpecificationMasterColumns),
                     ExportType: exportType
                 }
@@ -611,6 +639,47 @@ export const SpecificationMaster: React.FC = () => {
             'Preparing Export'
         );
     };
+
+    const modalTitle = editSpecificationMasterData
+        ? isExpandedEdit
+            ? activeTab === "L2"
+                ? "Update Sub Category Name"
+                : "Update Description"
+            : activeTab === "L1"
+                ? "Update Category Name"
+                : activeTab === "L2"
+                    ? "Update Category Name"
+                    : "Update Sub Category Name"
+        : activeTab === "L1"
+            ? "Add Category Name"
+            : activeTab === "L2"
+                ? "Add Sub Category Name"
+                : "Add Description";
+
+
+    const modalLabel =
+        activeTab === "L1"
+            ? "Category Name"
+            : activeTab === "L2"
+                ? (isExpandedEdit
+                    ? "Sub Category Name"
+                    : editSpecificationMasterData
+                        ? "Category Name"
+                        : "Sub Category Name"
+                )
+                : (isExpandedEdit
+                    ? "Description"
+                    : editSpecificationMasterData
+                        ? "Sub Category Name"
+                        : "Description"
+                );
+
+    const deletePageName =
+        activeTab === "L1"
+            ? "Category"
+            : activeTab === "L2"
+                ? (isExpandedEdit ? "Sub Category" : "Category")
+                : (isExpandedEdit ? "Description" : "Sub Category");
 
     const handleExportSpecificationmasterExcel = () => handleExportSpecificationMaster("Excel");
     const habndleExportSpecificationmasterPdf = () => handleExportSpecificationMaster("PDF");
@@ -640,6 +709,12 @@ export const SpecificationMaster: React.FC = () => {
                     islarge={true}
                     onTabChange={(t) => {
                         setActiveTab(t.id)
+                        setIsExpandedEdit(false);
+                        setEditSpecificationMasterData(null);
+                        setParentNames({
+                            categoryName: "",
+                            subCategoryName: "",
+                        });
                     }}
                 />
             </div>
@@ -708,33 +783,41 @@ export const SpecificationMaster: React.FC = () => {
                     setFormData(initialFormState());
                     setEditSpecificationMasterData(null);
                     setErrors({});
-                    setParentPath("");
                 }}
                 onCancel={() => {
                     setIsAddUpdateModalOpen(false);
                     setFormData(initialFormState());
                     setEditSpecificationMasterData(null);
                     setErrors({});
-                    setParentPath("");
                 }}
                 saveText={editSpecificationMasterData ? "Update " : "Add"}
-                title={editSpecificationMasterData ? "Update " : "Add"}
+                title={modalTitle}
                 loading={isLoading}
                 size="xl"
             >
                 <div className="space-y-10 p-6 bg-blue-100">
-                    {parentPath && (
-                        <div className="mb-4 text-lg font-medium text-gray-500">
-                            {parentPath}
-                        </div>
-                    )}
-
                     <div className="space-y-4" >
-                        <div>
+                        {activeTab !== "L1" && (
                             <Input
                                 label="Category Name"
+                                value={parentNames.categoryName}
+                                disabled
+                            />
+                        )}
+
+                        {activeTab === "L3" && (
+                            <Input
+                                label="Sub Category Name"
+                                value={parentNames.subCategoryName}
+                                disabled
+                            />
+                        )}
+
+                        <div>
+                            <Input
+                                label={modalLabel}
                                 value={formData.CategoryName ?? ""}
-                                placeholder="Enter Category Name"
+                                placeholder={`Enter ${modalLabel} `}
                                 onChange={(e) => handleFieldChange("CategoryName", e.target.value)}
                                 error={errors.CategoryName}
                                 required
@@ -771,7 +854,7 @@ export const SpecificationMaster: React.FC = () => {
                 }}
                 onConfirm={handleDeleteSpecificationMaster}
                 loading={isLoading}
-                pageName="Specification Master"
+                pageName={deletePageName}
             />
         </div>
     )

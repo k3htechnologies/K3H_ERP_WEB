@@ -1402,6 +1402,28 @@ export const LocalStorageHelper = {
     return null;
   },
   //#endregion
+
+  //#region PROJECT PROFESSIONAL DETAILS
+  storeProjectProfessionalDetailsTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("ERROR Project Professional Details Columns Details", error);
+    }
+  },
+  getProjectProfessionalDetailsTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.PROJECT_PROFESSIONAL_DETAILS_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Project Professional Details Columns Details:", error);
+        return null
+      }
+    }
+    return null
+  },
+  //#endregion
   //#region CLEAR LOCAL STORAGE
   clearLocalStorageData: (): void => {
     try {

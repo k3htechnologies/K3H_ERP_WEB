@@ -27,6 +27,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useTenantListState } from "@/features/tenant/context/TenantListStateContext";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import { TextArea } from "@/ui/components/forms/Textarea";
 
 
 const initialFormState = (): AddUpdateTenantRequest => ({
@@ -34,14 +35,24 @@ const initialFormState = (): AddUpdateTenantRequest => ({
   Uniquekey: null,
   BuildingId: 0,
   ProjectId: 0,
-  FlatNumber: "",
-  FlatCarpetAreaSqFt: null,
-  Facing: "",
-  FlatType: "",
-  FlatConfiguration: "",
-  FreeAreaOfferedPercent: null,
-  ExtraAreaPurchasedSqFt: null,
-  TotalAreaSqFt: null,
+
+  UnitAnnexureSurveyNumber: "",
+  UnitCarpetAreaSqFt: 0,
+  UnitFacing: "",
+  UnitType: "",
+  UnitConfiguration: "",
+  ExtraFreeCarpetAreaOfferedPercent: 0,
+  FreeMOFACarpetAreaSqFt: 0,
+  NewEligibilityMOFACarpetAreaSqFt: 0,
+  NewEligibilityRERACarpetAreaSqFt: 0,
+  MOFACarpetAreaPurchasedSqFt: 0,
+  RERACarpetAreaPurchasedSqFt: 0,
+  TotalNewMOFACarpetAreaSqFt: 0,
+  TotalNewRERACarpetAreaSqFt: 0,
+  DeckAreaSqFt: 0,
+  TotalNewRERACarpetAreaWithDeckSqFt: 0,
+  TerraceAreaSqFt: 0,
+  Remark: "",
 });
 
 const initialFormStateApplicantDetails = (): AddUpdateTenantApplicant => ({
@@ -131,7 +142,12 @@ const AddUpdateTenant: React.FC = () => {
   const navigate = useNavigate();
 
   //GET VALUE FROM URL :TENANTID
-  const { tenantId } = useParams<{ tenantId?: string }>();
+
+  const { TenantId } = useParams<{ TenantId?: string }>();
+
+  const tenantId = TenantId ? Number(TenantId) : 0;
+
+  const isAddMode = Number(tenantId) === 0;
 
   // TOAST
   const { addToast } = useToast();
@@ -147,7 +163,7 @@ const AddUpdateTenant: React.FC = () => {
 
   //#region TENANT LIST STATE CONTEXT
   const { listState } = useTenantListState();
-  const { buildingId, buildingName, tenantName } = listState;
+  const { buildingId, buildingName, applicantName } = listState;
   //#endregion
 
   //#region  TENANT APPLICANT
@@ -221,18 +237,16 @@ const AddUpdateTenant: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
+
   //#endregion
 
   //#region INITIALIZATION
   useEffect(() => {
-    if (!tenantId) return;
-    (async () => {
-      await fetchTenantDetails();
 
-    })
-      ();
+    if (!isAddMode) {
+      fetchTenantDetails();
+    }
   }, [tenantId /* + any stable deps */]);
-
 
   //#endregion
 
@@ -247,7 +261,7 @@ const AddUpdateTenant: React.FC = () => {
           PageNumber: 1,
           PageSize: 1,
           IsCheckPermission: false,
-          TenantId: Number(tenantId),
+          TenantId: Number(TenantId),
           ProjectId: Number(projectId),
           BuildingId: buildingId
         }
@@ -266,14 +280,22 @@ const AddUpdateTenant: React.FC = () => {
               Uniquekey: tenant.Uniquekey ?? prev.Uniquekey,
               BuildingId: Number(buildingId),
               ProjectId: tenant.ProjectId ?? prev.ProjectId,
-              FlatNumber: tenant.FlatNumber ?? prev.FlatNumber,
-              FlatCarpetAreaSqFt: tenant.FlatCarpetAreaSqFt ?? prev.FlatCarpetAreaSqFt,
-              Facing: tenant.Facing ?? prev.Facing,
-              FlatType: tenant.FlatType ?? prev.FlatType,
-              FlatConfiguration: tenant.FlatConfiguration ?? prev.FlatConfiguration,
-              FreeAreaOfferedPercent: tenant.FreeAreaOfferedPercent ?? prev.FreeAreaOfferedPercent,
-              ExtraAreaPurchasedSqFt: tenant.ExtraAreaPurchasedSqFt ?? prev.ExtraAreaPurchasedSqFt,
-              TotalAreaSqFt: tenant.TotalAreaSqFt ?? prev.TotalAreaSqFt,
+              UnitAnnexureSurveyNumber: tenant.UnitAnnexureSurveyNumber ?? prev.UnitAnnexureSurveyNumber,
+              UnitCarpetAreaSqFt: tenant.UnitCarpetAreaSqFt ?? prev.UnitCarpetAreaSqFt,
+              UnitFacing: tenant.UnitFacing ?? prev.UnitFacing,
+              UnitType: tenant.UnitType ?? prev.UnitType,
+              UnitConfiguration: tenant.UnitConfiguration ?? prev.UnitConfiguration,
+              ExtraFreeCarpetAreaOfferedPercent: tenant.ExtraFreeCarpetAreaOfferedPercent ?? prev.ExtraFreeCarpetAreaOfferedPercent,
+              FreeMOFACarpetAreaSqFt: tenant.FreeMOFACarpetAreaSqFt ?? prev.FreeMOFACarpetAreaSqFt,
+              NewEligibilityMOFACarpetAreaSqFt: tenant.NewEligibilityMOFACarpetAreaSqFt ?? prev.NewEligibilityMOFACarpetAreaSqFt,
+              NewEligibilityRERACarpetAreaSqFt: tenant.NewEligibilityRERACarpetAreaSqFt ?? prev.NewEligibilityRERACarpetAreaSqFt,
+              MOFACarpetAreaPurchasedSqFt: tenant.MOFACarpetAreaPurchasedSqFt ?? prev.MOFACarpetAreaPurchasedSqFt,
+              RERACarpetAreaPurchasedSqFt: tenant.RERACarpetAreaPurchasedSqFt ?? prev.RERACarpetAreaPurchasedSqFt,
+              TotalNewMOFACarpetAreaSqFt: tenant.TotalNewMOFACarpetAreaSqFt ?? prev.TotalNewMOFACarpetAreaSqFt,
+              TotalNewRERACarpetAreaSqFt: tenant.TotalNewRERACarpetAreaSqFt ?? prev.TotalNewRERACarpetAreaSqFt,
+              DeckAreaSqFt: tenant.DeckAreaSqFt ?? prev.DeckAreaSqFt,
+              TotalNewRERACarpetAreaWithDeckSqFt: tenant.TotalNewRERACarpetAreaWithDeckSqFt ?? prev.TotalNewRERACarpetAreaWithDeckSqFt,
+              Remark: tenant.Remark ?? prev.Remark,
             }));
 
 
@@ -326,27 +348,22 @@ const AddUpdateTenant: React.FC = () => {
     const newErrors: { [key: string]: string } = {}
 
 
-    if (!formData.FlatNumber?.trim()) {
-      newErrors.FlatNumber = 'Unit / Annexure / Survey Number is required.'
-    } else if (formData.FlatNumber.trim().length > 15) {
-      newErrors.FlatNumber = 'Unit / Annexure / Survey Number must be at most 50 characters'
+    if (!formData.UnitAnnexureSurveyNumber?.trim()) {
+      newErrors.UnitAnnexureSurveyNumber = 'Unit / Annexure / Survey Number is required.'
+    } else if (formData.UnitAnnexureSurveyNumber.trim().length > 15) {
+      newErrors.UnitAnnexureSurveyNumber = 'Unit / Annexure / Survey Number must be at most 50 characters'
     }
 
-    if (!formData.FlatType?.trim()) {
-      newErrors.FlatType = 'Unit Type is required.'
+    if (!formData.UnitType?.trim()) {
+      newErrors.UnitType = 'Unit Type is required.'
     }
 
-    if (formData.TotalAreaSqFt != null && formData.TotalAreaSqFt < 0) {
-      newErrors.TotalAreaSqFt = 'Total area must be positive';
-    }
-    if (formData.FlatType?.trim().toUpperCase() !== 'GYM') {
-      if (!formData.FlatConfiguration?.trim()) {
-        newErrors.FlatConfiguration = 'Unit Configuration is required.'
-      }
+    if (formData.UnitCarpetAreaSqFt != null && formData.UnitCarpetAreaSqFt < 0) {
+      newErrors.UnitCarpetAreaSqFt = 'Total area must be positive';
     }
 
-    if (!formData.Facing?.trim()) {
-      newErrors.Facing = 'Unit Facing is required.'
+    if (!formData.UnitFacing?.trim()) {
+      newErrors.UnitFacing = 'Unit Facing is required.'
     }
 
     return {
@@ -373,7 +390,7 @@ const AddUpdateTenant: React.FC = () => {
 
     }
     setErrors({})
-    
+
     const validation = validateAddTenantForm()
 
     if (!validation.isValid) {
@@ -415,7 +432,7 @@ const AddUpdateTenant: React.FC = () => {
       },
       undefined,
 
-      Number(tenantId) === 0 ? 'Add Tenant' : 'Update Tenant'
+      isAddMode ? 'Add Tenant' : 'Update Tenant'
     )
 
   };
@@ -1218,14 +1235,24 @@ const AddUpdateTenant: React.FC = () => {
     fd.append('Uniquekey', String(formData.Uniquekey ?? ''));
     fd.append('ProjectId', String(projectId ?? 0));
     fd.append('BuildingId', String(buildingId));
-    fd.append('FlatNumber', formData.FlatNumber ?? '');
-    fd.append('FlatCarpetAreaSqFt', String(formData.FlatCarpetAreaSqFt ?? ''));
-    fd.append('Facing', formData.Facing ?? '');
-    fd.append('FlatType', formData.FlatType ?? '');
-    fd.append('FlatConfiguration', formData.FlatConfiguration ?? '');
-    fd.append('FreeAreaOfferedPercent', String(formData.FreeAreaOfferedPercent ?? ''));
-    fd.append('ExtraAreaPurchasedSqFt', String(formData.ExtraAreaPurchasedSqFt ?? ''));
-    fd.append('TotalAreaSqFt', String(formData.TotalAreaSqFt ?? ''));
+    fd.append('UnitAnnexureSurveyNumber', String(formData.UnitAnnexureSurveyNumber ?? ''));
+    fd.append('UnitType', String(formData.UnitType ?? ''));
+    fd.append('UnitConfiguration', String(formData.UnitConfiguration ?? ''));
+    fd.append('UnitCarpetAreaSqFt', String(formData.UnitCarpetAreaSqFt ?? 0));
+    fd.append('UnitFacing', String(formData.UnitFacing ?? ''));
+
+    // New Details Append Code
+    fd.append('ExtraFreeCarpetAreaOfferedPercent', String(formData.ExtraFreeCarpetAreaOfferedPercent ?? 0));
+    fd.append('FreeMOFACarpetAreaSqFt', String(formData.FreeMOFACarpetAreaSqFt ?? 0));
+    fd.append('NewEligibilityMOFACarpetAreaSqFt', String(formData.NewEligibilityMOFACarpetAreaSqFt ?? 0));
+    fd.append('NewEligibilityRERACarpetAreaSqFt', String(formData.NewEligibilityRERACarpetAreaSqFt ?? 0));
+    fd.append('MOFACarpetAreaPurchasedSqFt', String(formData.MOFACarpetAreaPurchasedSqFt ?? 0));
+    fd.append('RERACarpetAreaPurchasedSqFt', String(formData.RERACarpetAreaPurchasedSqFt ?? 0));
+    fd.append('TotalNewMOFACarpetAreaSqFt', String(formData.TotalNewMOFACarpetAreaSqFt ?? 0));
+    fd.append('TotalNewRERACarpetAreaSqFt', String(formData.TotalNewRERACarpetAreaSqFt ?? 0));
+    fd.append('DeckAreaSqFt', String(formData.DeckAreaSqFt ?? 0));
+    fd.append('TotalNewRERACarpetAreaWithDeckSqFt', String(formData.TotalNewRERACarpetAreaWithDeckSqFt ?? 0));
+    fd.append('Remark', String(formData.Remark ?? ''));
 
     // helper that appends existing CSV and File parts (with filename)
     const addFilesWithExisting = (
@@ -1318,7 +1345,7 @@ const AddUpdateTenant: React.FC = () => {
                 <HeaderActionBar
                   titleText="Applicant Detail : "
                   subTitleText={`${buildingName}`}
-                  subSubTitleText={`${formData.TenantId === 0 ? "" : tenantName}`}
+                  subSubTitleText={`${formData.TenantId === 0 ? "" : applicantName}`}
                   isLoading={isLoading}
                 />
 
@@ -1384,23 +1411,22 @@ const AddUpdateTenant: React.FC = () => {
               <div>
                 <Input
                   label="Unit / Annexure / Survey Number"
-                  value={formData.FlatNumber}
+                  value={formData.UnitAnnexureSurveyNumber}
                   required
-                  onChange={e => handleFieldChange('FlatNumber', e.target.value)}
-                  error={errors.FlatNumber}
+                  onChange={e => handleFieldChange('UnitAnnexureSurveyNumber', e.target.value)}
+                  error={errors.UnitAnnexureSurveyNumber}
                   maxLength={15}
                   placeholder="Enter Unit Number"
                 />
               </div>
               <div>
-
                 <SinglePageSelection
                   label="Unit Type"
                   required
-                  value={formData.FlatType}
+                  value={formData.UnitType}
                   onChange={(e) => {
-                    handleFieldChange('FlatType', String(e));
-                    handleFieldChange('FlatConfiguration', '');
+                    handleFieldChange('UnitType', String(e));
+                    handleFieldChange('UnitConfiguration', '');
                   }}
                   options={FLAT_UNIT_TYPE
                     .filter(opt => opt.id !== 'Gym' && opt.id !== 'Void')
@@ -1409,119 +1435,188 @@ const AddUpdateTenant: React.FC = () => {
                       value: opt.id
                     }))
                   }
-                  error={errors.FlatType}
+                  error={errors.UnitType}
                   placeholder="Enter Unit Type"
                 />
               </div>
-              {formData.FlatType.toUpperCase() === "RESIDENTIAL" ?
+
+              {formData.UnitType.toUpperCase() === "RESIDENTIAL" ?
                 <div>
                   <SinglePageSelection
                     label="Unit Configuration"
-                    required
-                    value={formData.FlatConfiguration ?? ""}
-                    onChange={(e) => handleFieldChange('FlatConfiguration', String(e))}
+                    // required
+                    value={formData.UnitConfiguration ?? ""}
+                    onChange={(e) => handleFieldChange('UnitConfiguration', String(e))}
                     options={RESIDENTIAL_FLAT_CONFIGURATION.map((opt) => ({ label: opt.name, value: opt.id }))}
-                    error={errors.FlatConfiguration}
+                    error={errors.UnitConfiguration}
                   />
                 </div>
                 : ""}
 
-              {formData.FlatType.toUpperCase() === "COMMERCIAL" ?
+              {formData.UnitType.toUpperCase() === "COMMERCIAL" ?
                 <div>
                   <SinglePageSelection
                     label="Unit Configuration"
-                    required
-                    value={formData.FlatConfiguration ?? ""}
-                    onChange={(e) => handleFieldChange('FlatConfiguration', String(e))}
+                    value={formData.UnitConfiguration ?? ""}
+                    onChange={(e) => handleFieldChange('UnitConfiguration', String(e))}
                     options={COMMERCIAL_FLAT_CONFIGURATION.map((opt) => ({ label: opt.name, value: opt.id }))}
-                    error={errors.FlatConfiguration}
+                    error={errors.UnitConfiguration}
                   />
                 </div>
                 : ""}
               <div>
                 <Input
                   label="Carpet Area (SqFt)"
-                  value={formData.FlatCarpetAreaSqFt ?? ''}
-                  onChange={e => handleFieldChange('FlatCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
-                  error={errors.FlatCarpetAreaSqFt}
-                  placeholder="Enter Carpet Area"
-                  rightIcon="SqFt"
+                  value={formData.UnitCarpetAreaSqFt || ''}
+                  onChange={e => handleFieldChange('UnitCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
+                  error={errors.UnitCarpetAreaSqFt}
+                  placeholder="Enter Unit Carpet Area"
                 />
               </div>
-              <div>
 
+
+              <div>
                 <SinglePageSelection
                   label="Unit Facing"
                   required
-                  value={formData.Facing ?? ""}
-                  onChange={(e) => handleFieldChange('Facing', String(e))}
-                  options={FLAT_UNIT_FACING.map((opt) => ({ label: opt.name, value: opt.id }))}
-                  error={errors.Facing}
+                  value={formData.UnitFacing ? String(formData.UnitFacing).toUpperCase() : ""}
+                  onChange={(e) => handleFieldChange('UnitFacing', String(e))}
+                  options={FLAT_UNIT_FACING.map((opt) => ({
+                    label: opt.name,
+                    value: String(opt.id).toUpperCase()
+                  }))}
+                  error={errors.UnitFacing}
                 />
               </div>
 
             </div>
           </div>
 
+          {/* New Details */}
           <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Offer</h3>
-
+            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">New Details</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
               <div>
                 <Input
-                  label="Free Area Offered (%)"
-                  value={formData.FreeAreaOfferedPercent ?? ''}
+                  label="Extra Free Carpet Area Offered (%)"
+                  type="text"
+                  value={formData.ExtraFreeCarpetAreaOfferedPercent || ''}
                   onChange={(e) => {
                     const val = allowPercentage(e.target.value);
                     if (val !== null) {
-
-                      handleFieldChange("FreeAreaOfferedPercent", filterNumbersWithDecimal(e.target.value))
+                      handleFieldChange("ExtraFreeCarpetAreaOfferedPercent", filterNumbersWithDecimal(e.target.value));
                     }
                   }}
-                  error={errors.FreeAreaOfferedPercent}
-                  placeholder="Enter Free Area Offered"
-                  rightIcon="%"
+                  placeholder="Enter Free Carpet Area Offered"
+
                 />
               </div>
 
               <div>
                 <Input
-                  label="Free Area Offered (SqFt)"
-                  value={(Number(formData?.FlatCarpetAreaSqFt) * (formData?.FreeAreaOfferedPercent || 0) / 100).toFixed(2)}
+                  label="New Eligibility RERA Carpet Area (SqFt)"
+                  type="text"
+                  value={formData.NewEligibilityRERACarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('NewEligibilityRERACarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter New Eligibility RERA Carpet Area"
+                />
+              </div>
+
+              <div>
+                <Input
+                  label="Free MOFA Carpet Area (SqFt)"
+                  type="text"
+                  value={formData.FreeMOFACarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('FreeMOFACarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter Free MOFA Carpet Area"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Terrace Area (SqFt)"
+                  type="text"
+                  value={formData.TerraceAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('TerraceAreaSqFt', filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter Terrace Area"
+                />
+              </div>
+
+
+              <div>
+                <Input
+                  label="RERA Carpet Area Purchased (SqFt)"
+                  type="text"
+                  value={formData.RERACarpetAreaPurchasedSqFt || ''}
+                  onChange={(e) => handleFieldChange('RERACarpetAreaPurchasedSqFt', filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter RERA Carpet Area Purchased"
+                />
+              </div>
+              <div>
+                <Input
+                  label="New Eligibility MOFA Carpet Area (SqFt)"
+                  type="text"
+                  value={formData.NewEligibilityMOFACarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('NewEligibilityMOFACarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter New Eligibility MOFA Carpet Area"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Deck Area (SqFt)"
+                  type="text"
+                  value={formData.DeckAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('DeckAreaSqFt', filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter Deck Area"
+                />
+              </div>
+
+
+              <div>
+                <Input
+                  label="Total New Rera Carpet Area (SqFt)"
+                  value={formData.TotalNewRERACarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange("TotalNewRERACarpetAreaSqFt", filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter Total New Rera Carpet Area"
+                />
+              </div>
+
+              <div>
+                <Input
+                  label="MOFA Carpet Area Purchased (SqFt)"
+                  type="text"
+                  value={formData.MOFACarpetAreaPurchasedSqFt || ''}
+                  onChange={(e) => handleFieldChange('MOFACarpetAreaPurchasedSqFt', filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter New MOFA Carpet Area Purchased"
+                />
+              </div>
+
+
+              <div>
+                <Input
+                  label="Total New MOFA Carpet Area (SqFt)"
+                  type="text"
+                  value={formData.TotalNewMOFACarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('TotalNewMOFACarpetAreaSqFt', filterNumbersWithDecimal(e.target.value))}
+                  placeholder="Enter Total New MOFA Carpet Area"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Total New Rera Carpet Area With Deck (SqFt)"
+                  value={(Number(formData?.TotalNewRERACarpetAreaSqFt || 0) + (Number(formData?.DeckAreaSqFt || 0))).toFixed(2)}
                   disabled
-                  rightIcon="SqFt"
                 />
               </div>
 
-              <div>
-                <Input
-                  label="Total Area (SqFt)"
-                  value={formData.TotalAreaSqFt ?? ''}
-                  onChange={(e) => handleFieldChange("TotalAreaSqFt", filterNumbersWithDecimal(e.target.value))}
-                  error={errors.TotalAreaSqFt}
-                  placeholder="Enter Total Area"
-                  rightIcon="SqFt"
-                />
-              </div>
             </div>
-          </div>
-          <div className="space-y-4 pb-3">
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Extra Area Purchased</h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-              <div>
-                <Input
-                  label="Extra Area Purchased (SqFt)"
-                  value={formData.ExtraAreaPurchasedSqFt ?? ''}
-                  onChange={(e) => handleFieldChange("ExtraAreaPurchasedSqFt", filterNumbersWithDecimal(e.target.value))}
-                  error={errors.ExtraAreaPurchasedSqFt}
-                  placeholder="Enter Extra Area Purchased"
-                  rightIcon="SqFt"
-                />
-              </div>
-
+            <div>
+              <TextArea
+                label="Remark"
+                className='thin-scroll'
+                value={formData.Remark ?? ""}
+                placeholder="Enter Remark"
+                onChange={(e) => handleFieldChange("Remark", e.target.value)}
+              />
             </div>
           </div>
         </form>

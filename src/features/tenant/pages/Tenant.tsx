@@ -87,15 +87,25 @@ export const Tenant: React.FC = () => {
           TenantId: filterParams.TenantId ? Number(filterParams.TenantId) : undefined,
           ProjectId: Number(projectId),
           BuildingId: buildingIdNum,
-          FlatNumber: filterParams.FlatNumber?.trim() || undefined,
+
+          UnitAnnexureSurveyNumber: filterParams.UnitAnnexureSurveyNumber?.trim() || undefined,
           ApplicantName: filterParams.ApplicantName?.trim() || undefined,
-          FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
-          FlatType: filterParams.FlatType?.trim() || undefined,
-          FlatCarpetAreaSqFt: filterParams.FlatCarpetAreaSqFt?.trim() || undefined,
+          UnitType: filterParams.UnitType?.trim() || undefined,
+          UnitCarpetAreaSqFt: Number(filterParams.UnitCarpetAreaSqFt),
           BuildingNumber: filterParams.BuildingNumber?.trim() || undefined,
           Wing: filterParams.Wing?.trim() || undefined,
           Flat: filterParams.Flat?.trim() || undefined,
           ParkingNumber: filterParams.ParkingNumber?.trim() || undefined,
+
+
+          UnitFacing: filterParams.UnitFacing?.trim() || undefined,
+          UnitConfiguration: filterParams.UnitConfiguration?.trim() || undefined,
+
+          FlatNumber: filterParams.FlatNumber?.trim() || undefined,
+          FlatConfiguration: filterParams.FlatConfiguration?.trim() || undefined,
+          FlatType: filterParams.FlatType?.trim() || undefined,
+          FlatCarpetAreaSqFt: filterParams.FlatCarpetAreaSqFt?.trim() || undefined,
+
 
           SortBy: getSortByParam(sortInfo ?? null, tenantColumns)
         };
@@ -257,6 +267,7 @@ export const Tenant: React.FC = () => {
     updateListState({
       tenantId: row.TenantId,
       tenantName: row.FlatNumber,
+      applicantName: row.ApplicantName || "",
     });
     navigate('/tenant/view');
   }, [navigate, updateListState]);
@@ -267,6 +278,7 @@ export const Tenant: React.FC = () => {
     updateListState({
       tenantId: row.TenantId,
       tenantName: row.FlatNumber,
+      applicantName: row.ApplicantName || "",
     });
     navigate('/tenant/document');
   }, [navigate, updateListState]);
@@ -286,7 +298,7 @@ export const Tenant: React.FC = () => {
     () => [
 
       {
-        key: 'FlatNumber',
+        key: 'UnitAnnexureSurveyNumber',
         label: 'Unit / Annexure / Survey Number',
         width: '18',
         sortable: true,
@@ -310,8 +322,9 @@ export const Tenant: React.FC = () => {
         align: 'left',
         render: value => value ?? '-'
       },
+
       {
-        key: 'FlatType',
+        key: 'UnitType',
         label: 'Existing Unit Type',
         width: '16',
         sortable: true,
@@ -326,7 +339,7 @@ export const Tenant: React.FC = () => {
         )
       },
       {
-        key: 'FlatConfiguration',
+        key: 'UnitConfiguration',
         label: 'Existing Configuration',
         width: '18',
         sortable: false,
@@ -334,7 +347,7 @@ export const Tenant: React.FC = () => {
         render: value => <TooltipText text={value || '-'} maxWidth="160px" tooltipThreshold={16} />
       },
       {
-        key: 'FlatCarpetAreaSqFt',
+        key: 'UnitCarpetAreaSqFt',
         label: 'Existing Carpet Area (SqFt)',
         width: '18',
         sortable: false,
@@ -342,38 +355,88 @@ export const Tenant: React.FC = () => {
         render: value => value ?? '-'
       },
       {
-        key: 'FreeAreaOfferedPercent',
+        key: 'ExtraFreeCarpetAreaOfferedPercent',
         label: 'Free Area Offered (%)',
         width: '14',
         sortable: false,
         align: 'left',
         render: value => value ? `${value} %` : '-'
       },
-
       {
-        key: 'FreeAreaOfferedPercent',
+        key: 'FreeMOFACarpetAreaSqFt',
         label: 'Free Area Offered (SqFt)',
         width: '18',
         sortable: false,
         align: 'center',
-        render: (value, row) => (Number(row?.FlatCarpetAreaSqFt) * (value || 0) / 100).toFixed(2) ?? '-'
+        render: (value) => value ?? '-'
       },
-
       {
-        key: 'ExtraAreaPurchasedSqFt',
-        label: 'Extra Area Purchased (SqFt)',
-        width: '12',
+        key: 'NewEligibilityRERACarpetAreaSqFt',
+        label: 'New Eligibility RERA Carpet Area (SqFt)',
+        width: '18',
         sortable: false,
         align: 'center',
-        render: value => value || '-'
+        render: (value) => value ?? '-'
       },
       {
-        key: 'TotalAreaSqFt',
-        label: 'Eligible Total Area (SqFt)',
+        key: 'DeckAreaSqFt',
+        label: 'Deck Area (SqFt)',
         width: '18',
-        sortable: true,
+        sortable: false,
         align: 'center',
-        render: value => value ?? '-'
+        render: (value) => value ?? '-'
+
+      },
+      {
+        key: 'RERACarpetAreaPurchasedSqFt',
+        label: 'RERA Carpet Area Purchased (SqFt)',
+        width: '18',
+        sortable: false,
+        align: 'center',
+        render: (value) => value ?? '-'
+
+      },
+      {
+        key: 'NewEligibilityMOFACarpetAreaSqFt',
+        label: 'New Eligibility MOFA Carpet Area (SqFt)',
+        width: '18',
+        sortable: false,
+        align: 'center',
+        render: (value) => value ?? '-'
+      },
+      // Terrace Area
+
+      {
+        key: 'TotalNewRERACarpetAreaSqFt',
+        label: 'Total New Rera Carpet Area (SqFt)',
+        width: '18',
+        sortable: false,
+        align: 'center',
+        render: (value) => value ?? '-'
+      },
+      {
+        key: 'MOFACarpetAreaPurchasedSqFt',
+        label: 'MOFA Carpet Area Purchased (SqFt)',
+        width: '18',
+        sortable: false,
+        align: 'center',
+        render: (value) => value ?? '-'
+      },
+      {
+        key: 'TotalNewRERACarpetAreaWithDeckSqFt',
+        label: 'Total New Rera Carpet Area With Deck(sq.ft)',
+        width: '18',
+        sortable: false,
+        align: 'center',
+        render: (value) => value ?? '-'
+      },
+      {
+        key: 'TotalNewMOFACarpetAreaSqFt',
+        label: 'Total New MOFA Carpet Area (SqFt)',
+        width: '18',
+        sortable: false,
+        align: 'center',
+        render: (value) => value ?? '-'
       },
       {
         key: 'BuildingNumber',
@@ -441,7 +504,7 @@ export const Tenant: React.FC = () => {
         render: value => value || '-'
       },
       {
-        key: 'FlatFacing',
+        key: 'UnitFacing',
         label: 'Unit Facing',
         width: '12',
         sortable: false,
@@ -475,7 +538,7 @@ export const Tenant: React.FC = () => {
                 <FileText className="h-4 w-4" />
               </Button>
 
-               <Button
+              <Button
                 onClick={(e) => {
                   e.preventDefault()
                   e.stopPropagation()
@@ -505,7 +568,7 @@ export const Tenant: React.FC = () => {
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
-  const requiredTenantColumnKeys: string[] = ['FlatNumber'];
+  const requiredTenantColumnKeys: string[] = ['UnitAnnexureSurveyNumber', 'ApplicantName', 'UnitType', 'UnitConfiguration', 'UnitCarpetAreaSqFt', 'UnitFacing', 'DeckAreaSqFt', 'ParkingNumber', 'BuildingNumber', 'Wing', 'Flat', 'actions'];
 
   const allTenantColumnKeys: string[] = tenantColumns.map(c => c.key);
 
@@ -765,7 +828,7 @@ export const Tenant: React.FC = () => {
             key={projectId}
             label="Building"
             title="Select Building"
-            isShowClearSelection={false}
+            isShowClearSelection={true}
             size="lg"
             initialValue={
               buildingName
@@ -836,8 +899,8 @@ export const Tenant: React.FC = () => {
               <Input
                 label='Unit / Annexure / Survey Number'
                 type="text"
-                value={tempFilters.FlatNumber || ''}
-                onChange={e => handleFilterChange('FlatNumber', e.target.value)}
+                value={tempFilters.UnitAnnexureSurveyNumber || ''}
+                onChange={e => handleFilterChange('UnitAnnexureSurveyNumber', e.target.value)}
                 placeholder="Enter Unit / Annexure / Survey Number"
               />
             </div>
@@ -854,8 +917,8 @@ export const Tenant: React.FC = () => {
               <Input
                 label='Exisiting Unit Type'
                 type="text"
-                value={tempFilters.FlatType || ''}
-                onChange={e => handleFilterChange('FlatType', e.target.value)}
+                value={tempFilters.UnitType || ''}
+                onChange={e => handleFilterChange('UnitType', e.target.value)}
                 placeholder="Enter Exisiting Unit Type"
               />
             </div>
@@ -863,8 +926,8 @@ export const Tenant: React.FC = () => {
               <Input
                 label='Existing Configuration'
                 type="text"
-                value={tempFilters.FlatConfiguration || ''}
-                onChange={e => handleFilterChange('FlatConfiguration', e.target.value)}
+                value={tempFilters.UnitConfiguration || ''}
+                onChange={e => handleFilterChange('UnitConfiguration', e.target.value)}
                 placeholder="Enter Existing Configuration"
               />
             </div>
@@ -872,8 +935,8 @@ export const Tenant: React.FC = () => {
               <Input
                 label='Existing Carpet Area (SqFt)'
                 type="text"
-                value={tempFilters.FlatCarpetAreaSqFt || ''}
-                onChange={e => handleFilterChange('FlatCarpetAreaSqFt', e.target.value)}
+                value={tempFilters.UnitCarpetAreaSqFt || ''}
+                onChange={e => handleFilterChange('UnitCarpetAreaSqFt', e.target.value)}
                 placeholder="Enter Existing Carpet Area (SqFt)"
               />
             </div>

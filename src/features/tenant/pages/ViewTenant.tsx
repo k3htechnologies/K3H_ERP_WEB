@@ -39,7 +39,7 @@ export const ViewTenant: React.FC = () => {
 
     //#region TENANT LIST STATE CONTEXT
     const { listState } = useTenantListState();
-    const { tenantId, buildingId, tenantName, buildingName } = listState;
+    const { tenantId, buildingId, applicantName, buildingName } = listState;
     //#endregion
 
     //#region TAB ACTIVITY
@@ -220,7 +220,7 @@ export const ViewTenant: React.FC = () => {
             <HeaderActionBar
                 titleText={`Tenant ${activeTab} :`}
                 subTitleText={`${buildingName}`}
-                subSubTitleText={`${tenantName}`}
+                subSubTitleText={`${applicantName}`}
                 cancelText="Cancel"
                 EditText="Edit"
                 onCancel={() => handleBackToListTenant()}
@@ -327,12 +327,12 @@ export const ViewTenant: React.FC = () => {
 
                                         <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Unit / Annexure / Survey Number" value={editTenantData?.FlatNumber} />
-                                                <FieldItem label="Type" value={editTenantData?.FlatType} />
-                                                {editTenantData?.FlatType.toUpperCase() !== "GYM"
+                                                <FieldItem label="Unit / Annexure / Survey Number" value={editTenantData?.UnitAnnexureSurveyNumber} />
+                                                <FieldItem label="Type" value={editTenantData?.UnitType} />
+                                                {editTenantData?.UnitType?.toUpperCase() !== "GYM"
                                                     ?
-                                                    <FieldItem label="Configuration" value={editTenantData?.FlatConfiguration} />
-                                                    : <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
+                                                    <FieldItem label="Configuration" value={editTenantData?.UnitConfiguration} />
+                                                    : <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.UnitCarpetAreaSqFt} />
                                                 }
 
                                             </div>
@@ -340,12 +340,12 @@ export const ViewTenant: React.FC = () => {
 
                                         <div className="lg:col-span-3 pt-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                {editTenantData?.FlatType.toUpperCase() !== "GYM"
+                                                {editTenantData?.UnitType?.toUpperCase() !== "GYM"
                                                     ?
-                                                    <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.FlatCarpetAreaSqFt} />
+                                                    <FieldItem label="Carpet Area (SqFt)" value={editTenantData?.UnitCarpetAreaSqFt} />
                                                     : ""
                                                 }
-                                                <FieldItem label="Facing" value={editTenantData?.Facing} />
+                                                <FieldItem label="Facing" value={editTenantData?.UnitFacing} />
 
                                             </div>
                                         </div>
@@ -356,79 +356,7 @@ export const ViewTenant: React.FC = () => {
                                 </div>
                             </section>
 
-                            <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                                <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
-                                    <h4 className="text-sm font-semibold text-[#13367A]">
-                                        Offer
-                                    </h4>
-                                </div>
-                                <div className="p-4 bg-white">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-
-
-                                        <div className="lg:col-span-3">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                <FieldItem label="Free Area Offered (%)" value={editTenantData?.FreeAreaOfferedPercent} />
-                                                <FieldItem label="Free Area Offered (SqFt)" value={(Number(editTenantData?.FlatCarpetAreaSqFt) * (editTenantData?.FreeAreaOfferedPercent || 0) / 100).toFixed(2)} />
-                                                <FieldItem label="Total Area (SqFt)" value={editTenantData?.TotalAreaSqFt} />
-
-                                            </div>
-                                        </div>
-
-
-                                    </div>
-
-                                </div>
-                            </section>
-
-                            {editTenantData?.Flat === "" && (
-                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
-
-                                    <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
-                                        <h4 className="text-sm font-semibold text-[#7B6B28]">
-                                            New Unit Details
-                                        </h4>
-                                    </div>
-                                    <div className="p-4 bg-white">
-                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
-
-                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                    <FieldItem label="Building Number" value={editTenantData?.BuildingNumber} />
-                                                    <FieldItem label="Floor" value={editTenantData?.Floor} />
-                                                    <FieldItem label="Unit Number" value={editTenantData?.Flat} />
-
-
-                                                </div>
-                                            </div>
-
-
-                                            <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                    <FieldItem label="Type" value={editTenantData?.InventoryFlatType} />
-                                                    <FieldItem label="Configuration" value={editTenantData?.InventoryFlatConfiguration} />
-                                                    <FieldItem label="Facing" value={'-'} />
-
-                                                </div>
-                                            </div>
-
-
-                                            <div className="lg:col-span-3 pt-3">
-                                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                                    <FieldItem label="Extra Area Purchased (SqFt)" value={editTenantData?.ExtraAreaPurchasedSqFt} />
-                                                    <FieldItem label="RERA Carpet Area (SqFt)" value={editTenantData?.RERACarpetAreaSqFt} />
-                                                    <FieldItem label="Parking Number" value={editTenantData?.ParkingNumber} />
-
-                                                </div>
-                                            </div>
-
-
-                                        </div>
-                                    </div>
-
-                                </section>
-                            )}
                         </div>
                         {/* ================= RIGHT SIDE (1/3) ================= */}
                         <div className="lg:col-span-1 space-y-6">
@@ -463,6 +391,69 @@ export const ViewTenant: React.FC = () => {
                         </div>
 
                     </div>
+
+                    {editTenantData?.Flat === "" && (
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-6">
+
+                            <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#7B6B28]">
+                                    New Unit Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-4">
+
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Extra Free Carpet Area  %" value={editTenantData?.ExtraFreeCarpetAreaOfferedPercent} />
+                                            <FieldItem label="New Eligibility RERA Carpet Area (SqFt)" value={editTenantData?.NewEligibilityRERACarpetAreaSqFt} />
+                                            <FieldItem label="Free MOFA Carpet Area (SqFt)" value={editTenantData?.FreeMOFACarpetAreaSqFt} />
+
+                                        </div>
+                                    </div>
+
+
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Terrace Area (SqFt)" value={editTenantData?.TerraceAreaSqFt} />
+                                            <FieldItem label="RERA Carpet Area Purchased (SqFt)" value={editTenantData?.RERACarpetAreaPurchasedSqFt} />
+                                            <FieldItem label="New Eligibility MOFA Carpet Area (SqFt)" value={editTenantData?.NewEligibilityMOFACarpetAreaSqFt} />
+
+
+                                        </div>
+                                    </div>
+
+
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Deck Area (SqFt)" value={editTenantData?.DeckAreaSqFt} />
+                                            <FieldItem label="Total New Rera Carpet Area (SqFt)" value={editTenantData?.TotalNewRERACarpetAreaSqFt} />
+                                            <FieldItem label="MOFA Carpet Area Purchased (SqFt)" value={editTenantData?.MOFACarpetAreaPurchasedSqFt} />
+
+
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-3 pt-3 pb-3 border-b border-[#135bec2e] pb-3 pt-3">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Total New MOFA Carpet Area (SqFt)" value={editTenantData?.TotalNewMOFACarpetAreaSqFt} />
+                                            <FieldItem label="Total New Rera Carpet Area With Deck (SqFt)" value={editTenantData?.TotalNewRERACarpetAreaWithDeckSqFt} />
+
+                                        </div>
+                                    </div>
+
+                                    <div className="lg:col-span-3 pt-3 pb-3">
+                                        <div className='flex'>
+                                            <FieldItem label="Remark" value={editTenantData?.Remark} />
+                                        </div>
+
+                                    </div>
+
+
+                                </div>
+                            </div>
+
+                        </section>
+                    )}
                     {parkingList.length > 0 ?
                         <div className="mt-6">
                             <section className="bg-white rounded-xl shadow-sm p-6 border-[0.5px] border-[#3333334f]">

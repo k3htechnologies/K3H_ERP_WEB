@@ -47,6 +47,27 @@ export const LocalStorageHelper = {
     }
   },
 
+  storeMaterialRequisitionTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Material Requisition Columns Details:", error);
+    }
+  },
+
+  getMaterialRequisitionTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.MATERIAL_REQUISITION_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading Material Requisition Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+  },
+
   getMenuData: (): ModuleData[] | null => {
     const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.MENU_MODULE);
     if (stored) {
@@ -1099,7 +1120,7 @@ export const LocalStorageHelper = {
     }
     return null
   },
-  
+
   storeAchievementByChannelPartnerWalkinsRevisitTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS, columns);
@@ -1446,7 +1467,7 @@ export const LocalStorageHelper = {
   },
 
   //ESTIMATION AND BUDGET
-   storeBudgetTableColumns: (columns: string): void => {
+  storeBudgetTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS, columns);
     } catch (error) {

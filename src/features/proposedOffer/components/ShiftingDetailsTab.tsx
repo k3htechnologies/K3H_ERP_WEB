@@ -25,6 +25,7 @@ import {
   initialFormStateShiftingPaymentStage,
 } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface ShiftingDetailsTabProps {
   projectId: number | null;
@@ -688,6 +689,17 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
               />
             </div>
           </div>
+          <div>
+            <div>
+              <TextArea
+                label="Remarks"
+                className='thin-scroll'
+                value={formDataShiftingDetails.Remark ?? ""}
+                placeholder="Enter Remarks"
+                onChange={(e) => handleFieldChangeShiftingPaymentStage("Remark", e.target.value)}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Shifting List Section */}
@@ -834,6 +846,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 placeholder="Calculated Amount"
               />
             </div>
+
           </div>
         </div>
       </Modal>

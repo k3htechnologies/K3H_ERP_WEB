@@ -24,6 +24,7 @@ import {
   initialFormStateSecurityDepositPaymentStage,
 } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface SecurityDepositTabProps {
   projectId: number | null;
@@ -516,22 +517,31 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
               />
             </div>
           </div>
+          <div>
+            <TextArea
+              label="Remarks"
+              className='thin-scroll'
+              value={formDataSecurityDepositDetails.Remark ?? ""}
+              placeholder="Enter Remarks"
+              onChange={(e) => handleFieldChangeSecurityDepositDetails("Remark", e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Security Deposit List Section */}
         <div className="space-y-4 pb-5">
-           <div className="flex items-center justify-between border-b border-gray-300 pb-2">
-              <h3 className="text-lg font-semibold text-gray-900">
-                Security Deposit List
-              </h3>
+          <div className="flex items-center justify-between border-b border-gray-300 pb-2">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Security Deposit List
+            </h3>
             {canAction && buildingId > 0 && (
               <Button
                 onClick={handleAddSecurityDepositPaymentStageModal}
-               color="blue"
+                color="blue"
                 variant="solid"
                 colorMode="extraLight"
                 style={{ width: '35px', height: '35px' }}
-                centerIcon={<Plus className="h-4 w-4" /> }>
+                centerIcon={<Plus className="h-4 w-4" />}>
               </Button>
             )}
           </div>
@@ -618,6 +628,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
                 rightIcon="₹"
               />
             </div>
+
           </div>
         </div>
       </Modal>

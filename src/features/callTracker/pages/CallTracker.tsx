@@ -19,7 +19,7 @@ export const CallTracker: React.FC = () => {
                 <Tabs
                     tabs={CallTrackerTabList}
                     defaultActive={activeTab}
-                    islarge
+                    islarge={false}
                     onTabChange={(t) => setActiveTab(t.id)}
                 />
             </div>

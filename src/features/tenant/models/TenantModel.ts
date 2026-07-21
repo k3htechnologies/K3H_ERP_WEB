@@ -17,6 +17,11 @@ export interface FilterWithPaginationTenantRequest {
   Flat?: string | ''
   ParkingNumber?: string | ''
   SortBy?: string
+  UnitAnnexureSurveyNumber?: string | '';
+  UnitCarpetAreaSqFt?: number;
+  UnitFacing?: string | '';
+  UnitType?: string | '';
+  UnitConfiguration?: string | '';
   ExportType?: 'Excel' | 'PDF'
 }
 
@@ -52,7 +57,27 @@ export interface TenantData {
 
   TenantApplicantData: TenantApplicant[];
 
-  
+  UnitAnnexureSurveyNumber: string | null;
+  UnitCarpetAreaSqFt: number;
+  UnitFacing: string | null;
+  UnitType: string | null;
+  UnitConfiguration: string | null;
+
+  ExtraFreeCarpetAreaOfferedPercent: number;
+  FreeMOFACarpetAreaSqFt: number;
+  NewEligibilityMOFACarpetAreaSqFt: number;
+  NewEligibilityRERACarpetAreaSqFt: number;
+  MOFACarpetAreaPurchasedSqFt: number;
+  RERACarpetAreaPurchasedSqFt: number;
+  TotalNewMOFACarpetAreaSqFt: number;
+  TotalNewRERACarpetAreaSqFt: number;
+  DeckAreaSqFt: number;
+  TotalNewRERACarpetAreaWithDeckSqFt: number;
+  TerraceAreaSqFt: number;
+  Remark: string | null;
+
+
+
   CreatedById: number | 0
   CreatedBy: string | ''
   CreatedDate: string | null
@@ -63,12 +88,13 @@ export interface TenantData {
   LastModifiedDate: string | null
 
   BookingId: number | null;
+  ApplicantName?: string | null;
 }
 
 export interface Parking {
   ParkingId?: number | null;
   ParkingNumber?: string | null;
-  
+
 }
 
 export interface TenantApplicant {
@@ -108,7 +134,8 @@ export interface TenantApplicant {
   IFSCCode: string | null;
   ChequeURL: string;
 
-  
+
+
   CreatedById: number | 0
   CreatedBy: string | ''
   CreatedDate: string | null
@@ -124,15 +151,51 @@ export interface AddUpdateTenantRequest {
   Uniquekey: string | null;
   BuildingId: number;
   ProjectId: number;
-  FlatNumber: string;
-  FlatCarpetAreaSqFt: number | null;
-  Facing: string | null;
-  FlatType: string;
-  FlatConfiguration: string | null;
+  // FlatNumber: string;
+  // FlatCarpetAreaSqFt: number | null;
+  // Facing: string | null;
+  // FlatType: string;
+  // FlatConfiguration: string | null;
 
-  FreeAreaOfferedPercent: number | null;
-  ExtraAreaPurchasedSqFt: number | null;
-  TotalAreaSqFt: number | null;
+  // FreeAreaOfferedPercent: number | null;
+  // ExtraAreaPurchasedSqFt: number | null;
+  // TotalAreaSqFt: number | null;
+
+  UnitAnnexureSurveyNumber: string;
+  UnitCarpetAreaSqFt: number;
+  UnitFacing: string | null;
+  UnitType: string;
+  UnitConfiguration: string | null;
+
+  ExtraFreeCarpetAreaOfferedPercent: number;
+  FreeMOFACarpetAreaSqFt: number;
+  NewEligibilityMOFACarpetAreaSqFt: number;
+  NewEligibilityRERACarpetAreaSqFt: number;
+  MOFACarpetAreaPurchasedSqFt: number;
+  RERACarpetAreaPurchasedSqFt: number;
+  TotalNewMOFACarpetAreaSqFt: number;
+  TotalNewRERACarpetAreaSqFt: number;
+  DeckAreaSqFt: number;
+  TotalNewRERACarpetAreaWithDeckSqFt: number;
+  // New Terrace Area Field
+  TerraceAreaSqFt: number;
+  Remark: string | null;
+
+
+  // // New fields added here
+  // ExistingCarpetAreaSqft: number | null;
+  // ExtraFreeCarpetArea: number | null;
+  // FreeMOFSCarpetAreaSqft: number | null;
+  // NewEligibilityMOFACarpetAreaSqft: number | null;
+  // NewEligibiltiyReraCarpetAreaSqft: number | null;
+  // MOFACarpetAreaPurchasedSqft: number | null;
+  // ReraCarpetAreaPurchasedSqft: number | null;
+  // TotalNewMOFACarpetAreaSqft: number | null;
+  // TotalNewReraCarpetAreaSqft: number | null;
+  // DeckAreaSqft: number | null;
+  // TotalNewCarpetAreaWithDeckSqft: number | null;
+  // NewDetailFacing: string | null;
+
 }
 
 export interface AddUpdateTenantApplicant {
@@ -245,6 +308,7 @@ export interface AddUpdateTenantDocumentRequest {
 
   DocumentURL: File[] | null;
   RemoveDocumentURL: string;
+
 }
 
 export interface DeleteTenantDocumentRequest {
@@ -258,5 +322,30 @@ export interface DeleteTenantDocumentRequest {
 export type TenantDocumentListResponse = ApiResponse<TenantDocumentData[]>;
 export type TenantDocumentSaveResponse = ApiResponse<TenantDocumentData[]>;
 export type TenantDocumentDeleteResponse = ApiResponse<number>;
+
+// public class AddUpdateTenant
+// {
+//     public int TenantId { get; set; } = 0;
+//     public Guid? Uniquekey { get; set; } = Guid.NewGuid();
+//     public int BuildingId { get; set; } = 0;
+//     public int ProjectId { get; set; } = 0;
+//     public string UnitAnnexureSurveyNumber { get; set; } = string.Empty;        // (T) Flat Number
+//     public decimal? UnitCarpetAreaSqFt { get; set; } = 0;            // (T) Carpet Area
+//     public string? UnitFacing { get; set; } = string.Empty;                         // (D) North, South, East, West
+//     public string UnitType { get; set; } = string.Empty;          // (D) Residential / Commercial
+//     public string? UnitConfiguration { get; set; } = string.Empty;               // (D) 1BHK, 2BHK, Shop, Office
+
+//     //============================================================= [TENANT OFFER] ======================================================================================
+//     public decimal? ExtraFreeCarpetAreaOfferedPercent { get; set; } = 0;
+//     public decimal? FreeMOFACarpetAreaSqFt { get; set; } = 0;
+//     public decimal? NewEligibilityMOFACarpetAreaSqFt { get; set; } = 0;
+//     public decimal?  NewEligibilityRERACarpetAreaSqFt { get; set; } = 0;
+//     public decimal?  MOFACarpetAreaPurchasedSqFt { get; set; } = 0;
+//     public decimal?  RERACarpetAreaPurchasedSqFt { get; set; } = 0;
+//     public decimal?  TotalNewMOFACarpetAreaSqFt { get; set; } = 0;
+//     public decimal?  TotalNewRERACarpetAreaSqFt { get; set; } = 0;
+//     public decimal?  DeckAreaSqFt { get; set; } = 0;
+//     public decimal? TotalNewRERACarpetAreaWithDeckSqFt { get; set; } = 0;
+// }
 
 

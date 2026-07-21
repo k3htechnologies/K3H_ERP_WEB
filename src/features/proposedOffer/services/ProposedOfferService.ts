@@ -74,6 +74,28 @@ import type {
     DeleteProposedOfferSecurityDepositDetailsRequest,
     ProposedOfferSecurityDepositDetailsDeleteResponse,
 
+    // READY RECKONER
+    FilterWithPaginationReadyReckonerRequest,
+    ReadyReckonerListResponse,
+    ReadyReckonerSaveResponse,
+    AddUpdateReadyReckonerRequest,
+
+    // CARPET AREA
+    FilterWithPaginationCarpetAreaRequest,
+    CarpetAreaListResponse,
+    AddUpdateCarpetAreaRequest,
+    CarpetAreaSaveResponse,
+
+    // ADDITIONAL INFO
+    FilterWithPaginationAdditionalInformationRequest,
+    AdditionalInformationListResponse,
+    AddUpdateAdditionalInformationRequest,
+    AdditionalInformationSaveResponse,
+    FilterWithPaginationPlotAreaRequest,
+    PlotAreaListResponse,
+    AddUpdatePlotAreaRequest,
+    PlotAreaSaveResponse,
+
 } from '@/features/proposedOffer/models/ProposedOfferModel'
 
 //=============================================================
@@ -306,5 +328,85 @@ export const proposedOfferService = {
 
         }
     },
+
+    // ==================== READY RECKONER ====================
+    apiCallPullReadyReckoner: async (params: FilterWithPaginationReadyReckonerRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, ReadyReckonerListResponse>> => {
+        try {
+
+            return E.right(await proposedOfferDatasource.pullReadyReckoner(params, options?.signal))
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code })
+
+        }
+    },
+
+    apiCallAddUpdateReadyReckoner: async (params: AddUpdateReadyReckonerRequest): Promise<E.Either<Failure, ReadyReckonerSaveResponse>> => {
+        try {
+
+            return E.right(await proposedOfferDatasource.addUpdateReadyReckoner(params))
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code })
+
+        }
+    },
+
+    // CARPET AREA 
+
+    apiCallPullCarpetArea: async (params: FilterWithPaginationCarpetAreaRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, CarpetAreaListResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.pullCarpetArea(params, options?.signal))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    apiCallAddUpdateCarpetArea: async (params: AddUpdateCarpetAreaRequest): Promise<E.Either<Failure, CarpetAreaSaveResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.addUpdateCarpetArea(params))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    // ADDITONAL INFO
+
+    apiCallPullAdditionalInformation: async (params: FilterWithPaginationAdditionalInformationRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, AdditionalInformationListResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.pullAdditionalInformation(params, options?.signal))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    apiCallAddUpdateAdditionalInformation: async (params: AddUpdateAdditionalInformationRequest): Promise<E.Either<Failure, AdditionalInformationSaveResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.addUpdateAdditionalInformation(params))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    // Plot Area
+
+    apiCallPullPlotArea: async (params: FilterWithPaginationPlotAreaRequest, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, PlotAreaListResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.pullPlotArea(params, options?.signal))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
+    apiCallAddUpdatePlotArea: async (params: AddUpdatePlotAreaRequest): Promise<E.Either<Failure, PlotAreaSaveResponse>> => {
+        try {
+            return E.right(await proposedOfferDatasource.addUpdatePlotArea(params))
+        } catch (error: any) {
+            return E.left({ message: error.message, code: error.code })
+        }
+    },
+
 
 }

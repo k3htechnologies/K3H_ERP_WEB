@@ -13,6 +13,11 @@ import { ParkingAllotmentTab } from '../components/ParkingAllotmentTab';
 import { GSTonExistingPlusFreeAreaTab } from '../components/GSTonExistingPlusFreeAreaTab';
 import { ProjectCompletionTab } from '../components/ProjectCompletionTab';
 import { RentDetailsTab } from '../components/RentDetailsTab';
+import { ReadyReckonerTab } from '../components/ReadyReckonerTab';
+import { CarpetAreaTab } from '../components/CarpetAreaTab';
+import { AdditionalInformationTab } from '../components/AdditionalInformationTab';
+import { PlotAreaTab } from '../components/PlotAreaTab';
+import { BankGuaranteeTab } from '../components/BankGuranteeTab';
 
 export const ProposedOffer: React.FC = () => {
   const [buildingId, setBuildingId] = useState(0);
@@ -35,6 +40,11 @@ export const ProposedOffer: React.FC = () => {
     { id: "GSTonExistingPlusFreeArea", label: "GST on Existing + Free Area" },
     { id: "ProjectCompletion", label: "Project Completion" },
     { id: "RentDetails", label: "Rent Details" },
+    { id: "ReadyReckoner", label: "Ready Reckoner" },
+    { id: "CarpetArea", label: "Carpet Area" },
+    { id: "AdditionalInformation", label: "Additional Information" },
+    { id: "PlotArea", label: "Plot Area" },
+    { id: "BankGuarantee", label: "Bank Guarantee" }
   ];
 
   const [activeTab, setActiveTab] = useState<string>(proposedOfferTabList[0].id);
@@ -71,7 +81,7 @@ export const ProposedOffer: React.FC = () => {
             size="lg"
             initialValue={selectedBuilding}
             dataFetchCallBack={fetchBuildingCallback}
-            
+
             onSelected={(item) => {
               if (!item) return;
               setBuildingId(Number(item.value));
@@ -172,6 +182,51 @@ export const ProposedOffer: React.FC = () => {
 
         {activeTab === 'RentDetails' && (
           <RentDetailsTab
+            projectId={projectId}
+            buildingId={buildingId}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            setLoadingMessage={setLoadingMessage}
+          />
+        )}
+        {activeTab === 'ReadyReckoner' && (
+          <ReadyReckonerTab
+            projectId={projectId}
+            buildingId={buildingId}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            setLoadingMessage={setLoadingMessage}
+          />
+        )}
+        {activeTab === 'CarpetArea' && (
+          <CarpetAreaTab
+            projectId={projectId}
+            buildingId={buildingId}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            setLoadingMessage={setLoadingMessage}
+          />
+        )}
+        {activeTab === 'AdditionalInformation' && (
+          <AdditionalInformationTab
+            projectId={projectId}
+            buildingId={buildingId}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            setLoadingMessage={setLoadingMessage}
+          />
+        )}
+        {activeTab === 'PlotArea' && (
+          <PlotAreaTab
+            projectId={projectId}
+            buildingId={buildingId}
+            isLoading={isLoading}
+            setIsLoading={setIsLoading}
+            setLoadingMessage={setLoadingMessage}
+          />
+        )}
+        {activeTab === 'BankGuarantee' && (
+          <BankGuaranteeTab
             projectId={projectId}
             buildingId={buildingId}
             isLoading={isLoading}

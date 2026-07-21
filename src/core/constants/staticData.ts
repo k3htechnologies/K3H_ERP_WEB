@@ -141,7 +141,7 @@ export const MASTER_DATA = {
 
   speciality_type: ["Commercial Sale", "Commercial Leasing", "Residential Sale", "Commercial + Residential Sale"],
 
-  carpet_area_type: ["MOFA", "RERA"],
+  carpet_area_type: ["Extra Carpet Area Offered", "MOFA", "RERA"],
 
   tenure: [
     "Tenure 1",
@@ -163,6 +163,16 @@ export const MASTER_DATA = {
   unit_sqft_lumsum: ["Per Sq Ft", "Lumpsum"],
 
   project_category: ["Direct", "Tender"],
+
+  tenant_category: ["Commercial", "Residential"],
+
+  tenant_designation: ["Chairman/President", "Committee Member", "Member", "Treasurer", "Secretary"],
+
+  tenant_facing: ["Facing", "Front", "Back", "Garden", "Road", "East", "North", "West", "South"],
+
+  mode_options: ["Mode", "PDC", "Advance"],
+
+  brokerage_options: ["0", "1"],
 
   business_category: ["Commercial", "Mixed Use", "Residential"],
 
@@ -613,7 +623,7 @@ export const MASTER_DATA = {
 
   budgetLevelType: ["L1", "L2", "L3"],
 
-  aopStatus: ["AOP", "NON - AOP", "EXPIRED","EXPIRE SOON"],
+  aopStatus: ["AOP", "NON - AOP", "EXPIRED", "EXPIRE SOON"],
 
 } as const;
 
@@ -733,11 +743,15 @@ export const MODULE_OPTIONS = toOptions(MASTER_DATA.module);
 export const ASSIGN_STATUS_TYPE_OPTIONS = toOptions(MASTER_DATA.assignStatusType);
 export const HANDOVER_STATUS = toOptions(MASTER_DATA.handOverStatus);
 export const IBM_OBM_RANGE_FILTER_OPTIONS = toOptions(MASTER_DATA.ibmObmRangeFilter);
-export const CHANNEL_PARTNER_CATEGORY_OPTIONS= toOptions(MASTER_DATA.channelPartnerCategory);
+export const CHANNEL_PARTNER_CATEGORY_OPTIONS = toOptions(MASTER_DATA.channelPartnerCategory);
 export const IBM_OBM_REPORT_STAGE_OPTIONS = toOptions(MASTER_DATA.ibmObmReportStage);
 export const NOTICE_TYPE_OPTIONS = toOptions(MASTER_DATA.noticeType);
 export const BUDGET_LEVEL_TYPE = toOptions(MASTER_DATA.budgetLevelType);
 export const AOP_STATUS = toOptions(MASTER_DATA.aopStatus);
+export const MODE_OPTIONS = toOptions(MASTER_DATA.mode_options);
+export const BROKERAGE_OPTIONS = toOptions(MASTER_DATA.brokerage_options);
+
+export const TENANT_FACING_OPTIONS = toOptions(MASTER_DATA.tenant_facing);
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

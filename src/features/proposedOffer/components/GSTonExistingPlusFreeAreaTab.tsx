@@ -13,6 +13,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbersWithDecimal, isValidPercentage, allowPercentage } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { initialFormStateGSTonExistingPlusFreeArea } from '../utils/initialStates';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface GSTonExistingPlusFreeAreaTabProps {
   projectId: number | null;
@@ -227,7 +228,6 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                 placeholder="Enter GST on Area by Developer Percent"
               />
             </div>
-
             <div>
               <Input
                 label="Total GST (%)"
@@ -240,6 +240,17 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                 placeholder="System Calculated Total GST"
               />
             </div>
+
+          </div>
+          <div>
+            <TextArea
+              label="Remark"
+              className='thin-scroll'
+              value={formDataGSTonExistingPlusFreeArea.Remark ?? ""}
+              placeholder="Enter Remark"
+              onChange={(e) => handleFieldChangeGSTonExistingPlusFreeArea("Remark", e.target.value)}
+              error={errorsGSTonExistingPlusFreeArea.Remark}
+            />
           </div>
         </div>
       </div>

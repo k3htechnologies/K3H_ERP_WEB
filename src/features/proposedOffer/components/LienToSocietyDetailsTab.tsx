@@ -24,6 +24,7 @@ import {
   initialFormStateLienToSocietyPaymentStage,
 } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface LienToSocietyDetailsTabProps {
   projectId: number | null;
@@ -482,6 +483,16 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
                 placeholder="Enter Number of Commercial Lien Units"
               />
             </div>
+
+          </div>
+          <div>
+            <TextArea
+              label="Remark"
+              className='thin-scroll'
+              value={formDataLienToSocietyDetails.Remark ?? ""}
+              placeholder="Enter Remark"
+              onChange={(e) => handleFieldChangeLienToSocietyDetails("Remark", e.target.value)}
+            />
           </div>
         </div>
 

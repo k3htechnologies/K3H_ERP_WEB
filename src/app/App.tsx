@@ -117,7 +117,7 @@ import Enquiry from '@/features/enquiry/pages/Enquiry';
 import AddUpdateEnquiry from '@/features/enquiry/pages/AddUpdateEnquiry';
 import { EnquiryListStateProvider } from '@/features/enquiry/context/EnquiryListStateContext';
 import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
-import ProposedPlan from '@/features/proposedOffer/pages/ProposedPlan';
+import ProposedPlan from '@/features/proposedOffer/pages/ProposedPlan'
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
@@ -438,7 +438,7 @@ function App() {
 
             <Route path="tenant" element={<TenantListStateProvider><Tenant /></TenantListStateProvider>} />
             <Route path="tenant/view" element={<TenantListStateProvider><ViewTenant /></TenantListStateProvider>} />
-            <Route path="tenant/add/:tenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
+            <Route path="tenant/add/:TenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
             <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
 
             <Route path="rent" element={<RentListStateProvider><Rent /></RentListStateProvider>} />
@@ -495,7 +495,7 @@ function App() {
             {/* TAX TRACKER */}
             <Route path="noticeSection" element={<NoticeSectionMaster />} />
 
-              {/* ESTIMATION AND BUDGET */}
+            {/* ESTIMATION AND BUDGET */}
             <Route path='budget' element={<Budget />} />
             <Route path='summaryMis' element={<SummaryMIS />} />
             <Route path='specificationMaster' element={<SpecificationMaster />} />

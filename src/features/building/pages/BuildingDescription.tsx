@@ -28,6 +28,8 @@ const initialFormState = (): AddUpdateBuildingDetailsRequest => ({
   TotalResidentialCarpetAreaSqFt: undefined,
   TotalCommercialUnits: undefined,
   TotalCommercialCarpetAreaSqFt: undefined,
+  TotalGarageCarpetAreaSqFt: 0,
+  TotalTerraceCarpetAreaSqFt: 0,
   BuildingKeyContactDetailsJSON: undefined
 });
 
@@ -120,7 +122,9 @@ const BuildingDescription: React.FC = () => {
               TotalResidentialUnits: row.TotalResidentialUnits ?? prev.TotalResidentialUnits,
               TotalResidentialCarpetAreaSqFt: row.TotalResidentialCarpetAreaSqFt ?? prev.TotalResidentialCarpetAreaSqFt,
               TotalCommercialUnits: row.TotalCommercialUnits ?? prev.TotalCommercialUnits,
-              TotalCommercialCarpetAreaSqFt: row.TotalCommercialCarpetAreaSqFt ?? prev.TotalCommercialCarpetAreaSqFt
+              TotalCommercialCarpetAreaSqFt: row.TotalCommercialCarpetAreaSqFt ?? prev.TotalCommercialCarpetAreaSqFt,
+              TotalGarageCarpetAreaSqFt: row.TotalGarageCarpetAreaSqFt ?? prev.TotalGarageCarpetAreaSqFt,
+              TotalTerraceCarpetAreaSqFt: row.TotalTerraceCarpetAreaSqFt ?? prev.TotalTerraceCarpetAreaSqFt,
             }));
 
             // Parse contact details from JSON
@@ -215,6 +219,8 @@ const BuildingDescription: React.FC = () => {
       TotalResidentialCarpetAreaSqFt: formData.TotalResidentialCarpetAreaSqFt ?? undefined,
       TotalCommercialUnits: formData.TotalCommercialUnits ?? undefined,
       TotalCommercialCarpetAreaSqFt: formData.TotalCommercialCarpetAreaSqFt ?? undefined,
+      TotalGarageCarpetAreaSqFt: formData.TotalGarageCarpetAreaSqFt ??0,
+      TotalTerraceCarpetAreaSqFt: formData.TotalTerraceCarpetAreaSqFt ?? 0,
       BuildingKeyContactDetailsJSON: contactDetailsJSON
     };
 
@@ -399,6 +405,26 @@ const BuildingDescription: React.FC = () => {
                   value={formData.TotalCommercialCarpetAreaSqFt || ''}
                   onChange={(e) => handleFieldChange('TotalCommercialCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
                   placeholder="Enter Commercial Carpet Area"
+                  rightIcon="SqFt"
+                />
+              </div>
+              <div>
+                <Input
+                  label="Garage Carpet Area (SqFt)"
+                  type="text"
+                  value={formData.TotalGarageCarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('TotalGarageCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  placeholder="Enter Garage Carpet Area"
+                  rightIcon="SqFt"
+                />
+              </div>
+               <div>
+                <Input
+                  label="Terrace Carpet Area (SqFt)"
+                  type="text"
+                  value={formData.TotalTerraceCarpetAreaSqFt || ''}
+                  onChange={(e) => handleFieldChange('TotalTerraceCarpetAreaSqFt', filterNumbersWithDecimal(e.target.value) || 0)}
+                  placeholder="Enter Terrace Carpet Area"
                   rightIcon="SqFt"
                 />
               </div>

@@ -45,7 +45,6 @@ type PivotRentRow = {
 };
 
 export const Rent: React.FC = () => {
-  //#region STATE
   const { projectId } = useProject();
   const { addToast } = useToast();
   const { canAction, canExport } = useMenuPermissions();
@@ -59,21 +58,18 @@ export const Rent: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
 
-  //#region TAB ACTIVITY
   const rentTabList = [
-    { id: "Additional Rent", label: "Additional Rent" },
-    { id: "Rent", label: "Rent" },
-    { id: "Corpus", label: "Corpus" },
+    { id: "Additional TAA", label: "Additional TAA" },
+    { id: "TAA", label: "TAA" },
+    { id: "Hardship", label: "Hardship" },
     { id: "Brokerage", label: "Brokerage" },
     { id: "Shifting", label: "Shifting" },
   ];
 
-  // Use context state as source of truth, with local state as fallback
   const buildingId = listState.buildingId || 0;
   const buildingName = listState.buildingName || "";
   const filters = listState.filters || {};
   const searchTerm = listState.searchTerm || "";
-  // Ensure activeTab always has a value - use context or default to first tab
   const activeTab = listState.activeTab || rentTabList[0].id;
   const activeTenureTab = listState.tenure || "";
 
@@ -81,23 +77,17 @@ export const Rent: React.FC = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
 
   const [tenureTabList, setTenureTabList] = useState<TabItem[]>([]);
-  //#endregion
 
-  const isMonthBasedTab = ["Rent", "Additional Rent", "Brokerage"].includes(activeTab);
-  const isStageBasedTab = ["Corpus", "Shifting"].includes(activeTab);
+  const isMonthBasedTab = ["TAA", "Additional TAA", "Brokerage"].includes(activeTab);
+  const isStageBasedTab = ["Hardship", "Shifting"].includes(activeTab);
 
-  //#endregion
-
-  //#region BUILDING DROPDOWN
   const selectedBuilding = useMemo(() => {
     if (!projectId || !buildingId || buildingId <= 0) return null;
     return { label: buildingName || "", value: buildingId };
   }, [projectId, buildingId, buildingName]);
 
   const fetchBuildingCallback = useCallback((pageNumber: number) => fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) }), [projectId]);
-  //#endregion
-
-  //#region DEBOUNCE SEARCH
+  
   const debouncedSearch = useDebouncedCallback((value: string) => {
     setPagination({ currentPage: 1 });
     updateListState({
@@ -106,19 +96,17 @@ export const Rent: React.FC = () => {
       page: 1,
     });
   }, 350);
-  //#endregion
-
-  //#region TENURE FETCH
+  
   useEffect(() => {
     if (!projectId || buildingId <= 0) return;
-    if (!["Rent", "Brokerage"].includes(activeTab)) {
+    if (!["TAA", "Brokerage"].includes(activeTab)) {
       setTenureTabList([]);
       updateListState({ tenure: "" });
       return;
     }
 
     (async () => {
-      const response = await proposedOfferService.apiCallPullRentDetails({
+      const response = await proposedOfferService.apiCallPullTemporaryAccommodationAlternative({
         ProjectId: Number(projectId),
         BuildingId: buildingId,
       });
@@ -129,7 +117,6 @@ export const Rent: React.FC = () => {
         const tabs = tenures.map((t) => ({ id: t, label: t }));
         setTenureTabList(tabs);
 
-        // Restore tenure from context if available and valid, otherwise use first tab
         if (tabs.length > 0) {
           const isTenureValid = activeTenureTab && tabs.some((t) => t.id === activeTenureTab);
 
@@ -144,48 +131,40 @@ export const Rent: React.FC = () => {
     })();
   }, [activeTab, projectId, buildingId]);
 
-  // Track previous project to detect actual project changes
   const prevProjectIdRef = useRef<number | null>(null);
 
-  // Restore state from context on mount and when returning from other pages
   useEffect(() => {
     if (listState.buildingId > 0) {
       setPagination({ currentPage: listState.page || 1 });
     }
-    // Initialize activeTab if not set
     if (!listState.activeTab) {
       updateListState({
         activeTab: rentTabList[0].id,
         filters: { ...listState.filters, ChargeType: rentTabList[0].id },
       });
     }
-    // Initialize prevProjectIdRef on first mount
     if (prevProjectIdRef.current === null) {
       prevProjectIdRef.current = projectId;
     }
   }, []);
 
-  // Reset building only when project actually changes (not on every render or navigation)
   useEffect(() => {
     const prevProjectId = prevProjectIdRef.current;
-    // Only clear building if project actually changed (not on initial mount or navigation)
+    
     if (prevProjectId !== null && prevProjectId !== projectId) {
-      // Project actually changed, clear building
+     
       if (listState.buildingId > 0) {
         updateListState({ buildingId: 0, buildingName: "", filters: {}, searchTerm: "", page: 1 });
       }
       prevProjectIdRef.current = projectId;
     } else if (prevProjectId === null) {
-      // First mount - just set the ref, don't clear building
+      
       prevProjectIdRef.current = projectId;
     }
-    // Don't update ref on every render - only when project actually changes
+    
   }, [projectId, listState.buildingId, updateListState]);
 
-  //#endregion
-
-  //#region DATA LOAD RENT LIST
-
+  
   const loadRents = useCallback(async () => {
     if (!projectId || buildingId <= 0) return;
 
@@ -228,9 +207,7 @@ export const Rent: React.FC = () => {
   useEffect(() => {
     loadRents();
   }, [loadRents]);
-  //#endregion
-
-  //#region HANLDE BUILDING CHANGE EVENT
+  
 
   const handleBuildingChange = (item: DropdownItem | null) => {
     if (!item?.value) return;
@@ -248,9 +225,6 @@ export const Rent: React.FC = () => {
     setTenantApplicantChargesList([]);
   };
 
-  //#endregion
-
-  //#region DYANMIC HEADERS & TABLE DATA
   const dynamicHeaders = useMemo(() => {
     const headers = new Set<string>();
 
@@ -372,7 +346,7 @@ export const Rent: React.FC = () => {
 
         const response = await rentService.apiCallPullTenantApplicantCharges(params);
 
-        handleExportFile(response, exportType, "Rent", addToast);
+        handleExportFile(response, exportType, "TAA", addToast);
 
         return response;
       },
@@ -400,7 +374,7 @@ export const Rent: React.FC = () => {
       { key: "FlatCarpetAreaSqFt", label: "Existing Carpet Area (SqFt)", width: "18" },
     ];
 
-    const proposedOfferColumn: TableColumn[] = ["Rent", "Brokerage", "Additional Rent"].includes(activeTab)
+    const proposedOfferColumn: TableColumn[] = ["TAA", "Brokerage", "Additional TAA"].includes(activeTab)
       ? [
           {
             key: "ProposedOfferAmount",
@@ -477,12 +451,12 @@ export const Rent: React.FC = () => {
               return (
                 <div className="flex items-center justify-center">
                   {Number(String(row["Total"]).replace(/[₹,]/g, "") || 0) !== Number(String(row["Paid Total"]).replace(/[₹,]/g, "") || 0) && (
-                    <Button color="transparent" isborderRadius size="sm" style={{ color: "red", padding: "4px 8px" }} onClick={handleAddPayTrackRent} title="Add Pay Track Rent">
+                    <Button color="transparent" isborderRadius size="sm" style={{ color: "red", padding: "4px 8px" }} onClick={handleAddPayTrackRent} title="Add Pay Track TAA">
                       <Plus className="h-4 w-4" />
                     </Button>
                   )}
 
-                  <Button color="transparent" isborderRadius size="sm" style={{ color: "blue", padding: "4px 8px" }} onClick={handleViewPayTrackRent} title="View Pay Track Rent">
+                  <Button color="transparent" isborderRadius size="sm" style={{ color: "blue", padding: "4px 8px" }} onClick={handleViewPayTrackRent} title="View Pay Track TAA">
                     <Eye className="h-4 w-4" />
                   </Button>
                 </div>
@@ -503,9 +477,6 @@ export const Rent: React.FC = () => {
     },
   };
 
-  //#endregion
-
-  //#region  CLAER SEARCH & FILTERS
   const clearSearchRents = () => {
     debouncedSearch.cancel?.();
     updateListState({
@@ -515,9 +486,7 @@ export const Rent: React.FC = () => {
     });
     setPagination({ currentPage: 1 });
   };
-  //#endregion
-
-  //#region APPLY & ClearS
+  
 
   const applyFilters = () => {
     updateListState({
@@ -635,7 +604,7 @@ export const Rent: React.FC = () => {
       <Modal
         isOpen={showFilterPopup}
         onClose={() => setShowFilterPopup(false)}
-        title="Filter - Rent"
+        title="Filter - TAA"
         onSubmit={(e) => {
           e.preventDefault();
           applyFilters();

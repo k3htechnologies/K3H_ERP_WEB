@@ -16,6 +16,7 @@ import { CARPET_AREA_TYPE } from '@/core/constants';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { initialFormStateExtraCarpetArea } from '../utils/initialStates';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { getInputValue, isEmpty } from '@/core/utils/comman';
 
 interface ExtraCarpetAreaTabProps {
   projectId: number | null;
@@ -78,7 +79,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
               ExtraCarpetAreaOfferedType: data.ExtraCarpetAreaOfferedType || '',
               ResidentialExtraCarpetPercent: data.ResidentialExtraCarpetPercent ?? 0,
               CommercialExtraCarpetPercent: data.CommercialExtraCarpetPercent ?? 0,
-              Remark:data.Remark ?? "",
+              Remark: data.Remark ?? "",
             });
           } else {
             setFormDataExtraCarpetArea({
@@ -110,13 +111,13 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
       newErrors.ExtraCarpetAreaOfferedType = "Extra Carpet Area Type is required"
     }
 
-    if (!formDataExtraCarpetArea.ResidentialExtraCarpetPercent) {
+    if (isEmpty(formDataExtraCarpetArea.ResidentialExtraCarpetPercent)) {
       newErrors.ResidentialExtraCarpetPercent = 'Residential Extra Carpet Percentage is required'
     } else if (!isValidPercentage(String(formDataExtraCarpetArea.ResidentialExtraCarpetPercent))) {
       newErrors.ResidentialExtraCarpetPercent = 'Enter a valid percentage'
     }
 
-    if (!formDataExtraCarpetArea.CommercialExtraCarpetPercent) {
+    if (isEmpty(formDataExtraCarpetArea.CommercialExtraCarpetPercent)) {
       newErrors.CommercialExtraCarpetPercent = 'Commercial Extra Carpet Percentage is required'
     } else if (!isValidPercentage(String(formDataExtraCarpetArea.CommercialExtraCarpetPercent))) {
       newErrors.CommercialExtraCarpetPercent = 'Enter a valid percentage'
@@ -191,6 +192,8 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
     )
   };
 
+  const isBuildingSelected = buildingId > 0;
+
   return (
     <>
       <div className="space-y-6 pb-5">
@@ -208,6 +211,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 onChange={(e) => handleFieldChangeExtraCarpetArea('ExtraCarpetAreaOfferedType', String(e))}
                 options={CARPET_AREA_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
                 error={errors.ExtraCarpetAreaOfferedType}
+                disabled={!isBuildingSelected}
               />
             </div>
           </div>
@@ -223,7 +227,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 label="Residential Extra Carpet (%)"
                 required
                 type="text"
-                value={formDataExtraCarpetArea.ResidentialExtraCarpetPercent || ''}
+                value={getInputValue(formDataExtraCarpetArea.ProposedOfferExtraCarpetAreaId, formDataExtraCarpetArea.ResidentialExtraCarpetPercent)}
                 onChange={(e) => {
                   const val = allowPercentage(e.target.value);
                   if (val !== null) {
@@ -233,6 +237,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 error={errors.ResidentialExtraCarpetPercent}
                 placeholder="Enter Residential Extra Carpet"
                 rightIcon="%"
+                disabled={!isBuildingSelected}
               />
             </div>
             <div>
@@ -240,7 +245,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 label="Commercial Extra Carpet (%)"
                 required
                 type="text"
-                value={formDataExtraCarpetArea.CommercialExtraCarpetPercent || ''}
+                value={getInputValue(formDataExtraCarpetArea.ProposedOfferExtraCarpetAreaId, formDataExtraCarpetArea.CommercialExtraCarpetPercent)}
                 onChange={(e) => {
                   const val = allowPercentage(e.target.value);
                   if (val !== null) {
@@ -250,6 +255,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 error={errors.CommercialExtraCarpetPercent}
                 placeholder="Enter Commercial Extra Carpet"
                 rightIcon="%"
+                disabled={!isBuildingSelected}
               />
             </div>
 
@@ -261,6 +267,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
               value={formDataExtraCarpetArea.Remark ?? ""}
               placeholder="Enter Remark"
               onChange={(e) => handleFieldChangeExtraCarpetArea("Remark", e.target.value)}
+              disabled={!isBuildingSelected}
             />
           </div>
         </div>

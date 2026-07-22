@@ -26,6 +26,7 @@ import {
 } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { isEmpty } from '@/core/utils/comman';
 
 interface ShiftingDetailsTabProps {
   projectId: number | null;
@@ -102,7 +103,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
               ProjectId: Number(projectId),
               ShiftingOfferedToResidentialAmount: data.ShiftingOfferedToResidentialAmount ?? 0,
               ShiftingOfferedToCommercialAmount: data.ShiftingOfferedToCommercialAmount ?? 0,
-              Remark:data.Remark ?? "",
+              Remark: data.Remark ?? "",
               ShiftingDetailsWithPaymentStageJSON: ''
             });
 
@@ -139,11 +140,11 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (!formDataShiftingDetails.ShiftingOfferedToResidentialAmount) {
+    if (isEmpty(formDataShiftingDetails.ShiftingOfferedToResidentialAmount)) {
       newErrors.ShiftingOfferedToResidentialAmount = "Residential Shifting Amount is required "
     }
 
-    if (!formDataShiftingDetails.ShiftingOfferedToCommercialAmount) {
+    if (isEmpty(formDataShiftingDetails.ShiftingOfferedToCommercialAmount)) {
       newErrors.ShiftingOfferedToCommercialAmount = "Commercial Shifting Amount is required"
     }
 
@@ -195,7 +196,16 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
       return
     }
 
-    else if (shiftingPaymentStageList.length === 0) {
+    setErrorsShiftingDetails({})
+
+    const validation = validateShiftingDetailsForm()
+
+    if (!validation.isValid) {
+      setErrorsShiftingDetails(validation.errors)
+      return
+    }
+
+    if (shiftingPaymentStageList.length === 0) {
       addToast({ type: "error", title: "Please add atleast one Shifting details" });
       return
     }
@@ -216,14 +226,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
       return;
     }
 
-    setErrorsShiftingDetails({})
 
-    const validation = validateShiftingDetailsForm()
-
-    if (!validation.isValid) {
-      setErrorsShiftingDetails(validation.errors)
-      return
-    }
 
     await runApiWithLoader(
       setIsLoading,
@@ -638,10 +641,12 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
       'Delete All Shifting Details'
     )
   };
+
+  const isBuildingSelected = buildingId > 0;
+
   return (
     <>
       <div className="space-y-6">
-        {/* Shifting Amount Details Section */}
         <div className="space-y-4">
 
           <div className="flex items-center justify-between border-b border-gray-500 pb-2">
@@ -649,7 +654,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
               Shifting Amount Details
             </h3>
 
-            {canAction && buildingId > 0 && shiftingPaymentStageList.length > 0 && (
+            {canAction && buildingId > 0 && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0 && (
               <Button
                 onClick={handleConfirmationDialogBoxOpenShiftingDetails}
                 color="red"
@@ -670,11 +675,11 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 required
                 type="text"
                 rightIcon="₹"
-                value={formDataShiftingDetails.ShiftingOfferedToResidentialAmount || ''}
+                value={formDataShiftingDetails.ShiftingOfferedToResidentialAmount || 0}
                 onChange={(e) => handleFieldChangeShiftingDetails('ShiftingOfferedToResidentialAmount', filterNumbersWithDecimal(e.target.value))}
                 error={errorsShiftingDetails.ShiftingOfferedToResidentialAmount}
                 placeholder="Enter Residential Shifting Amount"
-                disabled={shiftingPaymentStageList.some(x => x.Type?.toUpperCase() === "RESIDENTIAL")}
+                disabled={!isBuildingSelected || shiftingPaymentStageList.some(x => x.Type?.toUpperCase() === "RESIDENTIAL")}
               />
             </div>
             <div>
@@ -683,11 +688,11 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 required
                 type="text"
                 rightIcon="₹"
-                value={formDataShiftingDetails.ShiftingOfferedToCommercialAmount || ''}
+                value={formDataShiftingDetails.ShiftingOfferedToCommercialAmount || 0}
                 onChange={(e) => handleFieldChangeShiftingDetails('ShiftingOfferedToCommercialAmount', filterNumbersWithDecimal(e.target.value))}
                 error={errorsShiftingDetails.ShiftingOfferedToCommercialAmount}
                 placeholder="Enter Commercial Shifting Amount"
-                disabled={shiftingPaymentStageList.some(x => x.Type?.toUpperCase() === "COMMERCIAL")}
+                disabled={!isBuildingSelected || shiftingPaymentStageList.some(x => x.Type?.toUpperCase() === "COMMERCIAL")}
               />
             </div>
           </div>
@@ -699,18 +704,18 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 value={formDataShiftingDetails.Remark ?? ""}
                 placeholder="Enter Remarks"
                 onChange={(e) => handleFieldChangeShiftingDetails("Remark", e.target.value)}
+                disabled={!isBuildingSelected}
               />
             </div>
           </div>
         </div>
 
-        {/* Shifting List Section */}
         <div className="space-y-4 pb-5">
           <div className="flex items-center justify-between border-b border-gray-300 pb-2">
             <h3 className="text-lg font-semibold text-gray-900">
               Shifting List
             </h3>
-            {canAction && buildingId > 0 && (
+            {canAction && buildingId > 0 && (Number(formDataShiftingDetails.ShiftingOfferedToResidentialAmount) > 0 || Number(formDataShiftingDetails.ShiftingOfferedToCommercialAmount) > 0) && (
               <Button
                 onClick={handleAddShiftingPaymentStageModal}
                 color="blue"
@@ -718,6 +723,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 colorMode="extraLight"
                 style={{ width: '35px', height: '35px' }}
                 centerIcon={<Plus className="h-4 w-4" />}>
+                title="Delete"
               </Button>
             )}
           </div>
@@ -732,7 +738,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         </div>
       </div>
       <BottomActionBar
-        saveText={(formDataShiftingDetails.ProposedOfferShiftingDetailsId && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0) ? 'Update' : 'Save'}
+        saveText={(formDataShiftingDetails.ProposedOfferShiftingDetailsId && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0) ? 'Update' : 'Add'}
         canAction={canAction && buildingId > 0}
         onSave={handleSaveShiftingDetails}
         leftActionText={buildingId > 0 && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0 ? "Generate" : ""}
@@ -742,7 +748,6 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         isLoading={isLoading}
       />
 
-      {/* ADD UPDATE SHIFTING PAYMENT STAGE MODAL */}
       <Modal
         isOpen={isAddUpdateShiftingPaymentStageModalOpen}
         onClose={() => {
@@ -774,13 +779,20 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 onChange={(e) => {
                   const rawType = String(e);
                   handleFieldChangeShiftingPaymentStage('Type', rawType);
-                  recalculateShiftingPaymentAmount(
-                    rawType,
-                    formDataShiftingPaymentStage.StagePercentage
-                  );
+                  recalculateShiftingPaymentAmount(rawType,formDataShiftingPaymentStage.StagePercentage);
                 }}
                 options={FLAT_UNIT_TYPE
-                  .filter(opt => opt.id === 'Commercial' || opt.id === 'Residential')
+                  .filter(opt => {
+                    if (opt.id === "Residential" && Number(formDataShiftingDetails.ShiftingOfferedToResidentialAmount) > 0) {
+                      return true;
+                    }
+
+                    if (opt.id === "Commercial" && Number(formDataShiftingDetails.ShiftingOfferedToCommercialAmount) > 0) {
+                      return true;
+                    }
+
+                    return false;
+                  })
                   .map(opt => ({
                     label: opt.name,
                     value: opt.id
@@ -798,6 +810,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 onChange={(e) => handleFieldChangeShiftingPaymentStage('Stage', e.target.value)}
                 error={errorsShiftingPaymentStage.Stage}
                 placeholder="Enter Stage"
+                maxLength={100}
               />
             </div>
             <div>
@@ -806,11 +819,10 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 required
                 type="text"
                 rightIcon="%"
-                value={
-                  formDataShiftingPaymentStage.StagePercentageText ??
-                  formDataShiftingPaymentStage.StagePercentage
-                }
+                value={formDataShiftingPaymentStage.StagePercentageText ?? formDataShiftingPaymentStage.StagePercentage}
+
                 onChange={(e) => {
+
                   const raw = filterNumbersWithDecimal(e.target.value);
                   const safeValue = allowPercentage(raw);
                   if (safeValue === null) return;
@@ -826,10 +838,8 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                   const percent = Number(raw);
                   handleFieldChangeShiftingPaymentStage('StagePercentage', percent);
 
-                  recalculateShiftingPaymentAmount(
-                    formDataShiftingPaymentStage.Type,
-                    percent
-                  );
+                  recalculateShiftingPaymentAmount(formDataShiftingPaymentStage.Type,percent);
+
                 }}
                 error={errorsShiftingPaymentStage.StagePercentage}
                 placeholder="Enter Stage Percentage"

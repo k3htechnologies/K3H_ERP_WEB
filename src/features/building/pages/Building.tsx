@@ -335,7 +335,7 @@ export const Building: React.FC = () => {
         key: 'TotalPlotAreaSqMt',
         label: 'Total Plot Area (SqMt)',
         width: '18',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => value ?? '-'
       },
@@ -343,7 +343,7 @@ export const Building: React.FC = () => {
         key: 'TotalPlotAreaSqFt',
         label: 'Total Plot Area (SqFt)',
         width: '18',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => value ?? '-'
       },
@@ -351,7 +351,7 @@ export const Building: React.FC = () => {
         key: 'NumberOfWings',
         label: 'Wings',
         width: '12',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => value ?? '-'
       },
@@ -359,7 +359,7 @@ export const Building: React.FC = () => {
         key: 'TotalNumberOfUnits',
         label: 'Total Units',
         width: '18',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => value ?? '-'
       },
@@ -367,7 +367,7 @@ export const Building: React.FC = () => {
         key: 'NumberOfFloors',
         label: 'Floors',
         width: '12',
-        sortable: true,
+        sortable: false,
         align: 'center',
         render: value => value ?? '-'
       },
@@ -400,6 +400,14 @@ export const Building: React.FC = () => {
       {
         key: 'VillageName',
         label: 'Village',
+        width: '15',
+        sortable: false,
+        align: 'center',
+        render: (value) => value || '-'
+      },
+      {
+        key: 'WardName',
+        label: 'Ward',
         width: '15',
         sortable: false,
         align: 'center',

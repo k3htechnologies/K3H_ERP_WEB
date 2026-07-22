@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { THEME } from "@/core/constants/theme";
+import { InfoIcon } from "lucide-react";
 
 export interface DropdownOptions {
   label: string;
@@ -599,7 +600,21 @@ const MultiSelectPagination: React.FC<MultiSelectPaginationProps> = ({
         </div>
       )}
 
-      {error && <p style={{ color: theme.colors.error, fontSize: currentSize.fontSize - 2, marginTop: "8px" }}>{error}</p>}
+
+      {error &&
+       <div
+        style={{
+          marginTop: theme.spacing.sm,
+          fontSize: theme.fontSize.sm,
+          color: theme.colors.error,
+          display: "flex",
+          alignItems: "center",
+          gap: "6px",
+        }}
+      >
+        <InfoIcon height={14} />
+        {error}
+      </div>}
     </div>
   );
 };

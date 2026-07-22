@@ -117,8 +117,7 @@ export const AddRefundDetails: React.FC = () => {
     }, [location.state]);
 
 
-    const fetchProjectBankList = useCallback(
-        async (pageNumber: number, params?: { value?: string }) => {
+    const fetchProjectBankList = useCallback( async (pageNumber: number, params?: { value?: string }) => {
             return fetchProjectBankDropdown(pageNumber, {
                 projectId: projectId || 0,
                 bankName: params?.value || ""

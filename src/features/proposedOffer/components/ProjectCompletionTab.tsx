@@ -72,7 +72,8 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
               BuildingId: buildingId,
               ProjectId: Number(projectId),
               CompletionTimelineMonths: data.CompletionTimelineMonths ?? 0,
-              GracePeriodMonths: data.GracePeriodMonths ?? 0
+              GracePeriodMonths: data.GracePeriodMonths ?? 0,
+              Remark:data.Remark ?? ""
             });
           } else {
             setFormDataProjectCompletion({
@@ -140,7 +141,8 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
           BuildingId: buildingId,
           ProjectId: Number(projectId),
           CompletionTimelineMonths: formDataProjectCompletion.CompletionTimelineMonths,
-          GracePeriodMonths: formDataProjectCompletion.GracePeriodMonths
+          GracePeriodMonths: formDataProjectCompletion.GracePeriodMonths,
+          Remark:formDataProjectCompletion.Remark ?? ""
         };
 
         const response = await proposedOfferService.apiCallAddUpdateProjectCompletion(payload);
@@ -176,6 +178,8 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
     )
   };
 
+   const isBuildingSelected = buildingId > 0;
+
   return (
     <>
       <div className="space-y-6 pb-5">
@@ -194,6 +198,8 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
                 onChange={(e) => handleFieldChangeProjectCompletion('CompletionTimelineMonths', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                 error={errorsProjectCompletion.CompletionTimelineMonths}
                 placeholder="Enter Completion Timeline in Months"
+                disabled={!isBuildingSelected}
+                maxLength={7}
               />
             </div>
             <div>
@@ -205,6 +211,8 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
                 onChange={(e) => handleFieldChangeProjectCompletion('GracePeriodMonths', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                 error={errorsProjectCompletion.GracePeriodMonths}
                 placeholder="Enter Grace Period in Months"
+                disabled={!isBuildingSelected}
+                 maxLength={7}
               />
             </div>
           </div>
@@ -215,22 +223,15 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
               value={formDataProjectCompletion.Remark ?? ""}
               placeholder="Enter Remarks"
               onChange={(e) => handleFieldChangeProjectCompletion("Remark", e.target.value)}
+              disabled={!isBuildingSelected}
             />
 
           </div>
         </div>
       </div>
       <BottomActionBar
-        cancelText="Cancel"
         saveText={(formDataProjectCompletion.ProposedOfferProjectCompletionId && formDataProjectCompletion.ProposedOfferProjectCompletionId > 0) ? 'Update' : 'Add'}
-        onCancel={() => {
-          setFormDataProjectCompletion({
-            ...initialFormStateProjectCompletion(),
-            ProjectId: Number(projectId)
-          });
-          setErrorsProjectCompletion({});
-          fetchProjectCompletionData();
-        }}
+      
         canAction={canAction && buildingId > 0}
         onSave={handleSaveProjectCompletion}
         isLoading={isLoading}

@@ -26,7 +26,7 @@ import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { fetchSpecificationMasterDropdown } from "@/features/specificationMaster/utils/SpecificationMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
-import { fetchPaginatedFlatsDropdown } from "../utils/PaginatedFlatsDropDown";
+import { fetchPaginatedFlatsDropdown } from "../../inventory/PaginatedFlatsDropDown";
 import { updateFilter } from "@/core/utils/filterHelper";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { BUDGET_LEVEL_TYPE } from "@/core/constants";

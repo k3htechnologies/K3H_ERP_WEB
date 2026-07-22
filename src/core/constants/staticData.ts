@@ -652,6 +652,21 @@ export const MASTER_DATA = {
     "Vacating Consent Letter",
     "Yadi Slip"
   ],
+
+  financialYear: [
+    "2019-20",
+    "2020-21",
+    "2021-22",
+    "2022-23",
+    "2023-24",
+    "2024-25",
+    "2025-26",
+    "2026-27",
+    "2027-28",
+    "2028-29",
+    "2029-30",
+  ]
+
 } as const;
 
 // ============================================================================
@@ -777,6 +792,7 @@ export const BUDGET_LEVEL_TYPE = toOptions(MASTER_DATA.budgetLevelType);
 export const AOP_STATUS = toOptions(MASTER_DATA.aopStatus);
 export const TENDER_PAYMENT_MODE = toOptions(MASTER_DATA.tenderPaymentMode);
 export const TENANT_DOCUMENT_TYPE = toOptions(MASTER_DATA.tenantDocumentTypes);
+export const FINANCIAL_YEAR = toOptions(MASTER_DATA.financialYear);
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

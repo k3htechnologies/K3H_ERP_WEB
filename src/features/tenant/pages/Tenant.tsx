@@ -334,12 +334,11 @@ export const Tenant: React.FC = () => {
       },
       {
         key: "UnitAnnexureSurveyNumber",
-        label: "Unit / Annexure / Survey Number",
+        label: "Unit / Annx / Svy No.",
         width: "18",
         sortable: true,
         fixed: "left",
         align: "left",
-        wrap:true,
         truncate:false,
         render: (value, row) => (
           <TooltipText text={value || "-"} maxWidth="160px" tooltipThreshold={16} onClick={() => handleViewTenantDetails(row)} />
@@ -400,7 +399,7 @@ export const Tenant: React.FC = () => {
           },
           {
             key: "UnitCarpetAreaSqFt",
-            label: "Carpet Area (SqFt)",
+            label: "Carpet Area",
             width: "18",
             sortable: false,
             align: "center",
@@ -411,7 +410,7 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#EEF5FF'
             },
-            render: (value) => value ?? "-",
+             render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "UnitFacing",
@@ -432,7 +431,7 @@ export const Tenant: React.FC = () => {
       },
       {
         key: "Eligibility Group",
-        label: "Eligibility  Details",
+        label: "Eligibility  Details in Carpet Area (SqFt)",
         align: "center",
         theadStyle: {
           backgroundColor: '#FBF5FF',
@@ -444,8 +443,7 @@ export const Tenant: React.FC = () => {
             label: "Free Area Offered (%)",
             width: "25",
             sortable: false,
-            wrap:true,
-            align: "left",
+            align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
               color: '#64748B'
@@ -457,10 +455,9 @@ export const Tenant: React.FC = () => {
           },
           {
             key: "FreeMOFACarpetAreaSqFt",
-            label: "Free MOFA Carpet Area (SqFt)",
+            label: "Free MOFA ",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -469,14 +466,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "NewEligibilityMOFACarpetAreaSqFt",
-            label: "New Eligibility MOFA Carpet Area (SqFt)",
+            label: "New Eligibility MOFA",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -485,14 +481,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "NewEligibilityRERACarpetAreaSqFt",
-            label: "New Eligibility RERA Carpet Area (SqFt)",
+            label: "New Eligibility RERA",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -501,14 +496,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "MOFACarpetAreaPurchasedSqFt",
-            label: "MOFA Carpet Area Purchased (SqFt)",
+            label: "MOFA Purchased",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -517,14 +511,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "RERACarpetAreaPurchasedSqFt",
-            label: "RERA Carpet Area Purchased (SqFt)",
+            label: "RERA Purchased",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -533,14 +526,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "TotalNewMOFACarpetAreaSqFt",
-            label: "Total New MOFA Carpet Area (SqFt)",
+            label: "Total New MOFA",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -549,16 +541,15 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+           render: (value) => (value ? `${value} SqFt` : "-"),
           },
 
 
           {
             key: "TotalNewRERACarpetAreaSqFt",
-            label: "Total New Rera Carpet Area (SqFt)",
+            label: "Total New RERA (A)",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -567,11 +558,11 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "DeckAreaSqFt",
-            label: "Deck Area (SqFt)",
+            label: "Deck Area (B)",
             width: "25",
             sortable: false,
             align: "center",
@@ -582,14 +573,13 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "ExistingTerraceAreaSqFt",
-            label: "Existing Terrace Area(SqFt)",
+            label: "Existing Terrace Area",
             width: "25",
             sortable: false,
-            wrap:true,
             align: "center",
             theadStyle: {
               backgroundColor: '#FFF',
@@ -598,15 +588,14 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
           {
             key: "AreaAgainstTerraceSqFt",
-            label: "Area Against Terrace (SqFt)",
+            label: "Area Against Terrace (C)",
             width: "25",
             sortable: false,
             align: "center",
-            wrap:true,
             theadStyle: {
               backgroundColor: '#FFF',
               color: '#64748B'
@@ -614,15 +603,14 @@ export const Tenant: React.FC = () => {
             tdStyle: {
               backgroundColor: '#FBF5FF'
             },
-            render: (value) => value ?? "-",
+            render: (value) => (value ? `${value} SqFt` : "-"),
           },
 
 
           {
             key: "TotalNewRERACarpetAreaWithDeckSqFt",
-            label: "Total New Rera Carpet Area With Deck & Terrace(sq.ft)",
+            label: "Total (A + B + C)",
             width: "25",
-            wrap:true,
             sortable: false,
             align: "center",
             theadStyle: {
@@ -638,7 +626,7 @@ export const Tenant: React.FC = () => {
                 Number(row.DeckAreaSqFt || 0) +
                 Number(row.AreaAgainstTerraceSqFt || 0);
 
-              return total > 0 ? total.toFixed(2) : "-";
+              return total > 0 ? `${total.toFixed(2)} SqFt` : "-";
             },
           },
 

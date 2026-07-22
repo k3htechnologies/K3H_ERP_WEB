@@ -34,6 +34,7 @@ const initialFormState = (): AddUpdateBuildingRequest => ({
   StateMasterId: null,
   CityMasterId: null,
   VillageMasterId: null,
+  WardMasterId:null,
   TotalNumberOfUnits: null,
   
   TotalUnitsAreaUtilizedSqFt: null,
@@ -52,43 +53,29 @@ const initialFormState = (): AddUpdateBuildingRequest => ({
 
 const AddUpdateBuilding: React.FC = () => {
 
-  //#region STATE MANAGEMENT
-
   const [formData, setFormData] = useState<AddUpdateBuildingRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
-  // NAVIGATE
   const navigate = useNavigate();
 
-  //GET VALUE FROM URL :BUILDINGID
   const { buildingId } = useParams<{ buildingId?: string }>();
 
-  // TOAST
   const { addToast } = useToast();
-
-  //ERROR SET UP
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-  //#endregion
-
-  //#region PROJECT SELECTION GET ID
 
   const { projectId } = useProject()
 
-  //#endregion
-
-  //#region MENU PERMISSIONS
   const { canAction } = useMenuPermissions('/building');
-  //#endregion
-
-  //#region COUNTRY STATE CITY DISTRICT 
+  
   const {
     isLoading: isLocationLoading,
     countries,
     statesByCountryId,
     districtsByStateId,
     citiesByDistrictId,
+    wardByDistrictId,
     villagesByCityId
   } = useCountryStateCityDistrictVillageData()
 
@@ -96,6 +83,7 @@ const AddUpdateBuilding: React.FC = () => {
   const [selectedStateId, setSelectedStateId] = React.useState<number | null>(null)
   const [selectedDistrictId, setSelectedDistrictId] = React.useState<number | null>(null)
   const [selectedCityId, setSelectedCityId] = React.useState<number | null>(null)
+  const [selectedWardId, setSelectedWardId] = React.useState<number | null>(null)
   const [selectedVillageId, setSelectedVillageId] = React.useState<number | null>(null)
 
   const countryOptions = countries.map(c => ({ label: c.name, value: c.id }))
@@ -124,6 +112,14 @@ const AddUpdateBuilding: React.FC = () => {
       }))
       : [];
 
+   const wardOptions =
+    selectedDistrictId != null
+      ? (wardByDistrictId[selectedDistrictId] || []).map(c => ({
+        label: c.name,
+        value: c.id,
+      }))
+      : [];
+
   const villageOptions =
     selectedCityId != null
       ? (villagesByCityId[selectedCityId] || []).map(c => ({
@@ -133,10 +129,6 @@ const AddUpdateBuilding: React.FC = () => {
       : [];
 
 
-
-  //#endregion
-
-  //#region HANDLE FILED CHNAGE EVENT
   const handleFieldChange = (field: keyof AddUpdateBuildingRequest, value: any) => {
 
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -145,9 +137,7 @@ const AddUpdateBuilding: React.FC = () => {
       setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
-  //#endregion
-
-  //#region INITIALIZATION
+  
 
   useEffect(() => {
     if (buildingId) {
@@ -160,9 +150,6 @@ const AddUpdateBuilding: React.FC = () => {
 
   }, [buildingId]);
 
-  //#endregion
-
-  //#region FETCH BUILDING DETAILS
   const fetchBuildingDetails = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -200,6 +187,7 @@ const AddUpdateBuilding: React.FC = () => {
               StateMasterId: e.StateMasterId ?? prev.StateMasterId,
               CityMasterId: e.CityMasterId ?? prev.CityMasterId,
               VillageMasterId: e.VillageMasterId ?? prev.VillageMasterId,
+              WardMasterId: e.WardMasterId ?? prev.WardMasterId,
               TotalNumberOfUnits: e.TotalNumberOfUnits ?? prev.TotalNumberOfUnits,
               TotalUnitsAreaUtilizedSqFt: e.TotalUnitsAreaUtilizedSqFt ?? prev.TotalUnitsAreaUtilizedSqFt,
               IsGarden: e.IsGarden ?? prev.IsGarden,
@@ -219,6 +207,7 @@ const AddUpdateBuilding: React.FC = () => {
             setSelectedStateId(e.StateMasterId ?? null);
             setSelectedDistrictId(e.DistrictMasterId ?? null);
             setSelectedCityId(e.CityMasterId ?? null);
+            setSelectedWardId(e.WardMasterId ?? null);
             setSelectedVillageId(e.VillageMasterId ?? null);
           }
         } else {
@@ -296,6 +285,9 @@ const AddUpdateBuilding: React.FC = () => {
     if (!formData.VillageMasterId) {
       newErrors.VillageMasterId = "Village is required";
     }
+    if (!formData.WardMasterId) {
+      newErrors.WardMasterId = "Ward is required";
+    }
 
     return {
       isValid: Object.keys(newErrors).length === 0,
@@ -319,6 +311,7 @@ const AddUpdateBuilding: React.FC = () => {
       StateMasterId: formData.StateMasterId,
       CityMasterId: formData.CityMasterId,
       VillageMasterId: formData.VillageMasterId,
+      WardMasterId: formData.WardMasterId,
       TotalNumberOfUnits: formData.TotalNumberOfUnits || 0,
       TotalUnitsAreaUtilizedSqFt: formData.TotalUnitsAreaUtilizedSqFt || 0,
       IsGarden: formData.IsGarden || false,
@@ -638,12 +631,14 @@ const AddUpdateBuilding: React.FC = () => {
                       setSelectedStateId(null);
                       setSelectedDistrictId(null);
                       setSelectedCityId(null);
+                      setSelectedWardId(null);
                       setSelectedVillageId(null);
 
                       handleFieldChange('CountryMasterId', 0);
                       handleFieldChange('StateMasterId', 0);
                       handleFieldChange('DistrictMasterId', 0);
                       handleFieldChange('CityMasterId', 0);
+                      handleFieldChange('WardMasterId', 0);
                       handleFieldChange('VillageMasterId', 0);
 
                       return;
@@ -655,12 +650,14 @@ const AddUpdateBuilding: React.FC = () => {
                     setSelectedStateId(null);
                     setSelectedDistrictId(null);
                     setSelectedCityId(null);
+                    setSelectedWardId(null);
                     setSelectedVillageId(null);
 
                     handleFieldChange('CountryMasterId', id);
                     handleFieldChange('StateMasterId', 0);
                     handleFieldChange('DistrictMasterId', 0);
                     handleFieldChange('CityMasterId', 0);
+                    handleFieldChange('WardMasterId', 0);
                     handleFieldChange('VillageMasterId', 0);
                   }}
                   disabled={isLocationLoading}
@@ -684,11 +681,13 @@ const AddUpdateBuilding: React.FC = () => {
                       setSelectedStateId(null);
                       setSelectedDistrictId(null);
                       setSelectedCityId(null);
+                      setSelectedWardId(null);
                       setSelectedVillageId(null);
 
                       handleFieldChange("StateMasterId", 0);
                       handleFieldChange("DistrictMasterId", 0);
                       handleFieldChange("CityMasterId", 0);
+                      handleFieldChange('WardMasterId', 0);
                       handleFieldChange('VillageMasterId', 0);
 
                       return;
@@ -699,11 +698,13 @@ const AddUpdateBuilding: React.FC = () => {
                     setSelectedStateId(id);
                     setSelectedDistrictId(null);
                     setSelectedCityId(null);
+                    setSelectedWardId(null);
                     setSelectedVillageId(null);
 
                     handleFieldChange("StateMasterId", id);
                     handleFieldChange("DistrictMasterId", 0);
                     handleFieldChange("CityMasterId", 0);
+                    handleFieldChange('WardMasterId', 0);
                     handleFieldChange('VillageMasterId', 0);
                   }}
                   disabled={!selectedCountryId || stateOptions.length === 0}
@@ -726,10 +727,12 @@ const AddUpdateBuilding: React.FC = () => {
                     if (!item) {
                       setSelectedDistrictId(null);
                       setSelectedCityId(null);
+                      setSelectedWardId(null);
                       setSelectedVillageId(null);
 
                       handleFieldChange('DistrictMasterId', 0);
                       handleFieldChange('CityMasterId', 0);
+                      handleFieldChange('WardMasterId', 0);
                       handleFieldChange('VillageMasterId', 0);
                       return;
                     }
@@ -738,10 +741,12 @@ const AddUpdateBuilding: React.FC = () => {
 
                     setSelectedDistrictId(id);
                     setSelectedCityId(null);
+                    setSelectedWardId(null);
                     setSelectedVillageId(null);
 
                     handleFieldChange('DistrictMasterId', id);
                     handleFieldChange('CityMasterId', 0);
+                    handleFieldChange('WardMasterId', 0);
                     handleFieldChange('VillageMasterId', 0);
                   }}
                   disabled={!selectedStateId || districtOptions.length === 0}
@@ -802,6 +807,33 @@ const AddUpdateBuilding: React.FC = () => {
                   }}
                   disabled={!selectedCityId || villageOptions.length === 0}
                   options={villageOptions}
+                />
+
+              </div>
+              
+              <div>
+
+                <SinglePageSelection
+                  label='Ward'
+                  placeholder="Select Ward"
+                  required
+                  value={selectedWardId ?? ''}
+                  error={errors.WardMasterId}
+                  onChange={(item) => {
+
+                    if (!item) {
+                      setSelectedWardId(null);
+                      handleFieldChange('WardMasterId', 0);
+                      return;
+                    }
+
+                    const id = Number(item);
+
+                    setSelectedWardId(id);
+                    handleFieldChange('WardMasterId', id);
+                  }}
+                  disabled={!selectedDistrictId || wardOptions.length === 0}
+                  options={wardOptions}
                 />
 
               </div>

@@ -42,6 +42,9 @@ export interface BuildingData {
   VillageMasterId: number | null;
   VillageName: string;
 
+  WardMasterId: number | null;
+  WardName: string;
+
   TotalNumberOfUnits: number | null;
   TotalUnitsAreaUtilizedSqFt: number | null;
 
@@ -86,6 +89,7 @@ export interface AddUpdateBuildingRequest {
   StateMasterId: number | null;
   CityMasterId: number | null;
   VillageMasterId: number | null;
+  WardMasterId: number | null;
   TotalNumberOfUnits: number | null;
   TotalUnitsAreaUtilizedSqFt: number | null;
   IsGarden: boolean | null;
@@ -137,6 +141,9 @@ export interface BuildingDetailsData {
   TotalResidentialCarpetAreaSqFt?: number | null;
   TotalCommercialUnits?: number | null;
   TotalCommercialCarpetAreaSqFt?: number | null;
+
+  TotalGarageCarpetAreaSqFt?: number;
+  TotalTerraceCarpetAreaSqFt?: number;
 
   // ===================== [BUILDING KEY CONTACT DETAILS] =====================
   BuildingKeyContactDetailsData?: BuildingKeyContactDetails[];
@@ -190,7 +197,8 @@ export interface AddUpdateBuildingDetailsRequest {
   TotalResidentialCarpetAreaSqFt?: number;
   TotalCommercialUnits?: number;
   TotalCommercialCarpetAreaSqFt?: number;
-
+  TotalGarageCarpetAreaSqFt?: number;
+  TotalTerraceCarpetAreaSqFt?: number;
   // ================== [BUILDING KEY CONTACT DETAILS] ===============
   BuildingKeyContactDetailsJSON?: string;
 }

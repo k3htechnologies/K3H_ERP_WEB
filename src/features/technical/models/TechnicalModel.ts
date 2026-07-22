@@ -47,6 +47,8 @@ export interface CountryStateCityDistrictVillageData {
     CityMasterId: number
     CityName: string
     DistrictMasterIdRef: number
+    WardMasterId: number
+    WardName: string
     VillageMasterId: number
     VillageName: string
     CityMasterIdRef: number

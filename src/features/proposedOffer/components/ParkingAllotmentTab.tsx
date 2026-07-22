@@ -72,7 +72,8 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
               BuildingId: buildingId,
               ProjectId: Number(projectId),
               NumberOfParkingAllottedToMembers: data.NumberOfParkingAllottedToMembers ?? 0,
-              TotalParkingPercentageAllottedToSociety: data.TotalParkingPercentageAllottedToSociety ?? 0
+              TotalParkingPercentageAllottedToSociety: data.TotalParkingPercentageAllottedToSociety ?? 0,
+              Remark: data.Remark ?? "",
             });
           } else {
             setFormDataParkingAllotment({
@@ -101,14 +102,17 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (!formDataParkingAllotment.NumberOfParkingAllottedToMembers) {
-      newErrors.NumberOfParkingAllottedToMembers = "Number of Parking Allotted to Members is required"
+    const hasParking = Number(formDataParkingAllotment.NumberOfParkingAllottedToMembers) > 0;
+
+    const hasPercentage = Number(formDataParkingAllotment.TotalParkingPercentageAllottedToSociety) > 0;
+
+    if (!hasParking && !hasPercentage) {
+      newErrors.NumberOfParkingAllottedToMembers = "Number of Parking Allotted to Members is required";
+      newErrors.TotalParkingPercentageAllottedToSociety = "Total Parking Percentage Allotted to Society is required";
     }
 
-    if (!formDataParkingAllotment.TotalParkingPercentageAllottedToSociety) {
-      newErrors.TotalParkingPercentageAllottedToSociety = 'Total Parking Percentage is required'
-    } else if (!isValidPercentage(String(formDataParkingAllotment.TotalParkingPercentageAllottedToSociety))) {
-      newErrors.TotalParkingPercentageAllottedToSociety = 'Enter a valid percentage'
+    if (hasPercentage && !isValidPercentage(String(formDataParkingAllotment.TotalParkingPercentageAllottedToSociety))) {
+      newErrors.TotalParkingPercentageAllottedToSociety = "Enter a valid percentage";
     }
 
     return {
@@ -142,7 +146,8 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
           BuildingId: buildingId,
           ProjectId: Number(projectId),
           NumberOfParkingAllottedToMembers: formDataParkingAllotment.NumberOfParkingAllottedToMembers,
-          TotalParkingPercentageAllottedToSociety: formDataParkingAllotment.TotalParkingPercentageAllottedToSociety
+          TotalParkingPercentageAllottedToSociety: formDataParkingAllotment.TotalParkingPercentageAllottedToSociety,
+          Remark: formDataParkingAllotment.Remark
         };
 
         const response = await proposedOfferService.apiCallAddUpdateParkingAllotment(payload);
@@ -178,6 +183,8 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
     )
   };
 
+   const isBuildingSelected = buildingId > 0;
+
   return (
     <>
       <div className="space-y-6 pb-5">
@@ -192,10 +199,12 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
                 label="Number of Parking Allotted to Members"
                 required
                 type="text"
-                value={formDataParkingAllotment.NumberOfParkingAllottedToMembers || ''}
+                disabled={!isBuildingSelected || Number(formDataParkingAllotment.TotalParkingPercentageAllottedToSociety) > 0}
+                value={formDataParkingAllotment.NumberOfParkingAllottedToMembers || 0}
                 onChange={(e) => handleFieldChangeParkingAllotment('NumberOfParkingAllottedToMembers', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                 error={errorsParkingAllotment.NumberOfParkingAllottedToMembers}
                 placeholder="Enter Number of Parking Allotted to Members"
+                maxLength={5}
               />
             </div>
             <div>
@@ -204,7 +213,8 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
                 required
                 type="text"
                 rightIcon="%"
-                value={formDataParkingAllotment.TotalParkingPercentageAllottedToSociety || ''}
+                disabled={!isBuildingSelected || Number(formDataParkingAllotment.NumberOfParkingAllottedToMembers) > 0}
+                value={formDataParkingAllotment.TotalParkingPercentageAllottedToSociety || 0}
                 onChange={(e) => {
                   const val = allowPercentage(e.target.value);
                   if (val !== null) {
@@ -223,21 +233,13 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
               value={formDataParkingAllotment.Remark ?? ""}
               placeholder="Enter Remark"
               onChange={(e) => handleFieldChangeParkingAllotment("Remark", e.target.value)}
+              disabled={!isBuildingSelected}
             />
           </div>
         </div>
       </div>
       <BottomActionBar
-        cancelText="Cancel"
         saveText={(formDataParkingAllotment.ProposedOfferParkingAllotmentId && formDataParkingAllotment.ProposedOfferParkingAllotmentId > 0) ? 'Update' : 'Add'}
-        onCancel={() => {
-          setFormDataParkingAllotment({
-            ...initialFormStateParkingAllotment(),
-            ProjectId: Number(projectId)
-          });
-          setErrorsParkingAllotment({});
-          fetchParkingAllotmentData();
-        }}
         canAction={canAction && buildingId > 0}
         onSave={handleSaveParkingAllotment}
         isLoading={isLoading}

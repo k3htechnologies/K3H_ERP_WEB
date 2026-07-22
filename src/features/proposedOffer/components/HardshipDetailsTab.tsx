@@ -26,6 +26,8 @@ import {
 } from '@/features/proposedOffer/utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import TooltipText from '@/ui/components/Tooltip/TooltipText';
+import { getInputValue, isEmpty } from '@/core/utils/comman';
 
 interface HardshipDetailsTabProps {
   projectId: number | null;
@@ -138,12 +140,12 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (!formDataHardshipDetails.HardshipOfferedToResidentialAmount) {
-      newErrors.HardshipOfferedToResidentialAmount = 'Residential Hardship Amount is required'
+    if (isEmpty(formDataHardshipDetails.HardshipOfferedToResidentialAmount)) {
+      newErrors.HardshipOfferedToResidentialAmount = 'Residential Hardship Offer Amount is required'
     }
 
-    if (!formDataHardshipDetails.HardshipOfferedToCommercialAmount) {
-      newErrors.HardshipOfferedToCommercialAmount = 'Commercial Hardship Amount is required'
+    if (isEmpty(formDataHardshipDetails.HardshipOfferedToCommercialAmount)) {
+      newErrors.HardshipOfferedToCommercialAmount = 'Commercial Hardship Offer Amount is required'
     }
 
     return {
@@ -189,30 +191,10 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
       commercialHardship: formDataHardshipDetails.HardshipOfferedToCommercialAmount ?? 0
     });
 
+
     if (buildingId === 0) {
       addToast({ type: "error", title: "Please select proper building first" });
       return
-    }
-
-    else if (corpusPaymentStageList.length === 0) {
-      addToast({ type: "error", title: "Please add atleast one corpus" });
-      return
-    }
-
-    else if (!residentialOk) {
-      addToast({
-        type: "error",
-        title: `Residential total (${residentialTotal}) cannot be greater than corpus amount (${formDataHardshipDetails.HardshipOfferedToResidentialAmount}).`
-      });
-      return;
-    }
-
-    else if (!commercialOk) {
-      addToast({
-        type: "error",
-        title: `Commercial total (${commercialTotal}) cannot be greater than corpus amount (${formDataHardshipDetails.HardshipOfferedToCommercialAmount}).`
-      });
-      return;
     }
 
     setErrorsHardshipDetails({})
@@ -223,6 +205,28 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
       setErrorsHardshipDetails(validation.errors)
       return
     }
+
+    if (corpusPaymentStageList.length === 0) {
+      addToast({ type: "error", title: "Please add atleast one Hardship Offer" });
+      return
+    }
+
+    else if (!residentialOk) {
+      addToast({
+        type: "error",
+        title: `Residential total (${residentialTotal}) cannot be greater than Hardship amount (${formDataHardshipDetails.HardshipOfferedToResidentialAmount}).`
+      });
+      return;
+    }
+
+    else if (!commercialOk) {
+      addToast({
+        type: "error",
+        title: `Commercial total (${commercialTotal}) cannot be greater than Hardship amount (${formDataHardshipDetails.HardshipOfferedToCommercialAmount}).`
+      });
+      return;
+    }
+
 
     await runApiWithLoader(
       setIsLoading,
@@ -507,7 +511,13 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
         width: '20',
         sortable: false,
         align: 'left',
-        render: (value) => value || '-'
+        render: (value) => (
+          <TooltipText
+            text={value || '-'}
+            maxWidth="180px"
+            tooltipThreshold={18}
+          />
+        )
       },
       {
         key: 'StagePercentage',
@@ -527,7 +537,7 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
       },
       {
         key: 'UnitSqFtLumsum',
-        label: 'Unit / Sq Ft / Lumsum',
+        label: 'Unit / SqFt / Lumpsum',
         width: '20',
         sortable: false,
         align: 'left',
@@ -535,7 +545,7 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
       },
       {
         key: 'CarpetAreaSqFt',
-        label: 'Carpet Area (Sq Ft)',
+        label: 'Carpet Area (SqFt)',
         width: '20',
         sortable: false,
         align: 'right',
@@ -668,16 +678,18 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
     )
   };
 
+  const isBuildingSelected = buildingId > 0;
+
   return (
     <>
       <div className="space-y-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between border-b border-gray-500 pb-2">
             <h3 className="text-lg font-semibold text-gray-900">
-              Hardship Amount Details
+              Hardship Offer Amount Details
             </h3>
 
-            {canAction && buildingId > 0 && corpusPaymentStageList.length > 0 && (
+            {canAction && buildingId > 0 && formDataHardshipDetails.ProposedOfferHardshipDetailsId > 0 && (
               <Button
                 onClick={handleConfirmationDialogBoxOpenHardshipDetails}
                 color="red"
@@ -685,8 +697,8 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
                 colorMode="extraLight"
                 style={{ width: '35px', height: '35px' }}
                 centerIcon={<Trash2 className="h-4 w-4" />}
+                title="Delete"
               >
-
               </Button>
             )}
 
@@ -694,38 +706,40 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
               <Input
-                label="Residential Hardship Amount (₹)"
+                label="Residential Hardship Offer Amount (₹)"
                 required
                 type="text"
                 rightIcon="₹"
-                value={formDataHardshipDetails.HardshipOfferedToResidentialAmount || ''}
-                onChange={(e) =>
-                  handleFieldChangeHardshipDetails('HardshipOfferedToResidentialAmount',
-                    e.target.value === ''
-                      ? null
-                      : Number(filterNumbersWithDecimal(e.target.value))
-                  )
-                }
+                value={getInputValue(formDataHardshipDetails.ProposedOfferHardshipDetailsId, formDataHardshipDetails.HardshipOfferedToResidentialAmount)}
+                onChange={(e) => {
+                  const val = allowPercentage(e.target.value);
+                  if (val !== null) {
+                    handleFieldChangeHardshipDetails("HardshipOfferedToResidentialAmount", filterNumbersWithDecimal(e.target.value));
+                  }
+                }}
                 error={errorsHardshipDetails.HardshipOfferedToResidentialAmount}
                 placeholder="Enter Residential Hardship Amount"
-                disabled={corpusPaymentStageList.some(x => x.Type?.toUpperCase() === "RESIDENTIAL")}
+                disabled={!isBuildingSelected || corpusPaymentStageList.some(x => x.Type?.toUpperCase() === "RESIDENTIAL")}
               />
             </div>
 
             <div>
               <Input
-                label="Commercial Hardship Amount (₹)"
+                label="Commercial Hardship Offer Amount (₹)"
                 required
                 type="text"
                 rightIcon="₹"
-                value={formDataHardshipDetails.HardshipOfferedToCommercialAmount || ''}
-                onChange={(e) => handleFieldChangeHardshipDetails('HardshipOfferedToCommercialAmount',
-                  e.target.value === ''
-                    ? null
-                    : Number(filterNumbersWithDecimal(e.target.value)))}
+                value={getInputValue(formDataHardshipDetails.ProposedOfferHardshipDetailsId, formDataHardshipDetails.HardshipOfferedToCommercialAmount)}
+
+                onChange={(e) => {
+                  const val = allowPercentage(e.target.value);
+                  if (val !== null) {
+                    handleFieldChangeHardshipDetails("HardshipOfferedToCommercialAmount", filterNumbersWithDecimal(e.target.value));
+                  }
+                }}
                 error={errorsHardshipDetails.HardshipOfferedToCommercialAmount}
                 placeholder="Enter Commercial Hardship Amount"
-                disabled={corpusPaymentStageList.some(x => x.Type?.toUpperCase() === "COMMERCIAL")}
+                disabled={!isBuildingSelected || corpusPaymentStageList.some(x => x.Type?.toUpperCase() === "COMMERCIAL")}
               />
             </div>
           </div>
@@ -736,6 +750,7 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
               value={formDataHardshipDetails.Remark ?? ""}
               placeholder="Enter Remarks"
               onChange={(e) => handleFieldChangeHardshipDetails("Remark", e.target.value)}
+              disabled={!isBuildingSelected}
             />
           </div>
         </div>
@@ -744,10 +759,10 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
           <div className="flex items-center justify-between border-b border-gray-300 pb-2">
 
             <h3 className="text-lg font-semibold text-gray-900">
-              Hardship List
+              Hardship Offer List
             </h3>
 
-            {canAction && buildingId > 0 && (
+            {canAction && buildingId > 0 && (Number(formDataHardshipDetails.HardshipOfferedToResidentialAmount) > 0 || Number(formDataHardshipDetails.HardshipOfferedToCommercialAmount) > 0) && (
               <Button
                 onClick={handleAddHardshipPaymentStageModal}
                 color="blue"
@@ -773,7 +788,7 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
       </div>
 
       <BottomActionBar
-        saveText={(formDataHardshipDetails.ProposedOfferHardshipDetailsId && formDataHardshipDetails.ProposedOfferHardshipDetailsId > 0) ? 'Update' : 'Save'}
+        saveText={(formDataHardshipDetails.ProposedOfferHardshipDetailsId && formDataHardshipDetails.ProposedOfferHardshipDetailsId > 0) ? 'Update' : 'Add'}
         canAction={buildingId > 0 && canAction}
         onSave={handleSaveHardshipDetails}
         leftActionText={buildingId > 0 && formDataHardshipDetails.ProposedOfferHardshipDetailsId > 0 ? "Generate" : ""}
@@ -822,7 +837,17 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
                   );
                 }}
                 options={FLAT_UNIT_TYPE
-                  .filter(opt => opt.id === 'Commercial' || opt.id === 'Residential')
+                  .filter(opt => {
+                    if (opt.id === "Residential" && Number(formDataHardshipDetails.HardshipOfferedToResidentialAmount) > 0) {
+                      return true;
+                    }
+
+                    if (opt.id === "Commercial" && Number(formDataHardshipDetails.HardshipOfferedToCommercialAmount) > 0) {
+                      return true;
+                    }
+
+                    return false;
+                  })
                   .map(opt => ({
                     label: opt.name,
                     value: opt.id
@@ -841,6 +866,7 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
                 onChange={(e) => handleFieldChangeHardshipPaymentStage('Stage', e.target.value)}
                 error={errorsHardshipPaymentStage.Stage}
                 placeholder="Enter Stage"
+                maxLength={100}
               />
             </div>
 
@@ -894,8 +920,8 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
             </div>
             <div>
               <SinglePageSelection
-                label="Unit / Sq Ft / Lumsum"
-                placeholder='Select Unit / Sq Ft / Lumsum'
+                label="Unit / SqFt / Lumpsum"
+                placeholder='Select Unit / SqFt / Lumpsum'
                 required
                 value={formDataHardshipPaymentStage.UnitSqFtLumsum || ''}
                 onChange={(e) => handleFieldChangeHardshipPaymentStage('UnitSqFtLumsum', String(e))}
@@ -906,8 +932,7 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
 
             <div>
               <Input
-                label="Carpet Area (Sq Ft)"
-                required
+                label="Carpet Area (SqFt)"
                 type="text"
                 value={formDataHardshipPaymentStage.CarpetAreaSqFt || ''}
                 onChange={(e) => {
@@ -944,8 +969,8 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
         onConfirm={handleGenerateHardshipDetails}
         loading={isLoading}
         pageName='rent'
-        title='Are sure you want generate corpus?'
-        message="Once the corpus is generated, it cannot be deleted"
+        title='Are sure you want generate hardship?'
+        message="Once the hardship is generated, it cannot be deleted"
         confirmText='Generate'
         variant='generate'
       />
@@ -955,8 +980,8 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
         onClose={() => { setIsConfirmationDialogBoxOpenDeleteAllHardshipDetails(false); }}
         onConfirm={handleDeleteAllHardshipDetails}
         loading={isLoading}
-        pageName='corpus'
-        title='Are sure you want delete corpus amount?'
+        pageName='hardship'
+        title='Are sure you want delete hardship amount?'
         confirmText='Delete All'
       />
 

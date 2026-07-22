@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
 import type {
-
     ProposedOfferProposedPlanData,
     FilterWithPaginationProposedOfferProposedPlanRequest,
     AddUpdateProposedOfferProposedPlanRequest,
@@ -21,45 +20,43 @@ import { AMENITIES_BY_CATEGORY } from '@/core/constants';
 import MultiFilePicker from '@/ui/components/ImagePicker/MultiFilePicker';
 import MultiSelectCheckBoxWithCategory from '@/ui/components/forms/MultiSelectCheckBoxWithCategory';
 import { ExpandableCard } from '@/ui/components/Card/ExpandableCard';
+import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleSelectDropdownWithPagination';
+import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
+import Tabs from '@/ui/components/Tab/Tab';
 
 //#region INITIAL FORM STATE - PROPOSED PLAN
 const initialFormStateProposedPlan = (): AddUpdateProposedOfferProposedPlanRequest => ({
     ProposedOfferProposedPlanId: 0,
     Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
     ProjectId: 0,
-
     TotalNumberOfBuilding: 0,
     TotalNumberOfWing: 0,
     TotalPodium: 0,
     TotalUnits: 0,
     TotalParking: 0,
-
     PlanDocumentURL: null,
     RemovePlanDocumentURL: '',
-
     ThreeDViewURL: null,
     RemoveThreeDViewURL: '',
-
     WalkthroughViewURL: null,
     RemoveWalkthroughViewURL: '',
-
     SalesPlanURL: null,
     RemoveSalesPlanURL: '',
-
     Amenities: '',
     ProposedOfferProposedPlanJSON: null,
+    SalesResidentialParking: 0,
+    SalesCommercialParking: 0,
+    SalesVisitorsParking: 0,
+    MemberResidentialParking: 0,
+    MemberCommercialParking: 0,
+    MemberVisitorsParking: 0,
 
-
-    // Check With Sir
-    TotalNumberOfFloors: 0,
-    TotalAmmenitiesAreaSqFt: 0,
-    MinEntranceLobbyAreaSqFt: 0,
-    NumberOfLiftsWingWise: 0
 });
 
 //#region INITIAL FORM STATE - WING PLAN
 const initialFormStateWingPlan = (): ProposedPlanWingWiseData => ({
     ProposedPlanWingWiseId: 0,
+
     Wings: '',
     MainEntranceLobbyAreaSqFt: 0,
     TotalNumberOfLifts: 0,
@@ -67,13 +64,20 @@ const initialFormStateWingPlan = (): ProposedPlanWingWiseData => ({
     TotalNumberOfUnitsForMember: 0,
     TotalNumberOfUnitsForSale: 0,
     TotalNumberOfAreaForMemberSqFt: 0,
-    TotalNumberOfAreaForSaleSqFt: 0
+    TotalNumberOfAreaForSaleSqFt: 0,
+    BuildingId: 0
 });
 //#endregion
 
 export const ProposedPlan: React.FC = () => {
 
-    //#region STATE
+    const ProposedPlanTabList = [
+        { id: 'BasicDetails', label: 'Basic Details' },
+        { id: 'Ammenities', label: 'Ammenities' },
+    ];
+
+    const [activeTab, setActiveTab] = useState(ProposedPlanTabList[0].id);
+
     const [, setProposedPlanData] = useState<ProposedOfferProposedPlanData | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
@@ -82,50 +86,57 @@ export const ProposedPlan: React.FC = () => {
     const [removedPlanDocumentUrls, setRemovedPlanDocumentUrls] = useState<string[]>([]);
     const [planDocumentURL, setPlanDocumentURL] = useState<string>();
 
-    // 3D View Document 
     const [threeDViewFiles, setThreeDViewFiles] = useState<(File | string)[]>([]);
     const [removedThreeDViewUrls, setRemovedThreeDViewUrls] = useState<string[]>([]);
     const [threeDViewURL, setThreeDViewURL] = useState<string>();
 
-    // Walk Through View Document
     const [walkThroughViewFiles, setWalkThroughViewFiles] = useState<(File | string)[]>([]);
     const [removedWalkThroughViewUrls, setRemovedWalkThroughViewUrls] = useState<string[]>([]);
     const [walkThroughViewURL, setWalkThroughViewURL] = useState<string>();
 
-    // Sales Plan Document
     const [salesPlanDocumentFiles, setSalesPlanDocumentFiles] = useState<(File | string)[]>([]);
     const [removedSalesPlanDocumentUrls, setRemovedSalesPlanDocumentUrls] = useState<string[]>([]);
     const [salesPlanDocumentURL, setSalesPlanDocumentURL] = useState<string>();
 
-    // TOAST
     const { addToast } = useToast();
 
-    //ERROR SET UP
     const [errorsProposedPlan, setErrorsProposedPlan] = useState<{ [k: string]: string }>({});
 
-    // ADD UPDATE PROPOSED PLAN
     const [formDataProposedPlan, setFormDataProposedPlan] = useState<AddUpdateProposedOfferProposedPlanRequest>(() => initialFormStateProposedPlan());
 
-    // ADD UPDATE WING PLAN
     const [wingsFormData, setWingsFormData] = useState<{ [key: number]: ProposedPlanWingWiseData }>({});
     const [savedWingsData, setSavedWingsData] = useState<{ [key: number]: ProposedPlanWingWiseData }>({});
 
-    // Error WingPlan
     const [wingsErrors, setWingsErrors] = useState<{ [key: number]: { [k: string]: string } }>({});
 
-
-
-    //#endregion
-
-    //#region MENU PERMISSIONS
     const { canAction } = useMenuPermissions();
-    //#endregion
 
-    //#region PROJECT SELECTION GET ID
     const { projectId } = useProject();
-    //#endregion
 
-    //#region INIT
+    const finalTotalParkingCount = useMemo(() => {
+        const {
+            SalesResidentialParking = 0,
+            SalesCommercialParking = 0,
+            SalesVisitorsParking = 0,
+            MemberResidentialParking = 0,
+            MemberCommercialParking = 0,
+            MemberVisitorsParking = 0
+        } = formDataProposedPlan || {};
+
+        return Number(SalesResidentialParking) +
+            Number(SalesCommercialParking) +
+            Number(SalesVisitorsParking) +
+            Number(MemberResidentialParking) +
+            Number(MemberCommercialParking) +
+            Number(MemberVisitorsParking);
+    }, [formDataProposedPlan]);
+
+    const grandTotalUnit = useMemo(() => {
+        return Object.values(savedWingsData).reduce(
+            (sum, wing) => sum + (Number(wing?.TotalNumberOfUnitsForMember || 0) + Number(wing?.TotalNumberOfUnitsForSale || 0)),
+            0
+        );
+    }, [savedWingsData]);
 
     useEffect(() => {
         if (!projectId) return;
@@ -142,21 +153,15 @@ export const ProposedPlan: React.FC = () => {
         setWalkThroughViewURL("")
         setRemovedWalkThroughViewUrls([]);
 
-        // Sales Plan Document
         setSalesPlanDocumentFiles([]);
         setSalesPlanDocumentURL("")
         setRemovedSalesPlanDocumentUrls([]);
-
-
 
         fetchProposedPlanData();
         setErrorsProposedPlan({});
     }, [projectId]);
 
 
-    //#endregion
-
-    //#region HANDLE FIELD CHANGE EVENT - PROPOSED PLAN
     const handleFieldChangeProposedPlan = (field: keyof AddUpdateProposedOfferProposedPlanRequest, value: any) => {
         setFormDataProposedPlan((prev) => ({ ...prev, [field]: value }));
 
@@ -164,9 +169,7 @@ export const ProposedPlan: React.FC = () => {
             setErrorsProposedPlan((prev) => ({ ...prev, [field]: "" }));
         }
     };
-    //#endregion
 
-    //#region HANDLE FIELD CHANGE EVENT - WING PLAN
     const handleFieldChangeWingPlan = (wingNumber: number, field: keyof ProposedPlanWingWiseData, value: any) => {
         setWingsFormData((prev) => ({
             ...prev,
@@ -187,51 +190,46 @@ export const ProposedPlan: React.FC = () => {
         }
     };
 
-    const validateWingPlanForm = (wingNumber: number): boolean => {
-        const data = wingsFormData[wingNumber] || initialFormStateWingPlan();
-        const newErrors: { [key: string]: string } = {};
+    const fetchLocalBuildingsData = () => {
+        const totalBuilding = Number(formDataProposedPlan.TotalNumberOfBuilding) || 0;
 
-        if (!data.Wings) newErrors.Wings = "Wing Name is required";
-        if (!data.TotalNumberOfLifts) newErrors.TotalNumberOfLifts = "Required";
-        if (!data.TotalNumberOfUnits) newErrors.TotalNumberOfUnits = "Required";
-        if (!data.TotalNumberOfUnitsForMember) newErrors.TotalNumberOfUnitsForMember = "Required";
-        if (!data.TotalNumberOfUnitsForSale) newErrors.TotalNumberOfUnitsForSale = "Required";
-        if (!data.TotalNumberOfAreaForMemberSqFt) newErrors.TotalNumberOfAreaForMemberSqFt = "Required";
-        if (!data.TotalNumberOfAreaForSaleSqFt) newErrors.TotalNumberOfAreaForSaleSqFt = "Required";
-
-        setWingsErrors(prev => ({
-            ...prev,
-            [wingNumber]: newErrors
+        // const items = Array.from({ length: totalBuilding }).map((_, index) => ({
+        //     value: `Building ${index + 1}`,
+        //     label: `Building ${index + 1}`
+        // }));
+        const items = Array.from({ length: totalBuilding }).map((_, index) => ({
+            value: String(index + 1),
+            label: `Building ${index + 1}`
         }));
 
-        if (Object.keys(newErrors).length > 0) {
-            addToast({ type: "error", title: "Please fill the required fields" });
-        }
+        return (_pageNumber: number, params?: { value?: string }) => {
+            const filteredItems = params?.value
+                ? items.filter(item => item.label.toLowerCase().includes(params.value!.toLowerCase()))
+                : items;
 
-        return Object.keys(newErrors).length === 0;
+            return Promise.resolve({
+                totalNumberOfRecord: filteredItems.length,
+                itemList: filteredItems
+            });
+        };
     };
 
     const handleSaveWingPlan = (wingNumber: number) => {
-        if (validateWingPlanForm(wingNumber)) {
-            const dataToSave = wingsFormData[wingNumber] || initialFormStateWingPlan();
-            setSavedWingsData(prev => ({
-                ...prev,
-                [wingNumber]: dataToSave
-            }));
-            addToast({ type: "success", title: `Wing ${wingNumber} details saved locally` });
-        }
+
+        setWingsErrors(prev => ({
+            ...prev,
+            [wingNumber]: {}
+        }));
+
+        const dataToSave = wingsFormData[wingNumber] || initialFormStateWingPlan();
+
+        setSavedWingsData(prev => ({
+            ...prev,
+            [wingNumber]: dataToSave
+        }));
+        addToast({ type: "success", title: `Wing ${wingNumber} details saved.` });
     };
 
-    const handleEditWingPlan = (wingNumber: number) => {
-        setSavedWingsData(prev => {
-            const newData = { ...prev };
-            delete newData[wingNumber];
-            return newData;
-        });
-    };
-    //#endregion
-
-    //#region PROPOSED PLAN
 
     const fetchProposedPlanData = async () => {
         await runApiWithLoader(
@@ -253,21 +251,62 @@ export const ProposedPlan: React.FC = () => {
                             ProposedOfferProposedPlanId: data.ProposedOfferProposedPlanId || 0,
                             Uniquekey: data.Uniquekey || initialFormStateProposedPlan().Uniquekey,
                             ProjectId: Number(projectId),
-                            TotalNumberOfFloors: data.TotalNumberOfFloors ?? 0,
                             TotalUnits: data.TotalUnits ?? 0,
+                            TotalParking: data.TotalParking ?? 0,
                             PlanDocumentURL: null,
                             RemovePlanDocumentURL: '',
-                            TotalParking: data.TotalParking ?? 0,
-                            Amenities: data.Amenities || ''
+                            ThreeDViewURL: null,
+                            RemoveThreeDViewURL: '',
+                            WalkthroughViewURL: null,
+                            RemoveWalkthroughViewURL: '',
+                            SalesPlanURL: null,
+                            RemoveSalesPlanURL: '',
+                            ProposedOfferProposedPlanJSON: null,
+                            Amenities: data.Amenities || '',
+                            TotalNumberOfBuilding: data.TotalNumberOfBuilding ?? 0,
+                            TotalNumberOfWing: data.TotalNumberOfWing ?? 0,
+                            TotalPodium: data.TotalPodium ?? 0,
+                            SalesResidentialParking: data.SalesResidentialParking ?? 0,
+                            SalesCommercialParking: data.SalesCommercialParking ?? 0,
+                            SalesVisitorsParking: data.SalesVisitorsParking ?? 0,
+                            MemberResidentialParking: data.MemberResidentialParking ?? 0,
+                            MemberCommercialParking: data.MemberCommercialParking ?? 0,
+                            MemberVisitorsParking: data.MemberVisitorsParking ?? 0,
                         });
                         setPlanDocumentFiles([]);
                         setPlanDocumentURL(data.PlanDocumentURL)
                         setRemovedPlanDocumentUrls([]);
+
+                        setThreeDViewURL(data.ThreeDViewURL)
+                        setRemovedThreeDViewUrls([]);
+
+                        setWalkThroughViewURL(data.WalkthroughViewURL)
+                        setRemovedWalkThroughViewUrls([]);
+
+                        setSalesPlanDocumentURL(data.SalesPlanURL)
+                        setRemovedSalesPlanDocumentUrls([]);
+
+                        if (data.ProposedPlanWingWiseData && data.ProposedPlanWingWiseData.length > 0) {
+                            const restoredWingsForm: { [key: number]: ProposedPlanWingWiseData } = {};
+                            const restoredSavedWings: { [key: number]: ProposedPlanWingWiseData } = {};
+                            data.ProposedPlanWingWiseData.forEach((wing, idx) => {
+                                const wingNumber = idx + 1;
+                                restoredWingsForm[wingNumber] = wing;
+                                restoredSavedWings[wingNumber] = wing;
+                            });
+                            setWingsFormData(restoredWingsForm);
+                            setSavedWingsData(restoredSavedWings);
+                        } else {
+                            setWingsFormData({});
+                            setSavedWingsData({});
+                        }
                     } else {
                         setFormDataProposedPlan({
                             ...initialFormStateProposedPlan(),
                             ProjectId: Number(projectId)
                         });
+                        setWingsFormData({});
+                        setSavedWingsData({});
                     }
                 } else {
                     addToast({ type: 'error', title: response.left.message });
@@ -290,10 +329,26 @@ export const ProposedPlan: React.FC = () => {
         form.append('ProposedOfferProposedPlanId', formDataProposedPlan.ProposedOfferProposedPlanId?.toString() || '');
         form.append('Uniquekey', formDataProposedPlan.Uniquekey || '');
         form.append('ProjectId', String(projectId));
-        form.append('TotalNumberOfFloors', String(formDataProposedPlan.TotalNumberOfFloors ?? 0));
-        form.append('TotalUnits', String(formDataProposedPlan.TotalUnits ?? 0));
-        form.append('TotalParking', String(formDataProposedPlan.TotalParking ?? 0));
-        //  form.append('MaterialRequisitionDetailJSON', JSON.stringify(materialList) ?? '');
+        form.append('TotalNumberOfBuilding', String(formDataProposedPlan.TotalNumberOfBuilding ?? 0));
+        form.append('TotalNumberOfWing', String(formDataProposedPlan.TotalNumberOfWing ?? 0));
+        form.append('TotalPodium', String(formDataProposedPlan.TotalPodium ?? 0));
+        form.append('SalesResidentialParking', String(formDataProposedPlan.SalesResidentialParking ?? 0));
+        form.append('SalesCommercialParking', String(formDataProposedPlan.SalesCommercialParking ?? 0));
+        form.append('SalesVisitorsParking', String(formDataProposedPlan.SalesVisitorsParking ?? 0));
+        form.append('MemberResidentialParking', String(formDataProposedPlan.MemberResidentialParking ?? 0));
+        form.append('MemberCommercialParking', String(formDataProposedPlan.MemberCommercialParking ?? 0));
+        form.append('MemberVisitorsParking', String(formDataProposedPlan.MemberVisitorsParking ?? 0));
+        form.append("TotalUnits", String(grandTotalUnit));
+        form.append("TotalParking", String(finalTotalParkingCount));
+
+        const savedWingsArray = Object.values(savedWingsData).map(wing => ({
+            ...wing,
+            TotalNumberOfUnits:
+                Number(wing.TotalNumberOfUnitsForMember || 0) +
+                Number(wing.TotalNumberOfUnitsForSale || 0),
+        }));
+
+        form.append('ProposedOfferProposedPlanJSON', JSON.stringify(savedWingsArray));
         form.append('Amenities', Array.isArray(formDataProposedPlan.Amenities)
             ? formDataProposedPlan.Amenities.join(",")
             : formDataProposedPlan.Amenities || '');
@@ -305,8 +360,6 @@ export const ProposedPlan: React.FC = () => {
         });
         form.append('RemovePlanDocumentURL', removedPlanDocumentUrls.join(','));
 
-
-        // New Upload Files Fields
         threeDViewFiles.forEach(file => {
             if (file instanceof File) {
                 form.append('ThreeDViewURL', file);
@@ -323,82 +376,43 @@ export const ProposedPlan: React.FC = () => {
 
         salesPlanDocumentFiles.forEach(file => {
             if (file instanceof File) {
-                form.append('SalesPlanDocumentURL', file);
+                form.append('SalesPlanURL', file);
             }
         });
-        form.append('RemoveSalesPlanDocumentURL', removedSalesPlanDocumentUrls.join(','));
+        form.append('RemoveSalesPlanURL', removedSalesPlanDocumentUrls.join(','));
+
 
         return form;
-
-
-
     }
-
-    const validateProposedPlanForm = (): {
-        isValid: boolean
-        errors: { [key: string]: string }
-    } => {
-        const newErrors: { [key: string]: string } = {}
-
-        if (!formDataProposedPlan.TotalNumberOfBuilding) {
-            newErrors.TotalNumberOfBuilding = "Total Number of Building is required"
-        }
-
-        if (!formDataProposedPlan.TotalNumberOfWing) {
-            newErrors.TotalNumberOfWing = "Total Number of Wing is required"
-        }
-
-        if (!formDataProposedPlan.TotalPodium) {
-            newErrors.TotalPodium = "Total Number of Podium is required"
-        }
-
-
-        if (!formDataProposedPlan.TotalNumberOfFloors) {
-            newErrors.TotalNumberOfFloors = "Total Number of Floors is required"
-        }
-
-        if (!formDataProposedPlan.TotalUnits) {
-            newErrors.TotalUnits = "Total Units is required"
-        }
-
-        if (!formDataProposedPlan.TotalParking) {
-            newErrors.TotalParking = "Total Parking is required"
-        }
-
-        if (!formDataProposedPlan.TotalAmmenitiesAreaSqFt) {
-            newErrors.TotalAmmenitiesAreaSqFt = "Total Amenities Area is required"
-        }
-
-        if (!formDataProposedPlan.MinEntranceLobbyAreaSqFt) {
-            newErrors.MinEntranceLobbyAreaSqFt = "Min Entrance Lobby Area is required"
-        }
-
-        if (!formDataProposedPlan.NumberOfLiftsWingWise) {
-            newErrors.NumberOfLiftsWingWise = "Number Of Lift (Wing Wise) is required"
-        }
-
-        return {
-            isValid: Object.keys(newErrors).length === 0,
-            errors: newErrors
-        }
-    }
-
 
     const handleSaveProposedPlan = async () => {
+
         setErrorsProposedPlan({})
 
-        const validation = validateProposedPlanForm()
+        const totalWings = Number(formDataProposedPlan.TotalNumberOfWing) || 0;
 
-        if (!validation.isValid) {
-            setErrorsProposedPlan(validation.errors)
-            return
+        const missingWings: number[] = [];
+
+        for (let i = 1; i <= totalWings; i++) {
+            const wingData = savedWingsData[i];
+
+            if (!wingData) {
+                missingWings.push(i);
+            }
+        }
+
+        if (missingWings.length > 0) {
+            addToast({
+                type: "error",
+                title: `Filling and saving details for Wing ${missingWings.join(", ")} is mandatory.`
+            });
+            return;
         }
 
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
-                
                 const formDataPayload = PushProposedPlanFormData();
 
                 const response = await proposedOfferService.apiCallAddUpdateProposedPlan(formDataPayload);
@@ -411,6 +425,12 @@ export const ProposedPlan: React.FC = () => {
 
                     setPlanDocumentFiles([]);
                     setRemovedPlanDocumentUrls([]);
+                    setThreeDViewFiles([]);
+                    setRemovedThreeDViewUrls([]);
+                    setWalkThroughViewFiles([]);
+                    setRemovedWalkThroughViewUrls([]);
+                    setSalesPlanDocumentFiles([]);
+                    setRemovedSalesPlanDocumentUrls([]);
 
                 } else {
 
@@ -427,410 +447,481 @@ export const ProposedPlan: React.FC = () => {
             Number(formDataProposedPlan.ProposedOfferProposedPlanId) === 0 ? 'Add Proposed Plan' : 'Update Proposed Plan'
         )
     };
-    //#endregion
 
-    //#region AMENITIES COUNT
 
     const amenitiesCount = Array.isArray(formDataProposedPlan.Amenities)
         ? formDataProposedPlan.Amenities.length
         : typeof formDataProposedPlan.Amenities === "string" && formDataProposedPlan.Amenities.length > 0
             ? formDataProposedPlan.Amenities.split(",").length
             : 0;
-    //#endregion
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-10">
             <Loader loading={isLoading} title={loadingMessage}>
                 <div></div>
             </Loader>
 
-            <div className="space-y-6 pb-5">
-                {/* Proposed Plan Details Section */}
-                <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
-                        Proposed Plan Details
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div>
-                            <Input
-                                label="Total Buildings"
-                                type="text"
-                                // disabled={!canAction}
-                                value={formDataProposedPlan.TotalNumberOfBuilding || ''}
-                                onChange={(e) => handleFieldChangeProposedPlan('TotalNumberOfBuilding', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
-                                placeholder="Enter Total Buildings"
-                                error={errorsProposedPlan.TotalNumberOfBuilding}
-                            />
-                        </div>
-                        <div>
-                            <Input
-                                label="Total Wings"
-                                type="text"
-                                // disabled={!canAction}
-                                value={formDataProposedPlan.TotalNumberOfWing || ''}
-                                onChange={(e) => handleFieldChangeProposedPlan('TotalNumberOfWing', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
-                                placeholder="Enter Total Wings"
-                                error={errorsProposedPlan.TotalNumberOfWing}
-                            />
-                        </div>
-                        <div>
-                            <Input
-                                label="Number Of Podium"
-                                type="text"
-                                // disabled={!canAction}
-                                value={formDataProposedPlan.TotalPodium || ''}
-                                onChange={(e) => handleFieldChangeProposedPlan('TotalPodium', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
-                                placeholder="Enter Number Of Podium"
-                                error={errorsProposedPlan.TotalPodium}
-                            />
-                        </div>
-                        <div>
-                            <Input
-                                label="Total Number of Floors"
-                                required
-                                type="text"
-                                // disabled={!canAction}
-                                value={formDataProposedPlan.TotalNumberOfFloors || ''}
-                                onChange={(e) => handleFieldChangeProposedPlan('TotalNumberOfFloors', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
-                                // maxLength={9}
-                                placeholder="Enter Total Number of Floors"
-                                error={errorsProposedPlan.TotalNumberOfFloors}
-                            />
-                        </div>
-                        <div>
-                            <Input
-                                label="Total Units"
-                                required
-                                type="text"
-                                //     disabled={!canAction}
-                                value={formDataProposedPlan.TotalUnits || ''}
-                                onChange={(e) => handleFieldChangeProposedPlan('TotalUnits', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
-                                // maxLength={9}
-                                placeholder="Enter Total Units"
-                                error={errorsProposedPlan.TotalUnits}
-                            />
-                        </div>
-                        <div>
-                            <Input
-                                label="Total Parking"
-                                required
-                                type="text"
-                                // disabled={!canAction}
-                                value={formDataProposedPlan.TotalParking || ''}
-                                onChange={(e) => handleFieldChangeProposedPlan('TotalParking', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
-                                error={errorsProposedPlan.TotalParking}
-                                // maxLength={9}
-                                placeholder="Enter Total Parking"
-                            />
-                        </div>
-                        <div>
-                            <Input
-                                label="Total Ammenities Area (SqFt)"
-                                value={formDataProposedPlan.TotalAmmenitiesAreaSqFt ?? ''}
-                                onChange={(e) => handleFieldChangeProposedPlan("TotalAmmenitiesAreaSqFt", filterNumbers(e.target.value))}
-                                placeholder="Enter Total Ammenities Area"
-                                rightIcon="SqFt"
-                                error={errorsProposedPlan.TotalAmmenitiesAreaSqFt}
-                            />
-                        </div>
-                        <div>
-                            <Input
-                                label="Main Entrance Lobby Area (SqFt)"
-                                value={formDataProposedPlan.MinEntranceLobbyAreaSqFt ?? ''}
-                                onChange={(e) => handleFieldChangeProposedPlan("MinEntranceLobbyAreaSqFt", filterNumbers(e.target.value))}
-                                placeholder="Enter Main Entrance Lobby Area"
-                                rightIcon="SqFt"
-                                error={errorsProposedPlan.MinEntranceLobbyAreaSqFt}
-                            />
-                        </div>
-                        <div>
-                            <Input
-                                label="Number Of Lifts Wing Wise"
-                                type="text"
-                                // disabled={!canAction}
-                                value={formDataProposedPlan.NumberOfLiftsWingWise || ''}
-                                onChange={(e) => handleFieldChangeProposedPlan('NumberOfLiftsWingWise', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
-                                placeholder="Enter Number Of Lift Wing Wise"
-                                error={errorsProposedPlan.NumberOfLiftsWingWise}
-                            />
-                        </div>
-                        <div>
-                            <MultiFilePicker
-                                label="Upload Plan"
-                                placeholder="Upload Plan"
-                                error={errorsProposedPlan.PlanDocumentURL}
-                                value={planDocumentFiles}
-                                onChange={setPlanDocumentFiles}
-                                availableFilesURL={planDocumentURL ?? ""}
-                                allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                onRemoveExisting={(url) => {
-                                    setRemovedPlanDocumentUrls((prev) => [...prev, url])
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <MultiFilePicker
-                                label="Upload 3D View"
-                                placeholder="Upload 3D View"
-                                error={errorsProposedPlan.ThreeDViewURL}
-                                value={threeDViewFiles}
-                                onChange={setThreeDViewFiles}
-                                availableFilesURL={threeDViewURL ?? ""}
-                                allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                onRemoveExisting={(url) => {
-                                    setRemovedThreeDViewUrls((prev) => [...prev, url])
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <MultiFilePicker
-                                label="Upload Walkthrough View "
-                                placeholder="Upload Walkthrough View"
-                                error={errorsProposedPlan.WalkthroughViewURL}
-                                value={walkThroughViewFiles}
-                                onChange={setWalkThroughViewFiles}
-                                availableFilesURL={walkThroughViewURL ?? ""}
-                                allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                onRemoveExisting={(url) => {
-                                    setRemovedWalkThroughViewUrls((prev) => [...prev, url])
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <MultiFilePicker
-                                label="Upload Sales Plan Document"
-                                placeholder="Upload Sales Plan Document"
-                                error={errorsProposedPlan.SalesPlanDocumentURL}
-                                value={salesPlanDocumentFiles}
-                                onChange={setSalesPlanDocumentFiles}
-                                availableFilesURL={salesPlanDocumentURL ?? ""}
-                                allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                onRemoveExisting={(url) => {
-                                    setRemovedSalesPlanDocumentUrls((prev) => [...prev, url])
-                                }}
-                            />
-                        </div>
-                    </div>
-                    {/* Dynamic Expandable Cards Layout for Wings */}
-                    <div className="space-y-4 mt-4">
-                        {Array.from({ length: Number(formDataProposedPlan.TotalNumberOfWing) || 0 }).map((_, index) => {
-                            const wingNumber = index + 1;
-                            const isSaved = !!savedWingsData[wingNumber];
-                            const currentFormData = wingsFormData[wingNumber] || initialFormStateWingPlan();
-                            const currentErrors = wingsErrors[wingNumber] || {};
+            <div>
+                <Tabs
+                    tabs={ProposedPlanTabList}
+                    defaultActive={activeTab}
+                    islarge={false}
+                    isChips={true}
+                    onTabChange={(t) => setActiveTab(t.id)}
+                />
+            </div>
 
-                            return (
-                                <ExpandableCard
-                                    key={wingNumber}
-                                    expandedheight={isSaved ? 400 : 600}
-                                    showline={false}
-                                    onClick={(isOpen) => {
-                                        if (isOpen) {
-                                            console.log(`Wing ${wingNumber} expanded`);
-                                        }
-                                    }}
-                                    title={
-                                        <div className="font-medium text-md flex items-center gap-2">
-                                            <span>Wing {wingNumber} Details {isSaved ? `- ${savedWingsData[wingNumber].Wings}` : ''}</span>
-                                            {isSaved && (
-                                                <span className="text-green-600 bg-green-50 px-2 py-0.5 rounded text-xs font-semibold border border-green-200">Saved</span>
-                                            )}
-                                        </div>
-                                    }
-                                    child={
-                                        <div className="p-4 bg-white rounded-b-lg">
-                                            {isSaved ? (
-                                                <div className="space-y-4">
-                                                    <div className="flex justify-between items-center border-b border-gray-200 pb-2">
-                                                        <h3 className="text-lg font-medium text-gray-900">Wing Details</h3>
-                                                        {canAction && (
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.preventDefault();
-                                                                    handleEditWingPlan(wingNumber);
-                                                                }}
-                                                                className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center"
-                                                            >
-                                                                <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                                                Edit
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Wing Name</p>
-                                                            <p className="font-medium text-sm">{savedWingsData[wingNumber].Wings}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Main Entrance Lobby Area (Sq. Ft)</p>
-                                                            <p className="font-medium text-sm">{savedWingsData[wingNumber].MainEntranceLobbyAreaSqFt || '-'}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Total Lifts</p>
-                                                            <p className="font-medium text-sm">{savedWingsData[wingNumber].TotalNumberOfLifts}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Total Units</p>
-                                                            <p className="font-medium text-sm">{savedWingsData[wingNumber].TotalNumberOfUnits}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Units For Member</p>
-                                                            <p className="font-medium text-sm">{savedWingsData[wingNumber].TotalNumberOfUnitsForMember}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Units For Sale</p>
-                                                            <p className="font-medium text-sm">{savedWingsData[wingNumber].TotalNumberOfUnitsForSale}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Area For Member (Sq. Ft)</p>
-                                                            <p className="font-medium text-sm">{savedWingsData[wingNumber].TotalNumberOfAreaForMemberSqFt}</p>
-                                                        </div>
-                                                        <div>
-                                                            <p className="text-xs text-gray-500">Area For Sale (Sq. Ft)</p>
-                                                            <p className="font-medium text-sm">{savedWingsData[wingNumber].TotalNumberOfAreaForSaleSqFt}</p>
-                                                        </div>
-                                                    </div>
+            <div>
+                <div className="space-y-4 p-5 -ml-5">
+                    {activeTab === 'BasicDetails' && (
+                        <div>
+                            <h3 className="text-lg font-semibold text-gray-900 border-b border-[#c6c6c6] pb-2">
+                                Proposed Plan Details
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mt-4">
+                                <div>
+                                    <Input
+                                        label="Total Buildings"
+                                        type="text"
+                                        value={formDataProposedPlan.TotalNumberOfBuilding || ''}
+                                        onChange={(e) => handleFieldChangeProposedPlan('TotalNumberOfBuilding', filterNumbers(e.target.value))}
+                                        placeholder="Enter Total Buildings"
+                                        maxLength={2}
+                                    />
+                                </div>
+                                <div>
+                                    <div>
+                                        <Input
+                                            label="Total Wings"
+                                            type="text"
+                                            value={formDataProposedPlan.TotalNumberOfWing || ''}
+                                            onChange={(e) => {
+                                                const filteredVal = filterNumbers(e.target.value);
+                                                const newWingCount = filteredVal ? Number(filteredVal) : 0;
+                                                handleFieldChangeProposedPlan('TotalNumberOfWing', newWingCount);
+                                                setWingsFormData({});
+                                                setSavedWingsData({});
+                                                setWingsErrors({});
+                                            }}
+                                            placeholder="Enter Total Wings"
+                                            maxLength={2}
+                                        />
+                                    </div>
+                                </div>
+                                <div>
+                                    <Input
+                                        label="Number Of Podium"
+                                        type="text"
+                                        value={formDataProposedPlan.TotalPodium || ''}
+                                        onChange={(e) => handleFieldChangeProposedPlan('TotalPodium', filterNumbers(e.target.value))}
+                                        placeholder="Enter Number Of Podium"
+                                        maxLength={2}
+                                    />
+                                </div>
+                                <div>
+                                    <Input
+                                        label="Total Units"
+                                        type="text"
+                                        value={grandTotalUnit}
+                                        disabled
+                                        placeholder="0"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-semibold text-gray-900  border-b border-[#c6c6c6] pb-2 mt-5">
+                                    Document Uploads
+                                </h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+                                    <div>
+                                        <MultiFilePicker
+                                            label="Upload Plan"
+                                            placeholder="Upload Plan"
+                                            error={errorsProposedPlan.PlanDocumentURL}
+                                            value={planDocumentFiles}
+                                            onChange={setPlanDocumentFiles}
+                                            availableFilesURL={planDocumentURL ?? ""}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            onRemoveExisting={(url) => {
+                                                setRemovedPlanDocumentUrls((prev) => [...prev, url])
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <MultiFilePicker
+                                            label="Upload 3D View"
+                                            placeholder="Upload 3D View"
+                                            error={errorsProposedPlan.ThreeDViewURL}
+                                            value={threeDViewFiles}
+                                            onChange={setThreeDViewFiles}
+                                            availableFilesURL={threeDViewURL ?? ""}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            onRemoveExisting={(url) => {
+                                                setRemovedThreeDViewUrls((prev) => [...prev, url])
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <MultiFilePicker
+                                            label="Upload Walkthrough View "
+                                            placeholder="Upload Walkthrough View"
+                                            error={errorsProposedPlan.WalkthroughViewURL}
+                                            value={walkThroughViewFiles}
+                                            onChange={setWalkThroughViewFiles}
+                                            availableFilesURL={walkThroughViewURL ?? ""}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            onRemoveExisting={(url) => {
+                                                setRemovedWalkThroughViewUrls((prev) => [...prev, url])
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <MultiFilePicker
+                                            label="Upload Sales Plan Document"
+                                            placeholder="Upload Sales Plan Document"
+                                            error={errorsProposedPlan.SalesPlanDocumentURL}
+                                            value={salesPlanDocumentFiles}
+                                            onChange={setSalesPlanDocumentFiles}
+                                            availableFilesURL={salesPlanDocumentURL ?? ""}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            onRemoveExisting={(url) => {
+                                                setRemovedSalesPlanDocumentUrls((prev) => [...prev, url])
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className='mt-5'>
+                                <h3 className="text-lg font-semibold text-gray-900 border-b border-[#c6c6c6] pb-2">
+                                    Parking Details
+                                </h3>
+
+                                <div className='mt-3'>
+                                    <label className="text-sm font-medium text-gray-500 ">Overall Parking (Sales Parking + Members Parking)</label>
+                                    <p className="mt-1 text-md  text-[#18536d] font-medium border border-gray-300 rounded-md px-3 py-2 bg-blue-50 text-gray-900">
+                                        {finalTotalParkingCount}
+                                    </p>
+                                </div>
+                                <h2 className='text-md font-semibold mt-3'>Sales Parking</h2>
+                                <div className='grid grid-cols-1 md:grid-cols-4 gap-6 mt-5'>
+                                    <div>
+                                        <Input
+                                            label="Residential"
+                                            type="text"
+                                            placeholder="Enter Residential"
+                                            value={formDataProposedPlan.SalesResidentialParking ?? 0}
+                                            onChange={(e) => handleFieldChangeProposedPlan('SalesResidentialParking', filterNumbers(e.target.value))}
+                                            maxLength={3}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Input
+                                            label="Commercial"
+                                            type="text"
+                                            placeholder="Enter Commercial"
+                                            value={formDataProposedPlan.SalesCommercialParking ?? 0}
+                                            onChange={(e) => handleFieldChangeProposedPlan('SalesCommercialParking', filterNumbers(e.target.value))}
+                                            maxLength={3}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Input
+                                            label="Visitors"
+                                            type="text"
+                                            placeholder="Enter Visitors"
+                                            value={formDataProposedPlan.SalesVisitorsParking ?? 0}
+                                            onChange={(e) => handleFieldChangeProposedPlan('SalesVisitorsParking', filterNumbers(e.target.value))}
+                                            maxLength={3}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Input
+                                            label="Total Sales Parking"
+                                            value={(Number(formDataProposedPlan.SalesResidentialParking) + Number(formDataProposedPlan.SalesCommercialParking) + Number(formDataProposedPlan.SalesVisitorsParking)) || '0'}
+                                            disabled
+                                        />
+                                    </div>
+                                </div>
+
+                                <h2 className='text-md font-semibold mt-3'>Members Parking</h2>
+
+                                <div className='grid grid-cols-1 md:grid-cols-4 gap-6 mt-5'>
+                                    <div>
+                                        <Input
+                                            label="Residential"
+                                            type="text"
+                                            placeholder="Enter Residential"
+                                            value={formDataProposedPlan.MemberResidentialParking ?? 0}
+                                            onChange={(e) => handleFieldChangeProposedPlan('MemberResidentialParking', filterNumbers(e.target.value))}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <Input
+                                            label="Commercial"
+                                            type="text"
+                                            placeholder="Enter Commercial"
+                                            value={formDataProposedPlan.MemberCommercialParking ?? 0}
+                                            onChange={(e) => handleFieldChangeProposedPlan('MemberCommercialParking', filterNumbers(e.target.value))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Input
+                                            label="Visitors"
+                                            type="text"
+                                            placeholder="Enter Visitors"
+                                            value={formDataProposedPlan.MemberVisitorsParking ?? 0}
+                                            onChange={(e) => handleFieldChangeProposedPlan('MemberVisitorsParking', filterNumbers(e.target.value))}
+                                        />
+                                    </div>
+                                    <div>
+                                        <Input
+                                            label="Total Members Parking"
+                                            value={(Number(formDataProposedPlan.MemberResidentialParking) + Number(formDataProposedPlan.MemberCommercialParking) + Number(formDataProposedPlan.MemberVisitorsParking)) || '0'}
+                                            disabled
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                            </div>
+
+                            <div className="space-y-4 mt-4">
+                                {Array.from({ length: Number(formDataProposedPlan.TotalNumberOfWing) || 0 }).map((_, index) => {
+                                    const wingNumber = index + 1;
+                                    const isSaved = !!savedWingsData[wingNumber];
+                                    const currentFormData = wingsFormData[wingNumber] || initialFormStateWingPlan();
+
+                                    return (
+                                        <ExpandableCard
+                                            key={wingNumber}
+                                            expandedheight={isSaved ? 400 : 600}
+                                            showline={false}
+                                            title={
+                                                <div className="font-medium text-md flex items-center gap-2">
+                                                    <span>
+                                                        {currentFormData.BuildingId
+                                                            ? `Building ${currentFormData.BuildingId} Wing Details`
+                                                            : `Wing ${wingNumber} Details`}
+                                                        {currentFormData.Wings ? ` - ${currentFormData.Wings}` : ''}
+                                                    </span>
                                                 </div>
-                                            ) : (
-                                                <div className="flex-1 space-y-2">
-                                                    <form onSubmit={(e) => { e.preventDefault(); handleSaveWingPlan(wingNumber); }}>
-                                                        <div className="space-y-4 pb-3">
-                                                            <h3 className="text-lg font-medium text-gray-900 border-b pb-2">Wing Details</h3>
-                                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                                <div>
-                                                                    <Input
-                                                                        type="text"
-                                                                        required
-                                                                        label='Wing Name'
-                                                                        value={currentFormData.Wings || ""}
-                                                                        onChange={(e) => handleFieldChangeWingPlan(wingNumber, "Wings", e.target.value)}
-                                                                        placeholder="Enter Wing Name"
-                                                                        maxLength={250}
-                                                                        error={currentErrors.Wings}
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <Input
-                                                                        label='Main Entrance Lobby Area (Sq. Ft)'
-                                                                        value={currentFormData.MainEntranceLobbyAreaSqFt || ""}
-                                                                        type="text"
-                                                                        onChange={(e) => handleFieldChangeWingPlan(wingNumber, 'MainEntranceLobbyAreaSqFt', filterNumbersWithDecimal(e.target.value))}
-                                                                        placeholder="Enter Main Entrance Lobby Area (Sq. Ft)"
-                                                                        error={currentErrors.MainEntranceLobbyAreaSqFt}
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <Input
-                                                                        label='Total Number of Lifts'
-                                                                        required
-                                                                        placeholder="Enter Total Number of Lifts"
-                                                                        type="text"
-                                                                        value={currentFormData.TotalNumberOfLifts || ""}
-                                                                        onChange={(e) => handleFieldChangeWingPlan(wingNumber, 'TotalNumberOfLifts', filterNumbersWithDecimal(e.target.value))}
-                                                                        error={currentErrors.TotalNumberOfLifts}
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <Input
-                                                                        label='Total Number of Units'
-                                                                        required
-                                                                        placeholder="Enter Total Number of Units"
-                                                                        type="text"
-                                                                        value={currentFormData.TotalNumberOfUnits || ""}
-                                                                        onChange={(e) => handleFieldChangeWingPlan(wingNumber, 'TotalNumberOfUnits', filterNumbersWithDecimal(e.target.value))}
-                                                                        error={currentErrors.TotalNumberOfUnits}
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <Input
-                                                                        type="text"
-                                                                        required
-                                                                        label='Total Number of Units For Member'
-                                                                        value={currentFormData.TotalNumberOfUnitsForMember || ""}
-                                                                        onChange={(e) => handleFieldChangeWingPlan(wingNumber, "TotalNumberOfUnitsForMember", filterNumbersWithDecimal(e.target.value))}
-                                                                        placeholder="Enter Total Number of Units For Member"
-                                                                        error={currentErrors.TotalNumberOfUnitsForMember}
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <Input
-                                                                        type="text"
-                                                                        required
-                                                                        label='Total Number of Units For Sale'
-                                                                        value={currentFormData.TotalNumberOfUnitsForSale || ""}
-                                                                        onChange={(e) => handleFieldChangeWingPlan(wingNumber, "TotalNumberOfUnitsForSale", filterNumbersWithDecimal(e.target.value))}
-                                                                        placeholder="Enter Total Number of Units For Sale"
-                                                                        error={currentErrors.TotalNumberOfUnitsForSale}
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <Input
-                                                                        type="text"
-                                                                        required
-                                                                        label='Total Number of Area For Member'
-                                                                        value={currentFormData.TotalNumberOfAreaForMemberSqFt || ""}
-                                                                        onChange={(e) => handleFieldChangeWingPlan(wingNumber, "TotalNumberOfAreaForMemberSqFt", filterNumbersWithDecimal(e.target.value))}
-                                                                        placeholder="Enter Total Number of Area For Member"
-                                                                        error={currentErrors.TotalNumberOfAreaForMemberSqFt}
-                                                                    />
-                                                                </div>
-                                                                <div>
-                                                                    <Input
-                                                                        type="text"
-                                                                        required
-                                                                        label='Total Number of Area For Sale'
-                                                                        value={currentFormData.TotalNumberOfAreaForSaleSqFt || ""}
-                                                                        onChange={(e) => handleFieldChangeWingPlan(wingNumber, "TotalNumberOfAreaForSaleSqFt", filterNumbersWithDecimal(e.target.value))}
-                                                                        placeholder="Enter Total Number of Area For Sale"
-                                                                        error={currentErrors.TotalNumberOfAreaForSaleSqFt}
-                                                                    />
-                                                                </div>
+                                            }
+                                            child={
+                                                <div className="">
+                                                    <div className='bg-white'>
+                                                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-5 p-5 ">
+
+                                                            <div>
+                                                                <SingleSelectDropdownWithPagination
+                                                                    label="Select Building"
+                                                                    title="Select Building"
+                                                                    size="lg"
+                                                                    dataFetchCallBack={fetchLocalBuildingsData()}
+                                                                    onSelected={(item) => {
+                                                                        const buildingId = Number(item?.value);
+                                                                        handleFieldChangeWingPlan(wingNumber, "BuildingId", buildingId);
+                                                                    }}
+                                                                    initialValue={
+                                                                        currentFormData.BuildingId
+                                                                            ? createDropdownInitialValue(
+                                                                                String(currentFormData.BuildingId),
+                                                                                `Building ${currentFormData.BuildingId}`
+                                                                            )
+                                                                            : createDropdownInitialValue("", "Select Building")
+                                                                    }
+                                                                />
                                                             </div>
+                                                            <div>
+                                                                <Input
+                                                                    type="text"
+                                                                    label="Wing Name"
+                                                                    value={currentFormData.Wings || ""}
+                                                                    onChange={(e) =>
+                                                                        handleFieldChangeWingPlan(
+                                                                            wingNumber,
+                                                                            "Wings",
+                                                                            e.target.value
+                                                                        )
+                                                                    }
+                                                                    placeholder="Enter Wing Name"
+                                                                    maxLength={25}
+                                                                />
+                                                            </div>
+
+                                                            <div>
+                                                                <Input
+                                                                    label="Main Entrance Lobby Area (SqFt)"
+                                                                    value={currentFormData.MainEntranceLobbyAreaSqFt || ""}
+                                                                    type="text"
+                                                                    onChange={(e) =>
+                                                                        handleFieldChangeWingPlan(
+                                                                            wingNumber,
+                                                                            "MainEntranceLobbyAreaSqFt",
+                                                                            filterNumbersWithDecimal(e.target.value)
+                                                                        )
+                                                                    }
+                                                                    placeholder="Enter Main Entrance Lobby Area (SqFt)"
+                                                                />
+                                                            </div>
+
+                                                            <div>
+                                                                <Input
+                                                                    label="Total Number of Lifts"
+                                                                    placeholder="Enter Total Number of Lifts"
+                                                                    type="text"
+                                                                    value={currentFormData.TotalNumberOfLifts || ""}
+                                                                    onChange={(e) =>
+                                                                        handleFieldChangeWingPlan(
+                                                                            wingNumber,
+                                                                            "TotalNumberOfLifts",
+                                                                            filterNumbers(e.target.value)
+                                                                        )
+                                                                    }
+                                                                    maxLength={2}
+                                                                />
+                                                            </div>
+
+                                                            <div>
+                                                                <Input
+                                                                    type="text"
+                                                                    label="Total Number of Units For Member"
+                                                                    value={currentFormData.TotalNumberOfUnitsForMember || ""}
+                                                                    onChange={(e) =>
+                                                                        handleFieldChangeWingPlan(
+                                                                            wingNumber,
+                                                                            "TotalNumberOfUnitsForMember",
+                                                                            filterNumbers(e.target.value)
+                                                                        )
+                                                                    }
+                                                                    maxLength={4}
+                                                                    placeholder="Enter Total Number of Units For Member"
+                                                                />
+                                                            </div>
+
+                                                            <div>
+                                                                <Input
+                                                                    type="text"
+                                                                    label="Total Number of Units For Sale"
+                                                                    value={currentFormData.TotalNumberOfUnitsForSale || ""}
+                                                                    onChange={(e) =>
+                                                                        handleFieldChangeWingPlan(
+                                                                            wingNumber,
+                                                                            "TotalNumberOfUnitsForSale",
+                                                                            filterNumbers(e.target.value)
+                                                                        )
+                                                                    }
+                                                                    maxLength={4}
+                                                                    placeholder="Enter Total Number of Units For Sale"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <Input
+                                                                    label="Total Number Of Units"
+                                                                    value={(
+                                                                        Number(currentFormData?.TotalNumberOfUnitsForMember) +
+                                                                        Number(currentFormData?.TotalNumberOfUnitsForSale || 0)
+                                                                    )}
+                                                                    disabled
+                                                                />
+                                                            </div>
+
+                                                            <div>
+                                                                <Input
+                                                                    type="text"
+                                                                    label="Total RERA Carpet Area For Member (SqFt)"
+                                                                    value={currentFormData.TotalNumberOfAreaForMemberSqFt || ""}
+                                                                    onChange={(e) =>
+                                                                        handleFieldChangeWingPlan(
+                                                                            wingNumber,
+                                                                            "TotalNumberOfAreaForMemberSqFt",
+                                                                            filterNumbersWithDecimal(e.target.value)
+                                                                        )
+                                                                    }
+                                                                    placeholder="Enter Total  RERA Carpet Area For Member"
+                                                                />
+                                                            </div>
+
+                                                            <div>
+                                                                <Input
+                                                                    type="text"
+                                                                    label="Total RERA Carpet Area For Sale (SqFt)"
+                                                                    value={currentFormData.TotalNumberOfAreaForSaleSqFt || ""}
+                                                                    onChange={(e) =>
+                                                                        handleFieldChangeWingPlan(
+                                                                            wingNumber,
+                                                                            "TotalNumberOfAreaForSaleSqFt",
+                                                                            filterNumbersWithDecimal(e.target.value)
+                                                                        )
+                                                                    }
+                                                                    placeholder="Enter Total RERA Carpet Area For Sale"
+                                                                />
+                                                            </div>
+                                                            <div>
+                                                                <Input
+                                                                    label="Total RERA Carpet Area (SqFt)"
+                                                                    value={(
+                                                                        Number(currentFormData?.TotalNumberOfAreaForMemberSqFt) +
+                                                                        Number(currentFormData?.TotalNumberOfAreaForSaleSqFt || 0)
+                                                                    ).toFixed(2)}
+                                                                    disabled
+                                                                />
+                                                            </div>
+
                                                         </div>
-                                                    </form>
-                                                    <BottomActionBar
-                                                        saveText={currentFormData.ProposedPlanWingWiseId ? "Update" : "Save "}
-                                                        canAction={canAction}
-                                                        onSave={() => handleSaveWingPlan(wingNumber)}
-                                                        isLoading={isLoading}
-                                                    />
+                                                    </div>
+
+                                                    <div className="mt-6 flex justify-end ">
+                                                        <BottomActionBar
+                                                            saveText={
+                                                                currentFormData.ProposedPlanWingWiseId
+                                                                    ? "Update"
+                                                                    : "Save"
+                                                            }
+                                                            canAction={canAction}
+                                                            onSave={() => handleSaveWingPlan(wingNumber)}
+                                                            isLoading={isLoading}
+                                                        />
+                                                    </div>
                                                 </div>
-                                            )}
-                                        </div>
+                                            }
+                                        />
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'Ammenities' && (
+                        <>
+                            <div>
+                                <MultiSelectCheckBoxWithCategory
+                                    label={`Select Amenities (${amenitiesCount})`}
+                                    placeholder="Search Amenities"
+                                    options={AMENITIES_BY_CATEGORY}
+                                    value={
+                                        Array.isArray(formDataProposedPlan.Amenities)
+                                            ? formDataProposedPlan.Amenities
+                                            : formDataProposedPlan.Amenities
+                                                ? formDataProposedPlan.Amenities.split(",")
+                                                : []
+                                    }
+                                    onChange={(values) =>
+                                        handleFieldChangeProposedPlan("Amenities", values)
                                     }
                                 />
-                            );
-                        })}
-                    </div>
-                    <div>
-
-                        <MultiSelectCheckBoxWithCategory
-                            label={`Select Amenities (${amenitiesCount})`}
-                            placeholder="Search Amenities"
-                            options={AMENITIES_BY_CATEGORY}
-                            // disabled={!canAction}
-                            value={
-                                Array.isArray(formDataProposedPlan.Amenities)
-                                    ? formDataProposedPlan.Amenities
-                                    : formDataProposedPlan.Amenities
-                                        ? formDataProposedPlan.Amenities.split(",")
-                                        : []
-                            }
-                            onChange={(values) =>
-                                handleFieldChangeProposedPlan("Amenities", values)
-                            }
-                        />
-                    </div>
-
+                            </div>
+                        </>
+                    )}
 
                 </div>
             </div>
 
             <BottomActionBar
                 saveText={(formDataProposedPlan.ProposedOfferProposedPlanId && formDataProposedPlan.ProposedOfferProposedPlanId > 0) ? 'Update' : 'Add'}
-                // saveText="Add"
                 canAction={canAction && Number(projectId) > 0}
-                // canAction={canAction}
                 onSave={handleSaveProposedPlan}
                 isLoading={isLoading}
             />
@@ -840,3 +931,4 @@ export const ProposedPlan: React.FC = () => {
 };
 
 export default ProposedPlan;
+

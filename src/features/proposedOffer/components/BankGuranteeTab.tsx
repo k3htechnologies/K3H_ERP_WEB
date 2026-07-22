@@ -7,16 +7,12 @@ interface BankGuranteeTabProps {
 }
 
 export const BankGuaranteeTab: React.FC<BankGuranteeTabProps> = ({
-    // projectId,
-    // buildingId,
-    // isLoading,
-    // setIsLoading,
-    // setLoadingMessage,
+   
 
 }) => {
     return (
         <div>
-            <h1>Bank Gurantee</h1>
+            
         </div>
     )
 }

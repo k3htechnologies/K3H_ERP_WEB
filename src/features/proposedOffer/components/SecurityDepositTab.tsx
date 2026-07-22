@@ -222,6 +222,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
         const response = await proposedOfferService.apiCallAddUpdateSecurityDepositDetails(payload);
 
         if (E.isRight(response)) {
+
           const isAdd = formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId === 0;
 
           if (isAdd) {
@@ -481,10 +482,12 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
       'Delete All Security Deposit Details'
     )
   };
+
+  const isBuildingSelected = buildingId > 0;
+
   return (
     <>
       <div className="space-y-6">
-        {/* Security Deposit Amount Details Section */}
         <div className="space-y-4">
 
 
@@ -493,7 +496,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
               Security Deposit Amount Details
             </h3>
 
-            {canAction && buildingId > 0 && securityDepositPaymentStageList.length > 0 && (
+            {canAction && buildingId > 0 && formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId > 0 && (
               <Button
                 onClick={handleConfirmationDialogBoxOpenSecurityDepositDetails}
                 color="red"
@@ -501,6 +504,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
                 colorMode="extraLight"
                 style={{ width: '35px', height: '35px' }}
                 centerIcon={<Trash2 className="h-4 w-4" />}
+                title="Delete"
               >
               </Button>
             )}
@@ -512,23 +516,24 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
                 label="Security Deposit Amount (₹)"
                 required
                 type="text"
-                value={formDataSecurityDepositDetails.SecurityDepositToSocietyAmount || ''}
+                value={formDataSecurityDepositDetails.SecurityDepositToSocietyAmount || 0}
                 onChange={(e) => handleFieldChangeSecurityDepositDetails('SecurityDepositToSocietyAmount', filterNumbersWithDecimal(e.target.value))}
                 error={errorsSecurityDepositDetails.SecurityDepositToSocietyAmount}
                 placeholder="Enter Security Deposit Amount"
                 rightIcon="₹"
-                disabled={securityDepositPaymentStageList.length > 0 ? true : false}
+                disabled={!isBuildingSelected || securityDepositPaymentStageList.length > 0 ? true : false}
               />
             </div>
             <div>
               <Input
                 label="Interest Amount (₹)"
                 type="text"
-                value={formDataSecurityDepositDetails.InterestAmount || ''}
+                value={formDataSecurityDepositDetails.InterestAmount || 0}
                 onChange={(e) => handleFieldChangeSecurityDepositDetails('InterestAmount', filterNumbersWithDecimal(e.target.value))}
                 error={errorsSecurityDepositDetails.InterestAmount}
                 placeholder="Enter Interest Amount"
                 rightIcon="₹"
+                disabled={!isBuildingSelected}
               />
             </div>
           </div>
@@ -539,6 +544,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
               value={formDataSecurityDepositDetails.Remark ?? ""}
               placeholder="Enter Remarks"
               onChange={(e) => handleFieldChangeSecurityDepositDetails("Remark", e.target.value)}
+              disabled={!isBuildingSelected}
             />
           </div>
         </div>
@@ -548,7 +554,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
             <h3 className="text-lg font-semibold text-gray-900">
               Security Deposit List
             </h3>
-            {canAction && buildingId > 0 && (
+            {canAction && buildingId > 0 && Number(formDataSecurityDepositDetails.SecurityDepositToSocietyAmount) > 0  && (
               <Button
                 onClick={handleAddSecurityDepositPaymentStageModal}
                 color="blue"
@@ -570,13 +576,12 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
         </div>
       </div>
       <BottomActionBar
-        saveText={(formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId && formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId > 0) ? 'Update' : 'Save'}
+        saveText={(formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId && formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId > 0) ? 'Update' : 'Add'}
         canAction={canAction && buildingId > 0}
         onSave={handleSaveSecurityDepositDetails}
         isLoading={isLoading}
       />
 
-      {/* ADD UPDATE SECURITY DEPOSIT PAYMENT STAGE MODAL */}
       <Modal
         isOpen={isAddUpdateSecurityDepositPaymentStageModalOpen}
         onClose={() => {
@@ -625,6 +630,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
                 onChange={(e) => handleFieldChangeSecurityDepositPaymentStage('Stage', e.target.value)}
                 error={errorsSecurityDepositPaymentStage.Stage}
                 placeholder="Enter Stage"
+                maxLength={100}
               />
             </div>
             <div>
@@ -646,8 +652,6 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
           </div>
         </div>
       </Modal>
-
-      {/* DELETE CONFIRMATION SECURITY DEPOSIT PAYMENT STAGE MODAL */}
 
       <DeleteDialog
         isOpen={isConfirmationDialogBoxOpenSecurityDepositPaymentStage}

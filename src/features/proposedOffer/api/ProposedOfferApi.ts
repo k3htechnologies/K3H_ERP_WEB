@@ -1,5 +1,9 @@
 export const ProposedOfferApi = {
     //=============================================================
+    // [ PDF ]
+    //=============================================================
+    PULL_PROPOSED_OFFER_PDF: '/ProposedOffer/PullProposedOfferPDF',
+    //=============================================================
     // [ EXTRA CARPET ]
     //=============================================================
     PULL_EXTRA_CARPET_AREA: '/ProposedOffer/PullExtraCarpetArea',
@@ -15,9 +19,9 @@ export const ProposedOfferApi = {
     //=============================================================
     // [ RENT DETAILS ]
     //=============================================================
-    PULL_RENT_DETAILS: '/ProposedOffer/PullRentDetails',
-    ADD_UPDATE_RENT_DETAILS: '/ProposedOffer/AddUpdateRentDetails',
-    DELETE_RENT_DETAILS: '/ProposedOffer/DeleteRentDetails',
+    PULL_TEMPORARY_ACCOMMODATION_ALTERNATIVE: '/ProposedOffer/PullTemporaryAccommodationAlternativeDetails',
+    ADD_UPDATE_TEMPORARY_ACCOMMODATION_ALTERNATIVE: '/ProposedOffer/AddUpdateTemporaryAccommodationAlternativeDetails',
+    DELETE_TEMPORARY_ACCOMMODATION_ALTERNATIVE: '/ProposedOffer/DeleteTemporaryAccommodationAlternativeDetails',
 
     //=============================================================
     // [ SHIFTING DETAILS ]
@@ -71,26 +75,16 @@ export const ProposedOfferApi = {
     //=============================================================
     // [ READY RECKONER ]
     //=============================================================
-    PULL_READY_RECKONER: '/ProposedOffer/PullReadyReckoner',
-    ADD_UPDATE_READY_RECKONER: '/ProposedOffer/AddUpdateReadyReckoner',
-
-    //=============================================================
-    // [ CARPET AREA ]
-    //=============================================================
-    PULL_CARPET_AREA: '/ProposedOffer/PullCarpetArea',
-    ADD_UPDATE_CARPET_AREA: '/ProposedOffer/AddUpdateCarpetArea',
-
+    PULL_READY_RECKONER_Rate: '/ProposedOffer/PullReadyReckonerRateDetails',
+    ADD_UPDATE_READY_RECKONER_Rate: '/ProposedOffer/AddUpdateReadyReckonerRateDetails',
+    DELETE_READY_RECKONER_Rate: '/ProposedOffer/DeleteReadyReckonerRateDetails',
     //=============================================================
     // [ ADDITIONAL INFORMATION ]
     //=============================================================
     PULL_ADDITIONAL_INFORMATION: '/ProposedOffer/PullAdditionalInformation',
     ADD_UPDATE_ADDITIONAL_INFORMATION: '/ProposedOffer/AddUpdateAdditionalInformation',
 
-    //=============================================================
-    // [ PLOT AREA ]
-    //=============================================================
-    PULL_PLOT_AREA: '/ProposedOffer/PullPlotArea',
-    ADD_UPDATE_PLOT_AREA: '/ProposedOffer/AddUpdatePlotArea',
+   
 
 } as const
 

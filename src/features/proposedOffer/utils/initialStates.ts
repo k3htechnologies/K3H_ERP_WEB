@@ -11,15 +11,11 @@ import type {
   AddUpdateProposedOfferParkingAllotmentRequest,
   AddUpdateProposedOfferGSTonExistingPlusFreeAreaRequest,
   AddUpdateProposedOfferProjectCompletionRequest,
-  AddUpdateProposedOfferRentDetailsRequest,
+  AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest,
 
   // Ready Reckoner
-  AddUpdateReadyReckonerRequest,
-  // Carpet Area
-  AddUpdateCarpetAreaRequest,
   AddUpdateAdditionalInformationRequest,
-  ProposedOfferRentDetailsData,
-  AddUpdatePlotAreaRequest,
+  AddUpdateProposedOfferReadyReckonerRateRequest,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 
 //#region INITIAL FORM STATE - EXTRA CARPET AREA
@@ -31,7 +27,7 @@ export const initialFormStateExtraCarpetArea = (): AddUpdateProposedOfferExtraCa
   ExtraCarpetAreaOfferedType: '',
   ResidentialExtraCarpetPercent: 0,
   CommercialExtraCarpetPercent: 0,
-  Remark:""
+  Remark: ""
 });
 //#endregion
 
@@ -44,7 +40,7 @@ export const initialFormStateHardshipDetails = (): AddUpdateProposedOfferHardshi
   HardshipOfferedToResidentialAmount: 0,
   HardshipOfferedToCommercialAmount: 0,
   HardshipDetailsWithPaymentStageJSON: '',
-  Remark:""
+  Remark: ""
 });
 //#endregion
 
@@ -60,7 +56,7 @@ export const initialFormStateHardshipPaymentStage = (): ProposedOfferHardshipDet
   StagePercentageText: '',
   Amount: 0,
   UnitSqFtLumsum: '',
-  CarpetAreaSqFt:0,
+  CarpetAreaSqFt: 0,
   CreatedById: 0,
   CreatedBy: '',
   CreatedDate: null,
@@ -79,8 +75,8 @@ export const initialFormStateSecurityDepositDetails = (): AddUpdateProposedOffer
   BuildingId: 0,
   ProjectId: 0,
   SecurityDepositToSocietyAmount: 0,
-  InterestAmount:0,
-  Remark:"",
+  InterestAmount: 0,
+  Remark: "",
   SecurityDepositToSocietyWithPaymentStageJSON: ''
 });
 //#endregion
@@ -113,7 +109,7 @@ export const initialFormStateShiftingDetails = (): AddUpdateProposedOfferShiftin
   ProjectId: 0,
   ShiftingOfferedToResidentialAmount: 0,
   ShiftingOfferedToCommercialAmount: 0,
-  Remark:"",
+  Remark: "",
   ShiftingDetailsWithPaymentStageJSON: '',
 });
 //#endregion
@@ -149,10 +145,10 @@ export const initialFormStateLienToSocietyDetails = (): AddUpdateProposedOfferLi
   ResidentialAreaSqFt: 0,
   CommercialAreaSqFt: 0,
   NumberOfResidentialLienUnits: 0,
-  ResidentialInventoryFlatId:"",
+  ResidentialInventoryFlatId: "",
   NumberOfCommercialLienUnits: 0,
-  CommercialInventoryFlatId:"",
-  Remark:"",
+  CommercialInventoryFlatId: "",
+  Remark: "",
 
   LienToSocietyWithPaymentStageJSON: ''
 });
@@ -186,7 +182,8 @@ export const initialFormStateParkingAllotment = (): AddUpdateProposedOfferParkin
   BuildingId: 0,
   ProjectId: 0,
   NumberOfParkingAllottedToMembers: 0,
-  TotalParkingPercentageAllottedToSociety: 0
+  TotalParkingPercentageAllottedToSociety: 0,
+  Remark: "",
 });
 //#endregion
 
@@ -213,54 +210,43 @@ export const initialFormStateProjectCompletion = (): AddUpdateProposedOfferProje
 //#endregion
 
 //#region INITIAL FORM STATE - RENT DETAILS
-export const initialFormStateRentDetails = (): AddUpdateProposedOfferRentDetailsRequest => ({
-  ProposedOfferRentDetailsId: 0,
+export const initialFormStateTemporaryAccommodationAlternative = (): AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest => ({
+  ProposedOfferTemporaryAccommodationAlternativeDetailsId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
-  IsAdditionalRent: false,
+  IsAdditionalTemporaryAccommodationAlternative: false,
   Type: '',
   Tenure: '',
   Amount: 0,
   UnitSqFtLumsum: '',
   CarpetAreaSqFt: 0,
-  RentStartDate: '',
-  RentEndDate: '',
+  TemporaryAccommodationAlternativeStartDate: '',
+  TemporaryAccommodationAlternativeEndDate: '',
   IsPayBrokerage: false
 });
 //#endregion
 
 // #region INITIAL FORM STATE - READY RECKONER
-export const initialFormStateReadyReckoner = (): AddUpdateReadyReckonerRequest => ({
-  ReadyReckonerId: 0,
+export const initialFormStateReadyReckonerRate = (): AddUpdateProposedOfferReadyReckonerRateRequest => ({
+  ProposedOfferReadyReckonerRateDetailsId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
-  ReadyReckonerZone: '',
-  LandReadyReckonerRate: 0,
-  ResidentialReadyReckonerRate: 0,
-  GroundShopReadyReckonerRate: 0,
-  OfficeReadyReckonerRate: 0,
-  Remark: ''
+  ResidentialRate: 0,
+  CommercialRate: 0,
+  ShopRate: 0,
+  IndustrialRate: 0,
+  LandRate: 0,
+  EffectiveStartDate: '',
+  EffectiveEndDate: '',
+  FinancialYear: '',
+  Remark: '',
 });
-
-// #region INITIAL FORM STATE - CARPET AREA
-export const initialFormStateCarpetArea = (): AddUpdateCarpetAreaRequest => ({
-  CarpetAreaId: 0,
-  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-  BuildingId: 0,
-  ProjectId: 0,
-  ExistingCarpetAreaResidentialMembersSqFt: 0,
-  ExistingCarpetAreaCommercialMembersSqFt: 0,
-  ExistingCarpetAreaOfEachGarageSqFt: 0,
-  TerraceAreaUtilizedByMembersSqFt: 0,
-  Remark: ''
-});
-//#endregion
 
 // #region INITIAL FORM STATE - ADDITIONAL INFORMATION
 export const initialFormStateAdditionalInformation = (): AddUpdateAdditionalInformationRequest => ({
-  AdditionalInformationId: 0,
+  ProposedOfferAdditionalInformationId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
@@ -272,46 +258,22 @@ export const initialFormStateAdditionalInformation = (): AddUpdateAdditionalInfo
 //#endregion
 
 // #region INITIAL FORM STATE - RENT OFFERED DETAILS
-export const initialFormStateRentOfferedDetails = (): ProposedOfferRentDetailsData => ({
-  ProposedOfferRentDetailsId: 0,
+export const initialFormStateTemporaryAccommodationAlternativeOfferedDetails = (): AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest => ({
+  ProposedOfferTemporaryAccommodationAlternativeDetailsId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
-  RentOfferedToResidential: 0,
-  RentOfferedToCommercial: 0,
-  IsAdditionalRent: true,
+  IsAdditionalTemporaryAccommodationAlternative: true,
   Type: "",
   Tenure: "",
   Amount: 0,
   UnitSqFtLumsum: "",
   CarpetAreaSqFt: 0,
-  RentStartDate: "",
-  RentEndDate: "",
+  TemporaryAccommodationAlternativeStartDate: "",
+  TemporaryAccommodationAlternativeEndDate: "",
   IsPayBrokerage: false,
-  CreatedById: 0,
-  CreatedBy: '',
-  CreatedDate: null,
-  ModifiedById: 0,
-  ModifiedBy: '',
-  ModifiedDate: null,
-  LastModifiedBy: '',
-  LastModifiedDate: null
-
-
+  Remark: ""
 });
 //#endregion
 
-// #region INITIAL FORM STATE - PLOT AREA
-export const initialFormStatePlotArea = (): AddUpdatePlotAreaRequest => ({
-  PlotAreaId: 0,
-  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
-  BuildingId: 0,
-  ProjectId: 0,
-  GrossPlotAreaSqFt: 0,
-  PlotAreaAsPhysicalSurveySqFt: 0,
-  PlotAreaAsPerOldApprovedPlansSqFt: 0,
-  PlotAreaAsPerConveyanceSqFt: 0,
-  PlotAreaAsPerPrCardSqFt: 0,
-  Remark: ''
-});
 

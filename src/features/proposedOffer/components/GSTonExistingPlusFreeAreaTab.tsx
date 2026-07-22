@@ -72,7 +72,8 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
               BuildingId: buildingId,
               ProjectId: Number(projectId),
               GSTOnAreaByMemberPercent: data.GSTOnAreaByMemberPercent ?? 0,
-              GSTOnAreaByDeveloperPercent: data.GSTOnAreaByDeveloperPercent ?? 0
+              GSTOnAreaByDeveloperPercent: data.GSTOnAreaByDeveloperPercent ?? 0,
+              Remark: data.Remark
             });
           } else {
             setFormDataGSTonExistingPlusFreeArea({
@@ -148,7 +149,9 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
           BuildingId: buildingId,
           ProjectId: Number(projectId),
           GSTOnAreaByMemberPercent: formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent,
-          GSTOnAreaByDeveloperPercent: formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent
+          GSTOnAreaByDeveloperPercent: formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent,
+          Remark: formDataGSTonExistingPlusFreeArea.Remark
+
         };
 
         const response = await proposedOfferService.apiCallAddUpdateGSTonExistingPlusFreeArea(payload);
@@ -184,6 +187,8 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
     )
   };
 
+  const isBuildingSelected = buildingId > 0;
+
   return (
     <>
       <div className="space-y-6 pb-5">
@@ -199,7 +204,7 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                 required
                 type="text"
                 rightIcon="%"
-                value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent || ''}
+                value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent || 0}
                 onChange={(e) => {
                   const val = allowPercentage(e.target.value);
                   if (val !== null) {
@@ -207,7 +212,8 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                   }
                 }}
                 error={errorsGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent}
-                placeholder="Enter GST on Area by Member Percent"
+                placeholder="Enter GST on Area by Member"
+                disabled={!isBuildingSelected}
               />
             </div>
 
@@ -217,7 +223,7 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                 required
                 type="text"
                 rightIcon="%"
-                value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent || ''}
+                value={formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent || 0}
                 onChange={(e) => {
                   const val = allowPercentage(e.target.value);
                   if (val !== null) {
@@ -225,7 +231,8 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                   }
                 }}
                 error={errorsGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent}
-                placeholder="Enter GST on Area by Developer Percent"
+                placeholder="Enter GST on Area by Developer"
+                disabled={!isBuildingSelected}
               />
             </div>
             <div>
@@ -235,7 +242,10 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
                 type="text"
                 rightIcon="%"
                 disabled
-                value={Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent) + Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent) || 0}
+                value={(
+                  (Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByDeveloperPercent) || 0) +
+                  (Number(formDataGSTonExistingPlusFreeArea.GSTOnAreaByMemberPercent) || 0)
+                ).toFixed(2)}
                 error={errorsGSTonExistingPlusFreeArea.TotalGSTPercent}
                 placeholder="System Calculated Total GST"
               />
@@ -250,22 +260,14 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
               placeholder="Enter Remark"
               onChange={(e) => handleFieldChangeGSTonExistingPlusFreeArea("Remark", e.target.value)}
               error={errorsGSTonExistingPlusFreeArea.Remark}
+              disabled={!isBuildingSelected}
             />
           </div>
         </div>
       </div>
 
       <BottomActionBar
-        cancelText="Cancel"
         saveText={(formDataGSTonExistingPlusFreeArea.ProposedOfferGSTonExistingPlusFreeAreaId && formDataGSTonExistingPlusFreeArea.ProposedOfferGSTonExistingPlusFreeAreaId > 0) ? 'Update' : 'Add'}
-        onCancel={() => {
-          setFormDataGSTonExistingPlusFreeArea({
-            ...initialFormStateGSTonExistingPlusFreeArea(),
-            ProjectId: Number(projectId)
-          });
-          setErrorsGSTonExistingPlusFreeArea({});
-          fetchGSTonExistingPlusFreeAreaData();
-        }}
         canAction={canAction && buildingId > 0}
         onSave={handleSaveGSTonExistingPlusFreeArea}
         isLoading={isLoading}

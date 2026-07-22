@@ -1,6 +1,17 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
 //=============================================================
+// [ PDF ]
+//=============================================================
+
+export interface FilterWithPaginationProposedOfferPdfRequest {
+    ProjectId?: number
+    BuildingId?: number
+    ExportType?: 'Excel' | 'PDF'
+}
+
+export type ProposedOfferPDFResponse = ApiResponse<string>;
+//=============================================================
 // [ EXTRA CARPET ]
 //=============================================================
 
@@ -121,32 +132,28 @@ export type ProposedOfferHardshipDetailsDeleteResponse = ApiResponse<number>;
 // [ RENT DETAILS ]
 //=============================================================
 
-export interface FilterWithPaginationProposedOfferRentDetailsRequest {
+export interface FilterWithPaginationProposedOfferTemporaryAccommodationAlternativeRequest {
 
     ProjectId?: number
     BuildingId?: number
     ExportType?: 'Excel' | 'PDF'
 }
 
-export interface ProposedOfferRentDetailsData {
-    ProposedOfferRentDetailsId?: number
+export interface ProposedOfferTemporaryAccommodationAlternativeData {
+    ProposedOfferTemporaryAccommodationAlternativeDetailsId?: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
-    IsAdditionalRent?: boolean
+    IsAdditionalTemporaryAccommodationAlternative?: boolean
     Type?: string
     Tenure?: string
     Amount?: number
     UnitSqFtLumsum?: string
     CarpetAreaSqFt?: number
-    RentStartDate?: string
-    RentEndDate?: string
+    TemporaryAccommodationAlternativeStartDate?: string
+    TemporaryAccommodationAlternativeEndDate?: string
     IsPayBrokerage?: boolean
-
-    RentOfferedToResidential?: number
-    RentOfferedToCommercial?: number
     Remark?: string
-
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -157,35 +164,35 @@ export interface ProposedOfferRentDetailsData {
     LastModifiedDate: string | null
 }
 
-export interface AddUpdateProposedOfferRentDetailsRequest {
-    ProposedOfferRentDetailsId: number
+export interface AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest {
+    ProposedOfferTemporaryAccommodationAlternativeDetailsId: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
-    IsAdditionalRent?: boolean
+    IsAdditionalTemporaryAccommodationAlternative?: boolean
     Type?: string
     Tenure?: string
     Amount?: number
     UnitSqFtLumsum?: string
     CarpetAreaSqFt?: number
-    RentStartDate?: string
-    RentEndDate?: string
+    TemporaryAccommodationAlternativeStartDate?: string
+    TemporaryAccommodationAlternativeEndDate?: string
     IsPayBrokerage?: boolean
     Mode?: string
     Brokerage?: number
     Remark?: string
 }
 
-export interface DeleteProposedOfferRentDetailsRequest {
-    ProposedOfferRentDetailsId: number
+export interface DeleteProposedOfferTemporaryAccommodationAlternativeRequest {
+    ProposedOfferTemporaryAccommodationAlternativeDetailsId: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
 }
 
-export type ProposedOfferRentDetailsListResponse = ApiResponse<ProposedOfferRentDetailsData[]>;
-export type ProposedOfferRentDetailsSaveResponse = ApiResponse<ProposedOfferRentDetailsData[]>;
-export type ProposedOfferRentDetailsDeleteResponse = ApiResponse<number>;
+export type ProposedOfferTemporaryAccommodationAlternativeListResponse = ApiResponse<ProposedOfferTemporaryAccommodationAlternativeData[]>;
+export type ProposedOfferTemporaryAccommodationAlternativeSaveResponse = ApiResponse<ProposedOfferTemporaryAccommodationAlternativeData[]>;
+export type ProposedOfferTemporaryAccommodationAlternativeDeleteResponse = ApiResponse<number>;
 //=============================================================
 // [ SHIFTING DETAILS ]
 //=============================================================
@@ -544,8 +551,6 @@ export interface ProposedOfferProposedPlanData {
     ProposedOfferProposedPlanId?: number
     Uniquekey?: string
     ProjectId: number
-
-    // New Fields Added here 15-07
     TotalNumberOfBuilding?: number;
     TotalNumberOfWing?: number;
     TotalPodium?: number;
@@ -557,10 +562,12 @@ export interface ProposedOfferProposedPlanData {
     SalesPlanURL?: string
     Amenities?: string
     ProposedPlanWingWiseData?: ProposedPlanWingWiseData[] | null;
-
-    // Check with sir
-    TotalNumberOfFloors?: number
-
+    SalesResidentialParking?: number;
+    SalesCommercialParking?: number;
+    SalesVisitorsParking?: number;
+    MemberResidentialParking?: number;
+    MemberCommercialParking?: number;
+    MemberVisitorsParking?: number;
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -573,6 +580,7 @@ export interface ProposedOfferProposedPlanData {
 
 export interface ProposedPlanWingWiseData {
     ProposedPlanWingWiseId: number | null
+    BuildingId: number | null
     Wings: string | null
     MainEntranceLobbyAreaSqFt: number | null;
     TotalNumberOfLifts: number | null;
@@ -587,36 +595,27 @@ export interface AddUpdateProposedOfferProposedPlanRequest {
     ProposedOfferProposedPlanId?: number
     Uniquekey?: string
     ProjectId?: number
-
-    // New 15-07
     TotalNumberOfBuilding?: number
     TotalNumberOfWing?: number
     TotalPodium?: number
     TotalUnits?: number
     TotalParking?: number
-
     PlanDocumentURL?: File[] | null
     RemovePlanDocumentURL?: string
-
     ThreeDViewURL?: File[] | null
     RemoveThreeDViewURL?: string
-
     WalkthroughViewURL?: File[] | null
     RemoveWalkthroughViewURL?: string
-
     SalesPlanURL?: File[] | null
     RemoveSalesPlanURL?: string
-
     Amenities?: string
     ProposedOfferProposedPlanJSON?: string | null
-
-    // Check With Sir
-    TotalNumberOfFloors?: number
-    TotalAmmenitiesAreaSqFt?: number
-    MinEntranceLobbyAreaSqFt?: number
-    NumberOfLiftsWingWise?: number
-
-
+    SalesResidentialParking?: number;
+    SalesCommercialParking?: number;
+    SalesVisitorsParking?: number;
+    MemberResidentialParking?: number;
+    MemberCommercialParking?: number;
+    MemberVisitorsParking?: number;
 }
 
 export type ProposedOfferProposedPlanListResponse = ApiResponse<ProposedOfferProposedPlanData[]>;
@@ -632,7 +631,7 @@ export interface AddUpdateGenerateProposedOfferRequest {
     Tenure?: string
     ChargeType?: string
     IsPayBrokerage?: boolean
-    IsAdditionalRent?: boolean
+    IsAdditionalTemporaryAccommodationAlternative?: boolean
 }
 
 export type GenerateProposedOfferResponse = ApiResponse<number>;
@@ -642,22 +641,29 @@ export type GenerateProposedOfferResponse = ApiResponse<number>;
 // [ READY RECKONER ]
 //=============================================================
 
-export interface FilterWithPaginationReadyReckonerRequest {
+export interface FilterWithPaginationProposedOfferReadyReckonerRateRequest {
+
     ProjectId?: number
     BuildingId?: number
     ExportType?: 'Excel' | 'PDF'
 }
 
-export interface ReadyReckonerData {
-    ReadyReckonerDataId?: number
+export interface ProposedOfferReadyReckonerRateData {
+    ProposedOfferReadyReckonerRateDetailsId?: number
     Uniquekey?: string
     BuildingId?: number
-    ProjectId?: number
-    ReadyReckonerZone: string
-    LandReadyReckonerRate?: number
-    ResidentialReadyReckonerRate?: number
-    GroundShopReadyReckonerRate?: number
-    OfficerReadyReckonerRate?: number
+    ProjectId: number
+    Zone?:string
+    SubZone?:string
+    ResidentialRate?: number
+    CommercialRate?: number
+    ShopRate?: number
+    IndustrialRate?: number
+    LandRate?: number
+    EffectiveStartDate?: string
+    EffectiveEndDate?: string
+    FinancialYear?: string
+    Remark?: string
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -668,67 +674,34 @@ export interface ReadyReckonerData {
     LastModifiedDate: string | null
 }
 
-export interface AddUpdateReadyReckonerRequest {
-    ReadyReckonerId?: number
+export interface AddUpdateProposedOfferReadyReckonerRateRequest {
+    ProposedOfferReadyReckonerRateDetailsId: number
     Uniquekey?: string
     BuildingId?: number
-    ProjectId?: number
-    ReadyReckonerZone: string
-    LandReadyReckonerRate?: number
-    ResidentialReadyReckonerRate?: number
-    GroundShopReadyReckonerRate?: number
-    OfficeReadyReckonerRate?: number
+    ProjectId: number
+    Zone?:string
+    SubZone?:string
+    ResidentialRate?: number
+    CommercialRate?: number
+    ShopRate?: number
+    IndustrialRate?: number
+    LandRate?: number
+    EffectiveStartDate?: string
+    EffectiveEndDate?: string
+    FinancialYear?: string
     Remark?: string
 }
 
-export type ReadyReckonerListResponse = ApiResponse<ReadyReckonerData[]>;
-export type ReadyReckonerSaveResponse = ApiResponse<ReadyReckonerData[]>;
-
-
-//=============================================================
-// [ READY RECKONER ]
-//=============================================================
-
-export interface FilterWithPaginationCarpetAreaRequest {
-    ProjectId?: number
-    BuildingId?: number
-    ExportType?: 'Excel' | 'PDF'
-}
-
-export interface CarpetAreaData {
-    CarpetAreaId?: number,
+export interface DeleteProposedOfferReadyReckonerRateRequest {
+    ProposedOfferReadyReckonerRateDetailsId: number
     Uniquekey?: string
     BuildingId?: number
-    ProjectId?: number,
-    ExistingCarpetAreaResidentialMembersSqFt?: number,
-    ExistingCarpetAreaCommercialMembersSqft?: number,
-    ExistingCarpetAreaOfEachGarageSqft?: number,
-    TerraceAreaUtilizedByMembersSqFt?: number,
-    Remark?: string,
-    CreatedById: number | 0
-    CreatedBy: string | ''
-    CreatedDate: string | null
-    ModifiedById: number | 0
-    ModifiedBy: string | ''
-    ModifiedDate: string | null
-    LastModifiedBy: string | ''
-    LastModifiedDate: string | null
+    ProjectId: number
 }
 
-export interface AddUpdateCarpetAreaRequest {
-    CarpetAreaId?: number,
-    Uniquekey?: string
-    BuildingId?: number
-    ProjectId?: number,
-    ExistingCarpetAreaResidentialMembersSqFt?: number,
-    ExistingCarpetAreaCommercialMembersSqFt?: number,
-    ExistingCarpetAreaOfEachGarageSqFt?: number,
-    TerraceAreaUtilizedByMembersSqFt?: number,
-    Remark?: string
-}
-
-export type CarpetAreaListResponse = ApiResponse<CarpetAreaData[]>;
-export type CarpetAreaSaveResponse = ApiResponse<CarpetAreaData[]>;
+export type ProposedOfferReadyReckonerRateListResponse = ApiResponse<ProposedOfferReadyReckonerRateData[]>;
+export type ProposedOfferReadyReckonerRateSaveResponse = ApiResponse<ProposedOfferReadyReckonerRateData[]>;
+export type ProposedOfferReadyReckonerRateDeleteResponse = ApiResponse<number>;
 
 // ADDITIONAL INFORMATION
 
@@ -739,14 +712,14 @@ export interface FilterWithPaginationAdditionalInformationRequest {
 }
 
 export interface AdditionalInformationData {
-    AdditionalInformationId?: number
+    ProposedOfferAdditionalInformationId?: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId?: number
     TaxAndDutiesDetails?: string
     TaxRemark?: string
     PurchaseOfAdditonalAreaRemark?: string,
-    AdditonalRemark?: string
+    AdditionalRemark?: string
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -758,7 +731,7 @@ export interface AdditionalInformationData {
 }
 
 export interface AddUpdateAdditionalInformationRequest {
-    AdditionalInformationId?: number,
+    ProposedOfferAdditionalInformationId?: number,
     Uniquekey?: string
     BuildingId?: number
     ProjectId?: number,
@@ -772,52 +745,4 @@ export type AdditionalInformationListResponse = ApiResponse<AdditionalInformatio
 export type AdditionalInformationSaveResponse = ApiResponse<AdditionalInformationData[]>;
 
 
-// PLOT AREA
-export interface FilterWithPaginationPlotAreaRequest {
-    ProjectId?: number
-    BuildingId?: number
-    ExportType?: 'Excel' | 'PDF'
-}
-
-export interface PlotAreaData {
-    PlotAreaId?: number,
-    Uniquekey?: string
-    BuildingId?: number
-    ProjectId?: number,
-
-
-    GrossPlotAreaSqFt?: number,
-    PlotAreaAsPhysicalSurveySqFt?: number,
-    PlotAreaAsPerOldApprovedPlansSqFt?: number,
-    PlotAreaAsPerConveyanceSqFt?: number,
-    PlotAreaAsPerPrCardSqFt?: number,
-    Remark?: string,
-
-    CreatedById: number | 0
-    CreatedBy: string | ''
-    CreatedDate: string | null
-    ModifiedById: number | 0
-    ModifiedBy: string | ''
-    ModifiedDate: string | null
-    LastModifiedBy: string | ''
-    LastModifiedDate: string | null
-}
-
-export interface AddUpdatePlotAreaRequest {
-    PlotAreaId?: number,
-    Uniquekey?: string
-    BuildingId?: number
-    ProjectId?: number,
-
-    GrossPlotAreaSqFt?: number,
-    PlotAreaAsPhysicalSurveySqFt?: number,
-    PlotAreaAsPerOldApprovedPlansSqFt?: number,
-    PlotAreaAsPerConveyanceSqFt?: number,
-    PlotAreaAsPerPrCardSqFt?: number,
-    Remark?: string,
-
-}
-
-export type PlotAreaListResponse = ApiResponse<PlotAreaData[]>;
-export type PlotAreaSaveResponse = ApiResponse<PlotAreaData[]>;
 

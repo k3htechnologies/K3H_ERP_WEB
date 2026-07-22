@@ -23,7 +23,6 @@ import { useBuildingListState } from '@/features/building/context/BuildingListSt
 
 export const ViewBuilding: React.FC = () => {
 
-    //#region STATE MANAGEMENT
     const [buildingData, setBuildingData] = useState<BuildingData | null>(null);
     const [buildingDocumentList, setBuildingDocumentList] = useState<BuildingDocumentData[]>([]);
     const [docFilesMap, setDocFilesMap] = useState<Record<number, BuildingDocumentData[]>>({});
@@ -36,7 +35,6 @@ export const ViewBuilding: React.FC = () => {
             doc: d
         }));
 
-    // SINGLE SEARCH TEXT BOX
     const [searchTerm, setSearchTerm] = useState('')
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchBuildingDocument(value)
@@ -48,24 +46,16 @@ export const ViewBuilding: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const { canAction } = useMenuPermissions();
-    // TOAST
+   
     const { addToast } = useToast();
 
-    //LOCATION
     const navigate = useNavigate();
 
-    //#endregion
-
-    //#region PROJECT SELECTION GET ID
     const { projectId } = useProject()
-    //#endregion
-
-    //#region BUILDING LIST STATE CONTEXT
+    
     const { listState } = useBuildingListState();
     const { buildingId, buildingName } = listState;
-    //#endregion
-
-    //#region TAB ACTIVITY
+    
     const buildingTabList = [
         { id: "Overview", label: "Overview" },
         { id: "Details", label: "Details" },
@@ -74,9 +64,6 @@ export const ViewBuilding: React.FC = () => {
 
     const [activeTab, setActiveTab] = useState<string>(buildingTabList[0].id);
 
-    //#endregion
-
-    //#region INIT
     useEffect(() => {
         if (!projectId || !buildingId) return;
 
@@ -89,9 +76,6 @@ export const ViewBuilding: React.FC = () => {
         }
     }, [projectId, buildingId, activeTab]);
 
-    //#endregion
-
-    //#region DATA LOAD OVERVIEW
     const loadBuildingFromServer = async () => {
         if (!buildingId) return;
         await runApiWithLoader(
@@ -128,9 +112,6 @@ export const ViewBuilding: React.FC = () => {
         );
     };
 
-    //#endregion 
-
-    //#region DATA LOAD DOCUMENT
     const loadBuildingDocumentFromServer = async (searchText = "") => {
         await runApiWithLoader(
             setIsLoading,
@@ -197,30 +178,19 @@ export const ViewBuilding: React.FC = () => {
         }
     };
 
-
-    //#region SERACH DEPARTMENT 
     const searchBuildingDocument = async (searchValue: string) => {
 
         setSearchTerm(searchValue);
         await loadBuildingDocumentFromServer(searchValue);
 
     }
-    //#endregion
-
-    //#region CLEAR SERACH DEPARTMENT 
+    
     const clearsearchBuildingDocument = async () => {
         setSearchTerm('');
         debouncedSearch.cancel?.();
         await loadBuildingDocumentFromServer();
     }
 
-    //#endregion
-
-
-
-    //#endregion 
-
-    //#region DATA LOAD Description
     const loadBuildingDetailsFromServer = async () => {
         await runApiWithLoader(
             setIsLoading,
@@ -447,6 +417,7 @@ export const ViewBuilding: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-4">
                                     <FieldItem label="City" value={buildingData?.CityName ?? '-'} />
                                     <FieldItem label="Village" value={buildingData?.VillageName ?? '-'} />
+                                    <FieldItem label="Ward" value={buildingData?.WardName ?? '-'} />
 
                                 </div>
                             </div>
@@ -730,10 +701,16 @@ export const ViewBuilding: React.FC = () => {
                                         </div>
                                     </div>
 
-                                    <div className="lg:col-span-3 ">
+                                    <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3">
                                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                             <FieldItem label="Total Commercial Units" value={buildingDetailsList?.[0]?.TotalCommercialUnits ?? 0} />
                                             <FieldItem label="Commercial Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalCommercialCarpetAreaSqFt ?? 0} />
+                                            <FieldItem label="Garage Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalGarageCarpetAreaSqFt ?? 0} />
+                                        </div>
+                                    </div>
+                                    <div className="lg:col-span-3 ">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                            <FieldItem label="Terrace Carpet Area (SqFt)" value={buildingDetailsList?.[0]?.TotalTerraceCarpetAreaSqFt ?? 0} />
                                         </div>
                                     </div>
                                 </div>
@@ -752,10 +729,7 @@ export const ViewBuilding: React.FC = () => {
 
 
                                     {contactDetailsList.map((contact, index) => (
-                                        <div
-                                            key={index}
-                                            className="border-b border-[#135bec2e] pb-4 space-y-3"
-                                        >
+                                        <div key={index}  className={`space-y-3 ${ index !== contactDetailsList.length - 1 ? "pb-4 border-b border-[#135bec2e]"  : "" }`}>
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
                                                 <FieldItem label="Contact Type" value={contact.ContactType} />

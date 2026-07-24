@@ -167,6 +167,12 @@ import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokera
 import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
 import Terms from '@/features/terms/pages/TermsAndCondition';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
+import JobRoleMaster from '@/features/hireSpace/pages/JobRoleMaster';
+import AddJobRolePage from '@/features/hireSpace/pages/AddJobRolePage';
+import JobOpenings from '@/features/jobOpening/pages/JobOpenings';
+import AddJobScreen from '@/features/jobOpening/pages/AddJobScreen';
+import JobApplicationsDetail from '@/features/jobOpening/pages/JobApplicationDetails';
+import InterviewSchedule from '@/features/jobOpening/pages/InterviewSchedule';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -216,6 +222,21 @@ function App() {
 
             <Route path="designationMaster" element={<DesignationMaster />} />
             <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
+
+            <Route path="jobRoleMaster" element={<JobRoleMaster />} />
+            <Route path="jobRoleMaster/add/:departmentId" element={<AddJobRolePage />} />
+            <Route path="jobRoleMaster/edit/:departmentId/:jobRoleId" element={<AddJobRolePage />} />
+
+            <Route path="jobOpenings" element={<JobOpenings />} />
+            <Route path="jobOpenings/add/:jobOpeningId?" element={<AddJobScreen />} />
+            <Route
+              path="jobOpenings/:departmentId/JobApplicationDetails/:jobOpeningMasterId"
+              element={<JobApplicationsDetail />}
+            />
+            <Route
+              path="jobOpenings/interviews/schedule"
+              element={<InterviewSchedule />}
+            />
 
             <Route
               path="employeeMaster"

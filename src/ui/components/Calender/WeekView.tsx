@@ -1,4 +1,5 @@
 import { getWeekDays, getHours } from "@/ui/components/Calender/CalendarUtils";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import type { CalendarEvent } from "./CalendarEvent";
 
 interface WeekViewProps {
@@ -57,16 +58,22 @@ export default function WeekView({
                                 {slotEvents.map(ev => (
                                     <div
                                         key={ev.id}
-                                        className={`absolute m-1 p-1 rounded cursor-pointer
+                                        className={`absolute m-1 min-w-0 overflow-hidden rounded p-1 cursor-pointer
                       ${ev.type?.toUpperCase() === "TASK"
                                                 ? "bg-blue-200 text-blue-900"
                                                 : ev.type?.toUpperCase() === "MEETING"
                                                     ? "bg-red-200 text-red-900"
                                                     : "bg-orange-200 text-orange-900"
-                                            }`}
+                                        }`}
                                         onClick={() => onEventClick?.(ev)}
                                     >
-                                        {ev.title}
+                                        <TooltipText
+                                            text={ev.title}
+                                            maxWidth="100%"
+                                            tooltipThreshold={14}
+                                            isApplyBgTextColor
+                                            tooltipClassName="text-left"
+                                        />
                                     </div>
                                 ))}
                             </div>

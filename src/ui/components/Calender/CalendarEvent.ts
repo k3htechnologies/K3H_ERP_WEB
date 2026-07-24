@@ -1,6 +1,7 @@
 export interface CalendarEvent {
-  id: string;
+  id: string | number;
   title: string;
+  color?: "blue" | "orange" | "green";
   type?: "TASK" | "MEETING" | "CONFERENCE";
   start: string;
   end?: string;

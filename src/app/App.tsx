@@ -1,80 +1,80 @@
-import React, { useEffect, Suspense } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
-import { Layout } from '../ui/layouts/Layout';
-import ErrorFallbackPage from '@/features/errorFallbackPage/pages/ErrorFallbackPage'
-import { useNetworkStatus } from '@/core/hooks/useNetworkStatus';
-import { SignIn } from '@/features/authentication/pages/signIn';
-import Dashboard from '@/features/dashboard/pages/Dashboard';
-import { Profile } from '@/features/profile/page/profile';
-import { LocalStorageHelper } from '@/core/utils/localStorageHelper';
-import EmployeeModuleAccess from '@/features/employeeModuleAccess/pages/EmployeeModuleAccess';
-import { DesignationMaster } from '@/features/designationMaster/pages/DesignationMaster';
-import { EmployeeMaster } from '@/features/employeeMaster/pages/EmployeeMaster';
-import { BranchMaster } from '@/features/branchMaster/pages/BranchMaster';
-import BranchAssociationsMaster from '@/features/branchAssociationsMaster/pages/BranchAssociationsMaster';
-import AssetMaster from '@/features/assetMaster/pages/AssetMaster';
-import AssetMappingMaster from '@/features/assetMappingMaster/pages/AssetMappingMaster';
-import DeductionMaster from '@/features/deductionMaster/pages/DeductionMaster';
-import HolidayMaster from '@/features/holidayMaster/pages/HolidayMaster';
-import HolidayMappingMaster from '@/features/holidayMappingMaster/pages/HolidayMappingMaster';
-import LeaveEncashmentMaster from '@/features/leaveEncashmentMaster/pages/LeaveEncashmentMaster';
-import LeaveTypeMaster from '@/features/leaveTypeMaster/pages/LeaveTypeMaster';
-import ShiftMaster from '@/features/shiftMaster/pages/ShiftMaster';
-import ShiftMappingMaster from '@/features/shiftMappingMaster/pages/ShiftMappingMaster';
-import WeekOffMasterMaster from '@/features/weekOffMaster/pages/WeekOffMaster';
-import WeekOffMappingMaster from '@/features/weekOffMappingMaster/pages/WeekOffMappingMaster';
-import Vendor from '@/features/vendor/pages/Vendor';
-import CompanyMaster from '@/features/companyMaster/pages/CompanyMaster';
-import TncMaster from '@/features/tnc/pages/TncMaster';
-import BankListMaster from '@/features/bankListMaster/pages/BankListMaster';
-import AddCompany from '@/features/companyMaster/pages/AddCompany';
-import { CountryStateCityDistrictVillage } from '@/core/hooks/useCountryStateCityDistrictVillage';
-import ProjectMaster from '@/features/projectMaster/pages/ProjectMaster';
-import AddUpdateEmployeeMaster from '@/features/employeeMaster/pages/AddUpdateEmployeeMaster';
-import { MaterialMaster } from '@/features/materialMaster/pages/MaterialMaster';
-import ViewEmployeeMaster from '@/features/employeeMaster/pages/ViewEmployeeMaster';
-import ViewProjectMaster from '@/features/projectMaster/pages/ViewProjectMaster';
-import AddUpdateProjectMaster from '@/features/projectMaster/pages/AddUpdateProjectMaster';
-import { AddUpdateAssetMaster } from '@/features/assetMaster/pages/AddUpdateAssetMaster';
-import ViewAssetMaster from '@/features/assetMaster/pages/ViewAssetMaster';
-import { AddUpdateWeekOffMaster } from '@/features/weekOffMaster/pages/AddUpdateWeekOffMaster';
-import AddUpdateAssetMappingMaster from '@/features/assetMappingMaster/pages/AddUpdateAssetMappingMaster';
-import AddUpdateDeductionMaster from '@/features/deductionMaster/pages/AddUpdateDeductionMaster';
-import AddUpdateShiftMaster from '@/features/shiftMaster/pages/AddUpdateShiftMaster';
-import ViewAssetMappingMaster from '@/features/assetMappingMaster/pages/ViewAssetMappingMaster';
-import ViewShiftMaster from '@/features/shiftMaster/pages/ViewShiftMaster';
-import ViewDeductionMaster from '@/features/deductionMaster/pages/ViewDeductionMaster';
-import ViewWeekOffMaster from '@/features/weekOffMaster/pages/ViewWeekOffPage';
-import SubMaterialMaster from '@/features/subMaterialMaster/pages/SubMaterialMaster';
-import { UomMaster } from '@/features/uomMaster/pages/UomMaster';
-import ProjectDocumentCategoryMaster from '@/features/projectDocumentCategory/pages/ProjectDocumentCategoryMaster';
-import ProjectDocument from '@/features/projectDocument/pages/ProjectDocument';
-import ApprovalDocumentCategoryMaster from '@/features/approvalDocumentCategory/pages/ApprovalDocumentCategoryMaster';
-import ApprovalDocument from '@/features/approvalDocument/pages/ApprovalDocument';
-import ProjectRERADocumentCategoryMaster from '@/features/projectRERADocumentCategory/pages/ProjectRERADocumentCategoryMaster';
-import ProjectRERADocument from '@/features/projectRERADocument/pages/ProjectRERADocument';
-import ViewCompanyMaster from '@/features/companyMaster/pages/ViewCompanyMaster';
-import Inventory from '@/features/inventory/pages/Inventory';
-import InventorySpecification from '@/features/inventory/pages/InventorySpecification';
-import { OutDoor } from '@/features/outdoor/pages/OutDoor';
-import { ViewVendor } from '@/features/vendor/pages/ViewVendor';
-import SiteProgress from '@/features/siteProgress/pages/SiteProgress';
-import SiteProgressSubConstruction from '@/features/siteProgress/pages/SiteProgressSubConstruction';
-import SiteProgressWingConstruction from '@/features/siteProgress/pages/SiteProgressWingConstruction';
-import SiteProgressFloorConstruction from '@/features/siteProgress/pages/SiteProgressFloorConstruction';
-import SiteProgressFlatConstruction from '@/features/siteProgress/pages/SiteProgressFlatConstruction';
-import SiteProgressConstructionActivity from '@/features/siteProgress/pages/SiteProgressConstructionActivity';
-import SiteProgressConstructionSubActivity from '@/features/siteProgress/pages/SiteProgressConstructionSubActivity';
-import { Building } from '@/features/building/pages/Building';
-import ViewBuilding from '@/features/building/pages/ViewBuilding';
-import AddUpdateBuilding from '@/features/building/pages/AddUpdateBuilding';
-import Tenant from '@/features/tenant/pages/Tenant';
-import AddUpdateTenant from '@/features/tenant/pages/AddUpdateTenant';
-import ViewTenant from '@/features/tenant/pages/ViewTenant';
-import AddUpdateVendor from '@/features/vendor/pages/AddUpdateVendor';
-import { ChannelPartner } from '@/features/ChannelPartner/pages/ChannelPartner';
-import { AddUpdateChannelPartner } from '@/features/ChannelPartner/pages/AddUpdateChannelPartner';
-import { ChannelPartnerSourcing } from '@/features/ChannelPartnerSourcing/pages/ChannelPartnerSourcing';
+import React, { Suspense } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Layout } from "../ui/layouts/Layout";
+import ErrorFallbackPage from "@/features/errorFallbackPage/pages/ErrorFallbackPage";
+import { useNetworkStatus } from "@/core/hooks/useNetworkStatus";
+import { SignIn } from "@/features/authentication/pages/signIn";
+import Dashboard from "@/features/dashboard/pages/Dashboard";
+import { Profile } from "@/features/profile/page/profile";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
+import EmployeeModuleAccess from "@/features/employeeModuleAccess/pages/EmployeeModuleAccess";
+import { DesignationMaster } from "@/features/designationMaster/pages/DesignationMaster";
+import { EmployeeMaster } from "@/features/employeeMaster/pages/EmployeeMaster";
+import { BranchMaster } from "@/features/branchMaster/pages/BranchMaster";
+import BranchAssociationsMaster from "@/features/branchAssociationsMaster/pages/BranchAssociationsMaster";
+import AssetMaster from "@/features/assetMaster/pages/AssetMaster";
+import AssetMappingMaster from "@/features/assetMappingMaster/pages/AssetMappingMaster";
+import DeductionMaster from "@/features/deductionMaster/pages/DeductionMaster";
+import HolidayMaster from "@/features/holidayMaster/pages/HolidayMaster";
+import HolidayMappingMaster from "@/features/holidayMappingMaster/pages/HolidayMappingMaster";
+import LeaveEncashmentMaster from "@/features/leaveEncashmentMaster/pages/LeaveEncashmentMaster";
+import LeaveTypeMaster from "@/features/leaveTypeMaster/pages/LeaveTypeMaster";
+import ShiftMaster from "@/features/shiftMaster/pages/ShiftMaster";
+import ShiftMappingMaster from "@/features/shiftMappingMaster/pages/ShiftMappingMaster";
+import WeekOffMasterMaster from "@/features/weekOffMaster/pages/WeekOffMaster";
+import WeekOffMappingMaster from "@/features/weekOffMappingMaster/pages/WeekOffMappingMaster";
+import Vendor from "@/features/vendor/pages/Vendor";
+import CompanyMaster from "@/features/companyMaster/pages/CompanyMaster";
+import TncMaster from "@/features/tnc/pages/TncMaster";
+import BankListMaster from "@/features/bankListMaster/pages/BankListMaster";
+import AddCompany from "@/features/companyMaster/pages/AddCompany";
+import { CountryStateCityDistrictVillage } from "@/core/hooks/useCountryStateCityDistrictVillage";
+import ProjectMaster from "@/features/projectMaster/pages/ProjectMaster";
+import AddUpdateEmployeeMaster from "@/features/employeeMaster/pages/AddUpdateEmployeeMaster";
+import { MaterialMaster } from "@/features/materialMaster/pages/MaterialMaster";
+import ViewEmployeeMaster from "@/features/employeeMaster/pages/ViewEmployeeMaster";
+import ViewProjectMaster from "@/features/projectMaster/pages/ViewProjectMaster";
+import AddUpdateProjectMaster from "@/features/projectMaster/pages/AddUpdateProjectMaster";
+import { AddUpdateAssetMaster } from "@/features/assetMaster/pages/AddUpdateAssetMaster";
+import ViewAssetMaster from "@/features/assetMaster/pages/ViewAssetMaster";
+import { AddUpdateWeekOffMaster } from "@/features/weekOffMaster/pages/AddUpdateWeekOffMaster";
+import AddUpdateAssetMappingMaster from "@/features/assetMappingMaster/pages/AddUpdateAssetMappingMaster";
+import AddUpdateDeductionMaster from "@/features/deductionMaster/pages/AddUpdateDeductionMaster";
+import AddUpdateShiftMaster from "@/features/shiftMaster/pages/AddUpdateShiftMaster";
+import ViewAssetMappingMaster from "@/features/assetMappingMaster/pages/ViewAssetMappingMaster";
+import ViewShiftMaster from "@/features/shiftMaster/pages/ViewShiftMaster";
+import ViewDeductionMaster from "@/features/deductionMaster/pages/ViewDeductionMaster";
+import ViewWeekOffMaster from "@/features/weekOffMaster/pages/ViewWeekOffPage";
+import SubMaterialMaster from "@/features/subMaterialMaster/pages/SubMaterialMaster";
+import { UomMaster } from "@/features/uomMaster/pages/UomMaster";
+import ProjectDocumentCategoryMaster from "@/features/projectDocumentCategory/pages/ProjectDocumentCategoryMaster";
+import ProjectDocument from "@/features/projectDocument/pages/ProjectDocument";
+import ApprovalDocumentCategoryMaster from "@/features/approvalDocumentCategory/pages/ApprovalDocumentCategoryMaster";
+import ApprovalDocument from "@/features/approvalDocument/pages/ApprovalDocument";
+import ProjectRERADocumentCategoryMaster from "@/features/projectRERADocumentCategory/pages/ProjectRERADocumentCategoryMaster";
+import ProjectRERADocument from "@/features/projectRERADocument/pages/ProjectRERADocument";
+import ViewCompanyMaster from "@/features/companyMaster/pages/ViewCompanyMaster";
+import Inventory from "@/features/inventory/pages/Inventory";
+import InventorySpecification from "@/features/inventory/pages/InventorySpecification";
+import { OutDoor } from "@/features/outdoor/pages/OutDoor";
+import { ViewVendor } from "@/features/vendor/pages/ViewVendor";
+import SiteProgress from "@/features/siteProgress/pages/SiteProgress";
+import SiteProgressSubConstruction from "@/features/siteProgress/pages/SiteProgressSubConstruction";
+import SiteProgressWingConstruction from "@/features/siteProgress/pages/SiteProgressWingConstruction";
+import SiteProgressFloorConstruction from "@/features/siteProgress/pages/SiteProgressFloorConstruction";
+import SiteProgressFlatConstruction from "@/features/siteProgress/pages/SiteProgressFlatConstruction";
+import SiteProgressConstructionActivity from "@/features/siteProgress/pages/SiteProgressConstructionActivity";
+import SiteProgressConstructionSubActivity from "@/features/siteProgress/pages/SiteProgressConstructionSubActivity";
+import { Building } from "@/features/building/pages/Building";
+import ViewBuilding from "@/features/building/pages/ViewBuilding";
+import AddUpdateBuilding from "@/features/building/pages/AddUpdateBuilding";
+import Tenant from "@/features/tenant/pages/Tenant";
+import AddUpdateTenant from "@/features/tenant/pages/AddUpdateTenant";
+import ViewTenant from "@/features/tenant/pages/ViewTenant";
+import AddUpdateVendor from "@/features/vendor/pages/AddUpdateVendor";
+import { ChannelPartner } from "@/features/ChannelPartner/pages/ChannelPartner";
+import { AddUpdateChannelPartner } from "@/features/ChannelPartner/pages/AddUpdateChannelPartner";
+import { ChannelPartnerSourcing } from "@/features/ChannelPartnerSourcing/pages/ChannelPartnerSourcing";
 
 import ViewChannelPartnerSourcing from '@/features/ChannelPartnerSourcing/pages/ViewChannelPartnerSourcing';
 import BuildingDescription from '@/features/building/pages/BuildingDescription';
@@ -118,6 +118,7 @@ import AddUpdateEnquiry from '@/features/enquiry/pages/AddUpdateEnquiry';
 import { EnquiryListStateProvider } from '@/features/enquiry/context/EnquiryListStateContext';
 import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
 import ProposedPlan from '@/features/proposedOffer/pages/ProposedPlan';
+import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
@@ -166,38 +167,6 @@ import AddUpdatePaidBrokerageBooking from '@/features/brokerage/pages/AddBrokera
 import PrivacyPolicy from '@/features/privacyPolicy/pages/PrivacyPolicy';
 import Terms from '@/features/terms/pages/TermsAndCondition';
 import CompanyPolicy from '@/features/companyPolicy/pages/companyPolicy';
-import PayTrack from '@/features/crmPayTrack/pages/PayTrack';
-import ViewPayTrack from '@/features/crmPayTrack/pages/ViewPayTrack';
-import { PayTrackBookingListStateProvider } from '@/features/crmPayTrack/context/PayTrackBookingListStateContext';
-import { InwardOutwardListStateProvider } from '@/features/inwardOutward/context/InwardOutwardListStateContext';
-import InwardOutward from '@/features/inwardOutward/pages/InwardOutward';
-import AddUpdateInwardOutward from '@/features/inwardOutward/pages/AddUpdateInwardOutward';
-import ViewInwardOutward from '@/features/inwardOutward/pages/ViewInwardOutward';
-import { BookingBrokerageListStateProvider } from '@/features/brokerage/context/BookingBrokerageListStateContext';
-import { ChannelPartnerUniverseListStateProvider } from '@/features/channelPartnerUniverse/context/ChannelPartnerUniverseListStateContext';
-import ChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ChannelPartnerUniverse';
-import ViewChannelPartnerUniverse from '@/features/channelPartnerUniverse/pages/ViewChannelPartnerUniverse';
-import CrmDashboard from '@/features/crmDashboard/pages/CrmDashboard';
-import InventoryParkingOverallReport from '@/features/inventoryParkingOverallReport/pages/InventoryParkingOverallReport';
-import AchievementReport from '@/features/achievement/pages/AchievementReport';
-import { PayTrackReportListStateProvider } from '@/features/crmPayTrackReport/context/PayTrackReportListStateContext';
-import PayTrackReport from '@/features/crmPayTrackReport/pages/PayTrackReport';
-import AddRefundDetails from '@/features/crmPayTrack/pages/AddRefundDetails';
-import Ticket from '@/features/ticket/pages/Ticket';
-import ViewTicket from '@/features/ticket/pages/ViewTicket';
-import { TicketListStateProvider } from '@/features/ticket/context/TicketListStateContext';
-import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
-import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
-import CollectionReport from '@/features/collectionReport/pages/CollectionReport';
-import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
-import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
-import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
-import Budget from '@/features/budget/pages/Budget';
-import SummaryMIS from '@/features/summaryMIS/SummaryMIS';
-import SpecificationMaster from '@/features/specificationMaster/pages/SpecificationMaster';
-import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
-import ChannelPartnerSalesMetrics from '@/features/ChannelPartner/pages/ChannelPartnerSalesMetrics';
-import AopAchievementReport from '@/features/aopAchievement/pages/AopAchievementReport';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -207,35 +176,24 @@ const LoadingSpinner = () => (
       <p className="mt-4 text-gray-600">Loading...</p>
     </div>
   </div>
-)
+);
 
 // Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-
   const token = LocalStorageHelper.getStoredTokenData();
 
   if (!token) {
-
     LocalStorageHelper.clearLocalStorageData();
 
-    return <Navigate to="/sign-in" replace />
+    return <Navigate to="/sign-in" replace />;
   }
 
 
-  return <>{children}</>
+  return <>{children}</>;
 }
 
 function App() {
-
   useNetworkStatus();
-
-  useEffect(() => {
-    const token = LocalStorageHelper.getStoredTokenData()
-    if (!token) {
-
-    }
-  }, [])
-
 
   return (
     <CountryStateCityDistrictVillage>
@@ -259,14 +217,63 @@ function App() {
             <Route path="designationMaster" element={<DesignationMaster />} />
             <Route path="designationMaster/employeeModuleAccess/:designationMasterId" element={<EmployeeModuleAccess />} />
 
-            <Route path="employeeMaster" element={<EmployeeListStateProvider><EmployeeMaster /></EmployeeListStateProvider>} />
-            <Route path="employeeMaster/view" element={<EmployeeListStateProvider><ViewEmployeeMaster /></EmployeeListStateProvider>} />
-            <Route path="employeeMaster/add/:employeeId?" element={<EmployeeListStateProvider><AddUpdateEmployeeMaster /></EmployeeListStateProvider>} />
-            <Route path="employeeMaster/document" element={<EmployeeListStateProvider><EmployeeDocument /></EmployeeListStateProvider>} />
+            <Route
+              path="employeeMaster"
+              element={
+                <EmployeeListStateProvider>
+                  <EmployeeMaster />
+                </EmployeeListStateProvider>
+              }
+            />
+            <Route
+              path="employeeMaster/view"
+              element={
+                <EmployeeListStateProvider>
+                  <ViewEmployeeMaster />
+                </EmployeeListStateProvider>
+              }
+            />
+            <Route
+              path="employeeMaster/add/:employeeId?"
+              element={
+                <EmployeeListStateProvider>
+                  <AddUpdateEmployeeMaster />
+                </EmployeeListStateProvider>
+              }
+            />
+            <Route
+              path="employeeMaster/document"
+              element={
+                <EmployeeListStateProvider>
+                  <EmployeeDocument />
+                </EmployeeListStateProvider>
+              }
+            />
 
-            <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
-            <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
-            <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
+            <Route
+              path="companyMaster"
+              element={
+                <CompanyListStateProvider>
+                  <CompanyMaster />
+                </CompanyListStateProvider>
+              }
+            />
+            <Route
+              path="companyMaster/view"
+              element={
+                <CompanyListStateProvider>
+                  <ViewCompanyMaster />
+                </CompanyListStateProvider>
+              }
+            />
+            <Route
+              path="companyMaster/add/:companyId?"
+              element={
+                <CompanyListStateProvider>
+                  <AddCompany />
+                </CompanyListStateProvider>
+              }
+            />
 
             <Route path="tnc" element={<TncMaster />} />
 
@@ -279,35 +286,168 @@ function App() {
             <Route path="uomMaster" element={<UomMaster />} />
 
             {/* SETTING -> COMPANY SETUP -> PROJECT */}
-            <Route path="projectMaster" element={<ProjectMasterListStateProvider><ProjectMaster /></ProjectMasterListStateProvider>} />
-            <Route path="projectMaster/view" element={<ProjectMasterListStateProvider><ViewProjectMaster /></ProjectMasterListStateProvider>} />
-            <Route path="projectMaster/add/:projectId?" element={<ProjectMasterListStateProvider><AddUpdateProjectMaster /></ProjectMasterListStateProvider>} />
-            <Route path="projectMaster/employee" element={<ProjectMasterListStateProvider><Employee /></ProjectMasterListStateProvider>} />
-            <Route path="projectMaster/bank" element={<ProjectMasterListStateProvider><Bank /></ProjectMasterListStateProvider>} />
-            <Route path="projectMaster/Company" element={<ProjectMasterListStateProvider><Company /></ProjectMasterListStateProvider>} />
-            <Route path="projectMaster/Approval" element={<ProjectMasterListStateProvider><Approval /></ProjectMasterListStateProvider>} />
+            <Route
+              path="projectMaster"
+              element={
+                <ProjectMasterListStateProvider>
+                  <ProjectMaster />
+                </ProjectMasterListStateProvider>
+              }
+            />
+            <Route
+              path="projectMaster/view"
+              element={
+                <ProjectMasterListStateProvider>
+                  <ViewProjectMaster />
+                </ProjectMasterListStateProvider>
+              }
+            />
+            <Route
+              path="projectMaster/add/:projectId?"
+              element={
+                <ProjectMasterListStateProvider>
+                  <AddUpdateProjectMaster />
+                </ProjectMasterListStateProvider>
+              }
+            />
+            <Route
+              path="projectMaster/employee"
+              element={
+                <ProjectMasterListStateProvider>
+                  <Employee />
+                </ProjectMasterListStateProvider>
+              }
+            />
+            <Route
+              path="projectMaster/bank"
+              element={
+                <ProjectMasterListStateProvider>
+                  <Bank />
+                </ProjectMasterListStateProvider>
+              }
+            />
+            <Route
+              path="projectMaster/Company"
+              element={
+                <ProjectMasterListStateProvider>
+                  <Company />
+                </ProjectMasterListStateProvider>
+              }
+            />
+            <Route
+              path="projectMaster/Approval"
+              element={
+                <ProjectMasterListStateProvider>
+                  <Approval />
+                </ProjectMasterListStateProvider>
+              }
+            />
 
             {/* SETTING -> COMPANY SETUP -> VENDOR */}
-            <Route path="vendor" element={<VendorListStateProvider><Vendor /></VendorListStateProvider>} />
-            <Route path="vendor/view" element={<VendorListStateProvider><ViewVendor /></VendorListStateProvider>} />
-            <Route path="vendor/add/:vendorId?" element={<VendorListStateProvider><AddUpdateVendor /></VendorListStateProvider>} />
+            <Route
+              path="vendor"
+              element={
+                <VendorListStateProvider>
+                  <Vendor />
+                </VendorListStateProvider>
+              }
+            />
+            <Route
+              path="vendor/view"
+              element={
+                <VendorListStateProvider>
+                  <ViewVendor />
+                </VendorListStateProvider>
+              }
+            />
+            <Route
+              path="vendor/add/:vendorId?"
+              element={
+                <VendorListStateProvider>
+                  <AddUpdateVendor />
+                </VendorListStateProvider>
+              }
+            />
 
             {/* SETTING -> COMPANY SETUP -> PAYROLL MASTER */}
             <Route path="branchMaster" element={<BranchMaster />} />
 
             <Route path="branchAssociationsMaster" element={<BranchAssociationsMaster />} />
 
-            <Route path="assetMaster" element={<AssetMasterListStateProvider><AssetMaster /></AssetMasterListStateProvider>} />
-            <Route path="assetMaster/view" element={<AssetMasterListStateProvider><ViewAssetMaster /></AssetMasterListStateProvider>} />
-            <Route path="assetMaster/add/:AssetMasterId?" element={<AssetMasterListStateProvider><AddUpdateAssetMaster /></AssetMasterListStateProvider>} />
+            <Route
+              path="assetMaster"
+              element={
+                <AssetMasterListStateProvider>
+                  <AssetMaster />
+                </AssetMasterListStateProvider>
+              }
+            />
+            <Route
+              path="assetMaster/view"
+              element={
+                <AssetMasterListStateProvider>
+                  <ViewAssetMaster />
+                </AssetMasterListStateProvider>
+              }
+            />
+            <Route
+              path="assetMaster/add/:AssetMasterId?"
+              element={
+                <AssetMasterListStateProvider>
+                  <AddUpdateAssetMaster />
+                </AssetMasterListStateProvider>
+              }
+            />
 
-            <Route path="assetMappingMaster" element={<AssetMappingMasterListStateProvider><AssetMappingMaster /></AssetMappingMasterListStateProvider>} />
-            <Route path="assetMappingMaster/view" element={<AssetMappingMasterListStateProvider><ViewAssetMappingMaster /></AssetMappingMasterListStateProvider>} />
-            <Route path="assetMappingMaster/add/:AssetMasterMappingId?" element={<AssetMappingMasterListStateProvider><AddUpdateAssetMappingMaster /></AssetMappingMasterListStateProvider>} />
+            <Route
+              path="assetMappingMaster"
+              element={
+                <AssetMappingMasterListStateProvider>
+                  <AssetMappingMaster />
+                </AssetMappingMasterListStateProvider>
+              }
+            />
+            <Route
+              path="assetMappingMaster/view"
+              element={
+                <AssetMappingMasterListStateProvider>
+                  <ViewAssetMappingMaster />
+                </AssetMappingMasterListStateProvider>
+              }
+            />
+            <Route
+              path="assetMappingMaster/add/:AssetMasterMappingId?"
+              element={
+                <AssetMappingMasterListStateProvider>
+                  <AddUpdateAssetMappingMaster />
+                </AssetMappingMasterListStateProvider>
+              }
+            />
 
-            <Route path="deductionMaster" element={<DeductionMasterListStateProvider><DeductionMaster /></DeductionMasterListStateProvider>} />
-            <Route path="deductionMaster/view" element={<DeductionMasterListStateProvider><ViewDeductionMaster /></DeductionMasterListStateProvider>} />
-            <Route path="deductionMaster/add/:DeductionMasterId?" element={<DeductionMasterListStateProvider><AddUpdateDeductionMaster /></DeductionMasterListStateProvider>} />
+            <Route
+              path="deductionMaster"
+              element={
+                <DeductionMasterListStateProvider>
+                  <DeductionMaster />
+                </DeductionMasterListStateProvider>
+              }
+            />
+            <Route
+              path="deductionMaster/view"
+              element={
+                <DeductionMasterListStateProvider>
+                  <ViewDeductionMaster />
+                </DeductionMasterListStateProvider>
+              }
+            />
+            <Route
+              path="deductionMaster/add/:DeductionMasterId?"
+              element={
+                <DeductionMasterListStateProvider>
+                  <AddUpdateDeductionMaster />
+                </DeductionMasterListStateProvider>
+              }
+            />
 
             <Route path="earningMaster" element={<EarningMaster />} />
 
@@ -319,16 +459,58 @@ function App() {
 
             <Route path="leaveTypeMaster" element={<LeaveTypeMaster />} />
 
-            <Route path="shiftMaster" element={<ShiftMasterListStateProvider><ShiftMaster /></ShiftMasterListStateProvider>} />
-            <Route path="shiftMaster/view" element={<ShiftMasterListStateProvider><ViewShiftMaster /></ShiftMasterListStateProvider>} />
-            <Route path="shiftMaster/add/:ShiftManagementMasterId?" element={<ShiftMasterListStateProvider><AddUpdateShiftMaster /></ShiftMasterListStateProvider>} />
+            <Route
+              path="shiftMaster"
+              element={
+                <ShiftMasterListStateProvider>
+                  <ShiftMaster />
+                </ShiftMasterListStateProvider>
+              }
+            />
+            <Route
+              path="shiftMaster/view"
+              element={
+                <ShiftMasterListStateProvider>
+                  <ViewShiftMaster />
+                </ShiftMasterListStateProvider>
+              }
+            />
+            <Route
+              path="shiftMaster/add/:ShiftManagementMasterId?"
+              element={
+                <ShiftMasterListStateProvider>
+                  <AddUpdateShiftMaster />
+                </ShiftMasterListStateProvider>
+              }
+            />
 
             <Route path="shiftMappingMaster" element={<ShiftMappingMaster />} />
 
-            <Route path="weekOffMaster" element={<WeekOffMasterListStateProvider><WeekOffMasterMaster /></WeekOffMasterListStateProvider>} />
+            <Route
+              path="weekOffMaster"
+              element={
+                <WeekOffMasterListStateProvider>
+                  <WeekOffMasterMaster />
+                </WeekOffMasterListStateProvider>
+              }
+            />
 
-            <Route path="weekOffMaster/view" element={<WeekOffMasterListStateProvider><ViewWeekOffMaster /></WeekOffMasterListStateProvider>} />
-            <Route path="weekOffMaster/add/:WeekOffMasterId?" element={<WeekOffMasterListStateProvider><AddUpdateWeekOffMaster /></WeekOffMasterListStateProvider>} />
+            <Route
+              path="weekOffMaster/view"
+              element={
+                <WeekOffMasterListStateProvider>
+                  <ViewWeekOffMaster />
+                </WeekOffMasterListStateProvider>
+              }
+            />
+            <Route
+              path="weekOffMaster/add/:WeekOffMasterId?"
+              element={
+                <WeekOffMasterListStateProvider>
+                  <AddUpdateWeekOffMaster />
+                </WeekOffMasterListStateProvider>
+              }
+            />
             <Route path="weekOffMappingMaster" element={<WeekOffMappingMaster />} />
 
             {/* PAYROLL */}
@@ -336,16 +518,72 @@ function App() {
             <Route path="payrollDashboard" element={<PayrollDashboard />} />
             <Route path="compOff" element={<CompOff />} />
 
-            <Route path="outdoor/add/:outdoorId?" element={<OutDoorListStateProvider><AddUpdateOutDoorPage /></OutDoorListStateProvider>} />
-            <Route path="outdoor" element={<OutDoorListStateProvider><OutDoor /></OutDoorListStateProvider>} />
+            <Route
+              path="outdoor/add/:outdoorId?"
+              element={
+                <OutDoorListStateProvider>
+                  <AddUpdateOutDoorPage />
+                </OutDoorListStateProvider>
+              }
+            />
+            <Route
+              path="outdoor"
+              element={
+                <OutDoorListStateProvider>
+                  <OutDoor />
+                </OutDoorListStateProvider>
+              }
+            />
 
-            <Route path="leaveCreditConfiguration" element={<LeaveCreditConfigurationListStateProvider><LeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
-            <Route path="leaveCreditConfiguration/add/:id?" element={<LeaveCreditConfigurationListStateProvider><AddUpdateLeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
-            <Route path="leaveCreditConfiguration/view/:id?" element={<LeaveCreditConfigurationListStateProvider><ViewLeaveCreditConfiguration /></LeaveCreditConfigurationListStateProvider>} />
+            <Route
+              path="leaveCreditConfiguration"
+              element={
+                <LeaveCreditConfigurationListStateProvider>
+                  <LeaveCreditConfiguration />
+                </LeaveCreditConfigurationListStateProvider>
+              }
+            />
+            <Route
+              path="leaveCreditConfiguration/add/:id?"
+              element={
+                <LeaveCreditConfigurationListStateProvider>
+                  <AddUpdateLeaveCreditConfiguration />
+                </LeaveCreditConfigurationListStateProvider>
+              }
+            />
+            <Route
+              path="leaveCreditConfiguration/view/:id?"
+              element={
+                <LeaveCreditConfigurationListStateProvider>
+                  <ViewLeaveCreditConfiguration />
+                </LeaveCreditConfigurationListStateProvider>
+              }
+            />
 
-            <Route path="leave" element={<LeaveListStateProvider><Leave /></LeaveListStateProvider>} />
-            <Route path="leave/add/:id?" element={<LeaveListStateProvider><AddUpdateLeave /></LeaveListStateProvider>} />
-            <Route path="leave/view/:id?" element={<LeaveListStateProvider><ViewLeave /></LeaveListStateProvider>} />
+            <Route
+              path="leave"
+              element={
+                <LeaveListStateProvider>
+                  <Leave />
+                </LeaveListStateProvider>
+              }
+            />
+            <Route
+              path="leave/add/:id?"
+              element={
+                <LeaveListStateProvider>
+                  <AddUpdateLeave />
+                </LeaveListStateProvider>
+              }
+            />
+            <Route
+              path="leave/view/:id?"
+              element={
+                <LeaveListStateProvider>
+                  <ViewLeave />
+                </LeaveListStateProvider>
+              }
+            />
 
             <Route path="resignation" element={<EmployeeResignation />} />
             <Route path="payrollReport" element={<PayrollReport />} />
@@ -354,10 +592,16 @@ function App() {
 
             {/* INVENTORY */}
             <Route path="inventoryDashboard" element={<InventoryDashboard />} />
-            <Route path="inventory" element={<BookingListStateProvider><Inventory></Inventory></BookingListStateProvider>} />
+            <Route
+              path="inventory"
+              element={
+                <BookingListStateProvider>
+                  <Inventory></Inventory>
+                </BookingListStateProvider>
+              }
+            />
             <Route path="inventory/inventorySpecification" element={<InventorySpecification></InventorySpecification>}></Route>
             <Route path="parking" element={<BookingListStateProvider><Parking></Parking></BookingListStateProvider>} />
-            <Route path="inventoryParkingOverallReport" element={<InventoryParkingOverallReport />} />
 
             {/* DOCUMENT */}
             <Route path="category" element={<ProjectDocumentCategoryMaster />} />
@@ -368,17 +612,18 @@ function App() {
             <Route path="rera" element={<ProjectRERADocument />} />
 
             {/* PROFILE */}
-            <Route path="profile" element={<EmployeeListStateProvider><Profile /></EmployeeListStateProvider>} />
+            <Route
+              path="profile"
+              element={
+                <EmployeeListStateProvider>
+                  <Profile />
+                </EmployeeListStateProvider>
+              }
+            />
 
             {/* COMMAN */}
             <Route path="event" element={<Event />} />
-            <Route path="inwardOutward" element={<InwardOutwardListStateProvider><InwardOutward /></InwardOutwardListStateProvider>} />
-            <Route path='inwardOutward/add/:InwardOutwardId?' element={<InwardOutwardListStateProvider><AddUpdateInwardOutward /></InwardOutwardListStateProvider>} />
-            <Route path='inwardOutward/view' element={<InwardOutwardListStateProvider><ViewInwardOutward /></InwardOutwardListStateProvider>} />
 
-            <Route path='ticket' element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
-            <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
-            <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
 
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />
@@ -388,17 +633,48 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
-            <Route path="channelPartner/salesMetrics" element={<ChannelPartnerListStateProvider><ChannelPartnerSalesMetrics /></ChannelPartnerListStateProvider>} />
 
-            <Route path="cpUniverse" element={<ChannelPartnerUniverseListStateProvider><ChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
-            <Route path="cpUniverse/view" element={<ChannelPartnerUniverseListStateProvider><ViewChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
+            <Route
+              path="sourcing"
+              element={
+                <ChannelPartnerSourcingListStateProvider>
+                  <ChannelPartnerSourcing />
+                </ChannelPartnerSourcingListStateProvider>
+              }
+            />
+            <Route
+              path="sourcing/view"
+              element={
+                <ChannelPartnerSourcingListStateProvider>
+                  <ViewChannelPartnerSourcing />
+                </ChannelPartnerSourcingListStateProvider>
+              }
+            />
 
-            <Route path="sourcing" element={<ChannelPartnerSourcingListStateProvider><ChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
-            <Route path="sourcing/view" element={<ChannelPartnerSourcingListStateProvider><ViewChannelPartnerSourcing /></ChannelPartnerSourcingListStateProvider>} />
-
-            <Route path="enquiry" element={<EnquiryListStateProvider><Enquiry /></EnquiryListStateProvider>} />
-            <Route path="enquiry/view/:EnquiryId?" element={<EnquiryListStateProvider><ViewEnquiry /></EnquiryListStateProvider>} />
-            <Route path="enquiry/add/:EnquiryId?" element={<EnquiryListStateProvider><AddUpdateEnquiry /></EnquiryListStateProvider>} />
+            <Route
+              path="enquiry"
+              element={
+                <EnquiryListStateProvider>
+                  <Enquiry />
+                </EnquiryListStateProvider>
+              }
+            />
+            <Route
+              path="enquiry/view/:EnquiryId?"
+              element={
+                <EnquiryListStateProvider>
+                  <ViewEnquiry />
+                </EnquiryListStateProvider>
+              }
+            />
+            <Route
+              path="enquiry/add/:EnquiryId?"
+              element={
+                <EnquiryListStateProvider>
+                  <AddUpdateEnquiry />
+                </EnquiryListStateProvider>
+              }
+            />
 
             <Route path="callTracker" element={<CallTracker />} />
 
@@ -410,45 +686,116 @@ function App() {
             <Route path="target" element={<Target />} />
             <Route path="classificationParameter" element={<ClassificationParameter />} />
 
-            <Route path="booking" element={<BookingListStateProvider><Booking /></BookingListStateProvider>} />
-            <Route path="booking/view" element={<BookingListStateProvider><ViewBooking /></BookingListStateProvider>} />
-            <Route path="booking/add" element={<BookingListStateProvider><AddUpdateBooking /></BookingListStateProvider>} />
+            <Route
+              path="booking"
+              element={
+                <BookingListStateProvider>
+                  <Booking />
+                </BookingListStateProvider>
+              }
+            />
+            <Route
+              path="booking/view"
+              element={
+                <BookingListStateProvider>
+                  <ViewBooking />
+                </BookingListStateProvider>
+              }
+            />
+            <Route
+              path="booking/add"
+              element={
+                <BookingListStateProvider>
+                  <AddUpdateBooking />
+                </BookingListStateProvider>
+              }
+            />
 
             <Route path="enquiryReport" element={<EnquiryReport />} />
             <Route path="cpEnquiryReport" element={<CPEnquiryReport />} />
-            <Route path="ibmObmReport" element={<IbmObmReport />} />
             <Route path="incentiveReport" element={<IncentiveReportListStateProvider><IncentiveReport /></IncentiveReportListStateProvider>} />
 
             <Route path="performance" element={<PerformanceReport />} />
-            <Route path="achievement" element={<AchievementReport />} />
-            <Route path="aopAchievement" element={<AopAchievementReport />} />
-
-            <Route path='channelPartnerCategory' element={<ChannelPartnerCategory />} />
 
 
             {/* REDEVELOPMENT */}
 
             <Route path="redevelopmentDashboard" element={<RedevelopmentDashboard />} />
 
-            <Route path="building" element={<BuildingListStateProvider><Building /></BuildingListStateProvider>} />
-            <Route path="building/view" element={<BuildingListStateProvider><ViewBuilding /></BuildingListStateProvider>} />
-            <Route path="building/add/:buildingId?" element={<BuildingListStateProvider><AddUpdateBuilding /></BuildingListStateProvider>} />
-            <Route path="building/description" element={<BuildingListStateProvider><BuildingDescription /></BuildingListStateProvider>} />
-            <Route path="building/document" element={<BuildingListStateProvider><BuildingDocument /></BuildingListStateProvider>} />
+            <Route
+              path="building"
+              element={
+                <BuildingListStateProvider>
+                  <Building />
+                </BuildingListStateProvider>
+              }
+            />
+            <Route
+              path="building/view"
+              element={
+                <BuildingListStateProvider>
+                  <ViewBuilding />
+                </BuildingListStateProvider>
+              }
+            />
+            <Route
+              path="building/add/:buildingId?"
+              element={
+                <BuildingListStateProvider>
+                  <AddUpdateBuilding />
+                </BuildingListStateProvider>
+              }
+            />
+            <Route
+              path="building/description"
+              element={
+                <BuildingListStateProvider>
+                  <BuildingDescription />
+                </BuildingListStateProvider>
+              }
+            />
+            <Route
+              path="building/document"
+              element={
+                <BuildingListStateProvider>
+                  <BuildingDocument />
+                </BuildingListStateProvider>
+              }
+            />
 
             <Route path="tenant" element={<TenantListStateProvider><Tenant /></TenantListStateProvider>} />
             <Route path="tenant/view" element={<TenantListStateProvider><ViewTenant /></TenantListStateProvider>} />
-            <Route path="tenant/add/:TenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
+            <Route path="tenant/add/:tenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
             <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
 
-            <Route path="rent" element={<RentListStateProvider><Rent /></RentListStateProvider>} />
-            <Route path="rent/pay/:PayTrackRentId?" element={<RentListStateProvider><AddUpdatePayTrackRent /></RentListStateProvider>} />
-            <Route path="rent/paymentLedger" element={<RentListStateProvider><ViewPayTrackRent /></RentListStateProvider>} />
+            <Route
+              path="rent"
+              element={
+                <RentListStateProvider>
+                  <Rent />
+                </RentListStateProvider>
+              }
+            />
+            <Route
+              path="rent/pay/:PayTrackRentId?"
+              element={
+                <RentListStateProvider>
+                  <AddUpdatePayTrackRent />
+                </RentListStateProvider>
+              }
+            />
+            <Route
+              path="rent/paymentLedger"
+              element={
+                <RentListStateProvider>
+                  <ViewPayTrackRent />
+                </RentListStateProvider>
+              }
+            />
 
             <Route path="proposedOffer" element={<ProposedOffer />} />
 
             <Route path="proposedPlan" element={<ProposedPlan />} />
-
 
             {/* OPERATION */}
             <Route path="siteProgress" element={<SiteProgress />} />
@@ -459,59 +806,95 @@ function App() {
             <Route path="siteProgress/SiteProgressConstructionActivity" element={<SiteProgressConstructionActivity />} />
             <Route path="siteProgress/SiteProgressConstructionSubActivity" element={<SiteProgressConstructionSubActivity />} />
 
-
             {/* LITIGATION */}
-            <Route path='litigation' element={<LitigationListStateProvider><Litigation /></LitigationListStateProvider>} />
-            <Route path='litigation/add/:LitigationId?' element={<LitigationListStateProvider><AddUpdateLitigation /></LitigationListStateProvider>} />
-            <Route path='litigation/view' element={<LitigationListStateProvider><ViewLitigation /></LitigationListStateProvider>} />
-            <Route path='litigation/document' element={<LitigationListStateProvider><LitigationDocument /></LitigationListStateProvider>} />
+            <Route
+              path="litigation"
+              element={
+                <LitigationListStateProvider>
+                  <Litigation />
+                </LitigationListStateProvider>
+              }
+            />
+            <Route
+              path="litigation/add/:LitigationId?"
+              element={
+                <LitigationListStateProvider>
+                  <AddUpdateLitigation />
+                </LitigationListStateProvider>
+              }
+            />
+            <Route
+              path="litigation/view"
+              element={
+                <LitigationListStateProvider>
+                  <ViewLitigation />
+                </LitigationListStateProvider>
+              }
+            />
+            <Route
+              path="litigation/document"
+              element={
+                <LitigationListStateProvider>
+                  <LitigationDocument />
+                </LitigationListStateProvider>
+              }
+            />
             <Route path="legalDashboard" element={<LitigationDashboard />} />
 
-
             {/* PROJECT */}
-            <Route path='approvedBank' element={<ApprovedBankListStateProvider><ApprovedBankFolder /></ApprovedBankListStateProvider>} />
-            <Route path='approvedBank/approvedBankFile/:ApprovedBankFolderId?' element={<ApprovedBankListStateProvider><ApprovedBankFile /></ApprovedBankListStateProvider>} />
+            <Route
+              path="approvedBank"
+              element={
+                <ApprovedBankListStateProvider>
+                  <ApprovedBankFolder />
+                </ApprovedBankListStateProvider>
+              }
+            />
+            <Route
+              path="approvedBank/approvedBankFile/:ApprovedBankFolderId?"
+              element={
+                <ApprovedBankListStateProvider>
+                  <ApprovedBankFile />
+                </ApprovedBankListStateProvider>
+              }
+            />
 
             {/* MARKETING */}
-            <Route path='content' element={<MarketingContentListStateProvider><MarketingContentFolder /></MarketingContentListStateProvider>} />
-            <Route path='content/contentDocument/:MarketingContentFolderId?' element={<MarketingContentListStateProvider><MarketingContent /></MarketingContentListStateProvider>} />
+            <Route
+              path="content"
+              element={
+                <MarketingContentListStateProvider>
+                  <MarketingContentFolder />
+                </MarketingContentListStateProvider>
+              }
+            />
+            <Route
+              path="content/contentDocument/:MarketingContentFolderId?"
+              element={
+                <MarketingContentListStateProvider>
+                  <MarketingContent />
+                </MarketingContentListStateProvider>
+              }
+            />
 
             {/* CRM */}
-            <Route path="crmDashboard" element={<CrmDashboard />} />
-            <Route path="payTrack" element={<PayTrackBookingListStateProvider><PayTrack /></PayTrackBookingListStateProvider>} />
-            <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
-            <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
-            <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
-            {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
-            <Route path="collectionReport" element={<CollectionReport />} />
-            <Route path="dailyCollectionReport" element={<DailyCollectionReport />} />
 
-
-            <Route path="brokerage" element={<BookingBrokerageListStateProvider><Brokerage /></BookingBrokerageListStateProvider>} />
-            <Route path="brokerage/brokerageInvoice/view" element={<BookingBrokerageListStateProvider><ViewBrokerageInvoice /></BookingBrokerageListStateProvider>} />
-            <Route path="brokerage/brokerageInvoice/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdateBrokerageInvoice /></BookingBrokerageListStateProvider>} />
-            <Route path="brokerage/PaidBrokerageBooking/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdatePaidBrokerageBooking /></BookingBrokerageListStateProvider>} />
-
-            {/* TAX TRACKER */}
-            <Route path="noticeSection" element={<NoticeSectionMaster />} />
-
-              {/* ESTIMATION AND BUDGET */}
-            <Route path='budget' element={<Budget />} />
-            <Route path='summaryMis' element={<SummaryMIS />} />
-            <Route path='specificationMaster' element={<SpecificationMaster />} />
-
+            <Route path="brokerage" element={<Brokerage />} />
+            <Route path="brokerageInvoice/view/:BookingId" element={<ViewBrokerageInvoice />} />
+            <Route path="brokerageInvoice/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdateBrokerageInvoice />} />
+            <Route path="/PaidBrokerageBooking/add/:BookingId/:BrokerageInvoiceId" element={<AddUpdatePaidBrokerageBooking />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 
           <Route path='Terms' element={<Terms />} />
-          <Route path='Privacy-Policy' element={<PrivacyPolicy />} />
+          <Route path='PrivacyPolicy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
-
+          
         </Routes>
       </Suspense>
     </CountryStateCityDistrictVillage>
-  )
+  );
 }
 
-export default App
+export default App;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { CalendarEvent } from "./CalendarEvent";
 import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 interface DayViewProps {
   currentDate: Date;
@@ -191,7 +192,13 @@ export default function DayView({
                   }}
                 />
                 <div className="pl-5 px-3 pt-2 text-[16px] font-semibold text-gray-800 truncate">
-                  {ev.title}
+                  <TooltipText
+                    text={ev.title}
+                    maxWidth="100%"
+                    tooltipThreshold={22}
+                    isApplyBgTextColor
+                    tooltipClassName="text-left"
+                  />
                 </div>
 
                 <div className=" pl-5 px-3 pb-2 text-[11px] text-gray-500">

@@ -11,11 +11,13 @@ import type {
   AddUpdateProposedOfferParkingAllotmentRequest,
   AddUpdateProposedOfferGSTonExistingPlusFreeAreaRequest,
   AddUpdateProposedOfferProjectCompletionRequest,
-  AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest,
+  AddUpdateProposedOfferTemporaryAlternateAccommodationRequest,
 
   // Ready Reckoner
   AddUpdateAdditionalInformationRequest,
   AddUpdateProposedOfferReadyReckonerRateRequest,
+  AddUpdateProposedOfferBankGuaranteeDetailsRequest,
+  ProposedOfferBankGuaranteeDetailsWithPaymentStageData,
 } from '@/features/proposedOffer/models/ProposedOfferModel';
 
 //#region INITIAL FORM STATE - EXTRA CARPET AREA
@@ -87,9 +89,42 @@ export const initialFormStateSecurityDepositPaymentStage = (): ProposedOfferSecu
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
-  Type: '',
   Stage: '',
   Amount: 0,
+  IsRelease: false,
+  CreatedById: 0,
+  CreatedBy: '',
+  CreatedDate: null,
+  ModifiedById: 0,
+  ModifiedBy: '',
+  ModifiedDate: null,
+  LastModifiedBy: '',
+  LastModifiedDate: null
+});
+//#endregion
+
+//#region INITIAL FORM STATE - BANK GUARANTEE DETAILS
+export const initialFormStateBankGuaranteeDetails = (): AddUpdateProposedOfferBankGuaranteeDetailsRequest => ({
+  ProposedOfferBankGuaranteeDetailsId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  BankGuaranteeAmount: 0,
+  AccountHolderName: '',
+  Remark: "",
+  BankGuaranteePaymentStageJSON: ''
+});
+//#endregion
+
+//#region INITIAL FORM STATE - BANK GUARANTEE PAYMENT STAGE
+export const initialFormStateBankGuaranteePaymentStage = (): ProposedOfferBankGuaranteeDetailsWithPaymentStageData => ({
+  ProposedOfferBankGuaranteeDetailsWithPaymentStageId: 0,
+  Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
+  BuildingId: 0,
+  ProjectId: 0,
+  Stage: '',
+  Amount: 0,
+  IsRelease: false,
   CreatedById: 0,
   CreatedBy: '',
   CreatedDate: null,
@@ -210,20 +245,21 @@ export const initialFormStateProjectCompletion = (): AddUpdateProposedOfferProje
 //#endregion
 
 //#region INITIAL FORM STATE - RENT DETAILS
-export const initialFormStateTemporaryAccommodationAlternative = (): AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest => ({
-  ProposedOfferTemporaryAccommodationAlternativeDetailsId: 0,
+export const initialFormStateTemporaryAlternateAccommodation = (): AddUpdateProposedOfferTemporaryAlternateAccommodationRequest => ({
+  ProposedOfferTemporaryAlternateAccommodationDetailsId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
-  IsAdditionalTemporaryAccommodationAlternative: false,
+  IsAdditionalTemporaryAlternateAccommodation: false,
   Type: '',
   Tenure: '',
   Amount: 0,
   UnitSqFtLumsum: '',
   CarpetAreaSqFt: 0,
-  TemporaryAccommodationAlternativeStartDate: '',
-  TemporaryAccommodationAlternativeEndDate: '',
-  IsPayBrokerage: false
+  TemporaryAlternateAccommodationStartDate: '',
+  TemporaryAlternateAccommodationEndDate: '',
+  IsPayBrokerage: false,
+  IsPayTAA: false
 });
 //#endregion
 
@@ -258,19 +294,19 @@ export const initialFormStateAdditionalInformation = (): AddUpdateAdditionalInfo
 //#endregion
 
 // #region INITIAL FORM STATE - RENT OFFERED DETAILS
-export const initialFormStateTemporaryAccommodationAlternativeOfferedDetails = (): AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest => ({
-  ProposedOfferTemporaryAccommodationAlternativeDetailsId: 0,
+export const initialFormStateTemporaryAlternateAccommodationOfferedDetails = (): AddUpdateProposedOfferTemporaryAlternateAccommodationRequest => ({
+  ProposedOfferTemporaryAlternateAccommodationDetailsId: 0,
   Uniquekey: '3fa85f64-5717-4562-b3fc-2c963f66afa6',
   BuildingId: 0,
   ProjectId: 0,
-  IsAdditionalTemporaryAccommodationAlternative: true,
+  IsAdditionalTemporaryAlternateAccommodation: true,
   Type: "",
   Tenure: "",
   Amount: 0,
   UnitSqFtLumsum: "",
   CarpetAreaSqFt: 0,
-  TemporaryAccommodationAlternativeStartDate: "",
-  TemporaryAccommodationAlternativeEndDate: "",
+  TemporaryAlternateAccommodationStartDate: "",
+  TemporaryAlternateAccommodationEndDate: "",
   IsPayBrokerage: false,
   Remark: ""
 });

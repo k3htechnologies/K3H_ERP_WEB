@@ -42,6 +42,9 @@ const ApprovalActionModal: React.FC<Props> = ({
     if (!remark.trim()) {
       setError("Remark is required");
       return;
+    }else if (remark.trim().length < 10) {
+      setError("Remark must be at least 10 characters");
+      return;
     }
 
     setError("");

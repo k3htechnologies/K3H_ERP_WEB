@@ -26,7 +26,9 @@ import {
 } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { TextArea } from '@/ui/components/forms/Textarea';
-import { isEmpty } from '@/core/utils/comman';
+import { getInputValue, isEmpty } from '@/core/utils/comman';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 interface ShiftingDetailsTabProps {
   projectId: number | null;
@@ -43,7 +45,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
   setIsLoading,
   setLoadingMessage,
 }) => {
-  const [, setShiftingDetailsData] = useState<ProposedOfferShiftingDetailsData | null>(null);
+  const [shiftingDetailsData, setShiftingDetailsData] = useState<ProposedOfferShiftingDetailsData | null>(null);
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const [errorsShiftingDetails, setErrorsShiftingDetails] = useState<{ [k: string]: string }>({});
@@ -675,7 +677,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 required
                 type="text"
                 rightIcon="₹"
-                value={formDataShiftingDetails.ShiftingOfferedToResidentialAmount || 0}
+                value={getInputValue(formDataShiftingDetails.ProposedOfferShiftingDetailsId, formDataShiftingDetails.ShiftingOfferedToResidentialAmount)}
                 onChange={(e) => handleFieldChangeShiftingDetails('ShiftingOfferedToResidentialAmount', filterNumbersWithDecimal(e.target.value))}
                 error={errorsShiftingDetails.ShiftingOfferedToResidentialAmount}
                 placeholder="Enter Residential Shifting Amount"
@@ -688,7 +690,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 required
                 type="text"
                 rightIcon="₹"
-                value={formDataShiftingDetails.ShiftingOfferedToCommercialAmount || 0}
+                value={getInputValue(formDataShiftingDetails.ProposedOfferShiftingDetailsId, formDataShiftingDetails.ShiftingOfferedToCommercialAmount)}
                 onChange={(e) => handleFieldChangeShiftingDetails('ShiftingOfferedToCommercialAmount', filterNumbersWithDecimal(e.target.value))}
                 error={errorsShiftingDetails.ShiftingOfferedToCommercialAmount}
                 placeholder="Enter Commercial Shifting Amount"
@@ -722,8 +724,8 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 variant="solid"
                 colorMode="extraLight"
                 style={{ width: '35px', height: '35px' }}
-                centerIcon={<Plus className="h-4 w-4" />}>
                 title="Delete"
+                centerIcon={<Plus className="h-4 w-4" />}>
               </Button>
             )}
           </div>
@@ -735,13 +737,38 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
             recordsPerPage={20}
             className="min-w-full"
           />
+
+          <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+              <h4 className="text-sm font-semibold text-[#333333]">
+                Action Details
+              </h4>
+            </div>
+            <div className="p-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                <FieldItem label="Created By" value={shiftingDetailsData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(shiftingDetailsData?.CreatedDate ?? '-')}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                <FieldItem label="Modified By" value={shiftingDetailsData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(shiftingDetailsData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
       <BottomActionBar
         saveText={(formDataShiftingDetails.ProposedOfferShiftingDetailsId && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0) ? 'Update' : 'Add'}
         canAction={canAction && buildingId > 0}
         onSave={handleSaveShiftingDetails}
-        leftActionText={buildingId > 0 && formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0 ? "Generate" : ""}
+        leftActionText={buildingId > 0  && canAction &&  formDataShiftingDetails.ProposedOfferShiftingDetailsId > 0 ? "Generate" : ""}
         onLeftAction={() =>
           handleConfirmationDialogBoxOpenGenerateShiftingDetails(formDataShiftingDetails as ProposedOfferShiftingDetailsData)
         }
@@ -779,7 +806,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 onChange={(e) => {
                   const rawType = String(e);
                   handleFieldChangeShiftingPaymentStage('Type', rawType);
-                  recalculateShiftingPaymentAmount(rawType,formDataShiftingPaymentStage.StagePercentage);
+                  recalculateShiftingPaymentAmount(rawType, formDataShiftingPaymentStage.StagePercentage);
                 }}
                 options={FLAT_UNIT_TYPE
                   .filter(opt => {
@@ -838,7 +865,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                   const percent = Number(raw);
                   handleFieldChangeShiftingPaymentStage('StagePercentage', percent);
 
-                  recalculateShiftingPaymentAmount(formDataShiftingPaymentStage.Type,percent);
+                  recalculateShiftingPaymentAmount(formDataShiftingPaymentStage.Type, percent);
 
                 }}
                 error={errorsShiftingPaymentStage.StagePercentage}

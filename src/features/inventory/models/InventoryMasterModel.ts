@@ -64,7 +64,7 @@ export interface InventoryFlatData {
     FlatConfiguration: string;
     FlatStatus: 'Alloted' | "Available" | "Booked" | "Blocked" | "Hold";
     FlatFacing: string;
-    
+    Note: string;
     CreatedById: number;
     CreatedBy: string;
     CreatedDate: string;

@@ -28,7 +28,9 @@ import { TextArea } from '@/ui/components/forms/Textarea';
 import MultiSelectPagination from '@/ui/components/DropDown/Multiselectpagination';
 import { useMultiSelectDropdown } from '@/core/hooks/useMultiSelectDropdown';
 import { fetchPaginatedCommercialFlatsDropdown, fetchPaginatedResidentialFlatsDropdown } from '@/features/inventory/PaginatedFlatsDropDown';
-import { isEmpty } from '@/core/utils/comman';
+import { getInputValue, isEmpty } from '@/core/utils/comman';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 interface LienToSocietyDetailsTabProps {
   projectId: number | null;
@@ -45,7 +47,7 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
   setIsLoading,
   setLoadingMessage,
 }) => {
-  const [, setLienToSocietyDetailsData] = useState<ProposedOfferLienToSocietyDetailsData | null>(null);
+  const [lienToSocietyDetailsData, setLienToSocietyDetailsData] = useState<ProposedOfferLienToSocietyDetailsData | null>(null);
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const [errorsLienToSocietyDetails, setErrorsLienToSocietyDetails] = useState<{ [k: string]: string }>({});
@@ -67,15 +69,33 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
     fetchLienToSocietyDetailsData();
   }, [projectId, buildingId]);
 
-  const ResidentialFlatDropDown = useMultiSelectDropdown({
+  const fetchResidentialFlats = useCallback(async (pageNumber: number, params?: { value?: string }) => {
 
-    value: selectResidentialFlatValues,
-    fetchCallback: fetchPaginatedResidentialFlatsDropdown,
+    return fetchPaginatedResidentialFlatsDropdown(pageNumber, {
+      ...params,
+      value: params?.value || "",
+      projectId: projectId || 0,
+      flat: params?.value || "",
+    });
+  }, [projectId]);
+
+  const ResidentialFlatDropDown = useMultiSelectDropdown({
+    value: selectResidentialFlatValues, fetchCallback: fetchPaginatedResidentialFlatsDropdown,
     fetchParams: {
       projectId: String(projectId),
     },
     autoFetchOptions: true,
   });
+
+  const fetchCommercialFlats = useCallback(async (pageNumber: number, params?: { value?: string }) => {
+
+    return fetchPaginatedCommercialFlatsDropdown(pageNumber, {
+      ...params,
+      value: params?.value || "",
+      projectId: projectId || 0,
+      flat: params?.value || "",
+    });
+  }, [projectId]);
 
   const CommercialFlatDropDown = useMultiSelectDropdown({
     value: selectCommercialFlatValues,
@@ -184,7 +204,7 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
       newErrors.CommercialAreaSqFt = "Commercial Area is required"
     }
 
-     const selectedCommercialCount = (formDataLienToSocietyDetails.CommercialInventoryFlatId ?? "").split(",").filter(x => x.trim() !== "").length;
+    const selectedCommercialCount = (formDataLienToSocietyDetails.CommercialInventoryFlatId ?? "").split(",").filter(x => x.trim() !== "").length;
 
     if (Number(formDataLienToSocietyDetails.NumberOfCommercialLienUnits) !== selectedCommercialCount) {
       newErrors.CommercialInventoryFlatId = `${formDataLienToSocietyDetails.NumberOfCommercialLienUnits} Commercial Lien Units are required.`
@@ -408,7 +428,7 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
       },
       {
         key: 'CarpetAreaSqFt',
-        label: 'Carpet Area (Sq Ft)',
+        label: 'Carpet Area (SqFt)',
         width: '20',
         sortable: false,
         align: 'right',
@@ -484,7 +504,7 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
                 label="Residential Area (SqFt)"
                 required
                 type="text"
-                value={formDataLienToSocietyDetails.ResidentialAreaSqFt || 0}
+                value={getInputValue(formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId, formDataLienToSocietyDetails.ResidentialAreaSqFt)}
                 onChange={(e) => handleFieldChangeLienToSocietyDetails('ResidentialAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                 error={errorsLienToSocietyDetails.ResidentialAreaSqFt}
                 placeholder="Enter Residential Area"
@@ -510,9 +530,9 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
                 label="Residential Lien Units"
                 title="Select Residential Lien Units"
                 size="md"
-                dataFetchCallBack={(pageNumber) => fetchPaginatedResidentialFlatsDropdown(pageNumber, { projectId: Number(projectId) })}
-                options={ResidentialFlatDropDown.initialOptions}
+                dataFetchCallBack={fetchResidentialFlats}
                 selectedValues={ResidentialFlatDropDown.selectedValues}
+                options={ResidentialFlatDropDown.initialOptions}
                 onChange={(values) => {
                   const { idsString } = ResidentialFlatDropDown.handleChange(values);
                   setSelectResidentialFlatValues(idsString || null);
@@ -520,18 +540,19 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
                   if (errorsLienToSocietyDetails.ResidentialInventoryFlatId) {
                     setErrorsLienToSocietyDetails((prev) => ({ ...prev, ResidentialInventoryFlatId: "" }));
                   }
-
                 }}
                 error={errorsLienToSocietyDetails.ResidentialInventoryFlatId}
                 disabled={!isBuildingSelected}
               />
+
+
             </div>
             <div>
               <Input
                 label="Commercial Area (SqFt)"
                 required
                 type="text"
-                value={formDataLienToSocietyDetails.CommercialAreaSqFt || 0}
+                value={getInputValue(formDataLienToSocietyDetails.ProposedOfferLienToSocietyDetailsId, formDataLienToSocietyDetails.CommercialAreaSqFt)}
                 onChange={(e) => handleFieldChangeLienToSocietyDetails('CommercialAreaSqFt', filterNumbersWithDecimal(e.target.value))}
                 error={errorsLienToSocietyDetails.CommercialAreaSqFt}
                 placeholder="Enter Commercial Area"
@@ -557,9 +578,9 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
                 label="Commercial Lien Units"
                 title="Select Commercial Lien Units"
                 size="md"
-                dataFetchCallBack={(pageNumber) => fetchPaginatedCommercialFlatsDropdown(pageNumber, { projectId: Number(projectId) })}
-                options={CommercialFlatDropDown.initialOptions}
+                dataFetchCallBack={fetchCommercialFlats}
                 selectedValues={CommercialFlatDropDown.selectedValues}
+                options={CommercialFlatDropDown.initialOptions}
                 onChange={(values) => {
                   const { idsString } = CommercialFlatDropDown.handleChange(values);
                   setSelectCommercialFlatValues(idsString || null);
@@ -567,7 +588,6 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
                   if (errorsLienToSocietyDetails.CommercialInventoryFlatId) {
                     setErrorsLienToSocietyDetails((prev) => ({ ...prev, CommercialInventoryFlatId: "" }));
                   }
-
                 }}
                 error={errorsLienToSocietyDetails.CommercialInventoryFlatId}
                 disabled={!isBuildingSelected}
@@ -616,6 +636,30 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
             recordsPerPage={20}
             className="min-w-full"
           />
+          <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+              <h4 className="text-sm font-semibold text-[#333333]">
+                Action Details
+              </h4>
+            </div>
+            <div className="p-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                <FieldItem label="Created By" value={lienToSocietyDetailsData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(lienToSocietyDetailsData?.CreatedDate ?? '-')}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                <FieldItem label="Modified By" value={lienToSocietyDetailsData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(lienToSocietyDetailsData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
       <BottomActionBar

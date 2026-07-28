@@ -14,6 +14,9 @@ import { filterNumbers, filterNumbersWithDecimal, isValidPercentage, allowPercen
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { initialFormStateParkingAllotment } from '../utils/initialStates';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { getInputValue } from '@/core/utils/comman';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 interface ParkingAllotmentTabProps {
   projectId: number | null;
@@ -30,7 +33,7 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
   setIsLoading,
   setLoadingMessage,
 }) => {
-  const [, setParkingAllotmentData] = useState<ProposedOfferParkingAllotmentData | null>(null);
+  const [parkingAllotmentData, setParkingAllotmentData] = useState<ProposedOfferParkingAllotmentData | null>(null);
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const [errorsParkingAllotment, setErrorsParkingAllotment] = useState<{ [k: string]: string }>({});
@@ -183,7 +186,7 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
     )
   };
 
-   const isBuildingSelected = buildingId > 0;
+  const isBuildingSelected = buildingId > 0;
 
   return (
     <>
@@ -200,7 +203,7 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
                 required
                 type="text"
                 disabled={!isBuildingSelected || Number(formDataParkingAllotment.TotalParkingPercentageAllottedToSociety) > 0}
-                value={formDataParkingAllotment.NumberOfParkingAllottedToMembers || 0}
+                value={getInputValue(formDataParkingAllotment.ProposedOfferParkingAllotmentId, formDataParkingAllotment.NumberOfParkingAllottedToMembers)}
                 onChange={(e) => handleFieldChangeParkingAllotment('NumberOfParkingAllottedToMembers', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
                 error={errorsParkingAllotment.NumberOfParkingAllottedToMembers}
                 placeholder="Enter Number of Parking Allotted to Members"
@@ -236,6 +239,30 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
               disabled={!isBuildingSelected}
             />
           </div>
+          <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+              <h4 className="text-sm font-semibold text-[#333333]">
+                Action Details
+              </h4>
+            </div>
+            <div className="p-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                <FieldItem label="Created By" value={parkingAllotmentData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(parkingAllotmentData?.CreatedDate ?? '-')}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                <FieldItem label="Modified By" value={parkingAllotmentData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(parkingAllotmentData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
       <BottomActionBar

@@ -15,13 +15,14 @@ import SingleSelectDropdownWithPagination from '@/ui/components/DropDown/SingleS
 import { fetchBankListMasterDropdown } from '@/features/bankListMaster/bankListMasterDropDown';
 import { filterIFSC, filterNumbers, filterNumbersWithDecimal, isValidAccount, isValidIFSC } from '@/core/utils/fileValidation';
 import { createDropdownInitialValue } from '@/core/utils/createDropdownInitialValue';
-import { AMOUNT_TYPE, PAYMENT_MODE, PAYMENT_TYPE } from '@/core/constants';
+import { AMOUNT_TYPE, PAYMENT_MODE } from '@/core/constants';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from '@/core/utils/dateFormat';
 import DatePickerInput from '@/ui/components/forms/Datepicker';
-import { fetchProjectBankDropdown, type ProjectBankDropdownItem } from '@/features/projectMaster/projectBankDropdown';
+import { fetchProjectBankDropdown, fetchProjectBankDropdownById } from '@/features/projectMaster/projectBankDropdown';
 import { useRentListState } from '@/features/rent/context/RentListStateContext';
 import { FieldItem } from '@/ui/components/forms/FieldItem';
+import type { ProjectWithBankDetails } from '@/features/projectMaster/models/ProjectMasterModel';
 
 const initialFormState = (): AddUpdatePayTrackRentRequest => ({
   PayTrackRentId: 0,
@@ -37,7 +38,6 @@ const initialFormState = (): AddUpdatePayTrackRentRequest => ({
   IFSCCode: null,
   PaymentMode: null,
   AmountType: null,
-  PaymentType: null,
   PayAmount: null,
   TransactionChequeDemandDraftNumber: null,
   TransactionChequeDemandDraftURL: null,
@@ -49,10 +49,8 @@ const initialFormState = (): AddUpdatePayTrackRentRequest => ({
   ChargeType: null,
 });
 
-
-
 export const AddUpdatePayTrackRent: React.FC = () => {
-  //#region STATE MANAGEMENT
+
   const [formData, setFormData] = useState<AddUpdatePayTrackRentRequest>(() => initialFormState());
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -64,10 +62,8 @@ export const AddUpdatePayTrackRent: React.FC = () => {
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const { listState, clearPayTrackRentContext, updateListState } = useRentListState();
-  const { buildingId, payTrackRentTenantApplicantId, tenantId, tenantApplicantId, activeTab, tenure, flatNumber, applicantName, totalAmount, paidTotalAmount } = listState;
+  const { buildingId, payTrackRentTenantApplicantId, tenantId, tenantApplicantId, activeTab, tenure, flatNumber, applicantName, totalAmount, paidTotalAmount, unitType, carpetArea } = listState;
 
-
-  // File states
   const [transactionChequeDemandFiles, setTransactionChequeDemandFiles] = useState<(File | string)[]>([]);
   const [removedTransactionChequeDemandUrls, setRemovedTransactionChequeDemandUrls] = useState<string[]>([]);
   const [transactionChequeDemandURL, setTransactionChequeDemandURL] = useState<string>();
@@ -76,25 +72,15 @@ export const AddUpdatePayTrackRent: React.FC = () => {
   const [removedPaymentReceiptUrls, setRemovedPaymentReceiptUrls] = useState<string[]>([]);
   const [paymentReceiptURL, setPaymentReceiptURL] = useState<string>();
 
-
-  const [beneficiaryAccountHolderName, setBeneficiaryAccountHolderName] = useState<string>();
-  const [accountNumber, setAccountNumber] = useState<string>();
-  const [ifscCode, setIfscCode] = useState<string>();
-  const [branch, setBranch] = useState<string>();
-  const [acType, setAcType] = useState<string>();
+  const [projectWithBankData, setProjectWithBankData] = useState<ProjectWithBankDetails | null>(null);
 
   const [originalPayAmount, setOriginalPayAmount] = useState<number>(0);
 
-
-
-  //SET DROP DOWN 
   const [dropdownLabels, setDropdownLabels] = useState<{
     projectBankName?: string;
     bankName?: string;
   }>({});
-  //#endregion
 
-  //#region INIT
   useEffect(() => {
     if (!projectId) return;
 
@@ -116,32 +102,11 @@ export const AddUpdatePayTrackRent: React.FC = () => {
   }, [projectId, PayTrackRentId, buildingId, payTrackRentTenantApplicantId, activeTab, tenure]);
 
   useEffect(() => {
-    if (!formData.ProjectBankListMasterId) return;
-
-    fetchProjectBankDropdown(1, { projectId: Number(projectId) }).then(res => {
-      const bank = res.itemList.find(
-        x => String(x.value) === String(formData.ProjectBankListMasterId)
-      );
-
-      if (!bank) return;
-
-      setBeneficiaryAccountHolderName(bank.BeneficiaryAccountHolderName);
-      setAccountNumber(bank.AccountNumber);
-      setIfscCode(bank.IFSCCode);
-      setBranch(bank.Branch);
-      setAcType(bank.AcType);
-    });
-  }, [formData.ProjectBankListMasterId, projectId]);
-
-  // Clear context when component unmounts
-  useEffect(() => {
     return () => {
       clearPayTrackRentContext();
     };
   }, [clearPayTrackRentContext]);
-  //#endregion
 
-  //#region LOAD DATA
   const loadPayTrackRentData = async (id: number) => {
     await runApiWithLoader(
       setIsLoading,
@@ -177,7 +142,6 @@ export const AddUpdatePayTrackRent: React.FC = () => {
               IFSCCode: data.IFSCCode,
               PaymentMode: data.PaymentMode,
               AmountType: data.AmountType,
-              PaymentType: data.PaymentType,
               PayAmount: data.PayAmount,
               TransactionChequeDemandDraftNumber: data.TransactionChequeDemandDraftNumber,
 
@@ -206,6 +170,13 @@ export const AddUpdatePayTrackRent: React.FC = () => {
               projectBankName: data.ProjectBankName || "",
             });
 
+            if (data.ProjectId) {
+              fetchProjectBankDropdownById(Number(projectId)).then((bank) => {
+                if (!bank) return;
+                setProjectWithBankData(bank);
+              });
+            }
+
           }
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -221,18 +192,13 @@ export const AddUpdatePayTrackRent: React.FC = () => {
     );
   };
 
-  //#endregion
-
-  //#region HANDLE FIELD CHANGE
   const handleFieldChange = (field: keyof AddUpdatePayTrackRentRequest, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: '' }));
     }
   };
-  //#endregion
 
-  //#region VALIDATION
   const validateForm = (): { isValid: boolean; errors: { [key: string]: string } } => {
     const newErrors: { [key: string]: string } = {};
 
@@ -264,24 +230,18 @@ export const AddUpdatePayTrackRent: React.FC = () => {
       newErrors.AmountType = 'Amount Type is required.';
     }
 
-    if (!formData.PaymentType || formData.PaymentType.trim() === '') {
-      newErrors.PaymentType = 'Payment Type is required.';
-    }
 
     if (!formData.PayAmount || formData.PayAmount <= 0) {
       newErrors.PayAmount = 'Amount is required and must be greater than 0.';
     }
 
-    const toNumber = (v: any) =>
-      Number(String(v ?? '0').replace(/[₹,]/g, '').trim()) || 0;
+    const toNumber = (v: any) => Number(String(v ?? '0').replace(/[₹,]/g, '').trim()) || 0;
 
     const total = toNumber(totalAmount);
     const alreadyPaid = toNumber(paidTotalAmount);
     const pay = toNumber(formData.PayAmount);
 
-    const effectivePaid = Number(PayTrackRentId) > 0
-      ? alreadyPaid - originalPayAmount + pay
-      : alreadyPaid + pay;
+    const effectivePaid = Number(PayTrackRentId) > 0 ? alreadyPaid - originalPayAmount + pay : alreadyPaid + pay;
 
     const remaining = total - effectivePaid;
 
@@ -304,9 +264,7 @@ export const AddUpdatePayTrackRent: React.FC = () => {
       errors: newErrors,
     };
   };
-  //#endregion
 
-  //#region BUILD FORM DATA
   const buildMultipartFormData = (): FormData => {
     const fd = new FormData();
 
@@ -323,7 +281,6 @@ export const AddUpdatePayTrackRent: React.FC = () => {
     fd.append('IFSCCode', formData.IFSCCode || '');
     fd.append('PaymentMode', formData.PaymentMode || '');
     fd.append('AmountType', formData.AmountType || '');
-    fd.append('PaymentType', formData.PaymentType || '');
     fd.append('PayAmount', String(formData.PayAmount ?? 0));
     fd.append('TransactionChequeDemandDraftNumber', formData.TransactionChequeDemandDraftNumber || '');
     fd.append('TransactionChequeDemandDraftDate', formData.TransactionChequeDemandDraftDate || '');
@@ -346,9 +303,7 @@ export const AddUpdatePayTrackRent: React.FC = () => {
     fd.append('RemovePaymentReceiptURL', removedPaymentReceiptUrls.join(','));
     return fd;
   };
-  //#endregion
 
-  //#region SUBMIT
   const handleSubmit = async () => {
 
     setErrors({});
@@ -368,8 +323,8 @@ export const AddUpdatePayTrackRent: React.FC = () => {
 
     const effectivePaid =
       Number(PayTrackRentId) > 0
-        ? alreadyPaid - originalPayAmount + pay   // UPDATE
-        : alreadyPaid + pay;                      // ADD
+        ? alreadyPaid - originalPayAmount + pay
+        : alreadyPaid + pay;
 
 
     await runApiWithLoader(
@@ -406,20 +361,18 @@ export const AddUpdatePayTrackRent: React.FC = () => {
       formData.PayTrackRentId === 0 ? 'Adding Pay Track Rent' : 'Updating Pay Track Rent'
     );
   };
-  //#endregion
+
 
   const fetchProjectBankList = useCallback(
     async (pageNumber: number, params?: { value?: string }) => {
-
       return fetchProjectBankDropdown(pageNumber, {
         projectId: projectId || 0,
-        bankName: params?.value || ""
+        bankName: params?.value || "",
+        isCheckPermission: false
       });
-
     },
     [projectId]
   );
-
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -435,8 +388,12 @@ export const AddUpdatePayTrackRent: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <FieldItem label="Flat Number" value={flatNumber || '-'} />
                 <FieldItem label="Applicant Name" value={applicantName || '-'} />
-                <FieldItem label="Tenure" value={tenure || '-'} />
+                {!["", "-"].includes(tenure?.trim() ?? "") && (
+                  <FieldItem label="Tenure" value={tenure} />
+                )}
                 <FieldItem label="Charge Type" value={activeTab || '-'} />
+                <FieldItem label="Carpet Area (SqFt)" value={carpetArea ? `${carpetArea} SqFt` : '-'} />
+                <FieldItem label="Unit Type" value={unitType || '-'} />
                 <FieldItem label="Total Amount" value={totalAmount > 0 ? `₹${totalAmount}` : '-'} />
                 <FieldItem label="Paid Total Amount" value={paidTotalAmount > 0 ? `₹${paidTotalAmount}` : '-'} />
               </div>
@@ -457,33 +414,10 @@ export const AddUpdatePayTrackRent: React.FC = () => {
                     onChange={(e) => handleFieldChange('AccountHolderName', e.target.value)}
                     error={errors.AccountHolderName}
                     placeholder="Enter Account Holder Name"
-                    maxLength={100}
+                    maxLength={50}
                     required
                   />
                 </div>
-                <div>
-                  <Input
-                    label="Account Number"
-                    value={formData.AccountNumber || ''}
-                    onChange={(e) => handleFieldChange('AccountNumber', filterNumbers(e.target.value))}
-                    error={errors.AccountNumber}
-                    placeholder="Enter Account Number"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <Input
-                    label="IFSC Code"
-                    value={formData.IFSCCode || ''}
-                    onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
-                    error={errors.IFSCCode}
-                    placeholder="Enter IFSC Code"
-                    maxLength={11}
-                    required
-                  />
-                </div>
-
                 <div>
                   <SingleSelectDropdownWithPagination
                     label="Bank"
@@ -501,6 +435,29 @@ export const AddUpdatePayTrackRent: React.FC = () => {
                     }}
                     initialValue={createDropdownInitialValue(formData.BankListMasterId, dropdownLabels.bankName)}
                     error={errors.BankListMasterId}
+                  />
+                </div>
+                <div>
+                  <Input
+                    label="Account Number"
+                    value={formData.AccountNumber || ''}
+                    onChange={(e) => handleFieldChange('AccountNumber', filterNumbers(e.target.value))}
+                    error={errors.AccountNumber}
+                    placeholder="Enter Account Number"
+                    maxLength={15}
+                    required
+                  />
+                </div>
+
+                <div>
+                  <Input
+                    label="IFSC Code"
+                    value={formData.IFSCCode || ''}
+                    onChange={(e) => handleFieldChange("IFSCCode", filterIFSC(e.target.value))}
+                    error={errors.IFSCCode}
+                    placeholder="Enter IFSC Code"
+                    maxLength={11}
+                    required
                   />
                 </div>
 
@@ -526,18 +483,6 @@ export const AddUpdatePayTrackRent: React.FC = () => {
                     onChange={(e) => handleFieldChange('AmountType', String(e))}
                     options={AMOUNT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
                     error={errors.AmountType}
-                  />
-                </div>
-
-                <div>
-                  <SinglePageSelection
-                    label="Payment Type"
-                    placeholder='Select Payment Type'
-                    required
-                    value={formData.PaymentType || ''}
-                    onChange={(e) => handleFieldChange('PaymentType', String(e))}
-                    options={PAYMENT_TYPE.map((opt) => ({ label: opt.name, value: opt.id }))}
-                    error={errors.PaymentType}
                   />
                 </div>
 
@@ -577,7 +522,7 @@ export const AddUpdatePayTrackRent: React.FC = () => {
                 <div>
                   <MultiFilePicker
                     label="Transaction / Cheque / Demand Draft"
-                    placeholder="Select File"
+                    placeholder="Select Transaction / Cheque / Demand Draft"
                     error={errors.TransactionChequeDemandDraftURL}
                     value={transactionChequeDemandFiles}
                     onChange={setTransactionChequeDemandFiles}
@@ -612,81 +557,56 @@ export const AddUpdatePayTrackRent: React.FC = () => {
 
 
             {/* Bank Details Section */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">
-                Project Bank Details (Payable)
-              </h3>
+            <div className="space-y-4 pt-5">
+              <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Developer Bank Details</h3>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
                 <div>
-
                   <SingleSelectDropdownWithPagination
-                    label="Project Wise Bank"
+                    label="Project Bank Name"
                     required
-                    title="Select Project Wise Bank"
+                    title="Select Project Bank Name"
                     size="lg"
-                    error={errors.ProjectBankListMasterId}
                     dataFetchCallBack={fetchProjectBankList}
                     onSelected={(item) => {
-                      if (!item) return;
+                      if (!item) {
+                        handleFieldChange("ProjectBankListMasterId", null);
+                        setProjectWithBankData(null);
+                        return;
+                      }
 
-                      const bank = item as ProjectBankDropdownItem;
+                      setProjectWithBankData(item as unknown as ProjectWithBankDetails);
 
-                      handleFieldChange("ProjectBankListMasterId", Number(bank.value));
-
-                      setBeneficiaryAccountHolderName(bank.BeneficiaryAccountHolderName);
-                      setAccountNumber(bank.AccountNumber);
-                      setIfscCode(bank.IFSCCode);
-                      setBranch(bank.Branch);
-                      setAcType(bank.AcType);
+                      handleFieldChange("ProjectBankListMasterId", Number(item.value));
                     }}
-
-                  />
-
-
-                </div>
-                <div>
-                  <Input
-                    label="Account Holder Name"
-                    value={beneficiaryAccountHolderName}
-                    placeholder="Enter Account Holder Name"
-                    disabled
+                    initialValue={createDropdownInitialValue(formData.ProjectBankListMasterId, dropdownLabels.projectBankName)}
+                    error={errors.ProjectBankListMasterId}
                   />
                 </div>
-                <div>
-                  <Input
-                    label="Account Number"
-                    value={accountNumber}
-                    placeholder="Enter Account Number"
-                    disabled
-                  />
-                </div>
-
-                <div>
-                  <Input
-                    label="IFSC Code"
-                    value={ifscCode || ''}
-                    placeholder="Enter IFSC Code"
-                    disabled
-                  />
-                </div>
-                <div>
-                  <Input
-                    label="Branch"
-                    value={branch || ''}
-                    placeholder="Enter Branch"
-                    disabled
-                  />
-                </div>
-                <div>
-                  <Input
-                    label="Account Type"
-                    value={acType || ''}
-                    placeholder="Enter Account Type"
-
-                    disabled
-                  />
-                </div>
+                {projectWithBankData && (
+                  <>
+                    <div>
+                      <Input
+                        label="Account Number"
+                        placeholder="Enter Account Number"
+                        value={projectWithBankData?.AccountNumber || ""}
+                        disabled
+                      />
+                    </div>
+                    <div>
+                      <Input label="IFSC Code" placeholder="Enter IFSC Code" value={projectWithBankData?.IFSCCode || ""} disabled />
+                    </div>
+                    <div>
+                      <Input label="Branch" placeholder="Enter Branch" value={projectWithBankData?.Branch || ""} disabled />
+                    </div>
+                    <div>
+                      <Input label="Account Type" placeholder="Enter Account Type" value={projectWithBankData?.AcType || ""} disabled />
+                    </div>
+                    <div>
+                      <Input label="Nature Of Account" placeholder="Enter Nature Of Account" value={projectWithBankData?.NatureOfAccount || ""} disabled />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 

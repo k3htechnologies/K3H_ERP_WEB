@@ -117,6 +117,8 @@ export const mapPathToRoute = (apiPath: string): string => {
         //MORE
         '/inwardoutward': '/inwardOutward',
         '/ticket': '/ticket',
+        '/otplogs': '/otplogs',
+
 
         //SETTING EXTRA
         '/companypolicy': '/companyPolicy',

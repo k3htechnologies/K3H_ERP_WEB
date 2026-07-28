@@ -17,6 +17,8 @@ import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelectio
 import { initialFormStateExtraCarpetArea } from '../utils/initialStates';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import { getInputValue, isEmpty } from '@/core/utils/comman';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 interface ExtraCarpetAreaTabProps {
   projectId: number | null;
@@ -33,7 +35,7 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
   setIsLoading,
   setLoadingMessage,
 }) => {
-  const [, setExtraCarpetAreaData] = useState<ProposedOfferExtraCarpetAreaData | null>(null);
+  const [extraCarpetAreaData, setExtraCarpetAreaData] = useState<ProposedOfferExtraCarpetAreaData | null>(null);
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -270,6 +272,30 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
               disabled={!isBuildingSelected}
             />
           </div>
+          <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+              <h4 className="text-sm font-semibold text-[#333333]">
+                Action Details
+              </h4>
+            </div>
+            <div className="p-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                <FieldItem label="Created By" value={extraCarpetAreaData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(extraCarpetAreaData?.CreatedDate ?? '-')}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                <FieldItem label="Modified By" value={extraCarpetAreaData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(extraCarpetAreaData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
 

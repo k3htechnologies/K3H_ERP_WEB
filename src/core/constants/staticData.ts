@@ -438,7 +438,7 @@ export const MASTER_DATA = {
 
   parkingSubCategory_SurfaceParking: ["SU 1", "GROUND"],
 
-  parkingSubCategory_PuzzleParking: ["PU 1", "GROUND"],
+  parkingSubCategory_PuzzleParking: ["LEVEL 1","LEVEL 2","LEVEL 3","LEVEL 4","LEVEL 5","LEVEL 6","LEVEL 7","LEVEL 8","LEVEL 9","LEVEL 10", "GROUND LEVEL"],
 
   parkingSubCategory_TowerParking: ["TO 1", "GROUND"],
 

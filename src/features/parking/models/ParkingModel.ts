@@ -29,6 +29,7 @@ export interface ParkingData {
     IsEVChargingAvailable: boolean;
 
     ParkingStatus?: 'Member' | "Available" | "Booked" | "Blocked" | "Hold";
+    Remark?: string | null;
 
     // ========================= INVENTORY DETAILS =========================
     InventoryBuildingId: number;
@@ -76,6 +77,7 @@ export interface UpdateParkingRequest {
 
     IsEVChargingAvailable: boolean;
     ParkingStatus?: string | null;
+    Remark?: string | null;
 
     // ================= INVENTORY DETAILS =================
     InventoryBuildingId: number;

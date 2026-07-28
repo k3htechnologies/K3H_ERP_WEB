@@ -198,6 +198,8 @@ import SpecificationMaster from '@/features/specificationMaster/pages/Specificat
 import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
 import ChannelPartnerSalesMetrics from '@/features/ChannelPartner/pages/ChannelPartnerSalesMetrics';
 import AopAchievementReport from '@/features/aopAchievement/pages/AopAchievementReport';
+import OTPLogs from '@/features/oTPLogs/pages/OTPLogs';
+import CompanyBank from '@/features/companyMaster/pages/CompanyBank';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -267,6 +269,7 @@ function App() {
             <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
+            <Route path='companyMaster/bank' element={<CompanyListStateProvider><CompanyBank /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />
 
@@ -379,6 +382,8 @@ function App() {
             <Route path='ticket' element={<TicketListStateProvider><Ticket /></TicketListStateProvider>} />
             <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
             <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
+
+            <Route path='otplogs' element={<OTPLogs />} />
 
             {/* SALES */}
             <Route path="saleDashboard" element={<SalesDashboard />} />

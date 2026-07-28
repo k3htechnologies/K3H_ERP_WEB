@@ -19,9 +19,9 @@ export const ProposedOfferApi = {
     //=============================================================
     // [ RENT DETAILS ]
     //=============================================================
-    PULL_TEMPORARY_ACCOMMODATION_ALTERNATIVE: '/ProposedOffer/PullTemporaryAccommodationAlternativeDetails',
-    ADD_UPDATE_TEMPORARY_ACCOMMODATION_ALTERNATIVE: '/ProposedOffer/AddUpdateTemporaryAccommodationAlternativeDetails',
-    DELETE_TEMPORARY_ACCOMMODATION_ALTERNATIVE: '/ProposedOffer/DeleteTemporaryAccommodationAlternativeDetails',
+    PULL_TEMPORARY_ALTERNATE_ACCOMMODATION: '/ProposedOffer/PullTemporaryAlternateAccommodationDetails',
+    ADD_UPDATE_TEMPORARY_ALTERNATE_ACCOMMODATION: '/ProposedOffer/AddUpdateTemporaryAlternateAccommodationDetails',
+    DELETE_TEMPORARY_ALTERNATE_ACCOMMODATION: '/ProposedOffer/DeleteTemporaryAlternateAccommodationDetails',
 
     //=============================================================
     // [ SHIFTING DETAILS ]
@@ -36,6 +36,13 @@ export const ProposedOfferApi = {
     PULL_SECURITY_DEPOSIT_DETAILS: '/ProposedOffer/PullSecurityDepositDetails',
     ADD_UPDATE_SECURITY_DEPOSIT_DETAILS: '/ProposedOffer/AddUpdateSecurityDepositDetails',
     DELETE_SECURITY_DEPOSIT_DETAILS: '/ProposedOffer/DeleteSecurityDepositDetails',
+
+    //=============================================================
+    // [ BANK GUARANTEE DETAILS ]
+    //=============================================================
+    PULL_BANK_GUARANTEE_DETAILS: '/ProposedOffer/PullBankGuaranteeDetails',
+    ADD_UPDATE_BANK_GUARANTEE_DETAILS: '/ProposedOffer/AddUpdateBankGuaranteeDetails',
+    DELETE_BANK_GUARANTEE_DETAILS: '/ProposedOffer/DeleteBankGuaranteeDetails',
 
     //=============================================================
     // [ LIEN TO SOCIETY DETAILS ]
@@ -66,6 +73,8 @@ export const ProposedOfferApi = {
     //=============================================================
     PULL_PROPOSED_PLAN: '/ProposedOffer/PullProposedPlan',
     ADD_UPDATE_PROPOSED_PLAN: '/ProposedOffer/AddUpdateProposedPlan',
+    ADD_UPDATE_BUILDING_PROPOSED_PLAN: '/ProposedOffer/AddUpdateBuildingProposedPlan',
+    COPY_PROPOSED_PLAN: '/ProposedOffer/CopyProposedPlan',
 
     //=============================================================
     // [ GENERATE PROPOSED PLAN ]

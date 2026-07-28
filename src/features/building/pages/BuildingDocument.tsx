@@ -349,8 +349,8 @@ const BuildingDocument: React.FC = () => {
 
               <TooltipText
                 text={value || ''}
-                maxWidth="250px"
-                tooltipThreshold={40}
+                maxWidth="400px"
+                tooltipThreshold={55}
               />
             </div>
 

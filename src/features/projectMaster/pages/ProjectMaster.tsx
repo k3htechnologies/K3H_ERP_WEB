@@ -300,6 +300,14 @@ export const ProjectMaster: React.FC = () => {
         )
       },
       {
+        key: 'FederationAmount',
+        label: 'Federation Amount (₹)',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
+      },
+      {
         key: 'APFNumber',
         label: 'APF Number',
         width: '15',

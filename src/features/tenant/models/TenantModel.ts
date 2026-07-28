@@ -7,6 +7,7 @@ export interface FilterWithPaginationTenantRequest {
   ProjectId?: number
   BuildingId?: number
   TenantId?: number
+  SystemGeneratedCode?: string | ''
   FlatNumber?: string | ''
   ApplicantName?: string | ''
   FlatConfiguration?: string | ''
@@ -17,6 +18,7 @@ export interface FilterWithPaginationTenantRequest {
   Flat?: string | ''
   ParkingNumber?: string | ''
   SortBy?: string
+
   UnitAnnexureSurveyNumber?: string | '';
   UnitCarpetAreaSqFt?: number;
   UnitFacing?: string | '';

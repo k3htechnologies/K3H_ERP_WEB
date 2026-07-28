@@ -72,12 +72,9 @@ export const Rent: React.FC = () => {
   const searchTerm = listState.searchTerm || "";
   const activeTab = listState.activeTab || rentTabList[0].id;
   const activeTenureTab = listState.tenure || "";
-
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
   const [showFilterPopup, setShowFilterPopup] = useState(false);
-
   const [tenureTabList, setTenureTabList] = useState<TabItem[]>([]);
-
   const isMonthBasedTab = ["TAA", "Additional TAA", "Brokerage"].includes(activeTab);
   const isStageBasedTab = ["Hardship", "Shifting"].includes(activeTab);
 
@@ -86,8 +83,11 @@ export const Rent: React.FC = () => {
     return { label: buildingName || "", value: buildingId };
   }, [projectId, buildingId, buildingName]);
 
-  const fetchBuildingCallback = useCallback((pageNumber: number) => fetchBuildingDropdown(pageNumber, { projectId: Number(projectId) }), [projectId]);
-  
+  const fetchBuildingCallback = useCallback((pageNumber: number, params?: { value?: string }) =>
+    fetchBuildingDropdown(pageNumber, { projectId: Number(projectId), buildingName: params?.value || "" }),
+    [projectId]
+  );
+
   const debouncedSearch = useDebouncedCallback((value: string) => {
     setPagination({ currentPage: 1 });
     updateListState({
@@ -96,7 +96,7 @@ export const Rent: React.FC = () => {
       page: 1,
     });
   }, 350);
-  
+
   useEffect(() => {
     if (!projectId || buildingId <= 0) return;
     if (!["TAA", "Brokerage"].includes(activeTab)) {
@@ -106,7 +106,7 @@ export const Rent: React.FC = () => {
     }
 
     (async () => {
-      const response = await proposedOfferService.apiCallPullTemporaryAccommodationAlternative({
+      const response = await proposedOfferService.apiCallPullTemporaryAlternateAccommodation({
         ProjectId: Number(projectId),
         BuildingId: buildingId,
       });
@@ -150,21 +150,21 @@ export const Rent: React.FC = () => {
 
   useEffect(() => {
     const prevProjectId = prevProjectIdRef.current;
-    
+
     if (prevProjectId !== null && prevProjectId !== projectId) {
-     
+
       if (listState.buildingId > 0) {
         updateListState({ buildingId: 0, buildingName: "", filters: {}, searchTerm: "", page: 1 });
       }
       prevProjectIdRef.current = projectId;
     } else if (prevProjectId === null) {
-      
+
       prevProjectIdRef.current = projectId;
     }
-    
+
   }, [projectId, listState.buildingId, updateListState]);
 
-  
+
   const loadRents = useCallback(async () => {
     if (!projectId || buildingId <= 0) return;
 
@@ -207,7 +207,7 @@ export const Rent: React.FC = () => {
   useEffect(() => {
     loadRents();
   }, [loadRents]);
-  
+
 
   const handleBuildingChange = (item: DropdownItem | null) => {
     if (!item?.value) return;
@@ -226,33 +226,37 @@ export const Rent: React.FC = () => {
   };
 
   const dynamicHeaders = useMemo(() => {
-    const headers = new Set<string>();
 
-    tenantApplicantChargesList.forEach((item) => {
-      if (item.Date === "1997-01-01T00:00:00" || item.Date === "1997-01-02T00:00:00") return;
+    if (isMonthBasedTab) {
 
-      if (isMonthBasedTab && item.Date) {
-        headers.add(formatDate_dd_MonthName_yy(item.Date));
+      const sorted = Array.from(
+        new Set(
+          tenantApplicantChargesList
+            .filter(item =>
+              item.Date &&
+              item.Date !== "1997-01-01T00:00:00" &&
+              item.Date !== "1997-01-02T00:00:00"
+            )
+            .map(item => item.Date!)
+        )
+      ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime()).map(date => formatDate_dd_MonthName_yy(date));
+
+      if (tenantApplicantChargesList.length > 0) {
+        sorted.push("Total", "Paid Total");
       }
 
-      if (isStageBasedTab && item.Stage) {
-        headers.add(item.Stage);
-      }
-    });
-
-    const sorted = Array.from(headers).sort((a, b) => {
-      if (isMonthBasedTab) {
-        return new Date(`01 ${a}`).getTime() - new Date(`01 ${b}`).getTime();
-      }
-      return a.localeCompare(b);
-    });
-
-    // ✅ ALWAYS ADD TOTAL COLUMNS
-    if (tenantApplicantChargesList.length > 0) {
-      sorted.push("Total", "Paid Total");
+      return sorted;
     }
 
-    return sorted;
+    const headers = Array.from(
+      new Set(tenantApplicantChargesList.filter(item => item.Stage).map(item => item.Stage!))
+    ).sort();
+
+    if (tenantApplicantChargesList.length > 0) {
+      headers.push("Total", "Paid Total");
+    }
+
+    return headers;
   }, [tenantApplicantChargesList, isMonthBasedTab, isStageBasedTab]);
 
   const tableData = useMemo<PivotRentRow[]>(() => {
@@ -301,6 +305,7 @@ export const Rent: React.FC = () => {
 
       // ───────── TOTAL INDICATOR ─────────
       if (item.Date === "1997-01-01T00:00:00") {
+        console.log(item.FlatNumber, item.TenantApplicantId, item.Amount);
         row.Total = amount; // ✅ ONLY HERE
       }
 
@@ -312,8 +317,8 @@ export const Rent: React.FC = () => {
 
     return Array.from(map.values()).map((row) => ({
       ...row,
-      Total: row.Total ? `₹${row.Total}` : "-",
-      "Paid Total": row["Paid Total"] ? `₹${row["Paid Total"]}` : "-",
+      Total: row.Total ? `₹${row.Total}` : "0",
+      "Paid Total": row["Paid Total"] ? `₹${row["Paid Total"]}` : "0",
     }));
   }, [tenantApplicantChargesList, dynamicHeaders, isMonthBasedTab, isStageBasedTab]);
 
@@ -362,28 +367,25 @@ export const Rent: React.FC = () => {
   const handleExportRentExcel = () => handleExportRents("Excel");
   const handleExportRentPdf = () => handleExportRents("PDF");
 
-  //#endregion
-
-  //#region COLUMNS
   const columns = useMemo<TableColumn[]>(() => {
     const baseColumns: TableColumn[] = [
       { key: "FlatNumber", label: "Unit Number", fixed: "left", width: "14" },
-      { key: "ApplicantName", label: "Applicant Name", width: "18" },
       { key: "ApplicantType", label: "Applicant Type", width: "18" },
+      { key: "ApplicantName", label: "Applicant Name", width: "18" },
       { key: "FlatType", label: "Existing Unit Type", width: "18" },
       { key: "FlatCarpetAreaSqFt", label: "Existing Carpet Area (SqFt)", width: "18" },
     ];
 
     const proposedOfferColumn: TableColumn[] = ["TAA", "Brokerage", "Additional TAA"].includes(activeTab)
       ? [
-          {
-            key: "ProposedOfferAmount",
-            label: "Proposed Offer Amount (₹)",
-            width: "20",
-            align: "right",
-            render: (_, row) => `${row.ProposedOfferAmount || 0} ${row.Unit || ""}`,
-          },
-        ]
+        {
+          key: "ProposedOfferAmount",
+          label: "Proposed Offer Amount (₹)",
+          width: "20",
+          align: "right",
+          render: (_, row) => `${row.ProposedOfferAmount || 0} ${row.Unit || ""}`,
+        },
+      ]
       : [];
 
     const dynamicColumns: TableColumn[] = dynamicHeaders.map((h) => ({
@@ -395,75 +397,94 @@ export const Rent: React.FC = () => {
 
     const actionColumn: TableColumn[] = canAction
       ? [
-          {
-            key: "Actions",
-            label: "Actions",
-            width: "12",
-            fixed: "right",
-            align: "center",
-            render: (_value, row: PivotRentRow) => {
-              const handleAddPayTrackRent = () => {
-                if (!row.TenantApplicantId || !buildingId) return;
+        {
+          key: "Actions",
+          label: "Actions",
+          width: "12",
+          fixed: "right",
+          align: "center",
+          render: (_value, row: PivotRentRow) => {
+            const handleAddPayTrackRent = () => {
+              if (!row.TenantApplicantId || !buildingId) return;
 
-                const totalAmount = Number(row["Total"].replace("₹", "") || 0);
-                const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
+              const totalAmount = Number(row["Total"].replace("₹", "") || 0);
+              const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
 
-                setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
-                updateListState({
-                  buildingId,
-                  buildingName,
-                  activeTab,
-                  tenure: activeTenureTab,
-                  tenantId: row.TenantId || 0,
-                  tenantName: row.ApplicantName || "",
-                  tenantApplicantId: row.TenantApplicantId || 0,
-                  flatNumber: row.FlatNumber || "",
-                  applicantName: row.ApplicantName || "",
-                  totalAmount: totalAmount,
-                  paidTotalAmount: paidTotalAmount,
-                });
-                navigate("/rent/pay");
-              };
+              setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
+              updateListState({
+                buildingId,
+                buildingName,
+                activeTab,
+                tenure: activeTenureTab,
+                tenantId: row.TenantId || 0,
+                tenantName: row.ApplicantName || "",
+                tenantApplicantId: row.TenantApplicantId || 0,
+                flatNumber: row.FlatNumber || "",
+                applicantName: row.ApplicantName || "",
+                totalAmount: totalAmount,
+                paidTotalAmount: paidTotalAmount,
+                unitType:row.FlatType,
+                carpetArea:row.FlatCarpetAreaSqFt
+              });
+              navigate("/rent/pay");
+            };
 
-              const handleViewPayTrackRent = () => {
-                if (!row.TenantApplicantId || !buildingId) return;
+            const handleViewPayTrackRent = () => {
 
-                const totalAmount = Number(row["Total"].replace("₹", "") || 0);
-                const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
+              if (!row.TenantApplicantId || !buildingId) return;
 
-                setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
-                updateListState({
-                  buildingId,
-                  buildingName,
-                  activeTab,
-                  tenure: activeTenureTab,
-                  tenantId: row.TenantId || 0,
-                  tenantName: row.ApplicantName || "",
-                  tenantApplicantId: row.TenantApplicantId || 0,
-                  flatNumber: row.FlatNumber || "",
-                  applicantName: row.ApplicantName || "",
-                  totalAmount: totalAmount,
-                  paidTotalAmount: paidTotalAmount,
-                });
-                navigate("/rent/paymentLedger");
-              };
+              const totalAmount = Number(row["Total"].replace("₹", "") || 0);
+              const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
 
-              return (
-                <div className="flex items-center justify-center">
-                  {Number(String(row["Total"]).replace(/[₹,]/g, "") || 0) !== Number(String(row["Paid Total"]).replace(/[₹,]/g, "") || 0) && (
-                    <Button color="transparent" isborderRadius size="sm" style={{ color: "red", padding: "4px 8px" }} onClick={handleAddPayTrackRent} title="Add Pay Track TAA">
+              setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
+
+              updateListState({
+                buildingId,
+                buildingName,
+                activeTab,
+                tenure: activeTenureTab,
+                tenantId: row.TenantId || 0,
+                tenantName: row.ApplicantName || "",
+                tenantApplicantId: row.TenantApplicantId || 0,
+                flatNumber: row.FlatNumber || "",
+                applicantName: row.ApplicantName || "",
+                totalAmount: totalAmount,
+                paidTotalAmount: paidTotalAmount,
+                unitType:row.FlatType,
+                carpetArea:row.FlatCarpetAreaSqFt
+              });
+              navigate("/rent/paymentLedger");
+            };
+
+            return (
+              <div className="flex items-center justify-center">
+
+                {Number(String(row["Total"]).replace(/[₹,]/g, "") || 0) !== Number(String(row["Paid Total"]).replace(/[₹,]/g, "") || 0)
+                  && Number(String(row["Total"]).replace(/[₹,]/g, "") || 0) > 0
+                  && (
+                    <Button
+                      color="transparent"
+                      isborderRadius
+                      size="sm"
+                      style={{ color: "red", padding: "4px 8px" }}
+                      onClick={handleAddPayTrackRent}
+                      title="Add Pay Track TAA"
+                    >
                       <Plus className="h-4 w-4" />
                     </Button>
                   )}
 
-                  <Button color="transparent" isborderRadius size="sm" style={{ color: "blue", padding: "4px 8px" }} onClick={handleViewPayTrackRent} title="View Pay Track TAA">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </div>
-              );
-            },
+                {Number(String(row["Total"]).replace(/[₹,]/g, "") || 0) > 0
+                  && (
+                    <Button color="transparent" isborderRadius size="sm" style={{ color: "blue", padding: "4px 8px" }} onClick={handleViewPayTrackRent} title="View Pay Track TAA">
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                  )}
+              </div>
+            );
           },
-        ]
+        },
+      ]
       : [];
 
     return [...baseColumns, ...proposedOfferColumn, ...dynamicColumns, ...actionColumn];
@@ -486,7 +507,7 @@ export const Rent: React.FC = () => {
     });
     setPagination({ currentPage: 1 });
   };
-  
+
 
   const applyFilters = () => {
     updateListState({
@@ -517,7 +538,6 @@ export const Rent: React.FC = () => {
   const handleFilterChange = (key: string, value: string) => {
     setTempFilters((prev) => updateFilter(prev, key, value));
   };
-  //#endregion
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
@@ -528,7 +548,7 @@ export const Rent: React.FC = () => {
       <TableActionToolbar
         isShowSearchBar
         searchTerm={searchTerm}
-        searchPlaceholder="Search By Flat Number"
+        searchPlaceholder="Search By Unit Number"
         onSearchChange={(v) => {
           updateListState({ searchTerm: v });
           debouncedSearch(v);
@@ -551,10 +571,17 @@ export const Rent: React.FC = () => {
         onExportPdf={handleExportRentPdf}
         exportLoading={isLoading}
       />
-      
+
       <div className="flex items-center gap-4 flex-nowrap">
         <div className={`relative w-[300px] flex-shrink-0 ${selectedBuilding ? "pb-0" : "pb-5"}`}>
-          <SingleSelectDropdownWithPagination title="Select Building" size="lg" initialValue={selectedBuilding} dataFetchCallBack={fetchBuildingCallback} isShowClearSelection={false} onSelected={handleBuildingChange} className="Bold" />
+          <SingleSelectDropdownWithPagination
+            title="Select Building"
+            size="lg"
+            initialValue={selectedBuilding}
+            dataFetchCallBack={fetchBuildingCallback}
+            isShowClearSelection={false}
+            onSelected={handleBuildingChange}
+            className="Bold" />
         </div>
 
         {/* Tabs */}
@@ -599,8 +626,13 @@ export const Rent: React.FC = () => {
       )}
 
       <div className="pt-5">
-        <DataTable data={tableData} columns={columns} pagination={paginationInfo} emptyMessage="No Data Found" fixedHeight />
+        <DataTable
+          data={tableData}
+          columns={columns}
+          pagination={paginationInfo}
+          emptyMessage="No Data Found" />
       </div>
+
       <Modal
         isOpen={showFilterPopup}
         onClose={() => setShowFilterPopup(false)}
@@ -617,7 +649,7 @@ export const Rent: React.FC = () => {
         <div className="space-y-6">
           <div className="space-y-4">
             <div>
-              <Input label="Flat Number" type="text" value={tempFilters.FlatNumber || ""} onChange={(e) => handleFilterChange("FlatNumber", e.target.value)} placeholder="Enter Flat Number" />
+              <Input label="Unit Number" type="text" value={tempFilters.FlatNumber || ""} onChange={(e) => handleFilterChange("FlatNumber", e.target.value)} placeholder="Enter Unit Number" />
             </div>
 
             <div>
@@ -637,12 +669,9 @@ export const Rent: React.FC = () => {
             </div>
 
             <div>
-              <Input label="Flat Type" type="text" value={tempFilters.FlatType || ""} onChange={(e) => handleFilterChange("FlatType", e.target.value)} placeholder="Enter Flat Type" />
+              <Input label="Existing Unit Type" type="text" value={tempFilters.FlatType || ""} onChange={(e) => handleFilterChange("FlatType", e.target.value)} placeholder="Enter Existing Unit Type" />
             </div>
 
-            <div>
-              <Input label="Flat Configuration" type="text" value={tempFilters.FlatConfiguration || ""} onChange={(e) => handleFilterChange("FlatConfiguration", e.target.value)} placeholder="Enter Flat Configuration" />
-            </div>
           </div>
         </div>
       </Modal>

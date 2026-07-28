@@ -28,6 +28,8 @@ import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { TextArea } from '@/ui/components/forms/Textarea';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { getInputValue, isEmpty } from '@/core/utils/comman';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 interface HardshipDetailsTabProps {
   projectId: number | null;
@@ -44,7 +46,7 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
   setIsLoading,
   setLoadingMessage,
 }) => {
-  const [, setHardshipDetailsData] = useState<ProposedOfferHardshipDetailsData | null>(null);
+  const [hardshipDetailsData, setHardshipDetailsData] = useState<ProposedOfferHardshipDetailsData | null>(null);
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const [errorsHardshipDetails, setErrorsHardshipDetails] = useState<{ [k: string]: string }>({});
@@ -711,12 +713,8 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
                 type="text"
                 rightIcon="₹"
                 value={getInputValue(formDataHardshipDetails.ProposedOfferHardshipDetailsId, formDataHardshipDetails.HardshipOfferedToResidentialAmount)}
-                onChange={(e) => {
-                  const val = allowPercentage(e.target.value);
-                  if (val !== null) {
-                    handleFieldChangeHardshipDetails("HardshipOfferedToResidentialAmount", filterNumbersWithDecimal(e.target.value));
-                  }
-                }}
+                onChange={(e) => handleFieldChangeHardshipDetails('HardshipOfferedToResidentialAmount', filterNumbersWithDecimal(e.target.value))}
+                
                 error={errorsHardshipDetails.HardshipOfferedToResidentialAmount}
                 placeholder="Enter Residential Hardship Amount"
                 disabled={!isBuildingSelected || corpusPaymentStageList.some(x => x.Type?.toUpperCase() === "RESIDENTIAL")}
@@ -730,13 +728,8 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
                 type="text"
                 rightIcon="₹"
                 value={getInputValue(formDataHardshipDetails.ProposedOfferHardshipDetailsId, formDataHardshipDetails.HardshipOfferedToCommercialAmount)}
-
-                onChange={(e) => {
-                  const val = allowPercentage(e.target.value);
-                  if (val !== null) {
-                    handleFieldChangeHardshipDetails("HardshipOfferedToCommercialAmount", filterNumbersWithDecimal(e.target.value));
-                  }
-                }}
+                onChange={(e) => handleFieldChangeHardshipDetails('HardshipOfferedToCommercialAmount', filterNumbersWithDecimal(e.target.value))}
+                
                 error={errorsHardshipDetails.HardshipOfferedToCommercialAmount}
                 placeholder="Enter Commercial Hardship Amount"
                 disabled={!isBuildingSelected || corpusPaymentStageList.some(x => x.Type?.toUpperCase() === "COMMERCIAL")}
@@ -784,6 +777,31 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
             recordsPerPage={20}
             className="min-w-full"
           />
+
+          <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+              <h4 className="text-sm font-semibold text-[#333333]">
+                Action Details
+              </h4>
+            </div>
+            <div className="p-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                <FieldItem label="Created By" value={hardshipDetailsData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(hardshipDetailsData?.CreatedDate ?? '-')}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                <FieldItem label="Modified By" value={hardshipDetailsData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(hardshipDetailsData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
 
@@ -791,11 +809,10 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
         saveText={(formDataHardshipDetails.ProposedOfferHardshipDetailsId && formDataHardshipDetails.ProposedOfferHardshipDetailsId > 0) ? 'Update' : 'Add'}
         canAction={buildingId > 0 && canAction}
         onSave={handleSaveHardshipDetails}
-        leftActionText={buildingId > 0 && formDataHardshipDetails.ProposedOfferHardshipDetailsId > 0 ? "Generate" : ""}
+        leftActionText={buildingId > 0 && canAction && formDataHardshipDetails.ProposedOfferHardshipDetailsId > 0 ? "Generate" : ""}
         onLeftAction={() =>
           handleConfirmationDialogBoxOpenGenerateHardshipDetails(formDataHardshipDetails as ProposedOfferHardshipDetailsData)
         }
-
         isLoading={isLoading}
       />
 
@@ -940,6 +957,7 @@ export const HardshipDetailsTab: React.FC<HardshipDetailsTabProps> = ({
                   handleFieldChangeHardshipPaymentStage('CarpetAreaSqFt', val);
                 }}
                 error={errorsHardshipPaymentStage.CarpetAreaSqFt}
+                rightIcon="SqFt"
                 placeholder="Enter Carpet Area"
               />
             </div>

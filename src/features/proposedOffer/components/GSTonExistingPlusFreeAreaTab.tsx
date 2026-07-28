@@ -14,6 +14,8 @@ import { filterNumbersWithDecimal, isValidPercentage, allowPercentage } from '@/
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { initialFormStateGSTonExistingPlusFreeArea } from '../utils/initialStates';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 interface GSTonExistingPlusFreeAreaTabProps {
   projectId: number | null;
@@ -30,7 +32,7 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
   setIsLoading,
   setLoadingMessage,
 }) => {
-  const [, setGSTonExistingPlusFreeAreaData] = useState<ProposedOfferGSTonExistingPlusFreeAreaData | null>(null);
+  const [gSTonExistingPlusFreeAreaData, setGSTonExistingPlusFreeAreaData] = useState<ProposedOfferGSTonExistingPlusFreeAreaData | null>(null);
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const [errorsGSTonExistingPlusFreeArea, setErrorsGSTonExistingPlusFreeArea] = useState<{ [k: string]: string }>({});
@@ -263,6 +265,31 @@ export const GSTonExistingPlusFreeAreaTab: React.FC<GSTonExistingPlusFreeAreaTab
               disabled={!isBuildingSelected}
             />
           </div>
+
+          <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+              <h4 className="text-sm font-semibold text-[#333333]">
+                Action Details
+              </h4>
+            </div>
+            <div className="p-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                <FieldItem label="Created By" value={gSTonExistingPlusFreeAreaData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(gSTonExistingPlusFreeAreaData?.CreatedDate ?? '-')}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                <FieldItem label="Modified By" value={gSTonExistingPlusFreeAreaData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(gSTonExistingPlusFreeAreaData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
 

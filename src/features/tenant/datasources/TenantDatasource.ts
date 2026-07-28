@@ -41,6 +41,7 @@ export class TenantDatasourceImpl implements TenantDatasource {
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
             if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString());
             if (params.TenantId) queryParams.append('TenantId', params.TenantId.toString());
+            if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
             if (params.UnitAnnexureSurveyNumber?.trim()) queryParams.append('UnitAnnexureSurveyNumber', params.UnitAnnexureSurveyNumber.trim());
             if (params.ApplicantName?.trim()) queryParams.append('ApplicantName', params.ApplicantName.trim());
             if (params.UnitType?.trim()) queryParams.append('UnitType', params.UnitType.trim());

@@ -68,7 +68,7 @@ export default function OverviewCards({
         Overview
       </h2>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-3 gap-4">
 
         {cards.map((c, i) => (
           <div key={i} className="bg-white rounded-2xl p-4 border border-gray-100" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>

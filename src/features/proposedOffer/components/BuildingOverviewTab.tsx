@@ -162,6 +162,24 @@ export const BuildingOverviewTab: React.FC<BuidlingOverviewTabProps> = ({
             {/* ================= RIGHT SIDE (1/3) ================= */}
             <div className="lg:col-span-2 space-y-6">
 
+                {/* ================= FSI / TDR INFORMATION ================= */}
+                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                    <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
+                        <h4 className="text-sm font-semibold text-[#7B6B28]">
+                            FSI / TDR Information
+                        </h4>
+                    </div>
+                    <div className="p-4 bg-white">
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                            <FieldItem label="FSI / TDR Utilization (SqFt)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
+                            <FieldItem label="Property Age (Years)" value={buildingData?.PropertyAgeYears ?? '-'} />
+
+                        </div>
+                    </div>
+
+                </section>
                 {/* ================= GARDERN INFORMATION ================= */}
                 <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
@@ -201,24 +219,7 @@ export const BuildingOverviewTab: React.FC<BuidlingOverviewTabProps> = ({
 
                 </section>
 
-                {/* ================= FSI / TDR INFORMATION ================= */}
-                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
-                    <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
-                        <h4 className="text-sm font-semibold text-[#7B6B28]">
-                            FSI / TDR Information
-                        </h4>
-                    </div>
-                    <div className="p-4 bg-white">
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                            <FieldItem label="FSI / TDR Utilization (SqFt)" value={buildingData?.FSI_TDR_UtilizationSqFt ?? '-'} />
-                            <FieldItem label="Property Age (Years)" value={buildingData?.PropertyAgeYears ?? '-'} />
-
-                        </div>
-                    </div>
-
-                </section>
 
                 {/* ================= GARDERN INFORMATION ================= */}
                 <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">

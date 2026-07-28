@@ -1,13 +1,15 @@
 import * as E from 'fp-ts/Either';
 import { inventoryService } from '@/features/inventory/services/InventoryServices';
 
-export const fetchPaginatedFlatsDropdown = async (pageNumber: number, params?: { value?: string, projectId?: number }) => {
+export const fetchPaginatedFlatsDropdown = async (pageNumber: number,params?: { value?: string; projectId?: number; flat?: string; flatStatus?: string }) => {
     
     try {
         const responseEither = await inventoryService.apiCallPullPaginatedFlats({
             PageSize: 1000,
             PageNumber: pageNumber,
             ProjectId: Number(params?.projectId),
+            Flat: params?.flat?.trim() || "",
+            FlatStatus: params?.flatStatus || "",
         });
 
         if (E.isLeft(responseEither)) {
@@ -41,15 +43,14 @@ export const fetchPaginatedFlatsDropdown = async (pageNumber: number, params?: {
     }
 };
 
-export const fetchPaginatedResidentialFlatsDropdown = async (pageNumber: number, params?: { value?: string, projectId?: number }) => {
+export const fetchPaginatedResidentialFlatsDropdown = async (pageNumber: number, params?: { value?: string, projectId?: number, flat?: string }) => {
     
     try {
         const responseEither = await inventoryService.apiCallPullPaginatedFlats({
             PageSize: 1000,
             PageNumber: pageNumber,
             ProjectId: Number(params?.projectId),
-            FlatType:'Residential',
-            FlatStatus:'Available'
+            Flat: params?.flat?.trim() || "",
         });
 
         if (E.isLeft(responseEither)) {
@@ -83,15 +84,14 @@ export const fetchPaginatedResidentialFlatsDropdown = async (pageNumber: number,
     }
 };
 
-export const fetchPaginatedCommercialFlatsDropdown = async (pageNumber: number, params?: { value?: string, projectId?: number }) => {
+export const fetchPaginatedCommercialFlatsDropdown = async (pageNumber: number, params?: { value?: string, projectId?: number, flat?: string })=> {
     
     try {
         const responseEither = await inventoryService.apiCallPullPaginatedFlats({
             PageSize: 1000,
             PageNumber: pageNumber,
             ProjectId: Number(params?.projectId),
-            FlatType:'Commercial',
-            FlatStatus:'Available'
+            Flat: params?.flat?.trim() || "",
         });
 
         if (E.isLeft(responseEither)) {

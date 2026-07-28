@@ -12,7 +12,7 @@ import { LienToSocietyDetailsTab } from '@/features/proposedOffer/components/Lie
 import { ParkingAllotmentTab } from '@/features/proposedOffer/components/ParkingAllotmentTab';
 import { GSTonExistingPlusFreeAreaTab } from '@/features/proposedOffer/components/GSTonExistingPlusFreeAreaTab';
 import { ProjectCompletionTab } from '@/features/proposedOffer/components/ProjectCompletionTab';
-import { TemporaryAccommodationAlternativeTab } from '@/features/proposedOffer/components/TemporaryAccommodationAlternativeTab';
+import { TemporaryAlternateAccommodationTab } from '@/features/proposedOffer/components/TemporaryAlternateAccommodationTab';
 import { ReadyReckonerRateTab } from '@/features/proposedOffer/components/ReadyReckonerRateTab';
 import { CarpetPlotAreaTab } from '@/features/proposedOffer/components/CarpetPloatAreaTab';
 import { AdditionalInformationTab } from '@/features/proposedOffer/components/AdditionalInformationTab';
@@ -36,19 +36,19 @@ export const ProposedOffer: React.FC = () => {
 
   const proposedOfferTabList = [
     { id: "BuildingOverview", label: "Building Overview" },
-    { id: "ExtraCarpetArea", label: "Extra Carpet Area" },
-    { id: "HardshipDetails", label: "Hardship Offer" },
-    { id: "SecurityDeposit", label: "Security Deposit" },
-    { id: "ShiftingDetails", label: "Shifting Details" },
-    { id: "LienToSocietyDetails", label: "Lien to Society Details" },
-    { id: "ParkingAllotment", label: "Parking Allotment" },
-    { id: "GSTonExistingPlusFreeArea", label: "GST on Existing + Free Area" },
-    { id: "ProjectCompletion", label: "Project Completion" },
-    { id: "TemporaryAccommodationAlternative", label: "Temp Accom Alternative" },
     { id: "ReadyReckonerRate", label: "Ready Reckoner Rate" },
     { id: "CarpetPlotArea", label: "Carpet / Plot Area" },
+    { id: "ExtraCarpetArea", label: "Extra Carpet Area" },
+    { id: "HardshipDetails", label: "Hardship Offer" },
+    { id: "TemporaryAlternateAccommodation", label: "Temp Alternate Accom" },
+    { id: "ShiftingDetails", label: "Shifting Details" },
+    { id: "GSTonExistingPlusFreeArea", label: "GST on Existing + Free Area" },
+    { id: "ParkingAllotment", label: "Parking Allotment" },
+    { id: "SecurityDeposit", label: "Security Deposit" },
+    { id: "BankGuarantee", label: "Bank Guarantee" },
+    { id: "LienToSocietyDetails", label: "Lien to Society Details" },
+    { id: "ProjectCompletion", label: "Project Completion" },
     { id: "AdditionalInformation", label: "Additional Information" },
-    { id: "BankGuarantee", label: "Bank Guarantee" }
   ];
 
   const [activeTab, setActiveTab] = useState<string>(proposedOfferTabList[0].id);
@@ -59,10 +59,10 @@ export const ProposedOffer: React.FC = () => {
   }, [buildingId, buildingName, projectId]);
 
   const fetchBuildingCallback = useCallback((pageNumber: number, params?: { value?: string }) =>
-      fetchBuildingDropdown(pageNumber, { projectId: Number(projectId),buildingName: params?.value || "" }),
+    fetchBuildingDropdown(pageNumber, { projectId: Number(projectId), buildingName: params?.value || "" }),
     [projectId]
   );
-  
+
   useEffect(() => {
     setBuildingId(0);
     setBuildingName('');
@@ -236,8 +236,8 @@ export const ProposedOffer: React.FC = () => {
           />
         )}
 
-        {activeTab === 'TemporaryAccommodationAlternative' && (
-          <TemporaryAccommodationAlternativeTab
+        {activeTab === 'TemporaryAlternateAccommodation' && (
+          <TemporaryAlternateAccommodationTab
             projectId={projectId}
             buildingId={buildingId}
             isLoading={isLoading}

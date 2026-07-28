@@ -17,14 +17,16 @@ import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { DataTable, type TableColumn } from '@/ui/components/DataTable/DataTable';
 import { Modal } from '@/ui/components/Modal/Modal';
 import { Edit, Plus, Trash2 } from 'lucide-react';
-import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { FLAT_UNIT_TYPE } from '@/core/constants';
 import {
   initialFormStateSecurityDepositDetails,
   initialFormStateSecurityDepositPaymentStage,
 } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { getInputValue, isEmpty } from '@/core/utils/comman';
+import Checkbox from '@/ui/components/forms/Checkbox';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 
 interface SecurityDepositTabProps {
   projectId: number | null;
@@ -41,7 +43,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
   setIsLoading,
   setLoadingMessage,
 }) => {
-  const [, setSecurityDepositDetailsData] = useState<ProposedOfferSecurityDepositDetailsData | null>(null);
+  const [securityDepositDetailsData, setSecurityDepositDetailsData] = useState<ProposedOfferSecurityDepositDetailsData | null>(null);
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const [errorsSecurityDepositDetails, setErrorsSecurityDepositDetails] = useState<{ [k: string]: string }>({});
@@ -99,8 +101,8 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
               BuildingId: buildingId,
               ProjectId: Number(projectId),
               SecurityDepositToSocietyAmount: data.SecurityDepositToSocietyAmount ?? 0,
-              InterestAmount : data.InterestAmount ?? 0,
-              Remark : data.Remark ?? "",
+              InterestAmount: data.InterestAmount ?? 0,
+              Remark: data.Remark ?? "",
               SecurityDepositToSocietyWithPaymentStageJSON: ''
             });
 
@@ -137,7 +139,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (!formDataSecurityDepositDetails.SecurityDepositToSocietyAmount) {
+    if (isEmpty(formDataSecurityDepositDetails.SecurityDepositToSocietyAmount)) {
       newErrors.SecurityDepositToSocietyAmount = 'Security Deposit Amount is required'
     }
 
@@ -147,29 +149,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
     }
   }
 
-  const validateSecurityDepositTotals = ({
-    stages,
-    securityDepositAmount,
-  }: {
-    stages: typeof securityDepositPaymentStageList;
-    securityDepositAmount: number;
-  }) => {
-    const total = stages.reduce(
-      (sum, cur) => sum + (Number(cur.Amount) || 0),
-      0
-    );
-
-    return {
-      total,
-      ok: total <= (securityDepositAmount ?? 0)
-    };
-  };
-
   const handleSaveSecurityDepositDetails = async () => {
-    const { total, ok } = validateSecurityDepositTotals({
-      stages: securityDepositPaymentStageList,
-      securityDepositAmount: formDataSecurityDepositDetails.SecurityDepositToSocietyAmount ?? 0
-    });
     if (buildingId === 0) {
       addToast({ type: "error", title: "Please select proper building first" });
       return
@@ -180,11 +160,19 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
       return
     }
 
-    else if (!ok) {
-      addToast({
-        type: "error",
-        title: `Total security deposit amount (${total}) cannot be greater than Security Deposit Amount (${formDataSecurityDepositDetails.SecurityDepositToSocietyAmount}).`
-      });
+    const releaseAmount = securityDepositPaymentStageList.filter(x => Boolean(x.IsRelease) === true).reduce((sum, x) => sum + Number(x.Amount || 0), 0);
+
+    const nonReleaseAmount = securityDepositPaymentStageList.filter(x => Boolean(x.IsRelease) === false).reduce((sum, x) => sum + Number(x.Amount || 0), 0);
+
+    const actualAmount = Number(formDataSecurityDepositDetails.SecurityDepositToSocietyAmount || 0);
+
+    if (releaseAmount !== actualAmount) {
+      addToast({ type: "error", title: `Release Amount (₹${releaseAmount}) must match Security Deposit Amount (₹${actualAmount}).` });
+      return;
+    }
+
+    if (nonReleaseAmount !== actualAmount) {
+      addToast({ type: "error", title: `Non-Release Amount (₹${nonReleaseAmount}) must match Security Deposit Amount (₹${actualAmount}).` });
       return;
     }
 
@@ -203,7 +191,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
       async () => {
         const paymentStageJSON = JSON.stringify(securityDepositPaymentStageList.map(item => ({
           ProposedOfferSecurityDepositDetailsWithPaymentStageId: item.ProposedOfferSecurityDepositDetailsWithPaymentStageId ?? 0,
-          Type: item.Type || '',
+          IsRelease: item.IsRelease ?? false,
           Stage: item.Stage || '',
           Amount: item.Amount ?? 0
         })));
@@ -214,8 +202,8 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
           BuildingId: buildingId,
           ProjectId: Number(projectId),
           SecurityDepositToSocietyAmount: formDataSecurityDepositDetails.SecurityDepositToSocietyAmount,
-          InterestAmount : formDataSecurityDepositDetails.InterestAmount ?? 0,
-          Remark : formDataSecurityDepositDetails.Remark ?? "",
+          InterestAmount: formDataSecurityDepositDetails.InterestAmount ?? 0,
+          Remark: formDataSecurityDepositDetails.Remark ?? "",
           SecurityDepositToSocietyWithPaymentStageJSON: paymentStageJSON
         };
 
@@ -265,10 +253,6 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (!formDataSecurityDepositPaymentStage.Type?.trim()) {
-      newErrors.Type = "Type is required"
-    }
-
     if (!formDataSecurityDepositPaymentStage.Stage?.trim()) {
       newErrors.Stage = "Stage is required"
     }
@@ -298,7 +282,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
     setEditingSecurityDepositPaymentStageData({ row, index });
     setFormDataSecurityDepositPaymentStage({
       ...row,
-      Type: row.Type || '',
+      IsRelease: row.IsRelease ?? false,
       Stage: row.Stage || '',
       Amount: row.Amount || 0
     });
@@ -367,14 +351,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
 
   const securityDepositPaymentStageColumns = useMemo<TableColumn[]>(
     () => [
-      {
-        key: 'Type',
-        label: 'Type',
-        width: '25',
-        sortable: false,
-        align: 'left',
-        render: (value) => value || '-'
-      },
+
       {
         key: 'Stage',
         label: 'Stage',
@@ -390,6 +367,14 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
         sortable: false,
         align: 'right',
         render: (value) => value ? `₹${value}` : '-'
+      },
+      {
+        key: 'IsRelease',
+        label: 'Is Release',
+        width: '20',
+        sortable: false,
+        align: 'center',
+        render: (value) => value ? 'Yes' : 'No'
       },
       {
         key: 'Action',
@@ -516,7 +501,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
                 label="Security Deposit Amount (₹)"
                 required
                 type="text"
-                value={formDataSecurityDepositDetails.SecurityDepositToSocietyAmount || 0}
+                value={getInputValue(formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId, formDataSecurityDepositDetails.SecurityDepositToSocietyAmount)}
                 onChange={(e) => handleFieldChangeSecurityDepositDetails('SecurityDepositToSocietyAmount', filterNumbersWithDecimal(e.target.value))}
                 error={errorsSecurityDepositDetails.SecurityDepositToSocietyAmount}
                 placeholder="Enter Security Deposit Amount"
@@ -528,7 +513,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
               <Input
                 label="Interest Amount (₹)"
                 type="text"
-                value={formDataSecurityDepositDetails.InterestAmount || 0}
+                value={getInputValue(formDataSecurityDepositDetails.ProposedOfferSecurityDepositDetailsId, formDataSecurityDepositDetails.InterestAmount)}
                 onChange={(e) => handleFieldChangeSecurityDepositDetails('InterestAmount', filterNumbersWithDecimal(e.target.value))}
                 error={errorsSecurityDepositDetails.InterestAmount}
                 placeholder="Enter Interest Amount"
@@ -554,7 +539,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
             <h3 className="text-lg font-semibold text-gray-900">
               Security Deposit List
             </h3>
-            {canAction && buildingId > 0 && Number(formDataSecurityDepositDetails.SecurityDepositToSocietyAmount) > 0  && (
+            {canAction && buildingId > 0 && Number(formDataSecurityDepositDetails.SecurityDepositToSocietyAmount) > 0 && (
               <Button
                 onClick={handleAddSecurityDepositPaymentStageModal}
                 color="blue"
@@ -573,6 +558,31 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
             recordsPerPage={20}
             className="min-w-full"
           />
+
+          <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+              <h4 className="text-sm font-semibold text-[#333333]">
+                Action Details
+              </h4>
+            </div>
+            <div className="p-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                <FieldItem label="Created By" value={securityDepositDetailsData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(securityDepositDetailsData?.CreatedDate ?? '-')}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                <FieldItem label="Modified By" value={securityDepositDetailsData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(securityDepositDetailsData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
       <BottomActionBar
@@ -604,23 +614,7 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
       >
         <div className="space-y-6 p-6 bg-blue-100">
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
-            <div>
-              <SinglePageSelection
-                label="Type"
-                placeholder='Select Type'
-                required
-                value={formDataSecurityDepositPaymentStage.Type || ''}
-                onChange={(e) => handleFieldChangeSecurityDepositPaymentStage('Type', String(e))}
-                options={FLAT_UNIT_TYPE
-                  .filter(opt => opt.id === 'Commercial' || opt.id === 'Residential')
-                  .map(opt => ({
-                    label: opt.name,
-                    value: opt.id
-                  }))
-                }
-                error={errorsSecurityDepositPaymentStage.Type}
-              />
-            </div>
+
             <div>
               <Input
                 label="Stage"
@@ -646,6 +640,13 @@ export const SecurityDepositTab: React.FC<SecurityDepositTabProps> = ({
                 error={errorsSecurityDepositPaymentStage.Amount}
                 placeholder="Enter Amount"
                 rightIcon="₹"
+              />
+            </div>
+            <div className="flex items-center">
+              <Checkbox
+                label="Is Release"
+                checked={formDataSecurityDepositPaymentStage.IsRelease ?? false}
+                onChange={(e) => handleFieldChangeSecurityDepositPaymentStage('IsRelease', e.target.checked)}
               />
             </div>
 

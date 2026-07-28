@@ -52,7 +52,7 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
       <div className="grid grid-cols-12 gap-6">
 
         {/* LEFT SIDE */}
-        <div className="col-span-8">
+        <div className="col-span-4">
 
           {/* Total Exposure */}
           <div className="bg-blue-50 rounded-xl p-4">
@@ -95,7 +95,7 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
           </div>
 
           {/* Metric Cards */}
-          <div className="grid grid-cols-3 gap-3 mt-4">
+          <div className="grid grid-cols-2 gap-3 mt-4">
 
             {metrics.map((m, i) => (
               <div
@@ -130,7 +130,7 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
         </div>
 
         {/* RIGHT SIDE CHART */}
-        <div className="col-span-4 h-[350px]">
+        <div className="col-span-8 h-[350px]">
 
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={chartData}>

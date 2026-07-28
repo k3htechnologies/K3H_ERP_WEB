@@ -132,27 +132,28 @@ export type ProposedOfferHardshipDetailsDeleteResponse = ApiResponse<number>;
 // [ RENT DETAILS ]
 //=============================================================
 
-export interface FilterWithPaginationProposedOfferTemporaryAccommodationAlternativeRequest {
+export interface FilterWithPaginationProposedOfferTemporaryAlternateAccommodationRequest {
 
     ProjectId?: number
     BuildingId?: number
     ExportType?: 'Excel' | 'PDF'
 }
 
-export interface ProposedOfferTemporaryAccommodationAlternativeData {
-    ProposedOfferTemporaryAccommodationAlternativeDetailsId?: number
+export interface ProposedOfferTemporaryAlternateAccommodationData {
+    ProposedOfferTemporaryAlternateAccommodationDetailsId?: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
-    IsAdditionalTemporaryAccommodationAlternative?: boolean
+    IsAdditionalTemporaryAlternateAccommodation?: boolean
     Type?: string
     Tenure?: string
     Amount?: number
     UnitSqFtLumsum?: string
     CarpetAreaSqFt?: number
-    TemporaryAccommodationAlternativeStartDate?: string
-    TemporaryAccommodationAlternativeEndDate?: string
+    TemporaryAlternateAccommodationStartDate?: string
+    TemporaryAlternateAccommodationEndDate?: string
     IsPayBrokerage?: boolean
+    IsPayTAA?: boolean
     Remark?: string
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -164,35 +165,36 @@ export interface ProposedOfferTemporaryAccommodationAlternativeData {
     LastModifiedDate: string | null
 }
 
-export interface AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest {
-    ProposedOfferTemporaryAccommodationAlternativeDetailsId: number
+export interface AddUpdateProposedOfferTemporaryAlternateAccommodationRequest {
+    ProposedOfferTemporaryAlternateAccommodationDetailsId: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
-    IsAdditionalTemporaryAccommodationAlternative?: boolean
+    IsAdditionalTemporaryAlternateAccommodation?: boolean
     Type?: string
     Tenure?: string
     Amount?: number
     UnitSqFtLumsum?: string
     CarpetAreaSqFt?: number
-    TemporaryAccommodationAlternativeStartDate?: string
-    TemporaryAccommodationAlternativeEndDate?: string
+    TemporaryAlternateAccommodationStartDate?: string | null
+    TemporaryAlternateAccommodationEndDate?: string | null
     IsPayBrokerage?: boolean
+    IsPayTAA?: boolean
     Mode?: string
     Brokerage?: number
     Remark?: string
 }
 
-export interface DeleteProposedOfferTemporaryAccommodationAlternativeRequest {
-    ProposedOfferTemporaryAccommodationAlternativeDetailsId: number
+export interface DeleteProposedOfferTemporaryAlternateAccommodationRequest {
+    ProposedOfferTemporaryAlternateAccommodationDetailsId: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
 }
 
-export type ProposedOfferTemporaryAccommodationAlternativeListResponse = ApiResponse<ProposedOfferTemporaryAccommodationAlternativeData[]>;
-export type ProposedOfferTemporaryAccommodationAlternativeSaveResponse = ApiResponse<ProposedOfferTemporaryAccommodationAlternativeData[]>;
-export type ProposedOfferTemporaryAccommodationAlternativeDeleteResponse = ApiResponse<number>;
+export type ProposedOfferTemporaryAlternateAccommodationListResponse = ApiResponse<ProposedOfferTemporaryAlternateAccommodationData[]>;
+export type ProposedOfferTemporaryAlternateAccommodationSaveResponse = ApiResponse<ProposedOfferTemporaryAlternateAccommodationData[]>;
+export type ProposedOfferTemporaryAlternateAccommodationDeleteResponse = ApiResponse<number>;
 //=============================================================
 // [ SHIFTING DETAILS ]
 //=============================================================
@@ -303,7 +305,7 @@ export interface ProposedOfferSecurityDepositDetailsWithPaymentStageData {
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
-    Type?: string
+    IsRelease?: boolean
     Stage?: string
     Amount?: number
     CreatedById: number | 0
@@ -335,6 +337,75 @@ export interface DeleteProposedOfferSecurityDepositDetailsRequest {
 export type ProposedOfferSecurityDepositDetailsListResponse = ApiResponse<ProposedOfferSecurityDepositDetailsData[]>;
 export type ProposedOfferSecurityDepositDetailsSaveResponse = ApiResponse<ProposedOfferSecurityDepositDetailsData[]>;
 export type ProposedOfferSecurityDepositDetailsDeleteResponse = ApiResponse<number>;
+
+//=============================================================
+// [  BANK GUARANTEE  DETAILS ]
+//=============================================================
+
+export interface FilterWithPaginationProposedOfferBankGuaranteeDetailsRequest {
+
+    ProjectId?: number
+    BuildingId?: number
+    ExportType?: 'Excel' | 'PDF'
+}
+
+export interface ProposedOfferBankGuaranteeDetailsData {
+    ProposedOfferBankGuaranteeDetailsId?: number
+    Uniquekey?: string
+    BuildingId?: number
+    ProjectId: number
+    BankGuaranteeAmount?: number
+    AccountHolderName?: string
+    Remark?: string
+    ProposedOfferBankGuaranteeDetailsWithPaymentStageData?: ProposedOfferBankGuaranteeDetailsWithPaymentStageData[]
+    
+    CreatedById: number | 0
+    CreatedBy: string | ''
+    CreatedDate: string | null
+    ModifiedById: number | 0
+    ModifiedBy: string | ''
+    ModifiedDate: string | null
+    LastModifiedBy: string | ''
+    LastModifiedDate: string | null
+}
+
+export interface ProposedOfferBankGuaranteeDetailsWithPaymentStageData {
+    ProposedOfferBankGuaranteeDetailsWithPaymentStageId?: number
+    Uniquekey?: string
+    BuildingId?: number
+    ProjectId: number
+    IsRelease?: boolean
+    Stage?: string
+    Amount?: number
+    CreatedById: number | 0
+    CreatedBy: string | ''
+    CreatedDate: string | null
+    ModifiedById: number | 0
+    ModifiedBy: string | ''
+    ModifiedDate: string | null
+    LastModifiedBy: string | ''
+    LastModifiedDate: string | null
+}
+
+export interface AddUpdateProposedOfferBankGuaranteeDetailsRequest {
+    ProposedOfferBankGuaranteeDetailsId: number
+    Uniquekey?: string
+    BuildingId?: number
+    ProjectId: number
+    BankGuaranteeAmount?: number
+    AccountHolderName?: string
+    Remark?: string
+    BankGuaranteePaymentStageJSON?: string
+}
+
+export interface DeleteProposedOfferBankGuaranteeDetailsRequest {
+    BuildingId?: number
+    ProjectId: number
+}
+
+export type ProposedOfferBankGuaranteeDetailsListResponse = ApiResponse<ProposedOfferBankGuaranteeDetailsData[]>;
+export type ProposedOfferBankGuaranteeDetailsSaveResponse = ApiResponse<ProposedOfferBankGuaranteeDetailsData[]>;
+export type ProposedOfferBankGuaranteeDetailsDeleteResponse = ApiResponse<number>;
 //=============================================================
 // [ LIEN TO SOCIETY DETAILS ]
 //=============================================================
@@ -542,7 +613,6 @@ export type ProposedOfferProjectCompletionSaveResponse = ApiResponse<ProposedOff
 // [ PROPOSED PLAN ]
 //=============================================================
 export interface FilterWithPaginationProposedOfferProposedPlanRequest {
-
     ProjectId?: number
     ExportType?: 'Excel' | 'PDF'
 }
@@ -552,6 +622,15 @@ export interface ProposedOfferProposedPlanData {
     Uniquekey?: string
     ProjectId: number
     TotalNumberOfBuilding?: number;
+    BuildingProposedPlanData?: BuildingProposedPlanData[] | null;
+}
+
+export interface BuildingProposedPlanData {
+    BuildingProposedPlanId?: number
+    Uniquekey?: string
+    ProposedOfferProposedPlanId?: number;
+    ProjectId?: number;
+    BuildingId?: string;
     TotalNumberOfWing?: number;
     TotalPodium?: number;
     TotalUnits?: number;
@@ -561,13 +640,13 @@ export interface ProposedOfferProposedPlanData {
     WalkthroughViewURL?: string
     SalesPlanURL?: string
     Amenities?: string
-    ProposedPlanWingWiseData?: ProposedPlanWingWiseData[] | null;
     SalesResidentialParking?: number;
     SalesCommercialParking?: number;
     SalesVisitorsParking?: number;
     MemberResidentialParking?: number;
     MemberCommercialParking?: number;
     MemberVisitorsParking?: number;
+    WingProposedPlanData?: WingProposedPlanData[] | null;
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -578,9 +657,9 @@ export interface ProposedOfferProposedPlanData {
     LastModifiedDate: string | null
 }
 
-export interface ProposedPlanWingWiseData {
+export interface WingProposedPlanData {
     ProposedPlanWingWiseId: number | null
-    BuildingId: number | null
+    BuildingId: string | null
     Wings: string | null
     MainEntranceLobbyAreaSqFt: number | null;
     TotalNumberOfLifts: number | null;
@@ -591,11 +670,18 @@ export interface ProposedPlanWingWiseData {
     TotalNumberOfAreaForSaleSqFt: number | null;
 }
 
-export interface AddUpdateProposedOfferProposedPlanRequest {
+export interface AddUpdateProposedPlanRequest {
+    ProposedOfferProposedPlanId?: number;
+    Uniquekey?: string;
+    ProjectId?: number;
+    TotalNumberOfBuilding?: number
+}
+
+export interface AddUpdateBuildingProposedPlanRequest {
     ProposedOfferProposedPlanId?: number
+    BuildingProposedPlanId?: number
     Uniquekey?: string
     ProjectId?: number
-    TotalNumberOfBuilding?: number
     TotalNumberOfWing?: number
     TotalPodium?: number
     TotalUnits?: number
@@ -609,17 +695,25 @@ export interface AddUpdateProposedOfferProposedPlanRequest {
     SalesPlanURL?: File[] | null
     RemoveSalesPlanURL?: string
     Amenities?: string
-    ProposedOfferProposedPlanJSON?: string | null
     SalesResidentialParking?: number;
     SalesCommercialParking?: number;
     SalesVisitorsParking?: number;
     MemberResidentialParking?: number;
     MemberCommercialParking?: number;
     MemberVisitorsParking?: number;
+    WingProposedPlanJSON?: string | null
+}
+
+export interface CopyProposedPlanRequest {
+    ProjectId?: number;
+    ProposedOfferProposedPlanId?: number;
+    SourceBuildingProposedPlanId?: number;
+    CopyBuildingProposedPlanId?: number;
 }
 
 export type ProposedOfferProposedPlanListResponse = ApiResponse<ProposedOfferProposedPlanData[]>;
 export type ProposedOfferProposedPlanSaveResponse = ApiResponse<ProposedOfferProposedPlanData[]>;
+export type ProposedOfferCopyProposedPlanSaveResponse = ApiResponse<ProposedOfferProposedPlanData[]>;
 
 //=============================================================
 // [ GENERATE PROPOSED PLAN ]
@@ -631,7 +725,8 @@ export interface AddUpdateGenerateProposedOfferRequest {
     Tenure?: string
     ChargeType?: string
     IsPayBrokerage?: boolean
-    IsAdditionalTemporaryAccommodationAlternative?: boolean
+    IsPayTAA?: boolean
+    IsAdditionalTemporaryAlternateAccommodation?: boolean
 }
 
 export type GenerateProposedOfferResponse = ApiResponse<number>;

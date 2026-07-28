@@ -15,9 +15,10 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { TextArea } from "@/ui/components/forms/Textarea";
-import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
+import { getInputValue, isEmpty, isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { FINANCIAL_YEAR } from "@/core/constants";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 
 interface ReadyReckonerRateTabProps {
     projectId: number | null;
@@ -167,23 +168,23 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                 newErrors.EffectiveEndDate = "Effective To Date must be greater than or equal to Effective From Date.";
             }
         }
-        if (!formDataReadyReckonerRate.ResidentialRate) {
+        if (isEmpty(formDataReadyReckonerRate.ResidentialRate)) {
             newErrors.ResidentialRate = "Residential Rate is required"
         }
 
-        if (!formDataReadyReckonerRate.CommercialRate) {
+        if (isEmpty(formDataReadyReckonerRate.CommercialRate)) {
             newErrors.CommercialRate = "Commercial Rate is required"
         }
 
-        if (!formDataReadyReckonerRate.ShopRate) {
+        if (isEmpty(formDataReadyReckonerRate.ShopRate)) {
             newErrors.ShopRate = "Shop Rate is required"
         }
 
-        if (!formDataReadyReckonerRate.IndustrialRate) {
+        if (isEmpty(formDataReadyReckonerRate.IndustrialRate)) {
             newErrors.IndustrialRate = "Industrial Rate is required"
         }
 
-        if (!formDataReadyReckonerRate.LandRate) {
+        if (isEmpty(formDataReadyReckonerRate.LandRate)) {
             newErrors.LandRate = "Land Rate is required"
         }
         return {
@@ -385,12 +386,29 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                 render: (value) => value ? `₹${value}` : '-'
             },
             {
-                key: 'Remark',
-                label: 'Remark',
-                width: '15',
+                key: "Remark",
+                label: "Remark",
+                width: "33",
                 sortable: false,
-                align: 'right',
-                render: (value) => value || '-'
+                align: "left",
+                render: (value, row) => <TooltipText text={value || row.Remark || "-"} maxWidth="180px" tooltipThreshold={18} />,
+            },
+            {
+                key: "ModifiedBy",
+                label: "Last Modified By",
+                width: "33",
+                sortable: false,
+                align: "left",
+                render: (value, row) => <TooltipText text={value || row.CreatedBy || "-"} maxWidth="180px" tooltipThreshold={18} />,
+            },
+            {
+                key: "ModifiedDate",
+                label: "Last Modified Date",
+                width: "33",
+                sortable: false,
+                align: "left",
+                render: (value, row) =>
+                    value ? formatDate_dd_MonthName_yy(value) : row.CreatedDate ? formatDate_dd_MonthName_yy(row.CreatedDate) : "-",
             },
             {
                 key: 'Action',
@@ -507,6 +525,7 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                             label="Zone"
                             required
                             type="text"
+
                             value={formDataReadyReckonerRate.Zone || ''}
                             onChange={(e) => {
                                 handleFieldChangeReadyReckonerRate('Zone', e.target.value);
@@ -573,7 +592,7 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                                 required
                                 type="text"
                                 rightIcon="₹"
-                                value={formDataReadyReckonerRate.ResidentialRate || ''}
+                                value={getInputValue(formDataReadyReckonerRate.ProposedOfferReadyReckonerRateDetailsId, formDataReadyReckonerRate.ResidentialRate)}
                                 onChange={(e) => {
                                     const val = filterNumbersWithDecimal(e.target.value);
                                     handleFieldChangeReadyReckonerRate('ResidentialRate', val);
@@ -588,7 +607,7 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                                 required
                                 type="text"
                                 rightIcon="₹"
-                                value={formDataReadyReckonerRate.CommercialRate || ''}
+                                value={getInputValue(formDataReadyReckonerRate.ProposedOfferReadyReckonerRateDetailsId, formDataReadyReckonerRate.CommercialRate)}
                                 onChange={(e) => {
                                     const val = filterNumbersWithDecimal(e.target.value);
                                     handleFieldChangeReadyReckonerRate('CommercialRate', val);
@@ -603,7 +622,7 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                                 required
                                 type="text"
                                 rightIcon="₹"
-                                value={formDataReadyReckonerRate.ShopRate || ''}
+                                value={getInputValue(formDataReadyReckonerRate.ProposedOfferReadyReckonerRateDetailsId, formDataReadyReckonerRate.ShopRate)}
                                 onChange={(e) => {
                                     const val = filterNumbersWithDecimal(e.target.value);
                                     handleFieldChangeReadyReckonerRate('ShopRate', val);
@@ -618,7 +637,7 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                                 required
                                 type="text"
                                 rightIcon="₹"
-                                value={formDataReadyReckonerRate.IndustrialRate || ''}
+                                value={getInputValue(formDataReadyReckonerRate.ProposedOfferReadyReckonerRateDetailsId, formDataReadyReckonerRate.IndustrialRate)}
                                 onChange={(e) => {
                                     const val = filterNumbersWithDecimal(e.target.value);
                                     handleFieldChangeReadyReckonerRate('IndustrialRate', val);
@@ -633,7 +652,7 @@ export const ReadyReckonerRateTab: React.FC<ReadyReckonerRateTabProps> = ({
                                 required
                                 type="text"
                                 rightIcon="₹"
-                                value={formDataReadyReckonerRate.LandRate || ''}
+                                value={getInputValue(formDataReadyReckonerRate.ProposedOfferReadyReckonerRateDetailsId, formDataReadyReckonerRate.LandRate)}
                                 onChange={(e) => {
                                     const val = filterNumbersWithDecimal(e.target.value);
                                     handleFieldChangeReadyReckonerRate('LandRate', val);

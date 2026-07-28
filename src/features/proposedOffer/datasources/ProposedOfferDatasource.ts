@@ -18,12 +18,12 @@ import type {
     ProposedOfferHardshipDetailsSaveResponse,
 
     // RENT
-    FilterWithPaginationProposedOfferTemporaryAccommodationAlternativeRequest,
-    AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest,
-    DeleteProposedOfferTemporaryAccommodationAlternativeRequest,
-    ProposedOfferTemporaryAccommodationAlternativeListResponse,
-    ProposedOfferTemporaryAccommodationAlternativeSaveResponse,
-    ProposedOfferTemporaryAccommodationAlternativeDeleteResponse,
+    FilterWithPaginationProposedOfferTemporaryAlternateAccommodationRequest,
+    AddUpdateProposedOfferTemporaryAlternateAccommodationRequest,
+    DeleteProposedOfferTemporaryAlternateAccommodationRequest,
+    ProposedOfferTemporaryAlternateAccommodationListResponse,
+    ProposedOfferTemporaryAlternateAccommodationSaveResponse,
+    ProposedOfferTemporaryAlternateAccommodationDeleteResponse,
 
     // SHIFTING
     FilterWithPaginationProposedOfferShiftingDetailsRequest,
@@ -91,6 +91,15 @@ import type {
     ProposedOfferReadyReckonerRateDeleteResponse,
     DeleteProposedOfferReadyReckonerRateRequest,
     AddUpdateProposedOfferReadyReckonerRateRequest,
+    FilterWithPaginationProposedOfferBankGuaranteeDetailsRequest,
+    AddUpdateProposedOfferBankGuaranteeDetailsRequest,
+    ProposedOfferBankGuaranteeDetailsSaveResponse,
+    ProposedOfferBankGuaranteeDetailsListResponse,
+    DeleteProposedOfferBankGuaranteeDetailsRequest,
+    ProposedOfferBankGuaranteeDetailsDeleteResponse,
+    AddUpdateProposedPlanRequest,
+    CopyProposedPlanRequest,
+    ProposedOfferCopyProposedPlanSaveResponse,
 
 
 } from '@/features/proposedOffer/models/ProposedOfferModel'
@@ -109,9 +118,9 @@ export abstract class ProposedOfferDatasource {
     abstract addUpdateHardshipDetails(data: AddUpdateProposedOfferHardshipDetailsRequest): Promise<ProposedOfferHardshipDetailsSaveResponse>
     abstract deleteHardshipDetails(params: DeleteProposedOfferHardshipDetailsRequest): Promise<ProposedOfferHardshipDetailsDeleteResponse>
 
-    abstract pullTemporaryAccommodationAlternative(params: FilterWithPaginationProposedOfferTemporaryAccommodationAlternativeRequest, signal?: AbortSignal): Promise<ProposedOfferTemporaryAccommodationAlternativeListResponse>
-    abstract addUpdateTemporaryAccommodationAlternative(data: AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest): Promise<ProposedOfferTemporaryAccommodationAlternativeSaveResponse>
-    abstract deleteTemporaryAccommodationAlternative(params: DeleteProposedOfferTemporaryAccommodationAlternativeRequest): Promise<ProposedOfferTemporaryAccommodationAlternativeDeleteResponse>
+    abstract pullTemporaryAlternateAccommodation(params: FilterWithPaginationProposedOfferTemporaryAlternateAccommodationRequest, signal?: AbortSignal): Promise<ProposedOfferTemporaryAlternateAccommodationListResponse>
+    abstract addUpdateTemporaryAlternateAccommodation(data: AddUpdateProposedOfferTemporaryAlternateAccommodationRequest): Promise<ProposedOfferTemporaryAlternateAccommodationSaveResponse>
+    abstract deleteTemporaryAlternateAccommodation(params: DeleteProposedOfferTemporaryAlternateAccommodationRequest): Promise<ProposedOfferTemporaryAlternateAccommodationDeleteResponse>
 
     abstract pullShiftingDetails(params: FilterWithPaginationProposedOfferShiftingDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferShiftingDetailsListResponse>
     abstract addUpdateShiftingDetails(data: AddUpdateProposedOfferShiftingDetailsRequest): Promise<ProposedOfferShiftingDetailsSaveResponse>
@@ -120,6 +129,10 @@ export abstract class ProposedOfferDatasource {
     abstract pullSecurityDepositDetails(params: FilterWithPaginationProposedOfferSecurityDepositDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferSecurityDepositDetailsListResponse>
     abstract addUpdateSecurityDepositDetails(data: AddUpdateProposedOfferSecurityDepositDetailsRequest): Promise<ProposedOfferSecurityDepositDetailsSaveResponse>
     abstract deleteSecurityDepositDetails(params: DeleteProposedOfferSecurityDepositDetailsRequest): Promise<ProposedOfferSecurityDepositDetailsDeleteResponse>
+
+    abstract pullBankGuaranteeDetails(params: FilterWithPaginationProposedOfferBankGuaranteeDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferBankGuaranteeDetailsListResponse>
+    abstract addUpdateBankGuaranteeDetails(data: AddUpdateProposedOfferBankGuaranteeDetailsRequest): Promise<ProposedOfferBankGuaranteeDetailsSaveResponse>
+    abstract deleteBankGuaranteeDetails(params: DeleteProposedOfferBankGuaranteeDetailsRequest): Promise<ProposedOfferBankGuaranteeDetailsDeleteResponse>
 
     abstract pullLienToSocietyDetails(params: FilterWithPaginationProposedOfferLienToSocietyDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferLienToSocietyDetailsListResponse>
     abstract addUpdateLienToSocietyDetails(data: AddUpdateProposedOfferLienToSocietyDetailsRequest): Promise<ProposedOfferLienToSocietyDetailsSaveResponse>
@@ -134,8 +147,9 @@ export abstract class ProposedOfferDatasource {
     abstract addUpdateProjectCompletion(data: AddUpdateProposedOfferProjectCompletionRequest): Promise<ProposedOfferProjectCompletionSaveResponse>
 
     abstract pullProposedPlan(params: FilterWithPaginationProposedOfferProposedPlanRequest, signal?: AbortSignal): Promise<ProposedOfferProposedPlanListResponse>
-    abstract addUpdateProposedPlan(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse>
-
+    abstract addUpdateProposedPlan(params: AddUpdateProposedPlanRequest): Promise<ProposedOfferProposedPlanSaveResponse>
+    abstract addUpdateBuildingProposedPlanRequest(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse>
+    abstract copyProposedPlan(params: CopyProposedPlanRequest): Promise<ProposedOfferCopyProposedPlanSaveResponse>
     abstract addUpdateGenerateProposedOffer(params: AddUpdateGenerateProposedOfferRequest): Promise<GenerateProposedOfferResponse>;
 
     abstract pullReadyReckonerRate(params: FilterWithPaginationProposedOfferReadyReckonerRateRequest, signal?: AbortSignal): Promise<ProposedOfferReadyReckonerRateListResponse>;
@@ -292,7 +306,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
     }
 
     //==================== RENT ====================
-    async pullTemporaryAccommodationAlternative(params: FilterWithPaginationProposedOfferTemporaryAccommodationAlternativeRequest, signal?: AbortSignal): Promise<ProposedOfferTemporaryAccommodationAlternativeListResponse> {
+    async pullTemporaryAlternateAccommodation(params: FilterWithPaginationProposedOfferTemporaryAlternateAccommodationRequest, signal?: AbortSignal): Promise<ProposedOfferTemporaryAlternateAccommodationListResponse> {
         try {
             const queryParams = new URLSearchParams()
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
@@ -300,7 +314,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
             if (params.ExportType) queryParams.append('ExportType', params.ExportType)
 
             return await this.k3hHttpClient.getRequestWithAuthentication(
-                `${ProposedOfferApi.PULL_TEMPORARY_ACCOMMODATION_ALTERNATIVE}?${queryParams.toString()}`,
+                `${ProposedOfferApi.PULL_TEMPORARY_ALTERNATE_ACCOMMODATION}?${queryParams.toString()}`,
                 { signal }
             )
         } catch (error) {
@@ -309,17 +323,17 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.pullTemporaryAccommodationAlternative(params, signal)
+                return await this.pullTemporaryAlternateAccommodation(params, signal)
             }
 
             throw error
         }
     }
 
-    async addUpdateTemporaryAccommodationAlternative(params: AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest): Promise<ProposedOfferTemporaryAccommodationAlternativeSaveResponse> {
+    async addUpdateTemporaryAlternateAccommodation(params: AddUpdateProposedOfferTemporaryAlternateAccommodationRequest): Promise<ProposedOfferTemporaryAlternateAccommodationSaveResponse> {
         try {
             return await this.k3hHttpClient.postRequestWithAuthentication(
-                ProposedOfferApi.ADD_UPDATE_TEMPORARY_ACCOMMODATION_ALTERNATIVE,
+                ProposedOfferApi.ADD_UPDATE_TEMPORARY_ALTERNATE_ACCOMMODATION,
                 params
             )
         } catch (error) {
@@ -328,24 +342,24 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateTemporaryAccommodationAlternative(params)
+                return await this.addUpdateTemporaryAlternateAccommodation(params)
             }
 
             throw error
         }
     }
 
-    async deleteTemporaryAccommodationAlternative(params: DeleteProposedOfferTemporaryAccommodationAlternativeRequest): Promise<ProposedOfferTemporaryAccommodationAlternativeDeleteResponse> {
+    async deleteTemporaryAlternateAccommodation(params: DeleteProposedOfferTemporaryAlternateAccommodationRequest): Promise<ProposedOfferTemporaryAlternateAccommodationDeleteResponse> {
 
         try {
             const queryParams = new URLSearchParams()
-            queryParams.append('ProposedOfferTemporaryAccommodationAlternativeDetailsId', params.ProposedOfferTemporaryAccommodationAlternativeDetailsId.toString())
+            queryParams.append('ProposedOfferTemporaryAlternateAccommodationDetailsId', params.ProposedOfferTemporaryAlternateAccommodationDetailsId.toString())
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
             if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
             if (params.Uniquekey) queryParams.append('Uniquekey', params.Uniquekey)
 
             return await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${ProposedOfferApi.DELETE_TEMPORARY_ACCOMMODATION_ALTERNATIVE}?${queryParams.toString()}`
+                `${ProposedOfferApi.DELETE_TEMPORARY_ALTERNATE_ACCOMMODATION}?${queryParams.toString()}`
             )
         } catch (error) {
 
@@ -353,7 +367,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.deleteTemporaryAccommodationAlternative(params)
+                return await this.deleteTemporaryAlternateAccommodation(params)
             }
 
             throw error
@@ -487,6 +501,71 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
             if (error instanceof TokenExpiredException) {
 
                 return await this.deleteSecurityDepositDetails(params)
+            }
+
+            throw error
+        }
+    }
+
+    //==================== BANK GUARANTEE ====================
+    async pullBankGuaranteeDetails(params: FilterWithPaginationProposedOfferBankGuaranteeDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferBankGuaranteeDetailsListResponse> {
+        try {
+            const queryParams = new URLSearchParams()
+            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
+            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType)
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(
+                `${ProposedOfferApi.PULL_BANK_GUARANTEE_DETAILS}?${queryParams.toString()}`,
+                { signal }
+            )
+        } catch (error) {
+            console.error('ERROR: PULL BANK GUARANTEE DETAILS:', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.pullBankGuaranteeDetails(params, signal)
+            }
+
+            throw error
+        }
+    }
+
+    async addUpdateBankGuaranteeDetails(params: AddUpdateProposedOfferBankGuaranteeDetailsRequest): Promise<ProposedOfferBankGuaranteeDetailsSaveResponse> {
+        try {
+            return await this.k3hHttpClient.postRequestWithAuthentication(
+                ProposedOfferApi.ADD_UPDATE_BANK_GUARANTEE_DETAILS,
+                params
+            )
+        } catch (error) {
+            console.error('ERROR: ADD UPDATE BANK GUARANTEE DETAILS:', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateBankGuaranteeDetails(params)
+            }
+
+            throw error
+        }
+    }
+
+    async deleteBankGuaranteeDetails(params: DeleteProposedOfferBankGuaranteeDetailsRequest): Promise<ProposedOfferBankGuaranteeDetailsDeleteResponse> {
+
+        try {
+            const queryParams = new URLSearchParams()
+            queryParams.append('ProjectId', params.ProjectId.toString())
+            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
+
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${ProposedOfferApi.DELETE_BANK_GUARANTEE_DETAILS}?${queryParams.toString()}`
+            )
+        } catch (error) {
+
+            console.error('ERROR: DELETE BANK GUARANTEE DETAILS:', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.deleteBankGuaranteeDetails(params)
             }
 
             throw error
@@ -660,7 +739,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         }
     }
 
-    //==================== PROPOSED PLAN ====================
+     //==================== PROPOSED PLAN ====================
     async pullProposedPlan(params: FilterWithPaginationProposedOfferProposedPlanRequest, signal?: AbortSignal): Promise<ProposedOfferProposedPlanListResponse> {
         try {
             const queryParams = new URLSearchParams()
@@ -683,24 +762,59 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         }
     }
 
-    async addUpdateProposedPlan(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse> {
+    async addUpdateProposedPlan(params: AddUpdateProposedPlanRequest): Promise<ProposedOfferProposedPlanSaveResponse> {
         try {
-            return await this.k3hHttpClient.multipartRequestWithAuthentication(
+            return await this.k3hHttpClient.postRequestWithAuthentication(
                 ProposedOfferApi.ADD_UPDATE_PROPOSED_PLAN,
-                formData
+                params
             )
         } catch (error) {
             console.error('ERROR: ADD UPDATE PROPOSED PLAN:', error)
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateProposedPlan(formData)
+                return await this.addUpdateProposedPlan(params)
             }
 
             throw error
         }
     }
 
+    async addUpdateBuildingProposedPlanRequest(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse> {
+        try {
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(
+                ProposedOfferApi.ADD_UPDATE_BUILDING_PROPOSED_PLAN,
+                formData
+            )
+        } catch (error) {
+            console.error('ERROR: ADD UPDATE BUILDING PROPOSED PLAN:', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateBuildingProposedPlanRequest(formData)
+            }
+
+            throw error
+        }
+    }
+
+async copyProposedPlan(params: CopyProposedPlanRequest): Promise<ProposedOfferCopyProposedPlanSaveResponse> {
+        try {
+            return await this.k3hHttpClient.postRequestWithAuthentication(
+                ProposedOfferApi.COPY_PROPOSED_PLAN,
+                params
+            )
+        } catch (error) {
+            console.error('ERROR: COPY PROPOSED PLAN:', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.copyProposedPlan(params)
+            }
+
+            throw error
+        }
+    }
 
     //====================GENERATE PROPOSED PLAN ====================
 

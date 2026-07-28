@@ -48,7 +48,6 @@ import { getNameInitials } from "@/core/utils/getNameInitials";
 import { filterNumbers } from "@/core/utils/fileValidation";
 
 export const EmployeeMaster: React.FC = () => {
-  //#region STATE
   const [employeeList, setEmployeeList] = useState<EmployeeMasterData[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState("");
@@ -69,48 +68,27 @@ export const EmployeeMaster: React.FC = () => {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
-  const [
-    isShowCustomizeEmployeeColumnsModal,
-    setIsShowCustomizeEmployeeColumnsModal,
-  ] = useState(false);
+  const [isShowCustomizeEmployeeColumnsModal, setIsShowCustomizeEmployeeColumnsModal] = useState(false);
 
-  //EXCEL IMPORT
   const [showImportModal, setShowImportModal] = useState(false);
 
   const { canAction, canExport } = useMenuPermissions();
 
-  //#endregion
-
-  //#region INIT
   useEffect(() => {
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
-      loadEmployees(
-        listState.page,
-        { EmployeeName: String(listState.searchTerm).trim() },
-        listState.sortInfo,
-      );
+      loadEmployees(listState.page, { EmployeeName: String(listState.searchTerm).trim() }, listState.sortInfo);
     } else {
       loadEmployees(listState.page, listState.filters, listState.sortInfo);
     }
-  }, [
-    listState.page,
-    listState.filters,
-    listState.sortInfo,
-    listState.searchTerm,
-  ]);
+  }, [listState.page, listState.filters, listState.sortInfo, listState.searchTerm]);
 
   useEffect(() => {
     return () => {
       debouncedSearch.cancel?.();
     };
   }, [debouncedSearch]);
-  //#endregion
 
-  //#region DATA LOAD
-  const fetchEmployeeList = async (
-    page: number = pagination.currentPage,
-    sort?: SortInfo,
-  ) => {
+  const fetchEmployeeList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadEmployees(page, filters, sort ?? sortInfo);
   };
 
@@ -187,9 +165,6 @@ export const EmployeeMaster: React.FC = () => {
     );
   };
 
-  //#endregion
-
-  //#region SEARCH EMPLOYEE FILTER
   const searchEmployees = async (searchValue: string) => {
     updateListState({ searchTerm: searchValue });
 
@@ -201,18 +176,12 @@ export const EmployeeMaster: React.FC = () => {
     updateListState({ searchTerm: searchValue, page: 1 });
   };
 
-  //#endregion
-
-  //#region CLAER SERACH EMPLOYEE
   const clearSearchEmployees = () => {
     debouncedSearch.cancel?.();
     updateListState({ searchTerm: "", filters: {}, page: 1 });
     setTempFilters({});
   };
 
-  //#endregion
-
-  //#region  EXCEL EXPORT TO EXCEL | PDF
   const handleExportEmployees = async (exportType: "Excel" | "PDF") => {
     await runApiWithLoader(
       setIsLoading,
@@ -270,12 +239,9 @@ export const EmployeeMaster: React.FC = () => {
   const handleExportEmployeeExcel = () => handleExportEmployees("Excel");
   const handleExportEmployeePdf = () => handleExportEmployees("PDF");
 
-  //#endregion
-
-  //#region TABLE CONFIG
   const handlePageChange = useCallback((page: number) => {
-      updateListState({ page });
-    },[sortInfo, updateListState],
+    updateListState({ page });
+  }, [sortInfo, updateListState],
   );
 
   const handleSortColumn = useCallback(
@@ -303,9 +269,6 @@ export const EmployeeMaster: React.FC = () => {
   );
 
   const employeesForTable = useMemo(() => employeeList, [employeeList]);
-  //#endregion
-
-  //#region VIEW EMPLOYEE MASTER
 
   const handleViewEmployeeDetails = useCallback(
     (row: EmployeeMasterData) => {
@@ -317,9 +280,6 @@ export const EmployeeMaster: React.FC = () => {
     },
     [navigate, updateListState],
   );
-  //#endregion
-
-  //#region VIEW EMPLOYEE DOCUMENT
 
   const handleViewEmployeeDocument = useCallback(
     (row: EmployeeMasterData) => {
@@ -332,9 +292,7 @@ export const EmployeeMaster: React.FC = () => {
     },
     [navigate, updateListState],
   );
-  //#endregion
 
-  //#region TABLE COLUMN
   const employeeColumns = useMemo<TableColumn[]>(
     () => [
       {
@@ -386,7 +344,7 @@ export const EmployeeMaster: React.FC = () => {
 
           return (
             <div className={`flex items-center justify-between gap-3`}>
-              
+
               <div className="flex items-center gap-3">
                 {hasProfile ? (
                   <img
@@ -701,9 +659,7 @@ export const EmployeeMaster: React.FC = () => {
     ],
     [canAction, handleViewEmployeeDetails, handleViewEmployeeDocument],
   );
-  //#endregion
 
-  //#region CUSTOMIZE COLUMNS
   const requiredEmployeeColumnKeys: string[] = ["FullName", 'Actions'];
 
   const allEmployeeColumnKeys: string[] = employeeColumns.map((c) => c.key);
@@ -741,9 +697,7 @@ export const EmployeeMaster: React.FC = () => {
       ),
     [employeeColumns, selectedEmployeeColumnKeys],
   );
-  //#endregion
 
-  //#region FILTER HELPERS
   const applyFilters = () => {
     updateListState({ filters: tempFilters, page: 1 });
     loadEmployees(1, tempFilters);
@@ -755,30 +709,21 @@ export const EmployeeMaster: React.FC = () => {
     updateListState({ filters: {}, page: 1 });
     loadEmployees(1, {});
   };
-  //#endregion
 
-  //#region ADD NEW EMPLOYEE
   const handleAddEmployeeModal = () => {
     navigate("/employeeMaster/add");
   };
-  //#endregion
-
-  //#region  HANDLE CHANGE EVENT
 
   const handleFilterChange = (key: string, value: string | null) => {
     setTempFilters((prev) => updateFilter(prev, key, value));
   };
 
-  //#endregion
-
-  //#region IMPORT EXCEL | DOWNLOAD
 
   const downloadExcelSampleEmployeeMaster = async () => {
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
       async () => {
-        // Find the column label for sorting
 
         const params: FilterPullExcelSample = {
           TableName: "EMPLOYEE MASTER",

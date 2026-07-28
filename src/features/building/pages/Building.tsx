@@ -78,6 +78,7 @@ export const Building: React.FC = () => {
           RoadWidth: filterParams.RoadWidth?.trim() || undefined,
           CityName: filterParams.CityName?.trim() || undefined,
           VillageName: filterParams.VillageName?.trim() || undefined,
+          WardName: filterParams.WardName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, buildingColumns)
         };
 
@@ -201,6 +202,7 @@ export const Building: React.FC = () => {
           RoadWidth: filters.RoadWidth?.trim() || undefined,
           CityName: filters.CityName?.trim() || undefined,
           VillageName: filters.VillageName?.trim() || undefined,
+          WardName: filters.WardName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, buildingColumns),
           ExportType: exportType
         };
@@ -773,6 +775,16 @@ export const Building: React.FC = () => {
                 value={tempFilters.VillageName || ''}
                 onChange={e => handleFilterChange('VillageName', e.target.value)}
                 placeholder="Enter Village"
+              />
+            </div>
+            <div>
+
+              <Input
+                label='Ward'
+                type="text"
+                value={tempFilters.WardName || ''}
+                onChange={e => handleFilterChange('WardName', e.target.value)}
+                placeholder="Enter Ward"
               />
             </div>
           </div>

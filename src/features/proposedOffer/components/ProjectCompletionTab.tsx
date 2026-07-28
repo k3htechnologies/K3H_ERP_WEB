@@ -14,6 +14,9 @@ import { filterNumbers } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { initialFormStateProjectCompletion } from '../utils/initialStates';
 import { TextArea } from '@/ui/components/forms/Textarea';
+import { FieldItem } from '@/ui/components/forms/FieldItem';
+import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { getInputValue, isEmpty } from '@/core/utils/comman';
 
 interface ProjectCompletionTabProps {
   projectId: number | null;
@@ -30,7 +33,7 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
   setIsLoading,
   setLoadingMessage,
 }) => {
-  const [, setProjectCompletionData] = useState<ProposedOfferProjectCompletionData | null>(null);
+  const [projectCompletionData, setProjectCompletionData] = useState<ProposedOfferProjectCompletionData | null>(null);
   const { addToast } = useToast();
   const { canAction } = useMenuPermissions();
   const [errorsProjectCompletion, setErrorsProjectCompletion] = useState<{ [k: string]: string }>({});
@@ -73,7 +76,7 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
               ProjectId: Number(projectId),
               CompletionTimelineMonths: data.CompletionTimelineMonths ?? 0,
               GracePeriodMonths: data.GracePeriodMonths ?? 0,
-              Remark:data.Remark ?? ""
+              Remark: data.Remark ?? ""
             });
           } else {
             setFormDataProjectCompletion({
@@ -102,11 +105,11 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
   } => {
     const newErrors: { [key: string]: string } = {}
 
-    if (!formDataProjectCompletion.CompletionTimelineMonths) {
+    if (isEmpty(formDataProjectCompletion.CompletionTimelineMonths)) {
       newErrors.CompletionTimelineMonths = "Completion Timeline (Months) is required"
     }
 
-    if (!formDataProjectCompletion.GracePeriodMonths) {
+    if (isEmpty(formDataProjectCompletion.GracePeriodMonths)) {
       newErrors.GracePeriodMonths = "Grace Period (Months) is required"
     }
 
@@ -142,7 +145,7 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
           ProjectId: Number(projectId),
           CompletionTimelineMonths: formDataProjectCompletion.CompletionTimelineMonths,
           GracePeriodMonths: formDataProjectCompletion.GracePeriodMonths,
-          Remark:formDataProjectCompletion.Remark ?? ""
+          Remark: formDataProjectCompletion.Remark ?? ""
         };
 
         const response = await proposedOfferService.apiCallAddUpdateProjectCompletion(payload);
@@ -178,7 +181,7 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
     )
   };
 
-   const isBuildingSelected = buildingId > 0;
+  const isBuildingSelected = buildingId > 0;
 
   return (
     <>
@@ -194,12 +197,12 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
                 label="Completion Timeline (Months)"
                 required
                 type="text"
-                value={formDataProjectCompletion.CompletionTimelineMonths || ''}
-                onChange={(e) => handleFieldChangeProjectCompletion('CompletionTimelineMonths', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
+                value={getInputValue(formDataProjectCompletion.ProposedOfferProjectCompletionId, formDataProjectCompletion.CompletionTimelineMonths)}
+                onChange={(e) => handleFieldChangeProjectCompletion('CompletionTimelineMonths', filterNumbers(e.target.value))}
                 error={errorsProjectCompletion.CompletionTimelineMonths}
                 placeholder="Enter Completion Timeline in Months"
                 disabled={!isBuildingSelected}
-                maxLength={7}
+                maxLength={3}
               />
             </div>
             <div>
@@ -207,12 +210,12 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
                 label="Grace Period (Months)"
                 required
                 type="text"
-                value={formDataProjectCompletion.GracePeriodMonths || ''}
-                onChange={(e) => handleFieldChangeProjectCompletion('GracePeriodMonths', filterNumbers(e.target.value) ? Number(filterNumbers(e.target.value)) : 0)}
+                value={getInputValue(formDataProjectCompletion.ProposedOfferProjectCompletionId, formDataProjectCompletion.GracePeriodMonths)}
+                onChange={(e) => handleFieldChangeProjectCompletion('GracePeriodMonths', filterNumbers(e.target.value))}
                 error={errorsProjectCompletion.GracePeriodMonths}
                 placeholder="Enter Grace Period in Months"
                 disabled={!isBuildingSelected}
-                 maxLength={7}
+                maxLength={3}
               />
             </div>
           </div>
@@ -227,11 +230,35 @@ export const ProjectCompletionTab: React.FC<ProjectCompletionTabProps> = ({
             />
 
           </div>
+          <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+            <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+              <h4 className="text-sm font-semibold text-[#333333]">
+                Action Details
+              </h4>
+            </div>
+            <div className="p-4 bg-white">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                <FieldItem label="Created By" value={projectCompletionData?.CreatedBy ?? '-'} />
+                <FieldItem
+                  label="Created Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(projectCompletionData?.CreatedDate ?? '-')}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                <FieldItem label="Modified By" value={projectCompletionData?.ModifiedBy ?? '-'} />
+                <FieldItem
+                  label="Modified Date"
+                  value={formatDate_dd_MonthName_yy_hh_mm(projectCompletionData?.ModifiedDate ?? '-')}
+                />
+              </div>
+            </div>
+          </section>
         </div>
       </div>
       <BottomActionBar
         saveText={(formDataProjectCompletion.ProposedOfferProjectCompletionId && formDataProjectCompletion.ProposedOfferProjectCompletionId > 0) ? 'Update' : 'Add'}
-      
+
         canAction={canAction && buildingId > 0}
         onSave={handleSaveProjectCompletion}
         isLoading={isLoading}

@@ -8,6 +8,7 @@ interface Props {
 const COLORS = ["#3b82f6", "#6366f1", "#8b5cf6"];
 
 export default function PartnerTypeDistribution({ partnerTypeDistributionData }: Props) {
+
     const maxValue = Math.max(...partnerTypeDistributionData.map(d => d.TotalCount), 1);
 
     return (
@@ -24,6 +25,7 @@ export default function PartnerTypeDistribution({ partnerTypeDistributionData }:
                 ) : (
                     <div className="flex flex-col justify-center flex-1 gap-4 px-2">
                         {partnerTypeDistributionData.map((item, index) => {
+                            
                             const percentage = (item.TotalCount / maxValue) * 100;
                             const color = COLORS[index % COLORS.length];
 

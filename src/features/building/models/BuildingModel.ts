@@ -11,6 +11,7 @@ export interface FilterWithPaginationBuildingRequest {
   RoadWidth?: string | ''
   CityName?: string | ''
   VillageName?: string | ''
+  WardName?: string | ''
   SortBy?: string
   ExportType?: 'Excel' | 'PDF'
 }

@@ -9,6 +9,8 @@ import useToast from "@/core/hooks/useToast";
 import { proposedOfferService } from "../services/ProposedOfferService";
 import * as E from 'fp-ts/Either';
 import { runApiWithLoader } from "@/core/utils";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
+import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 
 interface AdditionalInformationTabProps {
     projectId: number | null;
@@ -26,7 +28,7 @@ export const AdditionalInformationTab: React.FC<AdditionalInformationTabProps> =
     setLoadingMessage
 
 }) => {
-    const [, setAdditionalInformationData] = useState<AdditionalInformationData | null>(null);
+    const [additionalInformationData, setAdditionalInformationData] = useState<AdditionalInformationData | null>(null);
     const { addToast } = useToast();
     const { canAction } = useMenuPermissions();
     const [errorsAdditionalInformation, setErrorsAdditionalInformation] = useState<{ [k: string]: string }>({});
@@ -153,7 +155,7 @@ export const AdditionalInformationTab: React.FC<AdditionalInformationTabProps> =
         )
     };
 
-     const isBuildingSelected = buildingId?? 0 > 0;
+    const isBuildingSelected = buildingId ?? 0 > 0;
 
     return (
         <div className="space-y-6">
@@ -183,7 +185,7 @@ export const AdditionalInformationTab: React.FC<AdditionalInformationTabProps> =
                         placeholder="Enter Remarks"
                         onChange={(e) => handleFieldChangeAdditionalInformation("TaxRemark", e.target.value)}
                         disabled={!isBuildingSelected}
-                        
+
                     />
                 </div>
 
@@ -224,9 +226,34 @@ export const AdditionalInformationTab: React.FC<AdditionalInformationTabProps> =
                     </div>
                 </div>
 
+                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+                    <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+                        <h4 className="text-sm font-semibold text-[#333333]">
+                            Action Details
+                        </h4>
+                    </div>
+                    <div className="p-4 bg-white">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                            <FieldItem label="Created By" value={additionalInformationData?.CreatedBy ?? '-'} />
+                            <FieldItem
+                                label="Created Date"
+                                value={formatDate_dd_MonthName_yy_hh_mm(additionalInformationData?.CreatedDate ?? '-')}
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 pt-4">
+                            <FieldItem label="Modified By" value={additionalInformationData?.ModifiedBy ?? '-'} />
+                            <FieldItem
+                                label="Modified Date"
+                                value={formatDate_dd_MonthName_yy_hh_mm(additionalInformationData?.ModifiedDate ?? '-')}
+                            />
+                        </div>
+                    </div>
+                </section>
+
                 <BottomActionBar
                     saveText={(formDataAdditionalInformation.ProposedOfferAdditionalInformationId && formDataAdditionalInformation.ProposedOfferAdditionalInformationId > 0) ? 'Update' : 'Add'}
-                     canAction={Number(buildingId) > 0 && canAction}
+                    canAction={Number(buildingId) > 0 && canAction}
                     onSave={handleSaveAdditionalInformation}
                     isLoading={isLoading}
                 />

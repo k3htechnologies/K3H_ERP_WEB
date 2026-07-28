@@ -6,6 +6,7 @@ import type { InventoryFlatData } from "@/features/inventory/models/InventoryMas
 import { colorsForFlatComponent } from "@/features/inventory/utils/flatColors";
 import { useBookingListState } from "@/features/booking/context/BookingListStateContext";
 import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import FieldInfoTooltip from '@/ui/components/forms/FieldInfoTooltip';
 
 interface FlatCardProps {
     flat: InventoryFlatData;
@@ -41,7 +42,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
     };
 
     const handleEdit = () => {
-        
+
         sessionStorage.setItem("scrollFloorId", flat.InventoryFloorId.toString());
 
         navigate('/inventory/inventorySpecification', {
@@ -114,7 +115,11 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
         <div className={`flex flex-col justify-evenly ${flat.FlatStatus === "Available" ? "min-h-[250px]" : "h-[250px]"} w-[250px] rounded-[8px] border ${colorsForFlatComponent[flat.FlatStatus].Border} border-[0.3px] px-2`}
             style={gradientStyle}
         >
-            <FieldItem label="Unit No " value={flat.Flat} isRow={true} isUsedForInventoryFlat={true} />
+            <div className="flex items-center gap-1">
+                <FieldItem label="Unit No " value={flat.Flat} isRow={true} isUsedForInventoryFlat={true} />
+
+                <FieldInfoTooltip value={flat.Note} />
+            </div>
             <FieldItem label="Type " value={flat.FlatType} isRow={true} isUsedForInventoryFlat={true} />
             <FieldItem label="Area (SqFt) " value={flat.RERACarpetAreaSqFt} isRow={true} isUsedForInventoryFlat={true} />
             <FieldItem label="Configuration " value={flat.FlatConfiguration} isRow={true} isUsedForInventoryFlat={true} />
@@ -151,7 +156,7 @@ export const FlatCard = ({ flat, projectId, onDelete, wing, floor, buildingNumbe
                                 <Edit className="cursor-pointer" onClick={handleEdit} size={16} />
                             )}
                         </>
-                    ) : <div className="w-[20px]"/>
+                    ) : <div className="w-[20px]" />
                 }
 
             </div>

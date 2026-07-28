@@ -102,9 +102,14 @@ const RedevelopmentDashboard: React.FC = () => {
 
           <FinancialOverview tenantApplicantChargesData={tenantApplicantChargesData} />
 
-          <div className="grid grid-cols-2 gap-4 mt-5">
-            <AreaUtilization tenantData={tenantData} />
-            <TenantOverview tenantData={tenantData} />
+           <div className="grid grid-cols-12 gap-4 mt-5">
+            <div className="col-span-4">
+              <AreaUtilization tenantData={tenantData} />
+            </div>
+
+            <div className="col-span-4">
+              <TenantOverview tenantData={tenantData} />
+            </div>
           </div>
 
           <div className="grid grid-cols-12 gap-4 mt-5">

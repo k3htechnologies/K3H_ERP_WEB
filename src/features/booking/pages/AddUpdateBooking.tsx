@@ -392,6 +392,7 @@ export const AddUpdateBooking: React.FC = () => {
         FlatConfiguration: flatDataFromState.FlatConfiguration || "",
         FlatStatus: "Available",
         FlatFacing: "",
+        Note: "",
         InventoryFlatSpecificationData: [],
         OwnerName: "",
         CreatedById: 0,
@@ -579,6 +580,7 @@ export const AddUpdateBooking: React.FC = () => {
                 FlatConfiguration: booking.FlatConfiguration || "",
                 FlatStatus: "Booked",
                 FlatFacing: "",
+                Note:"",
                 InventoryFlatSpecificationData: [],
                 OwnerName: "",
                 CreatedById: 0,
@@ -1224,9 +1226,14 @@ export const AddUpdateBooking: React.FC = () => {
 
     if (!formData.PermanentAddress) {
       newErrors.PermanentAddress = "Permanent Address is required";
+    }else if (formData.PermanentAddress.trim().length < 25) {
+      newErrors.PermanentAddress = "Permanent Address must be at least 25 characters";
     }
+
     if (!formData.CommunicationAddress) {
       newErrors.CommunicationAddress = "Communication Address is required";
+    }else if (formData.CommunicationAddress.trim().length < 25) {
+      newErrors.CommunicationAddress = "Communication Address must be at least 25 characters";
     }
 
     if (!formData.AgreementValue || formData.AgreementValue === 0) {

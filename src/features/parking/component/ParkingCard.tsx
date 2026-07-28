@@ -6,16 +6,17 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/ui/components/forms";
 import { useBookingListState } from "@/features/booking/context/BookingListStateContext";
 import { formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
+import FieldInfoTooltip from "@/ui/components/forms/FieldInfoTooltip";
 
 interface ParkingCardProps {
   parking: ParkingData;
   onEdit: (parking: ParkingData) => void;
   canAction?: boolean
   canBookingAction?: boolean;
-  approvalStatus?:string;
+  approvalStatus?: string;
 }
 
-export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction ,approvalStatus}: ParkingCardProps) => {
+export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction, approvalStatus }: ParkingCardProps) => {
   const navigate = useNavigate();
   const { updateListState } = useBookingListState();
 
@@ -74,7 +75,16 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction ,appr
     <div
       className={`flex flex-col justify-evenly ${parking.ParkingStatus === "Available" ? "min-h-[250px]" : "h-[250px]"} w-[300px] rounded-[8px] border ${colorsForParkingComponent[parking.ParkingStatus ?? "Available"].Border} border-[0.3px] px-2 `} style={gradientStyle}>
 
-      <FieldItem label="Parking No" value={parking.ParkingNumber} isRow={true} isUsedForInventoryFlat={true} />
+      <div className="flex items-center gap-1">
+        <FieldItem
+          label="Parking No"
+          value={parking.ParkingNumber}
+          isRow
+          isUsedForInventoryFlat
+        />
+
+        <FieldInfoTooltip value={parking.Remark} />
+      </div>
       <FieldItem label="Category" value={parking.ParkingCategory} isRow={true} isUsedForInventoryFlat={true} />
       <FieldItem label="Type" value={parking.ParkingType} isRow={true} isUsedForInventoryFlat={true} />
       <FieldItem label="EV Charging " value={parking.IsEVChargingAvailable ? 'Yes' : 'No'} isRow={true} isUsedForInventoryFlat={true} />
@@ -93,7 +103,7 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction ,appr
           {parking.ParkingStatus}
         </div>
 
-        {approvalStatus?.toUpperCase()==="APPROVED" && <Eye size={16} onClick={() => onEdit(parking)} />}
+        {approvalStatus?.toUpperCase() === "APPROVED" && <Eye size={16} onClick={() => onEdit(parking)} />}
 
         {!approvalStatus?.toUpperCase().includes("APPROVED") && canAction && (
           <Edit className="cursor-pointer" onClick={() => onEdit(parking)} size={16} />
@@ -101,7 +111,7 @@ export const ParkingCard = ({ parking, onEdit, canAction, canBookingAction ,appr
 
       </div>
 
-      {parking.ParkingStatus === "Available"  && approvalStatus?.toUpperCase()==="APPROVED" && parking.ParkingNumber !== "" && parking.ParkingCategory !== "" && canBookingAction && (
+      {parking.ParkingStatus === "Available" && approvalStatus?.toUpperCase() === "APPROVED" && parking.ParkingNumber !== "" && parking.ParkingCategory !== "" && canBookingAction && (
         <div className="flex items-center justify-center mt-2">
           <Button
             onClick={handleBook}

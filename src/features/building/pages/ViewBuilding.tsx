@@ -46,16 +46,16 @@ export const ViewBuilding: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const { canAction } = useMenuPermissions();
-   
+
     const { addToast } = useToast();
 
     const navigate = useNavigate();
 
     const { projectId } = useProject()
-    
+
     const { listState } = useBuildingListState();
     const { buildingId, buildingName } = listState;
-    
+
     const buildingTabList = [
         { id: "Overview", label: "Overview" },
         { id: "Details", label: "Details" },
@@ -184,7 +184,7 @@ export const ViewBuilding: React.FC = () => {
         await loadBuildingDocumentFromServer(searchValue);
 
     }
-    
+
     const clearsearchBuildingDocument = async () => {
         setSearchTerm('');
         debouncedSearch.cancel?.();
@@ -386,7 +386,7 @@ export const ViewBuilding: React.FC = () => {
                                     <FieldItem label="Total Plot Area (SqMt)" value={buildingData?.TotalPlotAreaSqMt ?? '-'} />
                                     <FieldItem label="Total Plot Area (SqFt)" value={buildingData?.TotalPlotAreaSqFt ?? '-'} />
                                     <FieldItem label="Utilized Units Area (SqFt)" value={buildingData?.TotalUnitsAreaUtilizedSqFt ?? '-'} />
-                                    
+
 
                                 </div>
 
@@ -429,45 +429,6 @@ export const ViewBuilding: React.FC = () => {
                     {/* ================= RIGHT SIDE (1/3) ================= */}
                     <div className="lg:col-span-2 space-y-6">
 
-                        {/* ================= GARDERN INFORMATION ================= */}
-                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
-
-                             <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
-                                    <h4 className="text-sm font-semibold text-[#13367A]">
-                                    Garden Information
-                                </h4>
-                            </div>
-                            <div className="p-4 bg-white">
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Garden" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
-                                    <FieldItem label="Garden Area (SqFt)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
-
-                                </div>
-                            </div>
-
-                        </section>
-
-                        {/* ================= GARDERN INFORMATION ================= */}
-
-                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
-
-                             <div className="bg-[#EAFCFF] px-3 py-2 border-b border-[#D0D7DE]">
-                                <h4 className="text-sm font-semibold text-[#12A3DD]">
-                                    Religious Information
-                                </h4>
-                            </div>
-                            <div className="p-4 bg-white">
-
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                    <FieldItem label="Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
-                                    <FieldItem label="Structure Area (SqFt)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
-
-                                </div>
-                            </div>
-
-                        </section>
-
                         {/* ================= FSI / TDR INFORMATION ================= */}
                         <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
@@ -486,6 +447,47 @@ export const ViewBuilding: React.FC = () => {
                             </div>
 
                         </section>
+
+                        {/* ================= GARDERN INFORMATION ================= */}
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                            <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#13367A]">
+                                    Garden Information
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Garden" value={buildingData?.IsGarden ? 'Yes' : 'No'} />
+                                    <FieldItem label="Garden Area (SqFt)" value={buildingData?.TotalGardenAreaSqFt ?? '-'} />
+
+                                </div>
+                            </div>
+
+                        </section>
+
+                        {/* ================= GARDERN INFORMATION ================= */}
+
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                            <div className="bg-[#EAFCFF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#12A3DD]">
+                                    Religious Information
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+                                    <FieldItem label="Religious Structure" value={buildingData?.IsReligiousStructure ? 'Yes' : 'No'} />
+                                    <FieldItem label="Structure Area (SqFt)" value={buildingData?.TotalReligiousStructureAreaSqFt ?? '-'} />
+
+                                </div>
+                            </div>
+
+                        </section>
+
+
 
                         {/* ================= GARDERN INFORMATION ================= */}
                         <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
@@ -729,7 +731,7 @@ export const ViewBuilding: React.FC = () => {
 
 
                                     {contactDetailsList.map((contact, index) => (
-                                        <div key={index}  className={`space-y-3 ${ index !== contactDetailsList.length - 1 ? "pb-4 border-b border-[#135bec2e]"  : "" }`}>
+                                        <div key={index} className={`space-y-3 ${index !== contactDetailsList.length - 1 ? "pb-4 border-b border-[#135bec2e]" : ""}`}>
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
                                                 <FieldItem label="Contact Type" value={contact.ContactType} />

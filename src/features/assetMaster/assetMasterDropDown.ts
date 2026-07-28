@@ -25,6 +25,7 @@ export const fetchAssetMasterDropdown = async (pageNumber: number, params?: { va
             AssetModel: d.AssetModel,
             AssetBrand: d.AssetBrand,
             SerialNumber: d.SerialNumber,
+            PurchaseDate: d.PurchaseDate,
         }));
 
 

@@ -306,7 +306,7 @@ export const getPageInfo = (path: string) => {
             }
         case 'rent':
             return {
-                title: 'Rent',
+                title: 'Temporary Alternate Accommodation',
                 description: 'Manage rent cycles with clarity and control',
             }
         case 'proposedOffer':
@@ -338,6 +338,13 @@ export const getPageInfo = (path: string) => {
                 title: 'Ticket',
                 description: 'Ticket',
             }
+            
+            case 'otplogs':
+            return {
+                title: 'OTP Logs',
+                description: 'OTP Logs'
+            }
+
 
             {/* INVENTORY */ }
 

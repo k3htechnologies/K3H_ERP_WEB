@@ -11,73 +11,34 @@ body,
 
 body {
   font-family: 'Montserrat', system-ui, sans-serif;
-    margin: 0;
+  margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Hire Space and Job Opening use the same semantic typography scale as the ERP. */
-.talent-module {
-  font-family: 'Montserrat', system-ui, sans-serif;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-.talent-module :where(button, input, select, textarea) {
-  font-family: inherit !important;
-}
-
-.talent-module :is(.text-\[8px\], .text-\[9px\], .text-\[10px\], .text-\[11px\], .text-\[12px\]) {
-  font-size: 0.75rem;
-  line-height: 1rem;
-}
-
-.talent-module :is(.text-\[13px\], .text-\[14px\]) {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-.talent-module :is(.text-\[15px\], .text-\[16px\], .text-\[17px\]) {
-  font-size: 1rem;
-  line-height: 1.5rem;
-}
-
-.talent-module .text-\[22px\] {
-  font-size: 1.25rem;
-  line-height: 1.75rem;
-}
-
-/* Apply to any scrollable div */
 .thin-scroll {
   overflow: auto;
   position: relative;
 }
 
-/* Hide scrollbar by default (thin + invisible) */
 .thin-scroll::-webkit-scrollbar {
   width: 2px;
-  /* ultra thin */
   height: 6px;
   background: transparent;
 }
 
-/* Scrollbar track (appears only when scrolling/hover) */
 .thin-scroll:hover::-webkit-scrollbar-track,
 .thin-scroll:active::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.05);
-  /* very light grey */
 }
 
-/* Scrollbar thumb (light color + thin) */
 .thin-scroll:hover::-webkit-scrollbar-thumb,
 .thin-scroll:active::-webkit-scrollbar-thumb {
   background: rgba(120, 120, 120, 0.4);
-  /* light grey */
   border-radius: 10px;
 }
 
-/* When NOT scrolling/hover → fully hidden */
 .thin-scroll::-webkit-scrollbar-thumb {
   background: transparent;
 }

@@ -3,31 +3,28 @@ import { useLocation, useNavigate, useParams, useSearchParams } from "react-rout
 import * as E from "fp-ts/Either";
 
 import { runApiWithLoader } from "@/core/utils";
+import { useToast } from "@/core/hooks/useToast";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Button } from "@/ui/components/forms";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import CandidateDetailsPanel, { type CandidateDetailsTab } from "../components/CandidateDetailsPanel";
 import CandidateListPanel from "../components/CandidateListPanel";
 import CandidateStageSidebar from "../components/CandidateStageSidebar";
-import type { Candidate, CandidateRemark, CandidateStatus, PullCandidatesRequest } from "../models/JobRoleModel";
-import { jobRoleService } from "../services/JobRoleServices";
+import type { Candidate, CandidateRemark, CandidateStatus, PullCandidatesRequest } from "../models/JobOpeningModel";
+import { jobOpeningService } from "../services/JobOpeningService";
 import {
   CANDIDATE_STAGES,
   DEFAULT_REMARK_UNIQUE_KEY,
   formatCandidateDate,
-  getApiError,
   getCurrentUserId,
   getCurrentUserName,
   getErrorMessage,
-  getResponseData,
-  isApiSuccess,
   mapApiToCandidate,
   mapApiToRemark,
   mapApiToTimelineEvent,
   STAGE_ID_TO_STATUS,
   STATUS_TO_API_VALUE,
   STATUS_TO_STAGE_ID,
-  toApiRecordList,
 } from "../utils/candidateApplication";
 
 interface LocationState {
@@ -40,9 +37,10 @@ interface LocationState {
   jobOpeningMasterId?: number;
 }
 
-const JobApplicationsDetail = () => {
+export const JobApplicationsDetail: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { addToast } = useToast();
   const { departmentId, jobOpeningMasterId: routeJobOpeningMasterId } = useParams();
   const [searchParams] = useSearchParams();
 
@@ -120,7 +118,7 @@ const JobApplicationsDetail = () => {
     setRemarkError("");
 
     try {
-      const response = await jobRoleService.apiCallPullCandidateRemark(
+      const response = await jobOpeningService.apiCallPullCandidateRemark(
         {
           CandidateRemarkId: 0,
           CandidateId: candidateId,
@@ -128,12 +126,18 @@ const JobApplicationsDetail = () => {
         { signal },
       );
 
-      if (E.isLeft(response)) {
-        setRemarkError(response.left.message || "Unable to load remarks.");
+      if (signal?.aborted) return;
+
+      if (E.isLeft(response) || !response.right.IsSuccess) {
+        setRemarkError(
+          E.isLeft(response)
+            ? response.left.message
+            : response.right.ErrorMessage?.[0] || "Unable to load remarks.",
+        );
         return;
       }
 
-      const records = toApiRecordList(getResponseData<unknown>(response.right));
+      const records = response.right.Data ?? [];
       const mappedRemarks = records
         .filter((item) => item.IsDeleted !== true && item.IsActive !== false)
         .map(mapApiToRemark)
@@ -162,14 +166,23 @@ const JobApplicationsDetail = () => {
     setTimelineError("");
 
     try {
-      const response = await jobRoleService.apiCallPullCandidateApplicationTimeline({ CandidateId: candidateId }, { signal });
+      const response = await jobOpeningService.apiCallPullCandidateApplicationTimeline(
+        { CandidateId: candidateId },
+        { signal },
+      );
 
-      if (E.isLeft(response)) {
-        setTimelineError(response.left.message || "Unable to load timeline.");
+      if (signal?.aborted) return;
+
+      if (E.isLeft(response) || !response.right.IsSuccess) {
+        setTimelineError(
+          E.isLeft(response)
+            ? response.left.message
+            : response.right.ErrorMessage?.[0] || "Unable to load timeline.",
+        );
         return;
       }
 
-      const timeline = toApiRecordList(getResponseData<unknown>(response.right))
+      const timeline = (response.right.Data ?? [])
         .map(mapApiToTimelineEvent)
         .sort((first, second) => (first.timestamp ?? 0) - (second.timestamp ?? 0));
 
@@ -221,10 +234,12 @@ const JobApplicationsDetail = () => {
             params.JobRoleMasterId = parsedJobRoleMasterId;
           }
 
-          const response = await jobRoleService.apiCallPullCandidates(params, { signal: controller.signal });
+          const response = await jobOpeningService.apiCallPullCandidates(params, { signal: controller.signal });
 
-          if (E.isRight(response)) {
-            const mappedCandidates = toApiRecordList(getResponseData<unknown>(response.right)).map((record) => {
+          if (controller.signal.aborted) return response;
+
+          if (E.isRight(response) && response.right.IsSuccess) {
+            const mappedCandidates = (response.right.Data ?? []).map((record) => {
               const candidate = mapApiToCandidate(record);
               return candidate.jobOpeningMasterId > 0
                 ? candidate
@@ -238,7 +253,12 @@ const JobApplicationsDetail = () => {
           } else {
             setCandidates([]);
             setSelectedCandidateId(null);
-            console.error("Failed to load candidates:", response.left.message);
+            addToast({
+              type: "error",
+              title: E.isLeft(response)
+                ? response.left.message
+                : response.right.ErrorMessage?.[0] || "Failed to load candidates",
+            });
           }
 
           return response;
@@ -246,7 +266,10 @@ const JobApplicationsDetail = () => {
         undefined,
         (error: unknown) => {
           if (!controller.signal.aborted) {
-            console.error("Failed to load candidates:", getErrorMessage(error, "Unknown error"));
+            addToast({
+              type: "error",
+              title: getErrorMessage(error, "Failed to load candidates"),
+            });
           }
         },
         undefined,
@@ -256,7 +279,7 @@ const JobApplicationsDetail = () => {
 
     void loadCandidates();
     return () => controller.abort();
-  }, [departmentId, jobOpeningMasterId, jobRoleMasterId]);
+  }, [addToast, departmentId, jobOpeningMasterId, jobRoleMasterId]);
 
   useEffect(() => {
     if (activeTab !== "Remark" || !selectedCandidate?.candidateId) return;
@@ -328,7 +351,7 @@ const JobApplicationsDetail = () => {
 
     try {
       const isUpdate = editingRemark !== null;
-      const response = await jobRoleService.apiCallAddUpdateCandidateRemark({
+      const response = await jobOpeningService.apiCallAddUpdateCandidateRemark({
         CandidateRemarkId: isUpdate ? editingRemark.CandidateRemarkId : 0,
         UniqueKey: isUpdate ? editingRemark.UniqueKey : DEFAULT_REMARK_UNIQUE_KEY,
         CandidateId: selectedCandidate.candidateId,
@@ -336,12 +359,12 @@ const JobApplicationsDetail = () => {
         ApplicantStatus: STATUS_TO_API_VALUE[selectedCandidate.status],
       });
 
-      if (E.isLeft(response)) {
-        setRemarkError(response.left.message || "Unable to save remark.");
-        return;
-      }
-      if (!isApiSuccess(response.right)) {
-        setRemarkError(getApiError(response.right, "Unable to save remark."));
+      if (E.isLeft(response) || !response.right.IsSuccess) {
+        setRemarkError(
+          E.isLeft(response)
+            ? response.left.message
+            : response.right.ErrorMessage?.[0] || "Unable to save remark.",
+        );
         return;
       }
 
@@ -363,7 +386,7 @@ const JobApplicationsDetail = () => {
 
     try {
       const currentUserId = getCurrentUserId();
-      const response = await jobRoleService.apiCallUpdateCandidateState({
+      const response = await jobOpeningService.apiCallUpdateCandidateStage({
         CandidateId: selectedCandidate.candidateId,
         UniqueKey: selectedCandidate.uniqueKey,
         ApplicantStatus: STATUS_TO_API_VALUE[newStatus],
@@ -371,12 +394,12 @@ const JobApplicationsDetail = () => {
         ModifiedDate: new Date().toISOString(),
       });
 
-      if (E.isLeft(response)) {
-        setStageUpdateError(response.left.message || "Unable to update stage.");
-        return;
-      }
-      if (!isApiSuccess(response.right)) {
-        setStageUpdateError(getApiError(response.right, "Unable to update stage."));
+      if (E.isLeft(response) || !response.right.IsSuccess) {
+        setStageUpdateError(
+          E.isLeft(response)
+            ? response.left.message
+            : response.right.ErrorMessage?.[0] || "Unable to update stage.",
+        );
         return;
       }
 
@@ -415,7 +438,7 @@ const JobApplicationsDetail = () => {
   };
 
   return (
-    <div className="talent-module flex min-h-[calc(100dvh-96px)] min-w-0 flex-col rounded-2xl border border-gray-200/60 bg-[#F8F9FA] shadow-sm lg:h-[calc(100dvh-88px)] lg:min-h-0 lg:min-w-[967px] lg:overflow-hidden">
+    <div className="flex min-h-[calc(100dvh-96px)] min-w-0 flex-col rounded-2xl border border-gray-200/60 bg-[#F8F9FA] text-sm shadow-sm [&_button]:!font-[inherit] [&_input]:!font-[inherit] [&_select]:!font-[inherit] [&_textarea]:!font-[inherit] lg:h-[calc(100dvh-88px)] lg:min-h-0 lg:min-w-[967px] lg:overflow-hidden">
       <div className="shrink-0 px-3 pt-3 sm:px-[15px] sm:pt-[15px]">
         <TableActionToolbar
           isShowSearchBar
@@ -435,7 +458,7 @@ const JobApplicationsDetail = () => {
         />
       </div>
 
-      <main className="min-h-0 w-full flex-1 px-3 pb-3 sm:px-[15px] sm:pb-[15px]">
+      <div className="min-h-0 w-full flex-1 px-3 pb-3 sm:px-[15px] sm:pb-[15px]">
         <div className="grid min-h-0 grid-cols-1 items-stretch gap-3 lg:h-full lg:grid-cols-[220px_minmax(0,1fr)] lg:gap-[18px]">
           <CandidateStageSidebar
             stages={CANDIDATE_STAGES}
@@ -445,7 +468,7 @@ const JobApplicationsDetail = () => {
           />
 
           <div className="flex min-h-0 min-w-0 flex-col lg:h-full">
-            <nav aria-label="Job opening breadcrumb" className="mb-3 flex min-h-5 shrink-0 flex-wrap items-center gap-x-[11px] gap-y-1 lg:mb-[17px] lg:h-5 lg:flex-nowrap">
+            <nav aria-label="Job opening breadcrumb" className="mb-3 flex min-h-5 shrink-0 flex-wrap items-center gap-x-[11px] gap-y-1 font-[inherit] lg:mb-[17px] lg:h-5 lg:flex-nowrap">
               <Button
                 type="button"
                 onClick={() => navigate(-1)}
@@ -459,6 +482,7 @@ const JobApplicationsDetail = () => {
                   fontSize: "16px",
                   fontWeight: 600,
                   lineHeight: "20px",
+                  fontFamily: "inherit",
                 }}
               >
                 {departmentName}
@@ -475,7 +499,7 @@ const JobApplicationsDetail = () => {
                   maxWidth="320px"
                   tooltipThreshold={30}
                   isApplyBgTextColor
-                  tooltipClassName="flex h-5 items-center text-left text-[16px] font-semibold leading-5 tracking-[0%] text-[#17181C]"
+                  tooltipClassName="flex h-5 items-center text-left text-[16px] font-[inherit] font-semibold leading-5 tracking-[0%] text-[#17181C]"
                 />
               </div>
             </nav>
@@ -524,7 +548,7 @@ const JobApplicationsDetail = () => {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };

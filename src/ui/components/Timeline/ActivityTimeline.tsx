@@ -2,8 +2,7 @@ import type { Key, ReactNode } from "react";
 
 interface ActivityTimelineProps<T> {
   items: T[];
-  // 1. Add isLast to the renderItem signature
-  renderItem: (item: T, index: number, isLast: boolean) => ReactNode; 
+  renderItem: (item: T, index: number, isLast: boolean) => ReactNode;
   getKey?: (item: T, index: number) => Key;
   emptyState?: ReactNode;
   showPending?: boolean;
@@ -51,7 +50,6 @@ const ActivityTimeline = <T,>({
               )}
             </div>
             <div className={isLast && !showPending ? "" : compact ? "pb-[18px]" : "pb-5"}>
-              {/* 2. Pass isLast here */}
               {renderItem(item, index, isLast)}
             </div>
           </div>

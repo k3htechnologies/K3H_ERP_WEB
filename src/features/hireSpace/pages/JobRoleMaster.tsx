@@ -1,53 +1,63 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { ChevronRight, Loader2, Plus } from "lucide-react";
+import { ChevronRight, Plus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import * as E from "fp-ts/Either";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
-import { Button } from "@/ui/components/forms";
+import { Button, Input } from "@/ui/components/forms";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
+import { Modal } from "@/ui/components/Modal/Modal";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { Loader } from "@/core/utils/loader";
 import { useToast } from "@/core/hooks/useToast";
 import { handleExportFile } from "@/core/utils/exportFile";
-import DepartmentPanel from "../components/departmentPanel";
-import FilterModal, {
-  type JobRoleFilters,
-} from "../components/filterModel";
-import RoleDetailView from "../components/roleDetailView";
-import RoleListView from "../components/roleListView";
-import { jobRoleService } from "../services/JobRoleServices";
-import type { DepartmentItem, JobRole } from "../models/JobRoleModel";
+import DepartmentPanel from "../components/JobRoleDepartmentPanel";
+import RoleDetailView from "../components/JobRoleDetailView";
+import RoleListView from "../components/JobRoleListView";
+import { jobRoleMasterService } from "../services/JobRoleMasterService";
+import type {
+  JobDepartmentData,
+  JobRoleMasterData,
+} from "../models/JobRoleMasterModel";
 import {
   getJobRoleApiMessage,
   getJobRoleSkillsText,
   isJobRoleActive,
+  DEFAULT_UNIQUE_KEY,
 } from "../utils/jobRoleUtils";
 
-const DEFAULT_UNIQUE_KEY = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+interface JobRoleFilters {
+  roleName?: string;
+  skills?: string;
+  status?: "active" | "inactive";
+}
 
-const JobRoleMaster = () => {
+export const JobRoleMaster: React.FC = () => {
   const navigate = useNavigate();
   const { addToast } = useToast();
-  const [departments, setDepartments] = useState<DepartmentItem[]>([]);
-  const [selectedDepartment, setSelectedDepartment] =
-    useState<DepartmentItem | null>(null);
-  const [roles, setRoles] = useState<JobRole[]>([]);
-  const [selectedRole, setSelectedRole] = useState<JobRole | null>(null);
+  const [departments, setDepartments] = useState<JobDepartmentData[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState<JobDepartmentData | null>(null);
+  const [roles, setRoles] = useState<JobRoleMasterData[]>([]);
+  const [selectedRole, setSelectedRole] = useState<JobRoleMasterData | null>(null);
   const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<JobRoleFilters>({});
+  const [tempFilters, setTempFilters] = useState<JobRoleFilters>({});
   const [showFilterPopup, setShowFilterPopup] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isLoadingDepartments, setIsLoadingDepartments] = useState(false);
   const [isLoadingRoles, setIsLoadingRoles] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
+  const [isDuplicateDialogOpen, setIsDuplicateDialogOpen] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
     const loadDepartments = async () => {
       setIsLoadingDepartments(true);
-      const response = await jobRoleService.apiCallPullJobDepartments({
+      const response = await jobRoleMasterService.apiCallPullJobDepartments({
         signal: controller.signal,
       });
       if (controller.signal.aborted) return;
@@ -78,9 +88,9 @@ const JobRoleMaster = () => {
   }, [addToast]);
 
   const loadRoles = useCallback(
-    async (department: DepartmentItem, signal?: AbortSignal) => {
+    async (department: JobDepartmentData, signal?: AbortSignal) => {
       setIsLoadingRoles(true);
-      const response = await jobRoleService.apiCallPullJobRoles(
+      const response = await jobRoleMasterService.apiCallPullJobRoleMaster(
         {
           PageSize: 1000,
           PageNumber: 1,
@@ -146,7 +156,7 @@ const JobRoleMaster = () => {
 
   const handleExport = async (exportType: "Excel" | "PDF") => {
     setIsExporting(true);
-    const response = await jobRoleService.apiCallPullJobRoles({
+    const response = await jobRoleMasterService.apiCallPullJobRoleMaster({
       PageSize: roles.length || 1000,
       PageNumber: 1,
       DepartmentId: selectedDepartment?.DepartmentId,
@@ -171,7 +181,7 @@ const JobRoleMaster = () => {
       return;
     }
     setIsMutating(true);
-    const response = await jobRoleService.apiCallDeleteJobRole({
+    const response = await jobRoleMasterService.apiCallDeleteJobRoleMaster({
       JobRoleId: selectedRole.JobRoleId,
       UniqueKey: selectedRole.UniqueKey,
     });
@@ -195,16 +205,17 @@ const JobRoleMaster = () => {
     setViewMode("list");
   };
 
-  const handleDuplicateRole = async (role: JobRole) => {
+  const handleDuplicateRole = async (role: JobRoleMasterData) => {
     if (!role.DepartmentId) {
       addToast({ type: "error", title: "Department identifier is missing" });
+      setIsDuplicateDialogOpen(false);
       return;
     }
 
     const roleSkills = getJobRoleSkillsText(role.RoleSkills);
 
     setIsDuplicating(true);
-    const response = await jobRoleService.apiCallAddUpdateJobRole({
+    const response = await jobRoleMasterService.apiCallAddUpdateJobRoleMaster({
       JobRoleId: 0,
       UniqueKey: DEFAULT_UNIQUE_KEY,
       DepartmentId: role.DepartmentId,
@@ -217,6 +228,7 @@ const JobRoleMaster = () => {
       IsCopy: "1",
     });
     setIsDuplicating(false);
+    setIsDuplicateDialogOpen(false);
 
     if (E.isLeft(response) || !response.right.IsSuccess) {
       addToast({
@@ -240,7 +252,13 @@ const JobRoleMaster = () => {
   const isRoleDetailView = viewMode === "detail" && Boolean(selectedRole);
 
   return (
-    <div className="talent-module relative mx-auto flex h-[calc(100dvh-96px)] min-h-0 w-full max-w-[1600px] flex-col overflow-hidden rounded-2xl border border-gray-200/60 bg-white p-3 text-gray-800 shadow-sm sm:p-6 lg:h-[calc(100dvh-88px)]">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+        <Loader
+          loading={isLoadingDepartments || isLoadingRoles}
+          title={isLoadingDepartments ? "Loading departments..." : "Loading job roles..."}
+        >
+          <div />
+        </Loader>
         <div className="shrink-0">
           <TableActionToolbar
             isShowSearchBar
@@ -254,7 +272,10 @@ const JobRoleMaster = () => {
               skills: filters.skills ?? "",
               status: filters.status ?? "",
             }}
-            onOpenFilter={() => setShowFilterPopup(true)}
+            onOpenFilter={() => {
+              setTempFilters(filters);
+              setShowFilterPopup(true);
+            }}
             isShowCustomizeButton={false}
             isShowExportButton={roles.length > 0}
             onExportExcel={() => void handleExport("Excel")}
@@ -266,14 +287,13 @@ const JobRoleMaster = () => {
           />
         </div>
 
-        {isLoadingDepartments ? (
-          <LoadingState message="Loading departments..." />
-        ) : departments.length === 0 ? (
-          <div className="mt-3 rounded-xl border bg-white p-10 text-center text-sm text-gray-500">
-            No departments available.
-          </div>
+        {departments.length === 0 ? (
+          <NoDataView
+            message="No departments available"
+            className="py-10"
+          />
         ) : (
-          <div className="mt-2 flex min-h-0 flex-1 flex-col gap-3 overflow-hidden sm:gap-6 lg:flex-row">
+          <div className="mt-2 flex flex-col gap-3 sm:gap-6 lg:flex-row">
             <DepartmentPanel
               departments={departments}
               selectedDepartmentId={selectedDepartment?.DepartmentId ?? null}
@@ -284,33 +304,38 @@ const JobRoleMaster = () => {
               }}
             />
 
-            <main className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border border-gray-100 bg-white p-3 pt-4 shadow-xs sm:px-6 sm:pb-6 sm:pt-5">
-              {isLoadingRoles && <LoadingOverlay />}
+            <div className="relative flex flex-1 flex-col rounded-xl border border-gray-100 bg-white p-3 pt-4 shadow-xs sm:px-6 sm:pb-6 sm:pt-5">
               <div className="mb-4 flex shrink-0 flex-col justify-between gap-3 sm:mb-6 sm:flex-row sm:items-start sm:gap-4">
                 <div
                   className={`flex min-w-0 flex-nowrap items-center gap-1 not-italic ${
                     isRoleDetailView
-                      ? "text-[12px] font-medium leading-4 tracking-[0px]"
-                      : "text-right text-[16px] font-semibold leading-4 tracking-[0.6px]"
+                      ? "text-xs font-medium leading-4 tracking-[0px]"
+                      : "text-right text-base font-semibold leading-4 tracking-[0.6px]"
                   }`}
                 >
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setViewMode("list")}
-                    className={`inline-flex h-4 items-center whitespace-nowrap align-middle hover:text-blue-600 ${
+                    color="transparent"
+                    size="xss"
+                    className={`inline-flex h-4 items-center whitespace-nowrap align-middle hover:!text-blue-600 ${
                       isRoleDetailView ? "text-[#94A3B8]" : "text-[#17181C]"
                     }`}
+                    style={{ height: 16, padding: 0, color: "inherit", fontSize: "inherit", fontWeight: "inherit" }}
                   >
                     Job Roles
-                  </button>
+                  </Button>
                   <ChevronRight className="h-3 w-3 shrink-0 text-[#94A3B8]" />
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setViewMode("list")}
-                    className="inline-flex h-4 items-center whitespace-nowrap align-middle text-[#334155] hover:text-blue-600"
+                    color="transparent"
+                    size="xss"
+                    className="inline-flex h-4 items-center whitespace-nowrap align-middle text-[#334155] hover:!text-blue-600"
+                    style={{ height: 16, padding: 0, color: "#334155", fontSize: "inherit", fontWeight: "inherit" }}
                   >
                     {selectedDepartment?.DepartmentName}
-                  </button>
+                  </Button>
                   {isRoleDetailView && selectedRole && (
                     <>
                       <ChevronRight className="h-3 w-3 shrink-0 text-[#94A3B8]" />
@@ -320,7 +345,7 @@ const JobRoleMaster = () => {
                           maxWidth="180px"
                           tooltipThreshold={22}
                           isApplyBgTextColor
-                          tooltipClassName="text-left text-[12px] font-medium leading-4 tracking-[0px] text-[#334155]"
+                          tooltipClassName="text-left text-xs font-medium leading-4 tracking-[0px] text-[#334155]"
                         />
                       </div>
                     </>
@@ -334,7 +359,7 @@ const JobRoleMaster = () => {
                 )}
               </div>
 
-              <div className="min-h-0 flex-1 overflow-hidden">
+              <div className="flex-1">
                 {viewMode === "list" ? (
                   <RoleListView
                     filteredRoles={filteredRoles}
@@ -357,27 +382,82 @@ const JobRoleMaster = () => {
                   <RoleDetailView
                     selectedRole={selectedRole}
                     isDuplicating={isDuplicating}
-                    onDuplicate={(role) => void handleDuplicateRole(role)}
+                    onDuplicate={() => setIsDuplicateDialogOpen(true)}
                   />
                 )}
               </div>
-            </main>
+            </div>
           </div>
         )}
 
       {showFilterPopup && (
-        <FilterModal
-          value={filters}
+        <Modal
+          isOpen
           onClose={() => setShowFilterPopup(false)}
-          onReset={() => {
+          title="Filter Job Roles"
+          onSubmit={(event) => {
+            event.preventDefault();
+            setFilters({
+              roleName: tempFilters.roleName?.trim() || undefined,
+              skills: tempFilters.skills?.trim() || undefined,
+              status: tempFilters.status,
+            });
+            setShowFilterPopup(false);
+          }}
+          saveText="Apply"
+          cancelText="Clear"
+          onCancel={() => {
             setFilters({});
+            setTempFilters({});
             setShowFilterPopup(false);
           }}
-          onApply={(value) => {
-            setFilters(value);
-            setShowFilterPopup(false);
-          }}
-        />
+          size="small-half"
+        >
+          <div className="space-y-6">
+            <Input
+              label="Role Name"
+              value={tempFilters.roleName ?? ""}
+              onChange={(event) =>
+                setTempFilters((current) => ({
+                  ...current,
+                  roleName: event.target.value,
+                }))
+              }
+              placeholder="Enter role name"
+            />
+            <Input
+              label="Required Skills"
+              value={tempFilters.skills ?? ""}
+              onChange={(event) =>
+                setTempFilters((current) => ({
+                  ...current,
+                  skills: event.target.value,
+                }))
+              }
+              placeholder="Enter a skill"
+            />
+            <SinglePageSelection
+              label="Status"
+              value={tempFilters.status ?? ""}
+              onChange={(value) =>
+                setTempFilters((current) => ({
+                  ...current,
+                  status: (value || undefined) as JobRoleFilters["status"],
+                }))
+              }
+              options={[
+                { label: "All statuses", value: "" },
+                { label: "Active", value: "active" },
+                { label: "Inactive", value: "inactive" },
+              ]}
+              placeholder="All statuses"
+              searchable={false}
+              isShowClearSelection={false}
+              size="sm"
+              className="[&>div]:!h-10 [&>div]:!bg-white"
+            />
+          </div>
+        </Modal>
       )}
 
       <DeleteDialog
@@ -390,21 +470,21 @@ const JobRoleMaster = () => {
         loading={isMutating}
         pageName="Job Role"
       />
+
+      <DeleteDialog
+        isOpen={isDuplicateDialogOpen}
+        onClose={() => setIsDuplicateDialogOpen(false)}
+        onConfirm={() => {
+          if (selectedRole) void handleDuplicateRole(selectedRole);
+        }}
+        title="Duplicate Job Role?"
+        message="Are you sure you want to duplicate this job role?"
+        confirmText="Duplicate"
+        loading={isDuplicating}
+        variant="generate"
+      />
     </div>
   );
 };
-
-const LoadingState = ({ message }: { message: string }) => (
-  <div className="mt-2 flex min-h-[400px] flex-col items-center justify-center rounded-xl border border-gray-100 bg-white p-6">
-    <Loader2 className="mb-4 h-10 w-10 animate-spin text-[#135BEC]" />
-    <p className="text-sm font-medium text-gray-500">{message}</p>
-  </div>
-);
-
-const LoadingOverlay = () => (
-  <div className="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white/70">
-    <Loader2 className="h-8 w-8 animate-spin text-[#135BEC]" />
-  </div>
-);
 
 export default JobRoleMaster;

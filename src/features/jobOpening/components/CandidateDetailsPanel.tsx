@@ -3,10 +3,18 @@ import { Button, Input } from "@/ui/components/forms";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import ActivityTimeline from "@/ui/components/Timeline/ActivityTimeline";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
-import type { Candidate, CandidateRemark, CandidateStatus } from "../models/JobRoleModel";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import Tabs from "@/ui/components/Tab/Tab";
+import type { Candidate, CandidateRemark, CandidateStatus } from "../models/JobOpeningModel";
 import { getCandidateAvatarUrl, getRemarkAuthor, STAGE_OPTIONS } from "../utils/candidateApplication";
 
 export type CandidateDetailsTab = "Overview" | "Remark" | "Timeline";
+
+const CANDIDATE_DETAILS_TABS = [
+  { id: "Overview", label: "Overview" },
+  { id: "Remark", label: "Remark" },
+  { id: "Timeline", label: "Timeline" },
+] as const;
 
 interface CandidateDetailsPanelProps {
   candidate: Candidate | null;
@@ -55,12 +63,16 @@ const CandidateOverview = ({ candidate }: { candidate: Candidate }) => (
     <div className="flex flex-wrap gap-2">
       {candidate.skills.length > 0 ? (
         candidate.skills.map((skill) => (
-          <span key={skill} className="rounded-full bg-[#F3F4F6] px-3 py-1 text-[10px] font-normal text-[#5D6470]">
+          <span key={skill} className="rounded-full bg-[#F3F4F6] px-3 py-1 text-xs font-normal text-[#5D6470]">
             {skill}
           </span>
         ))
       ) : (
-        <span className="text-xs text-[#9CA3AF]">No skills available.</span>
+        <NoDataView
+          message="No skills available"
+          className="py-3"
+          iconClassName="!h-16 !w-16"
+        />
       )}
     </div>
 
@@ -70,14 +82,14 @@ const CandidateOverview = ({ candidate }: { candidate: Candidate }) => (
 
     <div className="rounded-[7px] border border-[#7B838D] bg-[#F9FAFB] px-4 py-4">
       <h4 className="text-xs font-medium text-[#30323A]">{candidate.education.degree}</h4>
-      <p className="mt-1 text-[10px] font-normal text-[#7B838D]">
+      <p className="mt-1 text-xs font-normal text-[#7B838D]">
         {candidate.education.school} &bull; {candidate.education.duration}
       </p>
     </div>
   </div>
 );
 
-const CandidateDetailsPanel = ({
+export const CandidateDetailsPanel: React.FC<CandidateDetailsPanelProps> = ({
   candidate,
   activeTab,
   visibleRemarks,
@@ -97,7 +109,7 @@ const CandidateDetailsPanel = ({
   onRemarkEdit,
   onRemarkEditCancel,
   onStageChange,
-}: CandidateDetailsPanelProps) => (
+}) => (
   <section className="flex h-[600px] min-h-0 min-w-0 flex-col overflow-hidden rounded-[6px] bg-white shadow-[0_1px_4px_rgba(15,23,42,0.05)] lg:h-full">
     {candidate ? (
       <>
@@ -154,34 +166,14 @@ const CandidateDetailsPanel = ({
 
             <div className="border-t border-[#C9CFDD]" />
 
-            <div className="mt-[14px] grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-3">
-              {(["Overview", "Remark", "Timeline"] as const).map((tab) => (
-                <Button
-                  type="button"
-                  key={tab}
-                  aria-pressed={activeTab === tab}
-                  onClick={() => onTabChange(tab)}
-                  color="transparent"
-                  fullWidth
-                  className={`inline-flex h-[35px] items-center justify-center rounded-[3px] border py-2 text-xs font-normal leading-none transition-colors ${
-                    activeTab === tab
-                      ? "border-[#8CB0FF] bg-[#DCE7FC] text-[#235EEE]"
-                      : "border-[#CFCFCF] bg-white text-[#8A8A8A] hover:!border-[#AFC4EA] hover:!text-[#235EEE]"
-                  }`}
-                  style={{
-                    height: 35,
-                    padding: "8px 0",
-                    borderRadius: 3,
-                    border: activeTab === tab ? "1px solid #8CB0FF" : "1px solid #CFCFCF",
-                    backgroundColor: activeTab === tab ? "#DCE7FC" : "#FFFFFF",
-                    color: activeTab === tab ? "#235EEE" : "#8A8A8A",
-                    fontWeight: 400,
-                  }}
-                >
-                  {tab}
-                </Button>
-              ))}
-            </div>
+            <Tabs
+              tabs={CANDIDATE_DETAILS_TABS}
+              activeTab={activeTab}
+              onTabChange={(tab) => onTabChange(tab.id as CandidateDetailsTab)}
+              ariaLabel="Candidate details"
+              isButtonGrid
+              buttonGridClassName="mt-[14px]"
+            />
           </div>
           <div className="thin-scroll min-h-0 flex-1 overflow-y-auto px-[15px] pb-[20px] pt-[20px]">
             {activeTab === "Overview" && <CandidateOverview candidate={candidate} />}
@@ -233,9 +225,10 @@ const CandidateDetailsPanel = ({
                   {isLoadingRemarks ? (
                     <p className="py-8 text-center text-sm text-[#9CA3AF]">Loading remarks...</p>
                   ) : visibleRemarks.length === 0 ? (
-                    <div className="rounded-[7px] bg-[#F9FAFB] px-4 py-8 text-center">
-                      <p className="text-sm text-[#9CA3AF]">No remarks found.</p>
-                    </div>
+                    <NoDataView
+                      message="No remarks found"
+                      className="py-8"
+                    />
                   ) : (
                     visibleRemarks.map((remark) => (
                       <div key={remark.CandidateRemarkId}>
@@ -284,13 +277,16 @@ const CandidateDetailsPanel = ({
                     compact
                     items={candidate.timeline}
                     getKey={(item, index) => `${item.event}-${item.date}-${index}`}
-                    emptyState={<p className="py-8 text-center text-sm text-[#9CA3AF]">No activity yet.</p>}
+                    emptyState={
+                      <NoDataView
+                        message="No activity yet"
+                        className="py-8"
+                      />
+                    }
                     showPending
-                    // 1. Receive the isLast argument here
                     renderItem={(item, _index, isLast) => (
                       <>
                         <div className="flex items-start justify-between gap-3">
-                          {/* 2. Conditionally apply text colors based on isLast */}
                           <h4
                             className={`align-middle text-base font-medium leading-6 tracking-normal ${
                               isLast ? "text-[#1D1D1D]" : "text-[#505F76]"
@@ -302,7 +298,7 @@ const CandidateDetailsPanel = ({
                             {item.date}
                           </span>
                         </div>
-                        <p className="mt-0.5 text-[10px] font-normal text-gray-500">By : {item.by}</p>
+                        <p className="mt-0.5 text-xs font-normal text-gray-500">By : {item.by}</p>
                       </>
                     )}
                   />
@@ -335,9 +331,10 @@ const CandidateDetailsPanel = ({
         </div>
       </>
     ) : (
-      <div className="flex flex-1 items-center justify-center px-4 text-center text-sm text-[#9CA3AF]">
-        Select a candidate to view details
-      </div>
+      <NoDataView
+        message="Select a candidate to view details"
+        className="flex-1 px-4 py-10"
+      />
     )}
   </section>
 );

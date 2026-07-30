@@ -1,7 +1,8 @@
 import React from "react";
 import { Edit, Trash2, MapPin, Clock, Briefcase } from "lucide-react";
 import { Button } from "@/ui/components/forms";
-import type { JobOpening } from "../models/JobRoleModel";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import type { JobOpening } from "../models/JobOpeningModel";
 
 interface ColumnConfig {
   key: string;
@@ -16,7 +17,7 @@ interface RoleListViewProps {
   onDeleteClick: (role: JobOpening) => void;
 }
 
-const RoleListView: React.FC<RoleListViewProps> = ({
+export const RoleListView: React.FC<RoleListViewProps> = ({
   filteredRoles,
   visibleColumns,
   onRoleClick,
@@ -25,9 +26,10 @@ const RoleListView: React.FC<RoleListViewProps> = ({
 }) => {
   if (!filteredRoles || filteredRoles.length === 0) {
     return (
-      <div className="text-center py-12 text-sm text-gray-400 font-medium bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
-        No job openings found in this category.
-      </div>
+      <NoDataView
+        message="No job openings found in this category"
+        className="py-12"
+      />
     );
   }
 
@@ -40,41 +42,31 @@ const RoleListView: React.FC<RoleListViewProps> = ({
     <div className="thin-scroll h-full min-h-0 space-y-4 overflow-y-auto pr-1">
       {filteredRoles.map((role) => {
         const isActive = role.JobRoleStatus === true;
-        const applicationsCount = role.ApplicationsCount ?? 0;
-        const hasApplications = applicationsCount > 0;
+        const applicationsCount = role.ApplicationCount ?? role.ApplicationsCount ?? 0;
 
         return (
           <div
             key={role.JobOpeningMasterId}
-            onClick={() => {
-              if (hasApplications) onRoleClick(role);
-            }}
-            aria-disabled={!hasApplications}
-            className={`rounded-xl border border-gray-200/80 bg-white p-3 shadow-sm transition-all hover:border-gray-300 sm:p-5 ${
-              hasApplications ? "group cursor-pointer" : "cursor-default"
-            }`}
+            onClick={() => onRoleClick(role)}
+            className="group cursor-pointer rounded-xl border border-gray-200/80 bg-white p-3 shadow-sm transition-all hover:border-gray-300 sm:p-5"
           >
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex min-w-0 flex-wrap items-center gap-3">
                 {isVisible("RoleName") && (
-                  <h3
-                    className={`break-words text-center text-[18px] font-semibold leading-[100%] tracking-[0%] text-[#135BEC] ${
-                      hasApplications ? "underline-offset-2 group-hover:underline" : ""
-                    }`}
-                  >
+                  <h3 className="break-words text-center text-[18px] font-semibold leading-[100%] tracking-[0%] text-[#135BEC] underline-offset-2 group-hover:underline">
                     {role.JobRoleName || "Untitled Role"}
                   </h3>
                 )}
                 {isVisible("DepartmentName") && role.DepartmentName && (
-                  <span className="inline-flex h-[15px] items-center rounded-full bg-[#EEF2FF] p-3 align-middle text-[10px] font-medium uppercase leading-[15px] tracking-[0.5px] text-[#4F46E5]">
+                  <span className="inline-flex h-[15px] items-center rounded-full bg-[#EEF2FF] p-3 align-middle text-xs font-medium uppercase leading-[15px] tracking-[0.5px] text-[#4F46E5]">
                     {role.DepartmentName}
                   </span>
                 )}
                 {isVisible("Status") &&
                   (isActive ? (
-                    <span className="rounded-full bg-[#DCFCE7] px-2 py-0.5 align-middle text-[10px] font-medium uppercase leading-[15px] tracking-[0.5px] text-[#16A34A]">ACTIVE</span>
+                    <span className="rounded-full bg-[#DCFCE7] px-2 py-0.5 align-middle text-xs font-medium uppercase leading-[15px] tracking-[0.5px] text-[#16A34A]">ACTIVE</span>
                   ) : (
-                    <span className="rounded-full bg-[#F1F5F9] px-2 py-0.5 text-[10px] font-medium uppercase tracking-[0.5px] text-[#64748B]">INACTIVE</span>
+                    <span className="rounded-full bg-[#F1F5F9] px-2 py-0.5 text-xs font-medium uppercase tracking-[0.5px] text-[#64748B]">INACTIVE</span>
                   ))}
               </div>
               {isVisible("Actions") && (

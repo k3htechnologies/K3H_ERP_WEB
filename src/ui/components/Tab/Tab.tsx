@@ -7,43 +7,83 @@ export interface TabItem {
 }
 
 interface TabsProps {
-  tabs: TabItem[];
+  tabs: readonly TabItem[];
   defaultActive?: string;
+  activeTab?: string;
   onTabChange?: (tab: TabItem) => void;
   islarge?: boolean
   isChips?: boolean;
   istoggleTab?: boolean;
+  isButtonGrid?: boolean;
+  ariaLabel?: string;
+  buttonGridClassName?: string;
 }
 
 export const Tabs: React.FC<TabsProps> = ({
   tabs,
   defaultActive,
+  activeTab,
   onTabChange,
   islarge = false,
   isChips = false,
   istoggleTab = false,
+  isButtonGrid = false,
+  ariaLabel = "Tabs",
+  buttonGridClassName = "",
 }) => {
 
   const [active, setActive] = useState<string | undefined>(tabs[0]?.id);
   const [hoveredTab, setHoveredTab] = useState<string | null>(null);
+  const selectedTabId = activeTab ?? active;
 
   useEffect(() => {
-    if (defaultActive) {
+    if (defaultActive && activeTab === undefined) {
       setActive(defaultActive);
     }
-  }, [defaultActive]);
+  }, [activeTab, defaultActive]);
 
   // 🔹 Auto-select first tab when tabs change
   useEffect(() => {
-    if (tabs.length > 0 && !defaultActive) {
+    if (tabs.length > 0 && !defaultActive && activeTab === undefined) {
       setActive(tabs[0].id);
     }
-  }, [tabs]);
+  }, [activeTab, defaultActive, tabs]);
 
   const handleChange = (tab: TabItem) => {
     setActive(tab.id);
     onTabChange?.(tab);
   };
+
+  if (isButtonGrid) {
+    return (
+      <div
+        role="tablist"
+        aria-label={ariaLabel}
+        className={`grid grid-cols-1 gap-2.5 min-[420px]:grid-cols-3 ${buttonGridClassName}`}
+      >
+        {tabs.map((tab) => {
+          const isActive = selectedTabId === tab.id;
+
+          return (
+            <button
+              type="button"
+              role="tab"
+              key={tab.id}
+              aria-selected={isActive}
+              onClick={() => handleChange(tab)}
+              className={`inline-flex h-[35px] w-full items-center justify-center rounded-[3px] border py-2 text-xs font-normal leading-none transition-colors ${
+                isActive
+                  ? "border-[#8CB0FF] bg-[#DCE7FC] text-[#235EEE]"
+                  : "border-[#CFCFCF] bg-white text-[#8A8A8A] hover:border-[#AFC4EA] hover:text-[#235EEE]"
+              }`}
+            >
+              {tab.label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  }
 
   if (istoggleTab) {
     return (
@@ -52,7 +92,7 @@ export const Tabs: React.FC<TabsProps> = ({
         style={{ border: "0.3px solid #0000003f" }}
       >
         {tabs.map((tab) => {
-          const isActive = active === tab.id;
+          const isActive = selectedTabId === tab.id;
 
           return (
             <button
@@ -78,7 +118,7 @@ export const Tabs: React.FC<TabsProps> = ({
       <div className="w-full border-b border-gray-200">
         <div className="flex gap-8">
           {tabs.map((tab) => {
-            const isActive = active === tab.id;
+            const isActive = selectedTabId === tab.id;
 
             return (
               <button
@@ -111,7 +151,7 @@ export const Tabs: React.FC<TabsProps> = ({
       <div className={`${islarge ? " flex flex-wrap gap-2" : " border-b border-blue-300 flex gap-2"}`}>
 
         {tabs.map((tab) => {
-          const isActive = active === tab.id;
+          const isActive = selectedTabId === tab.id;
           const isHovered = hoveredTab === tab.id;
 
           return (

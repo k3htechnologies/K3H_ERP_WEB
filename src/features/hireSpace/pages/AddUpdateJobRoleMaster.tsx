@@ -2,18 +2,21 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import * as E from "fp-ts/Either";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { AddUpdateFormLayout, Input } from "@/ui/components/forms";
+import { Input } from "@/ui/components/forms";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
-import { jobRoleService } from "../services/JobRoleServices";
-import type { JobRole, JobRoleSaveRequest } from "../models/JobRoleModel";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+import { jobRoleMasterService } from "../services/JobRoleMasterService";
+import type {
+  AddUpdateJobRoleMasterRequest,
+  JobRoleMasterData,
+} from "../models/JobRoleMasterModel";
 import {
   getJobRoleApiMessage,
   getJobRoleSkillsText,
+  DEFAULT_UNIQUE_KEY,
 } from "../utils/jobRoleUtils";
-
-const DEFAULT_UNIQUE_KEY = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
 
 interface FormState {
   roleName: string;
@@ -39,7 +42,7 @@ const initialFormState = (): FormState => ({
   uniqueKey: DEFAULT_UNIQUE_KEY,
 });
 
-const mapRoleToForm = (role: JobRole): FormState => ({
+const mapRoleToForm = (role: JobRoleMasterData): FormState => ({
   roleName: role.RoleName || "",
   description: role.RoleDescription || "",
   responsibilities: role.RoleResponsibility || "",
@@ -50,12 +53,13 @@ const mapRoleToForm = (role: JobRole): FormState => ({
   uniqueKey: role.UniqueKey || DEFAULT_UNIQUE_KEY,
 });
 
-export default function AddJobRolePage() {
+export const AddUpdateJobRoleMaster: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { departmentId, jobRoleId } = useParams();
   const { addToast } = useToast();
-  const passedRole = (location.state as { jobData?: JobRole } | null)?.jobData;
+  const { canAction } = useMenuPermissions("/jobRoleMaster");
+  const passedRole = (location.state as { jobData?: JobRoleMasterData } | null)?.jobData;
   const isUpdateMode = Boolean(jobRoleId);
   const departmentIdNumber = Number(departmentId);
   const jobRoleIdNumber = Number(jobRoleId);
@@ -74,7 +78,7 @@ export default function AddJobRolePage() {
     const controller = new AbortController();
     const loadRole = async () => {
       setIsLoadingRole(true);
-      const response = await jobRoleService.apiCallPullJobRoles(
+      const response = await jobRoleMasterService.apiCallPullJobRoleMaster(
         {
           PageSize: 1,
           PageNumber: 1,
@@ -148,7 +152,7 @@ export default function AddJobRolePage() {
       return;
     }
 
-    const payload: JobRoleSaveRequest = {
+    const payload: AddUpdateJobRoleMasterRequest = {
       JobRoleId: formValues.jobRoleId,
       UniqueKey: formValues.uniqueKey || DEFAULT_UNIQUE_KEY,
       DepartmentId: departmentIdNumber,
@@ -162,7 +166,7 @@ export default function AddJobRolePage() {
     };
 
     setIsLoading(true);
-    const response = await jobRoleService.apiCallAddUpdateJobRole(payload);
+    const response = await jobRoleMasterService.apiCallAddUpdateJobRoleMaster(payload);
     setIsLoading(false);
     if (E.isLeft(response)) {
       addToast({ type: "error", title: response.left.message });
@@ -186,98 +190,97 @@ export default function AddJobRolePage() {
   };
 
   return (
-    <AddUpdateFormLayout
-      className="talent-module max-sm:p-3"
-      contentClassName="max-sm:px-0 max-sm:py-2"
-      overlay={
-        <Loader
-          loading={isLoading || isLoadingRole}
-          title={isLoadingRole ? "Fetch Job Role Details" : "Processing Job Role"}
-        >
-          <div />
-        </Loader>
-      }
-      actions={
-        <BottomActionBar
-          cancelText="Cancel"
-          saveText={isUpdateMode ? "Update" : "Add"}
-          onCancel={() => navigate("/jobRoleMaster")}
-          onSave={handleSubmit}
-          isLoading={isLoading}
-          canAction
-        />
-      }
-    >
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-4">
-          <h3 className="border-b pb-2 text-lg font-medium text-gray-900">
-            Role Details
-          </h3>
+    <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+      <Loader
+        loading={isLoading || isLoadingRole}
+        title={isLoadingRole ? "Fetch Job Role Details" : "Processing Job Role"}
+      >
+        <div />
+      </Loader>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <Input
-              label="Role Name"
-              placeholder="Enter role name"
-              value={formValues.roleName}
-              onChange={(event) => updateField("roleName", event.target.value)}
-              error={errors.roleName}
-              required
-            />
-            <Input
-              label="Required Skills"
-              placeholder="React, TypeScript, Communication"
-              value={formValues.skills}
-              onChange={(event) => updateField("skills", event.target.value)}
-              error={errors.skills}
-              required
-            />
-            <TextArea
-              label="Role Description"
-              placeholder="Enter role description"
-              value={formValues.description}
-              onChange={(event) =>
-                updateField("description", event.target.value)
-              }
-              error={errors.description}
-              rows={4}
-              required
-            />
-            <TextArea
-              label="Responsibilities"
-              placeholder="Enter role responsibilities"
-              value={formValues.responsibilities}
-              onChange={(event) =>
-                updateField("responsibilities", event.target.value)
-              }
-              error={errors.responsibilities}
-              rows={4}
-              required
-            />
-            <TextArea
-              label="Job Requirements"
-              placeholder="Enter job requirements"
-              value={formValues.requirement}
-              onChange={(event) =>
-                updateField("requirement", event.target.value)
-              }
-              error={errors.requirement}
-              rows={4}
-              required
-            />
-            <TextArea
-              label="Qualifications"
-              placeholder="Enter qualifications"
-              value={formValues.qualification}
-              onChange={(event) =>
-                updateField("qualification", event.target.value)
-              }
-              error={errors.qualification}
-              rows={4}
-              required
-            />
+      <div className="thin-scroll flex-1 space-y-2 overflow-y-auto px-6 py-3">
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 pb-3">
+            <h3 className="border-b border-gray-300 pb-2 text-lg font-semibold text-gray-900">
+              Role Details
+            </h3>
+
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <Input
+                label="Role Name"
+                placeholder="Enter role name"
+                value={formValues.roleName}
+                onChange={(event) => updateField("roleName", event.target.value)}
+                error={errors.roleName}
+                required
+              />
+              <Input
+                label="Required Skills"
+                placeholder="React, TypeScript, Communication"
+                value={formValues.skills}
+                onChange={(event) => updateField("skills", event.target.value)}
+                error={errors.skills}
+                required
+              />
+              <TextArea
+                label="Role Description"
+                placeholder="Enter role description"
+                value={formValues.description}
+                onChange={(event) =>
+                  updateField("description", event.target.value)
+                }
+                error={errors.description}
+                rows={4}
+                required
+              />
+              <TextArea
+                label="Responsibilities"
+                placeholder="Enter role responsibilities"
+                value={formValues.responsibilities}
+                onChange={(event) =>
+                  updateField("responsibilities", event.target.value)
+                }
+                error={errors.responsibilities}
+                rows={4}
+                required
+              />
+              <TextArea
+                label="Job Requirements"
+                placeholder="Enter job requirements"
+                value={formValues.requirement}
+                onChange={(event) =>
+                  updateField("requirement", event.target.value)
+                }
+                error={errors.requirement}
+                rows={4}
+                required
+              />
+              <TextArea
+                label="Qualifications"
+                placeholder="Enter qualifications"
+                value={formValues.qualification}
+                onChange={(event) =>
+                  updateField("qualification", event.target.value)
+                }
+                error={errors.qualification}
+                rows={4}
+                required
+              />
+            </div>
           </div>
-        </div>
-      </form>
-    </AddUpdateFormLayout>
+        </form>
+      </div>
+
+      <BottomActionBar
+        cancelText="Cancel"
+        saveText={isUpdateMode ? "Update" : "Add"}
+        onCancel={() => navigate("/jobRoleMaster")}
+        onSave={handleSubmit}
+        isLoading={isLoading}
+        canAction={canAction}
+      />
+    </div>
   );
-}
+};
+
+export default AddUpdateJobRoleMaster;

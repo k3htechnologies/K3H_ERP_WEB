@@ -4,17 +4,23 @@ import { useToast } from "@/core/hooks/useToast";
 import { Loader } from "@/core/utils/loader";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
-import { jobRoleService } from "@/features/jobOpening/services/JobRoleServices";
+import { jobOpeningService } from "@/features/jobOpening/services/JobOpeningService";
+import { jobRoleMasterService } from "@/features/hireSpace/services/JobRoleMasterService";
 import * as E from "fp-ts/Either";
-import { AddUpdateFormLayout, Input } from "@/ui/components/forms";
-import type { JobOpening, JobRole } from "../models/JobRoleModel";
+import { Input } from "@/ui/components/forms";
+import type {
+  AddUpdateJobOpeningRequest,
+  JobOpening,
+} from "../models/JobOpeningModel";
+import type { JobRoleMasterData } from "@/features/hireSpace/models/JobRoleMasterModel";
 
 interface JobFormState {
   JobOpeningMasterId: number;
   UniqueKey: string;
   Department: string;
-  JobTitle: string; // Stores the JobRoleId
+  JobTitle: string;
   JobRoleName: string;
   RoleDescription: string;
   RoleResponsibility: string;
@@ -30,9 +36,11 @@ interface JobFormState {
   JobRoleStatus: string;
 }
 
+const DEFAULT_UNIQUE_KEY = "3fa85f64-5717-4562-b3fc-2c963f66afa6";
+
 const initialFormState = (): JobFormState => ({
   JobOpeningMasterId: 0,
-  UniqueKey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  UniqueKey: DEFAULT_UNIQUE_KEY,
   Department: "",
   JobTitle: "",
   JobRoleName: "",
@@ -50,11 +58,40 @@ const initialFormState = (): JobFormState => ({
   JobRoleStatus: "Active",
 });
 
+const mapJobOpeningToForm = (jobOpening: JobOpening): JobFormState => ({
+  JobOpeningMasterId: jobOpening.JobOpeningMasterId,
+  UniqueKey: jobOpening.UniqueKey || DEFAULT_UNIQUE_KEY,
+  Department: String(jobOpening.DepartmentMasterId || ""),
+  JobTitle: String(jobOpening.JobRoleMasterId || ""),
+  JobRoleName: jobOpening.JobRoleName || jobOpening.RoleName || "",
+  RoleDescription: jobOpening.JobDescription || "",
+  RoleResponsibility: jobOpening.JobResponsibilities || "",
+  JobRequirement: jobOpening.JobRequirement || "",
+  RoleQualification: jobOpening.JobQualification || "",
+  RoleSkills: jobOpening.JobSkills || "",
+  WorkMode: jobOpening.WorkMode || "",
+  ExpYears:
+    jobOpening.ExperienceYears !== undefined
+      ? String(jobOpening.ExperienceYears)
+      : "",
+  ExpMonths:
+    jobOpening.ExperienceMonths !== undefined
+      ? String(jobOpening.ExperienceMonths)
+      : "",
+  NumberOfOpenings:
+    jobOpening.NumberOfOpenings !== undefined
+      ? String(jobOpening.NumberOfOpenings)
+      : "",
+  WorkLocation: jobOpening.WorkLocation || "",
+  EmploymentType: jobOpening.EmploymentType || "",
+  JobRoleStatus: jobOpening.JobRoleStatus === false ? "Inactive" : "Active",
+});
+
 type AutofillFormKey = Exclude<keyof JobFormState, "JobOpeningMasterId">;
 
 const AUTOFILL_FIELD_MAP: Array<{
   formKey: AutofillFormKey;
-  roleKey: keyof JobRole;
+  roleKey: keyof JobRoleMasterData;
 }> = [
   { formKey: "RoleDescription", roleKey: "RoleDescription" },
   { formKey: "RoleResponsibility", roleKey: "RoleResponsibility" },
@@ -70,61 +107,79 @@ const AUTOFILL_FIELD_MAP: Array<{
   { formKey: "JobRoleStatus", roleKey: "Status" },
 ];
 
-const AddJobScreen: React.FC = () => {
+export const AddJobScreen: React.FC = () => {
   const [formData, setFormData] = useState<JobFormState>(() => initialFormState());
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const [departments, setDepartments] = useState<{ label: string; value: string }[]>([]);
   const [jobTitles, setJobTitles] = useState<{ label: string; value: string }[]>([]);
-  const [jobRolesData, setJobRolesData] = useState<JobRole[]>([]);
+  const [jobRolesData, setJobRolesData] = useState<JobRoleMasterData[]>([]);
 
   const navigate = useNavigate();
   const location = useLocation();
-  // FIX: route param name now matches how JobOpenings.tsx builds the edit URL
-  // (`/jobOpenings/add/${role.JobOpeningMasterId}`). If your actual route config
-  // uses a different param name, update both this and the router definition
-  // to match — they must be identical or isUpdateMode never becomes true.
   const { jobOpeningId } = useParams<{ jobOpeningId?: string }>();
   const { addToast } = useToast();
+  const { canAction } = useMenuPermissions("/jobOpenings");
 
   const isUpdateMode = Boolean(jobOpeningId);
+  const jobOpeningIdNumber = Number(jobOpeningId);
 
-  // -------------------------------------------------------------
-  // PREFILL FORM DATA IN UPDATE MODE
-  // (jobData comes from JobOpenings.tsx's initial PullJobOpeningMaster call,
-  // passed via router state — this is the single source of prefill data)
-  // -------------------------------------------------------------
   useEffect(() => {
-    const jobData = (
-      location.state as { jobData?: JobOpening & { Id?: number } }
-    )?.jobData;
+    const jobData = (location.state as { jobData?: JobOpening } | null)?.jobData;
 
     if (isUpdateMode && jobData) {
-      setFormData((prev) => ({
-        ...prev,
-        JobOpeningMasterId: jobData.JobOpeningMasterId || jobData.Id || 0,
-        UniqueKey: jobData.UniqueKey || "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-        Department: jobData.DepartmentMasterId ? String(jobData.DepartmentMasterId) : "",
-        JobTitle: jobData.JobRoleMasterId ? String(jobData.JobRoleMasterId) : "",
-        JobRoleName: jobData.JobRoleName || jobData.RoleName || "",
-        RoleDescription: jobData.JobDescription || "",
-        RoleResponsibility: jobData.JobResponsibilities || "",
-        JobRequirement: jobData.JobRequirement || "",
-        RoleQualification: jobData.JobQualification || "",
-        RoleSkills: jobData.JobSkills || "",
-        WorkMode: jobData.WorkMode || "",
-        ExpYears: jobData.ExperienceYears !== undefined ? String(jobData.ExperienceYears) : "",
-        ExpMonths: jobData.ExperienceMonths !== undefined ? String(jobData.ExperienceMonths) : "",
-        NumberOfOpenings: jobData.NumberOfOpenings !== undefined ? String(jobData.NumberOfOpenings) : "",
-        WorkLocation: jobData.WorkLocation || "",
-        EmploymentType: jobData.EmploymentType || "",
-        JobRoleStatus: jobData.JobRoleStatus === false ? "Inactive" : "Active",
-      }));
+      setFormData(mapJobOpeningToForm(jobData));
+      return;
     }
-  }, [isUpdateMode, location.state]);
 
-  // ---- Fetch Departments ----
+    if (!isUpdateMode || !Number.isInteger(jobOpeningIdNumber) || jobOpeningIdNumber <= 0) {
+      return;
+    }
+
+    const abortController = new AbortController();
+    const loadJobOpening = async () => {
+      setIsLoading(true);
+      const response = await jobOpeningService.apiCallPullJobOpening(
+        {
+          PageNumber: 1,
+          PageSize: 1,
+          JobOpeningMasterId: jobOpeningIdNumber,
+        },
+        { signal: abortController.signal },
+      );
+      if (abortController.signal.aborted) return;
+      setIsLoading(false);
+
+      if (E.isRight(response) && response.right.IsSuccess) {
+        const opening = response.right.Data?.find(
+          (item) => item.JobOpeningMasterId === jobOpeningIdNumber,
+        );
+        if (opening) {
+          setFormData(mapJobOpeningToForm(opening));
+          return;
+        }
+      }
+
+      addToast({
+        type: "error",
+        title: E.isLeft(response)
+          ? response.left.message
+          : response.right.ErrorMessage?.[0] || "Job opening not found",
+      });
+      navigate("/jobOpenings", { replace: true });
+    };
+
+    void loadJobOpening();
+    return () => abortController.abort();
+  }, [
+    addToast,
+    isUpdateMode,
+    jobOpeningIdNumber,
+    location.state,
+    navigate,
+  ]);
+
   useEffect(() => {
     let isMounted = true;
     const abortController = new AbortController();
@@ -132,8 +187,8 @@ const AddJobScreen: React.FC = () => {
     const fetchDepartments = async () => {
       setIsLoading(true);
       try {
-        const deptResponse = await jobRoleService.apiCallPullJobDepartments({ signal: abortController.signal });
-        if (isMounted && E.isRight(deptResponse)) {
+        const deptResponse = await jobRoleMasterService.apiCallPullJobDepartments({ signal: abortController.signal });
+        if (isMounted && E.isRight(deptResponse) && deptResponse.right.IsSuccess) {
           const rawData = Array.isArray(deptResponse.right.Data) ? deptResponse.right.Data : [];
           const mappedDepartments = rawData
             .filter((department) => department.DepartmentId && department.DepartmentName)
@@ -144,6 +199,13 @@ const AddJobScreen: React.FC = () => {
 
           const uniqueDepartments = Array.from(new Map(mappedDepartments.map((item) => [item.value, item])).values());
           setDepartments(uniqueDepartments);
+        } else if (isMounted) {
+          addToast({
+            type: "error",
+            title: E.isLeft(deptResponse)
+              ? deptResponse.left.message
+              : deptResponse.right.ErrorMessage?.[0] || "Failed to load departments",
+          });
         }
       } catch (error) {
         console.error("Failed to load departments", error);
@@ -157,11 +219,8 @@ const AddJobScreen: React.FC = () => {
       isMounted = false;
       abortController.abort();
     };
-  }, []);
+  }, [addToast]);
 
-  // ---- Fetch Job Titles by Department ----
-  // Still runs in edit mode too — needed so the (disabled) Job Title dropdown
-  // can resolve formData.JobTitle to its display label instead of showing blank.
   useEffect(() => {
     let isMounted = true;
     const abortController = new AbortController();
@@ -173,7 +232,7 @@ const AddJobScreen: React.FC = () => {
         return;
       }
       try {
-        const jobResponse = await jobRoleService.apiCallPullJobRoles(
+        const jobResponse = await jobRoleMasterService.apiCallPullJobRoleMaster(
           {
             PageNumber: 1,
             PageSize: 100,
@@ -181,7 +240,7 @@ const AddJobScreen: React.FC = () => {
           },
           { signal: abortController.signal },
         );
-        if (isMounted && E.isRight(jobResponse)) {
+        if (isMounted && E.isRight(jobResponse) && jobResponse.right.IsSuccess) {
           const rawData = Array.isArray(jobResponse.right.Data) ? jobResponse.right.Data : [];
           setJobRolesData(rawData);
           setJobTitles(
@@ -190,6 +249,13 @@ const AddJobScreen: React.FC = () => {
               value: (jobRole.JobRoleId ?? "").toString(),
             })),
           );
+        } else if (isMounted) {
+          addToast({
+            type: "error",
+            title: E.isLeft(jobResponse)
+              ? jobResponse.left.message
+              : jobResponse.right.ErrorMessage?.[0] || "Failed to load job titles",
+          });
         }
       } catch (error) {
         console.error("Failed to load job titles", error);
@@ -201,7 +267,7 @@ const AddJobScreen: React.FC = () => {
       isMounted = false;
       abortController.abort();
     };
-  }, [formData.Department]);
+  }, [addToast, formData.Department]);
 
   const handleDropdownChange = (
     field: keyof JobFormState,
@@ -215,7 +281,7 @@ const AddJobScreen: React.FC = () => {
       setFormData((prev) => ({
         ...initialFormState(),
         JobOpeningMasterId: prev.JobOpeningMasterId,
-        UniqueKey: isUpdateMode ? prev.UniqueKey : "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+        UniqueKey: isUpdateMode ? prev.UniqueKey : DEFAULT_UNIQUE_KEY,
         Department: extractedValue,
       }));
       return;
@@ -249,7 +315,6 @@ const AddJobScreen: React.FC = () => {
   };
 
   const handleFieldChange = (field: keyof JobFormState, value: string) => {
-    // Defensive: "Job Details" card fields are read-only in edit mode.
     const lockedInEditMode: (keyof JobFormState)[] = [
       "RoleDescription",
       "RoleResponsibility",
@@ -290,7 +355,6 @@ const validate = () => {
   if (!formData.RoleSkills.trim())
     newErrors.RoleSkills = "Skills are required";
 
-  // Basic Details
   if (!formData.WorkMode.trim())
     newErrors.WorkMode = "Work mode is required";
 
@@ -342,7 +406,7 @@ const validate = () => {
 
     setIsLoading(true);
 
-    const payload = {
+    const payload: AddUpdateJobOpeningRequest = {
       JobOpeningMasterId: formData.JobOpeningMasterId,
       UniqueKey: formData.UniqueKey,
       DepartmentMasterId: Number(formData.Department) || 0,
@@ -361,16 +425,10 @@ const validate = () => {
       JobRoleStatus: formData.JobRoleStatus === "Active",
     };
 
-    // apiCallAddUpdateJobRole expects FormData, so convert the payload
-    const payloadFormData = new FormData();
-    Object.entries(payload).forEach(([key, value]) => {
-      payloadFormData.append(key, String(value));
-    });
-
-    const response = await jobRoleService.apiCallAddUpdateJobRole(payloadFormData);
+    const response = await jobOpeningService.apiCallAddUpdateJobOpening(payload);
 
     setIsLoading(false);
-    if (E.isRight(response)) {
+    if (E.isRight(response) && response.right.IsSuccess) {
       addToast({
         type: "success",
         title:
@@ -380,37 +438,26 @@ const validate = () => {
     } else {
       addToast({
         type: "error",
-        title: response.left.message || "Failed to process request.",
+        title: E.isLeft(response)
+          ? response.left.message
+          : response.right.ErrorMessage?.[0] || "Failed to process request.",
       });
     }
   };
 
   return (
-    <AddUpdateFormLayout
-      className="talent-module max-sm:p-3"
-      contentClassName="max-sm:px-0 max-sm:py-2"
-      overlay={
-        <Loader loading={isLoading} title="Processing Job Request...">
-          <div />
-        </Loader>
-      }
-      actions={
-        <BottomActionBar
-          cancelText="Cancel"
-          onCancel={() => navigate(-1)}
-          onSave={handleSubmit}
-          isLoading={isLoading}
-          canAction
-          saveText={isUpdateMode ? "Update Job" : "Save Job"}
-        />
-      }
-    >
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-4">
+    <div className="rounded-lg border border-gray-200 bg-white p-5 shadow-sm">
+      <Loader loading={isLoading} title="Processing Job Request...">
+        <div />
+      </Loader>
+
+      <div className="thin-scroll flex-1 space-y-2 overflow-y-auto px-6 py-3">
+        <form onSubmit={handleSubmit}>
+          <div className="space-y-4 pb-3">
             <div className="flex flex-col gap-1 border-b pb-2 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="text-lg font-medium text-gray-900">Job Details</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Job Details</h3>
             {isUpdateMode && (
-              <span className="text-[11px] font-medium text-gray-400 italic">
+              <span className="text-xs font-medium text-gray-400 italic">
                 Role details are locked while editing an existing opening
               </span>
             )}
@@ -507,7 +554,6 @@ const validate = () => {
           </div>
         </div>
 
-        {/* Basic Details — stays fully editable in both Add and Update mode */}
           <div className="space-y-4 pt-5">
             <h3 className="border-b border-gray-300 pb-2 text-lg font-semibold text-gray-900">
               Basic Details
@@ -618,10 +664,19 @@ const validate = () => {
               />
             </div>
           </div>
-        </div>
+          </div>
+        </form>
+      </div>
 
-      </form>
-    </AddUpdateFormLayout>
+      <BottomActionBar
+        cancelText="Cancel"
+        onCancel={() => navigate(-1)}
+        onSave={handleSubmit}
+        isLoading={isLoading}
+        canAction={canAction}
+        saveText={isUpdateMode ? "Update" : "Add"}
+      />
+    </div>
   );
 };
 

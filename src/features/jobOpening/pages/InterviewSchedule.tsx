@@ -8,6 +8,7 @@ import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import SimpleDataTable, {
   type SimpleDataTableColumn,
 } from "@/ui/components/DataTable/SimpleDataTable";
@@ -19,9 +20,9 @@ import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeM
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { useToast } from "@/core/hooks/useToast";
-import { jobRoleService } from "../services/JobRoleServices";
-import type { ScheduleInterviewRequest } from "../models/JobRoleModel";
-import { DEFAULT_REMARK_UNIQUE_KEY, getApiError, getResponseData, isApiSuccess, toApiRecordList } from "../utils/candidateApplication";
+import { jobOpeningService } from "../services/JobOpeningService";
+import type { ScheduleInterviewRequest } from "../models/JobOpeningModel";
+import { DEFAULT_REMARK_UNIQUE_KEY } from "../utils/candidateApplication";
 import { isValidInterviewRecord, mapApiToInterview, toInterviewDateTimeIso, type InterviewItem } from "../utils/interviewSchedule";
 
 type CalendarView = "month" | "week" | "day";
@@ -152,7 +153,7 @@ const mergeInterviews = (current: InterviewItem[], incoming: InterviewItem[]) =>
   return merged;
 };
 
-export default function InterviewSchedule() {
+export const InterviewSchedule: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();
@@ -214,7 +215,7 @@ export default function InterviewSchedule() {
     }
 
     try {
-      const response = await jobRoleService.apiCallPullCandidateInterviews(
+      const response = await jobOpeningService.apiCallPullCandidateInterviews(
         {
           PageSize: INTERVIEW_PAGE_SIZE,
           PageNumber: pageNumber,
@@ -226,12 +227,16 @@ export default function InterviewSchedule() {
 
       if (signal?.aborted) return;
 
-      if (E.isLeft(response)) {
-        setInterviewError(response.left.message || "Unable to load interviews.");
+      if (E.isLeft(response) || !response.right.IsSuccess) {
+        setInterviewError(
+          E.isLeft(response)
+            ? response.left.message
+            : response.right.ErrorMessage?.[0] || "Unable to load interviews.",
+        );
         return;
       }
 
-      const records = toApiRecordList(getResponseData<unknown>(response.right));
+      const records = response.right.Data ?? [];
       const recordOffset = (pageNumber - 1) * INTERVIEW_PAGE_SIZE;
       const mappedInterviews = records.filter(isValidInterviewRecord).map((item, index) => mapApiToInterview(item, recordOffset + index));
       const totalRecords = getTotalRecords(response.right);
@@ -277,7 +282,7 @@ export default function InterviewSchedule() {
     setTodaysInterviews([]);
 
     try {
-      const response = await jobRoleService.apiCallPullCandidateInterviews(
+      const response = await jobOpeningService.apiCallPullCandidateInterviews(
         {
           PageSize: TODAY_INTERVIEW_PAGE_SIZE,
           PageNumber: 1,
@@ -288,12 +293,16 @@ export default function InterviewSchedule() {
 
       if (signal?.aborted) return;
 
-      if (E.isLeft(response)) {
-        setTodayInterviewError(response.left.message || "Unable to load interviews for the selected date.");
+      if (E.isLeft(response) || !response.right.IsSuccess) {
+        setTodayInterviewError(
+          E.isLeft(response)
+            ? response.left.message
+            : response.right.ErrorMessage?.[0] || "Unable to load interviews for the selected date.",
+        );
         return;
       }
 
-      const mappedInterviews = toApiRecordList(getResponseData<unknown>(response.right))
+      const mappedInterviews = (response.right.Data ?? [])
         .filter(isValidInterviewRecord)
         .map(mapApiToInterview)
         .filter((item) => isSameCalendarDate(item.date, date))
@@ -340,7 +349,7 @@ export default function InterviewSchedule() {
         render: (item) => (
           <div className="flex items-center gap-3">
             <span
-              className={`flex h-7 w-7 flex-none items-center justify-center rounded-full text-[9px] font-bold ${
+              className={`flex h-7 w-7 flex-none items-center justify-center rounded-full text-xs font-bold ${
                 item.eventColor === "orange"
                   ? "bg-[#FFE4D7] text-[#94452B]"
                   : item.eventColor === "green"
@@ -378,7 +387,7 @@ export default function InterviewSchedule() {
         align: "center",
         render: (item) => (
           <span
-            className={`inline-flex rounded-full px-3 py-1 text-[10px] font-medium ${
+            className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
               item.status === "Completed"
                 ? "bg-emerald-50 text-emerald-700"
                 : item.status === "Cancelled"
@@ -572,19 +581,14 @@ export default function InterviewSchedule() {
     setIsSavingInterview(true);
 
     try {
-      const response = await jobRoleService.apiCallScheduleInterview(request);
+      const response = await jobOpeningService.apiCallScheduleInterview(request);
 
-      if (E.isLeft(response)) {
+      if (E.isLeft(response) || !response.right.IsSuccess) {
         addToast({
           type: "error",
-          title: response.left.message || "Unable to schedule interview.",
-        });
-        return;
-      }
-      if (!isApiSuccess(response.right)) {
-        addToast({
-          type: "error",
-          title: getApiError(response.right, "Unable to schedule interview."),
+          title: E.isLeft(response)
+            ? response.left.message
+            : response.right.ErrorMessage?.[0] || "Unable to schedule interview.",
         });
         return;
       }
@@ -603,7 +607,7 @@ export default function InterviewSchedule() {
   };
 
   return (
-    <div className="talent-module mx-auto min-h-screen max-w-[1500px] rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5 lg:p-6">
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
         <div className="mb-5">
           <div className="[&_h2]:align-middle [&_h2]:text-[18px] [&_h2]:font-semibold [&_h2]:leading-[140%] [&_h2]:tracking-[0.01em]">
             <HeaderActionBar
@@ -656,18 +660,28 @@ export default function InterviewSchedule() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 rounded-md bg-[#F1F3FA] p-0.5 text-[11px] font-medium text-slate-500">
+              <div className="grid grid-cols-3 rounded-md bg-[#F1F3FA] p-0.5 text-xs font-medium text-slate-500">
                 {(["month", "week", "day"] as CalendarView[]).map((view) => (
-                  <button
+                  <Button
                     key={view}
                     type="button"
                     onClick={() => setCalendarView(view)}
+                    color="transparent"
+                    size="xs"
                     className={`min-w-[58px] rounded px-3 py-1.5 capitalize transition ${
-                      calendarView === view ? "bg-[#1E5BEA] text-white shadow-sm" : "hover:bg-white/60"
+                      calendarView === view ? "bg-[#1E5BEA] text-white shadow-sm" : "hover:!bg-white/60"
                     }`}
+                    style={{
+                      height: "auto",
+                      padding: "6px 12px",
+                      backgroundColor: calendarView === view ? "#1E5BEA" : "transparent",
+                      color: calendarView === view ? "#FFFFFF" : "inherit",
+                      fontSize: "inherit",
+                      fontWeight: "inherit",
+                    }}
                   >
                     {view}
-                  </button>
+                  </Button>
                 ))}
               </div>
             </div>
@@ -695,7 +709,7 @@ export default function InterviewSchedule() {
               <h2 className="align-middle text-lg font-semibold leading-7 tracking-normal text-slate-800">
                 {selectedDateHeading}
               </h2>
-              <span className="rounded-full bg-[#E8F0FF] px-2.5 py-1 text-[10px] font-semibold text-[#1455D9]">
+              <span className="rounded-full bg-[#E8F0FF] px-2.5 py-1 text-xs font-semibold text-[#1455D9]">
                 {todaysInterviews.length} {todaysInterviews.length === 1 ? "Interview" : "Interviews"}
               </span>
             </div>
@@ -713,17 +727,14 @@ export default function InterviewSchedule() {
                   Loading interviews...
                 </div>
               ) : todaysInterviews.length === 0 ? (
-                <div className="flex min-h-[250px] flex-col items-center justify-center rounded-lg border border-dashed border-slate-200 text-center">
-                  <CalendarDays className="mb-2 h-7 w-7 text-slate-300" />
-                  <p className="text-sm font-medium text-slate-500">
-                    {isSelectedDateToday
+                <NoDataView
+                  message={
+                    isSelectedDateToday
                       ? "No interviews scheduled for today"
-                      : "No interviews scheduled for this date"}
-                  </p>
-                  <p className="mt-1 text-xs text-slate-400">
-                    Select another date or schedule a new interview.
-                  </p>
-                </div>
+                      : "No interviews scheduled for this date"
+                  }
+                  className="min-h-[250px]"
+                />
               ) : (
                 visibleTodaysInterviews.map((item) => (
                   <article
@@ -743,17 +754,26 @@ export default function InterviewSchedule() {
                       <MoreVertical className="h-4 w-4" />
                     </Button>
 
-                    <button type="button" onClick={() => openEditScheduleModal(item)} className="block pr-7 text-left">
-                      <p className="align-middle text-[14px] font-semibold leading-[20px] tracking-[0px] text-[#075DE7]">
-                        {formatTimeLabel(item.startTime)} - {formatTimeLabel(item.endTime)}
-                      </p>
-                      <h3 className="mt-2 align-middle text-[16px] font-normal leading-[24px] tracking-[0px] text-slate-700">
-                        {item.candidate}
-                      </h3>
-                      <p className="mt-0.5 align-middle text-[16px] font-normal leading-[24px] tracking-[0px] text-slate-500">
-                        {item.position}
-                      </p>
-                    </button>
+                    <Button
+                      type="button"
+                      onClick={() => openEditScheduleModal(item)}
+                      color="transparent"
+                      variant="outline"
+                      className="block pr-7 text-left"
+                      style={{ height: "auto", padding: 0, justifyContent: "flex-start", border: "none", backgroundColor: "transparent", color: "inherit" }}
+                    >
+                      <div className="text-left">
+                        <p className="align-middle text-sm font-semibold leading-[20px] tracking-[0px] text-[#075DE7]">
+                          {formatTimeLabel(item.startTime)} - {formatTimeLabel(item.endTime)}
+                        </p>
+                        <h3 className="mt-2 align-middle text-base font-normal leading-[24px] tracking-[0px] text-slate-700">
+                          {item.candidate}
+                        </h3>
+                        <p className="mt-0.5 align-middle text-base font-normal leading-[24px] tracking-[0px] text-slate-500">
+                          {item.position}
+                        </p>
+                      </div>
+                    </Button>
 
                     <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
                       <TooltipText
@@ -796,7 +816,12 @@ export default function InterviewSchedule() {
               columns={pipelineColumns}
               getRowKey={(item) => item.id}
               onRowClick={openEditScheduleModal}
-              emptyMessage="No interviews scheduled from tomorrow onwards."
+              emptyMessage={
+                <NoDataView
+                  message="No interviews scheduled from tomorrow onwards"
+                  className="py-6"
+                />
+              }
               tableClassName="min-w-[820px]"
               headerRowClassName="bg-[#EEF3FF] align-middle text-[14px] font-semibold not-italic leading-5 tracking-[0px] text-slate-600"
             />
@@ -804,48 +829,57 @@ export default function InterviewSchedule() {
 
           <div className="max-h-[360px] space-y-3 overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] md:hidden">
             {pipelineInterviews.length === 0 ? (
-              <p className="py-10 text-center text-sm text-slate-400">No interviews scheduled from tomorrow onwards.</p>
+              <NoDataView
+                message="No interviews scheduled from tomorrow onwards"
+                className="py-10"
+              />
             ) : (
               pipelineInterviews.map((item) => (
-                <button
+                <Button
                   key={item.id}
                   type="button"
                   onClick={() => openEditScheduleModal(item)}
-                  className="w-full rounded-lg border border-slate-200 p-3 text-left transition hover:border-blue-200 hover:bg-blue-50/20"
+                  color="transparent"
+                  variant="outline"
+                  fullWidth
+                  className="w-full rounded-lg border border-slate-200 p-3 text-left transition hover:!border-blue-200 hover:!bg-blue-50/20"
+                  style={{ height: "auto", padding: 12, justifyContent: "stretch", border: "1px solid #E2E8F0", backgroundColor: "transparent", color: "inherit" }}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex min-w-0 items-center gap-2.5">
-                      <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[#DDEAFF] text-[9px] font-bold text-[#4770A5]">
-                        {getInitials(item.candidate)}
-                      </span>
-                      <div className="min-w-0">
-                        <TooltipText
-                          text={item.candidate}
-                          maxWidth="100%"
-                          tooltipThreshold={22}
-                          isApplyBgTextColor
-                          tooltipClassName="text-sm font-semibold text-slate-700"
-                        />
-                        <TooltipText
-                          text={item.position}
-                          maxWidth="100%"
-                          tooltipThreshold={24}
-                          isApplyBgTextColor
-                          tooltipClassName="text-xs text-slate-500"
-                        />
+                  <div className="w-full text-left">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[#DDEAFF] text-xs font-bold text-[#4770A5]">
+                          {getInitials(item.candidate)}
+                        </span>
+                        <div className="min-w-0">
+                          <TooltipText
+                            text={item.candidate}
+                            maxWidth="100%"
+                            tooltipThreshold={22}
+                            isApplyBgTextColor
+                            tooltipClassName="text-sm font-semibold text-slate-700"
+                          />
+                          <TooltipText
+                            text={item.position}
+                            maxWidth="100%"
+                            tooltipThreshold={24}
+                            isApplyBgTextColor
+                            tooltipClassName="text-xs text-slate-500"
+                          />
+                        </div>
                       </div>
+                      <span className="rounded-full bg-[#EEF3FC] px-2.5 py-1 text-xs font-medium text-[#55708C]">{item.status}</span>
                     </div>
-                    <span className="rounded-full bg-[#EEF3FC] px-2.5 py-1 text-[10px] font-medium text-[#55708C]">{item.status}</span>
+                    <div className="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-500 sm:grid-cols-2">
+                      <span className="flex items-center gap-1.5">
+                        <UserRound className="h-3.5 w-3.5" /> {item.interviewer}
+                      </span>
+                      <span className="flex items-center gap-1.5">
+                        <Clock3 className="h-3.5 w-3.5" /> {formatPipelineDate(item.date, item.startTime)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-500 sm:grid-cols-2">
-                    <span className="flex items-center gap-1.5">
-                      <UserRound className="h-3.5 w-3.5" /> {item.interviewer}
-                    </span>
-                    <span className="flex items-center gap-1.5">
-                      <Clock3 className="h-3.5 w-3.5" /> {formatPipelineDate(item.date, item.startTime)}
-                    </span>
-                  </div>
-                </button>
+                </Button>
               ))
             )}
           </div>
@@ -956,4 +990,6 @@ export default function InterviewSchedule() {
       </Modal>
     </div>
   );
-}
+};
+
+export default InterviewSchedule;

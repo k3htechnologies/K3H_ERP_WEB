@@ -107,7 +107,7 @@ export function ScrollableTabs<TId extends string | number = string>({
                   ? "1px solid #93C5FD"
                   : "1px solid #E5E7EB",
                 whiteSpace: "nowrap",
-                fontFamily: "Montserrat, system-ui, sans-serif",
+                fontFamily: "inherit",
                 fontWeight: 400,
                 fontSize: "12px",
                 lineHeight: "140%",

@@ -1,12 +1,20 @@
 import type {
   Candidate,
+  CandidateData,
   CandidateRemark,
+  CandidateRemarkData,
   CandidateStatus,
+  CandidateApplicationTimelineData,
+  CandidateInterviewData,
   Stage,
   TimelineEvent,
-} from "../models/JobRoleModel";
+} from "../models/JobOpeningModel";
 
-export type ApiRecord = Record<string, unknown>;
+export type ApiRecord =
+  | CandidateData
+  | CandidateRemarkData
+  | CandidateApplicationTimelineData
+  | CandidateInterviewData;
 
 export const DEFAULT_REMARK_UNIQUE_KEY =
   "3fa85f64-5717-4562-b3fc-2c963f66afa6";
@@ -111,37 +119,6 @@ export const normalizeCandidateStatus = (
   }
 };
 
-export const getResponseData = <T,>(response: unknown): T | null => {
-  if (!response || typeof response !== "object") return null;
-  const result = response as { Data?: T; data?: T };
-  return result.Data ?? result.data ?? null;
-};
-
-export const isApiSuccess = (response: unknown): boolean => {
-  if (!response || typeof response !== "object") return false;
-  const result = response as { IsSuccess?: boolean; isSuccess?: boolean };
-  if (result.IsSuccess === undefined && result.isSuccess === undefined) return true;
-  return result.IsSuccess ?? result.isSuccess ?? false;
-};
-
-export const getApiError = (response: unknown, fallback: string): string => {
-  if (!response || typeof response !== "object") return fallback;
-  const result = response as {
-    ErrorMessage?: string[];
-    errorMessage?: string[];
-    Message?: string;
-    message?: string;
-  };
-
-  return (
-    result.ErrorMessage?.[0] ??
-    result.errorMessage?.[0] ??
-    result.Message ??
-    result.message ??
-    fallback
-  );
-};
-
 export const getErrorMessage = (error: unknown, fallback: string): string =>
   error instanceof Error && error.message ? error.message : fallback;
 
@@ -158,7 +135,7 @@ export const getCurrentUserId = (): number => {
     const employeeId = Number(employee?.EmployeeId);
     if (Number.isFinite(employeeId) && employeeId > 0) return employeeId;
   } catch {
-    // Ignore malformed legacy storage and let the API identify the user.
+    return 0;
   }
 
   return 0;
@@ -187,14 +164,6 @@ export const formatCandidateDate = (value?: string | null): string => {
     month: "short",
     year: "numeric",
   });
-};
-
-export const toApiRecordList = (data: unknown): ApiRecord[] => {
-  const list = Array.isArray(data) ? data : data ? [data] : [];
-  return list.filter(
-    (item): item is ApiRecord =>
-      Boolean(item) && typeof item === "object" && !Array.isArray(item),
-  );
 };
 
 const parseSkills = (apiData: ApiRecord): string[] => {

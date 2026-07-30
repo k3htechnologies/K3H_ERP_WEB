@@ -1,22 +1,24 @@
 import React from "react";
 import { Edit, Trash2 } from "lucide-react";
 import { Button } from "@/ui/components/forms";
-import type { JobRole } from "../models/JobRoleModel";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import type { JobRoleMasterData } from "../models/JobRoleMasterModel";
 
 interface RoleListViewProps {
-  filteredRoles: JobRole[];
+  filteredRoles: JobRoleMasterData[];
   visibleColumns?: Array<{ key: string; label: string }>;
-  onRoleClick: (role: JobRole) => void;
-  onEditClick?: (role: JobRole) => void;
-  onDeleteClick: (role: JobRole) => void;
+  onRoleClick: (role: JobRoleMasterData) => void;
+  onEditClick?: (role: JobRoleMasterData) => void;
+  onDeleteClick: (role: JobRoleMasterData) => void;
 }
 
-const RoleListView: React.FC<RoleListViewProps> = ({ filteredRoles, visibleColumns, onRoleClick, onEditClick, onDeleteClick }) => {
+export const RoleListView: React.FC<RoleListViewProps> = ({ filteredRoles, visibleColumns, onRoleClick, onEditClick, onDeleteClick }) => {
   if (!filteredRoles || filteredRoles.length === 0) {
     return (
-      <div className="text-center py-12 text-sm text-gray-400 font-medium bg-gray-50/50 rounded-xl border border-dashed border-gray-200">
-        No job roles mapped to this department yet.
-      </div>
+      <NoDataView
+        message="No job roles mapped to this department"
+        className="py-12"
+      />
     );
   }
 
@@ -44,11 +46,11 @@ const RoleListView: React.FC<RoleListViewProps> = ({ filteredRoles, visibleColum
             <div className="flex w-full items-center justify-between gap-3 sm:ml-auto sm:w-auto sm:justify-start">
               {isVisible("Status") &&
                 (role.IsActive !== false ? (
-                  <span className="rounded-full bg-[#E5F5EB] px-3 py-1 text-[10px] font-medium uppercase leading-[15px] tracking-[0.5px] text-[#17B26A]">
+                  <span className="rounded-full bg-[#E5F5EB] px-3 py-1 text-xs font-medium uppercase leading-[15px] tracking-[0.5px] text-[#17B26A]">
                     Active
                   </span>
                 ) : (
-                  <span className="rounded-full bg-[#F1F5F9] px-3 py-1 text-[10px] font-medium uppercase leading-[15px] tracking-[0.5px] text-[#64748B]">
+                  <span className="rounded-full bg-[#F1F5F9] px-3 py-1 text-xs font-medium uppercase leading-[15px] tracking-[0.5px] text-[#64748B]">
                     Inactive
                   </span>
                 ))}
@@ -67,17 +69,21 @@ const RoleListView: React.FC<RoleListViewProps> = ({ filteredRoles, visibleColum
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
-                <button
+                <Button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     onDeleteClick(role);
                   }}
-                  className="p-1.5 bg-[#FEE4E2] hover:bg-[#FCD8D6] rounded-md text-[#F04438] hover:text-[#D92D20] transition-colors cursor-pointer"
+                  color="transparent"
+                  size="xs"
+                  defineWidth
+                  className="p-1.5 bg-[#FEE4E2] hover:!bg-[#FCD8D6] rounded-md text-[#F04438] hover:!text-[#D92D20] transition-colors cursor-pointer"
+                  style={{ height: 32, width: 32, padding: 6, backgroundColor: "#FEE4E2", color: "#F04438" }}
                   title="Delete Role"
                 >
                   <Trash2 className="h-4 w-4" />
-                </button>
+                </Button>
               </div>}
             </div>
           </div>

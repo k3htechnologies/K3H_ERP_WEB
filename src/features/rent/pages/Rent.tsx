@@ -83,9 +83,10 @@ export const Rent: React.FC = () => {
     return { label: buildingName || "", value: buildingId };
   }, [projectId, buildingId, buildingName]);
 
-  const fetchBuildingCallback = useCallback((pageNumber: number, params?: { value?: string }) =>
-    fetchBuildingDropdown(pageNumber, { projectId: Number(projectId), buildingName: params?.value || "" }),
-    [projectId]
+  const fetchBuildingCallback = useCallback(
+    (pageNumber: number, params?: { value?: string }) =>
+      fetchBuildingDropdown(pageNumber, { projectId: Number(projectId), buildingName: params?.value || "" }),
+    [projectId],
   );
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
@@ -152,18 +153,14 @@ export const Rent: React.FC = () => {
     const prevProjectId = prevProjectIdRef.current;
 
     if (prevProjectId !== null && prevProjectId !== projectId) {
-
       if (listState.buildingId > 0) {
         updateListState({ buildingId: 0, buildingName: "", filters: {}, searchTerm: "", page: 1 });
       }
       prevProjectIdRef.current = projectId;
     } else if (prevProjectId === null) {
-
       prevProjectIdRef.current = projectId;
     }
-
   }, [projectId, listState.buildingId, updateListState]);
-
 
   const loadRents = useCallback(async () => {
     if (!projectId || buildingId <= 0) return;
@@ -208,7 +205,6 @@ export const Rent: React.FC = () => {
     loadRents();
   }, [loadRents]);
 
-
   const handleBuildingChange = (item: DropdownItem | null) => {
     if (!item?.value) return;
     const id = Number(item?.value);
@@ -226,20 +222,16 @@ export const Rent: React.FC = () => {
   };
 
   const dynamicHeaders = useMemo(() => {
-
     if (isMonthBasedTab) {
-
       const sorted = Array.from(
         new Set(
           tenantApplicantChargesList
-            .filter(item =>
-              item.Date &&
-              item.Date !== "1997-01-01T00:00:00" &&
-              item.Date !== "1997-01-02T00:00:00"
-            )
-            .map(item => item.Date!)
-        )
-      ).sort((a, b) => new Date(a).getTime() - new Date(b).getTime()).map(date => formatDate_dd_MonthName_yy(date));
+            .filter((item) => item.Date && item.Date !== "1997-01-01T00:00:00" && item.Date !== "1997-01-02T00:00:00")
+            .map((item) => item.Date!),
+        ),
+      )
+        .sort((a, b) => new Date(a).getTime() - new Date(b).getTime())
+        .map((date) => formatDate_dd_MonthName_yy(date));
 
       if (tenantApplicantChargesList.length > 0) {
         sorted.push("Total", "Paid Total");
@@ -248,9 +240,7 @@ export const Rent: React.FC = () => {
       return sorted;
     }
 
-    const headers = Array.from(
-      new Set(tenantApplicantChargesList.filter(item => item.Stage).map(item => item.Stage!))
-    ).sort();
+    const headers = Array.from(new Set(tenantApplicantChargesList.filter((item) => item.Stage).map((item) => item.Stage!))).sort();
 
     if (tenantApplicantChargesList.length > 0) {
       headers.push("Total", "Paid Total");
@@ -378,14 +368,14 @@ export const Rent: React.FC = () => {
 
     const proposedOfferColumn: TableColumn[] = ["TAA", "Brokerage", "Additional TAA"].includes(activeTab)
       ? [
-        {
-          key: "ProposedOfferAmount",
-          label: "Proposed Offer Amount (₹)",
-          width: "20",
-          align: "right",
-          render: (_, row) => `${row.ProposedOfferAmount || 0} ${row.Unit || ""}`,
-        },
-      ]
+          {
+            key: "ProposedOfferAmount",
+            label: "Proposed Offer Amount (₹)",
+            width: "20",
+            align: "right",
+            render: (_, row) => `${row.ProposedOfferAmount || 0} ${row.Unit || ""}`,
+          },
+        ]
       : [];
 
     const dynamicColumns: TableColumn[] = dynamicHeaders.map((h) => ({
@@ -397,98 +387,115 @@ export const Rent: React.FC = () => {
 
     const actionColumn: TableColumn[] = canAction
       ? [
-        {
-          key: "Actions",
-          label: "Actions",
-          width: "12",
-          fixed: "right",
-          align: "center",
-          render: (_value, row: PivotRentRow) => {
-            const handleAddPayTrackRent = () => {
-              if (!row.TenantApplicantId || !buildingId) return;
+          {
+            key: "Actions",
+            label: "Actions",
+            width: "12",
+            fixed: "right",
+            align: "center",
+            render: (_value, row: PivotRentRow) => {
+              const handleAddPayTrackRent = () => {
+                if (!row.TenantApplicantId || !buildingId) return;
 
-              const totalAmount = Number(row["Total"].replace("₹", "") || 0);
-              const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
+                const totalAmount = Number(row["Total"].replace("₹", "") || 0);
+                const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
 
-              setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
-              updateListState({
-                buildingId,
-                buildingName,
-                activeTab,
-                tenure: activeTenureTab,
-                tenantId: row.TenantId || 0,
-                tenantName: row.ApplicantName || "",
-                tenantApplicantId: row.TenantApplicantId || 0,
-                flatNumber: row.FlatNumber || "",
-                applicantName: row.ApplicantName || "",
-                totalAmount: totalAmount,
-                paidTotalAmount: paidTotalAmount,
-                unitType:row.FlatType,
-                carpetArea:row.FlatCarpetAreaSqFt
-              });
-              navigate("/rent/pay");
-            };
+                setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
+                updateListState({
+                  buildingId,
+                  buildingName,
+                  activeTab,
+                  tenure: activeTenureTab,
+                  tenantId: row.TenantId || 0,
+                  tenantName: row.ApplicantName || "",
+                  tenantApplicantId: row.TenantApplicantId || 0,
+                  flatNumber: row.FlatNumber || "",
+                  applicantName: row.ApplicantName || "",
+                  totalAmount: totalAmount,
+                  paidTotalAmount: paidTotalAmount,
+                  unitType: row.FlatType,
+                  carpetArea: row.FlatCarpetAreaSqFt,
+                });
+                navigate("/rent/pay");
+              };
 
-            const handleViewPayTrackRent = () => {
+              const handleViewPayTrackRent = () => {
+                if (!row.TenantApplicantId || !buildingId) return;
 
-              if (!row.TenantApplicantId || !buildingId) return;
+                const totalAmount = Number(row["Total"].replace("₹", "") || 0);
+                const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
 
-              const totalAmount = Number(row["Total"].replace("₹", "") || 0);
-              const paidTotalAmount = Number(row["Paid Total"].replace("₹", "") || 0);
+                setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
 
-              setPayTrackRentContext(row.TenantApplicantId, row.ApplicantName || "");
+                updateListState({
+                  buildingId,
+                  buildingName,
+                  activeTab,
+                  tenure: activeTenureTab,
+                  tenantId: row.TenantId || 0,
+                  tenantName: row.ApplicantName || "",
+                  tenantApplicantId: row.TenantApplicantId || 0,
+                  flatNumber: row.FlatNumber || "",
+                  applicantName: row.ApplicantName || "",
+                  totalAmount: totalAmount,
+                  paidTotalAmount: paidTotalAmount,
+                  unitType: row.FlatType,
+                  carpetArea: row.FlatCarpetAreaSqFt,
+                });
+                navigate("/rent/paymentLedger");
+              };
+              return (() => {
+                const total = Number(String(row["Total"] ?? 0).replace(/[₹,]/g, ""));
+                const paidTotal = Number(String(row["Paid Total"] ?? 0).replace(/[₹,]/g, ""));
 
-              updateListState({
-                buildingId,
-                buildingName,
-                activeTab,
-                tenure: activeTenureTab,
-                tenantId: row.TenantId || 0,
-                tenantName: row.ApplicantName || "",
-                tenantApplicantId: row.TenantApplicantId || 0,
-                flatNumber: row.FlatNumber || "",
-                applicantName: row.ApplicantName || "",
-                totalAmount: totalAmount,
-                paidTotalAmount: paidTotalAmount,
-                unitType:row.FlatType,
-                carpetArea:row.FlatCarpetAreaSqFt
-              });
-              navigate("/rent/paymentLedger");
-            };
+                const isAddDisabled = total <= 0 || total === paidTotal;
+                const isViewDisabled = total <= 0;
 
-            return (
-              <div className="flex items-center justify-center">
-
-                {Number(String(row["Total"]).replace(/[₹,]/g, "") || 0) !== Number(String(row["Paid Total"]).replace(/[₹,]/g, "") || 0)
-                  && Number(String(row["Total"]).replace(/[₹,]/g, "") || 0) > 0
-                  && (
+                return (
+                  <div className="flex items-center justify-center gap-2">
                     <Button
-                      color="transparent"
-                      isborderRadius
-                      size="sm"
-                      style={{ color: "red", padding: "4px 8px" }}
                       onClick={handleAddPayTrackRent}
+                      disabled={isAddDisabled}
+                      color="blue"
+                      variant="solid"
+                      colorMode="extraLight"
                       title="Add Pay Track TAA"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  )}
+                      style={{ width: "35px", height: "35px" }}
+                      centerIcon={<Plus className="h-4 w-4" />}
+                    />
 
-                {Number(String(row["Total"]).replace(/[₹,]/g, "") || 0) > 0
-                  && (
-                    <Button color="transparent" isborderRadius size="sm" style={{ color: "blue", padding: "4px 8px" }} onClick={handleViewPayTrackRent} title="View Pay Track TAA">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  )}
-              </div>
-            );
+                    <Button
+                      onClick={handleViewPayTrackRent}
+                      disabled={isViewDisabled}
+                      color="blue"
+                      variant="solid"
+                      colorMode="extraLight"
+                      title="View Pay Track TAA"
+                      style={{ width: "35px", height: "35px" }}
+                      centerIcon={<Eye className="h-4 w-4" />}
+                    />
+                  </div>
+                );
+              })();
+            },
           },
-        },
-      ]
+        ]
       : [];
 
     return [...baseColumns, ...proposedOfferColumn, ...dynamicColumns, ...actionColumn];
-  }, [dynamicHeaders, canAction, activeTab, buildingId, buildingName, activeTab, activeTenureTab, navigate, setPayTrackRentContext, updateListState, filters]);
+  }, [
+    dynamicHeaders,
+    canAction,
+    activeTab,
+    buildingId,
+    buildingName,
+    activeTab,
+    activeTenureTab,
+    navigate,
+    setPayTrackRentContext,
+    updateListState,
+    filters,
+  ]);
 
   const paginationInfo: PaginationInfo = {
     ...pagination,
@@ -507,7 +514,6 @@ export const Rent: React.FC = () => {
     });
     setPagination({ currentPage: 1 });
   };
-
 
   const applyFilters = () => {
     updateListState({
@@ -581,7 +587,8 @@ export const Rent: React.FC = () => {
             dataFetchCallBack={fetchBuildingCallback}
             isShowClearSelection={false}
             onSelected={handleBuildingChange}
-            className="Bold" />
+            className="Bold"
+          />
         </div>
 
         {/* Tabs */}
@@ -591,6 +598,7 @@ export const Rent: React.FC = () => {
               tabs={rentTabList}
               defaultActive={activeTab}
               onTabChange={(t) => {
+                if (t.id === activeTab) return; 
                 updateListState({
                   activeTab: t.id,
                   tenure: "",
@@ -626,11 +634,7 @@ export const Rent: React.FC = () => {
       )}
 
       <div className="pt-5">
-        <DataTable
-          data={tableData}
-          columns={columns}
-          pagination={paginationInfo}
-          emptyMessage="No Data Found" />
+        <DataTable data={tableData} columns={columns} pagination={paginationInfo} emptyMessage="No Data Found" />
       </div>
 
       <Modal
@@ -649,29 +653,66 @@ export const Rent: React.FC = () => {
         <div className="space-y-6">
           <div className="space-y-4">
             <div>
-              <Input label="Unit Number" type="text" value={tempFilters.FlatNumber || ""} onChange={(e) => handleFilterChange("FlatNumber", e.target.value)} placeholder="Enter Unit Number" />
+              <Input
+                label="Unit Number"
+                type="text"
+                value={tempFilters.FlatNumber || ""}
+                onChange={(e) => handleFilterChange("FlatNumber", e.target.value)}
+                placeholder="Enter Unit Number"
+              />
             </div>
 
             <div>
-              <Input label="Applicant Name" type="text" value={tempFilters.ApplicantName || ""} onChange={(e) => handleFilterChange("ApplicantName", e.target.value)} placeholder="Enter Applicant Name" />
+              <Input
+                label="Applicant Name"
+                type="text"
+                value={tempFilters.ApplicantName || ""}
+                onChange={(e) => handleFilterChange("ApplicantName", e.target.value)}
+                placeholder="Enter Applicant Name"
+              />
             </div>
 
             <div>
-              <Input label="Applicant Type" type="text" value={tempFilters.ApplicantType || ""} onChange={(e) => handleFilterChange("ApplicantType", e.target.value)} placeholder="Enter Applicant Type" />
+              <Input
+                label="Applicant Type"
+                type="text"
+                value={tempFilters.ApplicantType || ""}
+                onChange={(e) => handleFilterChange("ApplicantType", e.target.value)}
+                placeholder="Enter Applicant Type"
+              />
             </div>
 
             <div>
-              <Input label="Tenure" type="text" disabled value={tempFilters.Tenure || ""} onChange={(e) => handleFilterChange("Tenure", e.target.value)} placeholder="Enter Tenure" />
+              <Input
+                label="Tenure"
+                type="text"
+                disabled
+                value={tempFilters.Tenure || ""}
+                onChange={(e) => handleFilterChange("Tenure", e.target.value)}
+                placeholder="Enter Tenure"
+              />
             </div>
 
             <div>
-              <Input label="Charge Type" type="text" disabled value={tempFilters.ChargeType || ""} onChange={(e) => handleFilterChange("ChargeType", e.target.value)} placeholder="Enter Charge Type" />
+              <Input
+                label="Charge Type"
+                type="text"
+                disabled
+                value={tempFilters.ChargeType || ""}
+                onChange={(e) => handleFilterChange("ChargeType", e.target.value)}
+                placeholder="Enter Charge Type"
+              />
             </div>
 
             <div>
-              <Input label="Existing Unit Type" type="text" value={tempFilters.FlatType || ""} onChange={(e) => handleFilterChange("FlatType", e.target.value)} placeholder="Enter Existing Unit Type" />
+              <Input
+                label="Existing Unit Type"
+                type="text"
+                value={tempFilters.FlatType || ""}
+                onChange={(e) => handleFilterChange("FlatType", e.target.value)}
+                placeholder="Enter Existing Unit Type"
+              />
             </div>
-
           </div>
         </div>
       </Modal>

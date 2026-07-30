@@ -42,7 +42,7 @@ export default function OverviewCards({
       color: "#4F46E5",
     },
     {
-      title: "Financial (Rent)",
+      title: "Financial (TAA)",
       value: `₹ ${formatToKLCr(financialTotal)}`,
       subtitle: ` Pending : ₹ ${formatToKLCr(financialTotal - financialTotalPaid)}`,
       icon: TrendingUp,

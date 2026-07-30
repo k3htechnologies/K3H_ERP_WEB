@@ -630,7 +630,7 @@ export interface BuildingProposedPlanData {
     Uniquekey?: string
     ProposedOfferProposedPlanId?: number;
     ProjectId?: number;
-    BuildingId?: string;
+    BuildingName?: string;
     TotalNumberOfWing?: number;
     TotalPodium?: number;
     TotalUnits?: number;
@@ -659,7 +659,7 @@ export interface BuildingProposedPlanData {
 
 export interface WingProposedPlanData {
     ProposedPlanWingWiseId: number | null
-    BuildingId: string | null
+    BuildingName: string | null
     Wings: string | null
     MainEntranceLobbyAreaSqFt: number | null;
     TotalNumberOfLifts: number | null;
@@ -708,7 +708,7 @@ export interface CopyProposedPlanRequest {
     ProjectId?: number;
     ProposedOfferProposedPlanId?: number;
     SourceBuildingProposedPlanId?: number;
-    CopyBuildingProposedPlanId?: number;
+    CopyBuildingProposedPlanId?: string;
 }
 
 export type ProposedOfferProposedPlanListResponse = ApiResponse<ProposedOfferProposedPlanData[]>;

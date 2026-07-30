@@ -1,4 +1,5 @@
-import { DataTableWithOutBorder } from "@/ui/components/DataTable/DataTableWithoutBorder";
+import { DataTableWithHeaderRowDivider } from "@/ui/components/DataTable/DataTableWithHeaderRowDivider";
+import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import React, { useMemo } from "react";
 
 interface Props {
@@ -23,11 +24,8 @@ const BuildingOverview: React.FC<Props> = ({ buildingData }) => {
         key: "CTSNumber",
         label: "CTS Number",
         align: "left",
-        render: (value: string) => (
-          <span className="font-medium text-black">
-            {(value || '')}
-          </span>
-        )
+        render: (value:string) => <TooltipText text={value || "-"} maxWidth="180px" tooltipThreshold={18} />,
+        
       },
       {
         key: "TotalPlotAreaSqFt",
@@ -38,19 +36,40 @@ const BuildingOverview: React.FC<Props> = ({ buildingData }) => {
             {(Number(value || 0))}
           </span>
         )
-      }
+      },
+      {
+        key: "CityName",
+        label: "City",
+        align: "left",
+        render: (value:string) => <TooltipText text={value || "-"} maxWidth="180px" tooltipThreshold={18} />,
+        
+      },
+      {
+        key: "VillageName",
+        label: "Village",
+        align: "left",
+        render: (value:string) => <TooltipText text={value || "-"} maxWidth="180px" tooltipThreshold={18} />,
+        
+      },
+      {
+        key: "WardName",
+        label: "Ward",
+        align: "left",
+        render: (value:string) => <TooltipText text={value || "-"} maxWidth="180px" tooltipThreshold={18} />,
+        
+      },
     ],
     []
   );
 
   return (
-    <div className="bg-white rounded-xl p-4" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+    <div className="bg-white rounded-xl p-4 h-[475px]" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
       <h3 className="text-sm text-gray-500 font-medium mb-3">
         Building Overview
       </h3>
 
-      <DataTableWithOutBorder
+      <DataTableWithHeaderRowDivider
         data={buildingData}
         columns={buildingColumns}
         emptyMessage="No Building Data Found"

@@ -43,7 +43,7 @@ export const fetchPaginatedFlatsDropdown = async (pageNumber: number,params?: { 
     }
 };
 
-export const fetchPaginatedResidentialFlatsDropdown = async (pageNumber: number, params?: { value?: string, projectId?: number, flat?: string }) => {
+export const fetchPaginatedResidentialFlatsDropdown = async (pageNumber: number, params?: { value?: string, projectId?: number, flat?: string,displayInventoryFlatId?:string }) => {
     
     try {
         const responseEither = await inventoryService.apiCallPullPaginatedFlats({
@@ -51,6 +51,10 @@ export const fetchPaginatedResidentialFlatsDropdown = async (pageNumber: number,
             PageNumber: pageNumber,
             ProjectId: Number(params?.projectId),
             Flat: params?.flat?.trim() || "",
+            FlatType:"Residential",
+            DisplayInventoryFlatId:params?.displayInventoryFlatId?.trim() || "",
+            ApprovalStatus:"APPROVED",
+            IsAcessOnlyLienToSociety:true
         });
 
         if (E.isLeft(responseEither)) {
@@ -84,7 +88,7 @@ export const fetchPaginatedResidentialFlatsDropdown = async (pageNumber: number,
     }
 };
 
-export const fetchPaginatedCommercialFlatsDropdown = async (pageNumber: number, params?: { value?: string, projectId?: number, flat?: string })=> {
+export const fetchPaginatedCommercialFlatsDropdown = async (pageNumber: number, params?: { value?: string, projectId?: number, flat?: string,displayInventoryFlatId?:string  })=> {
     
     try {
         const responseEither = await inventoryService.apiCallPullPaginatedFlats({
@@ -92,6 +96,10 @@ export const fetchPaginatedCommercialFlatsDropdown = async (pageNumber: number, 
             PageNumber: pageNumber,
             ProjectId: Number(params?.projectId),
             Flat: params?.flat?.trim() || "",
+            FlatType:"Commercial",
+            DisplayInventoryFlatId:params?.displayInventoryFlatId?.trim() || "",
+            ApprovalStatus:"APPROVED",
+            IsAcessOnlyLienToSociety:true
         });
 
         if (E.isLeft(responseEither)) {

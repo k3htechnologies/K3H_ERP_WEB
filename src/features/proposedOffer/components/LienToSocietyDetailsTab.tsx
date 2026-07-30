@@ -59,8 +59,8 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
   const [formDataLienToSocietyPaymentStage, setFormDataLienToSocietyPaymentStage] = useState<ProposedOfferLienToSocietyDetailsWithPaymentStageData>(() => initialFormStateLienToSocietyPaymentStage());
   const [isConfirmationDialogBoxOpenLienToSocietyPaymentStage, setIsConfirmationDialogBoxOpenLienToSocietyPaymentStage] = useState(false);
   const [deleteLienToSocietyPaymentStageData, setDeleteLienToSocietyPaymentStageData] = useState<{ row: ProposedOfferLienToSocietyDetailsWithPaymentStageData; index: number } | null>(null);
-  const [selectResidentialFlatValues, setSelectResidentialFlatValues] = useState<string | number | null>(null);
-  const [selectCommercialFlatValues, setSelectCommercialFlatValues] = useState<string | number | null>(null);
+  const [selectResidentialFlatValues, setSelectResidentialFlatValues] = useState<string  | null>(null);
+  const [selectCommercialFlatValues, setSelectCommercialFlatValues] = useState<string  | null>(null);
 
   useEffect(() => {
     if (!projectId || !buildingId) return;
@@ -76,8 +76,10 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
       value: params?.value || "",
       projectId: projectId || 0,
       flat: params?.value || "",
+      displayInventoryFlatId: selectResidentialFlatValues || "",
     });
-  }, [projectId]);
+  }, [projectId,selectResidentialFlatValues]);
+
 
   const ResidentialFlatDropDown = useMultiSelectDropdown({
     value: selectResidentialFlatValues, fetchCallback: fetchPaginatedResidentialFlatsDropdown,
@@ -94,8 +96,9 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
       value: params?.value || "",
       projectId: projectId || 0,
       flat: params?.value || "",
+      displayInventoryFlatId: selectCommercialFlatValues || "",
     });
-  }, [projectId]);
+  }, [projectId,selectCommercialFlatValues]);
 
   const CommercialFlatDropDown = useMultiSelectDropdown({
     value: selectCommercialFlatValues,
@@ -168,6 +171,8 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
               ProjectId: Number(projectId)
             });
             setLienToSocietyPaymentStageList([]);
+            setSelectCommercialFlatValues("");
+            setSelectResidentialFlatValues("");
           }
         } else {
           addToast({ type: 'error', title: response.left.message });
@@ -196,7 +201,7 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
 
     const selectedResidentialCount = (formDataLienToSocietyDetails.ResidentialInventoryFlatId ?? "").split(",").filter(x => x.trim() !== "").length;
 
-    if (Number(formDataLienToSocietyDetails.NumberOfResidentialLienUnits) !== selectedResidentialCount) {
+    if (selectedResidentialCount!==0 && Number(formDataLienToSocietyDetails.NumberOfResidentialLienUnits) !== selectedResidentialCount) {
       newErrors.ResidentialInventoryFlatId = `${formDataLienToSocietyDetails.NumberOfResidentialLienUnits} Residential Lien Units are required.`
     }
 
@@ -206,7 +211,7 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
 
     const selectedCommercialCount = (formDataLienToSocietyDetails.CommercialInventoryFlatId ?? "").split(",").filter(x => x.trim() !== "").length;
 
-    if (Number(formDataLienToSocietyDetails.NumberOfCommercialLienUnits) !== selectedCommercialCount) {
+    if (selectedCommercialCount!==0 && Number(formDataLienToSocietyDetails.NumberOfCommercialLienUnits) !== selectedCommercialCount) {
       newErrors.CommercialInventoryFlatId = `${formDataLienToSocietyDetails.NumberOfCommercialLienUnits} Commercial Lien Units are required.`
     }
 

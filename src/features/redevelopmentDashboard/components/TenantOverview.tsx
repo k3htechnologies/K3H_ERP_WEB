@@ -42,7 +42,7 @@ const TenantOverview: React.FC<Props> = ({ tenantData }) => {
 
 
   return (
-    <div className="bg-white rounded-xl p-4" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+    <div className="bg-white rounded-xl p-4 " style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
       <h3 className="text-sm text-gray-500 font-medium mb-3">
         Tenant Overview
@@ -50,7 +50,7 @@ const TenantOverview: React.FC<Props> = ({ tenantData }) => {
 
       <div className="flex flex-col items-center">
 
-        <div className="relative h-[220px] w-full max-w-[260px]">
+        <div className="relative h-[215px] w-full max-w-[180px]">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
@@ -73,7 +73,7 @@ const TenantOverview: React.FC<Props> = ({ tenantData }) => {
           </div>
         </div>
 
-        <div className="w-full mt-4 space-y-3">
+        <div className="w-full grid grid-cols-1 md:grid-cols-1 gap-3">
           {tenants.map((t, i) => (
             <div
               key={i}

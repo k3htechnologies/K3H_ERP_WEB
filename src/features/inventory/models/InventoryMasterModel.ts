@@ -225,6 +225,9 @@ export interface FilterPaginatedFlatsRequest {
     FlatConfiguration?: string
     FlatFacing?: string
     FlatStatus?: string
+    DisplayInventoryFlatId?: string
+    IsAcessOnlyLienToSociety?:boolean
+    ApprovalStatus?: string
 }
 
 export interface FilterWithPaginationProjectInventoryStructureRequest {

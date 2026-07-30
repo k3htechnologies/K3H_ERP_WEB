@@ -3,7 +3,6 @@ import OverviewCards from "@/features/redevelopmentDashboard/components/Overview
 import ProgressTimeline from "@/features/redevelopmentDashboard/components/ProgressTimeline";
 import AreaUtilization from "@/features/redevelopmentDashboard/components/AreaUtilization";
 import BuildingOverview from "@/features/redevelopmentDashboard/components/BuildingOverview";
-import ProposalSummary from "@/features/redevelopmentDashboard/components/ProposalSummary";
 import FinancialOverview from "@/features/redevelopmentDashboard/components/FinancialOverview";
 import TenantOverview from "@/features/redevelopmentDashboard/components/TenantOverview";
 import AlertsPanel from "@/features/redevelopmentDashboard/components/Alert";
@@ -14,6 +13,7 @@ import { Loader } from "@/core/utils/loader";
 import useToast from "@/core/hooks/useToast";
 import * as E from "fp-ts/Either";
 import { redevelopmentDashboardService } from "@/features/redevelopmentDashboard/services/RedevelopmentDashboardService";
+import ParkingDetails from "@/features/redevelopmentDashboard/components/ParkingDetails";
 
 const RedevelopmentDashboard: React.FC = () => {
 
@@ -25,7 +25,7 @@ const RedevelopmentDashboard: React.FC = () => {
 
   const [buildingData, setBuildingData] = useState<any[]>([]);
   const [tenantApplicantChargesData, setTenantApplicantChargesData] = useState<any[]>([]);
-  const [proposedOfferProposedPlanData, setProposedOfferProposedPlanData] = useState<any[]>([]);
+  const [parkingData, setParkingData] = useState<any[]>([]);
   const [tenantData, setTenantData] = useState<any[]>([]);
   const [alertsData, setAlertsData] = useState<any[]>([]);
 
@@ -56,7 +56,7 @@ const RedevelopmentDashboard: React.FC = () => {
 
           setBuildingData(e.Table0 || []);
           setTenantApplicantChargesData(e.Table1 || []);
-          setProposedOfferProposedPlanData(e.Table2 || []);
+          setParkingData(e.Table2 || []);
           setTenantData(e.Table3 || []);
           setAlertsData(e.Table4 || []);
 
@@ -82,9 +82,7 @@ const RedevelopmentDashboard: React.FC = () => {
 
       {buildingData.length > 0 ? (
         <>
-          <RedevelopmentHeader onBuildingChange={setSelectedBuildingId}
-            proposedOfferProposedPlanData={proposedOfferProposedPlanData}
-          />
+          <RedevelopmentHeader onBuildingChange={setSelectedBuildingId}/>
 
           <OverviewCards
             buildingData={buildingData}
@@ -97,7 +95,7 @@ const RedevelopmentDashboard: React.FC = () => {
             tenantApplicantChargesData={tenantApplicantChargesData}
             alertsData={alertsData}
             tenantData={tenantData}
-            proposedOfferProposedPlanData={proposedOfferProposedPlanData}
+            proposedOfferProposedPlanData={parkingData}
           />
 
           <FinancialOverview tenantApplicantChargesData={tenantApplicantChargesData} />
@@ -109,6 +107,10 @@ const RedevelopmentDashboard: React.FC = () => {
 
             <div className="col-span-4">
               <TenantOverview tenantData={tenantData} />
+            </div>
+
+             <div className="col-span-4">
+              <ParkingDetails parkingData={parkingData} />
             </div>
           </div>
 
@@ -122,10 +124,7 @@ const RedevelopmentDashboard: React.FC = () => {
             </div>
           </div>
 
-          <ProposalSummary
-            proposedOfferProposedPlanData={proposedOfferProposedPlanData}
-            tenantData={tenantData}
-          />
+          
         </>
       ) :
         <div className="flex items-center justify-center text-gray-400">

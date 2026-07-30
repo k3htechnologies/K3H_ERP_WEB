@@ -193,7 +193,6 @@ type BookingApplicantWithFiles = BookingApplicantData & {
 };
 
 export const AddUpdateBooking: React.FC = () => {
-  //#region STATE MANAGEMENT
   const [formData, setFormData] = useState<AddUpdateBookingRequest>(() => initialFormState());
   const [applicantList, setApplicantList] = useState<BookingApplicantWithFiles[]>([]);
   const [isLoading, setIsLoading] = useState(false);

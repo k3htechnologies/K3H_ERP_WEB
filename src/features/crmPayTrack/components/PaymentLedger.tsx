@@ -484,7 +484,7 @@ export const PaymentLedger: React.FC = () => {
       const selectedRow = paymentLedgerList.find((x) => x.PaymentFor === formData.PaymentFor);
 
       if (selectedRow) {
-        
+
         const total = Number(Number(selectedRow.TotalAmount || 0).toFixed(2));
         const alreadyPaid = Number(Number(selectedRow.ReceivedAmount || 0).toFixed(2));
 
@@ -509,7 +509,7 @@ export const PaymentLedger: React.FC = () => {
       newErrors.documentFiles = "Transaction / Cheque / Demand Draft Image is required.";
     }
 
-    if (!formData.ProjectBankListMasterId || formData.ProjectBankListMasterId === 0) {
+    if (!["Stamp Duty", "Agreement Value TDS", "Registration Fees"].includes(formData.PaymentFor ?? "") && (!formData.ProjectBankListMasterId || formData.ProjectBankListMasterId === 0)) {
       newErrors.ProjectBankListMasterId = "Project Bank Name is required";
     }
 
@@ -534,7 +534,7 @@ export const PaymentLedger: React.FC = () => {
     fd.append("PaymentFor", formData.PaymentFor);
     fd.append("PaymentMode", formData.PaymentMode);
     fd.append("PaymentReceivedFrom", formData.PaymentReceivedFrom);
-    fd.append("ProjectBankListMasterId", formData.ProjectBankListMasterId.toString());
+    fd.append("ProjectBankListMasterId", formData.ProjectBankListMasterId?.toString() || "0");
     fd.append("BankListMasterId", formData.BankListMasterId.toString());
     fd.append("ReceivedAmount", formData.ReceivedAmount.toString());
     fd.append("TransactionChequeDemandDraftNumber", formData.TransactionChequeDemandDraftNumber);
@@ -871,7 +871,7 @@ export const PaymentLedger: React.FC = () => {
                   const showDelete = canAction && !row.IsBookingAmount && bookingApprovalStatus?.toUpperCase() === 'APPROVED' && !row.ApprovalStatus?.toUpperCase().includes("APPROVED") ? true : false;
 
                   return (
-                    
+
                     <div key={index} className="bg-gray-50 border border-gray-200 rounded-xl p-4">
                       <div className="flex justify-between items-center">
                         <div className="text-sm text-gray-700">
@@ -1217,7 +1217,12 @@ export const PaymentLedger: React.FC = () => {
               <div>
                 <SingleSelectDropdownWithPagination
                   label="Project Bank Name"
-                  required
+                  required={
+                    ![
+                      "Stamp Duty",
+                      "Agreement Value TDS",
+                      "Registration Fees"
+                    ].includes(formData.PaymentFor ?? "")}
                   title="Select Project Bank Name"
                   size="lg"
                   dataFetchCallBack={fetchProjectBankList}

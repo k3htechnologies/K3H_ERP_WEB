@@ -14,7 +14,7 @@ interface Props {
   tenantApplicantChargesData: any[];
 }
 
-const COLORS = ["#2563EB", "#16A34A", "#F97316", "#EC4899", "#8B5CF6"];
+const COLORS = ["#2563EB", "#16A34A", "#F97316", "#8B5CF6", "#8B5CF6"];
 
 const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
 
@@ -43,16 +43,16 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
 
 
   return (
-    <div className="bg-white rounded-xl p-4 mt-5" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+    <div className="bg-white rounded-xl p-4 mt-5" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
 
       <h3 className="text-sm text-gray-500 font-medium mb-3">
-        Financial Overview (Rent)
+        Financial Overview (TAA)
       </h3>
 
       <div className="grid grid-cols-12 gap-6">
 
         {/* LEFT SIDE */}
-        <div className="col-span-4">
+        <div className="col-span-6">
 
           {/* Total Exposure */}
           <div className="bg-blue-50 rounded-xl p-4">
@@ -98,30 +98,33 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
           <div className="grid grid-cols-2 gap-3 mt-4">
 
             {metrics.map((m, i) => (
-              <div
-                key={i}
-                className="bg-gray-50 rounded-xl p-3 flex items-start gap-3"
-              >
+
+              <div className="bg-gray-50 rounded-xl p-3 flex items-start gap-3">
                 <div
                   className="w-3 h-3 rounded-sm mt-1"
                   style={{ backgroundColor: COLORS[i % COLORS.length] }}
                 />
 
-                <div>
-                  <p className="text-sm">{m.label}</p>
+                <div className="flex-1 flex justify-between items-start">
+                  <div>
+                    <p className="text-sm">{m.label}</p>
 
-                  <div className="relative group inline-block">
-                    <p className="font-semibold">₹ {formatToKLCr(m.value)}</p>
+                    <p className="text-xs text-gray-400">
+                      {(m.value / financialTotal * 100).toFixed(0)}% of total
+                    </p>
+                  </div>
+
+                  <div className="relative group text-right">
+                    <p className="font-semibold">
+                      ₹ {formatToKLCr(m.value)}
+                    </p>
+
                     {m.value && (
-                      <span className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
-                        {m.value}
+                      <span className="absolute bottom-full right-0 mb-2 hidden group-hover:block bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap">
+                        ₹ {m.value.toLocaleString("en-IN")}
                       </span>
                     )}
                   </div>
-
-                  <p className="text-xs text-gray-400">
-                    {(m.value / financialTotal * 100).toFixed(0)} % of total
-                  </p>
                 </div>
               </div>
             ))}
@@ -129,11 +132,10 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
           </div>
         </div>
 
-        {/* RIGHT SIDE CHART */}
-        <div className="col-span-8 h-[350px]">
+        <div className="col-span-6 h-[275px]">
 
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
+            <BarChart data={chartData} barSize={30}>
 
               <XAxis dataKey="name" tick={{ fontSize: 10 }} />
 
@@ -142,8 +144,7 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
               <Tooltip formatter={(v: any) => `₹ ${formatToKLCr(Number(v))}`} />
 
               <Bar dataKey="value" radius={[6, 6, 0, 0]}>
-                {chartData.map((_, index) => (
-                  <Cell key={index} fill={COLORS[index % COLORS.length]} />
+                {chartData.map((_, index) => (<Cell key={index} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Bar>
 

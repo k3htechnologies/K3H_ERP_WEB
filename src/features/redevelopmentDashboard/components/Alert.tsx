@@ -1,51 +1,67 @@
-import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import React from "react";
+import { AlertTriangle } from "lucide-react";
+import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import type { Table3 } from "@/features/inventoryDashboard/models/InventoryDashboardModel";
 
 interface Props {
-  alertsData: any[];
+  alertsData: Table3[];
 }
 
 const AlertsPanel: React.FC<Props> = ({ alertsData }) => {
-
   return (
-    <div className="bg-white rounded-xl p-4 h-[500px] flex flex-col" style={{boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}>
+    <div className="space-y-3">
+      <div
+        className="bg-white rounded-xl p-4 h-[476px] flex flex-col border border-gray-100"
+        style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
+      >
+        <h3 className="text-sm text-gray-500 font-medium mb-3">
+          Alerts
+        </h3>
+        <div className="flex-1 overflow-y-auto thin-scroll space-y-3 pr-1">
+          {alertsData.length === 0 && (
+            <p className="text-sm text-gray-400 text-center mt-16">
+              <NoDataView />
+            </p>
+          )}
 
-      <h3 className="text-sm text-gray-500 font-medium mb-4">
-        Alerts
-      </h3>
+          {alertsData.map((alert, i) => (
+            <div
+              key={i}
+              className="relative bg-orange-50 rounded-lg p-3 border border-orange-100"
+            >
 
-      {/* Scroll Area */}
-      <div className="flex-1 overflow-y-auto thin-scroll space-y-4 pr-1">
+              {/* Left Accent */}
+              <span className="absolute left-0 top-0 h-full w-1 bg-orange-400 rounded-l-lg" />
 
-        {alertsData.length === 0 && (
-          <p className="text-sm text-gray-400 text-center mt-10">
-            <NoDataView message="No alerts available"/>
-          </p>
-        )}
+              <div className="flex gap-3">
 
-        {alertsData.map((alert, i) => (
-          <div key={i} className="flex items-start justify-between">
+                <div className="pt-1 flex-shrink-0">
+                  <AlertTriangle size={18} className="text-orange-500" />
+                </div>
 
-            <div>
-              <p className="text-sm font-medium text-gray-800">
-                {alert.BuildingName || "-"}
-                <span className="text-gray-400 ml-2">
-                  {alert.UnitNumber || ""}
-                </span>
-              </p>
+                <div className="min-w-0 flex-1">
 
-              <p className="text-sm text-gray-600 mt-1">
-                {alert.Issue || "-"}
-              </p>
+                  <p className="text-sm font-medium text-gray-800">
+                    {alert.BuildingName || "-"}
+
+                  </p>
+
+                  <p className="text-sm text-orange-700 mt-1 break-words whitespace-normal">
+                    {alert.Issue || "-"}
+                  </p>
+
+                </div>
+
+              </div>
+
             </div>
-
-          </div>
-        ))}
+          ))}
+        </div>
 
       </div>
-
     </div>
   );
 };
 
 export default AlertsPanel;
+

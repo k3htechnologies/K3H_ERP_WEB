@@ -1,6 +1,17 @@
 import type { ApiResponse } from "@/core/api/ApiResponse"
 
 //=============================================================
+// [ PDF ]
+//=============================================================
+
+export interface FilterWithPaginationProposedOfferPdfRequest {
+    ProjectId?: number
+    BuildingId?: number
+    ExportType?: 'Excel' | 'PDF'
+}
+
+export type ProposedOfferPDFResponse = ApiResponse<string>;
+//=============================================================
 // [ EXTRA CARPET ]
 //=============================================================
 
@@ -19,6 +30,7 @@ export interface ProposedOfferExtraCarpetAreaData {
     ExtraCarpetAreaOfferedType?: string
     ResidentialExtraCarpetPercent?: number
     CommercialExtraCarpetPercent?: number
+    Remark?: string
 
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -46,25 +58,25 @@ export type ProposedOfferExtraCarpetAreaListResponse = ApiResponse<ProposedOffer
 export type ProposedOfferExtraCarpetAreaSaveResponse = ApiResponse<ProposedOfferExtraCarpetAreaData[]>;
 
 //=============================================================
-// [ CORPUS DETAILS ]
+// [ HARDSHIP DETAILS ]
 //=============================================================
 
-export interface FilterWithPaginationProposedOfferCorpusDetailsRequest {
+export interface FilterWithPaginationProposedOfferHardshipDetailsRequest {
 
     ProjectId?: number
     BuildingId?: number
     ExportType?: 'Excel' | 'PDF'
 }
 
-export interface ProposedOfferCorpusDetailsData {
-    ProposedOfferCorpusDetailsId?: number
+export interface ProposedOfferHardshipDetailsData {
+    ProposedOfferHardshipDetailsId?: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
-    CorpusOfferedToResidentialAmount?: number
-    CorpusOfferedToCommercialAmount?: number
-    ProposedOfferCorpusDetailsWithPaymentStageData?: ProposedOfferCorpusDetailsWithPaymentStageData[]
-
+    HardshipOfferedToResidentialAmount?: number
+    HardshipOfferedToCommercialAmount?: number
+    ProposedOfferHardshipDetailsWithPaymentStageData?: ProposedOfferHardshipDetailsWithPaymentStageData[]
+    Remark?: string
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -75,8 +87,8 @@ export interface ProposedOfferCorpusDetailsData {
     LastModifiedDate: string | null
 }
 
-export interface ProposedOfferCorpusDetailsWithPaymentStageData {
-    ProposedOfferCorpusDetailsWithPaymentStageId?: number
+export interface ProposedOfferHardshipDetailsWithPaymentStageData {
+    ProposedOfferHardshipDetailsWithPaymentStageId?: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
@@ -85,7 +97,8 @@ export interface ProposedOfferCorpusDetailsWithPaymentStageData {
     StagePercentage?: number
     StagePercentageText?: string
     Amount?: number
-    CorpusPaymentStageRemark?: string
+    UnitSqFtLumsum?: string
+    CarpetAreaSqFt?: number
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -96,55 +109,51 @@ export interface ProposedOfferCorpusDetailsWithPaymentStageData {
     LastModifiedDate: string | null
 }
 
-export interface AddUpdateProposedOfferCorpusDetailsRequest {
-    ProposedOfferCorpusDetailsId: number
+export interface AddUpdateProposedOfferHardshipDetailsRequest {
+    ProposedOfferHardshipDetailsId: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
-    CorpusOfferedToResidentialAmount?: number
-    CorpusOfferedToCommercialAmount?: number
-    CorpusDetailsWithPaymentStageJSON?: string
+    HardshipOfferedToResidentialAmount?: number
+    HardshipOfferedToCommercialAmount?: number
+    HardshipDetailsWithPaymentStageJSON?: string
     Remark?: string
 }
 
-export interface DeleteProposedOfferCorpusDetailsRequest {
+export interface DeleteProposedOfferHardshipDetailsRequest {
     BuildingId?: number
     ProjectId: number
 }
 
-export type ProposedOfferCorpusDetailsListResponse = ApiResponse<ProposedOfferCorpusDetailsData[]>;
-export type ProposedOfferCorpusDetailsSaveResponse = ApiResponse<ProposedOfferCorpusDetailsData[]>;
-export type ProposedOfferCorpusDetailsDeleteResponse = ApiResponse<number>;
+export type ProposedOfferHardshipDetailsListResponse = ApiResponse<ProposedOfferHardshipDetailsData[]>;
+export type ProposedOfferHardshipDetailsSaveResponse = ApiResponse<ProposedOfferHardshipDetailsData[]>;
+export type ProposedOfferHardshipDetailsDeleteResponse = ApiResponse<number>;
 //=============================================================
 // [ RENT DETAILS ]
 //=============================================================
 
-export interface FilterWithPaginationProposedOfferRentDetailsRequest {
+export interface FilterWithPaginationProposedOfferTemporaryAccommodationAlternativeRequest {
 
     ProjectId?: number
     BuildingId?: number
     ExportType?: 'Excel' | 'PDF'
 }
 
-export interface ProposedOfferRentDetailsData {
-    ProposedOfferRentDetailsId?: number
+export interface ProposedOfferTemporaryAccommodationAlternativeData {
+    ProposedOfferTemporaryAccommodationAlternativeDetailsId?: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
-    IsAdditionalRent?: boolean
+    IsAdditionalTemporaryAccommodationAlternative?: boolean
     Type?: string
     Tenure?: string
     Amount?: number
     UnitSqFtLumsum?: string
     CarpetAreaSqFt?: number
-    RentStartDate?: string
-    RentEndDate?: string
+    TemporaryAccommodationAlternativeStartDate?: string
+    TemporaryAccommodationAlternativeEndDate?: string
     IsPayBrokerage?: boolean
-
-    RentOfferedToResidential?: number
-    RentOfferedToCommercial?: number
     Remark?: string
-
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -155,35 +164,35 @@ export interface ProposedOfferRentDetailsData {
     LastModifiedDate: string | null
 }
 
-export interface AddUpdateProposedOfferRentDetailsRequest {
-    ProposedOfferRentDetailsId: number
+export interface AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest {
+    ProposedOfferTemporaryAccommodationAlternativeDetailsId: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
-    IsAdditionalRent?: boolean
+    IsAdditionalTemporaryAccommodationAlternative?: boolean
     Type?: string
     Tenure?: string
     Amount?: number
     UnitSqFtLumsum?: string
     CarpetAreaSqFt?: number
-    RentStartDate?: string
-    RentEndDate?: string
+    TemporaryAccommodationAlternativeStartDate?: string
+    TemporaryAccommodationAlternativeEndDate?: string
     IsPayBrokerage?: boolean
     Mode?: string
     Brokerage?: number
     Remark?: string
 }
 
-export interface DeleteProposedOfferRentDetailsRequest {
-    ProposedOfferRentDetailsId: number
+export interface DeleteProposedOfferTemporaryAccommodationAlternativeRequest {
+    ProposedOfferTemporaryAccommodationAlternativeDetailsId: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId: number
 }
 
-export type ProposedOfferRentDetailsListResponse = ApiResponse<ProposedOfferRentDetailsData[]>;
-export type ProposedOfferRentDetailsSaveResponse = ApiResponse<ProposedOfferRentDetailsData[]>;
-export type ProposedOfferRentDetailsDeleteResponse = ApiResponse<number>;
+export type ProposedOfferTemporaryAccommodationAlternativeListResponse = ApiResponse<ProposedOfferTemporaryAccommodationAlternativeData[]>;
+export type ProposedOfferTemporaryAccommodationAlternativeSaveResponse = ApiResponse<ProposedOfferTemporaryAccommodationAlternativeData[]>;
+export type ProposedOfferTemporaryAccommodationAlternativeDeleteResponse = ApiResponse<number>;
 //=============================================================
 // [ SHIFTING DETAILS ]
 //=============================================================
@@ -202,6 +211,7 @@ export interface ProposedOfferShiftingDetailsData {
     ProjectId: number
     ShiftingOfferedToResidentialAmount?: number
     ShiftingOfferedToCommercialAmount?: number
+    Remark?: string
     ProposedOfferShiftingDetailsWithPaymentStageData?: ProposedOfferShiftingDetailsWithPaymentStageData[]
 
     CreatedById: number | 0
@@ -243,8 +253,9 @@ export interface AddUpdateProposedOfferShiftingDetailsRequest {
     ProjectId: number
     ShiftingOfferedToResidentialAmount?: number
     ShiftingOfferedToCommercialAmount?: number
-    ShiftingDetailsWithPaymentStageJSON?: string
     Remark?: string
+    ShiftingDetailsWithPaymentStageJSON?: string
+
 }
 
 export interface DeleteProposedOfferShiftingDetailsRequest {
@@ -273,6 +284,8 @@ export interface ProposedOfferSecurityDepositDetailsData {
     BuildingId?: number
     ProjectId: number
     SecurityDepositToSocietyAmount?: number
+    InterestAmount?: number
+    Remark?: string
     ProposedOfferSecurityDepositDetailsWithPaymentStageData?: ProposedOfferSecurityDepositDetailsWithPaymentStageData[]
 
     CreatedById: number | 0
@@ -293,7 +306,6 @@ export interface ProposedOfferSecurityDepositDetailsWithPaymentStageData {
     Type?: string
     Stage?: string
     Amount?: number
-    Remark?: string
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -310,8 +322,9 @@ export interface AddUpdateProposedOfferSecurityDepositDetailsRequest {
     BuildingId?: number
     ProjectId: number
     SecurityDepositToSocietyAmount?: number
-    SecurityDepositToSocietyWithPaymentStageJSON?: string
+    InterestAmount?: number
     Remark?: string
+    SecurityDepositToSocietyWithPaymentStageJSON?: string
 }
 
 export interface DeleteProposedOfferSecurityDepositDetailsRequest {
@@ -341,7 +354,12 @@ export interface ProposedOfferLienToSocietyDetailsData {
     ResidentialAreaSqFt?: number
     CommercialAreaSqFt?: number
     NumberOfResidentialLienUnits?: number
+    ResidentialInventoryFlatId?: string
+    ResidentialFlat?: string
     NumberOfCommercialLienUnits?: number
+    CommercialInventoryFlatId?: string
+    CommercialFlat?: string
+    Remark?: string
     ProposedOfferSecurityDepositDetailsWithPaymentStageData?: ProposedOfferLienToSocietyDetailsWithPaymentStageData[]
 
     CreatedById: number | 0
@@ -382,9 +400,11 @@ export interface AddUpdateProposedOfferLienToSocietyDetailsRequest {
     ResidentialAreaSqFt?: number
     CommercialAreaSqFt?: number
     NumberOfResidentialLienUnits?: number
+    ResidentialInventoryFlatId?: string
     NumberOfCommercialLienUnits?: number
-    LienToSocietyWithPaymentStageJSON?: string
+    CommercialInventoryFlatId?: string
     Remark?: string
+    LienToSocietyWithPaymentStageJSON?: string
 }
 
 export type ProposedOfferLienToSocietyDetailsListResponse = ApiResponse<ProposedOfferLienToSocietyDetailsData[]>;
@@ -408,7 +428,7 @@ export interface ProposedOfferParkingAllotmentData {
     ProjectId: number
     NumberOfParkingAllottedToMembers?: number
     TotalParkingPercentageAllottedToSociety?: number
-
+    Remark?: string
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -425,8 +445,8 @@ export interface AddUpdateProposedOfferParkingAllotmentRequest {
     BuildingId?: number
     ProjectId: number
     NumberOfParkingAllottedToMembers?: number
-    TotalParkingPercentageAllottedToSociety?: number
     Remark?: string
+    TotalParkingPercentageAllottedToSociety?: number
 }
 
 
@@ -451,6 +471,7 @@ export interface ProposedOfferGSTonExistingPlusFreeAreaData {
     ProjectId: number
     GSTOnAreaByMemberPercent?: number
     GSTOnAreaByDeveloperPercent?: number
+    Remark?: string
 
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -492,6 +513,7 @@ export interface ProposedOfferProjectCompletionData {
     ProjectId: number
     CompletionTimelineMonths?: number
     GracePeriodMonths?: number
+    Remark?: string
 
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -520,7 +542,6 @@ export type ProposedOfferProjectCompletionSaveResponse = ApiResponse<ProposedOff
 // [ PROPOSED PLAN ]
 //=============================================================
 export interface FilterWithPaginationProposedOfferProposedPlanRequest {
-
     ProjectId?: number
     ExportType?: 'Excel' | 'PDF'
 }
@@ -530,6 +551,15 @@ export interface ProposedOfferProposedPlanData {
     Uniquekey?: string
     ProjectId: number
     TotalNumberOfBuilding?: number;
+    BuildingProposedPlanData?: BuildingProposedPlanData[] | null;
+}
+
+export interface BuildingProposedPlanData {
+    BuildingProposedPlanId?: number
+    Uniquekey?: string
+    ProposedOfferProposedPlanId?: number;
+    ProjectId?: number;
+    BuildingName?: string;
     TotalNumberOfWing?: number;
     TotalPodium?: number;
     TotalUnits?: number;
@@ -539,13 +569,13 @@ export interface ProposedOfferProposedPlanData {
     WalkthroughViewURL?: string
     SalesPlanURL?: string
     Amenities?: string
-    ProposedPlanWingWiseData?: ProposedPlanWingWiseData[] | null;
     SalesResidentialParking?: number;
     SalesCommercialParking?: number;
     SalesVisitorsParking?: number;
     MemberResidentialParking?: number;
     MemberCommercialParking?: number;
     MemberVisitorsParking?: number;
+    WingProposedPlanData?: WingProposedPlanData[] | null;
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -556,9 +586,9 @@ export interface ProposedOfferProposedPlanData {
     LastModifiedDate: string | null
 }
 
-export interface ProposedPlanWingWiseData {
+export interface WingProposedPlanData {
     ProposedPlanWingWiseId: number | null
-    BuildingId: number | null
+    BuildingName: string | null
     Wings: string | null
     MainEntranceLobbyAreaSqFt: number | null;
     TotalNumberOfLifts: number | null;
@@ -569,11 +599,25 @@ export interface ProposedPlanWingWiseData {
     TotalNumberOfAreaForSaleSqFt: number | null;
 }
 
-export interface AddUpdateProposedOfferProposedPlanRequest {
+export interface AddUpdateProposedPlanRequest {
+    ProposedOfferProposedPlanId?: number;
+    Uniquekey?: string;
+    ProjectId?: number;
+    TotalNumberOfBuilding?: number
+}
+
+export interface CopyProposedPlanRequest {
+    ProjectId?: number;
+    ProposedOfferProposedPlanId?: number;
+    SourceBuildingProposedPlanId?: number;
+    CopyBuildingProposedPlanId?: string;
+}
+
+export interface AddUpdateBuildingProposedPlanRequest {
     ProposedOfferProposedPlanId?: number
+    BuildingProposedPlanId?: number
     Uniquekey?: string
     ProjectId?: number
-    TotalNumberOfBuilding?: number
     TotalNumberOfWing?: number
     TotalPodium?: number
     TotalUnits?: number
@@ -587,13 +631,13 @@ export interface AddUpdateProposedOfferProposedPlanRequest {
     SalesPlanURL?: File[] | null
     RemoveSalesPlanURL?: string
     Amenities?: string
-    ProposedOfferProposedPlanJSON?: string | null
     SalesResidentialParking?: number;
     SalesCommercialParking?: number;
     SalesVisitorsParking?: number;
     MemberResidentialParking?: number;
     MemberCommercialParking?: number;
     MemberVisitorsParking?: number;
+    WingProposedPlanJSON?: string | null
 }
 
 export type ProposedOfferProposedPlanListResponse = ApiResponse<ProposedOfferProposedPlanData[]>;
@@ -609,7 +653,7 @@ export interface AddUpdateGenerateProposedOfferRequest {
     Tenure?: string
     ChargeType?: string
     IsPayBrokerage?: boolean
-    IsAdditionalRent?: boolean
+    IsAdditionalTemporaryAccommodationAlternative?: boolean
 }
 
 export type GenerateProposedOfferResponse = ApiResponse<number>;
@@ -619,22 +663,29 @@ export type GenerateProposedOfferResponse = ApiResponse<number>;
 // [ READY RECKONER ]
 //=============================================================
 
-export interface FilterWithPaginationReadyReckonerRequest {
+export interface FilterWithPaginationProposedOfferReadyReckonerRateRequest {
+
     ProjectId?: number
     BuildingId?: number
     ExportType?: 'Excel' | 'PDF'
 }
 
-export interface ReadyReckonerData {
-    ReadyReckonerDataId?: number
+export interface ProposedOfferReadyReckonerRateData {
+    ProposedOfferReadyReckonerRateDetailsId?: number
     Uniquekey?: string
     BuildingId?: number
-    ProjectId?: number
-    ReadyReckonerZone: string
-    LandReadyReckonerRate?: number
-    ResidentialReadyReckonerRate?: number
-    GroundShopReadyReckonerRate?: number
-    OfficerReadyReckonerRate?: number
+    ProjectId: number
+    Zone?: string
+    SubZone?: string
+    ResidentialRate?: number
+    CommercialRate?: number
+    ShopRate?: number
+    IndustrialRate?: number
+    LandRate?: number
+    EffectiveStartDate?: string
+    EffectiveEndDate?: string
+    FinancialYear?: string
+    Remark?: string
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -645,67 +696,34 @@ export interface ReadyReckonerData {
     LastModifiedDate: string | null
 }
 
-export interface AddUpdateReadyReckonerRequest {
-    ReadyReckonerId?: number
+export interface AddUpdateProposedOfferReadyReckonerRateRequest {
+    ProposedOfferReadyReckonerRateDetailsId: number
     Uniquekey?: string
     BuildingId?: number
-    ProjectId?: number
-    ReadyReckonerZone: string
-    LandReadyReckonerRate?: number
-    ResidentialReadyReckonerRate?: number
-    GroundShopReadyReckonerRate?: number
-    OfficeReadyReckonerRate?: number
+    ProjectId: number
+    Zone?: string
+    SubZone?: string
+    ResidentialRate?: number
+    CommercialRate?: number
+    ShopRate?: number
+    IndustrialRate?: number
+    LandRate?: number
+    EffectiveStartDate?: string
+    EffectiveEndDate?: string
+    FinancialYear?: string
     Remark?: string
 }
 
-export type ReadyReckonerListResponse = ApiResponse<ReadyReckonerData[]>;
-export type ReadyReckonerSaveResponse = ApiResponse<ReadyReckonerData[]>;
-
-
-//=============================================================
-// [ READY RECKONER ]
-//=============================================================
-
-export interface FilterWithPaginationCarpetAreaRequest {
-    ProjectId?: number
-    BuildingId?: number
-    ExportType?: 'Excel' | 'PDF'
-}
-
-export interface CarpetAreaData {
-    CarpetAreaId?: number,
+export interface DeleteProposedOfferReadyReckonerRateRequest {
+    ProposedOfferReadyReckonerRateDetailsId: number
     Uniquekey?: string
     BuildingId?: number
-    ProjectId?: number,
-    ExistingCarpetAreaResidentialMembersSqFt?: number,
-    ExistingCarpetAreaCommercialMembersSqft?: number,
-    ExistingCarpetAreaOfEachGarageSqft?: number,
-    TerraceAreaUtilizedByMembersSqFt?: number,
-    Remark?: string,
-    CreatedById: number | 0
-    CreatedBy: string | ''
-    CreatedDate: string | null
-    ModifiedById: number | 0
-    ModifiedBy: string | ''
-    ModifiedDate: string | null
-    LastModifiedBy: string | ''
-    LastModifiedDate: string | null
+    ProjectId: number
 }
 
-export interface AddUpdateCarpetAreaRequest {
-    CarpetAreaId?: number,
-    Uniquekey?: string
-    BuildingId?: number
-    ProjectId?: number,
-    ExistingCarpetAreaResidentialMembersSqFt?: number,
-    ExistingCarpetAreaCommercialMembersSqFt?: number,
-    ExistingCarpetAreaOfEachGarageSqFt?: number,
-    TerraceAreaUtilizedByMembersSqFt?: number,
-    Remark?: string
-}
-
-export type CarpetAreaListResponse = ApiResponse<CarpetAreaData[]>;
-export type CarpetAreaSaveResponse = ApiResponse<CarpetAreaData[]>;
+export type ProposedOfferReadyReckonerRateListResponse = ApiResponse<ProposedOfferReadyReckonerRateData[]>;
+export type ProposedOfferReadyReckonerRateSaveResponse = ApiResponse<ProposedOfferReadyReckonerRateData[]>;
+export type ProposedOfferReadyReckonerRateDeleteResponse = ApiResponse<number>;
 
 // ADDITIONAL INFORMATION
 
@@ -716,14 +734,14 @@ export interface FilterWithPaginationAdditionalInformationRequest {
 }
 
 export interface AdditionalInformationData {
-    AdditionalInformationId?: number
+    ProposedOfferAdditionalInformationId?: number
     Uniquekey?: string
     BuildingId?: number
     ProjectId?: number
     TaxAndDutiesDetails?: string
     TaxRemark?: string
     PurchaseOfAdditonalAreaRemark?: string,
-    AdditonalRemark?: string
+    AdditionalRemark?: string
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -735,7 +753,7 @@ export interface AdditionalInformationData {
 }
 
 export interface AddUpdateAdditionalInformationRequest {
-    AdditionalInformationId?: number,
+    ProposedOfferAdditionalInformationId?: number,
     Uniquekey?: string
     BuildingId?: number
     ProjectId?: number,
@@ -749,52 +767,4 @@ export type AdditionalInformationListResponse = ApiResponse<AdditionalInformatio
 export type AdditionalInformationSaveResponse = ApiResponse<AdditionalInformationData[]>;
 
 
-// PLOT AREA
-export interface FilterWithPaginationPlotAreaRequest {
-    ProjectId?: number
-    BuildingId?: number
-    ExportType?: 'Excel' | 'PDF'
-}
-
-export interface PlotAreaData {
-    PlotAreaId?: number,
-    Uniquekey?: string
-    BuildingId?: number
-    ProjectId?: number,
-
-
-    GrossPlotAreaSqFt?: number,
-    PlotAreaAsPhysicalSurveySqFt?: number,
-    PlotAreaAsPerOldApprovedPlansSqFt?: number,
-    PlotAreaAsPerConveyanceSqFt?: number,
-    PlotAreaAsPerPrCardSqFt?: number,
-    Remark?: string,
-
-    CreatedById: number | 0
-    CreatedBy: string | ''
-    CreatedDate: string | null
-    ModifiedById: number | 0
-    ModifiedBy: string | ''
-    ModifiedDate: string | null
-    LastModifiedBy: string | ''
-    LastModifiedDate: string | null
-}
-
-export interface AddUpdatePlotAreaRequest {
-    PlotAreaId?: number,
-    Uniquekey?: string
-    BuildingId?: number
-    ProjectId?: number,
-
-    GrossPlotAreaSqFt?: number,
-    PlotAreaAsPhysicalSurveySqFt?: number,
-    PlotAreaAsPerOldApprovedPlansSqFt?: number,
-    PlotAreaAsPerConveyanceSqFt?: number,
-    PlotAreaAsPerPrCardSqFt?: number,
-    Remark?: string,
-
-}
-
-export type PlotAreaListResponse = ApiResponse<PlotAreaData[]>;
-export type PlotAreaSaveResponse = ApiResponse<PlotAreaData[]>;
 

@@ -3,6 +3,8 @@ import { TokenExpiredException } from '@/core/config/baseClientexceptions'
 import { ProposedOfferApi } from '@/features/proposedOffer/api/ProposedOfferApi'
 import type {
 
+    FilterWithPaginationProposedOfferPdfRequest,
+    ProposedOfferPDFResponse,
     // EXTRA CARPET
     FilterWithPaginationProposedOfferExtraCarpetAreaRequest,
     AddUpdateProposedOfferExtraCarpetAreaRequest,
@@ -10,18 +12,18 @@ import type {
     ProposedOfferExtraCarpetAreaSaveResponse,
 
     // CORPUS
-    FilterWithPaginationProposedOfferCorpusDetailsRequest,
-    AddUpdateProposedOfferCorpusDetailsRequest,
-    ProposedOfferCorpusDetailsListResponse,
-    ProposedOfferCorpusDetailsSaveResponse,
+    FilterWithPaginationProposedOfferHardshipDetailsRequest,
+    AddUpdateProposedOfferHardshipDetailsRequest,
+    ProposedOfferHardshipDetailsListResponse,
+    ProposedOfferHardshipDetailsSaveResponse,
 
     // RENT
-    FilterWithPaginationProposedOfferRentDetailsRequest,
-    AddUpdateProposedOfferRentDetailsRequest,
-    DeleteProposedOfferRentDetailsRequest,
-    ProposedOfferRentDetailsListResponse,
-    ProposedOfferRentDetailsSaveResponse,
-    ProposedOfferRentDetailsDeleteResponse,
+    FilterWithPaginationProposedOfferTemporaryAccommodationAlternativeRequest,
+    AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest,
+    DeleteProposedOfferTemporaryAccommodationAlternativeRequest,
+    ProposedOfferTemporaryAccommodationAlternativeListResponse,
+    ProposedOfferTemporaryAccommodationAlternativeSaveResponse,
+    ProposedOfferTemporaryAccommodationAlternativeDeleteResponse,
 
     // SHIFTING
     FilterWithPaginationProposedOfferShiftingDetailsRequest,
@@ -68,36 +70,30 @@ import type {
     //GENERATE PROPOSED PLAN
 
     AddUpdateGenerateProposedOfferRequest,
-    ProposedOfferCorpusDetailsDeleteResponse,
-    DeleteProposedOfferCorpusDetailsRequest,
+    ProposedOfferHardshipDetailsDeleteResponse,
+    DeleteProposedOfferHardshipDetailsRequest,
     DeleteProposedOfferShiftingDetailsRequest,
     ProposedOfferShiftingDetailsDeleteResponse,
     DeleteProposedOfferSecurityDepositDetailsRequest,
     ProposedOfferSecurityDepositDetailsDeleteResponse,
 
     // READY RECKONER
-    FilterWithPaginationReadyReckonerRequest,
-    ReadyReckonerListResponse,
-    ReadyReckonerSaveResponse,
-    AddUpdateReadyReckonerRequest,
+    FilterWithPaginationProposedOfferReadyReckonerRateRequest,
+    ProposedOfferReadyReckonerRateListResponse,
+    ProposedOfferReadyReckonerRateSaveResponse,
 
-    // CARPET AREA
-    FilterWithPaginationCarpetAreaRequest,
-    AddUpdateCarpetAreaRequest,
-    CarpetAreaListResponse,
-    CarpetAreaSaveResponse,
 
     // ADDITIONAL INFORMATION
     FilterWithPaginationAdditionalInformationRequest,
     AddUpdateAdditionalInformationRequest,
     AdditionalInformationListResponse,
     AdditionalInformationSaveResponse,
+    ProposedOfferReadyReckonerRateDeleteResponse,
+    DeleteProposedOfferReadyReckonerRateRequest,
+    AddUpdateProposedOfferReadyReckonerRateRequest,
+    AddUpdateProposedPlanRequest,
+    CopyProposedPlanRequest,
 
-    // PLOT AREA
-    FilterWithPaginationPlotAreaRequest,
-    PlotAreaListResponse,
-    AddUpdatePlotAreaRequest,
-    PlotAreaSaveResponse,
 
 } from '@/features/proposedOffer/models/ProposedOfferModel'
 
@@ -106,16 +102,18 @@ import type {
 //=============================================================
 export abstract class ProposedOfferDatasource {
 
+    abstract pullProposedOfferPDF(params: FilterWithPaginationProposedOfferPdfRequest, signal?: AbortSignal): Promise<ProposedOfferPDFResponse>
+
     abstract pullExtraCarpetArea(params: FilterWithPaginationProposedOfferExtraCarpetAreaRequest, signal?: AbortSignal): Promise<ProposedOfferExtraCarpetAreaListResponse>
     abstract addUpdateExtraCarpetArea(data: AddUpdateProposedOfferExtraCarpetAreaRequest): Promise<ProposedOfferExtraCarpetAreaSaveResponse>
 
-    abstract pullCorpusDetails(params: FilterWithPaginationProposedOfferCorpusDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferCorpusDetailsListResponse>
-    abstract addUpdateCorpusDetails(data: AddUpdateProposedOfferCorpusDetailsRequest): Promise<ProposedOfferCorpusDetailsSaveResponse>
-    abstract deleteCorpusDetails(params: DeleteProposedOfferCorpusDetailsRequest): Promise<ProposedOfferCorpusDetailsDeleteResponse>
+    abstract pullHardshipDetails(params: FilterWithPaginationProposedOfferHardshipDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferHardshipDetailsListResponse>
+    abstract addUpdateHardshipDetails(data: AddUpdateProposedOfferHardshipDetailsRequest): Promise<ProposedOfferHardshipDetailsSaveResponse>
+    abstract deleteHardshipDetails(params: DeleteProposedOfferHardshipDetailsRequest): Promise<ProposedOfferHardshipDetailsDeleteResponse>
 
-    abstract pullRentDetails(params: FilterWithPaginationProposedOfferRentDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferRentDetailsListResponse>
-    abstract addUpdateRentDetails(data: AddUpdateProposedOfferRentDetailsRequest): Promise<ProposedOfferRentDetailsSaveResponse>
-    abstract deleteRentDetails(params: DeleteProposedOfferRentDetailsRequest): Promise<ProposedOfferRentDetailsDeleteResponse>
+    abstract pullTemporaryAccommodationAlternative(params: FilterWithPaginationProposedOfferTemporaryAccommodationAlternativeRequest, signal?: AbortSignal): Promise<ProposedOfferTemporaryAccommodationAlternativeListResponse>
+    abstract addUpdateTemporaryAccommodationAlternative(data: AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest): Promise<ProposedOfferTemporaryAccommodationAlternativeSaveResponse>
+    abstract deleteTemporaryAccommodationAlternative(params: DeleteProposedOfferTemporaryAccommodationAlternativeRequest): Promise<ProposedOfferTemporaryAccommodationAlternativeDeleteResponse>
 
     abstract pullShiftingDetails(params: FilterWithPaginationProposedOfferShiftingDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferShiftingDetailsListResponse>
     abstract addUpdateShiftingDetails(data: AddUpdateProposedOfferShiftingDetailsRequest): Promise<ProposedOfferShiftingDetailsSaveResponse>
@@ -138,9 +136,15 @@ export abstract class ProposedOfferDatasource {
     abstract addUpdateProjectCompletion(data: AddUpdateProposedOfferProjectCompletionRequest): Promise<ProposedOfferProjectCompletionSaveResponse>
 
     abstract pullProposedPlan(params: FilterWithPaginationProposedOfferProposedPlanRequest, signal?: AbortSignal): Promise<ProposedOfferProposedPlanListResponse>
-    abstract addUpdateProposedPlan(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse>
+    abstract addUpdateProposedPlan(params: AddUpdateProposedPlanRequest): Promise<ProposedOfferProposedPlanSaveResponse>
+    abstract copyProposedPlan(params: CopyProposedPlanRequest): Promise<ProposedOfferProposedPlanSaveResponse>
+    abstract addUpdateBuildingProposedPlanRequest(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse>
 
-    abstract addUpdateGenerateProposedOffer(params: AddUpdateGenerateProposedOfferRequest): Promise<GenerateProposedOfferResponse>
+    abstract addUpdateGenerateProposedOffer(params: AddUpdateGenerateProposedOfferRequest): Promise<GenerateProposedOfferResponse>;
+
+    abstract pullReadyReckonerRate(params: FilterWithPaginationProposedOfferReadyReckonerRateRequest, signal?: AbortSignal): Promise<ProposedOfferReadyReckonerRateListResponse>;
+    abstract addUpdateReadyReckonerRate(params: AddUpdateProposedOfferReadyReckonerRateRequest): Promise<ProposedOfferReadyReckonerRateSaveResponse>;
+    abstract deleteReadyReckonerRate(params: DeleteProposedOfferReadyReckonerRateRequest): Promise<ProposedOfferReadyReckonerRateDeleteResponse>;
 }
 //=============================================================
 // [ IMPLEMENTATION – YOUR STYLE ]
@@ -150,6 +154,32 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
     private get k3hHttpClient() {
         return baseClient
     }
+
+    //==================== EXTRA CARPET ====================
+
+    async pullProposedOfferPDF(params: FilterWithPaginationProposedOfferPdfRequest, signal?: AbortSignal): Promise<ProposedOfferPDFResponse> {
+        try {
+            const queryParams = new URLSearchParams()
+            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
+            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType)
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(
+                `${ProposedOfferApi.PULL_PROPOSED_OFFER_PDF}?${queryParams.toString()}`,
+                { signal }
+            )
+        } catch (error) {
+
+            console.error('ERROR: PULL PROPOSED OFFER PDF :', error)
+
+            if (error instanceof TokenExpiredException) {
+                return await this.pullProposedOfferPDF(params);
+            }
+
+            throw error
+        }
+    }
+
 
     //==================== EXTRA CARPET ====================
 
@@ -197,7 +227,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
     }
 
     //==================== CORPUS ====================
-    async pullCorpusDetails(params: FilterWithPaginationProposedOfferCorpusDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferCorpusDetailsListResponse> {
+    async pullHardshipDetails(params: FilterWithPaginationProposedOfferHardshipDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferHardshipDetailsListResponse> {
         try {
             const queryParams = new URLSearchParams()
 
@@ -206,7 +236,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
             if (params.ExportType) queryParams.append('ExportType', params.ExportType)
 
             return await this.k3hHttpClient.getRequestWithAuthentication(
-                `${ProposedOfferApi.PULL_CORPUS_DETAILS}?${queryParams.toString()}`,
+                `${ProposedOfferApi.PULL_HARSHIP_DETAILS}?${queryParams.toString()}`,
                 { signal }
             )
         } catch (error) {
@@ -214,18 +244,18 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.pullCorpusDetails(params);
+                return await this.pullHardshipDetails(params);
             }
             throw error
         }
     }
 
-    async addUpdateCorpusDetails(params: AddUpdateProposedOfferCorpusDetailsRequest): Promise<ProposedOfferCorpusDetailsSaveResponse> {
+    async addUpdateHardshipDetails(params: AddUpdateProposedOfferHardshipDetailsRequest): Promise<ProposedOfferHardshipDetailsSaveResponse> {
 
         try {
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                ProposedOfferApi.ADD_UPDATE_CORPUS_DETAILS,
+                ProposedOfferApi.ADD_UPDATE_HARSHIP_DETAILS,
                 params
 
             )
@@ -236,13 +266,13 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateCorpusDetails(params);
+                return await this.addUpdateHardshipDetails(params);
             }
             throw error
         }
     }
 
-    async deleteCorpusDetails(params: DeleteProposedOfferCorpusDetailsRequest): Promise<ProposedOfferCorpusDetailsDeleteResponse> {
+    async deleteHardshipDetails(params: DeleteProposedOfferHardshipDetailsRequest): Promise<ProposedOfferHardshipDetailsDeleteResponse> {
 
         try {
             const queryParams = new URLSearchParams()
@@ -250,7 +280,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
             if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
 
             return await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${ProposedOfferApi.DELETE_CORPUS_DETAILS}?${queryParams.toString()}`
+                `${ProposedOfferApi.DELETE_HARSHIP_DETAILS}?${queryParams.toString()}`
             )
         } catch (error) {
 
@@ -258,7 +288,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.deleteCorpusDetails(params)
+                return await this.deleteHardshipDetails(params)
             }
 
             throw error
@@ -266,7 +296,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
     }
 
     //==================== RENT ====================
-    async pullRentDetails(params: FilterWithPaginationProposedOfferRentDetailsRequest, signal?: AbortSignal): Promise<ProposedOfferRentDetailsListResponse> {
+    async pullTemporaryAccommodationAlternative(params: FilterWithPaginationProposedOfferTemporaryAccommodationAlternativeRequest, signal?: AbortSignal): Promise<ProposedOfferTemporaryAccommodationAlternativeListResponse> {
         try {
             const queryParams = new URLSearchParams()
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
@@ -274,7 +304,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
             if (params.ExportType) queryParams.append('ExportType', params.ExportType)
 
             return await this.k3hHttpClient.getRequestWithAuthentication(
-                `${ProposedOfferApi.PULL_RENT_DETAILS}?${queryParams.toString()}`,
+                `${ProposedOfferApi.PULL_TEMPORARY_ACCOMMODATION_ALTERNATIVE}?${queryParams.toString()}`,
                 { signal }
             )
         } catch (error) {
@@ -283,17 +313,17 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.pullRentDetails(params, signal)
+                return await this.pullTemporaryAccommodationAlternative(params, signal)
             }
 
             throw error
         }
     }
 
-    async addUpdateRentDetails(params: AddUpdateProposedOfferRentDetailsRequest): Promise<ProposedOfferRentDetailsSaveResponse> {
+    async addUpdateTemporaryAccommodationAlternative(params: AddUpdateProposedOfferTemporaryAccommodationAlternativeRequest): Promise<ProposedOfferTemporaryAccommodationAlternativeSaveResponse> {
         try {
             return await this.k3hHttpClient.postRequestWithAuthentication(
-                ProposedOfferApi.ADD_UPDATE_RENT_DETAILS,
+                ProposedOfferApi.ADD_UPDATE_TEMPORARY_ACCOMMODATION_ALTERNATIVE,
                 params
             )
         } catch (error) {
@@ -302,24 +332,24 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateRentDetails(params)
+                return await this.addUpdateTemporaryAccommodationAlternative(params)
             }
 
             throw error
         }
     }
 
-    async deleteRentDetails(params: DeleteProposedOfferRentDetailsRequest): Promise<ProposedOfferRentDetailsDeleteResponse> {
+    async deleteTemporaryAccommodationAlternative(params: DeleteProposedOfferTemporaryAccommodationAlternativeRequest): Promise<ProposedOfferTemporaryAccommodationAlternativeDeleteResponse> {
 
         try {
             const queryParams = new URLSearchParams()
-            queryParams.append('ProposedOfferRentDetailsId', params.ProposedOfferRentDetailsId.toString())
+            queryParams.append('ProposedOfferTemporaryAccommodationAlternativeDetailsId', params.ProposedOfferTemporaryAccommodationAlternativeDetailsId.toString())
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
             if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
             if (params.Uniquekey) queryParams.append('Uniquekey', params.Uniquekey)
 
             return await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${ProposedOfferApi.DELETE_RENT_DETAILS}?${queryParams.toString()}`
+                `${ProposedOfferApi.DELETE_TEMPORARY_ACCOMMODATION_ALTERNATIVE}?${queryParams.toString()}`
             )
         } catch (error) {
 
@@ -327,7 +357,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.deleteRentDetails(params)
+                return await this.deleteTemporaryAccommodationAlternative(params)
             }
 
             throw error
@@ -657,18 +687,53 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         }
     }
 
-    async addUpdateProposedPlan(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse> {
+    async addUpdateProposedPlan(params: AddUpdateProposedPlanRequest): Promise<ProposedOfferProposedPlanSaveResponse> {
         try {
-            return await this.k3hHttpClient.multipartRequestWithAuthentication(
+            return await this.k3hHttpClient.postRequestWithAuthentication(
                 ProposedOfferApi.ADD_UPDATE_PROPOSED_PLAN,
-                formData
+                params
             )
         } catch (error) {
             console.error('ERROR: ADD UPDATE PROPOSED PLAN:', error)
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateProposedPlan(formData)
+                return await this.addUpdateProposedPlan(params)
+            }
+
+            throw error
+        }
+    }
+    async copyProposedPlan(params: CopyProposedPlanRequest): Promise<ProposedOfferProposedPlanSaveResponse> {
+        try {
+            return await this.k3hHttpClient.postRequestWithAuthentication(
+                ProposedOfferApi.COPY_PROPOSED_PLAN,
+                params
+            )
+        } catch (error) {
+            console.error('ERROR: COPY PROPOSED PLAN:', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.copyProposedPlan(params)
+            }
+
+            throw error
+        }
+    }
+
+    async addUpdateBuildingProposedPlanRequest(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse> {
+        try {
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(
+                ProposedOfferApi.ADD_UPDATE_BUILDING_PROPOSED_PLAN,
+                formData
+            )
+        } catch (error) {
+            console.error('ERROR: ADD UPDATE BUILDING PROPOSED PLAN:', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateBuildingProposedPlanRequest(formData)
             }
 
             throw error
@@ -701,7 +766,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
     }
 
     //====================READY RECKONER ====================
-    async pullReadyReckoner(params: FilterWithPaginationReadyReckonerRequest, signal?: AbortSignal): Promise<ReadyReckonerListResponse> {
+    async pullReadyReckonerRate(params: FilterWithPaginationProposedOfferReadyReckonerRateRequest, signal?: AbortSignal): Promise<ProposedOfferReadyReckonerRateListResponse> {
         try {
             const queryParams = new URLSearchParams()
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
@@ -709,85 +774,65 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
             if (params.ExportType) queryParams.append('ExportType', params.ExportType)
 
             return await this.k3hHttpClient.getRequestWithAuthentication(
-                `${ProposedOfferApi.PULL_READY_RECKONER}?${queryParams.toString()}`,
+                `${ProposedOfferApi.PULL_READY_RECKONER_Rate}?${queryParams.toString()}`,
                 { signal }
             )
         } catch (error) {
-            console.error('ERROR: PULL READY RECKONER:', error)
+            console.error('ERROR: PULL READY RECKONER RATE:', error)
 
             if (error instanceof TokenExpiredException) {
-                return await this.pullReadyReckoner(params);
+                return await this.pullReadyReckonerRate(params);
             }
 
             throw error
         }
     }
 
-    async addUpdateReadyReckoner(params: AddUpdateReadyReckonerRequest): Promise<ReadyReckonerSaveResponse> {
+    async addUpdateReadyReckonerRate(params: AddUpdateProposedOfferReadyReckonerRateRequest): Promise<ProposedOfferReadyReckonerRateSaveResponse> {
 
         try {
 
             const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                ProposedOfferApi.ADD_UPDATE_READY_RECKONER,
+                ProposedOfferApi.ADD_UPDATE_READY_RECKONER_Rate,
                 params
             )
 
             return response
         } catch (error) {
-            console.error('Error: Add Update READY RECKONER :', error)
+            console.error('Error: Add Update READY RECKONER RATE :', error)
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateReadyReckoner(params);
+                return await this.addUpdateReadyReckonerRate(params);
             }
             throw error
         }
     }
 
-    //====================CARPET AREA ====================
-    async pullCarpetArea(params: FilterWithPaginationCarpetAreaRequest, signal?: AbortSignal): Promise<CarpetAreaListResponse> {
+    async deleteReadyReckonerRate(params: DeleteProposedOfferReadyReckonerRateRequest): Promise<ProposedOfferReadyReckonerRateDeleteResponse> {
+
         try {
             const queryParams = new URLSearchParams()
+            queryParams.append('ProposedOfferReadyReckonerRateDetailsId', params.ProposedOfferReadyReckonerRateDetailsId.toString())
             if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
             if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
-            if (params.ExportType) queryParams.append('ExportType', params.ExportType)
+            if (params.Uniquekey) queryParams.append('Uniquekey', params.Uniquekey)
 
-            return await this.k3hHttpClient.getRequestWithAuthentication(
-                `${ProposedOfferApi.PULL_CARPET_AREA}?${queryParams.toString()}`,
-                { signal }
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(
+                `${ProposedOfferApi.DELETE_READY_RECKONER_Rate}?${queryParams.toString()}`
             )
         } catch (error) {
-            console.error('ERROR: PULL CARPET AREA:', error)
+
+            console.error('ERROR: DELETE RENT DETAILS:', error)
 
             if (error instanceof TokenExpiredException) {
-                return await this.pullCarpetArea(params);
+
+                return await this.deleteReadyReckonerRate(params)
             }
 
             throw error
         }
     }
-
-    async addUpdateCarpetArea(params: AddUpdateCarpetAreaRequest): Promise<CarpetAreaSaveResponse> {
-
-        try {
-
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                ProposedOfferApi.ADD_UPDATE_CARPET_AREA,
-                params
-            )
-
-            return response
-        } catch (error) {
-            console.error('Error: Add Update CARPET AREA :', error)
-
-            if (error instanceof TokenExpiredException) {
-
-                return await this.addUpdateCarpetArea(params);
-            }
-            throw error
-        }
-    }
-
     // ADDITONAL INFORMATION
     async pullAdditionalInformation(params: FilterWithPaginationAdditionalInformationRequest, signal?: AbortSignal): Promise<AdditionalInformationListResponse> {
         try {
@@ -832,49 +877,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
         }
     }
 
-    // PLOT AREA
-    async pullPlotArea(params: FilterWithPaginationPlotAreaRequest, signal?: AbortSignal): Promise<PlotAreaListResponse> {
-        try {
-            const queryParams = new URLSearchParams()
-            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
-            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
-            if (params.ExportType) queryParams.append('ExportType', params.ExportType)
 
-            return await this.k3hHttpClient.getRequestWithAuthentication(
-                `${ProposedOfferApi.PULL_PLOT_AREA}?${queryParams.toString()}`,
-                { signal }
-            )
-        } catch (error) {
-            console.error('ERROR: PULL PLOT AREA:', error)
-
-            if (error instanceof TokenExpiredException) {
-                return await this.pullPlotArea(params);
-            }
-
-            throw error
-        }
-    }
-
-    async addUpdatePlotArea(params: AddUpdatePlotAreaRequest): Promise<PlotAreaSaveResponse> {
-
-        try {
-
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
-                ProposedOfferApi.ADD_UPDATE_PLOT_AREA,
-                params
-            )
-
-            return response
-        } catch (error) {
-            console.error('Error: Add Update PLOT AREA :', error)
-
-            if (error instanceof TokenExpiredException) {
-
-                return await this.addUpdatePlotArea(params);
-            }
-            throw error
-        }
-    }
 
 
 }

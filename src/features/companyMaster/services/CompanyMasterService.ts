@@ -5,7 +5,12 @@ import type {
     DeleteCompanyMasterRequest,
     CompanyMasterListResponse,
     CompanyMasterSaveResponse,
-    CompanyMasterDeleteResponse
+    CompanyMasterDeleteResponse,
+    FilterWithPaginationCompanyMasterWithBankDetails,
+    CompanyMasterWithBankDetailsListResponse,
+    CompanyMasterWithBankDetailsSaveResponse,
+    DeleteCompanyMasterWithBankDetailsRequest,
+    CompanyMasterWithBankDetailsDeleteResponse
 } from '@/features/companyMaster/models/CompanyMasterModel';
 
 import * as E from 'fp-ts/Either';
@@ -49,4 +54,40 @@ export const companyMasterService = {
 
         }
     },
+
+    apiCallPullCompanyMasterWithBankDetails: async (params: FilterWithPaginationCompanyMasterWithBankDetails, options?: { signal?: AbortSignal }): Promise<E.Either<Failure, CompanyMasterWithBankDetailsListResponse>> => {
+        try {
+
+            return E.right(await companyMasterDatasource.pullCompanyMasterWithBankDetails(params, options?.signal));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallAddUpdateCompanyMasterWithBankDetails: async (formData: FormData): Promise<E.Either<Failure, CompanyMasterWithBankDetailsSaveResponse>> => {
+        try {
+
+            return E.right(await companyMasterDatasource.addUpdateCompanyMasterWithBankDetails(formData));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    },
+
+    apiCallDeleteCompanyMasterWithBankDetails: async (params: DeleteCompanyMasterWithBankDetailsRequest): Promise<E.Either<Failure, CompanyMasterWithBankDetailsDeleteResponse>> => {
+        try {
+
+            return E.right(await companyMasterDatasource.deleteCompanyMasterWithBankDetails(params));
+
+        } catch (error: any) {
+
+            return E.left({ message: error.message, code: error.code });
+
+        }
+    }
 }

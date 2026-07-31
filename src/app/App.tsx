@@ -117,7 +117,7 @@ import Enquiry from '@/features/enquiry/pages/Enquiry';
 import AddUpdateEnquiry from '@/features/enquiry/pages/AddUpdateEnquiry';
 import { EnquiryListStateProvider } from '@/features/enquiry/context/EnquiryListStateContext';
 import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
-import ProposedPlan from '@/features/proposedOffer/pages/ProposedPlan'
+import NewProposedPlan from '@/features/proposedOffer/pages/NewProposedPlan'
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
@@ -198,6 +198,7 @@ import SpecificationMaster from '@/features/specificationMaster/pages/Specificat
 import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
 import ChannelPartnerSalesMetrics from '@/features/ChannelPartner/pages/ChannelPartnerSalesMetrics';
 import AopAchievementReport from '@/features/aopAchievement/pages/AopAchievementReport';
+import CompanyBank from '@/features/companyMaster/pages/CompanyBank';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -267,6 +268,7 @@ function App() {
             <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
+            <Route path='companyMaster/bank' element={<CompanyListStateProvider><CompanyBank /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />
 
@@ -447,7 +449,7 @@ function App() {
 
             <Route path="proposedOffer" element={<ProposedOffer />} />
 
-            <Route path="proposedPlan" element={<ProposedPlan />} />
+            <Route path="proposedPlan" element={<NewProposedPlan />} />
 
 
             {/* OPERATION */}

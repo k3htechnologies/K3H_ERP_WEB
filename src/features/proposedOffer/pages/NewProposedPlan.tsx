@@ -107,11 +107,12 @@ export const NewProposedPlan: React.FC = () => {
     const [savedWingsData, setSavedWingsData] = useState<{ [key: number]: WingProposedPlanData }>({});
     const [wingsErrors, setWingsErrors] = useState<{ [key: number]: { [k: string]: string } }>({});
     const [formData, setFormData] = useState<AddUpdateProposedPlanRequest>(() => initialFormState());
-    const [_previousBuildingCount, setPreviousBuildingCount] = useState<number>();
+    const [previousBuildingCount, setPreviousBuildingCount] = useState<number>(0);
     const [buildingTabs, setBuildingTabs] = useState<{ id: string; label: string }[]>([]);
     const [buildingPlanDataMap, setBuildingPlanDataMap] = useState<Record<string, BuildingProposedPlanData>>({});
     const [addBuildingModal, setAddBuildingModal] = useState(false);
     const [duplicateErrors, setDuplicateErrors] = useState<{ [k: string]: string }>({});
+    const [buildingErrors, setBuildingErrors] = useState<{ [k: string]: string }>({});
 
     const { addToast } = useToast();
     const { canAction } = useMenuPermissions();
@@ -124,6 +125,14 @@ export const NewProposedPlan: React.FC = () => {
         : typeof formDataProposedPlan.Amenities === "string" && formDataProposedPlan.Amenities.length > 0
             ? formDataProposedPlan.Amenities.split(",").length
             : 0;
+
+    const finalTotalParkingCount =
+        Number(formDataProposedPlan.SalesResidentialParking || 0) +
+        Number(formDataProposedPlan.SalesCommercialParking || 0) +
+        Number(formDataProposedPlan.SalesVisitorsParking || 0) +
+        Number(formDataProposedPlan.MemberResidentialParking || 0) +
+        Number(formDataProposedPlan.MemberCommercialParking || 0) +
+        Number(formDataProposedPlan.MemberVisitorsParking || 0);
 
     useEffect(() => {
         if (!projectId) return;
@@ -269,7 +278,7 @@ export const NewProposedPlan: React.FC = () => {
         if (isDuplicateName) {
             addToast({
                 type: "error",
-                title: "Same Wing Names are not allowed.",
+                title: "Wing name already exists.",
             });
             return;
         }
@@ -345,6 +354,7 @@ export const NewProposedPlan: React.FC = () => {
         }
 
         setBuildingCount(String(formData.TotalNumberOfBuilding ?? ""));
+        setBuildingErrors({});
         setAddBuildingModal(true);
     };
 
@@ -401,7 +411,7 @@ export const NewProposedPlan: React.FC = () => {
     ) => {
         setProposedPlanData(data);
 
-        setPreviousBuildingCount(data.TotalNumberOfBuilding);
+        setPreviousBuildingCount(data.TotalNumberOfBuilding ?? 0);
 
         setFormData({
             ProposedOfferProposedPlanId: data.ProposedOfferProposedPlanId,
@@ -436,51 +446,6 @@ export const NewProposedPlan: React.FC = () => {
         setIsDuplicateModalOpen(true);
     }
 
-    // const handleAddUpdateProposedPlan = async (eOrTotalBuildings?: React.FormEvent | number) => {
-    //     if (typeof eOrTotalBuildings === 'object' && eOrTotalBuildings !== null && 'preventDefault' in eOrTotalBuildings) {
-    //         eOrTotalBuildings.preventDefault();
-    //     }
-
-    //     const totalBuildings = typeof eOrTotalBuildings === 'number'
-    //         ? eOrTotalBuildings
-    //         : formData.TotalNumberOfBuilding;
-
-    //     await runApiWithLoader(
-    //         setIsLoading,
-    //         setLoadingMessage,
-    //         async () => {
-    //             const Payload: AddUpdateProposedPlanRequest = {
-    //                 ProposedOfferProposedPlanId: formData.ProposedOfferProposedPlanId,
-    //                 Uniquekey: formData.Uniquekey,
-    //                 TotalNumberOfBuilding: totalBuildings,
-    //                 ProjectId: Number(projectId),
-    //             };
-
-    //             const response = await proposedOfferService.apiCallAddUpdateProposedPlan(Payload);
-
-    //             if (E.isRight(response)) {
-    //                 addToast({ type: 'success', title: response.right.SuccessMessage[0] });
-
-    //                 const data = response.right.Data?.[0] || null;
-    //                 if (data) {
-    //                     applyBuildingResponseData(data, Number(projectId), true);
-    //                     setAddBuildingModal(false);
-    //                     setPreviousBuildingCount(totalBuildings);
-    //                 }
-    //             } else {
-    //                 addToast({ type: "error", title: response.left?.message });
-    //             }
-    //             return response;
-    //         },
-    //         undefined,
-    //         (error: any) => {
-    //             addToast({ type: 'error', title: error.message });
-    //         },
-    //         undefined,
-    //         Number(formData.ProposedOfferProposedPlanId) === 0 ? 'Add Proposed Plan' : 'Update Proposed Plan'
-    //     );
-    // };
-
     const handleAddUpdateProposedPlan = async (eOrTotalBuildings?: React.FormEvent | number) => {
         if (typeof eOrTotalBuildings === 'object' && eOrTotalBuildings !== null && 'preventDefault' in eOrTotalBuildings) {
             eOrTotalBuildings.preventDefault();
@@ -490,13 +455,21 @@ export const NewProposedPlan: React.FC = () => {
             ? eOrTotalBuildings
             : Number(formData.TotalNumberOfBuilding);
 
+        const validation = validateBuildingFormData();
+
+        if (!validation.isValid) {
+            setBuildingErrors(validation.errors);
+            return;
+        }
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
             async () => {
+
                 const Payload: AddUpdateProposedPlanRequest = {
-                    ProposedOfferProposedPlanId: formData.ProposedOfferProposedPlanId,
-                    Uniquekey: formData.Uniquekey,
+                    ProposedOfferProposedPlanId: (previousBuildingCount === 0) ? 0 : formData.ProposedOfferProposedPlanId,
+                    ...((previousBuildingCount === 0) ? {} : { Uniquekey: formData.Uniquekey }),
                     TotalNumberOfBuilding: totalBuildings,
                     ProjectId: Number(projectId),
                 };
@@ -506,11 +479,8 @@ export const NewProposedPlan: React.FC = () => {
                 if (E.isRight(response)) {
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
-                    const data = response.right.Data?.[0] || null;
-                    if (data) {
-                        applyBuildingResponseData(data, Number(projectId), true);
-                    } else if (totalBuildings === 0) {
-                        // Reset states when total buildings becomes 0
+                    if (totalBuildings === 0) {
+
                         setFormData(prev => ({ ...prev, TotalNumberOfBuilding: 0 }));
                         setProposedPlanData(null);
                         setBuildingTabs([]);
@@ -521,33 +491,52 @@ export const NewProposedPlan: React.FC = () => {
                         });
                         setWingsFormData({});
                         setSavedWingsData({});
+
+                    } else {
+
+                        const data = response.right.Data?.[0] || null;
+
+                        if (data) {
+                            setProposedPlanData(data);
+                            applyBuildingResponseData(data, Number(projectId));
+
+                        }
+
+
                     }
 
-                    // Modal force close on successful API execution
                     setAddBuildingModal(false);
                     setPreviousBuildingCount(totalBuildings);
+
                 } else {
+
                     addToast({ type: "error", title: response.left?.message });
                 }
+
                 return response;
             },
             undefined,
+
             (error: any) => {
+
                 addToast({ type: 'error', title: error.message });
             },
+
             undefined,
+
             Number(formData.ProposedOfferProposedPlanId) === 0 ? 'Add Proposed Plan' : 'Update Proposed Plan'
         );
     };
 
     const PushProposedPlanFormData = (): FormData => {
-
         const form = new FormData();
 
+        const wingCount = Number(formDataProposedPlan.TotalNumberOfWing || 0);
+
         form.append('ProposedOfferProposedPlanId', formDataProposedPlan.ProposedOfferProposedPlanId?.toString() || '');
-        form.append('Uniquekey', formDataProposedPlan.Uniquekey || '');
+        if (formDataProposedPlan.Uniquekey != '') form.append('Uniquekey', (formDataProposedPlan.Uniquekey || ''));
         form.append('ProjectId', String(projectId));
-        form.append('TotalNumberOfWing', String(formDataProposedPlan.TotalNumberOfWing ?? 0));
+        form.append('TotalNumberOfWing', String(wingCount));
         form.append('TotalPodium', String(formDataProposedPlan.TotalPodium ?? 0));
         form.append('SalesResidentialParking', String(formDataProposedPlan.SalesResidentialParking ?? 0));
         form.append('SalesCommercialParking', String(formDataProposedPlan.SalesCommercialParking ?? 0));
@@ -557,28 +546,29 @@ export const NewProposedPlan: React.FC = () => {
         form.append('MemberVisitorsParking', String(formDataProposedPlan.MemberVisitorsParking ?? 0));
         form.append("BuildingProposedPlanId", String(formDataProposedPlan.BuildingProposedPlanId));
         form.append("TotalParking", String(finalTotalParkingCount));
-        form.append(
-            "TotalUnits",
-            String(
-                Object.values(savedWingsData).reduce(
-                    (sum, wing) =>
-                        sum +
+
+        const activeWingsArray = wingCount === 0
+            ? []
+            : Object.entries(savedWingsData)
+                .filter(([key]) => Number(key) <= wingCount)
+                .map(([_, wing]) => ({
+                    ...wing,
+                    BuildingName: activeBuilding,
+                    TotalNumberOfUnits:
                         Number(wing.TotalNumberOfUnitsForMember || 0) +
                         Number(wing.TotalNumberOfUnitsForSale || 0),
-                    0
-                )
-            )
-        );
+                }));
 
-        const savedWingsArray = Object.values(savedWingsData).map(wing => ({
-            ...wing,
-            BuildingName: activeBuilding,
-            TotalNumberOfUnits:
-                Number(wing.TotalNumberOfUnitsForMember || 0) +
-                Number(wing.TotalNumberOfUnitsForSale || 0),
-        }));
+        const calculatedTotalUnits = wingCount === 0
+            ? 0
+            : activeWingsArray.reduce(
+                (sum, wing) => sum + Number(wing.TotalNumberOfUnits || 0),
+                0
+            );
 
-        form.append('WingProposedPlanJSON', JSON.stringify(savedWingsArray));
+        form.append("TotalUnits", String(calculatedTotalUnits));
+        form.append('WingProposedPlanJSON', JSON.stringify(activeWingsArray));
+
         form.append('Amenities', Array.isArray(formDataProposedPlan.Amenities)
             ? formDataProposedPlan.Amenities.join(",")
             : formDataProposedPlan.Amenities || '');
@@ -595,7 +585,6 @@ export const NewProposedPlan: React.FC = () => {
                 form.append('ThreeDViewURL', file);
             }
         });
-
         form.append('RemoveThreeDViewURL', removedThreeDViewUrls.join(','));
 
         walkThroughViewFiles.forEach(file => {
@@ -603,7 +592,6 @@ export const NewProposedPlan: React.FC = () => {
                 form.append('WalkthroughViewURL', file);
             }
         });
-
         form.append('RemoveWalkthroughViewURL', removedWalkThroughViewUrls.join(','));
 
         salesPlanDocumentFiles.forEach(file => {
@@ -611,10 +599,10 @@ export const NewProposedPlan: React.FC = () => {
                 form.append('SalesPlanURL', file);
             }
         });
-
         form.append('RemoveSalesPlanURL', removedSalesPlanDocumentUrls.join(','));
+
         return form;
-    }
+    };
 
     const PushDuplicateData = (): CopyProposedPlanRequest => {
 
@@ -635,12 +623,26 @@ export const NewProposedPlan: React.FC = () => {
         const newErrors: { [key: string]: string } = {};
 
         if (selectedDuplicateTargets.length === 0) {
-            newErrors.copyBuildingProposedPlanId = 'Duplicate To is required.';
+            newErrors.copyBuildingProposedPlanId = 'Applicable Building is required.';
         }
 
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
+        };
+    };
+
+    const validateBuildingFormData = () => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (!buildingCount.trim()) {
+            newErrors.TotalNumberOfBuilding =
+                "Total Number Of Buildings are required.";
+        }
+
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors,
         };
     };
 
@@ -683,21 +685,17 @@ export const NewProposedPlan: React.FC = () => {
                 return response;
             },
             undefined,
+
             (error: any) => {
+
                 addToast({ type: 'error', title: error.message })
             },
+
             undefined,
+
             formDataProposedPlan.BuildingProposedPlanId ? "Update Proposed Plan" : "Add Proposed Plan"
         );
     };
-
-    const finalTotalParkingCount =
-        Number(formDataProposedPlan.SalesResidentialParking || 0) +
-        Number(formDataProposedPlan.SalesCommercialParking || 0) +
-        Number(formDataProposedPlan.SalesVisitorsParking || 0) +
-        Number(formDataProposedPlan.MemberResidentialParking || 0) +
-        Number(formDataProposedPlan.MemberCommercialParking || 0) +
-        Number(formDataProposedPlan.MemberVisitorsParking || 0);
 
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-10">
@@ -716,8 +714,11 @@ export const NewProposedPlan: React.FC = () => {
                             colorMode="gradient_dark"
                             defineWidth
                             onClick={handleAddBuilding}
+
                         >
-                            + Add Building
+                            {Number(formData.TotalNumberOfBuilding || buildingsCount || 0) > 0
+                                ? 'Add / Update Building'
+                                : 'Add Building'}
                         </Button>
                     </>
                 )}
@@ -730,7 +731,6 @@ export const NewProposedPlan: React.FC = () => {
                     type="text"
                     value={formData.TotalNumberOfBuilding ?? ""}
                     disabled
-
                 />
             </div>
 
@@ -824,7 +824,6 @@ export const NewProposedPlan: React.FC = () => {
                                             <div>
                                                 <Input
                                                     label="Total Wings"
-
                                                     disabled={!isBuildingSelected || !canAction}
                                                     placeholder="Enter Number Of Wings"
                                                     type="text"
@@ -832,38 +831,42 @@ export const NewProposedPlan: React.FC = () => {
                                                     onChange={(e) => {
                                                         const filteredVal = filterNumbers(e.target.value);
                                                         const newWingCount = filteredVal !== '' ? Number(filteredVal) : null;
+
                                                         handleFieldChangeProposedPlan("TotalNumberOfWing", newWingCount);
+
+                                                        const targetCount = newWingCount ?? 0;
+
+
                                                         setWingsFormData((prev) => {
-                                                            const updated = { ...prev };
-                                                            for (let i = 1; i <= (newWingCount ?? 0); i++) {
-                                                                if (!updated[i]) {
-                                                                    updated[i] = initialFormStateWingPlan();
-                                                                }
+                                                            if (targetCount === 0) return {};
+                                                            const updated: typeof prev = {};
+                                                            for (let i = 1; i <= targetCount; i++) {
+                                                                updated[i] = prev[i] || initialFormStateWingPlan();
                                                             }
                                                             return updated;
                                                         });
+
                                                         setSavedWingsData((prev) => {
-                                                            const updated = { ...prev };
-                                                            for (let i = 1; i <= (newWingCount ?? 0); i++) {
-                                                                if (!updated[i]) {
-                                                                    updated[i] = initialFormStateWingPlan();
-                                                                }
+                                                            if (targetCount === 0) return {};
+                                                            const updated: typeof prev = {};
+                                                            for (let i = 1; i <= targetCount; i++) {
+                                                                if (prev[i]) updated[i] = prev[i];
                                                             }
                                                             return updated;
                                                         });
+
                                                         setWingsErrors((prev) => {
-                                                            const updated = { ...prev };
-                                                            for (let i = 1; i <= (newWingCount ?? 0); i++) {
-                                                                if (!updated[i]) {
-                                                                    updated[i] = {};
-                                                                }
+                                                            if (targetCount === 0) return {};
+                                                            const updated: typeof prev = {};
+                                                            for (let i = 1; i <= targetCount; i++) {
+                                                                updated[i] = prev[i] || {};
                                                             }
                                                             return updated;
                                                         });
                                                     }}
-
                                                     maxLength={2}
                                                 />
+
                                             </div>
                                         </div>
                                         <div>
@@ -904,9 +907,7 @@ export const NewProposedPlan: React.FC = () => {
                                                     title={
                                                         <div className="font-medium text-md flex items-center gap-2 ">
                                                             <span>
-                                                                {currentFormData.BuildingName
-                                                                    ? `Building ${currentFormData.BuildingName} Wing Details`
-                                                                    : `Wing ${wingNumber} Details`}
+                                                                {`Wing ${wingNumber} Details`}
                                                                 {currentFormData.Wings ? ` - ${currentFormData.Wings}` : ''}
                                                             </span>
                                                         </div>
@@ -919,6 +920,7 @@ export const NewProposedPlan: React.FC = () => {
                                                                         <Input
                                                                             type="text"
                                                                             label="Wing Name"
+                                                                            required
                                                                             disabled={!canAction}
                                                                             value={currentFormData.Wings || ""}
                                                                             onChange={(e) =>
@@ -1116,7 +1118,7 @@ export const NewProposedPlan: React.FC = () => {
                                             onRemoveExisting={(removedUrl) => {
                                                 setRemovedThreeDViewUrls((prev) => [...prev, removedUrl]);
                                             }}
-                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
 
                                         />
 
@@ -1130,7 +1132,7 @@ export const NewProposedPlan: React.FC = () => {
                                             onRemoveExisting={(removedUrl) => {
                                                 setRemovedWalkThroughViewUrls((prev) => [...prev, removedUrl]);
                                             }}
-                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                         />
 
                                         <MultiFilePicker
@@ -1143,7 +1145,7 @@ export const NewProposedPlan: React.FC = () => {
                                             onRemoveExisting={(removedUrl) => {
                                                 setRemovedSalesPlanDocumentUrls((prev) => [...prev, removedUrl]);
                                             }}
-                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                         />
                                     </div>
                                 </div>
@@ -1290,7 +1292,6 @@ export const NewProposedPlan: React.FC = () => {
                         onSave={handleSaveProposedPlan}
                         isLoading={isLoading}
                     />
-
                 </>
             )
                 : (
@@ -1343,24 +1344,24 @@ export const NewProposedPlan: React.FC = () => {
 
             <Modal
                 isOpen={addBuildingModal}
+
                 onClose={() => {
                     setAddBuildingModal(false);
+                    setBuildingErrors({});
                 }}
+
                 onCancel={() => {
                     setAddBuildingModal(false);
+                    setBuildingErrors({});
                 }}
-                title="Add Building"
+
+                title={`${previousBuildingCount > 0 ? 'Update Building' : 'Add Building'}`}
+
                 onSubmit={(e) => {
                     if (e && typeof e === 'object' && 'preventDefault' in e) e.preventDefault();
 
                     const trimmedCount = buildingCount.trim();
                     const count = Number(trimmedCount);
-
-
-                    if (trimmedCount === '' || Number.isNaN(count) || count < 0) {
-                        addToast({ type: 'error', title: 'Please enter a valid non-negative number.' });
-                        return;
-                    }
 
                     handleAddUpdateProposedPlan(count);
                 }}
@@ -1377,6 +1378,8 @@ export const NewProposedPlan: React.FC = () => {
                             onChange={(e) => setBuildingCount(e.target.value)}
                             placeholder="Enter Total Number Of Buildings"
                             maxLength={2}
+                            required
+                            error={buildingErrors.TotalNumberOfBuilding}
                         />
                     </div>
                 </div>

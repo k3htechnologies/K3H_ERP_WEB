@@ -59,9 +59,9 @@ export const fetchProjectBankDropdown = async (_pageNumber: number, params?: { p
   }
 };
 
-export const fetchProjectBankDropdownById = async (projectId: number) => {
+export const fetchProjectBankDropdownById = async (projectId: number,BankName?: string, IsCheckPermission?: boolean) => {
 
-  const responseEither = await projectMasterService.apiCallPullProjectMasterWithBankDetails(projectId);
+  const responseEither = await projectMasterService.apiCallPullProjectMasterWithBankDetails(projectId,BankName,IsCheckPermission);
 
   if (E.isLeft(responseEither)) return null;
 

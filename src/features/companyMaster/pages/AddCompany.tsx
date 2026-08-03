@@ -14,7 +14,7 @@ import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { MultiImageViewer } from '@/ui/components/ImageViewer/ImageViewer';
 import { Edit, IdCard, Mail, Phone, Trash2 } from 'lucide-react';
-import { calculateMergedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterTAN, hasAnyDocumentFile, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidTAN, mergeFiles } from '@/core/utils/fileValidation';
+import { calculateMergedFiles, calculateRemovedFiles, createFileUrlString, filterCIN, filterEmail, filterGST, filterLandline, filterLetters, filterMobile, filterPAN, filterPercentage, filterTAN, hasAnyDocumentFile, hasAnyFile, isAtLeastAge, isValidAadhaar, isValidCIN, isValidEmail, isValidGST, isValidMobile, isValidPAN, isValidTAN, mergeFiles } from '@/core/utils/fileValidation';
 import { runApiWithLoader } from '@/core/utils';
 import { companyMasterService } from '@/features/companyMaster/services/CompanyMasterService';
 import * as E from 'fp-ts/Either';
@@ -385,9 +385,9 @@ const AddCompany: React.FC = () => {
 
     // Email
     if (!formData.EmailId?.trim()) {
-      newErrors.EmailId = "Email Id is required.";
+      newErrors.EmailId = "E-Mail ID is required.";
     } else if (!isValidEmail(formData.EmailId?.trim())) {
-      newErrors.EmailId = "Enter a Valid E-mail Address";
+      newErrors.EmailId = "Enter a Valid E-Mail ID";
     }
 
 
@@ -684,7 +684,7 @@ const AddCompany: React.FC = () => {
       },
       {
         key: 'EmailId',
-        label: 'Email ID',
+        label: 'E-Mail ID',
         width: '20',
         sortable: false,
         align: 'left',
@@ -886,9 +886,9 @@ const AddCompany: React.FC = () => {
     }
 
     if (!formDataCompanyPartner.EmailId?.trim()) {
-      newErrorsCompanyPartner.EmailId = 'E-mail Id is required'
+      newErrorsCompanyPartner.EmailId = 'E-Mail ID is required'
     } else if (!isValidEmail(formDataCompanyPartner.EmailId.trim())) {
-      newErrorsCompanyPartner.EmailId = 'Enter a Valid E-mail Id'
+      newErrorsCompanyPartner.EmailId = 'Enter a Valid E-Mail ID'
     }
 
 
@@ -986,17 +986,17 @@ const AddCompany: React.FC = () => {
       return
     }
 
-    const mergedPhotoFiles = editingCompanyPartnerMasterData
-      ? mergeFiles(editingCompanyPartnerMasterData.row._photoFiles, companyPartnerPhotoURLFiles, removedCompanyPartnerPhotoURLs)
-      : companyPartnerPhotoURLFiles.slice();
+    const finalRemovedPhotoURLs = editingCompanyPartnerMasterData ? calculateRemovedFiles(editingCompanyPartnerMasterData.row._photoFiles, companyPartnerPhotoURLFiles, removedCompanyPartnerPhotoURLs) : removedCompanyPartnerPhotoURLs;
 
-    const mergedAadharFiles = editingCompanyPartnerMasterData
-      ? mergeFiles(editingCompanyPartnerMasterData.row._aadharCardFiles, companyPartnerAadhaarCardURLFiles, removedCompanyPartnerAadhaarCardURLs)
-      : companyPartnerAadhaarCardURLFiles.slice();
+    const mergedPhotoFiles = editingCompanyPartnerMasterData ? mergeFiles(editingCompanyPartnerMasterData.row._photoFiles, companyPartnerPhotoURLFiles, finalRemovedPhotoURLs) : companyPartnerPhotoURLFiles.slice();
 
-    const mergedPanFiles = editingCompanyPartnerMasterData
-      ? mergeFiles(editingCompanyPartnerMasterData.row._panCardFiles, companyPartnerPANURLFiles, removedCompanyPartnerPANURLs)
-      : companyPartnerPANURLFiles.slice();
+    const finalRemovedAadharURLs = editingCompanyPartnerMasterData ? calculateRemovedFiles(editingCompanyPartnerMasterData.row._aadharCardFiles, companyPartnerAadhaarCardURLFiles, removedCompanyPartnerAadhaarCardURLs) : removedCompanyPartnerAadhaarCardURLs;
+
+    const mergedAadharFiles = editingCompanyPartnerMasterData ? mergeFiles(editingCompanyPartnerMasterData.row._aadharCardFiles, companyPartnerAadhaarCardURLFiles, finalRemovedAadharURLs) : companyPartnerAadhaarCardURLFiles.slice();
+
+    const finalRemovedPanCardURLs = editingCompanyPartnerMasterData ? calculateRemovedFiles(editingCompanyPartnerMasterData.row._panCardFiles, companyPartnerPANURLFiles, removedCompanyPartnerPANURLs) : removedCompanyPartnerPANURLs;
+
+    const mergedPanFiles = editingCompanyPartnerMasterData ? mergeFiles(editingCompanyPartnerMasterData.row._panCardFiles, companyPartnerPANURLFiles, finalRemovedPanCardURLs) : companyPartnerPANURLFiles.slice();
 
     const partnerToSave: CompanyPartnerData & {
       _photoFiles?: (File | string)[];
@@ -1039,9 +1039,9 @@ const AddCompany: React.FC = () => {
       _aadharCardFiles: mergedAadharFiles,
 
       // -------- REMOVED URLS ----------
-      RemovePhotoURL: removedCompanyPartnerPhotoURLs.join(','),
-      RemovePanCardURL: removedCompanyPartnerPANURLs.join(','),
-      RemoveAadharCardURL: removedCompanyPartnerAadhaarCardURLs.join(','),
+      RemovePhotoURL: finalRemovedPhotoURLs.join(","),
+      RemovePanCardURL: finalRemovedPanCardURLs.join(','),
+      RemoveAadharCardURL: finalRemovedAadharURLs.join(','),
 
       CreatedById: editingCompanyPartnerMasterData?.row.CreatedById ?? 0,
       CreatedBy: editingCompanyPartnerMasterData?.row.CreatedBy || '',
@@ -1312,7 +1312,7 @@ const AddCompany: React.FC = () => {
             <div>
 
               <Input
-                label='Email Id'
+                label='E-Mail ID'
                 required
                 type="text"
                 value={formData.EmailId}
@@ -1322,7 +1322,7 @@ const AddCompany: React.FC = () => {
                   const emailId = filterEmail(e.target.value);
                   handleFieldChange('EmailId', emailId)
                 }}
-                placeholder="Enter Valid E-mail Id"
+                placeholder="Enter Valid E-Mail ID"
               />
 
             </div>
@@ -1727,6 +1727,7 @@ const AddCompany: React.FC = () => {
                 value={companyLetterHeadFooterFiles}
                 error={errors.CompanyLetterheadFooterURL}
                 onChange={(files) => {
+                  
                   if (hasInvalidFileFormat(files)) {
                     addToast({ type: "error", title: invalidFormatMessage("Company Letterhead Footer") });
                     return;
@@ -1946,7 +1947,7 @@ const AddCompany: React.FC = () => {
 
 
             <Input
-              label='Email Id'
+              label='E-Mail ID'
               required
               error={errorsCompanyPartner.EmailId}
               type="text"
@@ -1955,7 +1956,7 @@ const AddCompany: React.FC = () => {
               onChange={e =>
                 handleFieldChangeCompanyPartner('EmailId', filterEmail(e.target.value))
               }
-              placeholder="Enter E-mail Id"
+              placeholder="Enter E-Mail ID"
             />
 
 

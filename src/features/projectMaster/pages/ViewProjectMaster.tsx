@@ -629,7 +629,7 @@ export const ViewProjectMaster: React.FC = () => {
                                                 )}
                                             </div>
 
-                                            <FieldItem label="Bussiness Category" value={editProjectData?.BussinessCategory} isRow />
+                                            <FieldItem label="Business Category" value={editProjectData?.BussinessCategory} isRow />
                                             <FieldItem label="Federation" value={editProjectData?.IsFederation ? "YES" : "NO"} isRow />
                                             <FieldItem label="Federation Amount" value={formatCurrency(editProjectData?.FederationAmount ?? 0)} isRow />
                                         </div>
@@ -1160,7 +1160,7 @@ export const ViewProjectMaster: React.FC = () => {
                                         <FieldItem label="Firms Type" value={c.FirmsType ?? "-"} />
                                         <FieldItem label="Contact Person" value={c.ContactPerson ?? "-"} />
                                         <FieldItem label="Mobile Number" value={`+91 ${c.MobileNumber ?? "-"}`} />
-                                        <FieldItem label="E-mail Id" value={c.EmailId ?? "-"} />
+                                        <FieldItem label="E-Mail ID" value={c.EmailId ?? "-"} />
                                         <FieldItem label="PAN Number" value={c?.PANNumber ?? '-'} urls={c?.PanCardURL} isIcon />
                                         <FieldItem label="GST Number" value={c?.GSTNumber ?? '-'} urls={c?.GSTCertificateURL} isIcon />
                                         <FieldItem label="CIN Number" value={c?.CINNumber ?? '-'} urls={c?.CINURL} isIcon />

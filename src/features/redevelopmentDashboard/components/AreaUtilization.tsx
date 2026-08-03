@@ -4,7 +4,7 @@ interface Props {
   tenantData: any[];
 }
 
-const COLORS = ["#3b82f6", "#6366f1", "#8b5cf6"];
+const COLORS = ["#2563EB", "#16A34A", "#F97316"];
 
 export default function AreaUtilization({ tenantData }: Props) {
 
@@ -52,7 +52,7 @@ export default function AreaUtilization({ tenantData }: Props) {
           <div className="flex flex-col justify-center flex-1 gap-4 px-2">
             {data.map((item, index) => {
 
-              const percentage = (item.value / item.value) * 100;
+              const percentage =item.value===0 ? 0 : (item.value / item.value) * 100;
 
               const color = COLORS[index % COLORS.length];
 

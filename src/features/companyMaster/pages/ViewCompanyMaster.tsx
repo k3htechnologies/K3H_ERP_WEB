@@ -199,7 +199,7 @@ export const ViewCompanyMaster: React.FC = () => {
                                 </div>
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
-                                    <FieldItem label="Email Id" value={editCompanyData?.EmailId ?? "-"} />
+                                    <FieldItem label="E-Mail ID" value={editCompanyData?.EmailId ?? "-"} />
                                     <FieldItem label="Land Line Number" value={editCompanyData?.LandLineNumber ?? "-"} />
                                 </div>
                             </section>

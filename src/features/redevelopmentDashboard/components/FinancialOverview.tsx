@@ -14,7 +14,7 @@ interface Props {
   tenantApplicantChargesData: any[];
 }
 
-const COLORS = ["#2563EB", "#16A34A", "#F97316", "#8B5CF6", "#8B5CF6"];
+const COLORS = ["#4F46E5", "#10B981", "#F97316", "#F43F5E", "#13367A"];
 
 const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
 
@@ -89,7 +89,7 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
 
               <div className="flex justify-between text-xs text-gray-400 mt-1">
                 <span>Paid : ₹ {financialTotalPaid}</span>
-                <span>Pending ₹ {(financialTotal - financialTotalPaid).toFixed(2)}</span>
+                <span>Pending : ₹ {(financialTotal - financialTotalPaid).toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -110,7 +110,9 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
                     <p className="text-sm">{m.label}</p>
 
                     <p className="text-xs text-gray-400">
-                      {(m.value / financialTotal * 100).toFixed(0)}% of total
+                      {financialTotal > 0
+                        ? `${((m.value / financialTotal) * 100).toFixed(0)}% of total`
+                        : "0% of total"}
                     </p>
                   </div>
 
@@ -135,7 +137,7 @@ const FinancialOverview: React.FC<Props> = ({ tenantApplicantChargesData }) => {
         <div className="col-span-6 h-[275px]">
 
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} barSize={30}>
+            <BarChart data={chartData} barSize={30} style={{ fontFamily: "inherit" }}>
 
               <XAxis dataKey="name" tick={{ fontSize: 10 }} />
 

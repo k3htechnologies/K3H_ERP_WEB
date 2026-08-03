@@ -396,7 +396,7 @@ export const EmployeeMaster: React.FC = () => {
       },
       {
         key: "EmailId",
-        label: "Email Id",
+        label: "E-Mail ID",
         width: "14",
         sortable: false,
         align: "left",
@@ -985,10 +985,10 @@ export const EmployeeMaster: React.FC = () => {
             <div>
               <Input
                 type="text"
-                label="E-mail Id"
+                label="E-Mail ID"
                 value={tempFilters.EmailId || ""}
                 onChange={(e) => handleFilterChange("EmailId", e.target.value)}
-                placeholder="Enter E-mail Id"
+                placeholder="Enter E-Mail ID"
               />
             </div>
             <div>

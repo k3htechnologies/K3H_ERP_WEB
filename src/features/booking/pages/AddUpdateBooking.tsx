@@ -799,7 +799,7 @@ export const AddUpdateBooking: React.FC = () => {
       },
       {
         key: "ApplicantEmailId",
-        label: "Email Id",
+        label: "E-Mail ID",
         width: "15",
         sortable: false,
         align: "center",
@@ -1314,10 +1314,10 @@ export const AddUpdateBooking: React.FC = () => {
     }
 
     if (!formDataForApplicant.ApplicantEmailId?.trim()) {
-      newErrorsBookingApplicant.ApplicantEmailId = "E-mail Id is required";
+      newErrorsBookingApplicant.ApplicantEmailId = "E-Mail ID is required";
     }
     else if (!isValidEmail(formDataForApplicant.ApplicantEmailId.trim())) {
-      newErrorsBookingApplicant.ApplicantEmailId = "Enter a Valid E-mail Id";
+      newErrorsBookingApplicant.ApplicantEmailId = "Enter a Valid E-Mail ID";
     }
 
     const mergedPhotoFiles = editingApplicantData ? calculateMergedFiles(editingApplicantData.row._photoFiles, applicantPhotoFiles, removedApplicantPhotoURLs) : applicantPhotoFiles.slice();
@@ -2962,12 +2962,12 @@ export const AddUpdateBooking: React.FC = () => {
 
             <div>
               <Input
-                label="Email Id"
+                label="E-Mail ID"
                 required
                 error={errorsBookingApplicant.ApplicantEmailId}
                 type="text" value={formDataForApplicant.ApplicantEmailId ?? ""}
                 onChange={(e) => handleFieldChangeBookingApplicant("ApplicantEmailId", filterEmail(e.target.value))}
-                placeholder="Enter Email Id" />
+                placeholder="Enter E-Mail ID" />
             </div>
             <div>
               <MultiFilePicker label="Photo" placeholder="Select Photo" required error={errorsBookingApplicant.PhotoURL} value={applicantPhotoFiles} onChange={setApplicantPhotoFiles} allowedTypes={["image/jpeg", "image/png"]} maxFiles={1} onRemoveExisting={(url) => setRemovedApplicantPhotoURLs((prev) => [...prev, url])} />

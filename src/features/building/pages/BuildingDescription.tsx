@@ -505,7 +505,7 @@ const BuildingDescription: React.FC = () => {
                     </div>
                     <div className="md:col-span-2 lg:col-span-1">
                       <Input
-                        label="Email ID"
+                        label="E-Mail ID"
                         type="text"
                         value={contact.EmailId || ''}
                         onChange={(e) => {
@@ -525,7 +525,7 @@ const BuildingDescription: React.FC = () => {
                             }));
                           }
                         }}
-                        placeholder="Enter Email Id"
+                        placeholder="Enter E-Mail ID"
                         error={contactDetailsErrors[index]?.EmailId}
                       />
                     </div>

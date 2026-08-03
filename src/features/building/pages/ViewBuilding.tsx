@@ -737,7 +737,7 @@ export const ViewBuilding: React.FC = () => {
                                                 <FieldItem label="Contact Type" value={contact.ContactType} />
                                                 <FieldItem label="Contact Name" value={contact.ContactName} />
                                                 <FieldItem label="Mobile Number" value={contact?.MobileNumber ? `+91 ${contact.MobileNumber}` : ''} />
-                                                <FieldItem label="E-mail Id" value={contact.EmailId} />
+                                                <FieldItem label="E-Mail ID" value={contact.EmailId} />
 
                                             </div>
                                         </div>

@@ -973,7 +973,7 @@ export const Profile: React.FC = () => {
             errors.BloodGroup = 'Blood Group is required';
         }
         if (!employeeFormData.EmailId?.trim()) {
-            errors.EmailId = 'Email Id is required';
+            errors.EmailId = 'E-Mail ID is required';
         }
         if (!employeeFormData.PersonalMobileNumber?.trim()) {
             errors.PersonalMobileNumber = 'Personal Mobile Number is required';
@@ -1182,8 +1182,8 @@ export const Profile: React.FC = () => {
                                         <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                                 <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(safe(employeeData!.DateOfBirth))} />
-                                                <FieldItem label="Email ID" value={safe(employeeData!.EmailId)} />
-                                                <FieldItem label="Personal Mobile No." value={employeeData?.PersonalMobileNumber
+                                                <FieldItem label="E-Mail ID" value={safe(employeeData!.EmailId)} />
+                                                <FieldItem label="Personal Mobile Number" value={employeeData?.PersonalMobileNumber
                                                     ? `+91 ${safe(employeeData?.PersonalMobileNumber)}`
                                                     : '-'}
                                                 />
@@ -2156,8 +2156,8 @@ export const Profile: React.FC = () => {
                             placeholder="Enter Last Name"
                         />
                         <Input
-                            label="E-mail Id"
-                            placeholder="Enter E-mail Id"
+                            label="E-Mail ID"
+                            placeholder="Enter E-Mail ID"
                             rightIcon={<Mail className="h-6 w-6 text-gray-400" />}
                             value={employeeFormData.EmailId || ''}
                             onChange={(e) => setEmployeeFormData({ ...employeeFormData, EmailId: e.target.value })}

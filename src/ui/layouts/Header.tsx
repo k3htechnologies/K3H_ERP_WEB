@@ -512,9 +512,9 @@ export const Header: React.FC<HeaderProps> = ({
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <FieldItem label="Employee Code" value={employeeCode} />
-                            <FieldItem label="Personal Mobile Number" value={personalMobileNumber} />
-                            <FieldItem label="Email Id" value={emailId} />
-                            <FieldItem label="Office Email Id" value={officeEmailId} />
+                             <FieldItem label="Personal Mobile Number" value={personalMobileNumber ? `+91 ${(personalMobileNumber)}` : '-'}/>
+                            <FieldItem label="E-Mail ID" value={emailId} />
+                            <FieldItem label="Office E-Mail ID" value={officeEmailId} />
                             <FieldItem label="Branch" value={branch} />
                             <FieldItem
                                 label="Last Login"
@@ -935,7 +935,7 @@ export const Header: React.FC<HeaderProps> = ({
                                                                 </h4>
 
                                                                 <span className="text-sm text-gray-500">
-                                                                    ({emp.PersonalMobileNumber || '-'})
+                                                                    (+91 {emp.PersonalMobileNumber || '-'})
                                                                 </span>
                                                                 <span>{emp.Department || '-'}</span>
 

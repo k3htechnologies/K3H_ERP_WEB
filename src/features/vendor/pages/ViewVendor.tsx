@@ -117,7 +117,7 @@ export const ViewVendor: React.FC = () => {
                 <FieldItem label="Company Name" value={editVendorMasterData?.CompanyName ?? '-'} />
                 <FieldItem label="Company Type" value={editVendorMasterData?.CompanyType ?? '-'} />
                 <FieldItem label="Mobile Number" value={editVendorMasterData?.MobileNumber ?? '-'} />
-                <FieldItem label="Email ID" value={editVendorMasterData?.EmailId ?? '-'} />
+                <FieldItem label="E-Mail ID" value={editVendorMasterData?.EmailId ?? '-'} />
               </div>
             </section>
 

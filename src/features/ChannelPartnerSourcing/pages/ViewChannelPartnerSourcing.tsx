@@ -363,7 +363,7 @@ const ViewChannelPartnerSourcing: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FieldItem label="CP Code" value={editChannelPartnerData?.SystemGeneratedCode || '-'} />
                 <FieldItem label="Full Name" value={editChannelPartnerData?.Name || '-'} />
-                <FieldItem label="E-mail Id" value={editChannelPartnerData?.EmailId || '-'} />
+                <FieldItem label="E-Mail ID" value={editChannelPartnerData?.EmailId || '-'} />
                 <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(editChannelPartnerData?.DateOfBirth ?? "-")} />
                 <FieldItem label="Mobile No" value={!editChannelPartnerData?.MobileNumber ? "-" :  `${editChannelPartnerData?.MobileNumberCountryCode ?? "+91"}  ${editChannelPartnerData?.MobileNumber}`} />
                 

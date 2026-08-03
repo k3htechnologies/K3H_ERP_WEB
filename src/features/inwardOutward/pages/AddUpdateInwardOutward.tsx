@@ -246,9 +246,9 @@ export const AddUpdateInwardOutward: React.FC = () => {
             newErrors.SenderMobileNumber = 'Enter a valid Mobile Number'
         }
         if (!formData.SenderEmailId?.trim()) {
-            newErrors.SenderEmailId = 'Sender E-mail Id is required'
+            newErrors.SenderEmailId = 'Sender E-Mail ID is required'
         } else if (!isValidEmail(formData.SenderEmailId.trim())) {
-            newErrors.SenderEmailId = 'Enter a Valid E-mail Id'
+            newErrors.SenderEmailId = 'Enter a Valid E-Mail ID'
         }
         if (!formData.SenderAddress) {
             newErrors.SenderAddress = "Sender Address is required";
@@ -262,9 +262,9 @@ export const AddUpdateInwardOutward: React.FC = () => {
             newErrors.ReceiverMobileNumber = 'Enter a valid Mobile Number'
         }
         if (!formData.ReceiverEmailId?.trim()) {
-            newErrors.ReceiverEmailId = 'Receiver E-mail Id is required'
+            newErrors.ReceiverEmailId = 'Receiver E-Mail ID is required'
         } else if (!isValidEmail(formData.ReceiverEmailId.trim())) {
-            newErrors.ReceiverEmailId = 'Enter a Valid E-mail Id'
+            newErrors.ReceiverEmailId = 'Enter a Valid E-Mail ID'
         }
         if (!formData.ReceiverAddress) {
             newErrors.ReceiverAddress = "Receiver Address is required";
@@ -280,7 +280,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
             formData.ReceiverEmailId?.trim() &&
             formData.SenderEmailId.trim().toLowerCase() === formData.ReceiverEmailId.trim().toLowerCase()
         ) {
-            console.log("Sender and Receiver Email-Ids should not be the same");
             newErrors.ReceiverEmailId = "Sender and Receiver Email-Ids should not be the same";
             newErrors.SenderEmailId = "Sender and Receiver Email-Ids should not be the same";
         }
@@ -624,7 +623,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
                     <div>
                         <Input
-                            label="Email-Id"
+                            label="E-Mail ID"
                             value={formData.SenderEmailId ?? ''}
                             required
                             onChange={(e) => {
@@ -632,7 +631,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 handleFieldChange("SenderEmailId", emailId);
                             }}
                             error={errors.SenderEmailId}
-                            placeholder="Enter Sender E-mail Id"
+                            placeholder="Enter Sender E-Mail ID"
                             rightIcon={<Mail className="h-8 w-8" />}
                         />
                     </div>
@@ -691,7 +690,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
 
                     <div>
                         <Input
-                            label="Email-Id"
+                            label="E-Mail ID"
                             value={formData.ReceiverEmailId ?? ''}
                             required
                             onChange={(e) => {
@@ -699,7 +698,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 handleFieldChange("ReceiverEmailId", emailId);
                             }}
                             error={errors.ReceiverEmailId}
-                            placeholder="Enter Receiver E-mail Id"
+                            placeholder="Enter Receiver E-Mail ID"
                             rightIcon={<Mail className="h-8 w-8" />}
                         />
                     </div>

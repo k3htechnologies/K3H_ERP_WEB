@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
@@ -11,7 +11,6 @@ import type {
     BuildingProposedPlanData,
     CopyProposedPlanRequest
 } from '@/features/proposedOffer/models/ProposedOfferModel';
-
 import { proposedOfferService } from '@/features/proposedOffer/services/ProposedOfferService';
 import { Loader } from '@/core/utils/loader';
 import { Button, Input } from '@/ui/components/forms';
@@ -24,7 +23,6 @@ import MultiFilePicker from '@/ui/components/ImagePicker/MultiFilePicker';
 import MultiSelectCheckBoxWithCategory from '@/ui/components/forms/MultiSelectCheckBoxWithCategory';
 import { ExpandableCard } from '@/ui/components/Card/ExpandableCard';
 import Tabs from '@/ui/components/Tab/Tab';
-import ConfirmationDialogBox from '@/core/utils/confirmationDialogBox';
 import { Modal } from '@/ui/components/Modal/Modal';
 import MultiSelectPagination from '@/ui/components/DropDown/Multiselectpagination';
 import NoDataView from '@/ui/components/NoDataView/NoDataView';
@@ -83,6 +81,7 @@ export const ProposedPlan: React.FC = () => {
         { id: 'Ammenities', label: 'Ammenities' },
     ];
 
+    const [buildingCount, setBuildingCount] = useState("");
     const [activeBuilding, setActiveBuilding] = useState('Building 1');
     const [activeTab, setActiveTab] = useState(ProposedPlanTabList[0].id);
     const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
@@ -102,29 +101,38 @@ export const ProposedPlan: React.FC = () => {
     const [salesPlanDocumentFiles, setSalesPlanDocumentFiles] = useState<(File | string)[]>([]);
     const [removedSalesPlanDocumentUrls, setRemovedSalesPlanDocumentUrls] = useState<string[]>([]);
     const [salesPlanDocumentURL, setSalesPlanDocumentURL] = useState<string>();
-    const { addToast } = useToast();
     const [errorsProposedPlan, setErrorsProposedPlan] = useState<{ [k: string]: string }>({});
     const [formDataProposedPlan, setFormDataProposedPlan] = useState<AddUpdateBuildingProposedPlanRequest>(() => initialFormStateProposedPlan());
-    const [isProposedPlanUpdateDialogOpen, setIsProposedPlanUpdateDialogOpen] = useState(false);
     const [wingsFormData, setWingsFormData] = useState<{ [key: number]: WingProposedPlanData }>({});
     const [savedWingsData, setSavedWingsData] = useState<{ [key: number]: WingProposedPlanData }>({});
     const [wingsErrors, setWingsErrors] = useState<{ [key: number]: { [k: string]: string } }>({});
-    const { canAction } = useMenuPermissions();
-    const { projectId } = useProject();
     const [formData, setFormData] = useState<AddUpdateProposedPlanRequest>(() => initialFormState());
-    const [previousBuildingCount, setPreviousBuildingCount] = useState<number>();
+    const [previousBuildingCount, setPreviousBuildingCount] = useState<number>(0);
     const [buildingTabs, setBuildingTabs] = useState<{ id: string; label: string }[]>([]);
     const [buildingPlanDataMap, setBuildingPlanDataMap] = useState<Record<string, BuildingProposedPlanData>>({});
-
+    const [addBuildingModal, setAddBuildingModal] = useState(false);
     const [duplicateErrors, setDuplicateErrors] = useState<{ [k: string]: string }>({});
+    const [buildingErrors, setBuildingErrors] = useState<{ [k: string]: string }>({});
 
-    const totalBuildingInputRef = useRef<HTMLInputElement>(null);
-    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const pendingTotalBuildingsRef = useRef<number>(0);
+    const { addToast } = useToast();
+    const { canAction } = useMenuPermissions();
+    const { projectId } = useProject();
 
     const isBuildingSelected = Number(formData.TotalNumberOfBuilding) > 0;
     const buildingsCount = proposedPlanData?.BuildingProposedPlanData?.length;
+    const amenitiesCount = Array.isArray(formDataProposedPlan.Amenities)
+        ? formDataProposedPlan.Amenities.length
+        : typeof formDataProposedPlan.Amenities === "string" && formDataProposedPlan.Amenities.length > 0
+            ? formDataProposedPlan.Amenities.split(",").length
+            : 0;
 
+    const finalTotalParkingCount =
+        Number(formDataProposedPlan.SalesResidentialParking || 0) +
+        Number(formDataProposedPlan.SalesCommercialParking || 0) +
+        Number(formDataProposedPlan.SalesVisitorsParking || 0) +
+        Number(formDataProposedPlan.MemberResidentialParking || 0) +
+        Number(formDataProposedPlan.MemberCommercialParking || 0) +
+        Number(formDataProposedPlan.MemberVisitorsParking || 0);
 
     useEffect(() => {
         if (!projectId) return;
@@ -146,6 +154,8 @@ export const ProposedPlan: React.FC = () => {
     }, [projectId]);
 
     const fetchProposedPlanData = async () => {
+
+
         await runApiWithLoader(
             setIsLoading,
             setLoadingMessage,
@@ -229,14 +239,6 @@ export const ProposedPlan: React.FC = () => {
         }
     };
 
-    const handleField = (field: keyof AddUpdateProposedPlanRequest, value: any) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-
-        if (errorsProposedPlan[field]) {
-            setErrorsProposedPlan((prev) => ({ ...prev, [field]: "" }));
-        }
-    };
-
     const handleFieldChangeWingPlan = (wingNumber: number, field: keyof WingProposedPlanData, value: any) => {
         setWingsFormData((prev) => ({
             ...prev,
@@ -258,6 +260,31 @@ export const ProposedPlan: React.FC = () => {
     };
 
     const handleSaveWingPlan = (wingNumber: number) => {
+
+        const currentWingData = wingsFormData[wingNumber] || initialFormStateWingPlan();
+        const currentWingName = currentWingData.Wings?.trim()?.toLowerCase();
+
+        if (!currentWingName) {
+            addToast({ type: "error", title: "Please enter a Wing Name." });
+            return;
+        }
+
+        const isDuplicateName = Object.entries(wingsFormData).some(([key, wing]) => {
+            const otherWingNumber = Number(key);
+            return (
+                otherWingNumber !== wingNumber &&
+                wing.Wings?.trim()?.toLowerCase() === currentWingName
+            );
+        });
+
+        if (isDuplicateName) {
+            addToast({
+                type: "error",
+                title: "Wing name already exists.",
+            });
+            return;
+        }
+
         setWingsErrors(prev => ({
             ...prev,
             [wingNumber]: {}
@@ -319,6 +346,20 @@ export const ProposedPlan: React.FC = () => {
         setErrorsProposedPlan({});
     };
 
+    const handleAddBuilding = () => {
+        if (Number(projectId) <= 0) {
+            addToast({
+                type: "error",
+                title: "Please select a project first."
+            });
+            return;
+        }
+
+        setBuildingCount(String(formData.TotalNumberOfBuilding ?? ""));
+        setBuildingErrors({});
+        setAddBuildingModal(true);
+    };
+
     const handleAddDuplicateBuilding = async (e?: React.FormEvent) => {
         e?.preventDefault();
 
@@ -372,7 +413,7 @@ export const ProposedPlan: React.FC = () => {
     ) => {
         setProposedPlanData(data);
 
-        setPreviousBuildingCount(data.TotalNumberOfBuilding);
+        setPreviousBuildingCount(data.TotalNumberOfBuilding ?? 0);
 
         setFormData({
             ProposedOfferProposedPlanId: data.ProposedOfferProposedPlanId,
@@ -407,8 +448,21 @@ export const ProposedPlan: React.FC = () => {
         setIsDuplicateModalOpen(true);
     }
 
-    const handleAddUpdateProposedPlan = async (totalBuildings?: number) => {
+    const handleAddUpdateProposedPlan = async (eOrTotalBuildings?: React.FormEvent | number) => {
+        if (typeof eOrTotalBuildings === 'object' && eOrTotalBuildings !== null && 'preventDefault' in eOrTotalBuildings) {
+            eOrTotalBuildings.preventDefault();
+        }
 
+        const totalBuildings = typeof eOrTotalBuildings === 'number'
+            ? eOrTotalBuildings
+            : Number(formData.TotalNumberOfBuilding);
+
+        const validation = validateBuildingFormData();
+
+        if (!validation.isValid) {
+            setBuildingErrors(validation.errors);
+            return;
+        }
 
         await runApiWithLoader(
             setIsLoading,
@@ -416,49 +470,77 @@ export const ProposedPlan: React.FC = () => {
             async () => {
 
                 const Payload: AddUpdateProposedPlanRequest = {
-
-                    ProposedOfferProposedPlanId: formData.ProposedOfferProposedPlanId,
-                    Uniquekey: formData.Uniquekey,
-                    TotalNumberOfBuilding: totalBuildings ?? formData.TotalNumberOfBuilding,
+                    ProposedOfferProposedPlanId: (previousBuildingCount === 0) ? 0 : formData.ProposedOfferProposedPlanId,
+                    ...((previousBuildingCount === 0) ? {} : { Uniquekey: formData.Uniquekey }),
+                    TotalNumberOfBuilding: totalBuildings,
                     ProjectId: Number(projectId),
-
                 };
 
                 const response = await proposedOfferService.apiCallAddUpdateProposedPlan(Payload);
 
                 if (E.isRight(response)) {
-
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
-                    const data = response.right.Data?.[0] || null;
-                    if (data) {
-                        applyBuildingResponseData(data, Number(projectId), true);
-                        setIsProposedPlanUpdateDialogOpen(false);
-                        setPreviousBuildingCount(totalBuildings);
+                    if (totalBuildings === 0) {
+
+                        setFormData(prev => ({ ...prev, TotalNumberOfBuilding: 0 }));
+                        setProposedPlanData(null);
+                        setBuildingTabs([]);
+                        setBuildingPlanDataMap({});
+                        setFormDataProposedPlan({
+                            ...initialFormStateProposedPlan(),
+                            ProjectId: Number(projectId)
+                        });
+                        setWingsFormData({});
+                        setSavedWingsData({});
+
+                    } else {
+
+
+
+                        const data = response.right.Data?.[0] || null;
+
+                        if (data) {
+                            setProposedPlanData(data);
+                            applyBuildingResponseData(data, Number(projectId));
+
+                        }
+
+
                     }
 
+                    setAddBuildingModal(false);
+                    setPreviousBuildingCount(totalBuildings);
+
                 } else {
+
                     addToast({ type: "error", title: response.left?.message });
                 }
+
                 return response;
             },
             undefined,
+
             (error: any) => {
-                addToast({ type: 'error', title: error.message })
+
+                addToast({ type: 'error', title: error.message });
             },
+
             undefined,
+
             Number(formData.ProposedOfferProposedPlanId) === 0 ? 'Add Proposed Plan' : 'Update Proposed Plan'
-        )
+        );
     };
 
     const PushProposedPlanFormData = (): FormData => {
-
         const form = new FormData();
 
+        const wingCount = Number(formDataProposedPlan.TotalNumberOfWing || 0);
+
         form.append('ProposedOfferProposedPlanId', formDataProposedPlan.ProposedOfferProposedPlanId?.toString() || '');
-        form.append('Uniquekey', formDataProposedPlan.Uniquekey || '');
+        if (formDataProposedPlan.Uniquekey != '') form.append('Uniquekey', (formDataProposedPlan.Uniquekey || ''));
         form.append('ProjectId', String(projectId));
-        form.append('TotalNumberOfWing', String(formDataProposedPlan.TotalNumberOfWing ?? 0));
+        form.append('TotalNumberOfWing', String(wingCount));
         form.append('TotalPodium', String(formDataProposedPlan.TotalPodium ?? 0));
         form.append('SalesResidentialParking', String(formDataProposedPlan.SalesResidentialParking ?? 0));
         form.append('SalesCommercialParking', String(formDataProposedPlan.SalesCommercialParking ?? 0));
@@ -468,28 +550,29 @@ export const ProposedPlan: React.FC = () => {
         form.append('MemberVisitorsParking', String(formDataProposedPlan.MemberVisitorsParking ?? 0));
         form.append("BuildingProposedPlanId", String(formDataProposedPlan.BuildingProposedPlanId));
         form.append("TotalParking", String(finalTotalParkingCount));
-        form.append(
-            "TotalUnits",
-            String(
-                Object.values(savedWingsData).reduce(
-                    (sum, wing) =>
-                        sum +
+
+        const activeWingsArray = wingCount === 0
+            ? []
+            : Object.entries(savedWingsData)
+                .filter(([key]) => Number(key) <= wingCount)
+                .map(([_, wing]) => ({
+                    ...wing,
+                    BuildingName: activeBuilding,
+                    TotalNumberOfUnits:
                         Number(wing.TotalNumberOfUnitsForMember || 0) +
                         Number(wing.TotalNumberOfUnitsForSale || 0),
-                    0
-                )
-            )
-        );
+                }));
 
-        const savedWingsArray = Object.values(savedWingsData).map(wing => ({
-            ...wing,
-            BuildingName: activeBuilding,
-            TotalNumberOfUnits:
-                Number(wing.TotalNumberOfUnitsForMember || 0) +
-                Number(wing.TotalNumberOfUnitsForSale || 0),
-        }));
+        const calculatedTotalUnits = wingCount === 0
+            ? 0
+            : activeWingsArray.reduce(
+                (sum, wing) => sum + Number(wing.TotalNumberOfUnits || 0),
+                0
+            );
 
-        form.append('WingProposedPlanJSON', JSON.stringify(savedWingsArray));
+        form.append("TotalUnits", String(calculatedTotalUnits));
+        form.append('WingProposedPlanJSON', JSON.stringify(activeWingsArray));
+
         form.append('Amenities', Array.isArray(formDataProposedPlan.Amenities)
             ? formDataProposedPlan.Amenities.join(",")
             : formDataProposedPlan.Amenities || '');
@@ -506,7 +589,6 @@ export const ProposedPlan: React.FC = () => {
                 form.append('ThreeDViewURL', file);
             }
         });
-
         form.append('RemoveThreeDViewURL', removedThreeDViewUrls.join(','));
 
         walkThroughViewFiles.forEach(file => {
@@ -514,7 +596,6 @@ export const ProposedPlan: React.FC = () => {
                 form.append('WalkthroughViewURL', file);
             }
         });
-
         form.append('RemoveWalkthroughViewURL', removedWalkThroughViewUrls.join(','));
 
         salesPlanDocumentFiles.forEach(file => {
@@ -522,10 +603,10 @@ export const ProposedPlan: React.FC = () => {
                 form.append('SalesPlanURL', file);
             }
         });
-
         form.append('RemoveSalesPlanURL', removedSalesPlanDocumentUrls.join(','));
+
         return form;
-    }
+    };
 
     const PushDuplicateData = (): CopyProposedPlanRequest => {
 
@@ -546,12 +627,26 @@ export const ProposedPlan: React.FC = () => {
         const newErrors: { [key: string]: string } = {};
 
         if (selectedDuplicateTargets.length === 0) {
-            newErrors.copyBuildingProposedPlanId = 'Duplicate To is required.';
+            newErrors.copyBuildingProposedPlanId = 'Applicable Building is required.';
         }
 
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
+        };
+    };
+
+    const validateBuildingFormData = () => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (!buildingCount.trim()) {
+            newErrors.TotalNumberOfBuilding =
+                "Total Number Of Buildings are required.";
+        }
+
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors,
         };
     };
 
@@ -594,47 +689,16 @@ export const ProposedPlan: React.FC = () => {
                 return response;
             },
             undefined,
+
             (error: any) => {
+
                 addToast({ type: 'error', title: error.message })
             },
+
             undefined,
+
             formDataProposedPlan.BuildingProposedPlanId ? "Update Proposed Plan" : "Add Proposed Plan"
         );
-    };
-
-    const finalTotalParkingCount =
-        Number(formDataProposedPlan.SalesResidentialParking || 0) +
-        Number(formDataProposedPlan.SalesCommercialParking || 0) +
-        Number(formDataProposedPlan.SalesVisitorsParking || 0) +
-        Number(formDataProposedPlan.MemberResidentialParking || 0) +
-        Number(formDataProposedPlan.MemberCommercialParking || 0) +
-        Number(formDataProposedPlan.MemberVisitorsParking || 0);
-
-
-    const handleTotalBuildingChange = (value: string) => {
-        const cleanedDigits = filterNumbers(value);
-
-        if (debounceTimerRef.current) {
-            clearTimeout(debounceTimerRef.current);
-            debounceTimerRef.current = null;
-        }
-
-        if (cleanedDigits === "") {
-            handleField("TotalNumberOfBuilding", "");
-            return;
-        }
-
-        const totalBuildings = Number(cleanedDigits);
-        handleField("TotalNumberOfBuilding", totalBuildings);
-
-        if (totalBuildings !== previousBuildingCount) {
-            pendingTotalBuildingsRef.current = totalBuildings;
-
-            debounceTimerRef.current = setTimeout(() => {
-                totalBuildingInputRef.current?.blur();
-                setIsProposedPlanUpdateDialogOpen(true);
-            }, 500);
-        }
     };
 
     return (
@@ -643,25 +707,43 @@ export const ProposedPlan: React.FC = () => {
                 <div></div>
             </Loader>
 
-            <h3 className="text-lg font-semibold text-gray-900 border-b border-[#c6c6c6] pb-2">Plan Details</h3>
+            <div className="flex items-center justify-between border-b border-[#c6c6c6] pb-2">
+                <h3 className="text-lg font-semibold text-gray-900">Plan Details</h3>
+                {canAction && (
+                    <>
+                        <Button
+                            color="blue"
+                            size="mxs"
+                            variant="solid"
+                            colorMode="gradient_dark"
+                            style={{ width: '180px' }}
+                            onClick={handleAddBuilding}>
+                            {Number(formData.TotalNumberOfBuilding || buildingsCount || 0) > 0
+                                ? 'Add / Update Building'
+                                : 'Add Building'}
+                        </Button>
+                    </>
+                )}
+
+            </div>
 
             <div className='mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4'>
                 <Input
                     label="Total Number Of Buildings"
                     type="text"
-                    ref={totalBuildingInputRef}
                     value={formData.TotalNumberOfBuilding ?? ""}
-                    onChange={(e) => handleTotalBuildingChange(e.target.value)}
-                    placeholder="Enter Total Number Of Buildings"
-                    maxLength={2}
+                    disabled
                 />
             </div>
 
             {isBuildingSelected && buildingTabs.length > 0 && (
                 <div className="mt-4 flex items-center justify-between gap-3">
 
-                    <div className="flex-1 overflow-x-auto thin-scroll">
-                        <div className="flex flex-nowrap min-w-max">
+                    <div className="flex-1 overflow-x-auto thin-scroll min-w-0 pb-2">
+                        <div
+                            className="flex flex-nowrap min-w-max items-center gap-2 [&>*]:flex-shrink-0 [&>*]:flex-row [&_div]:flex-nowrap"
+                            style={{ display: 'flex', flexWrap: 'nowrap', whiteSpace: 'wrap' }}
+                        >
                             <Tabs
                                 tabs={buildingTabs}
                                 defaultActive={activeBuilding}
@@ -692,15 +774,21 @@ export const ProposedPlan: React.FC = () => {
 
                     {buildingTabs.length > 1 && (
                         <div className="shrink-0">
-                            <Button
-                                color="blue"
-                                size="mxs"
-                                variant="solid"
-                                colorMode="gradient_dark"
-                                style={{ width: '95px' }}
-                                onClick={handleDuplicateBuilding} >
-                                Duplicate
-                            </Button>
+                            {canAction && (
+                                <>
+                                    <Button
+                                        color="blue"
+                                        size="mxs"
+                                        variant="solid"
+                                        defineWidth
+                                        style={{ width: '95px' }}
+                                        onClick={handleDuplicateBuilding}
+                                    >
+                                        Duplicate
+                                    </Button>
+                                </>
+                            )}
+
                         </div>
                     )}
 
@@ -716,7 +804,13 @@ export const ProposedPlan: React.FC = () => {
                             key={activeBuilding}
                             islarge={false}
                             isChips={true}
-                            onTabChange={(t) => setActiveTab(t.id)}
+                            onTabChange={(t) => {
+                                setActiveTab(t.id);
+                                const currentBuildingData = buildingPlanDataMap[activeBuilding];
+                                if (currentBuildingData) {
+                                    bindBuildingData(currentBuildingData);
+                                }
+                            }}
                         />
                     </div>
 
@@ -733,52 +827,56 @@ export const ProposedPlan: React.FC = () => {
                                             <div>
                                                 <Input
                                                     label="Total Wings"
-                                                    disabled={!isBuildingSelected}
+                                                    disabled={!isBuildingSelected || !canAction}
+                                                    placeholder="Enter Number Of Wings"
                                                     type="text"
-                                                    value={formDataProposedPlan.TotalNumberOfWing || ''}
+                                                    value={formDataProposedPlan.TotalNumberOfWing ?? ''}
                                                     onChange={(e) => {
                                                         const filteredVal = filterNumbers(e.target.value);
-                                                        const newWingCount = filteredVal ? Number(filteredVal) : 0;
+                                                        const newWingCount = filteredVal !== '' ? Number(filteredVal) : null;
+
                                                         handleFieldChangeProposedPlan("TotalNumberOfWing", newWingCount);
+
+                                                        const targetCount = newWingCount ?? 0;
+
+
                                                         setWingsFormData((prev) => {
-                                                            const updated = { ...prev };
-                                                            for (let i = 1; i <= newWingCount; i++) {
-                                                                if (!updated[i]) {
-                                                                    updated[i] = initialFormStateWingPlan();
-                                                                }
+                                                            if (targetCount === 0) return {};
+                                                            const updated: typeof prev = {};
+                                                            for (let i = 1; i <= targetCount; i++) {
+                                                                updated[i] = prev[i] || initialFormStateWingPlan();
                                                             }
                                                             return updated;
                                                         });
+
                                                         setSavedWingsData((prev) => {
-                                                            const updated = { ...prev };
-                                                            for (let i = 1; i <= newWingCount; i++) {
-                                                                if (!updated[i]) {
-                                                                    updated[i] = initialFormStateWingPlan();
-                                                                }
+                                                            if (targetCount === 0) return {};
+                                                            const updated: typeof prev = {};
+                                                            for (let i = 1; i <= targetCount; i++) {
+                                                                if (prev[i]) updated[i] = prev[i];
                                                             }
                                                             return updated;
                                                         });
+
                                                         setWingsErrors((prev) => {
-                                                            const updated = { ...prev };
-                                                            for (let i = 1; i <= newWingCount; i++) {
-                                                                if (!updated[i]) {
-                                                                    updated[i] = {};
-                                                                }
+                                                            if (targetCount === 0) return {};
+                                                            const updated: typeof prev = {};
+                                                            for (let i = 1; i <= targetCount; i++) {
+                                                                updated[i] = prev[i] || {};
                                                             }
                                                             return updated;
                                                         });
                                                     }}
-                                                    placeholder="Enter Total Wings"
                                                     maxLength={2}
-
                                                 />
+
                                             </div>
                                         </div>
                                         <div>
                                             <Input
                                                 label="Number Of Podium"
                                                 type="text"
-                                                disabled={!isBuildingSelected}
+                                                disabled={!isBuildingSelected || !canAction}
                                                 value={formDataProposedPlan.TotalPodium || ''}
                                                 onChange={(e) => handleFieldChangeProposedPlan('TotalPodium', filterNumbers(e.target.value))}
                                                 placeholder="Enter Number Of Podium"
@@ -812,9 +910,7 @@ export const ProposedPlan: React.FC = () => {
                                                     title={
                                                         <div className="font-medium text-md flex items-center gap-2 ">
                                                             <span>
-                                                                {currentFormData.BuildingName
-                                                                    ? `Building ${currentFormData.BuildingName} Wing Details`
-                                                                    : `Wing ${wingNumber} Details`}
+                                                                {`Wing ${wingNumber} Details`}
                                                                 {currentFormData.Wings ? ` - ${currentFormData.Wings}` : ''}
                                                             </span>
                                                         </div>
@@ -827,6 +923,8 @@ export const ProposedPlan: React.FC = () => {
                                                                         <Input
                                                                             type="text"
                                                                             label="Wing Name"
+                                                                            required
+                                                                            disabled={!canAction}
                                                                             value={currentFormData.Wings || ""}
                                                                             onChange={(e) =>
                                                                                 handleFieldChangeWingPlan(
@@ -843,6 +941,7 @@ export const ProposedPlan: React.FC = () => {
                                                                     <div>
                                                                         <Input
                                                                             label="Main Entrance Lobby Area (SqFt)"
+                                                                            disabled={!canAction}
                                                                             value={currentFormData.MainEntranceLobbyAreaSqFt || ""}
                                                                             type="text"
                                                                             onChange={(e) =>
@@ -860,6 +959,7 @@ export const ProposedPlan: React.FC = () => {
                                                                     <div>
                                                                         <Input
                                                                             label="Total Number of Lifts"
+                                                                            disabled={!canAction}
                                                                             placeholder="Enter Total Number of Lifts"
                                                                             type="text"
                                                                             value={currentFormData.TotalNumberOfLifts || ""}
@@ -877,6 +977,7 @@ export const ProposedPlan: React.FC = () => {
                                                                     <div>
                                                                         <Input
                                                                             type="text"
+                                                                            disabled={!canAction}
                                                                             label="Total No. Of Units For Member"
                                                                             value={currentFormData.TotalNumberOfUnitsForMember || ""}
                                                                             onChange={(e) =>
@@ -895,6 +996,7 @@ export const ProposedPlan: React.FC = () => {
                                                                         <Input
                                                                             type="text"
                                                                             label="Total No. Of Units For Sale"
+                                                                            disabled={!canAction}
                                                                             value={currentFormData.TotalNumberOfUnitsForSale || ""}
                                                                             onChange={(e) =>
                                                                                 handleFieldChangeWingPlan(
@@ -922,6 +1024,7 @@ export const ProposedPlan: React.FC = () => {
                                                                         <Input
                                                                             type="text"
                                                                             label="Total Area For Member (SqFt)"
+                                                                            disabled={!canAction}
                                                                             value={currentFormData.TotalNumberOfAreaForMemberSqFt || ""}
                                                                             onChange={(e) =>
                                                                                 handleFieldChangeWingPlan(
@@ -931,6 +1034,7 @@ export const ProposedPlan: React.FC = () => {
                                                                                 )
                                                                             }
                                                                             placeholder="Enter Total Area For Member"
+                                                                            maxLength={7}
 
                                                                         />
                                                                     </div>
@@ -939,6 +1043,7 @@ export const ProposedPlan: React.FC = () => {
                                                                         <Input
                                                                             type="text"
                                                                             label="Total Area For Sale (SqFt)"
+                                                                            disabled={!canAction}
                                                                             value={currentFormData.TotalNumberOfAreaForSaleSqFt || ""}
                                                                             onChange={(e) =>
                                                                                 handleFieldChangeWingPlan(
@@ -948,6 +1053,7 @@ export const ProposedPlan: React.FC = () => {
                                                                                 )
                                                                             }
                                                                             placeholder="Enter Total Area For Sale"
+                                                                            maxLength={7}
                                                                         />
                                                                     </div>
                                                                     <div>
@@ -976,24 +1082,6 @@ export const ProposedPlan: React.FC = () => {
                                                                     isLoading={isLoading}
                                                                 />
                                                             </div>
-
-                                                            <ConfirmationDialogBox
-                                                                title='Add Building'
-                                                                message='Are you sure you want to Add Building'
-                                                                isOpen={isProposedPlanUpdateDialogOpen}
-                                                                onClose={() => {
-                                                                    setIsProposedPlanUpdateDialogOpen(false);
-                                                                    setErrorsProposedPlan({});
-                                                                    setFormDataProposedPlan({});
-                                                                    setDuplicateErrors({});
-                                                                    setSelectedDuplicateTargets([]);
-                                                                }}
-                                                                onConfirm={handleAddUpdateProposedPlan}
-                                                                confirmText="Yes"
-                                                                cancelText="No"
-                                                                loading={isLoading}
-                                                                variant='logout'
-                                                            />
                                                         </div>
                                                     }
                                                 />
@@ -1013,7 +1101,7 @@ export const ProposedPlan: React.FC = () => {
                                         <MultiFilePicker
                                             label="Upload Plan"
                                             placeholder="Upload Plan"
-                                            disabled={!isBuildingSelected}
+                                            disabled={!isBuildingSelected || !canAction}
                                             value={planDocumentFiles}
                                             onChange={setPlanDocumentFiles}
                                             availableFilesURL={planDocumentURL ?? ""}
@@ -1026,41 +1114,41 @@ export const ProposedPlan: React.FC = () => {
                                         <MultiFilePicker
                                             label="Upload 3D View"
                                             placeholder="Upload 3D View"
-                                            disabled={!isBuildingSelected}
+                                            disabled={!isBuildingSelected || !canAction}
                                             value={threeDViewFiles}
                                             onChange={setThreeDViewFiles}
                                             availableFilesURL={threeDViewURL ?? ""}
                                             onRemoveExisting={(removedUrl) => {
                                                 setRemovedThreeDViewUrls((prev) => [...prev, removedUrl]);
                                             }}
-                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
 
                                         />
 
                                         <MultiFilePicker
                                             label="Upload Walkthrough View"
                                             placeholder="Upload Walkthrough View"
-                                            disabled={!isBuildingSelected}
+                                            disabled={!isBuildingSelected || !canAction}
                                             value={walkThroughViewFiles}
                                             onChange={setWalkThroughViewFiles}
                                             availableFilesURL={walkThroughViewURL ?? ""}
                                             onRemoveExisting={(removedUrl) => {
                                                 setRemovedWalkThroughViewUrls((prev) => [...prev, removedUrl]);
                                             }}
-                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                         />
 
                                         <MultiFilePicker
                                             label="Upload Sales Plan"
                                             placeholder="Upload Sales Plan"
-                                            disabled={!isBuildingSelected}
+                                            disabled={!isBuildingSelected || !canAction}
                                             value={salesPlanDocumentFiles}
                                             onChange={setSalesPlanDocumentFiles}
                                             availableFilesURL={salesPlanDocumentURL ?? ""}
                                             onRemoveExisting={(removedUrl) => {
                                                 setRemovedSalesPlanDocumentUrls((prev) => [...prev, removedUrl]);
                                             }}
-                                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                            allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                         />
                                     </div>
                                 </div>
@@ -1084,7 +1172,7 @@ export const ProposedPlan: React.FC = () => {
                                             <Input
                                                 label="Residential"
                                                 type="text"
-                                                disabled={!isBuildingSelected}
+                                                disabled={!isBuildingSelected || !canAction}
                                                 placeholder="Enter Residential"
                                                 value={formDataProposedPlan.SalesResidentialParking ?? 0}
                                                 onChange={(e) => handleFieldChangeProposedPlan('SalesResidentialParking', filterNumbers(e.target.value))}
@@ -1095,7 +1183,7 @@ export const ProposedPlan: React.FC = () => {
                                             <Input
                                                 label="Commercial"
                                                 type="text"
-                                                disabled={!isBuildingSelected}
+                                                disabled={!isBuildingSelected || !canAction}
                                                 placeholder="Enter Commercial"
                                                 value={formDataProposedPlan.SalesCommercialParking ?? 0}
                                                 onChange={(e) => handleFieldChangeProposedPlan('SalesCommercialParking', filterNumbers(e.target.value))}
@@ -1107,7 +1195,7 @@ export const ProposedPlan: React.FC = () => {
                                             <Input
                                                 label="Visitors"
                                                 type="text"
-                                                disabled={!isBuildingSelected}
+                                                disabled={!isBuildingSelected || !canAction}
                                                 placeholder="Enter Visitors"
                                                 value={formDataProposedPlan.SalesVisitorsParking ?? 0}
                                                 onChange={(e) => handleFieldChangeProposedPlan('SalesVisitorsParking', filterNumbers(e.target.value))}
@@ -1131,7 +1219,7 @@ export const ProposedPlan: React.FC = () => {
                                                 label="Residential"
                                                 type="text"
                                                 placeholder="Enter Residential"
-                                                disabled={!isBuildingSelected}
+                                                disabled={!isBuildingSelected || !canAction}
                                                 value={formDataProposedPlan.MemberResidentialParking ?? 0}
                                                 onChange={(e) => handleFieldChangeProposedPlan('MemberResidentialParking', filterNumbers(e.target.value))}
                                                 maxLength={3}
@@ -1142,7 +1230,7 @@ export const ProposedPlan: React.FC = () => {
                                             <Input
                                                 label="Commercial"
                                                 type="text"
-                                                disabled={!isBuildingSelected}
+                                                disabled={!isBuildingSelected || !canAction}
                                                 placeholder="Enter Commercial"
                                                 value={formDataProposedPlan.MemberCommercialParking ?? 0}
                                                 onChange={(e) => handleFieldChangeProposedPlan('MemberCommercialParking', filterNumbers(e.target.value))}
@@ -1153,7 +1241,7 @@ export const ProposedPlan: React.FC = () => {
                                             <Input
                                                 label="Visitors"
                                                 type="text"
-                                                disabled={!isBuildingSelected}
+                                                disabled={!isBuildingSelected || !canAction}
                                                 placeholder="Enter Visitors"
                                                 value={formDataProposedPlan.MemberVisitorsParking ?? 0}
                                                 onChange={(e) => handleFieldChangeProposedPlan('MemberVisitorsParking', filterNumbers(e.target.value))}
@@ -1175,10 +1263,10 @@ export const ProposedPlan: React.FC = () => {
                                 <>
                                     <div>
                                         <MultiSelectCheckBoxWithCategory
-                                            label="Select Amenities"
+                                            label={`Select Amenities (${amenitiesCount})`}
                                             placeholder="Search Amenities"
                                             options={AMENITIES_BY_CATEGORY}
-                                            disabled={!isBuildingSelected}
+                                            disabled={!isBuildingSelected || !canAction}
                                             value={
                                                 Array.isArray(formDataProposedPlan.Amenities)
                                                     ? formDataProposedPlan.Amenities
@@ -1215,22 +1303,6 @@ export const ProposedPlan: React.FC = () => {
                         <NoDataView message="No Data Found" />
                     </section>
                 )}
-
-            <ConfirmationDialogBox
-                title="Add / Update Building Details"
-                message={`Are you sure you want to generate ${pendingTotalBuildingsRef.current} building(s)?`}
-                isOpen={isProposedPlanUpdateDialogOpen}
-                onClose={() => {
-                    handleField("TotalNumberOfBuilding", previousBuildingCount ?? proposedPlanData?.TotalNumberOfBuilding ?? 0);
-                    setIsProposedPlanUpdateDialogOpen(false);
-                }}
-                onConfirm={() => handleAddUpdateProposedPlan(pendingTotalBuildingsRef.current)}
-                confirmText="Yes"
-                cancelText="No"
-                loading={isLoading}
-                variant="generate"
-            />
-
             <Modal
                 isOpen={isDuplicateModalOpen}
                 onClose={() => {
@@ -1243,7 +1315,7 @@ export const ProposedPlan: React.FC = () => {
                     setSelectedDuplicateTargets([]);
                     setDuplicateErrors({});
                 }}
-                title="Duplicate Building Details"
+                title="Duplicate Building Configurations"
                 onSubmit={handleAddDuplicateBuilding}
                 saveText="Duplicate"
                 loading={isLoading}
@@ -1252,14 +1324,14 @@ export const ProposedPlan: React.FC = () => {
                 <div className="space-y-4 p-6 bg-blue-100 rounded-lg w-full box-border">
                     <div>
                         <Input
-                            label="Duplicate From"
+                            label="Source Building"
                             value={buildingPlanDataMap[activeBuilding]?.BuildingName ?? activeBuilding}
                             disabled
                         />
                     </div>
                     <div>
                         <MultiSelectPagination
-                            label="Duplicate To"
+                            label="Applicable Buildings"
                             key={activeBuilding}
                             dataFetchCallBack={fetchDuplicateToBuildings}
                             required
@@ -1269,6 +1341,47 @@ export const ProposedPlan: React.FC = () => {
                                 setSelectedDuplicateTargets(values);
                                 setDuplicateErrors({ copyBuildingProposedPlanId: '' });
                             }}
+                        />
+                    </div>
+                </div>
+            </Modal>
+
+            <Modal
+                isOpen={addBuildingModal}
+                onClose={() => {
+                    setAddBuildingModal(false);
+                    setBuildingErrors({});
+                }}
+                onCancel={() => {
+                    setAddBuildingModal(false);
+                    setBuildingErrors({});
+                }}
+
+                title={`${previousBuildingCount > 0 ? 'Update Building' : 'Add Building'}`}
+
+                onSubmit={(e) => {
+                    if (e && typeof e === 'object' && 'preventDefault' in e) e.preventDefault();
+
+                    const trimmedCount = buildingCount.trim();
+                    const count = Number(trimmedCount);
+
+                    handleAddUpdateProposedPlan(count);
+                }}
+                saveText="Add"
+                loading={isLoading}
+                size='xl'
+            >
+                <div className="space-y-4 p-6 bg-blue-100 rounded-lg w-full box-border">
+                    <div>
+                        <Input
+                            label="Total Number Of Buildings"
+                            type="text"
+                            value={buildingCount}
+                            onChange={(e) => setBuildingCount(e.target.value)}
+                            placeholder="Enter Total Number Of Buildings"
+                            maxLength={2}
+                            required
+                            error={buildingErrors.TotalNumberOfBuilding}
                         />
                     </div>
                 </div>

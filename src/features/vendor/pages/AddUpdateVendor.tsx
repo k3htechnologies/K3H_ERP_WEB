@@ -331,9 +331,9 @@ export const AddUpdateVendor: React.FC = () => {
 
     // Email
     if (!formData.EmailId?.trim()) {
-      newErrors.EmailId = "Email Id is required.";
+      newErrors.EmailId = "E-Mail ID is required.";
     } else if (!isValidEmail(formData.EmailId?.trim())) {
-      newErrors.EmailId = "Enter a valid email address.";
+      newErrors.EmailId = "Enter a valid E-Mail ID";
     }
 
     if (!formData.CompanyType?.trim()) {
@@ -585,8 +585,8 @@ export const AddUpdateVendor: React.FC = () => {
               error={errors.MobileNumber}
             />
             <Input
-              label="E-mail Id"
-              placeholder="Enter E-mail Id"
+              label="E-Mail ID"
+              placeholder="Enter E-Mail ID"
               required
               type="email"
               rightIcon={<Mail className="h-6 w-6 text-gray-400" />}

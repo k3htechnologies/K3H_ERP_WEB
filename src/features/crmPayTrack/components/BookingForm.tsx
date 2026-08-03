@@ -833,6 +833,23 @@ export const BookingFrom: React.FC<BookingProps> = ({ modalOpen, setModalOpen, w
 
                         <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
 
+                            <div className="bg-[#D0D7DE] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#12A3DD]">
+                                    Address Details
+                                </h4>
+                            </div>
+                            <div className="p-4 bg-white">
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+
+                                    <FieldItem label="Communication Address" value={getSafeString(bookingData.CommunicationAddress)} />
+                                    <FieldItem label="Permanent Address" value={getSafeString(bookingData.PermanentAddress)} />
+                                </div>
+                            </div>
+                        </section>
+
+                        <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
                             <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
                                 <h4 className="text-sm font-semibold text-[#13367A]">
                                     Project Details

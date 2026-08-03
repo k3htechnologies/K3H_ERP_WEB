@@ -438,7 +438,7 @@ export const Summary: React.FC = () => {
                                             <FieldItem label="Applicant Type" value={getSafeString(applicant?.ApplicantType)} className='text-blue-900 bold' />
                                             <FieldItem label="Applicant Name" value={getSafeString(applicant.ApplicantName)} urls={applicant?.PhotoURL} isIcon />
                                             <FieldItem label="Mobile Number" value={`${getSafeString(applicant?.ApplicantMobileNumberCountryCode ?? "+91")}  ${getSafeString(applicant?.ApplicantMobileNumber)}`} />
-                                            <FieldItem label="Email Id" value={getSafeString(applicant?.ApplicantEmailId)} />
+                                            <FieldItem label="E-Mail ID" value={getSafeString(applicant?.ApplicantEmailId)} />
                                             <FieldItem label="Aadhaar Card No." value={getSafeString(applicant?.AadharCardNumber)} urls={applicant?.AadharCardURL} isIcon />
                                             <FieldItem label="PAN No." value={getSafeString(applicant?.PanNumber)} urls={applicant?.PanCardURL} isIcon />
                                             <FieldItem label="Driving License" value={getSafeString(applicant?.DrivingLicenseNumber)} urls={applicant?.DrivingLicenseURL} isIcon />

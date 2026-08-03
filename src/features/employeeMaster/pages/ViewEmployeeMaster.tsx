@@ -581,8 +581,8 @@ export const ViewEmployeeMaster: React.FC = () => {
                                 <div className="lg:col-span-3 border-b border-[#135bec2e] pb-3 pt-3">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <FieldItem label="DOB" value={formatDate_dd_MonthName_yy(safe(employeeData!.DateOfBirth))} />
-                                        <FieldItem label="Email ID" value={safe(employeeData!.EmailId)} />
-                                        <FieldItem label="Personal Mobile No." value={employeeData?.PersonalMobileNumber
+                                        <FieldItem label="E-Mail ID" value={safe(employeeData!.EmailId)} />
+                                        <FieldItem label="Personal Mobile Number" value={employeeData?.PersonalMobileNumber
                                             ? `+91 ${safe(employeeData?.PersonalMobileNumber)}`
                                             : '-'}
                                         />

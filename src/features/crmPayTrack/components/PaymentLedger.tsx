@@ -163,7 +163,7 @@ export const PaymentLedger: React.FC = () => {
         handlePaymentForChange(editingPaymentLedgerData.PaymentFor || "", editingPaymentLedgerData.BookingOtherChargesId || 0);
 
         if (editingPaymentLedgerData.ProjectId) {
-          fetchProjectBankDropdownById(Number(projectId)).then((bank) => {
+          fetchProjectBankDropdownById(Number(projectId), "", false).then((bank) => {
             if (!bank) return;
             setProjectWithBankData(bank);
           });
@@ -601,6 +601,7 @@ export const PaymentLedger: React.FC = () => {
           setDocumentFiles([]);
           setDocumentURL("");
           setRemovedDocumentURLs([]);
+          setProjectWithBankData(null);
 
           addToast({ type: 'success', title: response.right.SuccessMessage[0] })
 
@@ -1006,6 +1007,7 @@ export const PaymentLedger: React.FC = () => {
           setDocumentFiles([]);
           setDocumentURL("");
           setRemovedDocumentURLs([]);
+          setProjectWithBankData(null);
           setPaymentDetails({ total: 0, received: 0, pending: 0 });
         }}
         onCancel={() => {
@@ -1233,15 +1235,16 @@ export const PaymentLedger: React.FC = () => {
                       return;
                     }
 
-                    setProjectWithBankData(item as unknown as ProjectWithBankDetails);
-
                     handleFieldChange("ProjectBankListMasterId", Number(item.value));
+
+                    setProjectWithBankData(item as unknown as ProjectWithBankDetails);
                   }}
                   initialValue={createDropdownInitialValue(formData.ProjectBankListMasterId, dropdownLabels.projectBankName)}
                   error={errors.ProjectBankListMasterId}
                 />
               </div>
-              {projectWithBankData && (
+
+              {projectWithBankData && Number(formData.ProjectBankListMasterId) > 0 && (
                 <>
                   <div>
                     <Input

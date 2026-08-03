@@ -445,8 +445,6 @@ export const Ticket: React.FC = () => {
 
     const ticketColumns = useMemo<TableColumn[]>(() => {
         const userDept = LocalStorageHelper.getStoredEmployeeData()?.Department;
-        const userDesignation = LocalStorageHelper.getStoredEmployeeData()?.Designation;
-        console.log('The user designation is ', userDesignation);
         const isITDept = userDept === "Information Technology";
 
         const columns: TableColumn[] = [

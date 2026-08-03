@@ -545,7 +545,7 @@ const AddUpdateTenant: React.FC = () => {
       },
       {
         key: 'ApplicantEmailId',
-        label: 'Email Id',
+        label: 'E-Mail ID',
         width: '15',
         sortable: false,
         align: 'center',
@@ -777,7 +777,7 @@ const AddUpdateTenant: React.FC = () => {
 
 
     if (formDataForApplicant.ApplicantEmailId?.trim() && !isValidEmail(formDataForApplicant.ApplicantEmailId.trim())) {
-      newErrorsTenantApplicant.ApplicantEmailId = 'Enter a valid Email Id';
+      newErrorsTenantApplicant.ApplicantEmailId = 'Enter a valid E-Mail ID';
     }
 
     const mergedAadharFiles = editingApplicantData
@@ -1710,14 +1710,14 @@ const AddUpdateTenant: React.FC = () => {
             </div>
             <div>
               <Input
-                label='Email Id'
+                label='E-Mail ID'
                 error={errorsTenantApplicant.ApplicantEmailId}
                 type="text"
                 value={formDataForApplicant.ApplicantEmailId ?? ""}
                 onChange={e =>
                   handleFieldChangeTenantApplicant('ApplicantEmailId', filterEmail(e.target.value))
                 }
-                placeholder="Enter Email Id"
+                placeholder="Enter E-Mail ID"
               />
             </div>
             <div>

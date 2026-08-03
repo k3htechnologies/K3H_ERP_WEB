@@ -217,7 +217,7 @@ export const CallingData: React.FC = () => {
         }
 
         if (formData.EmailId !== "" && !isValidEmail(formData.EmailId!.trim())) {
-            newErrors.EmailId = "Enter a Valid E-mail Id";
+            newErrors.EmailId = "Enter a Valid E-Mail ID";
 
         }
 
@@ -414,7 +414,7 @@ export const CallingData: React.FC = () => {
         },
         {
             key: 'EmailId',
-            label: 'E-mail Id',
+            label: 'E-Mail ID',
             width: '15',
             sortable: false,
             align: 'left',
@@ -785,7 +785,7 @@ export const CallingData: React.FC = () => {
                     <div>
                         <Input
                             type="text"
-                            label='Email Id'
+                            label='E-Mail ID'
                             value={formData.EmailId || ''}
                             error={errors.EmailId}
                             maxLength={250}
@@ -794,7 +794,7 @@ export const CallingData: React.FC = () => {
                                 const emailId = filterEmail(e.target.value);
                                 handleFieldChange("EmailId", emailId);
                             }}
-                            placeholder="Enter Valid E-mail Id"
+                            placeholder="Enter Valid E-Mail ID"
                         />
                     </div>
                     <div>

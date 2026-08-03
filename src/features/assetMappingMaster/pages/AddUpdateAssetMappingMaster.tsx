@@ -310,7 +310,7 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
 
                   handleFieldChange("AssetMasterId", Number(item.value));
                   setAssetMasterData(item as unknown as AssetMasterData);
-                  setPurchaseDate(assetMasterData?.PurchaseDate ?? "")
+                  setPurchaseDate(item.PurchaseDate ?? "");
 
                 }}
                 initialValue={createDropdownInitialValue(formData.AssetMasterId, dropdownLabels.assetName)}
@@ -367,8 +367,8 @@ export const AddUpdateAssetMappingMaster: React.FC = () => {
                     <FieldItem label="Designation" value={employeeDetails?.Designation || "-"} />
                     <FieldItem label="Branch" value={employeeDetails?.Branch || "-"} />
                     <FieldItem label="Reporting Person" value={employeeDetails?.ReportPersonName || "-"} />
-                    <FieldItem label="Email ID" value={employeeDetails?.EmailId || "-"} />
-                    <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber || "-"} />
+                    <FieldItem label="E-Mail ID" value={employeeDetails?.EmailId || "-"} />
+                    <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber ? `+91 ${(employeeDetails?.PersonalMobileNumber)}` : '-'}/>
                     <FieldItem label="Joining Date" value={formatDate_dd_mm_yyyy(employeeDetails?.JoiningDate || "-")} />
                   </div>
                 </div>

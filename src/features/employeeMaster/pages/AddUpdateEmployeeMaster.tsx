@@ -320,9 +320,9 @@ const AddUpdateEmployeePage: React.FC = () => {
     }
 
     if (!formData.EmailId?.trim()) {
-      newErrors.EmailId = "E-mail Id is required";
+      newErrors.EmailId = "E-Mail ID is required";
     } else if (!isValidEmail(formData.EmailId.trim())) {
-      newErrors.EmailId = "Enter a Valid E-mail Id";
+      newErrors.EmailId = "Enter a Valid E-Mail ID";
     }
 
     if (formData.OfficeEmailId?.trim() && !isValidEmail(formData.OfficeEmailId.trim())) {
@@ -559,10 +559,10 @@ const AddUpdateEmployeePage: React.FC = () => {
                 <DatePickerInput label="DOB" value={formatDate_dd_mm_yyyy(formData.DateOfBirth)} onChange={(val) => handleFieldChange("DateOfBirth", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.DateOfBirth} />
               </div>
               <div>
-                <Input label="E-mail Id" placeholder="Enter E-mail Id" value={formData.EmailId} rightIcon={<Mail className="h-6 w-6 text-gray-400" />} required onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))} error={errors.EmailId} />
+                <Input label="E-Mail ID" placeholder="Enter E-Mail ID" value={formData.EmailId} rightIcon={<Mail className="h-6 w-6 text-gray-400" />} required onChange={(e) => handleFieldChange("EmailId", filterEmail(e.target.value))} error={errors.EmailId} />
               </div>
               <div>
-                <Input label="Office E-mail Id" placeholder="Enter Office E-mail Id" value={formData.OfficeEmailId} rightIcon={<Mail className="h-6 w-6 text-gray-400" />} onChange={(e) => handleFieldChange("OfficeEmailId", filterEmail(e.target.value))} error={errors.OfficeEmailId} />
+                <Input label="Office E-Mail ID" placeholder="Enter Office E-Mail ID" value={formData.OfficeEmailId} rightIcon={<Mail className="h-6 w-6 text-gray-400" />} onChange={(e) => handleFieldChange("OfficeEmailId", filterEmail(e.target.value))} error={errors.OfficeEmailId} />
               </div>
 
               <div>
@@ -706,8 +706,9 @@ const AddUpdateEmployeePage: React.FC = () => {
                   <FieldItem label="Designation" value={employeeDetails?.Designation || "-"} />
                   <FieldItem label="Branch" value={employeeDetails?.Branch || "-"} />
                   <FieldItem label="Reporting Person" value={employeeDetails?.ReportPersonName || "-"} />
-                  <FieldItem label="Email ID" value={employeeDetails?.EmailId || "-"} />
-                  <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber || "-"} />
+                  <FieldItem label="E-Mail ID" value={employeeDetails?.EmailId || "-"} />
+                  <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber ? `+91 ${(employeeDetails?.PersonalMobileNumber)}` : '-'}/>
+                 
                 </div>
               </div>
             )}

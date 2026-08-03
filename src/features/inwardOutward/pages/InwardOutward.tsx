@@ -445,7 +445,7 @@ export const InwardOutward: React.FC = () => {
         },
         {
             key: 'SenderEmailId',
-            label: 'Sender Email Id',
+            label: 'Sender E-Mail ID',
             width: '15',
             sortable: false,
             align: 'left',
@@ -477,7 +477,7 @@ export const InwardOutward: React.FC = () => {
         },
         {
             key: 'ReceiverEmailId',
-            label: 'Receiver Email Id',
+            label: 'Receiver E-Mail ID',
             width: '15',
             sortable: false,
             align: 'left',

@@ -10,10 +10,10 @@ export interface FilterWithPaginationInwardAndOutWardRequest {
     DocumentType?: string
     DocumentTitle?: string;
     DeliveryStatus?: string;
-    SenderMobileNumber?: string;
-    ReceiverMobileNumber?: string;
-    FromDate?: string
-    ToDate?: string
+    SenderMobileNo?: string;
+    ReceiverMobileNo?: string;
+    FromDate?: string;
+    ToDate?: string;
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
 }
@@ -29,36 +29,35 @@ export interface InwardAndOutWardData {
     DocumentURL: string,
     Amount: number | 0,
     DeliveryType: string | null,
-    AcknowledgementSignatureURL: string,
-    AcknowledgementBy: string | null,
+    ReceiversSignature: string,
+    ReceivedBy: string | null,
     ChequeNo: string | null,
     Priority: string | null,
     DocumentDescription: string | null,
     DeliveryMode: string | null,
     DeliveryStatus: string | null,
-    AcknowledgementURL: string,
+    AcknowledgementSignatureURL: string | null,
+    AcknowledgementURL: string | null,
     AcknowledgementRemark: string | null,
     EmployeeNames: string | null
-    InVoiceDate: string | null,
+    InvoiceDate: string | null,
     DepartmentName: string | null,
     InwardNumber: number | 0,
-    InVoiceNumber: number | 0,
+    InvoiceNumber: number | 0,
     HandOverDate: string | null,
     HandOverTo: string | null,
 
     SenderName: string | null,
     SenderEmailId: string | null,
-    SenderMobileNumber: string | null,
-    SenderMobileNumberCountryCode: string | null
+    SenderMobileNo: string | null,
     SenderAddress: string | null,
 
     ReceiverName: string | null,
     ReceiverEmailId: string | null,
-    ReceiverMobileNumber: string | null
-    ReceiverMobileNumberCountryCode: string | null
+    ReceiverMobileNo: string | null
     ReceiverAddress: string | null
-
     InwardOutwardRevertHistory: InwardOutwardRevertHistory[];
+    InwardOutwardDocumentHistory: InwardOutwardDocumentHistory[];
 
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -67,54 +66,125 @@ export interface InwardAndOutWardData {
     ModifiedBy: string | ''
     ModifiedDate: string | null
     LastModifiedBy: string | ''
-    LastModifiedDate: string | null
+    LastModifiedDate: string | null,
+
+    ChequeNumber: string | null
+    AcknowledgementBy: string | null,
+    SenderMobileNumber: string | null,
+    SenderMobileNumberCountryCode: string | null,
+    ReceiverMobileNumber: string | null,
+    ReceiverMobileNumberCountryCode: string | null,
+
 }
 
+// export interface AddUpdateInwardAndOutWardRequest {
+//     AcknowledgementSignatureURL: File[] | null,
+//     InwardOutwardId: number | 0,
+//     UniqueKey: string | null
+//     InvoiceNumber: string | null,
+//     DocumentTitle: string | null,
+//     InwardOutwardDate: string | null,
+//     DocumentType: string | null,
+//     EmployeeId: string | null,
+//     DocumentURL: File[] | null,
+//     RemoveDocumentURL: string | ''
+//     Amount: number | 0,
+//     DeliveryType: string | null,
+//     ReceiversSignature: File[] | null,
+//     RemoveReceiversSignature: string | ''
+//     ReceivedBy: string | null,
+//     ChequeNo: string | null,
+//     Priority: string | null,
+//     DocumentDescription: string | null,
+//     DeliveryMode: string | null,
+//     DeliveryStatus: string | null,
+//     AcknowledgementURL: File[] | null,
+//     RemoveAcknowledgementURL: string | ''
+//     AcknowledgementRemark: string | null,
+//     EmployeeNames: string | null
+//     InvoiceDate: string | null,
+//     InwardNumber: number | 0,
+//     InVoiceNumber: number | null,
+//     HandOverDate: string | null,
+//     HandOverTo: string | null,
+
+//     SenderMobileNumberCountryCode: string | null,
+//     ReceiverMobileNumberCountryCode: string | null,
+//     RemoveAcknowledgementSignatureURL: string | ''
+
+//     ReceiverMobileNumber: string | null
+//     SenderMobileNumber: string | null
+
+//     SenderName: string | null,
+//     SenderEmailId: string | null,
+//     SenderMobileNo: string | null,
+//     SenderAddress: string | null,
+
+//     ReceiverName: string | null,
+//     ReceiverEmailId: string | null,
+//     ReceiverMobileNo: string | null
+//     ReceiverAddress: string | null
+
+//     ChequeNumber: string | null,
+//     AcknowledgementBy: string | null
+
+
+// }
+
 export interface AddUpdateInwardAndOutWardRequest {
-    InwardOutwardId: number | 0,
-    UniqueKey: string | null
-    DocumentTitle: string | null,
-    InwardOutwardDate: string | null,
-    DocumentType: string | null,
-    EmployeeId: string | null,
-    DocumentURL: File[] | null,
-    RemoveDocumentURL: string | ''
-    Amount: number | 0,
-    DeliveryType: string | null,
-    AcknowledgementSignatureURL: File[] | null,
-    RemoveAcknowledgementSignatureURL: string | ''
-    AcknowledgementBy: string | null,
-    ChequeNo: string | null,
-    Priority: string | null,
-    DocumentDescription: string | null,
-    DeliveryMode: string | null,
-    DeliveryStatus: string | null,
-    AcknowledgementURL: File[] | null,
-    RemoveAcknowledgementURL: string | ''
-    AcknowledgementRemark: string | null,
-    EmployeeNames: string | null
-    InVoiceDate: string | null,
-    InwardNumber: number | 0,
-    InVoiceNumber: number | null,
-    HandOverDate: string | null,
-    HandOverTo: string | null,
+    InwardOutwardId: number;
+    UniqueKey: string | null;
 
-    SenderName: string | null,
-    SenderEmailId: string | null,
-    SenderMobileNumber: string | null,
-    SenderMobileNumberCountryCode: string | null
-    SenderAddress: string | null,
+    InvoiceNumber: string | null;
+    InvoiceDate: string | null;
 
-    ReceiverName: string | null,
-    ReceiverEmailId: string | null,
-    ReceiverMobileNumber: string | null
-    ReceiverMobileNumberCountryCode: string | null
-    ReceiverAddress: string | null
+    DeliveryType: string | null;
+    DocumentType: string | null;
+    ChequeNumber: string | null;
+
+    DocumentTitle: string | null;
+    Amount: number;
+
+    InwardOutwardDate: string | null;
+
+    SenderName: string | null;
+    SenderAddress: string | null;
+    SenderMobileNumber: string | null;
+    SenderMobileNumberCountryCode: string | null;
+    SenderEmailId: string | null;
+
+    ReceiverName: string | null;
+    ReceiverAddress: string | null;
+    ReceiverMobileNumber: string | null;
+    ReceiverMobileNumberCountryCode: string | null;
+    ReceiverEmailId: string | null;
+
+    HandOverTo: string | null;
+    HandOverDate: string | null;
+
+    DocumentURL: File[] | null;
+    RemoveDocumentURL: string;
+
+    DocumentDescription: string | null;
+    EmployeeId: string | null;
+
+    DeliveryMode: string | null;
+    DeliveryStatus: string | null;
+
+    AcknowledgementBy: string | null;
+    AcknowledgementURL: File[] | null;
+    RemoveAcknowledgementURL: string;
+
+    AcknowledgementSignatureURL: File[] | null;
+    RemoveAcknowledgementSignatureURL: string;
+
+    AcknowledgementRemark: string | null;
 }
 
 export interface DeleteInwardAndOutWardRequest {
     UniqueKey: string
     InwardOutwardId: number
+
 }
 
 export interface InwardOutwardRevertHistory {
@@ -126,6 +196,10 @@ export interface InwardOutwardRevertHistory {
     RevertDocumentURL: string | null
 }
 
+export interface InwardOutwardDocumentHistory {
+    DeliveryStatus: string | null
+    DeliveryDate: string | null
+}
 
 export interface AddRevertInwardOutwardData {
     InwardOutwardRevertId: number | 0,

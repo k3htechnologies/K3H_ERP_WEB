@@ -26,42 +26,38 @@ import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
 const initialFormState = (): AddUpdateInwardAndOutWardRequest => ({
     InwardOutwardId: 0,
     UniqueKey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    EmployeeId: "",
-    InwardOutwardDate: new Date().toISOString().split("T")[0],
-    DocumentURL: null,
-    RemoveDocumentURL: '',
+    InvoiceNumber: "",
+    InvoiceDate: "",
     DeliveryType: "Others",
+    DocumentType: "",
+    ChequeNumber: "",
     DocumentTitle: "",
-    DeliveryStatus: "",
-    Priority: "",
+    Amount: 0,
+    InwardOutwardDate: "",
     SenderName: "",
-    SenderEmailId: "",
+    SenderAddress: "",
     SenderMobileNumber: "",
     SenderMobileNumberCountryCode: "",
-    SenderAddress: "",
+    SenderEmailId: "",
     ReceiverName: "",
-    ReceiverEmailId: "",
+    ReceiverAddress: "",
     ReceiverMobileNumber: "",
     ReceiverMobileNumberCountryCode: "",
-    ReceiverAddress: "",
-    Amount: 0,
-    DeliveryMode: "",
-    DocumentDescription: "",
+    ReceiverEmailId: "",
+    HandOverTo: "",
+    HandOverDate: "",
+    DocumentURL: null,
+    RemoveDocumentURL: '',
+    DocumentDescription: '',
+    EmployeeId: '',
+    DeliveryMode: '',
+    DeliveryStatus: '',
+    AcknowledgementBy: '',
     AcknowledgementURL: null,
     RemoveAcknowledgementURL: '',
-    AcknowledgementRemark: "",
     AcknowledgementSignatureURL: null,
     RemoveAcknowledgementSignatureURL: '',
-    AcknowledgementBy: "",
-    ChequeNo: "",
-    DocumentType: "",
-    EmployeeNames: "",
-    InVoiceDate: "",
-    InwardNumber: 0,
-    InVoiceNumber: null,
-    HandOverDate: "",
-    HandOverTo: "",
-
+    AcknowledgementRemark: '',
 })
 
 export const AddUpdateInwardOutward: React.FC = () => {
@@ -139,8 +135,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             DeliveryStatus: e.DeliveryStatus ?? prev.DeliveryStatus,
                             AcknowledgementRemark: e.AcknowledgementRemark ?? prev.AcknowledgementRemark,
                             Amount: e.Amount ?? prev.Amount,
-                            ChequeNo: e.ChequeNo ?? prev.ChequeNo,
-                            EmployeeNames: e.EmployeeNames ?? prev.EmployeeNames,
+                            ChequeNumber: e.ChequeNumber ?? prev.ChequeNumber,
                             AcknowledgementBy: e.AcknowledgementBy ?? prev.AcknowledgementBy,
                             DocumentDescription: e.DocumentDescription ?? prev.DocumentDescription,
                             SenderName: e.SenderName ?? prev.SenderName,
@@ -156,11 +151,10 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             DeliveryMode: e.DeliveryMode ?? prev.DeliveryMode,
                             DocumentType: e.DocumentType ?? prev.DocumentType,
                             InwardOutwardDate: e.InwardOutwardDate ?? prev.InwardOutwardDate,
-                            InVoiceDate: e.InVoiceDate ?? prev.InVoiceDate,
-                            InVoiceNumber: e.InVoiceNumber ?? prev.InVoiceNumber,
+                            InvoiceDate: e.InvoiceDate ?? prev.InvoiceDate,
+                            // InvoiceNumber: e.InvoiceNumber ?? prev.InvoiceNumber,
                             HandOverDate: e.HandOverDate ?? prev.HandOverDate,
                             HandOverTo: e.HandOverTo ?? prev.HandOverTo,
-                            InwardNumber: e.InwardNumber ?? prev.InwardNumber
                         }));
 
                         setSelectedEmployeeValues(e.EmployeeId || null);
@@ -198,32 +192,32 @@ export const AddUpdateInwardOutward: React.FC = () => {
         const newErrors: { [k: string]: string } = {};
 
         if (formData.DeliveryType === "Cheque") {
-            if (!formData.ChequeNo) {
-                newErrors.ChequeNo = "Cheque Number is required";
-            } else if (Number(formData.ChequeNo) === 0) {
-                newErrors.ChequeNo = "Cheque Number cannot be zero";
+            if (!formData.ChequeNumber) {
+                newErrors.ChequeNumber = "Cheque Number is required";
+            } else if (Number(formData.ChequeNumber) === 0) {
+                newErrors.ChequeNumber = "Cheque Number cannot be zero";
             }
             if (!formData.Amount) {
                 newErrors.Amount = "Amount is required";
             } else if (formData.Amount <= 0) {
                 newErrors.Amount = "Amount must be greater than 0";
             }
-            if (formData.InVoiceNumber === null || String(formData.InVoiceNumber).trim() === "") {
-                newErrors.InVoiceNumber = "Invoice Number is required";
+            if (formData.InvoiceNumber === null || String(formData.InvoiceNumber).trim() === "") {
+                newErrors.InvoiceNumber = "Invoice Number is required";
             }
-            if (formData.InVoiceNumber !== null && String(formData.InVoiceNumber).trim() !== "") {
-                if (Number(formData.InVoiceNumber) === 0) {
-                    newErrors.InVoiceNumber = "Invoice Number cannot be zero";
+            if (formData.InvoiceNumber !== null && String(formData.InvoiceNumber).trim() !== "") {
+                if (Number(formData.InvoiceNumber) === 0) {
+                    newErrors.InvoiceNumber = "Invoice Number cannot be zero";
                 }
             }
 
-            if (!formData.InVoiceDate) {
-                newErrors.InVoiceDate = "Invoice Date is required";
+            if (!formData.InvoiceDate) {
+                newErrors.InvoiceDate = "Invoice Date is required";
             }
         } else {
-            if (formData.InVoiceNumber !== null && String(formData.InVoiceNumber).trim() !== "") {
-                if (Number(formData.InVoiceNumber) === 0) {
-                    newErrors.InVoiceNumber = "Invoice Number cannot be zero";
+            if (formData.InvoiceNumber !== null && String(formData.InvoiceNumber).trim() !== "") {
+                if (Number(formData.InvoiceNumber) === 0) {
+                    newErrors.InvoiceNumber = "Invoice Number cannot be zero";
                 }
             }
         }
@@ -329,7 +323,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
         fd.append("AcknowledgementRemark", formData.AcknowledgementRemark ?? "");
         fd.append("AcknowledgementBy", formData.AcknowledgementBy ?? "");
         fd.append("DocumentType", formData.DocumentType ?? "");
-        fd.append("ChequeNo", formData.ChequeNo ?? "");
+        fd.append("ChequeNumber", formData.ChequeNumber ?? "");
         fd.append("SenderName", formData.SenderName ?? "");
         fd.append("SenderMobileNumber", formData.SenderMobileNumber ?? "");
         fd.append("SenderMobileNumberCountryCode", formData.SenderMobileNumberCountryCode ?? "");
@@ -340,9 +334,8 @@ export const AddUpdateInwardOutward: React.FC = () => {
         fd.append("ReceiverMobileNumberCountryCode", formData.ReceiverMobileNumberCountryCode ?? "");
         fd.append("ReceiverEmailId", formData.ReceiverEmailId ?? "");
         fd.append("ReceiverAddress", formData.ReceiverAddress ?? "");
-        fd.append("InVoiceDate", formData.InVoiceDate ?? "");
-        fd.append("InwardNumber", String(formData.InwardNumber ?? 0));
-        fd.append("InVoiceNumber", String(formData.InVoiceNumber ?? 0));
+        fd.append("InvoiceDate", formData.InvoiceDate ?? "");
+        fd.append("InvoiceNumber", String(formData.InvoiceNumber ?? 0));
         fd.append("HandOverDate", formData.HandOverDate ?? "");
         fd.append("HandOverTo", formData.HandOverTo ?? "");
 
@@ -476,7 +469,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 checked={formData.DeliveryType === "Others"}
                                 onChange={() => {
                                     handleFieldChange("DeliveryType", "Others");
-                                    handleFieldChange("ChequeNo", "");
+                                    handleFieldChange("ChequeNumber", "");
                                 }}
                             />
 
@@ -522,7 +515,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             value={formatDate_dd_mm_yyyy(formData.InwardOutwardDate ?? '')}
                             onChange={(val) => handleFieldChange('InwardOutwardDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                             required
-                            disabled={!!formData.InwardOutwardDate}
+                        // disabled={!!formData.InwardOutwardDate}
                         />
                     </div>
 
@@ -531,24 +524,24 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             type="text"
                             required={formData.DeliveryType === "Cheque"}
                             label='Invoice Number'
-                            value={formData.InVoiceNumber ?? ""}
+                            value={formData.InvoiceNumber ?? ""}
                             onChange={(e) => {
                                 const val = filterNumbersWithDecimal(e.target.value);
-                                handleFieldChange("InVoiceNumber", val);
+                                handleFieldChange("InvoiceNumber", val);
                             }}
                             placeholder="Enter Invoice Number"
                             maxLength={15}
-                            error={errors.InVoiceNumber}
+                            error={errors.InvoiceNumber}
                         />
                     </div>
 
                     <div>
                         <DatePickerInput
                             label="Invoice Date"
-                            value={formatDate_dd_mm_yyyy(formData.InVoiceDate ?? '')}
-                            onChange={(val) => handleFieldChange('InVoiceDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                            value={formatDate_dd_mm_yyyy(formData.InvoiceDate ?? '')}
+                            onChange={(val) => handleFieldChange('InvoiceDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                             required={formData.DeliveryType === "Cheque"}
-                            error={errors.InVoiceDate}
+                            error={errors.InvoiceDate}
                         />
                     </div>
 
@@ -569,10 +562,10 @@ export const AddUpdateInwardOutward: React.FC = () => {
                         <div>
                             <Input
                                 label="Cheque No"
-                                value={formData.ChequeNo ?? ''}
+                                value={formData.ChequeNumber ?? ''}
                                 required
-                                onChange={e => handleFieldChange('ChequeNo', filterNumbers(e.target.value))}
-                                error={errors.ChequeNo}
+                                onChange={e => handleFieldChange('ChequeNumber', filterNumbers(e.target.value))}
+                                error={errors.ChequeNumber}
                                 maxLength={6}
                                 placeholder="Enter Cheque No"
                             />

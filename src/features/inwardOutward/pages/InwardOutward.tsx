@@ -123,8 +123,8 @@ export const InwardOutward: React.FC = () => {
                     DocumentType: DocumentType ?? filterParams.DocumentType?.trim() ?? undefined,
                     DocumentTitle: filterParams.DocumentTitle ?? undefined,
                     DeliveryStatus: filterParams.DeliveryStatus ?? undefined,
-                    SenderMobileNumber: filterParams.SenderMobileNumber ?? undefined,
-                    ReceiverMobileNumber: filterParams.ReceiverMobileNumber ?? undefined,
+                    SenderMobileNo: filterParams.SenderMobileNo ?? undefined,
+                    ReceiverMobileNo: filterParams.ReceiverMobileNo ?? undefined,
                     FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
                     ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined, SortBy: getSortByParam(sort ?? null, InwardOutwardDataColumns),
                 }

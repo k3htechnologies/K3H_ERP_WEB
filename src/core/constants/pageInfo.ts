@@ -346,7 +346,7 @@ export const getPageInfo = (path: string) => {
             }
 
 
-            {/* INVENTORY */ }
+            {/* INVENTORY AND REPORT */ }
 
         case 'inventoryDashboard':
             return {

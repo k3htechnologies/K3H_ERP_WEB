@@ -25,6 +25,7 @@ import {
   initialFormStateCorpusPaymentStage,
 } from '@/features/proposedOffer/utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface CorpusDetailsTabProps {
   projectId: number | null;
@@ -703,6 +704,15 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
               />
             </div>
           </div>
+          <div>
+            <TextArea
+              label="Remarks"
+              className='thin-scroll'
+              value={formDataCorpusDetails.Remark ?? ""}
+              placeholder="Enter Remarks"
+              onChange={(e) => handleFieldChangeCorpusDetails("Remark", e.target.value)}
+            />
+          </div>
         </div>
 
         {/* Corpus List Section */}
@@ -720,7 +730,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
                 variant="solid"
                 colorMode="extraLight"
                 style={{ width: '35px', height: '35px' }}
-                centerIcon={<Plus className="h-4 w-4" /> }
+                centerIcon={<Plus className="h-4 w-4" />}
               >
               </Button>
             )}
@@ -768,11 +778,10 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
         title={editingCorpusPaymentStageData ? 'Update Corpus Payment Stage' : 'Add Corpus Payment Stage'}
         onSubmit={handleAddUpdateCorpusPaymentStage}
         saveText={editingCorpusPaymentStageData ? 'Update' : 'Add'}
-        cancelText="Cancel"
         loading={isLoading}
         size='lg'
       >
-        <div className="space-y-6">
+        <div className="space-y-6 p-6 bg-blue-100">
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <SinglePageSelection
@@ -859,6 +868,7 @@ export const CorpusDetailsTab: React.FC<CorpusDetailsTabProps> = ({
                 onChange={(e) => handleFieldChangeCorpusPaymentStage('Amount', e.target.value)}
               />
             </div>
+
           </div>
         </div>
       </Modal>

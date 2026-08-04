@@ -52,6 +52,7 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         ,'collectionReport'
         ,'ibmObmReport'
         ,'saleDashboard'
+        ,'aopAchievement'
         ,'specificationmaster'
     ];
 

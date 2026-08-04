@@ -5,7 +5,6 @@ import type {
     FilterWithPaginationBookingRequest,
     BookingListResponse,
     BookingSaveResponse,
-    CancelBookingRequest,
     BookingDeleteResponse,
     FilterWithPaginationChannelPartnerBookingRequest,
     FilterPaymentScheduleStagesRequest,
@@ -16,7 +15,7 @@ import type {
 export abstract class BookingDatasource {
     abstract pullBooking(params: FilterWithPaginationBookingRequest, signal?: AbortSignal): Promise<BookingListResponse>;
     abstract addUpdateBooking(data: FormData): Promise<BookingSaveResponse>;
-    abstract cancelBooking(params: CancelBookingRequest): Promise<BookingDeleteResponse>;
+    abstract cancelBooking(formData: FormData): Promise<BookingDeleteResponse>;
     abstract pullChannelPartnerBooking(params: FilterWithPaginationChannelPartnerBookingRequest, signal?: AbortSignal): Promise<BookingListResponse>;
     abstract pullPaymentScheduleStages(params: FilterPaymentScheduleStagesRequest): Promise<PaymentScheduleStagesResponse>;
     abstract updatePayTrackBookingRegistrationDateParking(formData: FormData): Promise<BookingUpdateegistrationDateParkingResponse>;
@@ -90,20 +89,21 @@ export class BookingDatasourceImpl implements BookingDatasource {
         }
     }
 
-    async cancelBooking(params: CancelBookingRequest): Promise<BookingDeleteResponse> {
+    async cancelBooking(formData: FormData): Promise<BookingDeleteResponse> {
         try {
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
                 BookingApi.CANCEL,
-                params
+                formData
             )
 
             return response
         } catch (error) {
+
             console.error('Error: Cancel BOOKING:', error)
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.cancelBooking(params);
+                return await this.cancelBooking(formData);
             }
 
             throw error

@@ -13,6 +13,7 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import { filterNumbers, filterNumbersWithDecimal, isValidPercentage, allowPercentage } from '@/core/utils/fileValidation';
 import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { initialFormStateParkingAllotment } from '../utils/initialStates';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface ParkingAllotmentTabProps {
   projectId: number | null;
@@ -214,6 +215,15 @@ export const ParkingAllotmentTab: React.FC<ParkingAllotmentTabProps> = ({
                 placeholder="Enter Total Parking Percentage"
               />
             </div>
+          </div>
+          <div>
+            <TextArea
+              label="Remark"
+              className='thin-scroll'
+              value={formDataParkingAllotment.Remark ?? ""}
+              placeholder="Enter Remark"
+              onChange={(e) => handleFieldChangeParkingAllotment("Remark", e.target.value)}
+            />
           </div>
         </div>
       </div>

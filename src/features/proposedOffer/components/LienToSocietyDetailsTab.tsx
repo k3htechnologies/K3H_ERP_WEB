@@ -24,6 +24,7 @@ import {
   initialFormStateLienToSocietyPaymentStage,
 } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface LienToSocietyDetailsTabProps {
   projectId: number | null;
@@ -482,6 +483,16 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
                 placeholder="Enter Number of Commercial Lien Units"
               />
             </div>
+
+          </div>
+          <div>
+            <TextArea
+              label="Remark"
+              className='thin-scroll'
+              value={formDataLienToSocietyDetails.Remark ?? ""}
+              placeholder="Enter Remark"
+              onChange={(e) => handleFieldChangeLienToSocietyDetails("Remark", e.target.value)}
+            />
           </div>
         </div>
 
@@ -550,11 +561,10 @@ export const LienToSocietyDetailsTab: React.FC<LienToSocietyDetailsTabProps> = (
         title={editingLienToSocietyPaymentStageData ? 'Update Lien to Society Payment Stage' : 'Add Lien to Society Payment Stage'}
         onSubmit={handleAddUpdateLienToSocietyPaymentStage}
         saveText={editingLienToSocietyPaymentStageData ? 'Update' : 'Add'}
-        cancelText="Cancel"
         loading={isLoading}
         size='lg'
       >
-        <div className="space-y-6">
+        <div className="space-y-6 p-6 bg-blue-100">
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <SinglePageSelection

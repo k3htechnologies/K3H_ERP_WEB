@@ -67,6 +67,7 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
             case "Parking Modification":
             case "Refund Payment Ledger":
             case "Flat Handover":
+            case "Cancel Booking":
 
                 return [
                     { key: "ProjectName", label: "Project", render: renderText },
@@ -157,15 +158,17 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
             icon: KeyRound,
             bg: "#E0F2FE",
             color: "#0284C7"
+        },
+        "Cancel Booking": {
+            icon: ClipboardCheck,
+            bg: "#FDF4FF",
+            color: "#A21CAF"
         }
     };
 
     return (
         <div className="space-y-3 pt-7">
-            <div
-                className="bg-white rounded-xl p-5 mt-5 flex flex-col border border-gray-100 h-[330px]"
-                style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
-            >
+            <div className="bg-white rounded-xl p-5 mt-5 flex flex-col border border-gray-100 h-[330px]" style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }} >
 
                 <p className="text-md font-semibold text-gray-500 pb-3">
                     Pending Approvals
@@ -173,7 +176,7 @@ const ModuleWorkFlowApproval = ({ moduleApproval }: Props) => {
 
                 {/* GRID */}
                 {moduleSummary.length > 0 ? (
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-y-auto pr-1">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 overflow-y-auto thin-scroll pr-1">
 
                         {moduleSummary.map((item, index) => {
 

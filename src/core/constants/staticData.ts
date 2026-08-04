@@ -248,6 +248,7 @@ export const MASTER_DATA = {
     "Re - Visit Proposed",
     "Re - Visit Scheduled",
     "Re - Visit",
+    "Repeat Re - Visit",
     "Negotiation",
     "Unit Selection / Blocked",
     "Booking Done",
@@ -618,10 +619,52 @@ export const MASTER_DATA = {
 
   budgetLevelType: ["L1", "L2", "L3"],
 
+  aopStatus: ["AOP", "NON - AOP", "EXPIRED", "EXPIRE SOON"],
+
+  tenderPaymentMode: ["Cheque", "Cash", "Demand Draft", "IMPS", "NEFT", "Pay Order", "RTGS", "UPI"],
+
+  tenantDocumentTypes: [
+    "33 (38) Notice",
+    "79 / A Consent",
+    "Additional Document (If Any)",
+    "Affidavit",
+    "Assessment Bill",
+    "Consent For Cluster (If Applicable)",
+    "Developer Format Consent",
+    "Electric NOC",
+    "Electricity Bill",
+    "Eligible / Non Eligible (Form 3 & 4)",
+    "Extra Area Purchase Letter",
+    "Extra Purchase Payment Schedule",
+    "Gas Bill",
+    "Maintenance Bill",
+    "MGL NOC",
+    "MHADA Verified Consent",
+    "Notarized Kararnama",
+    "PAAA Floor Plan",
+    "Photo Pass",
+    "Photo Pass Receipt",
+    "POA (Admission)",
+    "Ration Card (If Applicable)",
+    "Registered PAAA",
+    "Rent Receipt (If Applicable)",
+    "Repossession Letter",
+    "Repossession Undertaking",
+    "Sales Agreement",
+    "Share Certificate",
+    "Transfer Documents",
+    "Unit Plan",
+    "Vacant Possession Letter",
+    "Vacating Consent Letter",
+    "Yadi Slip"
+  ],
   professionalType: ["Architect", "Engineer", "Real Estate Agent", "Advocate"],
 
   type: ["Person /Individual", "Legal Entity / Other"],
 
+   mode_options: ["Mode", "PDC", "Advance"],
+
+  brokerage_options: ["0", "1"],
 } as const;
 
 // ============================================================================
@@ -714,6 +757,8 @@ export const PARKING_STATUS = toOptions(MASTER_DATA.parkingStatus);
 export const UNIT_LAYOUT = toOptions(MASTER_DATA.unitLayout);
 export const CASE_TYPE_OPTION = toOptions(MASTER_DATA.caseType);
 export const COURT_TYPE_OPTION = toOptions(MASTER_DATA.courtType);
+export const MODE_OPTIONS = toOptions(MASTER_DATA.mode_options);
+export const BROKERAGE_OPTIONS = toOptions(MASTER_DATA.brokerage_options);
 
 export const PAYMENT_MODE = toOptions(MASTER_DATA.paymentMode);
 export const HANDOVER_TYPE = toOptions(MASTER_DATA.handoverType);
@@ -745,6 +790,9 @@ export const CHANNEL_PARTNER_CATEGORY_OPTIONS = toOptions(MASTER_DATA.channelPar
 export const IBM_OBM_REPORT_STAGE_OPTIONS = toOptions(MASTER_DATA.ibmObmReportStage);
 export const NOTICE_TYPE_OPTIONS = toOptions(MASTER_DATA.noticeType);
 export const BUDGET_LEVEL_TYPE = toOptions(MASTER_DATA.budgetLevelType);
+export const AOP_STATUS = toOptions(MASTER_DATA.aopStatus);
+export const TENDER_PAYMENT_MODE = toOptions(MASTER_DATA.tenderPaymentMode);
+export const TENANT_DOCUMENT_TYPE = toOptions(MASTER_DATA.tenantDocumentTypes);
 export const MATERIAL_REQUISITION_STAGES_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStages);
 export const MATERIAL_REQUISITION_STATUS_OPTIONS = toOptions(MASTER_DATA.materialRequisitionStatus);
 export const PROJECT_PROFESSIONAL_DETAILS_STATUS_OPTIONS = toOptions(MASTER_DATA.professionalType);

@@ -24,6 +24,7 @@ export interface BuildingData {
   CTSNumber: string;
   GoogleLocation: string;
   TotalPlotAreaSqFt: number | null;
+  TotalPlotAreaSqMt: number | null;
   RoadWidth: string;
 
   CountryMasterId: number | null;
@@ -52,6 +53,7 @@ export interface BuildingData {
 
   PropertyAgeYears: number | null;
   NumberOfFloors: number | null;
+  NumberOfWings: number | null;
 
   FSI_TDR_UtilizationSqFt: number | null;
 
@@ -77,6 +79,7 @@ export interface AddUpdateBuildingRequest {
   CTSNumber: string;
   GoogleLocation?: string | '';
   TotalPlotAreaSqFt: number | null;
+  TotalPlotAreaSqMt: number | null;
   RoadWidth: string;
   CountryMasterId: number | null;
   DistrictMasterId: number | null;
@@ -91,6 +94,7 @@ export interface AddUpdateBuildingRequest {
   TotalReligiousStructureAreaSqFt: number | null;
   PropertyAgeYears: number | null;
   NumberOfFloors: number | null;
+  NumberOfWings: number | null;
   FSI_TDR_UtilizationSqFt: number | null;
   LandOwnershipType: string;
   IsLitigation: boolean | null;
@@ -128,7 +132,7 @@ export interface BuildingDetailsData {
   PlotAreaPRCardSqFt?: number | null;
 
   // ===================== [BUILDING CONSTRUCTION DETAILS] =====================
-  TotalBuiltUpAreaSqFt: number;
+  TotalCarpetAreaSqFt: number;
   TotalResidentialUnits?: number | null;
   TotalResidentialCarpetAreaSqFt?: number | null;
   TotalCommercialUnits?: number | null;
@@ -181,7 +185,7 @@ export interface AddUpdateBuildingDetailsRequest {
   PlotAreaPRCardSqFt?: number;
 
   // ================== [BUILDING CONSTRUCTION DETAILS] ==============
-  TotalBuiltUpAreaSqFt: number;
+  TotalCarpetAreaSqFt: number;
   TotalResidentialUnits?: number;
   TotalResidentialCarpetAreaSqFt?: number;
   TotalCommercialUnits?: number;

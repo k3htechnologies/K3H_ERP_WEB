@@ -18,7 +18,7 @@ import { useProject } from "@/features/projectMaster/context/ProjectContext";
 import { useNavigate } from "react-router-dom";
 import type { BrokerageBookingData, FilterWithPaginationBrokerageBookingRequest } from "@/features/brokerage/models/BrokerageInvoiceModel";
 import { brokerageInvoiceService } from "@/features/brokerage/services/BrokerageInvoiceService";
-import {  Input } from "@/ui/components/forms";
+import { Input } from "@/ui/components/forms";
 import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { CustomTable } from "@/ui/components/DataTable/CustomTable";
@@ -57,11 +57,11 @@ export const Brokerage: React.FC = () => {
     const [isShowCustomizeBrokerageBookingColumnsModal, setIsShowCustomizeBrokerageBookingColumnsModal] = useState(false);
 
     useEffect(() => {
-        
+
         if (listState.searchTerm && String(listState.searchTerm).trim()) {
 
-            loadBrokerageBooking(listState.page,{ ChannelPartnerName: String(listState.searchTerm).trim() },listState.sortInfo);
-        
+            loadBrokerageBooking(listState.page, { ChannelPartnerName: String(listState.searchTerm).trim() }, listState.sortInfo);
+
         } else {
 
             loadBrokerageBooking(listState.page, listState.filters, listState.sortInfo);
@@ -255,13 +255,14 @@ export const Brokerage: React.FC = () => {
             align: 'left',
             render: value => value || '-'
         },
+
         {
             key: 'ChannelPartnerMobileNumber',
-            label: 'CP Mobile Number',
-            width: '25',
+            label: 'Cp Mobile Number',
+            width: '15',
             sortable: false,
             align: 'left',
-            render: (value) => (value ? `+91 ${value}` : "-"),
+            render: (value, row) => value ? `${row.ChannelPartnerMobileNumberCountryCode || "+91"} ${value}` : '-'
         },
         {
             key: 'SystemGeneratedCode',
@@ -279,6 +280,14 @@ export const Brokerage: React.FC = () => {
             )
         },
         {
+            key: 'ProjectName',
+            label: 'Project Name',
+            width: '25',
+            sortable: false,
+            align: 'left',
+            render: value => value || '-'
+        },
+        {
             key: 'ApplicantName',
             label: 'Applicant Name',
             width: '25',
@@ -292,13 +301,21 @@ export const Brokerage: React.FC = () => {
             width: '25',
             sortable: false,
             align: 'left',
-            render: (value) => (value ? `+91 ${value}` : "-"),
+           render: (value, row) => value ? `${row.ApplicantMobileNumberCountryCode || "+91"} ${value}` : '-'
         },
         {
             key: "UnitGroup",
             label: "Unit",
             align: "center",
             children: [
+                {
+                    key: 'BookingType',
+                    label: 'Booking Type',
+                    width: '25',
+                    sortable: false,
+                    align: 'left',
+                    render: value => value || '-'
+                },
                 {
                     key: 'BuildingNumber',
                     label: 'Building',
@@ -381,7 +398,7 @@ export const Brokerage: React.FC = () => {
                     align: "right",
                     render: value => value ? formatCurrency(value) : '0'
                 },
-                
+
                 {
                     key: "PaymentPaidAmount",
                     label: "Account Paid (₹)",

@@ -345,6 +345,12 @@ export const getPageInfo = (path: string) => {
                 description: 'Ticket',
             }
 
+        case 'otplogs':
+            return {
+                title: 'OTP Logs',
+                description: 'OTP Logs'
+            }
+
             {/* INVENTORY */ }
 
         case 'inventoryDashboard':
@@ -478,6 +484,13 @@ export const getPageInfo = (path: string) => {
                 title: "Channel Partner Category",
                 description: "Channel Partner Category",
             }
+        case 'aopAchievement':
+            return {
+                title: "AOP Achievement",
+                description: "Recognize and Reward Top Performers",
+            }
+
+
 
         // MARKETING
         case 'content':
@@ -550,6 +563,18 @@ export const getPageInfo = (path: string) => {
                 description: 'Centralized management of notice sections for real estate projects',
             }
 
+        //SPECIFICATION MASTER
+        case 'specificationmaster':
+            return {
+                title: "Specification Master",
+                description: 'Overview of your system and key metrics',
+            }
+        //BUDGET
+        case 'budget':
+            return {
+                title: "Budget",
+                description: 'Overview of your system and key metrics',
+            }
         //STOCK MANAGEMENT
         case 'stock':
             return {
@@ -563,8 +588,8 @@ export const getPageInfo = (path: string) => {
                 title: "Specification Master",
                 description: 'Overview of your system and key metrics',
             }
-            //BUDGET
-            case 'budget':
+        //BUDGET
+        case 'budget':
             return {
                 title: "Budget",
                 description: 'Overview of your system and key metrics',

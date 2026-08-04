@@ -62,11 +62,37 @@ export const ProposedOfferApi = {
     //=============================================================
     PULL_PROPOSED_PLAN: '/ProposedOffer/PullProposedPlan',
     ADD_UPDATE_PROPOSED_PLAN: '/ProposedOffer/AddUpdateProposedPlan',
+    ADD_UPDATE_BUILDING_PROPOSED_PLAN: '/ProposedOffer/AddUpdateBuildingProposedPlan',
 
     //=============================================================
     // [ GENERATE PROPOSED PLAN ]
     //=============================================================
     ADD_UPDATE_GENERATE_PROPOSED_PLAN: '/ProposedOffer/AddUpdateGenerateProposedOffer',
+
+    //=============================================================
+    // [ READY RECKONER ]
+    //=============================================================
+    PULL_READY_RECKONER: '/ProposedOffer/PullReadyReckoner',
+    ADD_UPDATE_READY_RECKONER: '/ProposedOffer/AddUpdateReadyReckoner',
+
+    //=============================================================
+    // [ CARPET AREA ]
+    //=============================================================
+    PULL_CARPET_AREA: '/ProposedOffer/PullCarpetArea',
+    ADD_UPDATE_CARPET_AREA: '/ProposedOffer/AddUpdateCarpetArea',
+
+    //=============================================================
+    // [ ADDITIONAL INFORMATION ]
+    //=============================================================
+    PULL_ADDITIONAL_INFORMATION: '/ProposedOffer/PullAdditionalInformation',
+    ADD_UPDATE_ADDITIONAL_INFORMATION: '/ProposedOffer/AddUpdateAdditionalInformation',
+
+    //=============================================================
+    // [ PLOT AREA ]
+    //=============================================================
+    PULL_PLOT_AREA: '/ProposedOffer/PullPlotArea',
+    ADD_UPDATE_PLOT_AREA: '/ProposedOffer/AddUpdatePlotArea',
+
 } as const
 
 

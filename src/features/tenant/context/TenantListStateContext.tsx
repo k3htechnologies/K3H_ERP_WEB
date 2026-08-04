@@ -12,6 +12,7 @@ export type TenantListState = {
   buildingName: string;
   tenantId: number;
   tenantName: string;
+  applicantName: string;
 };
 
 const STORAGE_KEY = 'tenant.listState';
@@ -28,6 +29,7 @@ const getInitialState = (projectId: number | null): TenantListState => {
       buildingName: "",
       tenantId: 0,
       tenantName: "",
+      applicantName: "",
     };
   }
 
@@ -42,6 +44,7 @@ const getInitialState = (projectId: number | null): TenantListState => {
           // Ensure tenantId and tenantName are reset when on list page
           tenantId: parsed.state.tenantId || 0,
           tenantName: parsed.state.tenantName || "",
+          applicantName: parsed.state.applicantName || "",
         };
       }
     }
@@ -59,6 +62,7 @@ const getInitialState = (projectId: number | null): TenantListState => {
     buildingName: "",
     tenantId: 0,
     tenantName: "",
+    applicantName: "",
   };
 };
 
@@ -94,6 +98,7 @@ export const TenantListStateProvider = ({ children }: { children: ReactNode }) =
         buildingName: "",
         tenantId: 0,
         tenantName: "",
+        applicantName: "",
       };
       setListState(defaultState);
       // Clear stored state for old project
@@ -149,6 +154,7 @@ export const TenantListStateProvider = ({ children }: { children: ReactNode }) =
       buildingName: "",
       tenantId: 0,
       tenantName: "",
+      applicantName: "",
     };
     setListState(defaultState);
   }, []);

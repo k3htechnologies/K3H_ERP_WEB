@@ -4,7 +4,6 @@ import type {
     FilterWithPaginationBookingRequest,
     BookingListResponse,
     BookingSaveResponse,
-    CancelBookingRequest,
     BookingDeleteResponse,
     FilterWithPaginationChannelPartnerBookingRequest,
     FilterPaymentScheduleStagesRequest,
@@ -33,9 +32,9 @@ export const bookingService = {
         }
     },
 
-    apiCallCancelBooking: async (params: CancelBookingRequest): Promise<E.Either<Failure, BookingDeleteResponse>> => {
+    apiCallCancelBooking: async (formData: FormData): Promise<E.Either<Failure, BookingDeleteResponse>> => {
         try {
-            return E.right(await bookingDatasource.cancelBooking(params));
+            return E.right(await bookingDatasource.cancelBooking(formData));
         } catch (error: any) {
             return E.left({ message: error.message, code: error.code });
         }

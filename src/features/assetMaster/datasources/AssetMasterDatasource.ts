@@ -36,6 +36,7 @@ export class AssetMasterDatasourceImpl implements AssetMasterDatasource {
             if (params.AssetBrand?.trim()) queryParams.append('AssetBrand', params.AssetBrand.trim());
             if (params.SerialNumber?.trim()) queryParams.append('SerialNumber', params.SerialNumber.trim());
             if (params.Status?.trim()) queryParams.append('Status', params.Status.trim());
+            if (params.EmployeeName?.trim()) queryParams.append('EmployeeName', params.EmployeeName.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 

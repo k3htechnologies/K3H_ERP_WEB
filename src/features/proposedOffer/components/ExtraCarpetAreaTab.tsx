@@ -15,6 +15,7 @@ import BottomActionBar from '@/ui/components/forms/BottomActionBar';
 import { CARPET_AREA_TYPE } from '@/core/constants';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
 import { initialFormStateExtraCarpetArea } from '../utils/initialStates';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface ExtraCarpetAreaTabProps {
   projectId: number | null;
@@ -151,7 +152,8 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
           ProjectId: Number(projectId),
           ExtraCarpetAreaOfferedType: formDataExtraCarpetArea.ExtraCarpetAreaOfferedType,
           ResidentialExtraCarpetPercent: formDataExtraCarpetArea.ResidentialExtraCarpetPercent ?? 0,
-          CommercialExtraCarpetPercent: formDataExtraCarpetArea.CommercialExtraCarpetPercent ?? 0
+          CommercialExtraCarpetPercent: formDataExtraCarpetArea.CommercialExtraCarpetPercent ?? 0,
+          Remark: formDataExtraCarpetArea.Remark
         };
 
         const response = await proposedOfferService.apiCallAddUpdateExtraCarpetArea(payload);
@@ -250,6 +252,16 @@ export const ExtraCarpetAreaTab: React.FC<ExtraCarpetAreaTabProps> = ({
                 rightIcon="%"
               />
             </div>
+
+          </div>
+          <div>
+            <TextArea
+              label="Remark"
+              className='thin-scroll'
+              value={formDataExtraCarpetArea.Remark ?? ""}
+              placeholder="Enter Remark"
+              onChange={(e) => handleFieldChangeExtraCarpetArea("Remark", e.target.value)}
+            />
           </div>
         </div>
       </div>

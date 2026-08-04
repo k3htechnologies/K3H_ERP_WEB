@@ -152,14 +152,15 @@ const AddCompany: React.FC = () => {
 
   const [companyPartnerAadhaarCardURLFiles, setCompanyPartnerAadhaarCardURLFiles] = useState<(File | string)[]>([]);
   const [removedCompanyPartnerAadhaarCardURLs, setRemovedCompanyPartnerAadhaarCardURLs] = useState<string[]>([]);
-
+  const [companyPartnerAadhaarCardURL, setCompanyPartnerAadhaarCardURL] = useState<string>();
 
   const [companyPartnerPANURLFiles, setCompanyPartnerPANURLFiles] = useState<(File | string)[]>([]);
   const [removedCompanyPartnerPANURLs, setRemovedCompanyPartnerPANURLs] = useState<string[]>([]);
-
+  const [companyPartnerPANURL, setCompanyPartnerPANURL] = useState<string>();
 
   const [companyPartnerPhotoURLFiles, setCompanyPartnerPhotoURLFiles] = useState<(File | string)[]>([]);
   const [removedCompanyPartnerPhotoURLs, setRemovedCompanyPartnerPhotoURLs] = useState<string[]>([]);
+  const [companyPartnerPhotoURL, setCompanyPartnerPhotoURL] = useState<string>();
 
   //ERROR SET UP
   const [errorsCompanyPartner, setErrorsCompanyPartner] = useState<{ [k: string]: string }>({});
@@ -565,10 +566,8 @@ const AddCompany: React.FC = () => {
           navigate("/companyMaster");
 
         } else {
-
           addToast({ type: 'error', title: response.left.message });
         }
-
         return response
       },
       undefined,
@@ -579,13 +578,10 @@ const AddCompany: React.FC = () => {
       Number(companyId) === 0 ? 'Add Company Master' : 'Update Company Master...'
     )
   }
-
-
   //#endregion
 
 
   //#region EDIT DEPARTMENT MASTER
-
   const handleEditCompanyPartner = useCallback((row: PartnerDetailsWithFiles, index: number) => {
 
     const partnerData: AddUpdateCompanyPartnerRequest = {
@@ -613,7 +609,7 @@ const AddCompany: React.FC = () => {
 
     // PHOTO
     setCompanyPartnerPhotoURLFiles(row._photoFiles ?? []);
-    setRemovedCompanyPartnerPhotoURLs([]); // always reset
+    setRemovedCompanyPartnerPhotoURLs([]);
 
     // AADHAR
     setCompanyPartnerAadhaarCardURLFiles(row._aadharCardFiles ?? []);
@@ -625,8 +621,6 @@ const AddCompany: React.FC = () => {
 
     setIsAddUpdateCompanyPartnerModalOpen(true);
   }, []);
-
-
 
   //#endregion
 
@@ -649,54 +643,16 @@ const AddCompany: React.FC = () => {
         key: 'FullName',
         label: 'Full Name',
         width: '25',
-        sortable: true,
+        sortable: false,
         fixed: 'left',
         align: 'left',
-        render: (value, row, index) => {
+        render: (value) => {
           return (
-            <div className="flex items-center justify-between w-full gap-1">
-
-              <TooltipText
-                text={value || "-"}
-                maxWidth="250px"
-                tooltipThreshold={25}
-              />
-
-
-              {/* RIGHT: actions */}
-              <div className="flex items-center gap-1 shrink-0">
-                <Button
-
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleEditCompanyPartner(row, index);
-                  }}
-                  color="transparent"
-                  isborderRadius
-                  size="sm"
-                  title="Edit"
-                >
-                  <Edit className="h-4 w-4" />
-
-                </Button>
-
-                <Button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleConfirmationDialogBoxOpenCompanyPartner(row, index);
-                  }}
-                  color="transparent"
-                  isborderRadius
-                  size="sm"
-                  style={{ color: 'red' }}
-                  title="Delete"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
+            <TooltipText
+              text={value || "-"}
+              maxWidth="250px"
+              tooltipThreshold={25}
+            />
           );
 
         }
@@ -758,8 +714,6 @@ const AddCompany: React.FC = () => {
           );
         }
       },
-
-
       {
         key: 'AadharCardNumber',
         label: 'Aadhaar Number',
@@ -776,7 +730,53 @@ const AddCompany: React.FC = () => {
             />
           );
         }
+      },
+      {
+        key: "Actions",
+        label: "Actions",
+        width: '15',
+        sortable: false,
+        fixed: "right",
+        align: "center",
+        render: (_value, row, index) => {
+          return (
+            <div className="flex items-center justify-between w-full gap-1">
+              <div className="flex items-center gap-1 shrink-0">
+                <Button
 
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleEditCompanyPartner(row, index);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                  title="Edit"
+                >
+                  <Edit className="h-4 w-4" />
+
+                </Button>
+
+                <Button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleConfirmationDialogBoxOpenCompanyPartner(row, index);
+                  }}
+                  color="transparent"
+                  isborderRadius
+                  size="sm"
+                  style={{ color: 'red' }}
+                  title="Delete"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          );
+
+        }
       }
     ],
     [handleEditCompanyPartner, handleConfirmationDialogBoxOpenCompanyPartner, companyPartnerList]
@@ -794,6 +794,24 @@ const AddCompany: React.FC = () => {
   };
 
   //#endregion 
+
+  const ALLOWED_DOC_EXTENSIONS = ['pdf', 'doc', 'docx', 'jpg', 'jpeg', 'png'];
+
+  const hasInvalidFileFormat = (
+    files: (File | string)[] = [],
+    extraUrl?: string
+  ) => {
+    const allFiles = extraUrl ? [...files, extraUrl] : files;
+
+    return allFiles.some((file) => {
+      const name = typeof file === 'string' ? file : file.name;
+      const extension = name.split('.').pop()?.toLowerCase() || '';
+      return extension && !ALLOWED_DOC_EXTENSIONS.includes(extension);
+    });
+  };
+
+  const invalidFormatMessage = (label: string) =>
+    `${label} Uploaded files must be in a valid format (PDF, DOC, DOCX, JPG, JPEG, PNG).`;
 
   //#region ADD UPDATE COMPANY PARTNER DATA
 
@@ -913,7 +931,6 @@ const AddCompany: React.FC = () => {
     if (hasPanFile && !hasPanNumber) {
       newErrorsCompanyPartner.PanNumber = "PAN Card Number is required";
     }
-
 
     // ===== Aadhaar =====
 
@@ -1053,6 +1070,9 @@ const AddCompany: React.FC = () => {
     setCompanyPartnerPhotoURLFiles([]);
     setRemovedCompanyPartnerPhotoURLs([]);
     setRemovedCompanyPartnerAadhaarCardURLs([]);
+    setCompanyPartnerPANURL('');
+    setCompanyPartnerAadhaarCardURL('');
+    setCompanyPartnerPhotoURL('')
     setRemovedCompanyPartnerPANURLs([]);
   };
 
@@ -1200,12 +1220,12 @@ const AddCompany: React.FC = () => {
       addFilesWithExisting(fd, prefix, realPartner._photoFiles, 'PhotoURL');
       addFilesWithExisting(fd, prefix, realPartner._panCardFiles, 'PanCardURL');
       addFilesWithExisting(fd, prefix, realPartner._aadharCardFiles, 'AadharCardURL');
+      
     });
 
     return fd;
   };
   //#region 
-
 
   return (
 
@@ -1353,7 +1373,13 @@ const AddCompany: React.FC = () => {
                 placeholder='Select GST Certificate'
                 error={errors.GSTCertificateURL}
                 value={gstGSTCertificateFiles}
-                onChange={setGSTCertificateFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("GST Certificate") });
+                    return;
+                  }
+                  setGSTCertificateFiles(files);
+                }}
                 availableFilesURL={gSTCertificateURL ?? ""}
                 allowedTypes={["image/jpeg",
                   "image/png",
@@ -1392,7 +1418,13 @@ const AddCompany: React.FC = () => {
                 placeholder='Select Pan Card'
                 error={errors.PanCardURL}
                 value={panURLFiles}
-                onChange={setPANURLFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("Pan Card") });
+                    return;
+                  }
+                  setPANURLFiles(files);
+                }}
                 availableFilesURL={panURL ?? ""}
                 allowedTypes={["image/jpeg",
                   "image/png",
@@ -1433,7 +1465,13 @@ const AddCompany: React.FC = () => {
                 placeholder='Select CIN'
                 value={cinURLFiles}
                 error={errors.CINURL}
-                onChange={setCINURLFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("CIN") });
+                    return;
+                  }
+                  setCINURLFiles(files);
+                }}
                 availableFilesURL={cinURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
@@ -1656,7 +1694,13 @@ const AddCompany: React.FC = () => {
                 required
                 error={errors.CompanyLetterheadHeaderURL}
                 value={companyLetterHeadHeaderFiles}
-                onChange={setCompanyLetterHeadHeaderFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("Company Letterhead Header") });
+                    return;
+                  }
+                  setCompanyLetterHeadHeaderFiles(files);
+                }}
                 availableFilesURL={companyLetterHeadHeaderURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
@@ -1682,7 +1726,13 @@ const AddCompany: React.FC = () => {
                 required
                 value={companyLetterHeadFooterFiles}
                 error={errors.CompanyLetterheadFooterURL}
-                onChange={setCompanyLetterHeadFooterFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("Company Letterhead Footer") });
+                    return;
+                  }
+                  setCompanyLetterHeadFooterFiles(files);
+                }}
                 availableFilesURL={companyLetterHeadFooterURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",
@@ -1776,6 +1826,9 @@ const AddCompany: React.FC = () => {
           setRemovedCompanyPartnerPhotoURLs([]);
           setRemovedCompanyPartnerAadhaarCardURLs([]);
           setRemovedCompanyPartnerPANURLs([]);
+          setCompanyPartnerPANURL('');
+          setCompanyPartnerAadhaarCardURL('');
+          setCompanyPartnerPhotoURL('')
           setErrorsCompanyPartner({});
 
         }}
@@ -1789,6 +1842,9 @@ const AddCompany: React.FC = () => {
           setRemovedCompanyPartnerPhotoURLs([]);
           setRemovedCompanyPartnerAadhaarCardURLs([]);
           setRemovedCompanyPartnerPANURLs([]);
+          setCompanyPartnerPANURL('');
+          setCompanyPartnerAadhaarCardURL('');
+          setCompanyPartnerPhotoURL('')
           setErrorsCompanyPartner({});
 
         }}
@@ -1925,6 +1981,7 @@ const AddCompany: React.FC = () => {
               error={errorsCompanyPartner.PanCardURL}
               value={companyPartnerPANURLFiles}
               onChange={setCompanyPartnerPANURLFiles}
+              availableFilesURL={companyPartnerPANURL ?? ""}
               allowedTypes={[
                 "image/jpeg",
                 "image/png",
@@ -1959,6 +2016,7 @@ const AddCompany: React.FC = () => {
               required
               error={errorsCompanyPartner.AadharCardURL}
               value={companyPartnerAadhaarCardURLFiles}
+              availableFilesURL={companyPartnerAadhaarCardURL ?? ""}
               onChange={setCompanyPartnerAadhaarCardURLFiles}
               allowedTypes={[
                 "image/jpeg",
@@ -1980,6 +2038,7 @@ const AddCompany: React.FC = () => {
               error={errorsCompanyPartner.PhotoURL}
               value={companyPartnerPhotoURLFiles}
               onChange={setCompanyPartnerPhotoURLFiles}
+              availableFilesURL={companyPartnerPhotoURL ?? ""}
               allowedTypes={[
                 "image/jpeg",
                 "image/png",

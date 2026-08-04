@@ -138,6 +138,9 @@ export interface BookingData {
     CancelledById: number | null;
     CancelledBy: string | null;
     CancelledDate: string | null;
+    CancelRemark: string | null;
+    CancelBookingApprovalStatus: string | null;
+    ProofOfDocumentURL: string | null;
 
     IsApproval: boolean;
     ApprovalStatus: string | null;
@@ -361,6 +364,9 @@ export interface CancelBookingRequest {
     ProjectId: number | null;
     InventoryFlatId: number | null;
     ParkingId: string | null;
+    CancelRemark: string | null;
+    ProofOfDocumentURL?: File[] | null;
+    RemoveProofOfDocumentURL?: string;
 }
 
 //=============================================================

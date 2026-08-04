@@ -75,6 +75,31 @@ import type {
     DeleteProposedOfferSecurityDepositDetailsRequest,
     ProposedOfferSecurityDepositDetailsDeleteResponse,
 
+    // READY RECKONER
+    FilterWithPaginationReadyReckonerRequest,
+    ReadyReckonerListResponse,
+    ReadyReckonerSaveResponse,
+    AddUpdateReadyReckonerRequest,
+
+    // CARPET AREA
+    FilterWithPaginationCarpetAreaRequest,
+    AddUpdateCarpetAreaRequest,
+    CarpetAreaListResponse,
+    CarpetAreaSaveResponse,
+
+    // ADDITIONAL INFORMATION
+    FilterWithPaginationAdditionalInformationRequest,
+    AddUpdateAdditionalInformationRequest,
+    AdditionalInformationListResponse,
+    AdditionalInformationSaveResponse,
+
+    // PLOT AREA
+    FilterWithPaginationPlotAreaRequest,
+    PlotAreaListResponse,
+    AddUpdatePlotAreaRequest,
+    PlotAreaSaveResponse,
+    AddUpdateProposedPlanRequest,
+
 } from '@/features/proposedOffer/models/ProposedOfferModel'
 
 //=============================================================
@@ -114,7 +139,8 @@ export abstract class ProposedOfferDatasource {
     abstract addUpdateProjectCompletion(data: AddUpdateProposedOfferProjectCompletionRequest): Promise<ProposedOfferProjectCompletionSaveResponse>
 
     abstract pullProposedPlan(params: FilterWithPaginationProposedOfferProposedPlanRequest, signal?: AbortSignal): Promise<ProposedOfferProposedPlanListResponse>
-    abstract addUpdateProposedPlan(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse>
+    abstract addUpdateProposedPlan(params: AddUpdateProposedPlanRequest): Promise<ProposedOfferProposedPlanSaveResponse>
+    abstract addUpdateBuildingProposedPlanRequest(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse>
 
     abstract addUpdateGenerateProposedOffer(params: AddUpdateGenerateProposedOfferRequest): Promise<GenerateProposedOfferResponse>
 }
@@ -190,7 +216,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.pullCorpusDetails(params);
+                return await this.pullCorpusDetails(params);
             }
             throw error
         }
@@ -212,7 +238,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.addUpdateCorpusDetails(params);
+                return await this.addUpdateCorpusDetails(params);
             }
             throw error
         }
@@ -371,7 +397,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.deleteShiftingDetails(params)
+                return await this.deleteShiftingDetails(params)
             }
 
             throw error
@@ -543,7 +569,7 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.pullGSTonExistingPlusFreeArea(params, signal)
+                return await this.pullGSTonExistingPlusFreeArea(params, signal)
             }
 
             throw error
@@ -626,31 +652,48 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.pullProposedPlan(params, signal)
+                return await this.pullProposedPlan(params, signal)
             }
 
             throw error
         }
     }
 
-    async addUpdateProposedPlan(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse> {
+    async addUpdateProposedPlan(params: AddUpdateProposedPlanRequest): Promise<ProposedOfferProposedPlanSaveResponse> {
         try {
-            return await this.k3hHttpClient.multipartRequestWithAuthentication(
+            return await this.k3hHttpClient.postRequestWithAuthentication(
                 ProposedOfferApi.ADD_UPDATE_PROPOSED_PLAN,
-                formData
+                params
             )
         } catch (error) {
             console.error('ERROR: ADD UPDATE PROPOSED PLAN:', error)
 
             if (error instanceof TokenExpiredException) {
 
-                return await this.addUpdateProposedPlan(formData)
+                return await this.addUpdateProposedPlan(params)
             }
 
             throw error
         }
     }
 
+    async addUpdateBuildingProposedPlanRequest(formData: FormData): Promise<ProposedOfferProposedPlanSaveResponse> {
+        try {
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(
+                ProposedOfferApi.ADD_UPDATE_BUILDING_PROPOSED_PLAN,
+                formData
+            )
+        } catch (error) {
+            console.error('ERROR: ADD UPDATE BUILDING PROPOSED PLAN:', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateBuildingProposedPlanRequest(formData)
+            }
+
+            throw error
+        }
+    }
 
     //====================GENERATE PROPOSED PLAN ====================
 
@@ -670,10 +713,187 @@ export class ProposedOfferDatasourceImpl implements ProposedOfferDatasource {
 
             if (error instanceof TokenExpiredException) {
 
-                return  await this.addUpdateGenerateProposedOffer(params);
+                return await this.addUpdateGenerateProposedOffer(params);
             }
             throw error
         }
     }
+
+    //====================READY RECKONER ====================
+    async pullReadyReckoner(params: FilterWithPaginationReadyReckonerRequest, signal?: AbortSignal): Promise<ReadyReckonerListResponse> {
+        try {
+            const queryParams = new URLSearchParams()
+            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
+            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType)
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(
+                `${ProposedOfferApi.PULL_READY_RECKONER}?${queryParams.toString()}`,
+                { signal }
+            )
+        } catch (error) {
+            console.error('ERROR: PULL READY RECKONER:', error)
+
+            if (error instanceof TokenExpiredException) {
+                return await this.pullReadyReckoner(params);
+            }
+
+            throw error
+        }
+    }
+
+    async addUpdateReadyReckoner(params: AddUpdateReadyReckonerRequest): Promise<ReadyReckonerSaveResponse> {
+
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                ProposedOfferApi.ADD_UPDATE_READY_RECKONER,
+                params
+            )
+
+            return response
+        } catch (error) {
+            console.error('Error: Add Update READY RECKONER :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateReadyReckoner(params);
+            }
+            throw error
+        }
+    }
+
+    //====================CARPET AREA ====================
+    async pullCarpetArea(params: FilterWithPaginationCarpetAreaRequest, signal?: AbortSignal): Promise<CarpetAreaListResponse> {
+        try {
+            const queryParams = new URLSearchParams()
+            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
+            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType)
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(
+                `${ProposedOfferApi.PULL_CARPET_AREA}?${queryParams.toString()}`,
+                { signal }
+            )
+        } catch (error) {
+            console.error('ERROR: PULL CARPET AREA:', error)
+
+            if (error instanceof TokenExpiredException) {
+                return await this.pullCarpetArea(params);
+            }
+
+            throw error
+        }
+    }
+
+    async addUpdateCarpetArea(params: AddUpdateCarpetAreaRequest): Promise<CarpetAreaSaveResponse> {
+
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                ProposedOfferApi.ADD_UPDATE_CARPET_AREA,
+                params
+            )
+
+            return response
+        } catch (error) {
+            console.error('Error: Add Update CARPET AREA :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateCarpetArea(params);
+            }
+            throw error
+        }
+    }
+
+    // ADDITONAL INFORMATION
+    async pullAdditionalInformation(params: FilterWithPaginationAdditionalInformationRequest, signal?: AbortSignal): Promise<AdditionalInformationListResponse> {
+        try {
+            const queryParams = new URLSearchParams()
+            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
+            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType)
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(
+                `${ProposedOfferApi.PULL_ADDITIONAL_INFORMATION}?${queryParams.toString()}`,
+                { signal }
+            )
+        } catch (error) {
+            console.error('ERROR: PULL ADDITIONAL INFORMATION:', error)
+
+            if (error instanceof TokenExpiredException) {
+                return await this.pullAdditionalInformation(params);
+            }
+
+            throw error
+        }
+    }
+
+    async addUpdateAdditionalInformation(params: AddUpdateAdditionalInformationRequest): Promise<AdditionalInformationSaveResponse> {
+
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                ProposedOfferApi.ADD_UPDATE_ADDITIONAL_INFORMATION,
+                params
+            )
+
+            return response
+        } catch (error) {
+            console.error('Error: Add Update ADDITIONAL INFORMATION :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdateAdditionalInformation(params);
+            }
+            throw error
+        }
+    }
+
+    // PLOT AREA
+    async pullPlotArea(params: FilterWithPaginationPlotAreaRequest, signal?: AbortSignal): Promise<PlotAreaListResponse> {
+        try {
+            const queryParams = new URLSearchParams()
+            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString())
+            if (params.BuildingId) queryParams.append('BuildingId', params.BuildingId.toString())
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType)
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(
+                `${ProposedOfferApi.PULL_PLOT_AREA}?${queryParams.toString()}`,
+                { signal }
+            )
+        } catch (error) {
+            console.error('ERROR: PULL PLOT AREA:', error)
+
+            if (error instanceof TokenExpiredException) {
+                return await this.pullPlotArea(params);
+            }
+
+            throw error
+        }
+    }
+
+    async addUpdatePlotArea(params: AddUpdatePlotAreaRequest): Promise<PlotAreaSaveResponse> {
+
+        try {
+
+            const response = await this.k3hHttpClient.postRequestWithAuthentication(
+                ProposedOfferApi.ADD_UPDATE_PLOT_AREA,
+                params
+            )
+
+            return response
+        } catch (error) {
+            console.error('Error: Add Update PLOT AREA :', error)
+
+            if (error instanceof TokenExpiredException) {
+
+                return await this.addUpdatePlotArea(params);
+            }
+            throw error
+        }
+    }
+
 
 }

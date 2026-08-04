@@ -93,6 +93,7 @@ export const mapPathToRoute = (apiPath: string): string => {
         '/performance': '/performance',
         '/achievement': '/achievement',
         '/channelpartnercategory' :'/channelPartnerCategory',
+        '/aopachievement': '/aopAchievement',
 
 
         // INVENTORY

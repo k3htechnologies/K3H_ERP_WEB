@@ -36,7 +36,7 @@ import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import { copyToClipboard } from '@/core/utils/comman';
 import { filterNumbers } from '@/core/utils/fileValidation';
 import { SinglePageSelection } from '@/ui/components/DropDown/SinglePageSelection';
-import { IBM_OBM_RANGE_FILTER_OPTIONS } from '@/core/constants';
+import { AOP_STATUS, IBM_OBM_RANGE_FILTER_OPTIONS } from '@/core/constants';
 
 
 export const ChannelPartner: React.FC = () => {
@@ -121,6 +121,7 @@ export const ChannelPartner: React.FC = () => {
           VillageName: filterParams.VillageName?.trim() || undefined,
           NoOfIBM: filterParams.NoOfIBM?.trim() || undefined,
           NoOfOBM: filterParams.NoOfOBM?.trim() || undefined,
+          AOPStatus: filterParams.AOPStatus?.trim() || undefined,
           SystemGeneratedCode: filterParams.SystemGeneratedCode?.trim() || undefined,
 
           SortBy: getSortByParam(sortInfo ?? null, ChannelPartnerColumns)
@@ -215,6 +216,7 @@ export const ChannelPartner: React.FC = () => {
           VillageName: filters.VillageName?.trim() || undefined,
           NoOfIBM: filters.NoOfIBM?.trim() || undefined,
           NoOfOBM: filters.NoOfOBM?.trim() || undefined,
+          AOPStatus: filters.AOPStatus?.trim() || undefined,
           SystemGeneratedCode: filters.SystemGeneratedCode?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, ChannelPartnerColumns),
           ExportType: exportType
@@ -970,6 +972,19 @@ export const ChannelPartner: React.FC = () => {
               value={tempFilters.NoOfOBM || ''}
               onChange={e => handleFilterChange('NoOfOBM', String(e))}
               options={IBM_OBM_RANGE_FILTER_OPTIONS.map(opt => ({
+                label: opt.name,
+                value: opt.id
+              }))}
+            />
+          </div>
+
+          <div>
+            <SinglePageSelection
+              label="AOP Status"
+              placeholder="Select AOP Status"
+              value={tempFilters.AOPStatus || ''}
+              onChange={e => handleFilterChange('AOPStatus', String(e))}
+              options={AOP_STATUS.map(opt => ({
                 label: opt.name,
                 value: opt.id
               }))}

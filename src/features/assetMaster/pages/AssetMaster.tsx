@@ -112,6 +112,7 @@ export const AssetMaster: React.FC = () => {
           AssetBrand: filterParams.AssetBrand?.trim() || undefined,
           AssetModel: filterParams.AssetModel?.trim() || undefined,
           SerialNumber: filterParams.SerialNumber?.trim() || undefined,
+          EmployeeName :filterParams.EmployeeName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, assetMasterColumns)
         };
 
@@ -182,6 +183,7 @@ export const AssetMaster: React.FC = () => {
           AssetBrand: filters.AssetBrand?.trim() || undefined,
           AssetModel: filters.AssetModel?.trim() || undefined,
           SerialNumber: filters.SerialNumber?.trim() || undefined,
+          EmployeeName :filters.EmployeeName?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, assetMasterColumns),
 
           ExportType: exportType
@@ -596,6 +598,13 @@ export const AssetMaster: React.FC = () => {
         size="small-half"
       >
         <div className="space-y-6">
+          <div>
+            <Input type="text"
+              label='Employee Name'
+              value={tempFilters?.EmployeeName ?? ''}
+              onChange={e => handleFilterChange('EmployeeName', e.target.value)}
+              placeholder="Enter Employee Name" />
+          </div>
           <div>
             <Input type="text"
               label='Asset Name'

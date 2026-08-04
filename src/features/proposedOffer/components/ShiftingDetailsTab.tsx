@@ -25,6 +25,7 @@ import {
   initialFormStateShiftingPaymentStage,
 } from '../utils/initialStates';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { TextArea } from '@/ui/components/forms/Textarea';
 
 interface ShiftingDetailsTabProps {
   projectId: number | null;
@@ -688,6 +689,17 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
               />
             </div>
           </div>
+          <div>
+            <div>
+              <TextArea
+                label="Remarks"
+                className='thin-scroll'
+                value={formDataShiftingDetails.Remark ?? ""}
+                placeholder="Enter Remarks"
+                onChange={(e) => handleFieldChangeShiftingPaymentStage("Remark", e.target.value)}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Shifting List Section */}
@@ -746,11 +758,10 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
         title={editingShiftingPaymentStageData ? 'Update Shifting Payment Stage' : 'Add Shifting Payment Stage'}
         onSubmit={handleAddUpdateShiftingPaymentStage}
         saveText={editingShiftingPaymentStageData ? 'Update' : 'Add'}
-        cancelText="Cancel"
         loading={isLoading}
         size='lg'
       >
-        <div className="space-y-6">
+        <div className="space-y-6 p-6 bg-blue-100">
           <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
             <div>
               <SinglePageSelection
@@ -835,6 +846,7 @@ export const ShiftingDetailsTab: React.FC<ShiftingDetailsTabProps> = ({
                 placeholder="Calculated Amount"
               />
             </div>
+
           </div>
         </div>
       </Modal>

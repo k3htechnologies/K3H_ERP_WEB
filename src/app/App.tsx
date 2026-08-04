@@ -116,8 +116,6 @@ import Enquiry from '@/features/enquiry/pages/Enquiry';
 import AddUpdateEnquiry from '@/features/enquiry/pages/AddUpdateEnquiry';
 import { EnquiryListStateProvider } from '@/features/enquiry/context/EnquiryListStateContext';
 import EarningMaster from '@/features/earningMaster/pages/EarningMaster';
-import ProposedPlan from '@/features/proposedOffer/pages/ProposedPlan';
-import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
 import EmployeeResignation from '@/features/resignation/pages/EmployeeResignation';
 import PayrollReport from '@/features/payrollReport/pages/PayrollReport';
 import DepartmentMaster from '@/features/departmentMaster/pages/DepartmentMaster';
@@ -185,6 +183,9 @@ import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSect
 import Budget from '@/features/budget/pages/Budget';
 import SummaryMIS from '@/features/summaryMIS/SummaryMIS';
 import SpecificationMaster from '@/features/specificationMaster/pages/SpecificationMaster';
+import ViewChannelPartner from '@/features/ChannelPartner/pages/ViewChannelPartner';
+import ChannelPartnerSalesMetrics from '@/features/ChannelPartner/pages/ChannelPartnerSalesMetrics';
+import AopAchievementReport from '@/features/aopAchievement/pages/AopAchievementReport';
 // import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/materialRequisitionListStateContext';
 import { MaterialRequisitionListStateProvider } from '@/features/materialRequisition/context/MaterialRequisitionListStateContext';
 import { AddUpdateMaterialRequisition } from '@/features/materialRequisition/pages/AddUpdateMaterialRequisition';
@@ -201,6 +202,10 @@ import ProjectProfessionalDetails from '@/features/projectProfessionalDetails/pa
 import { ProjectProfessionalDetailsListStateProvider } from '@/features/projectProfessionalDetails/context/ProjectProfessionalDetailsListStateContext';
 import ViewProjectProfessionalDetails from '@/features/projectProfessionalDetails/pages/ViewProjectProfessionalDetails';
 import AddUpdateProjectProfessionalDetail from '@/features/projectProfessionalDetails/pages/AddUpdateProjectProfessionalDetails';
+import CompanyBank from '@/features/companyMaster/pages/CompanyBank';
+import NewProposedPlan from '@/features/proposedOffer/pages/NewProposedPlan';
+import OTPLogs from '@/features/oTPLogs/pages/OTPLogs';
+import CameraPlayer from '@/features/cameraPlayer/pages/CameraPlayer';
 
 // Loading component for Suspense fallback 
 const LoadingSpinner = () => (
@@ -279,6 +284,7 @@ function App() {
             <Route path="companyMaster" element={<CompanyListStateProvider><CompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/view" element={<CompanyListStateProvider><ViewCompanyMaster /></CompanyListStateProvider>} />
             <Route path="companyMaster/add/:companyId?" element={<CompanyListStateProvider><AddCompany /></CompanyListStateProvider>} />
+            <Route path='companyMaster/bank' element={<CompanyListStateProvider><CompanyBank /></CompanyListStateProvider>} />
 
             <Route path="tnc" element={<TncMaster />} />
 
@@ -395,6 +401,7 @@ function App() {
             <Route path="channelPartner" element={<ChannelPartnerListStateProvider><ChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/view" element={<ChannelPartnerListStateProvider><ViewChannelPartner /></ChannelPartnerListStateProvider>} />
             <Route path="channelPartner/add/:ChannelPartnerId?" element={<ChannelPartnerListStateProvider><AddUpdateChannelPartner /></ChannelPartnerListStateProvider>} />
+            <Route path="channelPartner/salesMetrics" element={<ChannelPartnerListStateProvider><ChannelPartnerSalesMetrics /></ChannelPartnerListStateProvider>} />
 
             <Route path="cpUniverse" element={<ChannelPartnerUniverseListStateProvider><ChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
             <Route path="cpUniverse/view" element={<ChannelPartnerUniverseListStateProvider><ViewChannelPartnerUniverse /></ChannelPartnerUniverseListStateProvider>} />
@@ -427,6 +434,7 @@ function App() {
 
             <Route path="performance" element={<PerformanceReport />} />
             <Route path="achievement" element={<AchievementReport />} />
+            <Route path="aopAchievement" element={<AopAchievementReport />} />
 
             <Route path='channelPartnerCategory' element={<ChannelPartnerCategory />} />
 
@@ -443,7 +451,7 @@ function App() {
 
             <Route path="tenant" element={<TenantListStateProvider><Tenant /></TenantListStateProvider>} />
             <Route path="tenant/view" element={<TenantListStateProvider><ViewTenant /></TenantListStateProvider>} />
-            <Route path="tenant/add/:tenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
+            <Route path="tenant/add/:TenantId?" element={<TenantListStateProvider><AddUpdateTenant /></TenantListStateProvider>} />
             <Route path="tenant/document" element={<TenantListStateProvider><TenantDocument /></TenantListStateProvider>} />
 
             <Route path="rent" element={<RentListStateProvider><Rent /></RentListStateProvider>} />
@@ -452,7 +460,7 @@ function App() {
 
             <Route path="proposedOffer" element={<ProposedOffer />} />
 
-            <Route path="proposedPlan" element={<ProposedPlan />} />
+            <Route path="proposedPlan" element={<NewProposedPlan />} />
 
 
             {/* OPERATION */}
@@ -525,7 +533,12 @@ function App() {
             <Route path='addUpdateProjectProfessionalDetails/add' element={<ProjectProfessionalDetailsListStateProvider><AddUpdateProjectProfessionalDetail /></ProjectProfessionalDetailsListStateProvider>} />
             <Route path='viewProjectProfessionalDetails/view' element={<ProjectProfessionalDetailsListStateProvider><ViewProjectProfessionalDetails /></ProjectProfessionalDetailsListStateProvider>} />
 
-          </Route>
+            <Route path='cameraPlayer' element={<CameraPlayer/>}/>
+
+            {/* MORE */}
+            <Route path='otplogs' element={<OTPLogs />} />
+
+          </Route>  
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />
 

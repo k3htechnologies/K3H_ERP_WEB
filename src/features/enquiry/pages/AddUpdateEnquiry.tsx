@@ -404,7 +404,7 @@ export const AddUpdateEnquiry: React.FC = () => {
       extraParams: {
         MobileNumberCountryCode: countryCode || "+91",
         ProjectId: Number(projectId),
-        NotCheckFinalStage: 'LOST,BOOKING DONE'
+        NotCheckFinalStage: 'LOST,BOOKING DONE,CANCELLED'
       }
     });
 

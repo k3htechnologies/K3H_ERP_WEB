@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp } from "lucide-react";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
+import { useViewportHeight } from "@/core/utils/useViewportHeight";
 
 export interface CardPaginationInfo {
   currentPage: number;
@@ -37,7 +38,10 @@ interface Props {
   header?: (row: any) => React.ReactNode;
 
   columns?: CardColumn[];
+
+  maxHeight?: string;
 }
+
 
 export const PaginationCardView: React.FC<Props> = ({
   data,
@@ -49,6 +53,7 @@ export const PaginationCardView: React.FC<Props> = ({
   renderExpanded,
   header,
   columns = [],
+  maxHeight = useViewportHeight(255, 350, 900),
 }) => {
   const [expandedCard, setExpandedCard] = useState<number | null>(null);
 
@@ -152,16 +157,15 @@ export const PaginationCardView: React.FC<Props> = ({
   };
 
   return (
-    <div className={`bg-white rounded-lg flex flex-col ${className}`}>
+    <div className={`bg-white rounded-lg p-2 flex flex-col ${className}`}>
 
-      <div className="space-y-4">
+      <div className="flex-1 overflow-y-auto thin-scroll space-y-4 pr-1" style={{ maxHeight }}>
 
         {!loading && data.length === 0 ? (
           <section className="md:col-span-4 bg-white rounded-xl shadow-sm p-6 border-[0.1px] border-[#3333334f]">
             <NoDataView message={emptyMessage} />
           </section>
         ) : (
-
           data.map((row, index) => (
 
             <div key={index} className="border border-gray-200 rounded-xl p-4 bg-white shadow-sm">

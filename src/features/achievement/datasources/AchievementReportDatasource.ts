@@ -19,6 +19,9 @@ export abstract class AchievementReportDatasource {
     abstract pullProjectAchievementReport(params: FilterWithPaginationAchievementRequest, signal?: AbortSignal): Promise<ProjectAchievementListResponse>;
     abstract pullSourcingAchievementReport(params: FilterWithPaginationAchievementRequest, signal?: AbortSignal): Promise<AchievementSourcingListResponse>;
     abstract pullClosingAchievementReport(params: FilterWithPaginationAchievementRequest, signal?: AbortSignal): Promise<AchievementClosingListResponse>;
+    abstract pullWalkinsRevisitReport(params: FilterWithPaginationClickAchievementRequest, signal?: AbortSignal): Promise<WalkinsRevisitReportListResponse>;
+    abstract pullBookingReport(params: FilterWithPaginationClickAchievementRequest, signal?: AbortSignal): Promise<BookingReportListResponse>;
+    abstract pullIBMOBMReport(params: FilterWithPaginationClickAchievementRequest, signal?: AbortSignal): Promise<IBMOBMReportListResponse>;
 }
 
 export class AchievementReportDatasourceImpl implements AchievementReportDatasource {

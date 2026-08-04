@@ -144,6 +144,7 @@ export const CollectionReport: React.FC = () => {
                 label: 'Type',
                 width: '14',
                 align: 'left',
+                fixed: 'left',
                 theadStyle: {
                     backgroundColor: '#F8FAFC',
                     color: '#000'

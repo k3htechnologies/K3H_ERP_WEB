@@ -8,6 +8,7 @@ import type {
     ChannelPartnerSaveResponse,
     FilterWithPaginationChannelPartnerCompanyRequest,
 } from '@/features/ChannelPartner/models/ChannelPartnerModel'
+import type { ChannelPartnerAOPListResponse, FilterWithPaginationChannelPartnerAOPRequest } from "@/features/ChannelPartner/models/ChannelPartnerAOPModel"
 
 export abstract class ChannelPartnerDatasource {
 
@@ -15,6 +16,7 @@ export abstract class ChannelPartnerDatasource {
     abstract addUpdateChannelPartner(data: FormData): Promise<ChannelPartnerSaveResponse>;
     abstract deleteChannelPartnerRequest(params: DeleteChannelPartnerRequest): Promise<ChannelPartnerSaveResponse>;
     abstract pullChannelPartnerCompany(params: FilterWithPaginationChannelPartnerCompanyRequest, signal?: AbortSignal): Promise<ChannelPartnerListResponse>;
+    abstract pullChannelPartnerAOP(params: FilterWithPaginationChannelPartnerAOPRequest, signal?: AbortSignal): Promise<ChannelPartnerAOPListResponse>;
 }
 
 export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
@@ -50,6 +52,7 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
             if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
             if (params.NoOfIBM?.trim()) queryParams.append('NoOfIBM', params.NoOfIBM.trim());
             if (params.NoOfOBM?.trim()) queryParams.append('NoOfOBM', params.NoOfOBM.trim());
+            if (params.AOPStatus?.trim()) queryParams.append('AOPStatus', params.AOPStatus.trim());
             if (params.Status?.trim()) queryParams.append('Status', params.Status.trim());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
@@ -126,6 +129,32 @@ export class ChannelPartnerDatasourceImpl implements ChannelPartnerDatasource {
             if (error instanceof TokenExpiredException) {
 
                 return   await this.pullChannelPartner(params);
+            }
+            throw error
+        }
+    }
+
+     async pullChannelPartnerAOP(params: FilterWithPaginationChannelPartnerAOPRequest, signal?: AbortSignal): Promise<ChannelPartnerAOPListResponse> {
+        try {
+            const queryParams = new URLSearchParams({
+                pageSize: (params.PageSize ?? 10).toString(),
+                pageNumber: (params.PageNumber ?? 1).toString(),
+                IsCheckPermission: (params.IsCheckPermission ?? true).toString(),
+            })
+
+            if (params.ProjectId) queryParams.append('ProjectId', params.ProjectId.toString());
+            if (params.ChannelPartnerId) queryParams.append('ChannelPartnerId', params.ChannelPartnerId.toString());
+            if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
+            if (params.ExportType) queryParams.append('ExportType', params.ExportType);
+
+            return await this.k3hHttpClient.getRequestWithAuthentication(`${ChannelPartnerApi.PULL_AOP}?${queryParams.toString()}`, { signal });
+
+        } catch (error: any) {
+            console.error('ERROR: PULL CHANNEL PARTNER AOP :', error);
+
+            if (error instanceof TokenExpiredException) {
+
+                return  await this.pullChannelPartnerAOP(params);
             }
             throw error
         }

@@ -39,16 +39,16 @@ export const ViewBrokerageInvoice: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [brokerageInvoiceList, setBrokerageInvoiceList] = useState<BrokerageInvoiceData[]>([]);
-    
+
     const [isConfirmationDialogBoxOpen, setIsConfirmationDialogBoxOpen] = useState(false)
     const [deleteBrokerageInvoiceData, setDeleteBrokerageInvoiceData] = useState<BrokerageInvoiceData | null>(null)
 
     const [paidBrokerageBookingList, setPaidBrokerageBookingList] = useState<PaidBrokerageBookingData[]>([]);
 
-    
+
     const [isConfirmationDialogBoxOpenForPayment, setIsConfirmationDialogBoxOpenForPayment] = useState(false)
     const [deletePaidBrokerageBookingData, setDeletePaidBrokerageBookingData] = useState<PaidBrokerageBookingData | null>(null)
-    
+
 
     const { projectId } = useProject();
 
@@ -525,7 +525,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
         setIsConfirmationDialogBoxOpenForPayment(true)
     }, [])
 
-     const handleDeletePaidPayment = async () => {
+    const handleDeletePaidPayment = async () => {
 
         setIsConfirmationDialogBoxOpenForPayment(false);
 
@@ -541,7 +541,7 @@ export const ViewBrokerageInvoice: React.FC = () => {
                     PaidBrokerageBookingId: deletePaidBrokerageBookingData.PaidBrokerageBookingId || 0,
 
                     Uniquekey: deletePaidBrokerageBookingData.Uniquekey || "",
-                    
+
                     BookingId: deletePaidBrokerageBookingData.BookingId || 0,
 
                     ProjectId: deletePaidBrokerageBookingData.ProjectId || 0,
@@ -697,61 +697,77 @@ export const ViewBrokerageInvoice: React.FC = () => {
                             },
 
                             renderRow: (row: BrokerageInvoiceData) => {
+
                                 const invoice = Number(row.InvoiceAmount || 0);
                                 const paid = Number(row.PaymentAmount || 0);
                                 const pending = invoice - paid;
-                                return (
-                                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
-                                        <div className="flex justify-between items-start">
 
-                                            <div className="grid grid-cols-3 gap-4 w-full">
-                                                <FieldItem label="Account Name" value={row.AccountName} />
+                                return (
+
+                                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-4">
+                                        <div className="flex justify-between items-center">
+                                            <div className="text-sm text-gray-700">
+                                               <FieldItem label="Account Holder Name" value={row.AccountName} isRow/>
+                                               
+                                               <FieldItem label="Invoice Amount" value={formatCurrency(row.InvoiceAmount)} isRow/>
+
+                                               <FieldItem label="Invoice Date" value={formatDate_dd_MonthName_yy(row.InvoiceDate ?? '')} isRow/>
+
+                                            </div>
+
+                                            <div className="flex items-center gap-2">
+                                                {canMakePaymentAction && row.ApprovalStatus.toUpperCase() === "APPROVED" && (
+                                                    <div className="ml-4 whitespace-nowrap">
+
+                                                        {pending > 0 ? (
+                                                            <Button
+                                                                color="green"
+                                                                size="sm"
+                                                                onClick={() => handleAddPaidBrokerageBooking(row.BrokerageInvoiceId)}
+                                                            >
+                                                                Make Payment
+                                                            </Button>
+                                                        ) : (
+                                                            <span className="text-green-600 font-medium">
+                                                                Fully Paid
+                                                            </span>
+                                                        )}
+
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-3 gap-6 text-sm pt-5">
+                                            <div className="space-y-3">
+                                                <h3 className="font-semibold mb-2">Invoice Details</h3>
+
+                                               
                                                 <FieldItem label="Account Number" value={row.AccountNumber} />
-                                                <FieldItem label="IFSC Code" value={row.IFSCCode} />
                                                 <FieldItem label="Bank Name" value={row.BankName} />
+                                                 <FieldItem label="Remark" value={row.Remark} />
+                                            </div>
+
+                                            <div className="space-y-3">
+                                                <h3 className="font-semibold mb-2">&nbsp;</h3>
+
+                                                <FieldItem label="IFSC Code" value={row.IFSCCode} />
                                                 <FieldItem label="Due Date" value={formatDate_dd_MonthName_yy(row.DueDate ?? '')} />
                                             </div>
-                                            {canMakePaymentAction && row.ApprovalStatus.toUpperCase() === "APPROVED" && (
-                                                <div className="ml-4 whitespace-nowrap">
 
-                                                    {pending > 0 ? (
-                                                        <Button
-                                                            color="green"
-                                                            size="sm"
-                                                            onClick={() => handleAddPaidBrokerageBooking(row.BrokerageInvoiceId)}
-                                                        >
-                                                            Make Payment
-                                                        </Button>
-                                                    ) : (
-                                                        <span className="text-green-600 font-medium">
-                                                            Fully Paid
-                                                        </span>
-                                                    )}
 
-                                                </div>
-                                            )}
 
+                                            <div className="space-y-3">
+                                                <h3 className="font-semibold mb-2">Action Details</h3>
+
+                                                <FieldItem label="Created By" value={row?.CreatedBy ?? "-"} />
+                                                <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.CreatedDate ?? "-")} />
+                                                <FieldItem label="Modified By" value={row?.ModifiedBy ?? "-"} />
+                                                <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.ModifiedDate ?? "-")} />
+                                            </div>
                                         </div>
-                                        <div className="grid grid-cols-1 pt-5">
-                                            <FieldItem label="Remark" value={row.Remark} />
-                                        </div>
-
-                                        <h3 className="font-semibold pt-5 mb-2">Action Details</h3>
-
-                                        <div className="grid grid-cols-3 gap-6 text-sm  space-y-3">
-
-
-                                            <FieldItem label="Created By" value={row?.CreatedBy ?? "-"} />
-
-                                            <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.CreatedDate ?? "-")} />
-                                            <FieldItem label="Modified By" value={row?.ModifiedBy ?? "-"} />
-                                            <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(row?.ModifiedDate ?? "-")} />
-                                        </div>
-
-
-                                      
-
                                     </div>
+                                    
                                 );
                             },
 

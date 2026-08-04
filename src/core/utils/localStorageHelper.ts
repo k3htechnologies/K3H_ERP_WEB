@@ -1077,6 +1077,91 @@ export const LocalStorageHelper = {
     return null
   },
 
+  //AOP ACHIEVEMENT
+
+  storeAchievementByChannelPartnerTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Channel Partner Columns Details:', error)
+    }
+  },
+
+  getAchievementByChannelPartnerTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Channel Partner Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+  
+  storeAchievementByChannelPartnerWalkinsRevisitTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Channel Partner Walkins Revisit Columns Details:', error)
+    }
+  },
+
+  getAchievementByChannelPartnerWalkinsRevisitTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Channel Partner Walkins Revisit Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+
+  storeAchievementByChannelPartnerBookingTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_BOOKING_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Channel Partner Booking Columns Details:', error)
+    }
+  },
+
+  getAchievementByChannelPartnerBookingTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_BOOKING_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_BOOKING_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Channel Partner Booking Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+
+  storeAchievementByChannelPartnerIbmObmTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Achievement by Channel Partner IbmObm Columns Details:', error)
+    }
+  },
+
+  getAchievementByChannelPartnerIbmObmTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Achievement by Channel Partner IbmObm Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
 
   //PROJECT DOCUMENT
   storeProjectDocumentCategoryMasterTableColumns: (columns: string): void => {
@@ -1480,6 +1565,11 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.DAILY_COLLECTION_REPORT_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.NOTICE_SECTION_MASTER_SELECTED_COLUMNS);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_BOOKING_COLUMNS);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS);
 
 
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);

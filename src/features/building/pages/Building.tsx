@@ -66,7 +66,7 @@ export const Building: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-       
+
         const params: FilterWithPaginationBuildingRequest = {
           PageNumber: pageNum,
           PageSize: pagination.pageSize,
@@ -189,7 +189,7 @@ export const Building: React.FC = () => {
       setIsLoading,
       setLoadingMessage,
       async () => {
-        
+
 
         const params: FilterWithPaginationBuildingRequest = {
           PageNumber: 1,
@@ -331,11 +331,26 @@ export const Building: React.FC = () => {
         align: 'left',
         render: value => value || '-'
       },
-
+      {
+        key: 'TotalPlotAreaSqMt',
+        label: 'Total Plot Area (SqMt)',
+        width: '18',
+        sortable: true,
+        align: 'center',
+        render: value => value ?? '-'
+      },
       {
         key: 'TotalPlotAreaSqFt',
         label: 'Total Plot Area (SqFt)',
         width: '18',
+        sortable: true,
+        align: 'center',
+        render: value => value ?? '-'
+      },
+      {
+        key: 'NumberOfWings',
+        label: 'Wings',
+        width: '12',
         sortable: true,
         align: 'center',
         render: value => value ?? '-'

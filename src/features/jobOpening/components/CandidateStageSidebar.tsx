@@ -10,7 +10,7 @@ interface CandidateStageSidebarProps {
 }
 
 export const CandidateStageSidebar: React.FC<CandidateStageSidebarProps> = ({ stages, counts, selectedStageId, onStageChange }) => (
-  <aside className="min-h-0 overflow-hidden rounded-[6px] bg-white px-3 py-3 shadow-[0_1px_4px_rgba(15,23,42,0.03)] lg:h-full lg:px-[15px] lg:pb-0 lg:pt-[13px]">
+  <aside className="min-h-0 overflow-hidden rounded-[6px] border border-gray-200 bg-white px-3 py-3 shadow-[0_1px_4px_rgba(15,23,42,0.03)] lg:h-full lg:px-[15px] lg:pb-0 lg:pt-[13px]">
     <h2 className="mb-2 text-base font-medium leading-[15px] text-[#24262D] lg:mb-[15px]">Stages</h2>
     <div className="flex gap-2 overflow-x-auto pb-1 lg:flex-col lg:gap-0 lg:overflow-visible lg:pb-0">
       {stages.map((stage) => {

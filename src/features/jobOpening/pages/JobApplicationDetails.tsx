@@ -6,6 +6,7 @@ import { runApiWithLoader } from "@/core/utils";
 import { useToast } from "@/core/hooks/useToast";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Button } from "@/ui/components/forms";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import CandidateDetailsPanel, { type CandidateDetailsTab } from "../components/CandidateDetailsPanel";
 import CandidateListPanel from "../components/CandidateListPanel";
@@ -469,39 +470,51 @@ export const JobApplicationsDetail: React.FC = () => {
 
           <div className="flex min-h-0 min-w-0 flex-col lg:h-full">
             <nav aria-label="Job opening breadcrumb" className="mb-3 flex min-h-5 shrink-0 flex-wrap items-center gap-x-[11px] gap-y-1 font-[inherit] lg:mb-[17px] lg:h-5 lg:flex-nowrap">
-              <Button
-                type="button"
-                onClick={() => navigate(-1)}
-                color="transparent"
-                size="xs"
-                className="font-semibold text-[#24262D] hover:text-blue-600"
-                style={{
-                  height: "auto",
-                  padding: 0,
-                  color: "#24262D",
-                  fontSize: "16px",
-                  fontWeight: 600,
-                  lineHeight: "20px",
-                  fontFamily: "inherit",
-                }}
-              >
-                {departmentName}
-              </Button>
+              <FieldItem
+                label="Department"
+                className="[&>span:first-child]:hidden [&>div]:!mt-0"
+                value={
+                  <Button
+                    type="button"
+                    onClick={() => navigate(-1)}
+                    color="transparent"
+                    size="xs"
+                    className="font-semibold text-[#24262D] hover:text-blue-600"
+                    style={{
+                      height: "auto",
+                      padding: 0,
+                      color: "#24262D",
+                      fontSize: "16px",
+                      fontWeight: 600,
+                      lineHeight: "20px",
+                      fontFamily: "inherit",
+                    }}
+                  >
+                    {departmentName}
+                  </Button>
+                }
+              />
               <span
                 aria-hidden="true"
                 className="flex h-5 items-center text-[16px] font-semibold leading-5 tracking-[0.6px] text-[#7B838D]"
               >
                 &gt;
               </span>
-              <div className="flex h-5 min-w-0 max-w-[220px] items-center sm:max-w-[320px]">
-                <TooltipText
-                  text={jobRoleName}
-                  maxWidth="320px"
-                  tooltipThreshold={30}
-                  isApplyBgTextColor
-                  tooltipClassName="flex h-5 items-center text-left text-[16px] font-[inherit] font-semibold leading-5 tracking-[0%] text-[#17181C]"
-                />
-              </div>
+              <FieldItem
+                label="Job Role"
+                className="[&>span:first-child]:hidden [&>div]:!mt-0"
+                value={
+                  <div className="flex h-5 min-w-0 max-w-[220px] items-center sm:max-w-[320px]">
+                    <TooltipText
+                      text={jobRoleName}
+                      maxWidth="320px"
+                      tooltipThreshold={30}
+                      isApplyBgTextColor
+                      tooltipClassName="flex h-5 items-center text-left text-[16px] font-[inherit] font-semibold leading-5 tracking-[0%] text-[#17181C]"
+                    />
+                  </div>
+                }
+              />
             </nav>
 
             <div className="grid min-h-0 min-w-0 flex-1 grid-cols-1 items-stretch gap-3 lg:grid-cols-[1.044fr_1fr] lg:gap-[18px]">

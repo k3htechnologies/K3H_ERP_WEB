@@ -17,7 +17,7 @@ import { handleExportFile } from "@/core/utils/exportFile";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Input } from "@/ui/components/forms";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import ScrollableTabs from "@/ui/components/Tab/ScrollableTabs";
+import Tabs from "@/ui/components/Tab/Tab";
 import RoleListView from "../components/roleListView";
 
 interface JobOpeningFilters {
@@ -431,11 +431,12 @@ export const JobOpenings: React.FC = () => {
             </div>
           )}
           <div className="flex flex-nowrap">
-            <ScrollableTabs
+            <Tabs
               tabs={departmentTabs}
               activeTab={activeTab}
-              onChange={handleTabChange}
+              onTabChange={(tab) => handleTabChange(tab.id)}
               ariaLabel="Job opening departments"
+              isScrollable
             />
           </div>
         </div>

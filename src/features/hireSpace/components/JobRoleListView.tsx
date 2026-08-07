@@ -63,9 +63,11 @@ export const RoleListView: React.FC<RoleListViewProps> = ({ filteredRoles, visib
                     onEditClick?.(role);
                   }}
                   color="transparent"
-                  isborderRadius
-                  size="sm"
-                  title="Edit"
+                  size="xs"
+                  defineWidth
+                  className="cursor-pointer rounded-md bg-[#F2F4F7] p-1.5 text-[#667085] transition-colors hover:!bg-[#EAECF0] hover:!text-[#475467]"
+                  style={{ height: 32, width: 32, padding: 6, backgroundColor: "#F2F4F7", color: "#667085" }}
+                  title="Edit Role"
                 >
                   <Edit className="h-4 w-4" />
                 </Button>

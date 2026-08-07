@@ -1,4 +1,5 @@
 import { Briefcase, Clock, MapPin } from "lucide-react";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 import type { JobRoleMasterData } from "../models/JobRoleMasterModel";
 import JobRoleDetailContent from "./JobRoleDetailContent";
 import JobRoleDetailSidebar from "./JobRoleDetailSidebar";
@@ -22,19 +23,37 @@ export const RoleDetailView: React.FC<RoleDetailViewProps> = ({ selectedRole, is
         <h1 className="mb-3 text-[16px] font-semibold leading-[33.6px] tracking-[-0.7px] text-[#1A1D1F]">
           {selectedRole.RoleName}
         </h1>
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm font-medium text-[#6F767E]">
-          <span className="flex items-center gap-1.5">
-            <Briefcase className="h-4 w-4 text-[#9EA5AD]" />
-            {experience || "Experience not specified"}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <MapPin className="h-4 w-4 text-[#9EA5AD]" />
-            {selectedRole.WorkLocation || selectedRole.WorkMode || "Not specified"}
-          </span>
-          <span className="flex items-center gap-1.5">
-            <Clock className="h-4 w-4 text-[#9EA5AD]" />
-            {selectedRole.EmploymentType || "Not specified"}
-          </span>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+          <FieldItem
+            label="Experience"
+            className="[&>span:first-child]:hidden [&>div]:!mt-0"
+            value={
+              <span className="flex items-center gap-1.5 text-sm font-medium text-[#6F767E]">
+                <Briefcase className="h-4 w-4 text-[#9EA5AD]" />
+                {experience || "Not specified"}
+              </span>
+            }
+          />
+          <FieldItem
+            label="Location"
+            className="[&>span:first-child]:hidden [&>div]:!mt-0"
+            value={
+              <span className="flex items-center gap-1.5 text-sm font-medium text-[#6F767E]">
+                <MapPin className="h-4 w-4 text-[#9EA5AD]" />
+                {selectedRole.WorkLocation || selectedRole.WorkMode || "Not specified"}
+              </span>
+            }
+          />
+          <FieldItem
+            label="Employment Type"
+            className="[&>span:first-child]:hidden [&>div]:!mt-0"
+            value={
+              <span className="flex items-center gap-1.5 text-sm font-medium text-[#6F767E]">
+                <Clock className="h-4 w-4 text-[#9EA5AD]" />
+                {selectedRole.EmploymentType || "Not specified"}
+              </span>
+            }
+          />
         </div>
       </div>
 

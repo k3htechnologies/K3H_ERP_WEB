@@ -24,6 +24,7 @@ export const JobRoleDetailSidebar: React.FC<JobRoleDetailSidebarProps> = ({
         <h3 className="mb-5 text-[14px] font-bold leading-[20px] tracking-[0px] text-[#1A1D1F]">Tech Stack</h3>
         <FieldItem
           label="Required Skills"
+          className="[&>span:first-child]:hidden [&>div]:!mt-0"
           value={
             skills.length ? (
               <div className="flex flex-wrap gap-2.5">
@@ -61,7 +62,7 @@ export const JobRoleDetailSidebar: React.FC<JobRoleDetailSidebarProps> = ({
           fullWidth
           leftIcon={<Copy className="h-4 w-4" />}
           className="flex h-9 w-full items-center justify-center gap-2 rounded-lg border border-[#475467] bg-[#344054] px-3 text-center align-middle text-[14px] font-semibold leading-[16px] tracking-[0px] transition-colors hover:!bg-[#475467] disabled:cursor-not-allowed disabled:opacity-60"
-          style={{ height: 36, padding: "0 12px", border: "1px solid #475467", backgroundColor: "#344054", color: "#FFFFFF", fontSize: 14, fontWeight: 600 }}
+          style={{ height: 36, padding: "0 12px", border: "1px solid #475467", backgroundColor: "#344054", color: "#FFFFFF", fontSize: 14, fontWeight: 600, fontFamily: "inherit" }}
         >
           Duplicate Job Role
         </Button>

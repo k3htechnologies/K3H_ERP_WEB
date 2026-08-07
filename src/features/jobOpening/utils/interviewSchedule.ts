@@ -53,17 +53,16 @@ const normalizeStatus = (value: string): InterviewStatus => {
 export const isValidInterviewRecord = (item: ApiRecord): boolean => {
   const interviewId = numberValue(item, ["InterviewId"]);
   const candidateId = numberValue(item, ["CandidateId", "CareerId"]);
-  const candidateName = stringValue(item, ["CandidateName", "FullName"]);
   const interviewDate = stringValue(item, [
     "InterviewDate",
     "ScheduledDate",
     "Date",
+    "CalendarDate",
   ]);
 
   return (
     interviewId > 0 &&
     candidateId > 0 &&
-    candidateName.trim().length > 0 &&
     interviewDate.trim().length > 0 &&
     !Number.isNaN(new Date(interviewDate).getTime())
   );
@@ -78,6 +77,7 @@ export const mapApiToInterview = (
     "InterviewDate",
     "ScheduledDate",
     "Date",
+    "CalendarDate",
   ]);
   const parsedDate = new Date(dateValue);
   const date = Number.isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
@@ -102,7 +102,7 @@ export const mapApiToInterview = (
     candidate: stringValue(
       item,
       ["CandidateName", "FullName"],
-      "Unknown Candidate",
+      `Candidate #${numberValue(item, ["CandidateId", "CareerId"])}`,
     ),
     position: stringValue(
       item,
@@ -142,4 +142,4 @@ export const mapApiToInterview = (
 export const toInterviewDateTimeIso = (
   date: string,
   time: string,
-): string => new Date(`${date}T${time}:00`).toISOString();
+): string => `${date}T${time}:00`;

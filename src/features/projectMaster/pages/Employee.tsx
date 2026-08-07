@@ -22,6 +22,7 @@ import { formatDate_dd_MonthName_yy } from '@/core/utils/dateFormat';
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { useProjectMasterListState } from '@/features/projectMaster/context/ProjectMasterListStateContext';
 import { DeleteDialog } from '@/ui/components/forms/DeleteDialog';
+import { ProfileInfo } from '@/ui/components/ProfileInfo';
 
 const Employee: React.FC = () => {
   //#region STATE MANAGEMENT
@@ -210,39 +211,23 @@ const Employee: React.FC = () => {
         align: 'left',
         render: (value, row) => {
           const fullName = (row?.FullName ?? '').trim();
-          const initials = fullName
-            ? fullName
-              .split(/\s+/)
-              .map((w: string) => (w && w.length ? w[0] : ''))
-              .join('')
-              .toUpperCase()
-              .slice(0, 2)
-            : 'NA';
 
           return (
             <div className={`flex items-center justify-between gap-3`}>
-              {/* left: avatar + name */}
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-7 h-7 rounded-full
-                       bg-blue-200 
-                       flex items-center justify-center
-                       text-gray-800 font-medium text-xs
-                       border border-gray-300"
-                  title={fullName || '-'}
-                >
-                  {initials}
-                </div>
-                <div className="min-w-0">
+              <ProfileInfo
+                name={fullName}
+                imageUrl={row?.ProfilePhotoURL}
+                avatarSize="xs"
+                className="flex-1"
+                value={
                   <TooltipText
                     text={value || row.FirstName || '-'}
                     maxWidth="260px"
                     tooltipThreshold={26}
 
                   />
-                </div>
-
-              </div>
+                }
+              />
 
               <div className="flex items-center justify-end ml-2 w-20">
                 {canAction ?

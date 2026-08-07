@@ -1,10 +1,12 @@
 import { Calendar } from "lucide-react";
 import { Button, Input } from "@/ui/components/forms";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import ActivityTimeline from "@/ui/components/Timeline/ActivityTimeline";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
 import Tabs from "@/ui/components/Tab/Tab";
+import { ProfileInfo } from "@/ui/components/ProfileInfo";
 import type { Candidate, CandidateRemark, CandidateStatus } from "../models/JobOpeningModel";
 import { getCandidateAvatarUrl, getRemarkAuthor, STAGE_OPTIONS } from "../utils/candidateApplication";
 
@@ -38,22 +40,13 @@ interface CandidateDetailsPanelProps {
   onStageChange: (status: CandidateStatus) => void;
 }
 
-const CandidateInfo = ({ label, value }: { label: string; value: string }) => (
-  <div>
-    <span className="mb-1.5 block align-middle text-[12px] font-normal uppercase leading-[16px] tracking-[0.3px] text-gray-400">
-      {label}
-    </span>
-    <span className="align-middle text-[14px] font-medium leading-[24px] tracking-[0px] text-gray-900">{value}</span>
-  </div>
-);
-
 const CandidateOverview = ({ candidate }: { candidate: Candidate }) => (
   <div>
     <div className="grid grid-cols-2 gap-x-5 gap-y-6">
-      <CandidateInfo label="Current Position" value={candidate.currentPosition} />
-      <CandidateInfo label="Experience" value={candidate.experienceDetail} />
-      <CandidateInfo label="Expected Salary" value={candidate.expectedSalary} />
-      <CandidateInfo label="Notice Period" value={candidate.noticePeriod} />
+      <FieldItem label="Current Position" value={candidate.currentPosition} />
+      <FieldItem label="Experience" value={candidate.experienceDetail} />
+      <FieldItem label="Expected Salary" value={candidate.expectedSalary} />
+      <FieldItem label="Notice Period" value={candidate.noticePeriod} />
     </div>
 
     <p className="mb-3 mt-6 align-middle text-[12px] font-normal uppercase leading-[16px] tracking-[0.3px] text-[#8A8A8A]">
@@ -68,21 +61,17 @@ const CandidateOverview = ({ candidate }: { candidate: Candidate }) => (
           </span>
         ))
       ) : (
-        <NoDataView
-          message="No skills available"
-          className="py-3"
-          iconClassName="!h-16 !w-16"
-        />
+        <span className="text-sm font-medium text-[#1D1D1D]">-</span>
       )}
     </div>
 
-    <p className="mb-3 mt-6 align-middle text-[12px] font-normal uppercase leading-[16px] tracking-[0.3px] text-[#8A8A8A]">
+    <p className="mb-3 mt-6 align-middle text-[14px] font-normal uppercase leading-[16px] tracking-[0.3px] text-[#8A8A8A]">
       Education
     </p>
 
     <div className="rounded-[7px] border border-[#7B838D] bg-[#F9FAFB] px-4 py-4">
-      <h4 className="text-xs font-medium text-[#30323A]">{candidate.education.degree}</h4>
-      <p className="mt-1 text-xs font-normal text-[#7B838D]">
+      <h4 className="text-sm font-medium text-[#30323A]">{candidate.education.degree}</h4>
+      <p className="mt-1 text-sm font-normal text-[#7B838D]">
         {candidate.education.school} &bull; {candidate.education.duration}
       </p>
     </div>
@@ -110,19 +99,19 @@ export const CandidateDetailsPanel: React.FC<CandidateDetailsPanelProps> = ({
   onRemarkEditCancel,
   onStageChange,
 }) => (
-  <section className="flex h-[600px] min-h-0 min-w-0 flex-col overflow-hidden rounded-[6px] bg-white shadow-[0_1px_4px_rgba(15,23,42,0.05)] lg:h-full">
+  <section className="flex h-[600px] min-h-0 min-w-0 flex-col overflow-hidden rounded-[6px] border border-gray-200 bg-white shadow-[0_1px_4px_rgba(15,23,42,0.05)] lg:h-full">
     {candidate ? (
       <>
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="shrink-0 px-[15px] pt-[14px]">
             <h2 className="text-sm font-medium tracking-[0.6px] text-[#7B838D]">Candidate Details</h2>
 
-            <div className="mt-[17px] flex items-center gap-2.5 px-[17px] pb-[17px]">
-              <div className="h-[38px] w-[38px] shrink-0 overflow-hidden rounded-full border border-[#E5E7EB] bg-[#F3F4F6]">
-                <img src={getCandidateAvatarUrl(candidate)} alt={candidate.name} className="h-full w-full object-cover" />
-              </div>
-
-              <div className="min-w-0">
+            <ProfileInfo
+              name={candidate.name}
+              imageUrl={getCandidateAvatarUrl(candidate)}
+              avatarSize="md"
+              className="mt-[17px] items-start px-[17px] pb-[17px]"
+              value={
                 <TooltipText
                   text={candidate.name}
                   maxWidth="100%"
@@ -130,6 +119,8 @@ export const CandidateDetailsPanel: React.FC<CandidateDetailsPanelProps> = ({
                   isApplyBgTextColor
                   tooltipClassName="text-[20px] font-semibold leading-[28px] text-[#202229]"
                 />
+              }
+              secondaryValue={
                 <TooltipText
                   text={candidate.email}
                   maxWidth="100%"
@@ -137,6 +128,8 @@ export const CandidateDetailsPanel: React.FC<CandidateDetailsPanelProps> = ({
                   isApplyBgTextColor
                   tooltipClassName="mt-0.5 text-xs font-normal leading-[14px] text-[#7B838D]"
                 />
+              }
+              tertiaryValue={
                 <TooltipText
                   text={candidate.location}
                   maxWidth="100%"
@@ -144,6 +137,11 @@ export const CandidateDetailsPanel: React.FC<CandidateDetailsPanelProps> = ({
                   isApplyBgTextColor
                   tooltipClassName="text-xs font-normal leading-[14px] text-[#7B838D]"
                 />
+              }
+              valueClassName="leading-7"
+              secondaryClassName="!mt-0 leading-[14px]"
+              tertiaryClassName="leading-[14px]"
+            >
                 <Button
                   type="button"
                   onClick={() => onScheduleInterview(candidate)}
@@ -161,8 +159,7 @@ export const CandidateDetailsPanel: React.FC<CandidateDetailsPanelProps> = ({
                 >
                   Schedule Interview
                 </Button>
-              </div>
-            </div>
+            </ProfileInfo>
 
             <div className="border-t border-[#C9CFDD]" />
 

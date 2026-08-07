@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import * as E from "fp-ts/Either";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Button, Input } from "@/ui/components/forms";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
@@ -252,7 +253,7 @@ export const JobRoleMaster: React.FC = () => {
   const isRoleDetailView = viewMode === "detail" && Boolean(selectedRole);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+    <div className="flex flex-col rounded-lg border border-gray-200 bg-white p-5 shadow-sm lg:h-[calc(100dvh-78px)] lg:min-h-[520px] lg:overflow-hidden">
         <Loader
           loading={isLoadingDepartments || isLoadingRoles}
           title={isLoadingDepartments ? "Loading departments..." : "Loading job roles..."}
@@ -293,73 +294,90 @@ export const JobRoleMaster: React.FC = () => {
             className="py-10"
           />
         ) : (
-          <div className="mt-2 flex flex-col gap-3 sm:gap-6 lg:flex-row">
-            <DepartmentPanel
-              departments={departments}
-              selectedDepartmentId={selectedDepartment?.DepartmentId ?? null}
-              onSelectDepartment={(department) => {
-                setSelectedDepartment(department);
-                setSelectedRole(null);
-                setViewMode("list");
-              }}
-            />
+          <div className="flex flex-col gap-3 sm:gap-6 lg:min-h-0 lg:flex-1 lg:flex-row">
+            <div className="min-h-0 w-full shrink-0 [&>div]:!border-gray-200 lg:h-full lg:w-[280px]">
+              <DepartmentPanel
+                departments={departments}
+                selectedDepartmentId={selectedDepartment?.DepartmentId ?? null}
+                onSelectDepartment={(department) => {
+                  setSelectedDepartment(department);
+                  setSelectedRole(null);
+                  setViewMode("list");
+                }}
+              />
+            </div>
 
-            <div className="relative flex flex-1 flex-col rounded-xl border border-gray-100 bg-white p-3 pt-4 shadow-xs sm:px-6 sm:pb-6 sm:pt-5">
+            <div className="relative flex min-h-0 flex-1 flex-col rounded-xl border border-gray-200 bg-white p-3 pt-4 shadow-xs sm:px-6 sm:pb-6 sm:pt-5 lg:h-full lg:overflow-hidden">
               <div className="mb-4 flex shrink-0 flex-col justify-between gap-3 sm:mb-6 sm:flex-row sm:items-start sm:gap-4">
-                <div
-                  className={`flex min-w-0 flex-nowrap items-center gap-1 not-italic ${
-                    isRoleDetailView
-                      ? "text-xs font-medium leading-4 tracking-[0px]"
-                      : "text-right text-base font-semibold leading-4 tracking-[0.6px]"
-                  }`}
-                >
-                  <Button
-                    type="button"
-                    onClick={() => setViewMode("list")}
-                    color="transparent"
-                    size="xss"
-                    className={`inline-flex h-4 items-center whitespace-nowrap align-middle hover:!text-blue-600 ${
-                      isRoleDetailView ? "text-[#94A3B8]" : "text-[#17181C]"
-                    }`}
-                    style={{ height: 16, padding: 0, color: "inherit", fontSize: "inherit", fontWeight: "inherit" }}
-                  >
-                    Job Roles
-                  </Button>
+                <div className="flex min-w-0 flex-nowrap items-center gap-1 text-right text-base font-semibold not-italic leading-4 tracking-[0.6px]">
+                  <FieldItem
+                    label="Job Roles"
+                    className="[&>span:first-child]:hidden [&>div]:!mt-0"
+                    value={
+                      <Button
+                        type="button"
+                        onClick={() => setViewMode("list")}
+                        color="transparent"
+                        size="xss"
+                        className={`inline-flex h-4 items-center whitespace-nowrap align-middle hover:!text-blue-600 ${
+                          isRoleDetailView ? "text-[#94A3B8]" : "text-[#17181C]"
+                        }`}
+                        style={{ height: 16, padding: 0, color: "inherit", fontSize: "inherit", fontWeight: "inherit", fontFamily: "inherit" }}
+                      >
+                        Job Roles
+                      </Button>
+                    }
+                  />
                   <ChevronRight className="h-3 w-3 shrink-0 text-[#94A3B8]" />
-                  <Button
-                    type="button"
-                    onClick={() => setViewMode("list")}
-                    color="transparent"
-                    size="xss"
-                    className="inline-flex h-4 items-center whitespace-nowrap align-middle text-[#334155] hover:!text-blue-600"
-                    style={{ height: 16, padding: 0, color: "#334155", fontSize: "inherit", fontWeight: "inherit" }}
-                  >
-                    {selectedDepartment?.DepartmentName}
-                  </Button>
+                  <FieldItem
+                    label="Department"
+                    className="[&>span:first-child]:hidden [&>div]:!mt-0"
+                    value={
+                      <Button
+                        type="button"
+                        onClick={() => setViewMode("list")}
+                        color="transparent"
+                        size="xss"
+                        className="inline-flex h-4 items-center whitespace-nowrap align-middle text-[#334155] hover:!text-blue-600"
+                        style={{ height: 16, padding: 0, color: "#334155", fontSize: "inherit", fontWeight: "inherit", fontFamily: "inherit" }}
+                      >
+                        {selectedDepartment?.DepartmentName}
+                      </Button>
+                    }
+                  />
                   {isRoleDetailView && selectedRole && (
                     <>
                       <ChevronRight className="h-3 w-3 shrink-0 text-[#94A3B8]" />
-                      <div className="flex h-4 max-w-[120px] min-w-0 items-center sm:max-w-[180px]">
-                        <TooltipText
-                          text={selectedRole.RoleName}
-                          maxWidth="180px"
-                          tooltipThreshold={22}
-                          isApplyBgTextColor
-                          tooltipClassName="text-left text-xs font-medium leading-4 tracking-[0px] text-[#334155]"
-                        />
-                      </div>
+                      <FieldItem
+                        label="Role"
+                        className="[&>span:first-child]:hidden [&>div]:!mt-0"
+                        value={
+                          <div className="flex h-4 max-w-[120px] min-w-0 items-center sm:max-w-[180px]">
+                            <TooltipText
+                              text={selectedRole.RoleName}
+                              maxWidth="180px"
+                              tooltipThreshold={22}
+                              isApplyBgTextColor
+                              tooltipClassName="text-left text-base font-semibold leading-4 tracking-[0.6px] text-[#334155]"
+                            />
+                          </div>
+                        }
+                      />
                     </>
                   )}
                 </div>
 
                 {viewMode === "list" && selectedDepartment && (
-                  <Button onClick={() => navigate(`/jobRoleMaster/add/${selectedDepartment.DepartmentId}`)}>
+                  <Button
+                    onClick={() => navigate(`/jobRoleMaster/add/${selectedDepartment.DepartmentId}`)}
+                    style={{ fontFamily: "inherit" }}
+                  >
                     <Plus className="h-4 w-4" /> Add Role
                   </Button>
                 )}
               </div>
 
-              <div className="flex-1">
+              <div className="min-h-0 flex-1 overflow-hidden">
                 {viewMode === "list" ? (
                   <RoleListView
                     filteredRoles={filteredRoles}
@@ -478,10 +496,10 @@ export const JobRoleMaster: React.FC = () => {
           if (selectedRole) void handleDuplicateRole(selectedRole);
         }}
         title="Duplicate Job Role?"
-        message="Are you sure you want to duplicate this job role?"
+        message={`This will create a copy of "${selectedRole?.RoleName ?? "this job role"}" with the same role details. Do you want to continue?`}
         confirmText="Duplicate"
         loading={isDuplicating}
-        variant="generate"
+        variant="info"
       />
     </div>
   );

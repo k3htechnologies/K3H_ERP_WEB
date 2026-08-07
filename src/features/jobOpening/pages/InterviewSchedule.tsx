@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { BriefcaseBusiness, CalendarDays, ChevronLeft, ChevronRight, Clock3, MoreVertical, UserRound } from "lucide-react";
 import * as E from "fp-ts/Either";
@@ -6,12 +6,13 @@ import CustomCalendar from "@/ui/components/Calender/CustomCalendar";
 import type { CalendarEvent } from "@/ui/components/Calender/CalendarEvent";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { Button, Input } from "@/ui/components/forms";
+import { FieldItem } from "@/ui/components/forms/FieldItem";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
-import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import NoDataView from "@/ui/components/NoDataView/NoDataView";
-import SimpleDataTable, {
-  type SimpleDataTableColumn,
-} from "@/ui/components/DataTable/SimpleDataTable";
+import {
+  DataTable,
+  type TableColumn,
+} from "@/ui/components/DataTable/DataTable";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { TimePicker } from "@/ui/components/TimePicker/TimePicker";
@@ -21,7 +22,7 @@ import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import { useToast } from "@/core/hooks/useToast";
 import { jobOpeningService } from "../services/JobOpeningService";
-import type { ScheduleInterviewRequest } from "../models/JobOpeningModel";
+import type { PullCandidateInterviewRequest, ScheduleInterviewRequest } from "../models/JobOpeningModel";
 import { DEFAULT_REMARK_UNIQUE_KEY } from "../utils/candidateApplication";
 import { isValidInterviewRecord, mapApiToInterview, toInterviewDateTimeIso, type InterviewItem } from "../utils/interviewSchedule";
 
@@ -56,12 +57,13 @@ interface ScheduleFormErrors {
 }
 
 const pad = (value: number) => String(value).padStart(2, "0");
-const TODAY_PREVIEW_COUNT = 3;
-const INTERVIEW_PAGE_SIZE = 10;
-const TODAY_INTERVIEW_PAGE_SIZE = 100;
-const CALENDAR_SCROLL_THRESHOLD = 60;
+const TODAY_PREVIEW_COUNT = 2;
+const INTERVIEW_PAGE_SIZE = 100;
 
 const toDateInputValue = (date: Date) => `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+
+const toCalendarNavigationDate = (date: Date) =>
+  new Date(date.getFullYear(), date.getMonth(), date.getDate(), 12);
 
 const combineDateAndTime = (date: Date, time: string) => {
   const [hours = 0, minutes = 0] = time.split(":").map(Number);
@@ -136,14 +138,13 @@ const getTotalRecords = (response: unknown): number | null => {
 
 const mergeInterviews = (current: InterviewItem[], incoming: InterviewItem[]) => {
   const merged = [...current];
-  const indexes = new Map(current.map((item, index) => [item.uniqueKey || `interview-${item.id}`, index]));
+  const indexes = new Map(current.map((item, index) => [item.id, index]));
 
   incoming.forEach((item) => {
-    const key = item.uniqueKey || `interview-${item.id}`;
-    const existingIndex = indexes.get(key);
+    const existingIndex = indexes.get(item.id);
 
     if (existingIndex === undefined) {
-      indexes.set(key, merged.length);
+      indexes.set(item.id, merged.length);
       merged.push(item);
     } else {
       merged[existingIndex] = item;
@@ -153,6 +154,51 @@ const mergeInterviews = (current: InterviewItem[], incoming: InterviewItem[]) =>
   return merged;
 };
 
+const fetchAllInterviewPages = async (
+  filters: Omit<PullCandidateInterviewRequest, "PageNumber" | "PageSize">,
+  signal?: AbortSignal,
+): Promise<InterviewItem[]> => {
+  let pageNumber = 1;
+  let loadedInterviews: InterviewItem[] = [];
+
+  while (!signal?.aborted) {
+    const response = await jobOpeningService.apiCallPullCandidateInterviews(
+      {
+        ...filters,
+        PageSize: INTERVIEW_PAGE_SIZE,
+        PageNumber: pageNumber,
+      },
+      { signal },
+    );
+
+    if (signal?.aborted) return [];
+    if (E.isLeft(response)) throw new Error(response.left.message || "Unable to load interviews.");
+    if (!response.right.IsSuccess) {
+      throw new Error(response.right.ErrorMessage?.[0] || "Unable to load interviews.");
+    }
+
+    const records = response.right.Data ?? [];
+    const recordOffset = (pageNumber - 1) * INTERVIEW_PAGE_SIZE;
+    const mappedInterviews = records
+      .filter(isValidInterviewRecord)
+      .map((item, index) => mapApiToInterview(item, recordOffset + index));
+
+    loadedInterviews = mergeInterviews(loadedInterviews, mappedInterviews);
+
+    const totalRecords = getTotalRecords(response.right);
+    const loadedRecordCount = recordOffset + records.length;
+    const hasNextPage =
+      totalRecords === null
+        ? records.length === INTERVIEW_PAGE_SIZE
+        : loadedRecordCount < totalRecords;
+
+    if (!hasNextPage || records.length === 0) break;
+    pageNumber += 1;
+  }
+
+  return loadedInterviews;
+};
+
 export const InterviewSchedule: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -160,28 +206,21 @@ export const InterviewSchedule: React.FC = () => {
 
   const passedCandidate = (location.state?.candidate || null) as RouteCandidate | null;
   const candidateId = Number(searchParams.get("candidateId") || passedCandidate?.candidateId || passedCandidate?.id || 0);
-  const jobOpeningMasterId = Number(passedCandidate?.jobOpeningMasterId || 0);
+  const jobOpeningMasterId = Number(searchParams.get("jobOpeningMasterId") || passedCandidate?.jobOpeningMasterId || 0);
   const { addToast } = useToast();
-  const todayListHasScrolledRef = useRef(false);
-  const calendarRequestInFlightRef = useRef(false);
-  const calendarHasMoreRef = useRef(true);
-  const calendarPageRef = useRef(1);
-  const calendarAbortControllerRef = useRef<AbortController | null>(null);
 
   const [calendarView, setCalendarView] = useState<CalendarView>("month");
-  const [currentDate, setCurrentDate] = useState(() => new Date());
-  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [currentDate, setCurrentDate] = useState(() => toCalendarNavigationDate(new Date()));
+  const [selectedDate, setSelectedDate] = useState(() => toCalendarNavigationDate(new Date()));
   const visibleMonth = currentDate.getMonth() + 1;
   const visibleYear = currentDate.getFullYear();
   const [interviews, setInterviews] = useState<InterviewItem[]>([]);
-  const [todaysInterviews, setTodaysInterviews] = useState<InterviewItem[]>([]);
+  const [pipelineSourceInterviews, setPipelineSourceInterviews] = useState<InterviewItem[]>([]);
   const [isTodayListExpanded, setIsTodayListExpanded] = useState(false);
   const [isLoadingInterviews, setIsLoadingInterviews] = useState(false);
-  const [isFetchingMoreInterviews, setIsFetchingMoreInterviews] = useState(false);
-  const [isLoadingTodaysInterviews, setIsLoadingTodaysInterviews] = useState(false);
-  const [hasMoreInterviews, setHasMoreInterviews] = useState(true);
+  const [isLoadingPipeline, setIsLoadingPipeline] = useState(false);
   const [interviewError, setInterviewError] = useState("");
-  const [todayInterviewError, setTodayInterviewError] = useState("");
+  const [pipelineError, setPipelineError] = useState("");
   const [interviewRefreshKey, setInterviewRefreshKey] = useState(0);
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [editingInterviewId, setEditingInterviewId] = useState<number | null>(null);
@@ -203,150 +242,105 @@ export const InterviewSchedule: React.FC = () => {
     autoFetchOptions: true,
   });
 
-  const loadCalendarInterviews = useCallback(async (month: number, year: number, pageNumber: number, signal?: AbortSignal) => {
-    if (signal?.aborted || calendarRequestInFlightRef.current) return;
+  const loadCalendarInterviews = useCallback(async (month: number, year: number, signal?: AbortSignal) => {
+    if (signal?.aborted) return;
 
-    calendarRequestInFlightRef.current = true;
-    if (pageNumber === 1) {
-      setIsLoadingInterviews(true);
-      setInterviewError("");
-    } else {
-      setIsFetchingMoreInterviews(true);
-    }
+    setIsLoadingInterviews(true);
+    setInterviewError("");
 
     try {
-      const response = await jobOpeningService.apiCallPullCandidateInterviews(
-        {
-          PageSize: INTERVIEW_PAGE_SIZE,
-          PageNumber: pageNumber,
-          Month: month,
-          Year: year,
-        },
-        { signal },
-      );
-
-      if (signal?.aborted) return;
-
-      if (E.isLeft(response) || !response.right.IsSuccess) {
-        setInterviewError(
-          E.isLeft(response)
-            ? response.left.message
-            : response.right.ErrorMessage?.[0] || "Unable to load interviews.",
+      const loadedInterviews = await fetchAllInterviewPages({ Month: month, Year: year }, signal);
+      if (!signal?.aborted) {
+        setInterviews(loadedInterviews);
+        setPipelineSourceInterviews((previous) =>
+          mergeInterviews(previous, loadedInterviews),
         );
-        return;
       }
-
-      const records = response.right.Data ?? [];
-      const recordOffset = (pageNumber - 1) * INTERVIEW_PAGE_SIZE;
-      const mappedInterviews = records.filter(isValidInterviewRecord).map((item, index) => mapApiToInterview(item, recordOffset + index));
-      const totalRecords = getTotalRecords(response.right);
-      const loadedRecordCount = recordOffset + records.length;
-      const canLoadMore = totalRecords === null ? records.length === INTERVIEW_PAGE_SIZE : loadedRecordCount < totalRecords;
-
-      setInterviews((previous) => (pageNumber === 1 ? mappedInterviews : mergeInterviews(previous, mappedInterviews)));
-      calendarPageRef.current = pageNumber;
-      calendarHasMoreRef.current = canLoadMore;
-      setHasMoreInterviews(canLoadMore);
     } catch (error: unknown) {
       if (!signal?.aborted) {
         setInterviewError(error instanceof Error ? error.message : "Unable to load interviews.");
       }
     } finally {
       if (!signal?.aborted) {
-        calendarRequestInFlightRef.current = false;
         setIsLoadingInterviews(false);
-        setIsFetchingMoreInterviews(false);
       }
     }
   }, []);
 
   useEffect(() => {
-    calendarAbortControllerRef.current?.abort();
     const controller = new AbortController();
-    calendarAbortControllerRef.current = controller;
-    calendarRequestInFlightRef.current = false;
-    calendarHasMoreRef.current = true;
-    calendarPageRef.current = 1;
     setInterviews([]);
-    setHasMoreInterviews(true);
-    void loadCalendarInterviews(visibleMonth, visibleYear, 1, controller.signal);
+    void loadCalendarInterviews(visibleMonth, visibleYear, controller.signal);
 
     return () => controller.abort();
   }, [visibleMonth, visibleYear, interviewRefreshKey, loadCalendarInterviews]);
 
-  const loadSelectedDateInterviews = useCallback(async (date: Date, signal?: AbortSignal) => {
+  const loadPipelineInterviews = useCallback(async (signal?: AbortSignal) => {
     if (signal?.aborted) return;
 
-    setIsLoadingTodaysInterviews(true);
-    setTodayInterviewError("");
-    setTodaysInterviews([]);
+    setIsLoadingPipeline(true);
+    setPipelineError("");
 
     try {
-      const response = await jobOpeningService.apiCallPullCandidateInterviews(
-        {
-          PageSize: TODAY_INTERVIEW_PAGE_SIZE,
-          PageNumber: 1,
-          InterviewDate: toDateInputValue(date),
-        },
-        { signal },
-      );
-
-      if (signal?.aborted) return;
-
-      if (E.isLeft(response) || !response.right.IsSuccess) {
-        setTodayInterviewError(
-          E.isLeft(response)
-            ? response.left.message
-            : response.right.ErrorMessage?.[0] || "Unable to load interviews for the selected date.",
+      const loadedInterviews = await fetchAllInterviewPages({}, signal);
+      if (!signal?.aborted) {
+        setPipelineSourceInterviews((previous) =>
+          mergeInterviews(previous, loadedInterviews),
         );
-        return;
       }
-
-      const mappedInterviews = (response.right.Data ?? [])
-        .filter(isValidInterviewRecord)
-        .map(mapApiToInterview)
-        .filter((item) => isSameCalendarDate(item.date, date))
-        .sort((first, second) => first.startTime.localeCompare(second.startTime));
-
-      setTodaysInterviews(mappedInterviews);
     } catch (error: unknown) {
       if (!signal?.aborted) {
-        setTodayInterviewError(error instanceof Error ? error.message : "Unable to load interviews for the selected date.");
+        setPipelineError(error instanceof Error ? error.message : "Unable to load upcoming interviews.");
       }
     } finally {
-      if (!signal?.aborted) setIsLoadingTodaysInterviews(false);
+      if (!signal?.aborted) setIsLoadingPipeline(false);
     }
   }, []);
 
   useEffect(() => {
     const controller = new AbortController();
-    todayListHasScrolledRef.current = false;
-    setIsTodayListExpanded(false);
-    void loadSelectedDateInterviews(selectedDate, controller.signal);
+    void loadPipelineInterviews(controller.signal);
     return () => controller.abort();
-  }, [interviewRefreshKey, loadSelectedDateInterviews, selectedDate]);
+  }, [interviewRefreshKey, loadPipelineInterviews]);
+
+  useEffect(() => {
+    setIsTodayListExpanded(false);
+  }, [selectedDate]);
+
+  const selectedDateInterviews = useMemo(
+    () =>
+      interviews
+        .filter(
+          (item) =>
+            item.status === "Scheduled" &&
+            isSameCalendarDate(item.date, selectedDate),
+        )
+        .sort((first, second) => first.startTime.localeCompare(second.startTime)),
+    [interviews, selectedDate],
+  );
 
   const pipelineInterviews = useMemo(() => {
-    const tomorrow = new Date();
-    tomorrow.setHours(0, 0, 0, 0);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    return interviews
-      .filter((item) => combineDateAndTime(item.date, item.startTime).getTime() >= tomorrow.getTime())
+    return mergeInterviews(pipelineSourceInterviews, interviews)
+      .filter(
+        (item) =>
+          item.status === "Scheduled" &&
+          combineDateAndTime(item.date, item.startTime).getTime() >= today.getTime(),
+      )
       .sort(
         (first, second) =>
           combineDateAndTime(first.date, first.startTime).getTime() - combineDateAndTime(second.date, second.startTime).getTime(),
       );
-  }, [interviews]);
+  }, [interviews, pipelineSourceInterviews]);
 
-  const pipelineColumns = useMemo<
-    SimpleDataTableColumn<InterviewItem>[]
-  >(
+  const pipelineColumns = useMemo<TableColumn[]>(
     () => [
       {
         key: "candidate",
-        header: "Candidate",
-        render: (item) => (
+        label: "Candidate",
+        render: (_value, item: InterviewItem) => (
           <div className="flex items-center gap-3">
             <span
               className={`flex h-7 w-7 flex-none items-center justify-center rounded-full text-xs font-bold ${
@@ -359,7 +353,7 @@ export const InterviewSchedule: React.FC = () => {
             >
               {getInitials(item.candidate)}
             </span>
-            <span className="align-middle text-[16px] font-normal not-italic leading-[100%] tracking-[0px] text-slate-700">
+            <span className="align-middle text-xs font-normal text-slate-700">
               {item.candidate}
             </span>
           </div>
@@ -367,25 +361,23 @@ export const InterviewSchedule: React.FC = () => {
       },
       {
         key: "position",
-        header: "Position",
-        render: (item) => item.position,
+        label: "Position",
       },
       {
         key: "interviewer",
-        header: "Interviewer",
-        render: (item) => item.interviewer,
+        label: "Interviewer",
       },
       {
         key: "dateTime",
-        header: "Date & Time",
-        render: (item) =>
+        label: "Date & Time",
+        render: (_value, item: InterviewItem) =>
           formatPipelineDate(item.date, item.startTime),
       },
       {
         key: "status",
-        header: "Status",
+        label: "Status",
         align: "center",
-        render: (item) => (
+        render: (_value, item: InterviewItem) => (
           <span
             className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${
               item.status === "Completed"
@@ -411,40 +403,13 @@ export const InterviewSchedule: React.FC = () => {
   const visibleTodaysInterviews = useMemo(
     () =>
       !isSelectedDateToday || isTodayListExpanded
-        ? todaysInterviews
-        : todaysInterviews.slice(0, TODAY_PREVIEW_COUNT),
-    [isSelectedDateToday, isTodayListExpanded, todaysInterviews],
+        ? selectedDateInterviews
+        : selectedDateInterviews.slice(0, TODAY_PREVIEW_COUNT),
+    [isSelectedDateToday, isTodayListExpanded, selectedDateInterviews],
   );
 
   const handleViewMoreToday = () => {
-    todayListHasScrolledRef.current = false;
     setIsTodayListExpanded(true);
-  };
-
-  const handleTodayListScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    if (!isSelectedDateToday || !isTodayListExpanded) return;
-
-    const scrollTop = event.currentTarget.scrollTop;
-    if (scrollTop > 4) {
-      todayListHasScrolledRef.current = true;
-      return;
-    }
-
-    if (todayListHasScrolledRef.current) {
-      todayListHasScrolledRef.current = false;
-      setIsTodayListExpanded(false);
-    }
-  };
-
-  const handleCalendarScroll = (event: React.UIEvent<HTMLDivElement>) => {
-    const element = event.currentTarget;
-    const isNearBottom = element.scrollHeight - element.scrollTop <= element.clientHeight + CALENDAR_SCROLL_THRESHOLD;
-
-    if (!isNearBottom || !calendarHasMoreRef.current || calendarRequestInFlightRef.current) {
-      return;
-    }
-
-    void loadCalendarInterviews(visibleMonth, visibleYear, calendarPageRef.current + 1, calendarAbortControllerRef.current?.signal);
   };
 
   const calendarEvents = useMemo<CalendarEvent[]>(
@@ -465,23 +430,21 @@ export const InterviewSchedule: React.FC = () => {
   );
 
   const handlePreviousPeriod = () => {
-    setCurrentDate((previous) => {
-      const next = new Date(previous);
-      if (calendarView === "day") next.setDate(next.getDate() - 1);
-      else if (calendarView === "week") next.setDate(next.getDate() - 7);
-      else return new Date(next.getFullYear(), next.getMonth() - 1, 1);
-      return next;
-    });
+    const next = new Date(currentDate);
+    if (calendarView === "day") next.setDate(next.getDate() - 1);
+    else if (calendarView === "week") next.setDate(next.getDate() - 7);
+    else next.setFullYear(next.getFullYear(), next.getMonth() - 1, 1);
+    setCurrentDate(next);
+    setSelectedDate(next);
   };
 
   const handleNextPeriod = () => {
-    setCurrentDate((previous) => {
-      const next = new Date(previous);
-      if (calendarView === "day") next.setDate(next.getDate() + 1);
-      else if (calendarView === "week") next.setDate(next.getDate() + 7);
-      else return new Date(next.getFullYear(), next.getMonth() + 1, 1);
-      return next;
-    });
+    const next = new Date(currentDate);
+    if (calendarView === "day") next.setDate(next.getDate() + 1);
+    else if (calendarView === "week") next.setDate(next.getDate() + 7);
+    else next.setFullYear(next.getFullYear(), next.getMonth() + 1, 1);
+    setCurrentDate(next);
+    setSelectedDate(next);
   };
 
   const openNewScheduleModal = () => {
@@ -517,15 +480,17 @@ export const InterviewSchedule: React.FC = () => {
   };
 
   const handleCalendarDateChange = (date: Date) => {
-    setSelectedDate(date);
-    setCurrentDate(date);
+    const navigationDate = toCalendarNavigationDate(date);
+    setSelectedDate(navigationDate);
+    setCurrentDate(navigationDate);
   };
 
   const handleCalendarEventClick = (calendarEvent: CalendarEvent) => {
     const item = interviews.find((interview) => interview.id === Number(calendarEvent.id));
     if (item) {
-      setSelectedDate(item.date);
-      setCurrentDate(item.date);
+      const navigationDate = toCalendarNavigationDate(item.date);
+      setSelectedDate(navigationDate);
+      setCurrentDate(navigationDate);
       openEditScheduleModal(item);
     }
   };
@@ -597,8 +562,9 @@ export const InterviewSchedule: React.FC = () => {
         type: "success",
         title: editingInterviewId ? "Interview updated successfully." : "Interview scheduled successfully.",
       });
-      setSelectedDate(interviewDate);
-      setCurrentDate(interviewDate);
+      const navigationDate = toCalendarNavigationDate(interviewDate);
+      setSelectedDate(navigationDate);
+      setCurrentDate(navigationDate);
       setIsScheduleModalOpen(false);
       setInterviewRefreshKey((current) => current + 1);
     } finally {
@@ -621,11 +587,10 @@ export const InterviewSchedule: React.FC = () => {
           </div>
         </div>
 
-        {(isLoadingInterviews || isLoadingTodaysInterviews) && (
+        {isLoadingInterviews && (
           <p className="mb-3 text-xs font-medium text-blue-600">Loading interviews...</p>
         )}
         {interviewError && <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{interviewError}</p>}
-        {todayInterviewError && <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{todayInterviewError}</p>}
 
         <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2.15fr)_minmax(300px,1fr)]">
           <section className="flex h-[500px] min-w-0 flex-col overflow-hidden rounded-xl border border-slate-200 bg-white">
@@ -678,6 +643,7 @@ export const InterviewSchedule: React.FC = () => {
                       color: calendarView === view ? "#FFFFFF" : "inherit",
                       fontSize: "inherit",
                       fontWeight: "inherit",
+                      fontFamily: "inherit",
                     }}
                   >
                     {view}
@@ -686,10 +652,7 @@ export const InterviewSchedule: React.FC = () => {
               </div>
             </div>
 
-            <div
-              onScroll={handleCalendarScroll}
-              className="min-h-0 flex-1 overflow-y-auto bg-white [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-            >
+            <div className="min-h-0 flex-1 overflow-y-auto bg-white [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
               <CustomCalendar
                 view={calendarView}
                 currentDate={currentDate}
@@ -697,10 +660,6 @@ export const InterviewSchedule: React.FC = () => {
                 onDateChange={handleCalendarDateChange}
                 onEventClick={handleCalendarEventClick}
               />
-              {isFetchingMoreInterviews && <p className="py-3 text-center text-xs font-medium text-blue-600">Loading more interviews...</p>}
-              {!hasMoreInterviews && interviews.length > INTERVIEW_PAGE_SIZE && (
-                <p className="py-3 text-center text-xs text-slate-400">All interviews loaded</p>
-              )}
             </div>
           </section>
 
@@ -710,27 +669,26 @@ export const InterviewSchedule: React.FC = () => {
                 {selectedDateHeading}
               </h2>
               <span className="rounded-full bg-[#E8F0FF] px-2.5 py-1 text-xs font-semibold text-[#1455D9]">
-                {todaysInterviews.length} {todaysInterviews.length === 1 ? "Interview" : "Interviews"}
+                {selectedDateInterviews.length} {selectedDateInterviews.length === 1 ? "Interview" : "Interviews"}
               </span>
             </div>
 
             <div
-              onScroll={handleTodayListScroll}
               className={`min-h-0 flex-1 space-y-3 pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] ${
                 !isSelectedDateToday || isTodayListExpanded
                   ? "max-h-[390px] overflow-y-auto"
                   : "overflow-hidden"
               }`}
             >
-              {isLoadingTodaysInterviews && todaysInterviews.length === 0 ? (
+              {isLoadingInterviews && selectedDateInterviews.length === 0 ? (
                 <div className="flex min-h-[250px] items-center justify-center text-sm font-medium text-blue-600">
                   Loading interviews...
                 </div>
-              ) : todaysInterviews.length === 0 ? (
+              ) : selectedDateInterviews.length === 0 ? (
                 <NoDataView
                   message={
                     isSelectedDateToday
-                      ? "No interviews scheduled for today"
+                      ? "No upcoming interviews for today"
                       : "No interviews scheduled for this date"
                   }
                   className="min-h-[250px]"
@@ -759,31 +717,26 @@ export const InterviewSchedule: React.FC = () => {
                       onClick={() => openEditScheduleModal(item)}
                       color="transparent"
                       variant="outline"
-                      className="block pr-7 text-left"
-                      style={{ height: "auto", padding: 0, justifyContent: "flex-start", border: "none", backgroundColor: "transparent", color: "inherit" }}
+                      fullWidth
+                      className="block w-full pr-7 text-left"
+                      style={{ height: "auto", padding: 0, justifyContent: "flex-start", border: "none", backgroundColor: "transparent", color: "inherit", fontFamily: "inherit" }}
                     >
-                      <div className="text-left">
-                        <p className="align-middle text-sm font-semibold leading-[20px] tracking-[0px] text-[#075DE7]">
-                          {formatTimeLabel(item.startTime)} - {formatTimeLabel(item.endTime)}
-                        </p>
-                        <h3 className="mt-2 align-middle text-base font-normal leading-[24px] tracking-[0px] text-slate-700">
-                          {item.candidate}
-                        </h3>
-                        <p className="mt-0.5 align-middle text-base font-normal leading-[24px] tracking-[0px] text-slate-500">
-                          {item.position}
-                        </p>
+                      <div className="grid w-full grid-cols-1 gap-3 text-left">
+                        <FieldItem
+                          label="Time"
+                          value={
+                            <span className="text-sm font-semibold leading-5 text-[#075DE7]">
+                              {formatTimeLabel(item.startTime)} - {formatTimeLabel(item.endTime)}
+                            </span>
+                          }
+                        />
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                          <FieldItem label="Candidate" value={item.candidate} />
+                          <FieldItem label="Position" value={item.position} />
+                        </div>
+                        <FieldItem label="Interviewer" value={item.interviewer} />
                       </div>
                     </Button>
-
-                    <div className="mt-3 flex items-center gap-2 text-xs text-slate-500">
-                      <TooltipText
-                        text={`Interviewer: ${item.interviewer}`}
-                        maxWidth="100%"
-                        tooltipThreshold={28}
-                        isApplyBgTextColor
-                        tooltipClassName="text-slate-500"
-                      />
-                    </div>
                   </article>
                 ))
               )}
@@ -791,13 +744,14 @@ export const InterviewSchedule: React.FC = () => {
 
             {isSelectedDateToday &&
               !isTodayListExpanded &&
-              todaysInterviews.length > TODAY_PREVIEW_COUNT && (
+              selectedDateInterviews.length > TODAY_PREVIEW_COUNT && (
               <Button
                 type="button"
                 onClick={handleViewMoreToday}
                 color="blue"
                 fullWidth
                 className="mt-4 h-11 w-full rounded-lg bg-[#1F5BEA] text-sm font-semibold text-white transition hover:bg-[#174ED1]"
+                style={{ fontFamily: "inherit" }}
               >
                 View More
               </Button>
@@ -807,30 +761,38 @@ export const InterviewSchedule: React.FC = () => {
 
         <section id="interview-pipeline" className="mt-4 scroll-mt-4 rounded-xl border border-slate-200 bg-white p-4 sm:p-5">
           <h2 className="mb-4 text-[18px] font-semibold leading-[28px] tracking-[0px] text-slate-800">
-            Interview Pipeline - Tomorrow Onwards
+            Interview Pipeline
           </h2>
 
+          {isLoadingPipeline && (
+            <p className="mb-3 text-xs font-medium text-blue-600">Loading upcoming interviews...</p>
+          )}
+          {pipelineError && (
+            <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-600">{pipelineError}</p>
+          )}
+
           <div className="hidden max-h-[360px] overflow-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] md:block">
-            <SimpleDataTable
+            <DataTable
               data={pipelineInterviews}
               columns={pipelineColumns}
-              getRowKey={(item) => item.id}
-              onRowClick={openEditScheduleModal}
-              emptyMessage={
-                <NoDataView
-                  message="No interviews scheduled from tomorrow onwards"
-                  className="py-6"
-                />
+              rowKey="id"
+              onRowClick={(row) =>
+                openEditScheduleModal(row as InterviewItem)
               }
-              tableClassName="min-w-[820px]"
-              headerRowClassName="bg-[#EEF3FF] align-middle text-[14px] font-semibold not-italic leading-5 tracking-[0px] text-slate-600"
+              emptyMessage="No upcoming interviews scheduled"
+              variant="minimal"
+              className="min-w-[820px]"
+              headerRowClassName="!bg-[#EEF3FF]"
+              headerCellClassName="!px-5 !py-3 !text-[11px] !font-medium !text-[#4B5563]"
+              rowClassName="hover:bg-[#F8FAFC]"
+              cellClassName="!px-5 !py-4 !text-xs !text-[#4B5563]"
             />
           </div>
 
           <div className="max-h-[360px] space-y-3 overflow-y-auto pr-1 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] md:hidden">
             {pipelineInterviews.length === 0 ? (
               <NoDataView
-                message="No interviews scheduled from tomorrow onwards"
+                message="No upcoming interviews scheduled"
                 className="py-10"
               />
             ) : (
@@ -843,7 +805,7 @@ export const InterviewSchedule: React.FC = () => {
                   variant="outline"
                   fullWidth
                   className="w-full rounded-lg border border-slate-200 p-3 text-left transition hover:!border-blue-200 hover:!bg-blue-50/20"
-                  style={{ height: "auto", padding: 12, justifyContent: "stretch", border: "1px solid #E2E8F0", backgroundColor: "transparent", color: "inherit" }}
+                  style={{ height: "auto", padding: 12, justifyContent: "stretch", border: "1px solid #E2E8F0", backgroundColor: "transparent", color: "inherit", fontFamily: "inherit" }}
                 >
                   <div className="w-full text-left">
                     <div className="flex items-center justify-between gap-3">
@@ -851,32 +813,34 @@ export const InterviewSchedule: React.FC = () => {
                         <span className="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-[#DDEAFF] text-xs font-bold text-[#4770A5]">
                           {getInitials(item.candidate)}
                         </span>
-                        <div className="min-w-0">
-                          <TooltipText
-                            text={item.candidate}
-                            maxWidth="100%"
-                            tooltipThreshold={22}
-                            isApplyBgTextColor
-                            tooltipClassName="text-sm font-semibold text-slate-700"
-                          />
-                          <TooltipText
-                            text={item.position}
-                            maxWidth="100%"
-                            tooltipThreshold={24}
-                            isApplyBgTextColor
-                            tooltipClassName="text-xs text-slate-500"
-                          />
-                        </div>
+                        <FieldItem
+                          label="Candidate"
+                          className="[&>span:first-child]:hidden [&>div]:!mt-0"
+                          value={item.candidate}
+                        />
                       </div>
                       <span className="rounded-full bg-[#EEF3FC] px-2.5 py-1 text-xs font-medium text-[#55708C]">{item.status}</span>
                     </div>
-                    <div className="mt-3 grid grid-cols-1 gap-2 text-xs text-slate-500 sm:grid-cols-2">
-                      <span className="flex items-center gap-1.5">
-                        <UserRound className="h-3.5 w-3.5" /> {item.interviewer}
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <Clock3 className="h-3.5 w-3.5" /> {formatPipelineDate(item.date, item.startTime)}
-                      </span>
+                    <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+                      <FieldItem label="Position" value={item.position} />
+                      <FieldItem
+                        label="Interviewer"
+                        className="[&>span:first-child]:hidden [&>div]:!mt-0"
+                        value={
+                          <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                            <UserRound className="h-3.5 w-3.5" /> {item.interviewer}
+                          </span>
+                        }
+                      />
+                      <FieldItem
+                        label="Date & Time"
+                        className="[&>span:first-child]:hidden [&>div]:!mt-0"
+                        value={
+                          <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                            <Clock3 className="h-3.5 w-3.5" /> {formatPipelineDate(item.date, item.startTime)}
+                          </span>
+                        }
+                      />
                     </div>
                   </div>
                 </Button>
@@ -969,22 +933,38 @@ export const InterviewSchedule: React.FC = () => {
             />
           </div>
 
-          <div className="rounded-lg bg-[#F7F9FC] p-3 text-xs text-slate-500 sm:col-span-2">
-            <div className="flex flex-wrap gap-x-5 gap-y-2">
-              <span className="flex items-center gap-1.5">
-                <BriefcaseBusiness className="h-3.5 w-3.5 text-slate-400" />
-                {formData.position || "Position not selected"}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
-                {formatDate_dd_mm_yyyy(formData.date) || "Date not selected"}
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Clock3 className="h-3.5 w-3.5 text-slate-400" />
-                {formData.startTime || "--:--"}
-              </span>
-              <span className="flex items-center gap-1.5">Stage: {formData.stage || "Not selected"}</span>
-            </div>
+          <div className="grid grid-cols-1 gap-3 rounded-lg bg-[#F7F9FC] p-3 sm:col-span-2 sm:grid-cols-2 lg:grid-cols-4">
+            <FieldItem
+              label="Position"
+              className="[&>span:first-child]:hidden [&>div]:!mt-0"
+              value={
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <BriefcaseBusiness className="h-3.5 w-3.5 text-slate-400" />
+                  {formData.position || "Position not selected"}
+                </span>
+              }
+            />
+            <FieldItem
+              label="Interview Date"
+              className="[&>span:first-child]:hidden [&>div]:!mt-0"
+              value={
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <CalendarDays className="h-3.5 w-3.5 text-slate-400" />
+                  {formatDate_dd_mm_yyyy(formData.date) || "Date not selected"}
+                </span>
+              }
+            />
+            <FieldItem
+              label="Interview Time"
+              className="[&>span:first-child]:hidden [&>div]:!mt-0"
+              value={
+                <span className="flex items-center gap-1.5 text-xs text-slate-500">
+                  <Clock3 className="h-3.5 w-3.5 text-slate-400" />
+                  {formData.startTime || "--:--"}
+                </span>
+              }
+            />
+            <FieldItem label="Stage" value={formData.stage || "Not selected"} />
           </div>
         </div>
       </Modal>

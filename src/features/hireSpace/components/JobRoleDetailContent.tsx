@@ -80,6 +80,7 @@ export const JobRoleDetailContent: React.FC<JobRoleDetailContentProps> = ({ role
       >
         <FieldItem
           label="Description"
+          className="[&>span:first-child]:hidden [&>div]:!mt-0"
           value={
             <p className="break-words whitespace-pre-wrap text-[14px] font-medium leading-[22.4px] tracking-[0px] text-[#344054]">
               {role.RoleDescription || "No role description available."}
@@ -95,6 +96,7 @@ export const JobRoleDetailContent: React.FC<JobRoleDetailContentProps> = ({ role
       >
         <FieldItem
           label="Responsibilities"
+          className="[&>span:first-child]:hidden [&>div]:!mt-0"
           value={<ItemList items={responsibilities} empty="No responsibilities available." grid />}
         />
       </Section>
@@ -107,6 +109,7 @@ export const JobRoleDetailContent: React.FC<JobRoleDetailContentProps> = ({ role
       >
         <FieldItem
           label="Requirements & Qualifications"
+          className="[&>span:first-child]:hidden [&>div]:!mt-0"
           value={
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 sm:gap-8">
               <ItemList title="Qualifications" items={qualifications} empty="No qualifications available." />

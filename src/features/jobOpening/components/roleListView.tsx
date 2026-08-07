@@ -81,16 +81,41 @@ export const RoleListView: React.FC<RoleListViewProps> = ({
               )}
             </div>
             {isVisible("NumberOfOpenings") && (
-              <div className="mt-2.5"><p className="text-xs font-normal text-gray-400">Total Openings : <span className="font-semibold text-gray-700">{role.NumberOfOpenings ?? "—"}</span></p></div>
+              <div className="mt-2.5">
+                <p className="text-xs font-normal text-gray-400">
+                  Total Openings :{" "}
+                  <span className="font-semibold text-gray-700">
+                    {role.NumberOfOpenings ?? "—"}
+                  </span>
+                </p>
+              </div>
             )}
-            <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs font-normal text-gray-500">
-                {isVisible("Experience") && <div className="flex items-center gap-1.5"><Briefcase className="h-4 w-4 text-gray-400" strokeWidth={2} />{role.ExperienceYears || 0} yrs {role.ExperienceMonths || 0} mos</div>}
-                {isVisible("WorkLocation") && <div className="flex items-center gap-1.5"><MapPin className="h-4 w-4 text-gray-400" strokeWidth={2} />{role.WorkLocation || "—"}</div>}
-                {isVisible("EmploymentType") && <div className="flex items-center gap-1.5"><Clock className="h-4 w-4 text-gray-400" strokeWidth={2} />{role.EmploymentType || role.WorkMode || "—"}</div>}
+                {isVisible("Experience") && (
+                  <div className="flex items-center gap-1.5">
+                    <Briefcase className="h-4 w-4 text-gray-400" strokeWidth={2} />
+                    {role.ExperienceYears || 0} yrs {role.ExperienceMonths || 0} mos
+                  </div>
+                )}
+                {isVisible("WorkLocation") && (
+                  <div className="flex items-center gap-1.5">
+                    <MapPin className="h-4 w-4 text-gray-400" strokeWidth={2} />
+                    {role.WorkLocation || "—"}
+                  </div>
+                )}
+                {isVisible("EmploymentType") && (
+                  <div className="flex items-center gap-1.5">
+                    <Clock className="h-4 w-4 text-gray-400" strokeWidth={2} />
+                    {role.EmploymentType || role.WorkMode || "—"}
+                  </div>
+                )}
               </div>
               {isVisible("ApplicationsCount") && (
-                <div className="flex shrink-0 items-center gap-1 self-end text-xs font-medium text-[#3B82F6] sm:self-auto"><span className="h-1.5 w-1.5 rounded-full bg-[#2563EB]" aria-hidden="true" />{applicationsCount} Applications</div>
+                <div className="flex shrink-0 items-center gap-1 self-end text-xs font-medium text-[#3B82F6] sm:self-auto">
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#2563EB]" aria-hidden="true" />
+                  {applicationsCount} Applications
+                </div>
               )}
             </div>
           </div>

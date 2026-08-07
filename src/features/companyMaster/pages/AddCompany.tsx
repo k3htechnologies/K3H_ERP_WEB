@@ -1512,7 +1512,13 @@ const AddCompany: React.FC = () => {
                 placeholder='Select TAN'
                 value={tanURLFiles}
                 error={errors.TANURL}
-                onChange={setTANURLFiles}
+                onChange={(files) => {
+                  if (hasInvalidFileFormat(files)) {
+                    addToast({ type: "error", title: invalidFormatMessage("TAN") });
+                    return;
+                  }
+                  setTANURLFiles(files);
+                }}
                 availableFilesURL={tanURL ?? ""}
                 allowedTypes={[
                   "image/jpeg",

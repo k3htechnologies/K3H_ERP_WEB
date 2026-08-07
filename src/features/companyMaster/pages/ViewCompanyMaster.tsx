@@ -204,6 +204,7 @@ export const ViewCompanyMaster: React.FC = () => {
                                 </div>
                             </section>
 
+
                             {/* ================= GENERAL / REGISTRATION ================= */}
                             <section className="border border-[#33333321] rounded-xl overflow-hidden">
                                 <div className="bg-[#FFF6EB] px-4 py-2 border-b border-[#D0D7DE]">
@@ -262,8 +263,8 @@ export const ViewCompanyMaster: React.FC = () => {
 
                             {/* ================= ACTION DETAILS ================= */}
                             <section className="border border-[#33333321] rounded-xl overflow-hidden">
-                                <div className="bg-[#FFFFE4] px-4 py-2 border-b border-[#D0D7DE]">
-                                    <h4 className="text-sm font-semibold text-[#7B6B28]">
+                                <div className="bg-[#E1E2E4] px-3 py-2 border-b border-[#D0D7DE]">
+                                    <h4 className="text-sm font-semibold text-[#333333]">
                                         Action Details
                                     </h4>
                                 </div>
@@ -293,8 +294,8 @@ export const ViewCompanyMaster: React.FC = () => {
                         {/* ================= PARTNERS ================= */}
 
                         <section className="border border-[#33333321] rounded-xl overflow-hidden">
-                            <div className="bg-[#E6FFE6] px-4 py-2 border-b border-[#D0D7DE]">
-                                <h4 className="text-sm font-semibold text-[#00A800]">
+                            <div className="bg-[#FCF1FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                <h4 className="text-sm font-semibold text-[#561F64]">
                                     Partners ({editCompanyData?.CompanyPartnerData?.length ?? 0})
                                 </h4>
                             </div>
@@ -318,7 +319,7 @@ export const ViewCompanyMaster: React.FC = () => {
 
                                                     <div>
                                                         <h3
-                                                            className="text-sm font-medium  text-[#0F172A] line-clamp-1 break-all pt-2"
+                                                            className="text-sm font-medium  text-[#0F172A] pt-2"
                                                             title={partner.FullName}
                                                         >
                                                             {partner.FullName}
@@ -337,7 +338,7 @@ export const ViewCompanyMaster: React.FC = () => {
 
                                             <div className="p-2">
                                                 <div className="grid grid-cols-2 gap-y-3 gap-x-4 text-xs">
-                                                     <FieldItem label="Mobile Number" value={`+91 ${partner?.MobileNumber ?? "-"}`} />
+                                                    <FieldItem label="Mobile Number" value={`+91 ${partner?.MobileNumber ?? "-"}`} />
                                                     <div>
                                                         <p className="text-sm font-medium text-[#1D1D1D80]">Email</p>
                                                         <a href={`mailto:${getSafeString(partner.EmailId, "")}`} className="text-blue-600 text-sm hover:underline truncate" >

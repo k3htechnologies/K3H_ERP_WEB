@@ -31,6 +31,7 @@ export class VendorDatasourceImpl implements VendorDatasource {
             })
 
             if (params.VendorId) queryParams.append('VendorId', params.VendorId.toString());
+            if (params.SystemGeneratedCode?.trim()) queryParams.append('SystemGeneratedCode', params.SystemGeneratedCode.trim());
             if (params.VendorName?.trim()) queryParams.append('VendorName', params.VendorName.trim());
             if (params.CompanyName?.trim()) queryParams.append('CompanyName', params.CompanyName.trim());
             if (params.CompanyType?.trim()) queryParams.append('CompanyType', params.CompanyType.trim());

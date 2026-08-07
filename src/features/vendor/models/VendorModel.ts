@@ -5,6 +5,7 @@ export interface FilterWithPaginationVendorRequest {
     PageNumber: number
     IsCheckPermission?: boolean
     VendorId?: number
+    SystemGeneratedCode?: string
     VendorName?: string
     CompanyName?: string
     CompanyType?: string
@@ -20,9 +21,12 @@ export interface FilterWithPaginationVendorRequest {
 export interface VendorData {
     VendorId: number | 0
     Uniquekey: string
+    SystemGeneratedCode: string| ''
+    VerifiedNonVerified: string
     CompanyName: string | ''
     CompanyType: string | ''
     VendorName: string | ''
+    MobileNumberCountryCode: string | ''
     MobileNumber: string | ''
     EmailId: string | ''
     AadharCardNumber: string | ''
@@ -55,7 +59,6 @@ export interface VendorData {
     ContractTypeMasterData: any[] | []
 
     MagicLinkURL: string | ''
-    SystemGeneratedCode: string | ''
     ProjectName: string | ''
     CreatedById: number | 0
     CreatedBy: string | ''
@@ -74,6 +77,7 @@ export interface AddUpdateVendorRequest {
     CompanyName: string | ''
     CompanyType: string | ''
     VendorName: string | ''
+    MobileNumberCountryCode: string | ''
     MobileNumber: string | ''
     EmailId: string | ''
     AadharCardNumber: string | ''

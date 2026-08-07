@@ -70,12 +70,18 @@ export const SubMaterialMasterTable: React.FC<SubMaterialMasterTableProps> = ({
             <div className={`flex items-center ${canAction ? 'justify-between' : 'justify-start'}`}>
               <TooltipText
                 text={value || '-'}
-                maxWidth="400px"
-                tooltipThreshold={30}
+                maxWidth="800px"
+                tooltipThreshold={100}
                 onClick={() => onView(row)}
               />
             </div>
           )
+        };
+      }
+      if (col.key === 'IsTolerant') {
+        return {
+          ...col,
+          render: (value) => value == 1 ? 'Yes' : 'No'
         };
       }
       return col;

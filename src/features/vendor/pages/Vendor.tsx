@@ -4,11 +4,7 @@ import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type Ta
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import type {
-  VendorData,
-  FilterWithPaginationVendorRequest
-} from '@/features/vendor/models/VendorModel';
-
+import type { VendorData, FilterWithPaginationVendorRequest} from '@/features/vendor/models/VendorModel';
 import { vendorService } from '@/features/vendor/services/VendorService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
@@ -22,7 +18,7 @@ import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import CustomizeColumnsModal from '@/ui/components/CustomizeColumns/CustomizeColumnsModal';
 import { useNavigate } from 'react-router-dom';
 import { useVendorListState } from '@/features/vendor/context/VendorListStateContext';
-import { AlertTriangle, Trash2 } from 'lucide-react';
+import { AlertTriangle, Copy, Trash2 } from 'lucide-react';
 import { updateFilter } from '@/core/utils/filterHelper';
 import { technicalService } from '@/features/technical/services/TechnicalService';
 import type { FilterMagicLinkWithValidate, FilterPullExcelSample } from '@/features/technical/models/TechnicalModel';
@@ -34,6 +30,7 @@ import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import { isVendorComplete } from '@/features/vendor/utils/vendorUtils';
 import { filterNumbers } from '@/core/utils/fileValidation';
+import { copyToClipboard } from '@/core/utils/comman';
 
 
 export const Vendor: React.FC = () => {
@@ -60,23 +57,18 @@ export const Vendor: React.FC = () => {
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   const [isShowCustomizeVendorColumnsModal, setIsShowCustomizeVendorColumnsModal] = useState(false);
-
-  //EXCEL IMPORT 
+ 
   const [showImportModal, setShowImportModal] = useState(false);
 
-  //SHARE MAGIC LINK OPTION
   const [isShareMagicLinkModalOpen, setIsShareMagicLinkModalOpen] = useState(false);
   const [magicLink, setmagicLink] = useState<string>('');
 
   const { canAction, canExport } = useMenuPermissions();
-  //#endregion
-
-  //#region INIT
+  
   useEffect(() => {
-    // Sync pagination with context state
+   
     setPagination({ currentPage: listState.page });
 
-    // Load vendors with current context state
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
       loadVendors(listState.page, { VendorName: String(listState.searchTerm).trim() }, listState.sortInfo);
     } else {
@@ -90,9 +82,6 @@ export const Vendor: React.FC = () => {
     }
   }, [debouncedSearch])
 
-  //#endregion
-
-  //#region DATA LOAD
 
   const fetchVendorList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
     return await loadVendors(page, filters, sort ?? sortInfo);
@@ -117,6 +106,7 @@ export const Vendor: React.FC = () => {
           GSTNumber: filterParams.GSTNumber?.trim() || undefined,
           AadharCardNumber: filterParams.AadharCardNumber?.trim() || undefined,
           PanCardNumber: filterParams.PanCardNumber?.trim() || undefined,
+          SystemGeneratedCode: filterParams.SystemGeneratedCode?.trim() || undefined,
 
           SortBy: getSortByParam(sortInfo ?? null, vendorColumns)
         }
@@ -147,9 +137,6 @@ export const Vendor: React.FC = () => {
     );
   };
 
-  //#endregion
-
-  //#region SEARCH VENDOR FILTER
   const searchVendors = async (searchValue: string) => {
     updateListState({ searchTerm: searchValue });
 
@@ -163,9 +150,6 @@ export const Vendor: React.FC = () => {
   };
 
 
-  //#endregion
-
-  //#region CLAER SERACH VENDOR
   const clearSearchVendors = () => {
     updateListState({ searchTerm: '', filters: {}, page: 1 });
 
@@ -176,9 +160,7 @@ export const Vendor: React.FC = () => {
     loadVendors(1, { VendorName: '' }, sortInfo, undefined);
   };
 
-  //#endregion
-
-  //#region  EXCEL EXPORT TO EXCEL | PDF
+ 
   const handleExportVendors = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -198,6 +180,7 @@ export const Vendor: React.FC = () => {
           GSTNumber: filters.GSTNumber?.trim() || undefined,
           AadharCardNumber: filters.AadharCardNumber?.trim() || undefined,
           PanCardNumber: filters.PanCardNumber?.trim() || undefined,
+          SystemGeneratedCode: filters.SystemGeneratedCode?.trim() || undefined,
           SortBy: getSortByParam(sortInfo ?? null, vendorColumns),
           ExportType: exportType
         }
@@ -226,8 +209,8 @@ export const Vendor: React.FC = () => {
   //#region TABLE CONFIG
 
   const handlePageChange = useCallback((page: number) => {
-      updateListState({ page });
-    }, [sortInfo, updateListState]);
+    updateListState({ page });
+  }, [sortInfo, updateListState]);
 
   const handleSortColumn = useCallback((sort: SortInfo) => {
     updateListState({ sortInfo: sort, page: 1 });
@@ -246,28 +229,72 @@ export const Vendor: React.FC = () => {
   )
 
   const vendorListForTable = useMemo(() => vendorList, [vendorList]);
-  //#endregion
-
-  //#region VIEW VENDOR MASTER
+  
   const handleViewVendorDetails = useCallback((row: VendorData) => {
     updateListState({ vendorId: row.VendorId, vendorName: row.VendorName });
     navigate('/vendor/view');
   }, [navigate, updateListState]);
 
-  //#endregion
-
-  //#region CONFIRMATION DIALOG BOX
 
   const handleConfirmationDialogBoxOpen = useCallback((row: VendorData) => {
     setDeleteVendorDetailsData(row)
     setIsConfirmationDialogBoxOpen(true)
   }, [])
 
-  //#endregion
-
-  //#region TABLE COLUMN
   const vendorColumns = useMemo<TableColumn[]>(
     () => [
+      {
+        key: 'SystemGeneratedCode',
+        label: 'Vendor Code',
+        width: '20',
+        sortable: true,
+        fixed: 'left',
+        align: 'left',
+        render: (value, row) => {
+
+          return (
+            <div className="flex items-center justify-center gap-2">
+
+              <TooltipText
+                text={value || '-'}
+                maxWidth="180px"
+                tooltipThreshold={25}
+                tooltipClassName="inline-block px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 overflow-hidden text-ellipsis whitespace-nowrap"
+              />
+
+              {row.VerifiedNonVerified !== 'Verified' && (
+                <span title="Vendor Profile Incomplete">
+                  <AlertTriangle className="w-4 h-4 text-amber-500 cursor-pointer" />
+                </span>
+              )}
+
+              {value && (
+                <Button
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const success = await copyToClipboard(value);
+                    if (success) {
+                      addToast({ type: 'success', title: `${value} Copied!` });
+                    }
+                  }}
+                  color="transparent"
+                  size="sm"
+                  style={{
+                    padding: '2px 6px',
+                    color: '#6B7280',
+                    cursor: 'pointer'
+                  }}
+                  title="Copy"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                </Button>
+              )}
+
+            </div>
+          );
+        }
+      },
       {
         key: 'VendorName',
         label: 'Vendor Name',
@@ -302,7 +329,7 @@ export const Vendor: React.FC = () => {
       {
         key: 'CompanyName',
         label: 'Company Name',
-        width: '20',
+        width: '15',
         sortable: true,
         align: 'left',
         render: (value) => value || '-'
@@ -321,8 +348,7 @@ export const Vendor: React.FC = () => {
         width: '15',
         sortable: false,
         align: 'left',
-        render: value => value ? `+91 ${value}` : '-'
-
+        render: (value, row) => value ? `${row.MobileNumberCountryCode || "+91"} ${value}` : '-'
       },
       {
         key: 'EmailId',
@@ -351,7 +377,7 @@ export const Vendor: React.FC = () => {
       },
       {
         key: 'PanCardNumber',
-        label: 'Pan Number',
+        label: 'PAN Number',
         width: '15',
         sortable: false,
         align: 'left',
@@ -383,6 +409,14 @@ export const Vendor: React.FC = () => {
             />
           );
         }
+      },
+       {
+        key: 'CountryName',
+        label: 'Country',
+        width: '15',
+        sortable: false,
+        align: 'left',
+        render: (value) => value || '-'
       },
       {
         key: 'StateName',
@@ -446,7 +480,7 @@ export const Vendor: React.FC = () => {
   //#endregion
 
   //#region CUSTOMIZE COLUMNS
-  const requiredVendorColumnKeys: string[] = ['VendorName','Actions'];
+  const requiredVendorColumnKeys: string[] = ['VendorName', 'Actions'];
   const allVendorColumnKeys: string[] = vendorColumns.map(c => c.key)
   const [selectedVendorColumnKeys, setSelectedVendorColumnKeys] = useState<string[]>(() => {
     try {
@@ -785,7 +819,7 @@ export const Vendor: React.FC = () => {
         columns={vendorColumns}
         selectedKeys={selectedVendorColumnKeys}
         requiredKeys={requiredVendorColumnKeys}
-        title="Customize Vendor Table Columns"
+        title="Customize Table Columns"
       />
 
       <Modal
@@ -804,6 +838,13 @@ export const Vendor: React.FC = () => {
       >
         <div className="space-y-6">
           <div className="space-y-4">
+            <div>
+              <Input type="text"
+                label='Vendor Code'
+                value={tempFilters?.SystemGeneratedCode ?? ''}
+                onChange={e => handleFilterChange('SystemGeneratedCode', e.target.value)}
+                placeholder="Enter Vendor Code" />
+            </div>
             <div>
 
               <Input
@@ -878,11 +919,11 @@ export const Vendor: React.FC = () => {
             <div>
 
               <Input
-                label='Pan Card Number'
+                label='PAN Number'
                 type="text"
                 value={tempFilters.PanCardNumber || ''}
                 onChange={e => handleFilterChange('PanCardNumber', e.target.value)}
-                placeholder="Enter Pan Card Number"
+                placeholder="Enter PAN Card Number"
               />
             </div>
           </div>

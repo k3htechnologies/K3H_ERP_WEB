@@ -1,8 +1,7 @@
 export const TaxTrackerDocumentApi = {
-    
     PULL: '/TaxTracker/PullTaxTrackerDocument',
-    ADD_UPDATE:'/TaxTracker/AddUpdateTaxTrackerDocument',
-    DELETE:'/TaxTracker/DeleteTaxTrackerDocument'
+    ADD_UPDATE: '/TaxTracker/AddUpdateTaxTrackerDocument',
+    DELETE: '/TaxTracker/DeleteTaxTrackerDocument'
 
 } as const
 

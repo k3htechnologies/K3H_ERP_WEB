@@ -1,85 +1,73 @@
 import { useState } from "react";
 import { Loader } from "@/core/utils/loader";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import type { AddUpdateTaxTrackerRequest } from "../models/TaxTrackerModel";
+import type { AddUpdateTaxTrackerRequest } from "@/features/taxTracker/models/TaxTrackerModel";
 import { Input } from "@/ui/components/forms";
-import { useTaxTrackerListState } from "../context/TaxTrackerListStateContext";
+import { useTaxTrackerListState } from "@/features/taxTracker/context/TaxTrackerListStateContext";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { NOTICE_STATUS_OPTIONS } from "@/core/constants";
+import { AUTHORITY_OPTIONS } from "@/core/constants";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useNavigate } from "react-router-dom";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { fetchGovernmentComplianceDropdown, fetchNoticeSectionDropdown } from "../fetchGovernmentComplianceDopdown";
+import { fetchGovernmentComplianceDropdown, fetchNoticeSectionDropdown } from "@/features/taxTracker/fetchGovernmentComplianceDopdown";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { runApiWithLoader } from "@/core/utils";
-import { taxTrackerService } from "../services/TaxTrackerService";
+import { taxTrackerService } from "@/features/taxTracker/services/TaxTrackerService";
 import * as E from 'fp-ts/Either';
 import useToast from "@/core/hooks/useToast";
 import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
+import { TextArea } from "@/ui/components/forms/Textarea";
+import { fetchCompanyMasterDropdown } from "@/features/companyMaster/companyMasterDropDown";
+import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
+
+const initialFormState = (): AddUpdateTaxTrackerRequest => ({
+    TaxTrackerId: 0,
+    Uniquekey: null,
+    GovernmentCompliance: null,
+    CompanyId: 0,
+    FinancialYear: '',
+    ResponsiblePersonId: null,
+    NoticeType: null,
+    NoticeSectionMasterId: 0,
+    Authority: null,
+    NoticeDate: null,
+    DueDate: null,
+    NoticeStatus: null,
+    NoticeDocumentURL: [],
+    RemoveNoticeDocumentURL: null,
+    OfficerName: null,
+    OfficerAddress: null,
+    NoticeDescription: null,
+    ReplyDocumentURL: [],
+    RemoveReplyDocumentURL: null,
+    RequestType: "Notice"
+});
 
 export const AddUpdateTaxTracker: React.FC = () => {
 
     const { listState } = useTaxTrackerListState();
     const { canAction } = useMenuPermissions('/taxTracker');
-    // const { CompanyName } = listState;
     const { addToast } = useToast();
 
-
-    const initialFormState = (): AddUpdateTaxTrackerRequest => ({
-        TaxTrackerId: 0,
-        Uniquekey: null,
-        GovernmentCompliance: null,
-        CompanyId: 0,
-        FinancialYear: '',
-        ResponsiblePersonId: null,
-        NoticeType: null,
-        NoticeSectionMasterId: 0,
-        Authority: null,
-        NoticeDate: null,
-        DueDate: null,
-        NoticeStatus: null,
-        NoticeDocumentURL: [],
-        RemoveNoticeDocumentURL: null,
-        OfficerName: null,
-        OfficerAddress: null,
-        NoticeDescription: null,
-    });
+    const [dropdownLabels, setDropdownLabels] = useState<{ companyName?: string; }>(() => ({
+        companyName: listState.CompanyName || undefined,
+    }));
 
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [selectedResponsiblePersonesNames, setSelectedResponsiblePersonesNames] = useState<string | number | null>(null);
-
-    // Notice Document URL state for document uploads 
     const [noticeDocumentURLFiles, setNoticeDocumentURLFiles] = useState<(File | string)[]>([]);
     const [noticeDocumentURL, setNoticeDocumentURL] = useState<string>("");
     const [removedNoticeDocumentURLs, setRemovedNoticeDocumentURLs] = useState<string[]>([]);
-
-    // Reply Document URL state for document uploads 
-    const [replyDocumentURLFiles, setReplyDocumentURLFiles] = useState<(File | string)[]>([]);
-    const [replyDocumentURL, setReplyDocumentURL] = useState<string>("");
-    const [removedReplyDocumentURLs, setRemovedReplyDocumentURLs] = useState<string[]>([]);
-
-    // Initialize formData directly from context so fields are pre-filled immediately on mount
-    const [formData, setFormData] = useState<AddUpdateTaxTrackerRequest>(() => ({
-        ...initialFormState(),
-        CompanyId: listState.CompanyId || 0,
-        CompanyName: listState.CompanyName || null,
-        FinancialYear: listState.FinancialYear || '',
-    }));
-    const navigate = useNavigate();
+    const [formData, setFormData] = useState<AddUpdateTaxTrackerRequest>(() => initialFormState());
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
-    const handleFieldChange = (field: keyof AddUpdateTaxTrackerRequest, value: any) => {
-        setFormData((prev) => ({ ...prev, [field]: value }));
-        if (errors[field]) {
-            setErrors((prev) => ({ ...prev, [field]: "" }));
-        }
-    };
+    const navigate = useNavigate();
 
     const responsiblePersonNamesDropDown = useMultiSelectDropdown({
         value: selectedResponsiblePersonesNames,
@@ -87,11 +75,6 @@ export const AddUpdateTaxTracker: React.FC = () => {
         autoFetchOptions: true,
     });
 
-    // const handleAddUpdateTaxTracker = () => {
-    //     console.log('Form Submitted Data:', formData);
-    // };
-
-    // Validation Function //
     const validateAddTaxTrackerForm = (): {
 
         isValid: boolean
@@ -108,6 +91,12 @@ export const AddUpdateTaxTracker: React.FC = () => {
         if (!formData.ResponsiblePersonId) {
             newErrors.ResponsiblePersonId = 'Responsible Person is required.';
         }
+        if (!formData.FinancialYear) {
+            newErrors.FinancialYear = 'Financial Year is required.';
+        }
+        if (!formData.CompanyId) {
+            newErrors.CompanyId = 'Company is required.';
+        }
         if (!formData.NoticeType) {
             newErrors.NoticeType = 'Notice Type is required.';
         }
@@ -117,35 +106,33 @@ export const AddUpdateTaxTracker: React.FC = () => {
         if (!formData.Authority) {
             newErrors.Authority = 'Authority is required.';
         }
+        if (!formData.OfficerName) {
+            newErrors.OfficerName = 'Officer Name is required.';
+        }
+        if (!formData.OfficerAddress) {
+            newErrors.OfficerAddress = 'Officer Address is required.';
+        }
         if (!formData.NoticeDate) {
             newErrors.NoticeDate = 'Notice Date is required.';
         }
         if (!formData.DueDate) {
             newErrors.DueDate = 'Due Date is required.';
         }
-        if (!formData.NoticeStatus) {
-            newErrors.NoticeStatus = 'Notice Status is required.';
-        }
-        // if (!formData.NoticeDocumentURL && !noticeDocumentURLFiles?.length) {
-        //     newErrors.NoticeDocumentURL = 'Notice Document is required.';
-        // }
         if (!hasAnyDocumentFile(noticeDocumentURLFiles, noticeDocumentURL, removedNoticeDocumentURLs)) {
             newErrors.NoticeDocumentURL = "Notice Document is required.";
         }
-
-        // if (!formData.ReplyDocumentURL) {
-        //     newErrors.ReplyDocumentURL = 'Reply Document is required.';
-        // }
-
-
+        if (!formData.NoticeDescription) {
+            newErrors.NoticeDescription = 'Notice Description is required.';
+        }
         return {
             isValid: Object.keys(newErrors).length === 0,
             errors: newErrors
         };
+
     };
 
-
     const PushAddUpdateTaxTrackerData = (): FormData => {
+
         const fd = new FormData();
 
         fd.append('TaxTrackerId', String(formData.TaxTrackerId ?? 0));
@@ -159,16 +146,15 @@ export const AddUpdateTaxTracker: React.FC = () => {
         fd.append('Authority', formData.Authority || '');
         fd.append('NoticeDate', formData.NoticeDate || '');
         fd.append('DueDate', formData.DueDate || '');
-        fd.append('NoticeStatus', formData.NoticeStatus || '');
         fd.append('OfficerName', formData.OfficerName || '');
         fd.append('OfficerAddress', formData.OfficerAddress || '');
         fd.append('NoticeDescription', formData.NoticeDescription || '');
+        fd.append("RequestType", formData.RequestType || "Notice");
 
         noticeDocumentURLFiles.forEach(file => {
             if (file instanceof File) {
                 fd.append('NoticeDocumentURL', file);
             }
-
 
         });
 
@@ -181,6 +167,13 @@ export const AddUpdateTaxTracker: React.FC = () => {
 
         return fd;
     }
+
+    const handleFieldChange = (field: keyof AddUpdateTaxTrackerRequest, value: any) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
 
     const handleAddUpdateTaxTracker = async () => {
         setErrors({});
@@ -207,7 +200,11 @@ export const AddUpdateTaxTracker: React.FC = () => {
                 if (E.isRight(response)) {
 
                     addToast({ type: "success", title: response.right.SuccessMessage[0] });
-
+                    setNoticeDocumentURL("");
+                    setNoticeDocumentURLFiles([]);
+                    setRemovedNoticeDocumentURLs([]);
+                    setSelectedResponsiblePersonesNames(null);
+                    setFormData(initialFormState());
 
                     navigate("/taxTracker");
 
@@ -216,12 +213,13 @@ export const AddUpdateTaxTracker: React.FC = () => {
                 }
                 return response;
             },
+
             undefined,
+
             (error: any) => {
                 addToast({ type: 'error', title: error.message });
             },
             undefined,
-            // isAddMode ? 'Add Litigation' : 'Update Litigation'
         );
 
     }
@@ -240,19 +238,16 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                 <SingleSelectDropdownWithPagination
                                     label="Government Compliance"
                                     title="Select Government Compliance"
+                                    required
                                     size="lg"
                                     dataFetchCallBack={fetchGovernmentComplianceDropdown}
                                     onSelected={(item) => {
                                         if (!item) {
                                             handleFieldChange("GovernmentCompliance", null);
-                                            // handleFieldChange("NoticeSection", null);
                                             handleFieldChange("NoticeSectionMasterId", 0);
                                             return;
                                         }
                                         handleFieldChange("GovernmentCompliance", item.value);
-
-                                        // Reset notice state if parent compliance changes
-                                        // handleFieldChange("NoticeSection", null);
                                         handleFieldChange("NoticeSectionMasterId", 0);
                                     }}
                                     error={errors.GovernmentCompliance}
@@ -261,13 +256,28 @@ export const AddUpdateTaxTracker: React.FC = () => {
                             </div>
 
                             <div>
-                                <Input
-                                    type="text"
-                                    label="Company Name"
-                                    value={listState.CompanyName || ""}
-                                    // onChange={(e) => handleFieldChange("CompanyName", e.target.value)}
-                                    // error={errors.CompanyName}
-                                    disabled
+                                <SingleSelectDropdownWithPagination
+                                    label="Company"
+                                    title="Select Company"
+                                    size="lg"
+                                    dataFetchCallBack={fetchCompanyMasterDropdown}
+                                    onSelected={(item) => {
+                                        const companyId = item ? Number(item.value) : 0;
+                                        const companyName = item?.label || "";
+
+                                        handleFieldChange("CompanyId", companyId);
+
+                                        setDropdownLabels((prev) => ({
+                                            ...prev,
+                                            companyName: companyName,
+                                        }));
+                                    }}
+                                    initialValue={createDropdownInitialValue(
+                                        formData.CompanyId,
+                                        dropdownLabels.companyName
+                                    )}
+                                    error={errors.CompanyId}
+                                    required
                                 />
                             </div>
 
@@ -275,15 +285,18 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                 <Input
                                     type="text"
                                     label="Financial Year"
+                                    placeholder="Enter Year"
                                     value={formData.FinancialYear}
-                                    onChange={(e) => handleFieldChange("FinancialYear", e.target.value)}
+                                    onChange={(e) => handleFieldChange('FinancialYear', e.target.value)}
                                     error={errors.FinancialYear}
+                                    required
                                 />
                             </div>
 
                             <div>
                                 <MultiSelectPagination
                                     label="Responsible Person"
+                                    required
                                     dataFetchCallBack={fetchEmployeeMasterDropdown}
                                     selectedValues={responsiblePersonNamesDropDown.selectedValues}
                                     options={responsiblePersonNamesDropDown.initialOptions}
@@ -304,11 +317,13 @@ export const AddUpdateTaxTracker: React.FC = () => {
                             <div>
                                 <Input type="text" label="Notice Type" placeholder="Notice Type" required value={formData.NoticeType ?? ""} onChange={(e) => handleFieldChange("NoticeType", e.target.value)} error={errors.NoticeType} />
                             </div>
+
                             <div>
                                 <SingleSelectDropdownWithPagination
                                     label="Notice U/S"
                                     title="Select Notice Section"
                                     size="lg"
+                                    required
                                     disabled={!formData.GovernmentCompliance}
                                     key={formData.GovernmentCompliance}
                                     dataFetchCallBack={(pageNumber) =>
@@ -316,34 +331,56 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                     }
                                     onSelected={(item) => {
                                         if (!item) {
-                                            // handleFieldChange("NoticeSection", null);
                                             handleFieldChange("NoticeSectionMasterId", 0);
                                             return;
                                         }
-                                        // handleFieldChange("NoticeSection", item.value);
                                         handleFieldChange("NoticeSectionMasterId", Number(item.noticeSectionMasterId));
                                     }}
                                     error={errors.NoticeSectionMasterId}
                                 />
                             </div>
-                            <div>
-                                <Input type="text" label="Authority" placeholder="Authority" required value={formData.Authority ?? ""} onChange={(e) => handleFieldChange("Authority", e.target.value)} error={errors.Authority} />
-                            </div>
+
                             <div>
                                 <DatePickerInput label="Notice Date" value={formatDate_dd_mm_yyyy(formData.NoticeDate)} onChange={(val) => handleFieldChange("NoticeDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.NoticeDate} />
                             </div>
                             <div>
                                 <DatePickerInput label="Due Date" value={formatDate_dd_mm_yyyy(formData.DueDate)} onChange={(val) => handleFieldChange("DueDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.DueDate} />
                             </div>
+
+                        </div>
+
+                        <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Authorities Details</h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <SinglePageSelection label="Notice Status" required value={formData.NoticeStatus ?? ""} onChange={(e) => handleFieldChange("NoticeStatus", String(e))} options={NOTICE_STATUS_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))} error={errors.NoticeStatus} placeholder="Notice Status" />
+                                <SinglePageSelection
+                                    label="Authority Type"
+                                    placeholder='Select Authority Type'
+                                    required
+                                    value={formData.Authority || ''}
+                                    onChange={(e) => handleFieldChange('Authority', String(e))}
+                                    options={AUTHORITY_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                    error={errors.Authority}
+                                />
                             </div>
+                            <div>
+                                <Input type="text" label="Officer Name" placeholder="Officer Name" required value={formData.OfficerName ?? ""} onChange={(e) => handleFieldChange("OfficerName", e.target.value)} error={errors.OfficerName} />
+                            </div>
+
+                        </div>
+                        <div>
+                            <TextArea
+                                label="Divisional Address"
+                                placeholder="Divisional Address"
+                                required
+                                className='thin-scroll'
+                                value={formData.OfficerAddress || ''}
+                                onChange={(e) => handleFieldChange("OfficerAddress", e.target.value)}
+                                error={errors.OfficerAddress} />
                         </div>
 
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Document Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {/* Left to be discussed */}
-                            <div>
+                        <div>
+                            <div className="mt-5">
                                 <MultiFilePicker
                                     label="Upload Notice Document"
                                     required
@@ -358,26 +395,17 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                         setRemovedNoticeDocumentURLs((prev) => [...prev, url]);
                                     }}
                                     error={errors.NoticeDocumentURL}
-
                                 />
                             </div>
-                            <div>
-                                <MultiFilePicker
-                                    label="Upload Reply Document"
+                            <div className="mt-5">
+                                <TextArea
+                                    label="Notice Description"
+                                    placeholder="Enter Description"
                                     required
-                                    placeholder="Select files"
-                                    value={replyDocumentURLFiles}
-                                    onChange={setReplyDocumentURLFiles}
-                                    availableFilesURL={replyDocumentURL ?? ""}
-                                    allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                    maxFiles={5}
-                                    maxSizeMB={10}
-                                    error={errors.ReplyDocumentURL}
-                                    onRemoveExisting={(url) => {
-                                        setRemovedReplyDocumentURLs((prev) => [...prev, url]);
-                                    }}
-                                />
-
+                                    className='thin-scroll'
+                                    value={formData.NoticeDescription || ''}
+                                    onChange={(e) => handleFieldChange("NoticeDescription", e.target.value)}
+                                    error={errors.NoticeDescription} />
                             </div>
                         </div>
                     </div>

@@ -58,7 +58,7 @@ export const useNoticeSectionMaster = () => {
         { id: "ESIC", label: "ESIC" },
         { id: "Other", label: "Other" },
     ]);
-    const [activeTab, setActiveTab] = useState<string>("Income Tax");
+    const [activeTab, setActiveTab] = useState<string>(governementComplianceTabList[0].id);
 
     //ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -74,7 +74,7 @@ export const useNoticeSectionMaster = () => {
         if (hasFetchedInitialNoticeSections.current) return
         hasFetchedInitialNoticeSections.current = true;
         fetchNoticeSectionList()
-    }, [])
+    }, [activeTab])
 
     useEffect(() => {
         return () => {
@@ -89,7 +89,6 @@ export const useNoticeSectionMaster = () => {
                     NoticeSectionMasterId: editingNoticeSectionMasterData.NoticeSectionMasterId,
                     Uniquekey: editingNoticeSectionMasterData.Uniquekey || getInitialFormState().Uniquekey,
                     NoticeSection: editingNoticeSectionMasterData.NoticeSection || '',
-                    GovernmentCompliance: editingNoticeSectionMasterData.GovernmentCompliance || ''
                     GovernmentCompliance: editingNoticeSectionMasterData.GovernmentCompliance || ''
                 });
             } else {
@@ -215,7 +214,6 @@ export const useNoticeSectionMaster = () => {
                     IsCheckPermission: true,
                     NoticeSectionMasterId: filters.NoticeSectionMasterId ? Number(filters.NoticeSectionMasterId) : 0,
                     GovernmentCompliance: filters.GovernmentCompliance ?? undefined,
-                    GovernmentCompliance: filters.GovernmentCompliance ?? undefined,
                     NoticeSection: filters.NoticeSection ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, noticeSectionMasterColumns),
                     ExportType: exportType
@@ -293,7 +291,6 @@ export const useNoticeSectionMaster = () => {
         setEditingNoticeSectionMasterData({
             ...row,
             GovernmentCompliance: row.GovernmentCompliance || '',
-            GovernmentCompliance: row.GovernmentCompliance || '',
             NoticeSection: row.NoticeSection || ''
         })
         setIsAddUpdateModalOpen(true);
@@ -333,7 +330,6 @@ export const useNoticeSectionMaster = () => {
         return {
             NoticeSectionMasterId: formData.NoticeSectionMasterId,
             Uniquekey: formData.Uniquekey,
-            GovernmentCompliance: formData.GovernmentCompliance,
             GovernmentCompliance: formData.GovernmentCompliance,
             NoticeSection: formData.NoticeSection
         };
@@ -425,7 +421,7 @@ export const useNoticeSectionMaster = () => {
         setEditingNoticeSectionMasterData(null);
         setFormData({
             ...getInitialFormState(),
-            GovernmentCompliance: activeTab, // Automatically set from selected tab
+            GovernmentCompliance: activeTab,
         });
         setErrors({});
         setIsAddUpdateModalOpen(true);

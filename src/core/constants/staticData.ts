@@ -141,7 +141,7 @@ export const MASTER_DATA = {
 
   speciality_type: ["Commercial Sale", "Commercial Leasing", "Residential Sale", "Commercial + Residential Sale"],
 
-  carpet_area_type: ["MOFA", "RERA"],
+  carpet_area_type: ["MOFA", "RERA", "Extra Carpet Area Offered"],
 
   tenure: [
     "Tenure 1",
@@ -611,13 +611,17 @@ export const MASTER_DATA = {
 
   noticeType: ['Income Tax', 'GST', 'PT', 'PF', 'ESIC', 'Other'],
 
-  authorityOptions: ["Income Tax Department", "GST Department", "Other"],
+  authorityOptions: ["District Court", "High Court", "Supreme Court", "Other"],
 
   financialYear: ["2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2025-27"],
 
-  noticeStatus: ['Open', 'Closed', 'Reopened'],
+  noticeStatus: ['Reply Submitted', 'Order Awaited', 'Non-Favourable', 'Appeal Pending', 'Closed', 'Reopen'],
 
-  noticeSection: ['Section 143(1)', 'Section 143(2)', 'Section 148', 'Section 153A', 'Section 153C', 'Section 155(1)', 'Section 156', 'Section 245', 'Section 274', 'Section 275', 'Section 276CC', 'Other']
+  noticeSection: ['Section 143(1)', 'Section 143(2)', 'Section 148', 'Section 153A', 'Section 153C', 'Section 155(1)', 'Section 156', 'Section 245', 'Section 274', 'Section 275', 'Section 276CC', 'Other'],
+
+  requestTypeOptions: ['Reply', 'Order', 'Notice', 'Close-Notice'],
+
+  orderStatusOptions: ['Favourable', 'Non-Favourable']
 
 } as const;
 
@@ -745,6 +749,8 @@ export const FINANCIAL_YEAR_OPTIONS = toOptions(MASTER_DATA.financialYear);
 export const NOTICE_US_OPTIONS = toOptions(MASTER_DATA.noticeSection);
 export const AUTHORITY_OPTIONS = toOptions(MASTER_DATA.authorityOptions);
 export const NOTICE_STATUS_OPTIONS = toOptions(MASTER_DATA.noticeStatus);
+export const REQUEST_TYPE_OPTIONS = toOptions(MASTER_DATA.requestTypeOptions);
+export const ORDER_STATUS_OPTIONS = toOptions(MASTER_DATA.orderStatusOptions);
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)
 // ============================================================================

@@ -194,9 +194,10 @@ import ViewAssignTicket from '@/features/ticket/pages/ViewAssignTicket';
 import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/ChannelPartnerCategory';
 import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
 import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
-import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
+// import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
 import TaxTracker from '@/features/taxTracker/pages/TaxTracker';
 import AddUpdateTaxTracker from '@/features/taxTracker/pages/AddUpdateTaxTracker';
+import NoticeSectionTabMaster from '@/features/noticeSectionMaster/pages/NoticeSectionTabMaster';
 import ViewTaxTracker from '@/features/taxTracker/pages/ViewTaxTracker';
 
 // Loading component for Suspense fallback
@@ -497,7 +498,8 @@ function App() {
             <Route path="brokerage/PaidBrokerageBooking/add/:BrokerageInvoiceId" element={<BookingBrokerageListStateProvider><AddUpdatePaidBrokerageBooking /></BookingBrokerageListStateProvider>} />
 
             {/* TAX TRACKER */}
-            <Route path="noticeSection" element={<NoticeSectionMaster />} />
+            {/* <Route path="noticeSection" element={<NoticeSectionMaster />} /> */}
+            <Route path="noticeSection" element={<NoticeSectionTabMaster />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

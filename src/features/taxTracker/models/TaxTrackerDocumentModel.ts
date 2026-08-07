@@ -10,10 +10,16 @@ export interface TaxTrackerDocumentData {
     TaxTrackerDocumentId: number | 0;
     Uniquekey: string | null;
     TaxTrackerId: number | 0;
+    RequestType: string | null;
+    AuthorityType: string | null;
     NoticeDocumentURL: string | null;
+    RemoveNoticeDocumentURL?: string | null;
     NoticeDescription: string | null;
     OfficerName: string | null;
     OfficerAddress: string | null;
+    AmountUnderDisputeDate: string
+    AmountUnderDispute: string;
+    OrderStatus: string;
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null
@@ -22,16 +28,21 @@ export interface TaxTrackerDocumentData {
     ModifiedDate: string | null
 }
 
-// Not-fixed will be changed in future, check with Backend Developer
 export interface AddUpdateTaxTrackerDocumentRequest {
     TaxTrackerDocumentId: number | 0;
     Uniquekey: string | null;
     TaxTrackerId: number | 0;
+    RequestType: string | null;
+    AuthorityType: string | null;
     NoticeDocumentURL: File[] | null;
     RemoveNoticeDocumentURL?: string | null;
     NoticeDescription: string | null;
     OfficerName: string | null;
     OfficerAddress: string | null;
+    AmountUnderDisputeDate: string | null;
+    AmountUnderDispute: number | 0;
+    OrderStatus: string | null;
+    NoticeStatus: string | null;
 }
 
 export interface DeleteTaxTrackerDocumentRequest {

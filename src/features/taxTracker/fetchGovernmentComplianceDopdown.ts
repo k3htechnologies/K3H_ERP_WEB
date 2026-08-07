@@ -1,11 +1,10 @@
 import * as E from 'fp-ts/Either';
 import { noticeSectionMasterService } from '@/features/noticeSectionMaster/services/NoticeSectionMasterService';
 
-// 1. Fetching Unique Government Compliances
 export const fetchGovernmentComplianceDropdown = async (pageNumber: number, params?: { value?: string }) => {
     try {
         const responseEither = await noticeSectionMasterService.apiCallPullNoticeSectionMaster({
-            PageSize: 20,
+            PageSize: 50,
             PageNumber: pageNumber,
             GovernmentCompliance: params?.value || ""
         });
@@ -39,15 +38,14 @@ export const fetchGovernmentComplianceDropdown = async (pageNumber: number, para
     }
 };
 
-// 2. Fetching Notice Sections filtered by selected Government Compliance
 export const fetchNoticeSectionDropdown = async (pageNumber: number, governmentCompliance: string) => {
     if (!governmentCompliance) return { totalNumberOfRecord: 0, itemList: [] };
 
     try {
         const responseEither = await noticeSectionMasterService.apiCallPullNoticeSectionMaster({
-            PageSize: 50, // Higher page size to bring options matching the filter
+            PageSize: 50,
             PageNumber: pageNumber,
-            GovernmentCompliance: governmentCompliance // Filters master list by selection (e.g. "Income Tax")
+            GovernmentCompliance: governmentCompliance
         });
 
         if (E.isLeft(responseEither)) {
@@ -56,12 +54,11 @@ export const fetchNoticeSectionDropdown = async (pageNumber: number, governmentC
 
         const apiResponse = responseEither.right;
 
-        // Map matching rows into section options
         const itemList = (apiResponse?.Data || [])
             .filter((d: any) => d.GovernmentCompliance === governmentCompliance)
             .map((d: any) => ({
                 label: d.NoticeSection,
-                value: d.NoticeSection, // Dropdown text matching value
+                value: d.NoticeSection,
                 noticeSectionMasterId: d.NoticeSectionMasterId
             }));
 

@@ -1,5 +1,4 @@
 import type { ApiResponse } from "@/core/api/ApiResponse";
-
 export interface FilterWithPaginationTaxTrackerRequest {
     PageSize: number;
     PageNumber: number;
@@ -40,17 +39,25 @@ export interface TaxTrackerData {
     ModifiedById: number | 0
     ModifiedBy: string | ''
     ModifiedDate: string | null
+    RequestType: string | null;
 }
 
 export interface TaxTrackerDocumentDetailsData {
     TaxTrackerDocumentId: number | null;
     Uniquekey: string | null;
     TaxTrackerId: number | 0;
+    RequestType: string | null;
+    AuthorityType: string | null;
     NoticeDocumentURL: string | null;
     NoticeDescription: string | null;
     OfficerName: string | null;
     OfficerAddress: string | null;
-    CreatedById: number | 0
+    AmountUnderDisputeDate: string | null;
+    AmountUnderDispute: number | null;
+    OrderStatus: string | null;
+    NoticeStatus: string | null;
+    CreatedById: number | 0;
+    Description: string | null;
     CreatedBy: string | ''
     CreatedDate: string | null
     ModifiedById: number | 0
@@ -76,16 +83,20 @@ export interface AddUpdateTaxTrackerRequest {
     OfficerName: string | null;
     OfficerAddress: string | null;
     NoticeDescription: string | null;
+    ReplyDocumentURL: File[] | null;
+    RemoveReplyDocumentURL: string | null;
+    RequestType: string | null;
 }
-
 export interface DeleteTaxTrackerRequest {
     TaxTrackerId: number | 0;
     Uniquekey: string | null;
 }
 
+
 export type TaxTrackerListResponse = ApiResponse<TaxTrackerData[]>;
 export type TaxTrackerSaveResponse = ApiResponse<TaxTrackerData[]>;
 export type TaxTrackerDeleteResponse = ApiResponse<number[]>;
+
 
 
 

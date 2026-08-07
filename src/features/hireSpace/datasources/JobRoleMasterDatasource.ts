@@ -112,13 +112,14 @@ export class JobRoleMasterDatasourceImpl implements JobRoleMasterDatasource {
 
     async deleteJobRoleMaster(params: DeleteJobRoleMasterRequest): Promise<JobRoleMasterDeleteResponse> {
         try {
-            const queryParams = new URLSearchParams({
-                JobRoleId: (params.JobRoleId ?? 0).toString(),
+            const payload: DeleteJobRoleMasterRequest = {
+                JobRoleId: params.JobRoleId ?? 0,
                 UniqueKey: params.UniqueKey ?? '',
-            })
+            }
 
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
-                `${JobRoleMasterApi.DELETE}?${queryParams.toString()}`
+            const response = await this.k3hHttpClient.deleteRequestWithAuthenticationBody(
+                JobRoleMasterApi.DELETE,
+                payload
             )
 
             return response

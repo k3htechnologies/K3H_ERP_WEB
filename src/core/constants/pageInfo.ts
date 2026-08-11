@@ -338,8 +338,8 @@ export const getPageInfo = (path: string) => {
                 title: 'Ticket',
                 description: 'Ticket',
             }
-            
-            case 'otplogs':
+
+        case 'otplogs':
             return {
                 title: 'OTP Logs',
                 description: 'OTP Logs'
@@ -543,6 +543,11 @@ export const getPageInfo = (path: string) => {
                 description: "Comprehensive report for collection management with real-time insights and actionable data",
             }
 
+        case 'visitorManagement':
+            return {
+                title: "Visitor Management",
+                description: "Track, manage, and streamline visitor access with precision and efficiency",
+            }
 
         case 'brokerage':
             return {
@@ -557,14 +562,14 @@ export const getPageInfo = (path: string) => {
                 description: 'Centralized management of notice sections for real estate projects',
             }
 
-             //SPECIFICATION MASTER
+        //SPECIFICATION MASTER
         case 'specificationmaster':
             return {
                 title: "Specification Master",
                 description: 'Overview of your system and key metrics',
             }
-            //BUDGET
-            case 'budget':
+        //BUDGET
+        case 'budget':
             return {
                 title: "Budget",
                 description: 'Overview of your system and key metrics',

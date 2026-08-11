@@ -200,6 +200,8 @@ import ChannelPartnerSalesMetrics from '@/features/ChannelPartner/pages/ChannelP
 import AopAchievementReport from '@/features/aopAchievement/pages/AopAchievementReport';
 import OTPLogs from '@/features/oTPLogs/pages/OTPLogs';
 import CompanyBank from '@/features/companyMaster/pages/CompanyBank';
+import VisitorManagement from '@/features/visitorManagement/pages/VisitorManagement';
+import AddUpdateVisitorManagement from '@/features/visitorManagement/pages/AddUpdateVisitorManagement';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -500,10 +502,15 @@ function App() {
             {/* TAX TRACKER */}
             <Route path="noticeSection" element={<NoticeSectionMaster />} />
 
-              {/* ESTIMATION AND BUDGET */}
+            {/* ESTIMATION AND BUDGET */}
             <Route path='budget' element={<Budget />} />
             <Route path='summaryMis' element={<SummaryMIS />} />
             <Route path='specificationMaster' element={<SpecificationMaster />} />
+
+            {/* PRAVESH DWAR  VISITOR MANAGEMENT*/}
+            <Route path='visitorManagement' element={<VisitorManagement />} />
+            <Route path='visitorManagement/add/:VisitorId?' element={<AddUpdateVisitorManagement />} />
+
 
           </Route>
 
@@ -512,6 +519,8 @@ function App() {
           <Route path='Terms' element={<Terms />} />
           <Route path='Privacy-Policy' element={<PrivacyPolicy />} />
           <Route path='companyPolicy' element={<CompanyPolicy />} />
+
+          {/* Pravesh Dwar Visitor Management */}
 
         </Routes>
       </Suspense>

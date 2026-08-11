@@ -727,7 +727,7 @@ const ApprovalDocument: React.FC = () => {
           return (
             <div className="flex items-center justify-end ml-2 gap-1">
               {/* RIGHT SIDE — Fixed Edit Button */}
-              <div className="flex-shrink-0 ml-2">
+              <div className="shrink-0 ml-2">
                 <Button
                   type="button"
                   onClick={(e) => {

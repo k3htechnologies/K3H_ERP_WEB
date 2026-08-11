@@ -10,7 +10,7 @@ import { Loader } from "@/core/utils/loader";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { inwardOutwardService } from "@/features/inwardOutward/services/InwardOutwardService";
 import type { AddRevertInwardOutwardData, DeleteInwardAndOutWardRequest, FilterWithPaginationInwardAndOutWardRequest, InwardAndOutWardData } from "@/features/inwardOutward/models/InwardOutwardModel";
-import { useInwardOutwardListState } from "../context/InwardOutwardListStateContext";
+import { useInwardOutwardListState } from "@/features/inwardOutward/context/InwardOutwardListStateContext";
 import { useDebouncedCallback } from "@/core/hooks/useDebouncedCallback";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
@@ -31,13 +31,15 @@ import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { formatCurrency } from "@/core/utils/comman";
 import { toUpperCase } from "fp-ts/lib/string";
 import { handleExportFile } from "@/core/utils/exportFile";
+import { getNameInitials } from "@/core/utils/getNameInitials";
+import { hasAnyDocumentFile } from "@/core/utils/fileValidation";
 
 const initialFormState = (): AddRevertInwardOutwardData => ({
     InwardOutwardRevertId: 0,
     InwardOutwardId: 0,
     UniqueKey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-    RevertDate: new Date().toISOString().split("T")[0],
-    RevertDocumentURL: '',
+    RevertDate: null,
+    RevertDocumentURL: null,
     RevertRemark: '',
 });
 
@@ -123,8 +125,8 @@ export const InwardOutward: React.FC = () => {
                     DocumentType: DocumentType ?? filterParams.DocumentType?.trim() ?? undefined,
                     DocumentTitle: filterParams.DocumentTitle ?? undefined,
                     DeliveryStatus: filterParams.DeliveryStatus ?? undefined,
-                    SenderMobileNo: filterParams.SenderMobileNo ?? undefined,
-                    ReceiverMobileNo: filterParams.ReceiverMobileNo ?? undefined,
+                    ReceiverMobileNumber: filterParams.ReceiverMobileNumber ?? undefined,
+                    SenderMobileNumber: filterParams.SenderMobileNumber ?? undefined,
                     FromDate: filterParams.FromDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.FromDate) || undefined : undefined,
                     ToDate: filterParams.ToDate ? convert_dd_mm_yyyy_To_Yyyy_mm_dd(filterParams.ToDate) || undefined : undefined, SortBy: getSortByParam(sort ?? null, InwardOutwardDataColumns),
                 }
@@ -178,7 +180,7 @@ export const InwardOutward: React.FC = () => {
 
                 const response = await inwardOutwardService.apiCallPullInwardOutward(params);
 
-                handleExportFile(response, exportType, 'InwardOutward', addToast);
+                handleExportFile(response, exportType, 'Inward Outward', addToast);
 
                 return response;
             },
@@ -227,21 +229,9 @@ export const InwardOutward: React.FC = () => {
 
         if (!formData.RevertDate) {
             newErrors.RevertDate = "Revert Date is required";
-
-        } else if (formData.RevertDate) {
-
-            const selectedDate = new Date(formData.RevertDate as string);
-            const today = new Date();
-
-            selectedDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
-
-            if (selectedDate < today) {
-                newErrors.RevertDate = "Revert Date Can't be in the Past"
-            }
         }
 
-        if (!revertDocumentURLFiles || revertDocumentURLFiles.length === 0) {
+        if (!hasAnyDocumentFile(revertDocumentURLFiles)) {
             newErrors.RevertDocumentURL = "File is required.";
         }
 
@@ -377,6 +367,7 @@ export const InwardOutward: React.FC = () => {
             sortable: false,
             align: 'center',
             render: (_value, row) => {
+
                 const employees = row.EmployeeNames
                     ?.split(",")
                     .map((e: string) => e.trim())
@@ -388,15 +379,6 @@ export const InwardOutward: React.FC = () => {
                     ? employees.length - maxVisible
                     : 0;
 
-                const getInitials = (name: string) => {
-                    const words = name.split(" ");
-
-                    const first = words[0]?.charAt(0) || "";
-                    const last = words[words.length - 1]?.charAt(0) || "";
-
-                    return (first + last).toUpperCase();
-                };
-
                 return (
                     <div className="flex items-center -space-x-2">
                         {visible.map((emp: string, index: number) => (
@@ -405,7 +387,7 @@ export const InwardOutward: React.FC = () => {
                                 className="w-8 h-8 rounded-full bg-gray-500 flex items-center justify-center text-white text-xs border-2 border-white"
                                 title={emp}
                             >
-                                {getInitials(emp)}
+                                {getNameInitials(emp)}
                             </div>
                         ))}
 
@@ -441,7 +423,13 @@ export const InwardOutward: React.FC = () => {
             width: '15',
             sortable: true,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="250px"
+                    tooltipThreshold={25}
+                />
+            )
         },
         {
             key: 'SenderEmailId',
@@ -465,7 +453,14 @@ export const InwardOutward: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="250px"
+                    tooltipThreshold={25}
+                />
+            )
+
         },
         {
             key: 'ReceiverName',
@@ -473,7 +468,13 @@ export const InwardOutward: React.FC = () => {
             width: '15',
             sortable: true,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="250px"
+                    tooltipThreshold={25}
+                />
+            )
         },
         {
             key: 'ReceiverEmailId',
@@ -497,7 +498,13 @@ export const InwardOutward: React.FC = () => {
             width: '15',
             sortable: false,
             align: 'left',
-            render: value => value || '-'
+            render: (value) => (
+                <TooltipText
+                    text={value || '-'}
+                    maxWidth="250px"
+                    tooltipThreshold={25}
+                />
+            )
         },
         {
             key: 'InwardOutwardDate',
@@ -508,15 +515,7 @@ export const InwardOutward: React.FC = () => {
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
         },
         {
-            key: 'InwardNumber',
-            label: 'Inward Number',
-            width: '15',
-            sortable: false,
-            align: 'left',
-            render: value => value || '-'
-        },
-        {
-            key: 'InVoiceDate',
+            key: 'InvoiceDate',
             label: 'Invoice Date',
             width: '15',
             sortable: false,
@@ -524,7 +523,7 @@ export const InwardOutward: React.FC = () => {
             render: (value?: string) => value ? formatDate_dd_MonthName_yy(value) : "-",
         },
         {
-            key: 'InVoiceNumber',
+            key: 'InvoiceNumber',
             label: 'Invoice Number',
             width: '15',
             sortable: false,
@@ -588,7 +587,7 @@ export const InwardOutward: React.FC = () => {
             fixed: 'right',
             render: (_value, row) => {
 
-                const showDelete = (row.DeliveryStatus || "") === "" ? true : false;
+                const showDelete = ((row.DeliveryStatus || "") === "" && canAction) ? true : false;
                 return (
                     <div className="flex justify-between">
 
@@ -842,7 +841,6 @@ export const InwardOutward: React.FC = () => {
                     islarge={true}
                     onTabChange={(t) => {
                         setActiveTab(t.id);
-
                         loadInwardOutward(1, {}, sortInfo, searchTerm, toUpperCase(t.label) === "ALL" ? "" : t.label);
                     }}
                 />
@@ -901,10 +899,11 @@ export const InwardOutward: React.FC = () => {
                                 value={formatDate_dd_mm_yyyy(formData.RevertDate)}
                                 onChange={(val) => handleFieldChange('RevertDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                                 required
+                                isDisplayCurrentDate
+                                minDate={new Date(new Date().setDate(new Date().getDate()))}
                                 error={errors.RevertDate}
                             />
                         </div>
-
                         <div>
                             <MultiFilePicker
                                 label="Upload Document"
@@ -912,7 +911,7 @@ export const InwardOutward: React.FC = () => {
                                 placeholder="select file"
                                 value={revertDocumentURLFiles}
                                 onChange={setRevertDocumentURLFiles}
-                                allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", "application/vnd.ms-excel"]}
                                 maxFiles={5}
                                 error={errors.RevertDocumentURL}
                             />
@@ -999,7 +998,9 @@ export const InwardOutward: React.FC = () => {
                             label='Sender Mobile No'
                             value={tempFilters?.SenderMobileNumber ?? ''}
                             onChange={e => handleFilterChange('SenderMobileNumber', e.target.value)}
-                            placeholder="Enter Sender Mobile No" />
+                            placeholder="Enter Sender Mobile No"
+                            maxLength={10}
+                        />
                     </div>
 
                     <div>
@@ -1007,7 +1008,8 @@ export const InwardOutward: React.FC = () => {
                             label='Receiver Mobile No'
                             value={tempFilters?.ReceiverMobileNumber ?? ''}
                             onChange={e => handleFilterChange('ReceiverMobileNumber', e.target.value)}
-                            placeholder="Enter Receiver Mobile No" />
+                            placeholder="Enter Receiver Mobile No"
+                            maxLength={10} />
                     </div>
 
                     <div>

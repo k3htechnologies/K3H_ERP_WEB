@@ -19,6 +19,7 @@ import { formatCurrency } from "@/core/utils/comman";
 import { getNameInitials } from "@/core/utils/getNameInitials";
 import Accordion from "@/ui/components/Card/Accordion";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const ViewInwardOutward: React.FC = () => {
 
@@ -30,8 +31,10 @@ const ViewInwardOutward: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
     const { addToast } = useToast();
+    const { canAction } = useMenuPermissions("/inwardOutward");
     const { InwardOutwardId } = useParams<{ InwardOutwardId?: string }>();
     const { listState } = useInwardOutwardListState();
+
     const currentInwardOutwardId = InwardOutwardId ? Number(InwardOutwardId) : listState.InwardOutwardId;
 
     const inwardOutwardDocumentAccordionItems = trackingList
@@ -41,8 +44,6 @@ const ViewInwardOutward: React.FC = () => {
             title: d.DocumentType ?? "",
             doc: d
         }));
-
-    console.log('Inward Outward Accordian Items', inwardOutwardDocumentAccordionItems);
 
     const InwardTabList = [
         { id: "Overview", label: "Overview" },
@@ -63,13 +64,8 @@ const ViewInwardOutward: React.FC = () => {
         parseDocumentUrls(d.AcknowledgementSignatureURL ?? "").filter(x => x?.trim()?.length).length > 0
     );
 
-    console.log('Docs', acknowledgementDocs);
-    console.log('Docs', acknowledgementSignDocs);
-
     useEffect(() => {
-
         if (!currentInwardOutwardId || currentInwardOutwardId === 0) return;
-
         fetchInwardOutwardData();
     }, [currentInwardOutwardId])
 
@@ -140,7 +136,7 @@ const ViewInwardOutward: React.FC = () => {
                 cancelText="Cancel"
                 onCancel={() => handleBackToInwardList()}
                 EditText="Edit"
-                canAction={(inwardOutwardData?.DeliveryStatus || "") === "" ? true : false}
+                canAction={((inwardOutwardData?.DeliveryStatus || "") === "" && canAction) ? true : false}
                 onEdit={() => {
                     if (inwardOutwardData) {
                         handleEditInward(inwardOutwardData);
@@ -169,11 +165,8 @@ const ViewInwardOutward: React.FC = () => {
             {activeTab === "Overview" && (
                 <div className="grid grid-cols-12 gap-4 pt-5">
 
-                    {/* LEFT SIDE */}
                     <div className="col-span-7">
                         <div>
-
-                            {/* ================= BASIC DETAILS ================= */}
                             <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
                                 <div className="bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE]">
                                     <h4 className="text-sm font-semibold text-[#1D4ED8]">
@@ -184,7 +177,7 @@ const ViewInwardOutward: React.FC = () => {
                                     <FieldItem label="Document Title" value={inwardOutwardData?.DocumentTitle} />
                                     <FieldItem label="Document Type" value={inwardOutwardData?.DocumentType} />
                                     <FieldItem label="Delivery Type" value={inwardOutwardData?.DeliveryType} />
-                                    <FieldItem label="Amount" value={formatCurrency(inwardOutwardData?.Amount ?? 0)} />
+                                    <FieldItem label="Amount" value={formatCurrency(Number(inwardOutwardData?.Amount?.toFixed(2) ?? 0))} />
                                     <FieldItem label="Date" value={inwardOutwardData?.InwardOutwardDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InwardOutwardDate) : ""} />
                                     <FieldItem label="Invoice Number" value={inwardOutwardData?.InvoiceNumber} />
                                     <FieldItem label="Invoice Date" value={inwardOutwardData?.InvoiceDate ? formatDate_dd_MonthName_yy(inwardOutwardData.InvoiceDate) : ""} />
@@ -192,7 +185,6 @@ const ViewInwardOutward: React.FC = () => {
                                 </div>
                             </section>
 
-                            {/* ================= SENDER DETAILS ================= */}
                             <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-4">
                                 <div className="bg-[#FFF6EB] px-3 py-2 border-b border-[#D0D7DE]">
                                     <h4 className="text-sm font-semibold text-[#C2410C]">
@@ -202,15 +194,14 @@ const ViewInwardOutward: React.FC = () => {
                                 <div className="lg:col-span-3 pb-1 p-4 pb-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
                                         <FieldItem label="Name" value={inwardOutwardData?.SenderName} />
-                                        <FieldItem label="Mobile No." value={`+91 ${inwardOutwardData?.SenderMobileNumber}`} />
+                                        <FieldItem label="Mobile Number" value={`${inwardOutwardData?.SenderMobileNumberCountryCode} ${inwardOutwardData?.SenderMobileNumber}`} />
                                         <FieldItem label="E-mail ID" value={inwardOutwardData?.SenderEmailId} />
                                         <FieldItem label="Address" value={inwardOutwardData?.SenderAddress} />
-
                                     </div>
                                 </div>
                             </section>
 
-                            {/* ================= RECEIVER DETAILS ================= */}
+
                             <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-4">
                                 <div className="bg-[#F6F9FF] px-3 py-2 border-b border-[#D0D7DE]">
                                     <h4 className="text-sm font-semibold text-[#13367A]">
@@ -220,7 +211,7 @@ const ViewInwardOutward: React.FC = () => {
                                 <div className="lg:col-span-3 pb-1 p-4 pb-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 ">
                                         <FieldItem label="Name" value={inwardOutwardData?.ReceiverName} />
-                                        <FieldItem label="Mobile No." value={`+91 ${inwardOutwardData?.ReceiverMobileNumber}`} />
+                                        <FieldItem label="Mobile Number" value={`${inwardOutwardData?.ReceiverMobileNumberCountryCode} ${inwardOutwardData?.ReceiverMobileNumber}`} />
                                         <FieldItem label="E-mail ID" value={inwardOutwardData?.ReceiverEmailId} />
                                         <FieldItem label="Address" value={inwardOutwardData?.ReceiverAddress} />
 
@@ -228,7 +219,6 @@ const ViewInwardOutward: React.FC = () => {
                                 </div>
                             </section>
 
-                            {/* ================= DOCUMENT DETAILS ================= */}
                             <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-4">
                                 <div className="bg-[#EAFCFF] px-3 py-2 border-b border-[#D0D7DE]">
                                     <h4 className="text-sm font-semibold text-[#12A3DD]">
@@ -237,15 +227,14 @@ const ViewInwardOutward: React.FC = () => {
                                 </div>
                                 <div className="lg:col-span-3 pb-1 p-4 pb-4">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
-                                        <FieldItem label="Cheque No." value={inwardOutwardData?.ChequeNumber} />
-                                        <FieldItem className="cursor-pointer text-blue-500" label="Attachment" value={inwardOutwardData?.DocumentURL ? "View" : "-"} urls={inwardOutwardData?.DocumentURL} isIcon />
+                                        <FieldItem label="Cheque Number" value={inwardOutwardData?.ChequeNumber} />
+                                        <FieldItem label="Attachment" value={inwardOutwardData?.DocumentURL ? "View" : "-"} urls={inwardOutwardData?.DocumentURL} isIcon />
                                         <FieldItem label="Amount" value={formatCurrency(inwardOutwardData?.Amount)} />
                                         <FieldItem label="Document Description" value={inwardOutwardData?.DocumentDescription ?? ''} />
                                     </div>
                                 </div>
                             </section>
 
-                            {/* ================= DELIVERY DETAILS ================= */}
                             <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-4">
                                 <div className="bg-[#FFFFE4] px-3 py-2 border-b border-[#D0D7DE]">
                                     <h4 className="text-sm font-semibold text-[#7B6B28]">
@@ -256,12 +245,10 @@ const ViewInwardOutward: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 p-4">
                                         <FieldItem label="Delivery Mode" value={inwardOutwardData?.DeliveryMode} />
                                         <FieldItem label="Status" value={inwardOutwardData?.DeliveryStatus} />
-
                                     </div>
                                 </div>
                             </section>
 
-                            {/* ================= ACKNOWLEDGEMENT DETAILS ================= */}
                             <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden mt-4">
                                 <div className="bg-[#FCF1FF] px-3 py-2 border-b border-[#D0D7DE]">
                                     <h4 className="text-sm font-semibold text-[#561F64]">
@@ -272,8 +259,8 @@ const ViewInwardOutward: React.FC = () => {
                                 <div className="lg:col-span-3 pb-1">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 p-4">
                                         <FieldItem label="Acknowledged By" value={inwardOutwardData?.AcknowledgementBy} />
-                                        <FieldItem className="cursor-pointer text-blue-500" label="Acknowledger's Signature" value={inwardOutwardData?.AcknowledgementSignatureURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementSignatureURL} isIcon />
-                                        <FieldItem className="cursor-pointer text-blue-500" label="Attachment" value={inwardOutwardData?.AcknowledgementURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementURL} isIcon />
+                                        <FieldItem label="Acknowledger's Signature" value={inwardOutwardData?.AcknowledgementSignatureURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementSignatureURL} isIcon />
+                                        <FieldItem label="Attachment" value={inwardOutwardData?.AcknowledgementURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementURL} isIcon />
                                         <FieldItem label="Handover To" value={inwardOutwardData?.HandOverTo} />
                                         <FieldItem label="Handover Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.HandOverDate ?? '')} />
                                         <FieldItem label="Remark" value={inwardOutwardData?.AcknowledgementRemark ?? ''} />
@@ -301,16 +288,14 @@ const ViewInwardOutward: React.FC = () => {
                     </div>
 
 
-                    {/* RIGHT SIDE */}
                     <div className="col-span-5">
                         <section className="border-[0.1px] border-[#33333321] rounded-xl overflow-hidden bg-white">
-                            {/* Header Bar */}
+
                             <div className="bg-[#F3F0FE] px-3 py-2 border-b border-[#D0D7DE]">
                                 <h1 className="text-sm font-semibold text-[#6D28D9]">
                                     Document Tracking
                                 </h1>
                             </div>
-
 
                             <div className="p-3">
                                 <div className="overflow-y-auto h-[240px] thin-scroll pr-2 pt-2">
@@ -345,7 +330,7 @@ const ViewInwardOutward: React.FC = () => {
                                         })
                                     ) : (
                                         <div className="flex justify-center items-center h-full text-gray-500 text-sm">
-                                            No document tracking data found.
+                                            <NoDataView message="No document tracking data found." />
                                         </div>
                                     )}
                                 </div>
@@ -386,7 +371,6 @@ const ViewInwardOutward: React.FC = () => {
                                                     )}
                                                 </div>
 
-                                                {/* Content */}
                                                 <div className="flex-1 pb-6">
                                                     <div className="font-semibold text-gray-900">
                                                         {employeeName}
@@ -427,23 +411,22 @@ const ViewInwardOutward: React.FC = () => {
 
                                                     <FieldItem label="Remark" value={item.RevertRemark || "-"} />
 
-                                                    {parseDocumentUrls(item.RevertDocumentURL).length > 0 && (
-                                                        <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded-[4px] mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
-                                                            <p>Document</p>
-                                                            <MultiImageViewer
-                                                                images={parseDocumentUrls(item.RevertDocumentURL)}
-                                                                title="Revert Document"
-                                                                isIcon={false}
-                                                                triggerLabel="Document"
-                                                            />
-                                                        </div>
-                                                    )}
+                                                    <div className="inline-flex items-end gap-1 px-2 py-2 border border-blue-500 text-blue-600 rounded-[4px] mt-2 text-sm font-medium cursor-pointer hover:bg-blue-50 transition">
+                                                        <p>Document</p>
+                                                        <MultiImageViewer
+                                                            images={parseDocumentUrls(item.RevertDocumentURL)}
+                                                            title="Revert Document"
+                                                            isIcon={false}
+                                                            triggerLabel="Document"
+                                                        />
+                                                    </div>
+
                                                 </div>
                                             );
                                         })
                                     ) : (
                                         <div className="flex justify-center items-center h-full text-gray-500 text-sm py-10">
-                                            No revert data found
+                                            <NoDataView message="No revert data found" />
                                         </div>
                                     )}
                                 </div>
@@ -474,7 +457,6 @@ const ViewInwardOutward: React.FC = () => {
 
                                     return (
                                         <div>
-                                            {/* HEADER */}
                                             <div
                                                 className="flex justify-between items-center px-4 py-3"
                                                 onClick={async () => {
@@ -486,14 +468,11 @@ const ViewInwardOutward: React.FC = () => {
                                                 <span>{isOpen ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}</span>
                                             </div>
 
-                                            {/* BODY */}
                                             {isOpen && (
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pl-3 pt-3 pb-3">
 
                                                     {inwardDocs.map((d, index) => {
-
                                                         const urls = parseDocumentUrls(d.DocumentURL ?? "").filter(x => x?.trim()?.length);
-
                                                         return (
                                                             <div key={index} className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
                                                                 <div className="flex items-start justify-between p-2 gap-2">
@@ -533,54 +512,6 @@ const ViewInwardOutward: React.FC = () => {
                         )}
 
                         {acknowledgementDocs.length > 0 && (
-                            // <ExpandableCard
-                            //     showline={false}
-                            //     defaultOpen={true}
-                            //     title={
-                            //         <div className="flex items-center gap-2 w-full pt-3 p-2">
-                            //             <span className="text-base font-semibold text-gray-900">Acknowledgement</span>
-                            //         </div>
-                            //     }
-                            //     child={
-                            //         <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-5">
-
-                            //             {acknowledgementDocs.map((d, index) => {
-                            //                 const urls = parseDocumentUrls(d.AcknowledgementURL ?? "").filter(x => x?.trim()?.length);
-
-                            //                 return (
-                            //                     <div key={index} className="border border-gray-200 rounded-lg shadow-sm flex flex-col h-full">
-                            //                         <div className="flex items-start justify-between p-2 gap-2">
-
-                            //                             <span className="text-sm text-gray-500 mt-1">
-                            //                                 Document Count: {urls.length}
-                            //                             </span>
-
-                            //                             <MultiImageViewer
-                            //                                 images={urls}
-                            //                                 title="Acknowledgement"
-                            //                                 triggerLabel="View"
-                            //                                 isIcon={false}
-                            //                             />
-                            //                         </div>
-
-                            //                         <div className="bg-gray-50 p-2 mt-auto">
-                            //                             <FieldItem
-                            //                                 label="Uploaded By / Date"
-                            //                                 value={`${d?.ModifiedBy || d?.CreatedBy || "-"} / ${d?.ModifiedDate
-                            //                                     ? formatDate_dd_MonthName_yy_hh_mm(d.ModifiedDate)
-                            //                                     : d?.CreatedDate
-                            //                                         ? formatDate_dd_MonthName_yy_hh_mm(d.CreatedDate)
-                            //                                         : "-"
-                            //                                     }`}
-                            //                             />
-                            //                         </div>
-                            //                     </div>
-                            //                 );
-                            //             })}
-                            //         </div>
-                            //     }
-                            // />
-
                             <Accordion
                                 items={inwardOutwardDocumentAccordionItems}
                                 allowMultipleOpen
@@ -592,7 +523,6 @@ const ViewInwardOutward: React.FC = () => {
 
                                     return (
                                         <div>
-                                            {/* HEADER */}
                                             <div
                                                 className="flex justify-between items-center px-4 py-3"
                                                 onClick={async () => {
@@ -604,7 +534,6 @@ const ViewInwardOutward: React.FC = () => {
                                                 <span>{isOpen ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}</span>
                                             </div>
 
-                                            {/* BODY */}
                                             {isOpen && (
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pl-3 pt-3 pb-3">
 

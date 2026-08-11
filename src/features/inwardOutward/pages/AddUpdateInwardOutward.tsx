@@ -13,7 +13,7 @@ import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy, } from "@/core/utils/dateFormat";
 import { inwardOutwardService } from "@/features/inwardOutward/services/InwardOutwardService";
 import { TextArea } from "@/ui/components/forms/Textarea";
-import { filterEmail, filterNumbers, filterNumbersWithDecimal, hasAnyDocumentFile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
+import { filterEmail, filterLetters, filterNumbers, filterNumbersWithDecimal, hasAnyDocumentFile, isValidEmail, isValidMobile } from "@/core/utils/fileValidation";
 import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
@@ -33,16 +33,16 @@ const initialFormState = (): AddUpdateInwardAndOutWardRequest => ({
     ChequeNumber: "",
     DocumentTitle: "",
     Amount: 0,
-    InwardOutwardDate: "",
+    InwardOutwardDate: null,
     SenderName: "",
     SenderAddress: "",
     SenderMobileNumber: "",
-    SenderMobileNumberCountryCode: "",
+    SenderMobileNumberCountryCode: "+91",
     SenderEmailId: "",
     ReceiverName: "",
     ReceiverAddress: "",
     ReceiverMobileNumber: "",
-    ReceiverMobileNumberCountryCode: "",
+    ReceiverMobileNumberCountryCode: "+91",
     ReceiverEmailId: "",
     HandOverTo: "",
     HandOverDate: "",
@@ -84,6 +84,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
     const { addToast } = useToast();
 
     const { canAction } = useMenuPermissions("/inwardOutwardAcknowledgement");
+    const { canAction: canActionInwardOutward } = useMenuPermissions("/inwardOutward");
 
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
@@ -114,7 +115,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
             async () => {
                 const params: FilterWithPaginationInwardAndOutWardRequest = {
                     PageNumber: 1,
-                    PageSize: 20,
+                    PageSize: 1,
                     InwardOutwardId: Number(InwardOutwardId)
                 };
 
@@ -130,7 +131,8 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             InwardOutwardId: e.InwardOutwardId ?? prev.InwardOutwardId,
                             UniqueKey: e.UniqueKey ?? prev.UniqueKey,
                             EmployeeId: e.EmployeeId ?? prev.EmployeeId,
-                            DeliveryType: e.DeliveryType ?? prev.DeliveryType,
+                            InvoiceNumber: e.InvoiceNumber ?? prev.InvoiceNumber,
+                            InvoiceDate: e.InvoiceDate ?? prev.InvoiceDate,
                             DocumentTitle: e.DocumentTitle ?? prev.DocumentTitle,
                             DeliveryStatus: e.DeliveryStatus ?? prev.DeliveryStatus,
                             AcknowledgementRemark: e.AcknowledgementRemark ?? prev.AcknowledgementRemark,
@@ -151,8 +153,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             DeliveryMode: e.DeliveryMode ?? prev.DeliveryMode,
                             DocumentType: e.DocumentType ?? prev.DocumentType,
                             InwardOutwardDate: e.InwardOutwardDate ?? prev.InwardOutwardDate,
-                            InvoiceDate: e.InvoiceDate ?? prev.InvoiceDate,
-                            // InvoiceNumber: e.InvoiceNumber ?? prev.InvoiceNumber,
                             HandOverDate: e.HandOverDate ?? prev.HandOverDate,
                             HandOverTo: e.HandOverTo ?? prev.HandOverTo,
                         }));
@@ -205,20 +205,12 @@ export const AddUpdateInwardOutward: React.FC = () => {
             if (formData.InvoiceNumber === null || String(formData.InvoiceNumber).trim() === "") {
                 newErrors.InvoiceNumber = "Invoice Number is required";
             }
-            if (formData.InvoiceNumber !== null && String(formData.InvoiceNumber).trim() !== "") {
-                if (Number(formData.InvoiceNumber) === 0) {
-                    newErrors.InvoiceNumber = "Invoice Number cannot be zero";
-                }
-            }
-
             if (!formData.InvoiceDate) {
                 newErrors.InvoiceDate = "Invoice Date is required";
             }
         } else {
-            if (formData.InvoiceNumber !== null && String(formData.InvoiceNumber).trim() !== "") {
-                if (Number(formData.InvoiceNumber) === 0) {
-                    newErrors.InvoiceNumber = "Invoice Number cannot be zero";
-                }
+            if ((formData.InvoiceNumber !== null && String(formData.InvoiceNumber).trim() !== "") && Number(formData.InvoiceNumber) === 0) {
+                newErrors.InvoiceNumber = "Invoice Number cannot be zero";
             }
         }
 
@@ -317,7 +309,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
         fd.append("DeliveryMode", formData.DeliveryMode ?? "");
         fd.append("DeliveryStatus", formData.DeliveryStatus ?? "");
         fd.append("DeliveryType", formData.DeliveryType ?? "");
-        fd.append("Amount", String(formData.Amount ?? 0));
+        fd.append("Amount", String(Number(formData.Amount) || 0));
         fd.append("DocumentDescription", formData.DocumentDescription ?? "");
         fd.append("DocumentTitle", formData.DocumentTitle ?? "");
         fd.append("AcknowledgementRemark", formData.AcknowledgementRemark ?? "");
@@ -515,7 +507,8 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             value={formatDate_dd_mm_yyyy(formData.InwardOutwardDate ?? '')}
                             onChange={(val) => handleFieldChange('InwardOutwardDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                             required
-                        // disabled={!!formData.InwardOutwardDate}
+                            disabled={true}
+                            isDisplayCurrentDate
                         />
                     </div>
 
@@ -526,7 +519,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             label='Invoice Number'
                             value={formData.InvoiceNumber ?? ""}
                             onChange={(e) => {
-                                const val = filterNumbersWithDecimal(e.target.value);
+                                const val = (e.target.value);
                                 handleFieldChange("InvoiceNumber", val);
                             }}
                             placeholder="Enter Invoice Number"
@@ -598,7 +591,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                                 handleFieldChange("SenderMobileNumberCountryCode", value)
                             }
                             error={errors.SenderMobileNumber}
-
                         />
                     </div>
 
@@ -607,7 +599,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             label="Name"
                             value={formData.SenderName ?? ''}
                             required
-                            onChange={e => handleFieldChange("SenderName", e.target.value)}
+                            onChange={e => handleFieldChange("SenderName", filterLetters(e.target.value))}
                             error={errors.SenderName}
                             maxLength={50}
                             placeholder="Enter Sender Name"
@@ -653,7 +645,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             required
                             onMobileChange={(value) => {
                                 handleFieldChange("ReceiverMobileNumber", value);
-
                                 fetchSenderReceiverByMobileNoData(value, "receiver");
                                 setFormData(prev => ({
                                     ...prev,
@@ -674,7 +665,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             label="Name"
                             value={formData.ReceiverName ?? ''}
                             required
-                            onChange={e => handleFieldChange("ReceiverName", e.target.value)}
+                            onChange={e => handleFieldChange("ReceiverName", filterLetters(e.target.value))}
                             error={errors.ReceiverName}
                             maxLength={50}
                             placeholder="Enter Receiver Name"
@@ -720,7 +711,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             value={documentURLFiles}
                             onChange={setDocumentURLFiles}
                             availableFilesURL={documentURL ?? ''}
-                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                            allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", "application/vnd.ms-excel"]}
                             maxFiles={5}
                             error={errors.DocumentURL}
                             onRemoveExisting={(url) => {
@@ -828,7 +819,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             value={acknowledgementURLFiles}
                             onChange={setAcknowledgementURLFiles}
                             availableFilesURL={acknowledgementURL ?? ''}
-                            allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                            allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", "application/vnd.ms-excel"]}
                             maxFiles={5}
                             onRemoveExisting={(url) => {
                                 setRemovedAcknowledgementURLs((prev) => [...prev, url]);
@@ -855,6 +846,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             label="Handover Date"
                             disabled={!canAction}
                             value={formatDate_dd_mm_yyyy(formData.HandOverDate ?? '')}
+
                             onChange={(val) => handleFieldChange('HandOverDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                         />
                     </div>
@@ -867,7 +859,6 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             disabled={!canAction}
                             value={formData.AcknowledgementRemark ?? ''}
                             onChange={e => handleFieldChange("AcknowledgementRemark", e.target.value)}
-                            maxLength={50}
                             placeholder="Enter Remark"
                         />
                     </div>
@@ -878,8 +869,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                 cancelText="Cancel"
                 saveText={formData.InwardOutwardId ? "Update" : "Add"}
                 onCancel={() => navigate(-1)}
-                // canAction={(formData.DeliveryStatus || "") === "" ? true : false}
-                canAction={canAction}
+                canAction={canActionInwardOutward}
                 onSave={() => {
                     handleAddUpdateInward();
                 }}

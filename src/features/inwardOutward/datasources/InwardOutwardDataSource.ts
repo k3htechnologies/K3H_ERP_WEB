@@ -118,6 +118,7 @@ export class InwardAndOutWardDatasourceImpl implements InwardAndOutWardDatasourc
             })
 
             if (params.MobileNumber?.trim()) queryParams.append('MobileNumber', params.MobileNumber.trim());
+
             return await this.k3hHttpClient.getRequestWithAuthentication(`${InwardOutwardApi.PULL_SENDER_RECEIVER_BY_MOBILE_NO}?${queryParams.toString()}`, { signal });
 
         } catch (error: any) {

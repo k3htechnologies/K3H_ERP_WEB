@@ -155,6 +155,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             InwardOutwardDate: e.InwardOutwardDate ?? prev.InwardOutwardDate,
                             HandOverDate: e.HandOverDate ?? prev.HandOverDate,
                             HandOverTo: e.HandOverTo ?? prev.HandOverTo,
+                            DeliveryType: e.DeliveryType ?? prev.DeliveryType,  
                         }));
 
                         setSelectedEmployeeValues(e.EmployeeId || null);

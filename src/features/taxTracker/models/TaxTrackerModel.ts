@@ -6,7 +6,9 @@ export interface FilterWithPaginationTaxTrackerRequest {
     CompanyId?: number | 0;
     CompanyName?: string;
     TaxTrackerId?: number;
+    NoticeType?: string;
     NoticeSection?: string;
+    AuthorityType?: string;
     FinancialYear?: string;
     NoticeStatus?: string;
     FromNoticeDate?: string | null;

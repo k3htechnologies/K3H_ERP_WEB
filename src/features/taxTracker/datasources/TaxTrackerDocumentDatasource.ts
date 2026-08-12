@@ -4,12 +4,10 @@ import { TaxTrackerDocumentApi } from "@/features/taxTracker/api/TaxTrackerDocum
 import { TokenExpiredException } from "@/core/config/baseClientexceptions";
 
 export abstract class TaxTrackerDocumentDatasource {
-
     abstract pullTaxTrackerDocument(params: FilterWithPaginationTaxTrackerDocumentRequest, signal?: AbortSignal): Promise<TaxTrackerDocumentListResponse>;
     abstract addUpdateTaxTrackerDocument(formData: FormData): Promise<TaxTrackerDocumentSaveResponse>;
     abstract deleteTaxTrackerDocument(params: DeleteTaxTrackerDocumentRequest): Promise<TaxTrackerDocumentDeleteResponse>;
 }
-
 export class TaxTrackerDocumentDatasourceImpl implements TaxTrackerDocumentDatasource {
 
     private get k3hHttpClient() {
@@ -26,12 +24,10 @@ export class TaxTrackerDocumentDatasourceImpl implements TaxTrackerDocumentDatas
             if (params.TaxTrackerDocumentId) queryParams.append('TaxTrackerDocumentId', params.TaxTrackerDocumentId.toString());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+            return await this.k3hHttpClient.getRequestWithAuthentication(
                 `${TaxTrackerDocumentApi.PULL}?${queryParams.toString()}`,
                 { signal }
             )
-
-            return response
 
         } catch (error: any) {
 
@@ -49,12 +45,11 @@ export class TaxTrackerDocumentDatasourceImpl implements TaxTrackerDocumentDatas
     async addUpdateTaxTrackerDocument(formData: FormData): Promise<TaxTrackerDocumentSaveResponse> {
         try {
 
-            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(
                 TaxTrackerDocumentApi.ADD_UPDATE,
                 formData
             )
 
-            return response
         } catch (error) {
 
             console.error('ERROR: ADD UPDATE TAX TRACKER DOCUMENT :', error)
@@ -77,11 +72,9 @@ export class TaxTrackerDocumentDatasourceImpl implements TaxTrackerDocumentDatas
 
             })
 
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(
                 `${TaxTrackerDocumentApi.DELETE}?${queryParams.toString()}`
             )
-
-            return response
 
         } catch (error) {
 

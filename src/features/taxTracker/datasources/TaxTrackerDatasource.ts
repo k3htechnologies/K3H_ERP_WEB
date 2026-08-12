@@ -6,8 +6,6 @@ import type {
     TaxTrackerSaveResponse,
     TaxTrackerDeleteResponse,
     DeleteTaxTrackerRequest,
-
-
 } from '@/features/taxTracker/models/TaxTrackerModel';
 import { TaxTrackerApi } from "@/features/taxTracker/api/TaxTrackerApi";
 
@@ -34,6 +32,7 @@ export class TaxTrackerDatasourceImpl implements TaxTrackerDatasource {
             if (params.CompanyId) queryParams.append('CompanyId', params.CompanyId.toString());
             if (params.CompanyName) queryParams.append('CompanyName', params.CompanyName);
             if (params.NoticeSection) queryParams.append('NoticeSection', params.NoticeSection);
+            if (params.NoticeType) queryParams.append('NoticeType', params.NoticeType);
             if (params.FinancialYear) queryParams.append('FinancialYear', params.FinancialYear);
             if (params.NoticeStatus) queryParams.append('NoticeStatus', params.NoticeStatus);
             if (params.FromNoticeDate) queryParams.append('FromNoticeDate', params.FromNoticeDate.toString());
@@ -42,10 +41,10 @@ export class TaxTrackerDatasourceImpl implements TaxTrackerDatasource {
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+            return await this.k3hHttpClient.getRequestWithAuthentication(
                 `${TaxTrackerApi.PULL}?${queryParams.toString()}`, { signal }
             )
-            return response;
+
         } catch (error: any) {
 
             console.error('ERROR: PULL TAX TRACKER:', error);
@@ -62,11 +61,10 @@ export class TaxTrackerDatasourceImpl implements TaxTrackerDatasource {
 
         try {
 
-            const response = await this.k3hHttpClient.multipartRequestWithAuthentication(
+            return await this.k3hHttpClient.multipartRequestWithAuthentication(
                 TaxTrackerApi.ADD_UPDATE,
                 formData
             )
-            return response
 
         } catch (error) {
 
@@ -88,11 +86,10 @@ export class TaxTrackerDatasourceImpl implements TaxTrackerDatasource {
 
             })
 
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(
                 `${TaxTrackerApi.DELETE}?${queryParams.toString()}`
             )
 
-            return response
 
         } catch (error) {
 

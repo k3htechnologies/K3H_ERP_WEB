@@ -615,7 +615,7 @@ export const MASTER_DATA = {
 
   financialYear: ["2022-23", "2023-24", "2024-25", "2025-26", "2026-27", "2025-27"],
 
-  noticeStatus: ['Reply Submitted', 'Order Awaited', 'Non-Favourable', 'Appeal Pending', 'Closed', 'Reopen'],
+  noticeStatus: ['Reply Submitted', 'Favourable', 'Non-Favourable', 'Closed', 'Reopened', 'Reply Pending'],
 
   noticeSection: ['Section 143(1)', 'Section 143(2)', 'Section 148', 'Section 153A', 'Section 153C', 'Section 155(1)', 'Section 156', 'Section 245', 'Section 274', 'Section 275', 'Section 276CC', 'Other'],
 

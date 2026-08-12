@@ -158,7 +158,7 @@ export const TableActionToolbar: React.FC<TableActionToolbarProps> = ({
       <div className="flex items-center justify-between gap-4 flex-wrap">
         {/* SEARCH BAR */}
         <div className={`relative min-w-0 w-[526px] ${isShowSearchBar ? 'block' : 'invisible'}`}>
-          
+
           <Input
             type="text"
             value={searchTerm}

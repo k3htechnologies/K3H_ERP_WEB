@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { AddUpdateNoticeSectionMasterRequest, DeleteNoticeSectionMasterRequest, FilterWithPaginationNoticeSectionMasterRequest, NoticeSectionMasterData } from "../models/NoticeSectionMasterModel";
+import type { AddUpdateNoticeSectionMasterRequest, DeleteNoticeSectionMasterRequest, FilterWithPaginationNoticeSectionMasterRequest, NoticeSectionMasterData } from "@/features/noticeSectionMaster/models/NoticeSectionMasterModel";
 import usePagination from "@/core/hooks/usePagination";
 import { Loader } from "@/core/utils/loader";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
@@ -8,10 +8,9 @@ import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type TableColumn } from "@/ui/components/DataTable/DataTable";
 import { runApiWithLoader } from "@/core/utils";
 import { getSortByParam } from "@/core/constants/sortingColumnDetails";
-import { noticeSectionMasterService } from "../services/NoticeSectionMasterService";
+import { noticeSectionMasterService } from "@/features/noticeSectionMaster/services/NoticeSectionMasterService";
 import * as E from 'fp-ts/Either';
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import Tabs from "@/ui/components/Tab/Tab";
 import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
@@ -20,9 +19,9 @@ import { Button, Input } from "@/ui/components/forms";
 import TooltipText from "@/ui/components/Tooltip/TooltipText";
 import { handleExportFile } from "@/core/utils/exportFile";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
-import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
-import { fetchGovernmentComplianceDropdown } from "../NoticeSectionDropdown";
 import { Trash2 } from "lucide-react";
+import { NOTICE_TYPE_OPTIONS } from '@/core/constants';
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 
 const initialFormState = (): AddUpdateNoticeSectionMasterRequest => ({
     NoticeSectionMasterId: 0,
@@ -37,7 +36,7 @@ export const NoticeSectionTabMaster = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [sortInfo, setSortInfo] = useState<SortInfo | undefined>();
-    const [filters, setFilters] = useState<FilterInfo>({});
+
     const [editingNoticeSectionMasterData, setEditingNoticeSectionMasterData] = useState<NoticeSectionMasterData | null>(null);
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [formData, setFormData] = useState<AddUpdateNoticeSectionMasterRequest>(() => initialFormState());
@@ -45,6 +44,12 @@ export const NoticeSectionTabMaster = () => {
     const [deleteNoticeSectionMasterData, setDeleteNoticeSectionMasterData] = useState<NoticeSectionMasterData | null>(null)
     const [viewNoticeSectionMasterData, setViewNoticeSectionMasterData] = useState<NoticeSectionMasterData | null>(null);
     const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+
+    const [filters, setFilters] = useState<FilterInfo>({});
+    const [showFilterPopup, setShowFilterPopup] = useState(false);
+    const [tempFilters, setTempFilters] = useState<FilterInfo>({});
+
+
 
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
 
@@ -61,17 +66,6 @@ export const NoticeSectionTabMaster = () => {
     const debouncedSearch = useDebouncedCallback((value: string) => {
         searchNoticeSectionMaster(value);
     }, 350);
-
-    const noticeSectionTabList = [
-        { id: "Income Tax", label: "Income Tax" },
-        { id: "GST", label: "GST" },
-        { id: "PT", label: "PT" },
-        { id: "PF", label: "PF" },
-        { id: "ESIC", label: "ESIC" },
-        { id: "Other", label: "Other" },
-    ];
-
-    const [activeTab, setActiveTab] = useState<string>(noticeSectionTabList[0].id);
 
     useEffect(() => {
         if (hasFetchedInitialNoticeSectionMaster.current) return;
@@ -101,6 +95,23 @@ export const NoticeSectionTabMaster = () => {
         }
     }, [isAddUpdateModalOpen, editingNoticeSectionMasterData]);
 
+    const applyFilters = () => {
+        setFilters(tempFilters);
+        setPagination({ currentPage: 1 });
+
+        loadNoticeSections(1, tempFilters);
+        setShowFilterPopup(false);
+    };
+
+
+    const clearFilters = () => {
+        setTempFilters({});
+        setFilters({});
+        setPagination({ currentPage: 1 });
+
+        loadNoticeSections(1, {}, sortInfo, searchTerm);
+    };
+
     const fetchNoticeSectionList = async (page: number = pagination.currentPage, sort?: SortInfo) => {
         return await loadNoticeSections(page, filters, sort ?? sortInfo);
     };
@@ -116,7 +127,7 @@ export const NoticeSectionTabMaster = () => {
                     PageSize: pagination.pageSize,
                     IsCheckPermission: true,
                     NoticeSectionMasterId: filterParams.NoticeSectionMasterId ? Number(filterParams.NoticeSectionMasterId) : 0,
-                    GovernmentCompliance: filterParams.GovernmentCompliance ?? activeTab,
+                    GovernmentCompliance: filterParams.GovernmentCompliance,
                     NoticeSection: searchtext ?? filterParams.NoticeSection ?? undefined,
                     SortBy: getSortByParam(sortInfo ?? null, noticeSectionMasterColumns)
                 }
@@ -155,7 +166,6 @@ export const NoticeSectionTabMaster = () => {
 
         const baseFilters: FilterInfo = {
             ...filters,
-            GovernmentCompliance: filters.GovernmentCompliance || activeTab,
         };
 
         if (searchValue.trim() === '') {
@@ -183,7 +193,7 @@ export const NoticeSectionTabMaster = () => {
                     PageNumber: 1,
                     PageSize: pagination.totalRecords,
                     IsCheckPermission: true,
-                    GovernmentCompliance: activeTab?.trim() || undefined,
+                    GovernmentCompliance: filters.GovernmentCompliance?.trim() || undefined,
                     NoticeSection: filters.NoticeSection?.trim() || undefined,
                     SortBy: getSortByParam(sortInfo ?? null, noticeSectionMasterColumns),
                     ExportType: exportType
@@ -216,11 +226,10 @@ export const NoticeSectionTabMaster = () => {
 
         const updatedFilters = {
             ...filters,
-            GovernmentCompliance: filters.GovernmentCompliance || activeTab
         };
 
         loadNoticeSections(1, updatedFilters, sort, searchTerm || undefined);
-    }, [filters, searchTerm, activeTab]);
+    }, [filters, searchTerm]);
 
     const noticeSectionMasterPaginationInfo: PaginationInfo = useMemo(
         () => ({
@@ -244,7 +253,7 @@ export const NoticeSectionTabMaster = () => {
     const handleEditNoticeSectionMaster = useCallback((row: NoticeSectionMasterData) => {
         setEditingNoticeSectionMasterData({
             ...row,
-            GovernmentCompliance: row.GovernmentCompliance || activeTab,
+            GovernmentCompliance: row.GovernmentCompliance,
             NoticeSection: row.NoticeSection || '',
         })
         setIsAddUpdateModalOpen(true);
@@ -275,6 +284,15 @@ export const NoticeSectionTabMaster = () => {
                         />
                     </div>
                 )
+            },
+            {
+                key: 'GovernmentCompliance',
+                label: 'Government Compliance',
+                width: '30',
+                sortable: true,
+                fixed: 'left',
+                align: 'left',
+                render: value => value || '-'
             },
             {
                 key: 'actions',
@@ -434,7 +452,9 @@ export const NoticeSectionTabMaster = () => {
 
     const handleAddNoticeSectionModal = () => {
         setEditingNoticeSectionMasterData(null);
-        setFormData(initialFormState());
+        setFormData({
+            ...initialFormState(),
+        });
         setErrors({});
         setIsAddUpdateModalOpen(true);
     }
@@ -508,6 +528,11 @@ export const NoticeSectionTabMaster = () => {
                             currentPage: pagination.currentPage,
                             totalRecords: pagination.totalRecords + 1,
                             totalPages: Math.ceil((pagination.totalRecords + 1) / pagination.pageSize)
+                        });
+
+                        addToast({
+                            type: 'success',
+                            title: response.right.SuccessMessage[0]
                         });
 
 
@@ -628,7 +653,14 @@ export const NoticeSectionTabMaster = () => {
                     debouncedSearch(v);
                 }}
                 onClearSearch={clearSearchNoticeSection}
-                isShowFilterButton={false}
+
+                isShowFilterButton
+                filters={filters}
+                onOpenFilter={() => {
+                    setTempFilters(filters);
+                    setShowFilterPopup(true);
+                }}
+
                 isShowCustomizeButton={false}
                 isShowAddButton={canAction}
                 addTitle="Add"
@@ -638,24 +670,6 @@ export const NoticeSectionTabMaster = () => {
                 onExportExcel={handleExportNoticeSectionExcel}
                 onExportPdf={handleExportNoticeSectionPdf}
                 exportLoading={isLoading}
-            />
-
-
-
-            <Tabs
-                tabs={noticeSectionTabList}
-                defaultActive={activeTab}
-                islarge={true}
-                onTabChange={(t) => {
-                    setActiveTab(t.id);
-                    const newFilters: FilterInfo = {
-                        ...filters,
-                        GovernmentCompliance: t.id,
-                    };
-
-                    setFilters(newFilters);
-                    loadNoticeSections(1, newFilters, sortInfo);
-                }}
             />
 
             <div className='pt-5'>
@@ -702,27 +716,15 @@ export const NoticeSectionTabMaster = () => {
                         <div className="space-y-4" >
                             <div>
                                 <div>
-                                    <SingleSelectDropdownWithPagination
+                                    <SinglePageSelection
                                         label="Government Compliance"
-                                        title="Select Government Compliance"
-                                        size="lg"
-                                        initialValue={
-                                            formData.GovernmentCompliance
-                                                ? { label: formData.GovernmentCompliance, value: formData.GovernmentCompliance }
-                                                : undefined
-                                        }
-                                        dataFetchCallBack={fetchGovernmentComplianceDropdown}
-                                        onSelected={(item) => {
-                                            if (!item) {
-                                                handleFieldChange("GovernmentCompliance", null);
-                                                handleFieldChange("NoticeSection", null);
-                                                handleFieldChange("NoticeSectionMasterId", 0);
-                                                return;
-                                            }
-                                            handleFieldChange("GovernmentCompliance", item.value);
-                                            handleFieldChange("NoticeSection", null);
-                                            handleFieldChange("NoticeSectionMasterId", 0);
+                                        onChange={(e) => {
+                                            handleFieldChange("GovernmentCompliance", String(e));
                                         }}
+                                        options={NOTICE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                        value={formData.GovernmentCompliance}
+                                        placeholder="Select Government Compliance"
+                                        required
                                         error={errors.GovernmentCompliance}
                                     />
                                 </div>
@@ -755,6 +757,62 @@ export const NoticeSectionTabMaster = () => {
                     pageName='noticeSection'
                 />
             </div>
+
+            <Modal
+                isOpen={showFilterPopup}
+                onClose={() => {
+                    setShowFilterPopup(false);
+                }}
+
+                title="Filter By Notice Sections"
+                onSubmit={e => {
+                    e.preventDefault();
+                    applyFilters();
+                }}
+                saveText="Apply"
+                cancelText="Clear"
+                onCancel={() => clearFilters()}
+                resetText=""
+                size="small-half"
+            >
+                <div className="space-y-10">
+                    <div className="space-y-4">
+
+                        <div>
+                            <Input
+                                label='Notice U/S'
+                                type="text"
+                                value={tempFilters.NoticeSection}
+                                maxLength={100}
+                                onChange={(e) =>
+                                    setTempFilters({
+                                        ...tempFilters,
+                                        NoticeSection: e.target.value
+                                    })
+                                }
+                                placeholder="Enter Notice U/S"
+                            />
+                        </div>
+                        <div>
+                            <SinglePageSelection
+                                label="Government Compliance"
+                                onChange={(e) => {
+                                    setTempFilters({
+                                        ...tempFilters,
+                                        GovernmentCompliance: String(e)
+                                    });
+                                }}
+                                options={NOTICE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                value={tempFilters.GovernmentCompliance}
+                                placeholder="Select Government Compliance"
+
+                            />
+                        </div>
+
+
+                    </div>
+                </div>
+            </Modal>
         </div>
     );
 };

@@ -8,13 +8,13 @@ import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeM
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
-import { AUTHORITY_OPTIONS } from "@/core/constants";
+import { AUTHORITY_OPTIONS, NOTICE_TYPE_OPTIONS } from "@/core/constants";
 import DatePickerInput from "@/ui/components/forms/Datepicker";
 import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { useNavigate } from "react-router-dom";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
-import { fetchGovernmentComplianceDropdown, fetchNoticeSectionDropdown } from "@/features/taxTracker/fetchGovernmentComplianceDopdown";
+import { fetchNoticeSectionDropdown } from "@/features/taxTracker/fetchGovernmentComplianceDopdown";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
 import { runApiWithLoader } from "@/core/utils";
 import { taxTrackerService } from "@/features/taxTracker/services/TaxTrackerService";
@@ -118,6 +118,9 @@ export const AddUpdateTaxTracker: React.FC = () => {
         if (!formData.DueDate) {
             newErrors.DueDate = 'Due Date is required.';
         }
+        if (formData.DueDate && formData.NoticeDate && formData.DueDate < formData.NoticeDate) {
+            newErrors.DueDate = "Due Date should be greater than Notice Date.";
+        }
         if (!hasAnyDocumentFile(noticeDocumentURLFiles, noticeDocumentURL, removedNoticeDocumentURLs)) {
             newErrors.NoticeDocumentURL = "Notice Document is required.";
         }
@@ -150,6 +153,7 @@ export const AddUpdateTaxTracker: React.FC = () => {
         fd.append('OfficerAddress', formData.OfficerAddress || '');
         fd.append('NoticeDescription', formData.NoticeDescription || '');
         fd.append("RequestType", formData.RequestType || "Notice");
+        fd.append('NoticeStatus', 'Reply Pending');
 
         noticeDocumentURLFiles.forEach(file => {
             if (file instanceof File) {
@@ -166,6 +170,7 @@ export const AddUpdateTaxTracker: React.FC = () => {
         fd.append('RemoveNoticeDocumentURL', removedNoticeDocumentURLs.join(','));
 
         return fd;
+
     }
 
     const handleFieldChange = (field: keyof AddUpdateTaxTrackerRequest, value: any) => {
@@ -235,24 +240,19 @@ export const AddUpdateTaxTracker: React.FC = () => {
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <SingleSelectDropdownWithPagination
-                                    label="Government Compliance"
-                                    title="Select Government Compliance"
-                                    required
-                                    size="lg"
-                                    dataFetchCallBack={fetchGovernmentComplianceDropdown}
-                                    onSelected={(item) => {
-                                        if (!item) {
-                                            handleFieldChange("GovernmentCompliance", null);
-                                            handleFieldChange("NoticeSectionMasterId", 0);
-                                            return;
-                                        }
-                                        handleFieldChange("GovernmentCompliance", item.value);
-                                        handleFieldChange("NoticeSectionMasterId", 0);
-                                    }}
-                                    error={errors.GovernmentCompliance}
-                                />
-
+                                <div>
+                                    <SinglePageSelection
+                                        label="Government Compliance"
+                                        onChange={(e) => {
+                                            handleFieldChange("GovernmentCompliance", String(e));
+                                        }}
+                                        options={NOTICE_TYPE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                        value={formData.GovernmentCompliance ?? ''}
+                                        placeholder="Select Government Compliance"
+                                        required
+                                        error={errors.GovernmentCompliance}
+                                    />
+                                </div>
                             </div>
 
                             <div>
@@ -325,7 +325,6 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                     size="lg"
                                     required
                                     disabled={!formData.GovernmentCompliance}
-                                    key={formData.GovernmentCompliance}
                                     dataFetchCallBack={(pageNumber) =>
                                         fetchNoticeSectionDropdown(pageNumber, formData.GovernmentCompliance || "")
                                     }

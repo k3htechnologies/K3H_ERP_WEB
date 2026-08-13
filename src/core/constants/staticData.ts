@@ -438,9 +438,9 @@ export const MASTER_DATA = {
 
   parkingSubCategory_SurfaceParking: ["SU 1", "GROUND"],
 
-  parkingSubCategory_PuzzleParking: ["LEVEL 1","LEVEL 2","LEVEL 3","LEVEL 4","LEVEL 5","LEVEL 6","LEVEL 7","LEVEL 8","LEVEL 9","LEVEL 10", "GROUND LEVEL"],
+  parkingSubCategory_PuzzleParking: ["LEVEL 1", "LEVEL 2", "LEVEL 3", "LEVEL 4", "LEVEL 5", "LEVEL 6", "LEVEL 7", "LEVEL 8", "LEVEL 9", "LEVEL 10", "GROUND LEVEL"],
 
-  parkingSubCategory_TowerParking: ["ROTATING","TO 1", "GROUND"],
+  parkingSubCategory_TowerParking: ["ROTATING", "TO 1", "GROUND"],
 
   parkingSubCategory_PitPuzzleParking: ["PIT 1", "GROUND"],
 
@@ -665,7 +665,9 @@ export const MASTER_DATA = {
     "2027-28",
     "2028-29",
     "2029-30",
-  ]
+  ],
+
+  purposeOptions: ["Delivery", "Guest", "Interview", "Meeting", "Others"]
 
 } as const;
 
@@ -793,6 +795,7 @@ export const AOP_STATUS = toOptions(MASTER_DATA.aopStatus);
 export const TENDER_PAYMENT_MODE = toOptions(MASTER_DATA.tenderPaymentMode);
 export const TENANT_DOCUMENT_TYPE = toOptions(MASTER_DATA.tenantDocumentTypes);
 export const FINANCIAL_YEAR = toOptions(MASTER_DATA.financialYear);
+export const PURPOSE_OPTIONS = toOptions(MASTER_DATA.purposeOptions);
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

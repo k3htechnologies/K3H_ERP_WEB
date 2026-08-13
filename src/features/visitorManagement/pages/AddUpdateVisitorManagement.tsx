@@ -5,16 +5,30 @@ import type { AddUpdateVisitorManagementRequest, FilterWithPaginationVisitorsByM
 import { filterLetters } from "@/core/utils/fileValidation";
 import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
 import { runApiWithLoader } from "@/core/utils";
+import { Clock } from "lucide-react";
+import { TimePickerCustomize } from "@/ui/components/TimePicker/TimePickerCustomize";
+import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
+import { PURPOSE_OPTIONS } from "@/core/constants";
+import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
+import { fetchEmployeeMasterDropdown } from "@/features/employeeMaster/employeeMasterDropDown";
+import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
+import DatePickerInput from "@/ui/components/forms/Datepicker";
+import { convert_dd_mm_yyyy_To_Yyyy_mm_dd, formatDate_dd_mm_yyyy } from "@/core/utils/dateFormat";
+import BottomActionBar from "@/ui/components/forms/BottomActionBar";
+import { useNavigate } from "react-router-dom";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 
 const initialFormState = (): AddUpdateVisitorManagementRequest => ({
     MobileNumber: "",
     VisitorName: "",
     EmployeeId: "",
     AppointmentDate: null,
-    AppointmentTime: null,
+    AppointmentTime: "00:00",
     VisitorId: 0,
     Uniquekey: "",
-    MobileNumberCountryCode: "+91"
+    MobileNumberCountryCode: "+91",
+    Address: "",
+    Reason: ""
 })
 
 
@@ -23,10 +37,35 @@ const AddUpdateVisitorManagement: React.FC = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [formData, setFormData] = useState<AddUpdateVisitorManagementRequest>(() => initialFormState());
+    const [selectedEmployeeValues, setSelectedEmployeeValues] = useState<string | number | null>(null);
+
+    const navigate = useNavigate();
+
+    //#region MENU PERMISSIONS
+    const { canAction, canExport } = useMenuPermissions();
+    //#endregion
+
+    const [timePickerField, setTimePickerField] = useState<{
+        field: keyof AddUpdateVisitorManagementRequest;
+        value: string;
+    } | null>(null);
+    const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+
+    const formatLabel = (value: string) =>
+        value
+            .split(/(?=[A-Z])/)
+            .join(" ")
+            .trim();
 
     // ERROR SET UP
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
     //#endregion
+
+    const employeeDropdown = useMultiSelectDropdown({
+        value: selectedEmployeeValues,
+        fetchCallback: fetchEmployeeMasterDropdown,
+        autoFetchOptions: true,
+    });
 
     const handleAddUpdateVisitorManagement = (e: React.FormEvent) => {
         e.preventDefault();
@@ -43,6 +82,10 @@ const AddUpdateVisitorManagement: React.FC = () => {
         }
     };
     //#endregion
+
+    const handleSubmit = () => {
+        console.log('Final Submit Api call');
+    }
 
     // const fetchVisitorByMobileNoData = async (mobileNumber: string) => {
     //     await runApiWithLoader(
@@ -126,11 +169,82 @@ const AddUpdateVisitorManagement: React.FC = () => {
                             </div>
                             <div>
                                 <Input
-                                    label="First Name"
-                                    placeholder="Enter First Name"
+                                    label="Full Name"
+                                    placeholder="Enter Full Name"
                                     value={formData.VisitorName}
                                     required onChange={(e) => handleFieldChange("VisitorName", filterLetters(e.target.value))}
                                     error={errors.VisitorName}
+                                />
+                            </div>
+                            <div>
+                                <Input
+                                    label="Address"
+                                    value={formData.Address ?? ''}
+                                    required
+                                    onChange={e => handleFieldChange("Address", e.target.value)}
+                                    error={errors.Address}
+                                    maxLength={100}
+                                    placeholder="Enter Address"
+                                />
+                            </div>
+
+                            {/* Selcet all employees dropdown */}
+
+                            <div>
+                                <MultiSelectPagination
+                                    label="Employee"
+                                    dataFetchCallBack={fetchEmployeeMasterDropdown}
+                                    selectedValues={employeeDropdown.selectedValues}
+                                    options={employeeDropdown.initialOptions}
+                                    onChange={(values) => {
+                                        const { idsString } = employeeDropdown.handleChange(values);
+                                        setSelectedEmployeeValues(idsString || null);
+                                        handleFieldChange("EmployeeId", idsString);
+                                        if (errors.EmployeeId) {
+                                            setErrors((prev) => ({ ...prev, EmployeeId: "" }));
+                                        }
+                                    }}
+                                />
+                            </div>
+
+                            <div>
+                                <DatePickerInput
+                                    label="Date"
+                                    value={formatDate_dd_mm_yyyy(formData.AppointmentDate ?? '')}
+                                    onChange={(val) => handleFieldChange('AppointmentDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                />
+                            </div>
+
+
+                            <Input
+                                label="Appointment Time"
+                                value={formData.AppointmentTime || ""}
+                                onClick={() => {
+                                    setTimePickerField({
+                                        field: "AppointmentTime",
+                                        value: formData.AppointmentTime || "",
+                                    });
+                                    setIsTimePickerOpen(true);
+                                }}
+                                leftIcon={<Clock className="h-8 w-8" />}
+                            />
+
+                            <div>
+                                <SinglePageSelection
+                                    label="Purpose"
+                                    placeholder="Select Purpose"
+                                    value={formData.Purpose}
+                                    onChange={(val) => handleFieldChange("Purpose", String(val))}
+                                    options={PURPOSE_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
+                                />
+                            </div>
+
+                            <div>
+                                <Input
+                                    label="Reason (Optional)"
+                                    placeholder="Enter Reason"
+                                    value={formData.Reason || ''}
+                                    onChange={(e) => handleFieldChange("Reason", e.target.value)}
                                 />
                             </div>
 
@@ -140,6 +254,34 @@ const AddUpdateVisitorManagement: React.FC = () => {
 
 
                 </form>
+
+                <BottomActionBar
+                    cancelText="Cancel"
+                    saveText={formData.VisitorId ? "Update" : "Add"}
+                    onCancel={() => navigate(-1)}
+                    canAction={canAction}
+                    onSave={() => {
+                        handleSubmit();
+                    }}
+                    isLoading={isLoading}
+                />
+
+                <TimePickerCustomize
+                    isOpen={isTimePickerOpen}
+                    title={formatLabel(timePickerField?.field || "")}
+                    value={timePickerField?.value || "00:00"}
+                    onClose={() => {
+                        setIsTimePickerOpen(false);
+                        setTimePickerField(null);
+                    }}
+                    onConfirm={(time) => {
+                        if (timePickerField) {
+                            handleFieldChange(timePickerField.field, time);
+                        }
+                        setIsTimePickerOpen(false);
+                        setTimePickerField(null);
+                    }}
+                />
 
             </div>
         </div>

@@ -4,14 +4,32 @@ import { Button } from "@/ui/components/forms";
 import TableActionToolbar from "@/ui/components/TableAction/TableActionToolbar";
 import { Plus } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import { useNavigate } from "react-router-dom";
+import type { FilterWithPaginationVisitorManagement } from "../models/VisitorManagementModel";
+import usePagination from "@/core/hooks/usePagination";
+import { runApiWithLoader } from "@/core/utils";
+import { getSortByParam } from "@/core/constants/sortingColumnDetails";
+import { handleExportFile } from "@/core/utils/exportFile";
+import { visitorManagementService } from "../services/VisitorManagementService";
 
-const VisitorManagement: React.FC = () => {
+interface Props {
+    fromDate: string | null;
+    toDate: string | null;
+}
+
+const VisitorManagement: React.FC<Props> = ({ fromDate, toDate }) => {
 
     const [isLoading, setIsLoading] = useState(false);
     const [loadingMessage, setLoadingMessage] = useState('');
     const [openVisitorModal, setOpenVisitorModal] = useState<boolean>(false);
     // const [errors, setErrors] = useState<{ [k: string]: string }>({});
+
+    const { pagination, setPagination } = usePagination(20);
+
+    const { canExport } = useMenuPermissions();
+
+
 
     const navigate = useNavigate();
 
@@ -22,6 +40,35 @@ const VisitorManagement: React.FC = () => {
     const handleAddVisitor = (e: React.FormEvent) => {
         e.preventDefault();
         console.log('Add Visitor');
+    };
+
+    const handleExportVisitor = async (exportType: 'Excel' | 'PDF') => {
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const params: FilterWithPaginationVisitorManagement = {
+
+                    PageNumber: 1,
+                    PageSize: pagination.totalRecords,
+                    FromDate: fromDate ? fromDate || undefined : undefined,
+                    ToDate: toDate ? toDate || undefined : undefined,
+                    // SortBy: getSortByParam(sortInfo ?? null, visitorsTableColumns),
+                    ExportType: exportType
+                };
+
+                const response = await visitorManagementService.apiCallPullVisitorManagement(params);
+
+                // handleExportFile(response, exportType, 'Visitor Management', addToast);
+
+                return response;
+            },
+            undefined,
+            // (error: any) => addToast({ type: 'error', title: error.message || 'Export failed' }),
+            undefined,
+            // 'Preparing Export'
+        );
     };
 
     const visitorsTableColumns = useMemo<TableColumn[]>(
@@ -82,7 +129,9 @@ const VisitorManagement: React.FC = () => {
                     searchPlaceholder="Search By Visitor's Name"
                     isShowFilterButton={false}
                     isShowCustomizeButton={false}
-                    isShowExportButton={false}
+                    isShowExportButton={canExport}
+                    // onExportExcel={handleVisitorExcel}
+                    // onExportPdf={handleVisitorPdf}
                     exportLoading={isLoading}
                 />
                 <Button

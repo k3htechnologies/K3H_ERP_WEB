@@ -34,10 +34,13 @@ export interface AddUpdateVisitorManagementRequest {
     MobileNumber: string;
     MobileNumberCountryCode: string;
     VisitorName: string | '';
+    Purpose?: string | '';
     //Fetch the employee dropdown in the below key (Appointment With)
     EmployeeId: string | null;
     AppointmentDate: string | null;
     AppointmentTime: string | null;
+    Address: string | null;
+    Reason: string | null;
 }
 
 export interface DeleteVisitorRequest {

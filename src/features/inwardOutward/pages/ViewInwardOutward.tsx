@@ -260,7 +260,7 @@ const ViewInwardOutward: React.FC = () => {
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 p-4">
                                         <FieldItem label="Acknowledged By" value={inwardOutwardData?.AcknowledgementBy} />
                                         <FieldItem label="Acknowledger's Signature" value={inwardOutwardData?.AcknowledgementSignatureURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementSignatureURL} isIcon />
-                                        <FieldItem label="Attachment" value={inwardOutwardData?.AcknowledgementURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementURL} isIcon />
+                                        <FieldItem label="Acknowledge Document" value={inwardOutwardData?.AcknowledgementURL ? "View" : "-"} urls={inwardOutwardData?.AcknowledgementURL} isIcon />
                                         <FieldItem label="Handover To" value={inwardOutwardData?.HandOverTo} />
                                         <FieldItem label="Handover Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.HandOverDate ?? '')} />
                                         <FieldItem label="Remark" value={inwardOutwardData?.AcknowledgementRemark ?? ''} />
@@ -278,9 +278,9 @@ const ViewInwardOutward: React.FC = () => {
                                 <div className="lg:col-span-3 pb-1">
                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 p-4">
                                         <FieldItem label="Created By" value={inwardOutwardData?.CreatedBy} />
-                                        <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.CreatedDate ?? '')} />
+                                        <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(inwardOutwardData?.CreatedDate ?? '')} />
                                         <FieldItem label="Modified By" value={inwardOutwardData?.ModifiedBy} />
-                                        <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(inwardOutwardData?.ModifiedDate ?? '')} />
+                                        <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(inwardOutwardData?.ModifiedDate ?? '')} />
                                     </div>
                                 </div>
                             </section>

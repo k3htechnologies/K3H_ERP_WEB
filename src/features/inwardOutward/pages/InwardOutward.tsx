@@ -39,7 +39,7 @@ const initialFormState = (): AddRevertInwardOutwardData => ({
     InwardOutwardId: 0,
     UniqueKey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
     RevertDate: null,
-    RevertDocumentURL: null,
+    RevertDocumentURL: [],
     RevertRemark: '',
 });
 
@@ -52,7 +52,11 @@ export const InwardOutward: React.FC = () => {
 
     const [isAddUpdateModalOpen, setIsAddUpdateModalOpen] = useState(false);
     const [formData, setFormData] = useState<AddRevertInwardOutwardData>(() => initialFormState());
+
     const [revertDocumentURLFiles, setRevertDocumentURLFiles] = useState<(File | string)[]>([]);
+    const [revertDocumentURL, setRevertDocumentURL]= useState<string>("");
+    const [removedRevertDocumentURLs, setRemovedRevertDocumentURLs]=useState<string[]>([]);
+
 
     const [showFilterPopup, setShowFilterPopup] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
@@ -213,7 +217,13 @@ export const InwardOutward: React.FC = () => {
             if (file instanceof File) {
                 fd.append("RevertDocumentURL", file);
             }
-        })
+        });
+
+        const hasExistingFile = revertDocumentURL && revertDocumentURL.trim() !== "" &&  !removedRevertDocumentURLs.includes(revertDocumentURL);
+        if (hasExistingFile) {
+            fd.append('RevertDocumentURL', revertDocumentURL);
+        }
+ 
         return fd;
     };
 
@@ -231,7 +241,7 @@ export const InwardOutward: React.FC = () => {
             newErrors.RevertDate = "Revert Date is required";
         }
 
-        if (!hasAnyDocumentFile(revertDocumentURLFiles)) {
+        if (!hasAnyDocumentFile(revertDocumentURLFiles, revertDocumentURL, removedRevertDocumentURLs)) {
             newErrors.RevertDocumentURL = "File is required.";
         }
 
@@ -269,6 +279,10 @@ export const InwardOutward: React.FC = () => {
                     setRevertedInwardOutwardDataList(prev => [newRecord, ...prev]);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
+
+                    setRevertDocumentURL("");
+                    setRevertDocumentURLFiles([]);
+                    setRemovedRevertDocumentURLs([]);
 
                 } else {
                     addToast({ type: "error", title: response.left?.message });
@@ -908,11 +922,15 @@ export const InwardOutward: React.FC = () => {
                             <MultiFilePicker
                                 label="Upload Document"
                                 required
-                                placeholder="select file"
+                                placeholder="Select files"
                                 value={revertDocumentURLFiles}
                                 onChange={setRevertDocumentURLFiles}
+                                availableFilesURL={revertDocumentURL ?? ""}
                                 allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf", "application/vnd.ms-excel"]}
                                 maxFiles={5}
+                                onRemoveExisting={(url) => {
+                                        setRemovedRevertDocumentURLs((prev) => [...prev, url]);
+                                    }}
                                 error={errors.RevertDocumentURL}
                             />
                         </div>

@@ -287,6 +287,10 @@ export const AddUpdateInwardOutward: React.FC = () => {
             newErrors.SenderAddress = "Sender and Receiver addresses should not be the same";
         }
 
+        if(!formData.HandOverDate){
+            newErrors.HandOverDate = "Hand Over Date is required";
+        }
+
         if (!formData.EmployeeId) {
             newErrors.EmployeeId = "Assign Employee is required";
         }
@@ -847,6 +851,7 @@ export const AddUpdateInwardOutward: React.FC = () => {
                             label="Handover Date"
                             disabled={!canAction}
                             value={formatDate_dd_mm_yyyy(formData.HandOverDate ?? '')}
+                            
 
                             onChange={(val) => handleFieldChange('HandOverDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
                         />

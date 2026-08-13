@@ -149,7 +149,7 @@ export const TaxTracker: React.FC = () => {
                     GovernmentCompliance: filterParams.GovernmentCompliance,
                     NoticeSection: searchtext ?? filterParams.NoticeSection ?? undefined,
                     NoticeType: filterParams.NoticeType ?? "",
-                    AuthorityType: filterParams.AuthorityType ?? undefined,
+                    Authority: filterParams.Authority ?? undefined,
                     FromNoticeDate: filterParams.FromNoticeDate ?? '',
                     ToNoticeDate: filterParams.ToNoticeDate ?? undefined,
                     NoticeStatus: filterParams.NoticeStatus ?? undefined,
@@ -266,19 +266,13 @@ export const TaxTracker: React.FC = () => {
 
                 break;
 
-            case "Other":
-                if (!requestFormData.AuthorityType)
-                    newErrors.AuthorityType = "Authority Type is required.";
 
-                if (!requestFormData.AmountUnderDisputeDate)
-                    newErrors.AmountUnderDisputeDate = "Date is required.";
-
-                if (!requestFormData.AmountUnderDispute)
-                    newErrors.AmountUnderDispute = "Amount is required.";
-
+            case "Close-Notice":
                 if (!hasAnyDocumentFile(noticeDocumentURLFiles, noticeDocumentURL, removedNoticeDocumentURLs))
                     newErrors.NoticeDocumentURL = "Document is required.";
+                break;
 
+            default:
                 break;
         }
 
@@ -332,6 +326,7 @@ export const TaxTracker: React.FC = () => {
         fd.append('OrderStatus', requestFormData.OrderStatus || '');
         fd.append('NoticeStatus', requestFormData.NoticeStatus || '');
 
+
         noticeDocumentURLFiles.forEach(file => {
             if (file instanceof File) {
                 fd.append('NoticeDocumentURL', file);
@@ -362,7 +357,8 @@ export const TaxTracker: React.FC = () => {
             TaxTrackerId: item.TaxTrackerId ?? 0,
             NoticeType: item.NoticeType ?? "",
             CompanyName: item.CompanyName ?? "",
-            FinancialYear: item.FinancialYear ?? ""
+            FinancialYear: item.FinancialYear ?? "",
+            GovernmentCompliance: item.GovernmentCompliance ?? ""
         });
         navigate('/taxTracker/view');
     }, [navigate, updateListState],);
@@ -633,6 +629,14 @@ export const TaxTracker: React.FC = () => {
                 ),
             },
             {
+                key: 'GovernmentCompliance',
+                label: 'Government Compliance',
+                width: '30',
+                fixed: 'left',
+                align: 'left',
+                render: value => value || ''
+            },
+            {
                 key: 'CompanyName',
                 label: 'Company Name',
                 width: '30',
@@ -648,7 +652,6 @@ export const TaxTracker: React.FC = () => {
                 align: 'left',
                 render: value => value || ''
             },
-
             {
                 key: 'NoticeSection',
                 label: 'Notice U / S',
@@ -793,7 +796,7 @@ export const TaxTracker: React.FC = () => {
                 </div>
             </div>
 
-            <div className="mt-5">
+            <div className="">
 
                 <DataTable
                     data={taxTrackerList}
@@ -922,7 +925,7 @@ export const TaxTracker: React.FC = () => {
                                     value={noticeDocumentURLFiles}
                                     onChange={setNoticeDocumentURLFiles}
                                     availableFilesURL={noticeDocumentURL ?? ""}
-                                    allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                     maxFiles={5}
                                     maxSizeMB={10}
                                     onRemoveExisting={(url) => {
@@ -953,7 +956,7 @@ export const TaxTracker: React.FC = () => {
                                     value={noticeDocumentURLFiles}
                                     onChange={setNoticeDocumentURLFiles}
                                     availableFilesURL={noticeDocumentURL ?? ""}
-                                    allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                     maxFiles={5}
                                     maxSizeMB={10}
                                     onRemoveExisting={(url) => {
@@ -965,62 +968,6 @@ export const TaxTracker: React.FC = () => {
                             </div>
                         </>
                     )}
-                    {/* {requestFormData.RequestType === 'Other' && (
-                        <>
-                            <div>
-                                <SinglePageSelection
-                                    label="Authority"
-                                    placeholder='Select Authority'
-                                    required
-                                    value={requestFormData.AuthorityType || ''}
-                                    onChange={(e) => handleRequestFieldChange('AuthorityType', String(e))}
-                                    options={AUTHORITY_OPTIONS.map((opt) => ({ label: opt.name, value: opt.id }))}
-                                    error={errors.AuthorityType}
-                                />
-                            </div>
-
-                            <div>
-                                <DatePickerInput
-                                    label={`${requestFormData.RequestType} Date`}
-                                    placeholder={`Enter ${requestFormData.RequestType} Date`}
-                                    value={formatDate_dd_mm_yyyy(requestFormData.AmountUnderDisputeDate)}
-                                    onChange={(val) => handleRequestFieldChange("AmountUnderDisputeDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
-                                    required
-                                    error={errors.AmountUnderDisputeDate} />
-                            </div>
-
-                            <div>
-                                <Input
-                                    label="Amount Under Dispute"
-                                    placeholder="Enter Amount"
-                                    value={requestFormData.AmountUnderDispute || ''}
-                                    onChange={(e) => handleRequestFieldChange('AmountUnderDispute', e.target.value)}
-                                    error={errors.AmountUnderDispute}
-                                    type='number'
-                                />
-                            </div>
-
-                            <div className="mt-5">
-                                <MultiFilePicker
-                                    label={`${requestFormData.RequestType} Document`}
-                                    required
-                                    placeholder={`Select ${requestFormData.RequestType} Document`}
-                                    value={noticeDocumentURLFiles}
-                                    onChange={setNoticeDocumentURLFiles}
-                                    availableFilesURL={noticeDocumentURL ?? ""}
-                                    allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
-                                    maxFiles={5}
-                                    maxSizeMB={10}
-                                    onRemoveExisting={(url) => {
-                                        setRemovedNoticeDocumentURLs((prev) => [...prev, url]);
-                                    }}
-                                    error={errors.NoticeDocumentURL}
-
-                                />
-                            </div>
-                        </>
-
-                    )} */}
 
                     {requestFormData.RequestType === 'Order' && (
                         <>
@@ -1108,7 +1055,7 @@ export const TaxTracker: React.FC = () => {
                                     value={noticeDocumentURLFiles}
                                     onChange={setNoticeDocumentURLFiles}
                                     availableFilesURL={noticeDocumentURL ?? ""}
-                                    allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                     maxFiles={5}
                                     maxSizeMB={10}
                                     onRemoveExisting={(url) => {
@@ -1130,7 +1077,7 @@ export const TaxTracker: React.FC = () => {
                                     value={noticeDocumentURLFiles}
                                     onChange={setNoticeDocumentURLFiles}
                                     availableFilesURL={noticeDocumentURL ?? ""}
-                                    allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                     maxFiles={5}
                                     maxSizeMB={10}
                                     onRemoveExisting={(url) => {
@@ -1225,10 +1172,30 @@ export const TaxTracker: React.FC = () => {
                                     placeholder="Enter Notice U/S"
                                 />
                             </div>
+                            <div className="mt-5">
+                                <Input
+                                    label='Authority'
+                                    type="text"
+                                    value={tempFilters.Authority || ''}
+                                    onChange={e => handleFilterChange("Authority", e.target.value)}
+                                    placeholder="Enter Authority"
+                                    maxLength={70}
+                                />
+                            </div>
+                            <div className="mt-5">
+                                <Input
+                                    label='Government Compliance'
+                                    type="text"
+                                    value={tempFilters.GovernmentCompliance || ''}
+                                    onChange={e => handleFilterChange("GovernmentCompliance", e.target.value)}
+                                    placeholder="Enter Government Compliance"
+                                    maxLength={70}
+                                />
+                            </div>
 
                             <div className="mt-5">
                                 <DatePickerInput
-                                    label='Notice Date'
+                                    label='From Notice Date'
                                     value={formatDate_dd_mm_yyyy(tempFilters.FromNoticeDate)}
                                     onChange={(value) => handleFilterChange('FromNoticeDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? '')}
                                 />
@@ -1236,7 +1203,7 @@ export const TaxTracker: React.FC = () => {
 
                             <div className="mt-5">
                                 <DatePickerInput
-                                    label='Due Date'
+                                    label='To Notice Date'
                                     value={formatDate_dd_mm_yyyy(tempFilters.ToNoticeDate)}
                                     onChange={(value) => handleFilterChange('ToNoticeDate', convert_dd_mm_yyyy_To_Yyyy_mm_dd(value) ?? '')}
                                 />

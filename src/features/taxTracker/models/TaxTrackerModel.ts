@@ -13,8 +13,10 @@ export interface FilterWithPaginationTaxTrackerRequest {
     NoticeStatus?: string;
     FromNoticeDate?: string | null;
     ToNoticeDate?: string | null;
+    Authority?: string;
     SortBy?: string
     ExportType?: 'Excel' | 'PDF'
+
 }
 
 export interface TaxTrackerData {

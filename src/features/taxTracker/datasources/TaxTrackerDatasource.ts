@@ -36,6 +36,7 @@ export class TaxTrackerDatasourceImpl implements TaxTrackerDatasource {
             if (params.FinancialYear) queryParams.append('FinancialYear', params.FinancialYear);
             if (params.NoticeStatus) queryParams.append('NoticeStatus', params.NoticeStatus);
             if (params.FromNoticeDate) queryParams.append('FromNoticeDate', params.FromNoticeDate.toString());
+            if (params.Authority) queryParams.append('Authority', params.Authority);
             if (params.ToNoticeDate) queryParams.append('ToNoticeDate', params.ToNoticeDate.toString());
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);

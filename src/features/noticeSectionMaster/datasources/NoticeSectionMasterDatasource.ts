@@ -34,14 +34,13 @@ export class NoticeSectionMasterDatasourceImpl implements NoticeSectionMasterDat
             if (params.NoticeSectionMasterId) queryParams.append('NoticeSectionMasterId', params.NoticeSectionMasterId.toString());
             if (params.NoticeSection?.trim()) queryParams.append('NoticeSection', params.NoticeSection.trim());
             if (params.GovernmentCompliance?.trim()) queryParams.append('GovernmentCompliance', params.GovernmentCompliance.trim());
-            
+
             if (params.SortBy?.trim()) queryParams.append('SortBy', params.SortBy.trim());
             if (params.ExportType) queryParams.append('ExportType', params.ExportType);
 
-            const response = await this.k3hHttpClient.getRequestWithAuthentication(
+            return await this.k3hHttpClient.getRequestWithAuthentication(
                 `${NoticeSectionMasterApi.PULL}?${queryParams.toString()}`, { signal }
             )
-            return response;
         } catch (error: any) {
 
             console.error('ERROR: PULL NOTICE SECTION MASTER :', error);
@@ -59,9 +58,7 @@ export class NoticeSectionMasterDatasourceImpl implements NoticeSectionMasterDat
 
         try {
 
-            const response = await this.k3hHttpClient.postRequestWithAuthentication(NoticeSectionMasterApi.ADD_UPDATE, params);
-
-            return response;
+            return await this.k3hHttpClient.postRequestWithAuthentication(NoticeSectionMasterApi.ADD_UPDATE, params);
 
         } catch (error) {
 
@@ -82,9 +79,7 @@ export class NoticeSectionMasterDatasourceImpl implements NoticeSectionMasterDat
                 Uniquekey: params.Uniquekey ?? '',
             })
 
-            const response = await this.k3hHttpClient.deleteRequestWithAuthentication(`${NoticeSectionMasterApi.DELETE}?${queryParams.toString()}`);
-
-            return response;
+            return await this.k3hHttpClient.deleteRequestWithAuthentication(`${NoticeSectionMasterApi.DELETE}?${queryParams.toString()}`);
 
         } catch (error) {
 

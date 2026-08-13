@@ -343,7 +343,12 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                 <DatePickerInput label="Notice Date" value={formatDate_dd_mm_yyyy(formData.NoticeDate)} onChange={(val) => handleFieldChange("NoticeDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.NoticeDate} />
                             </div>
                             <div>
-                                <DatePickerInput label="Due Date" value={formatDate_dd_mm_yyyy(formData.DueDate)} onChange={(val) => handleFieldChange("DueDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))} required error={errors.DueDate} />
+                                <DatePickerInput
+                                    label="Due Date"
+                                    value={formatDate_dd_mm_yyyy(formData.DueDate)}
+                                    minDate={new Date(new Date().setDate(new Date().getDate()))}
+                                    onChange={(val) => handleFieldChange("DueDate", convert_dd_mm_yyyy_To_Yyyy_mm_dd(val))}
+                                    required error={errors.DueDate} />
                             </div>
 
                         </div>
@@ -387,7 +392,7 @@ export const AddUpdateTaxTracker: React.FC = () => {
                                     value={noticeDocumentURLFiles}
                                     onChange={setNoticeDocumentURLFiles}
                                     availableFilesURL={noticeDocumentURL ?? ""}
-                                    allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
+                                    allowedTypes={["image/jpeg", "image/png", "image/jpg", "application/pdf"]}
                                     maxFiles={5}
                                     maxSizeMB={10}
                                     onRemoveExisting={(url) => {

@@ -9,13 +9,14 @@ import { NoticeSectionMasterFormModal } from "@/features/noticeSectionMaster/com
 import { createFormResetHandler } from "@/features/noticeSectionMaster/utils/noticeSectionMasterUtils";
 import { DeleteDialog } from "@/ui/components/forms/DeleteDialog";
 import { NoticeSectionMasterViewModal } from "@/features/noticeSectionMaster/components/NoticeSectionMasterViewModal";
-import { Tabs } from "@/ui/components/Tab/Tab";
+import { NoticeSectionMasterFilterModal } from "@/features/noticeSectionMaster/components/NoticeSectionMasterFilterModal";
 
 export const NoticeSectionMaster: React.FC = () => {
 
     const {
         // State
         noticeSectionMasterList,
+        showFilterPopup,
         isLoading,
         loadingMessage,
         visibleNoticeSectionMasterColumns,
@@ -37,9 +38,8 @@ export const NoticeSectionMaster: React.FC = () => {
         isConfirmationDialogBoxOpen,
         isViewModalOpen,
         viewNoticeSectionMasterDetailsData,
-        governementComplianceTabList,
-        activeTab,
-        filteredNoticeSectionMasterList,
+        filters,
+        tempFilters,
 
         //Setters
         setSearchTerm,
@@ -53,10 +53,14 @@ export const NoticeSectionMaster: React.FC = () => {
         setDeleteNoticeSectionMasterDetailsData,
         setIsViewModalOpen,
         setViewNoticeSectionMasterDetailsData,
-        setActiveTab,
+        setShowFilterPopup,
+        setTempFilters,
 
         //Actions
         handleSortColumn,
+        applyFilters,
+        clearFilters,
+        handleFilterChange,
         handlePageChange,
         handleViewNoticeSectionMasterDetails,
         handleEditNoticeSectionMaster,
@@ -68,6 +72,7 @@ export const NoticeSectionMaster: React.FC = () => {
         handleAddUpdateNoticeSectionMaster,
         handleFieldChange,
         handleDeleteNoticeSectionMaster,
+
     } = useNoticeSectionMaster();
 
 
@@ -125,6 +130,10 @@ export const NoticeSectionMaster: React.FC = () => {
                 onClearSearch={clearSearchNoticeSectionMaster}
                 isShowCustomizeButton
                 onCustomize={() => setIsShowCustomizeNoticeSectionMasterColumnsModal(true)}
+                // FILTER
+                isShowFilterButton
+                filters={filters}
+                onOpenFilter={() => setShowFilterPopup(true)}
                 // ADD
                 isShowAddButton={canAction}
                 addTitle="Add"
@@ -136,18 +145,9 @@ export const NoticeSectionMaster: React.FC = () => {
                 exportLoading={isLoading}
             />
 
-            <Tabs
-                tabs={governementComplianceTabList}
-                defaultActive={activeTab}
-                islarge={true}
-                onTabChange={(t) => {
-                    setActiveTab(t.id);
-                }}
-            />
-
             <div className="mt-5">
                 <NoticeSectionMasterTable
-                    data={filteredNoticeSectionMasterList}
+                    data={noticeSectionListForTable}
                     columns={visibleNoticeSectionMasterColumns}
                     pagination={noticeSectionMasterPaginationInfo}
                     sortInfo={sortInfo}
@@ -160,7 +160,6 @@ export const NoticeSectionMaster: React.FC = () => {
                     loading={isLoading}
                 />
             </div>
-
 
             <NoticeSectionMasterViewModal
                 isOpen={isViewModalOpen}
@@ -193,18 +192,28 @@ export const NoticeSectionMaster: React.FC = () => {
                     setSelectedNoticeSectionMasterColumnKeys(withRequired)
 
                     try {
-
                         LocalStorageHelper.storeNoticeSectionMasterTableColumns(JSON.stringify(withRequired),)
 
                     }
                     catch {
-
                     }
                 }}
                 columns={noticeSectionMasterColumns}
                 selectedKeys={selectedNoticeSectionMasterColumnKeys}
                 requiredKeys={requiredNoticeSectionMasterMasterColumnKeys}
                 title="Customize Table Columns"
+            />
+
+            <NoticeSectionMasterFilterModal
+                isOpen={showFilterPopup}
+                onClose={() => {
+                    setTempFilters(filters);
+                    setShowFilterPopup(false);
+                }}
+                onApply={applyFilters}
+                onClear={clearFilters}
+                tempFilters={tempFilters}
+                onFilterChange={handleFilterChange}
             />
 
             <DeleteDialog

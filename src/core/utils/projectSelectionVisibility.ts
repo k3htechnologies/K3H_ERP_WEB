@@ -54,6 +54,10 @@ export const shouldShowProjectSelection = (pathname: string): boolean => {
         ,'saleDashboard'
         ,'aopAchievement'
         ,'specificationmaster'
+        ,'termSheet'
+        ,'taxTracker'
+        ,'noticeSection'
+        ,'otpLogs'
     ];
 
     const baseRoute = getBaseRouteName(pathname);

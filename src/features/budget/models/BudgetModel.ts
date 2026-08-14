@@ -39,6 +39,9 @@ export interface BudgetData {
     TotalRate: number | 0
     BudgetAmount: number | 0
     Remark: string | null
+    IsAccessToDelete: boolean
+    IsApproval: boolean
+    ApprovalStatus: string
     CreatedById: number | 0
     CreatedBy: string | ''
     CreatedDate: string | null

@@ -765,7 +765,7 @@ export const ViewProjectMaster: React.FC = () => {
 
                         <div className="grid grid-cols-1 xl:grid-cols-1 gap-6 pt-5">
                             <div className="bg-white rounded-3xl border border-gray-200 shadow-sm p-5">
-                                <div className="flex justify-between items-center mb-6">
+                                <div className="flex justify-between items-center mb-3">
                                     <div className="flex items-center gap-3">
                                         <div className="w-11 h-11 rounded-xl bg-indigo-50 flex items-center justify-center">
                                             <MapPin className="w-5 h-5 text-indigo-600" />
@@ -786,7 +786,8 @@ export const ViewProjectMaster: React.FC = () => {
                                     )}
                                 </div>
 
-                                <div className="grid grid-cols-6 text-sm font-semibold text-gray-500 pb-2">
+
+                                <div className="grid grid-cols-6 text-sm font-semibold text-gray-500 pb-2 pt-3">
                                     <span>Country</span>
                                     <span>State</span>
                                     <span>District</span>
@@ -796,7 +797,7 @@ export const ViewProjectMaster: React.FC = () => {
                                 </div>
 
                                 <div className="border-t border-gray-300"></div>
-                                <div className="grid grid-cols-6 pt-3 text-md font-medium text-slate-800">
+                                <div className="grid grid-cols-6 pt-3 mb-3 text-md font-medium text-slate-800">
                                     <span>{editProjectData?.CountryName || "-"}</span>
                                     <span>{editProjectData?.StateName || "-"}</span>
                                     <span>{editProjectData?.DistrictName || "-"}</span>
@@ -804,6 +805,15 @@ export const ViewProjectMaster: React.FC = () => {
                                     <span>{editProjectData?.VillageName || "-"}</span>
                                     <span>{editProjectData?.ZipCode || "-"}</span>
                                 </div>
+
+                                <div className="flex items-center justify-between gap-4 mt-4">
+
+                                    <p className="text-sm bg-blue-50 rounded-lg p-4 border border-blue-200 px-4 py-3 flex-1 mb-0">
+                                        Project Location : {editProjectData?.ProjectLocation}
+                                    </p>
+
+                                </div>
+
                             </div>
                         </div>
 

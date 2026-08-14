@@ -79,7 +79,7 @@ const tenantDataPercent = totalBuildingIds.length === 0 ? 0 : Math.round((matche
       style={{ boxShadow: "0px 1px 2px rgba(0,0,0,0.05)" }}
     >
       <p className="text-sm text-gray-500 font-medium mb-4">
-        Project Progress
+        Project ERP Progress
       </p>
 
       <div className="relative flex items-center justify-between">

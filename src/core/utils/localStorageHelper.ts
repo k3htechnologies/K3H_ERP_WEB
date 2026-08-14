@@ -1099,7 +1099,7 @@ export const LocalStorageHelper = {
     }
     return null
   },
-  
+
   storeAchievementByChannelPartnerWalkinsRevisitTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_WALKINS_REVISIT_COLUMNS, columns);
@@ -1446,7 +1446,7 @@ export const LocalStorageHelper = {
   },
 
   //ESTIMATION AND BUDGET
-   storeBudgetTableColumns: (columns: string): void => {
+  storeBudgetTableColumns: (columns: string): void => {
     try {
       localStorage.setItem(LOCAL_STORAGE_KEYS.BUDGET_SELECTED_COLUMNS, columns);
     } catch (error) {
@@ -1467,11 +1467,33 @@ export const LocalStorageHelper = {
     return null
   },
 
+  //TERM SHEET
 
-  //#region CLEAR LOCAL STORAGE
+  storeTermSheetTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TERM_SHEET_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error('Error Term Sheet Columns Details:', error)
+    }
+  },
+
+  getTermSheetTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TERM_SHEET_SELECTED_COLUMNS)
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.TERM_SHEET_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error('Error reading Term Sheet Columns Details:', error)
+        return null
+      }
+    }
+    return null
+  },
+
   clearLocalStorageData: (): void => {
     try {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE);
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.EMPLOYEE_PROJECT);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.TOKEN);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.LAST_VISITED_PAGE);
       localStorage.removeItem(LOCAL_STORAGE_KEYS.DAPARTMENT_MASTER_SELECTED_COLUMNS);
@@ -1531,6 +1553,36 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_KEYS.ACHIEVEMENT_BY_CHANNEL_PARTNER_IBMOBM_COLUMNS);
 
 
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_CREDIT_CONFIGURATION_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.LEAVE_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.OUTDOOR_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.APPROVAL_DOCUMENT_CATEGORY_MASTER_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.REDEVELOPMENT_BUILDING_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TENANT_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_UNIVERSE_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.ENQUIRY_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.CHANNEL_PARTNER_SOURCING_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.INCENTIVE_REPORT_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.MATERIAL_MASTER_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.SUB_MATERIAL_MASTER_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.UOM_MASTER_SELECTED_COLUMNS);
+
+      localStorage.removeItem(LOCAL_STORAGE_KEYS.TERM_SHEET_SELECTED_COLUMNS);
+
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.EMPLOYEE);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.COMPANY);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.VENDOR);
@@ -1553,11 +1605,11 @@ export const LocalStorageHelper = {
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.INWARD_OUTWARD);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.BOOKING_Brokerage);
       localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TICKET);
+      localStorage.removeItem(LOCAL_STORAGE_FOR_STATE_KEYS.TERM_SHEET);
 
 
     } catch (error) {
       console.error("ERROR : CLEARING LOCAL STORAGE:", error);
     }
   },
-  //#endregion
 };

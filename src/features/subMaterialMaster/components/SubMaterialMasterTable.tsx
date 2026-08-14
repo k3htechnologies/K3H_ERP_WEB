@@ -78,6 +78,16 @@ export const SubMaterialMasterTable: React.FC<SubMaterialMasterTableProps> = ({
           )
         };
       }
+      if (col.key === 'Uom') {
+        return {
+          ...col,
+          render: (_value, row: SubMaterialMasterData) => (
+            <span>
+              {row.Uom || '-'} {row.UomCode ? ` (${row.UomCode})` : ''}
+            </span>
+          )
+        };
+      }
       if (col.key === 'IsTolerant') {
         return {
           ...col,

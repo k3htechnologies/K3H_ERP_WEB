@@ -191,7 +191,6 @@ import ChannelPartnerCategory from '@/features/channelPartnerCategory/pages/Chan
 import CollectionReport from '@/features/collectionReport/pages/CollectionReport';
 import IbmObmReport from '@/features/ibmObmReport/pages/IbmObmReport';
 import DailyCollectionReport from '@/features/dailyCollectionReport/pages/DailyCollectionReport';
-import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
 import Budget from '@/features/budget/pages/Budget';
 import SummaryMIS from '@/features/summaryMIS/SummaryMIS';
 import SpecificationMaster from '@/features/specificationMaster/pages/SpecificationMaster';
@@ -200,6 +199,17 @@ import ChannelPartnerSalesMetrics from '@/features/ChannelPartner/pages/ChannelP
 import AopAchievementReport from '@/features/aopAchievement/pages/AopAchievementReport';
 import OTPLogs from '@/features/oTPLogs/pages/OTPLogs';
 import CompanyBank from '@/features/companyMaster/pages/CompanyBank';
+import { TermSheetListStateProvider } from '@/features/termSheet/context/TermSheetListStateContext';
+import TermSheet from '@/features/termSheet/pages/TermSheet';
+import { TermSheetDocument } from '@/features/termSheet/pages/TermSheetDocument';
+import ViewTermSheet from '@/features/termSheet/pages/ViewTermSheet';
+import CompareTermSheet from '@/features/termSheet/pages/CompareTermSheet';
+import { TaxTrackerListStateProvider } from '@/features/taxTracker/context/TaxTrackerListStateContext';
+import TaxTracker from '@/features/taxTracker/pages/TaxTracker';
+import AddUpdateTaxTracker from '@/features/taxTracker/pages/AddUpdateTaxTracker';
+import { ViewTaxTracker } from '@/features/taxTracker/pages/ViewTaxTracker';
+import NoticeSectionMaster from '@/features/noticeSectionMaster/pages/NoticeSectionMaster';
+import AddUpdateTermSheet from '@/features/termSheet/pages/AddUpdateTermSheet';
 
 // Loading component for Suspense fallback
 const LoadingSpinner = () => (
@@ -211,7 +221,6 @@ const LoadingSpinner = () => (
   </div>
 )
 
-// Protected Route Component
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   const token = LocalStorageHelper.getStoredTokenData();
@@ -383,6 +392,12 @@ function App() {
             <Route path='ticket/view' element={<TicketListStateProvider><ViewTicket /></TicketListStateProvider>} />
             <Route path='ticket/assignTicketView' element={<TicketListStateProvider><ViewAssignTicket /></TicketListStateProvider>} />
 
+            {/* TAX TRACKER */}
+            <Route path='taxTracker' element={<TaxTrackerListStateProvider><TaxTracker /></TaxTrackerListStateProvider>} />
+            <Route path='taxTracker/add/:TaxTrackerId?' element={<TaxTrackerListStateProvider><AddUpdateTaxTracker /></TaxTrackerListStateProvider>} />
+            <Route path='taxTracker/view' element={<TaxTrackerListStateProvider><ViewTaxTracker /></TaxTrackerListStateProvider>} />
+
+
             <Route path='otplogs' element={<OTPLogs />} />
 
             {/* SALES */}
@@ -487,7 +502,6 @@ function App() {
             <Route path="payTrack/view" element={<PayTrackBookingListStateProvider><ViewPayTrack /></PayTrackBookingListStateProvider>} />
             <Route path="payTrack/view/addRefundDetails" element={<PayTrackBookingListStateProvider><AddRefundDetails /></PayTrackBookingListStateProvider>} />
             <Route path="payTrackReport" element={<PayTrackReportListStateProvider><PayTrackReport /></PayTrackReportListStateProvider>} />
-            {/* <Route path="payTrackReport/view" element={<PayTrackReportListStateProvider><ViewPayTrackReport /></PayTrackReportListStateProvider>} /> */}
             <Route path="collectionReport" element={<CollectionReport />} />
             <Route path="dailyCollectionReport" element={<DailyCollectionReport />} />
 
@@ -500,11 +514,17 @@ function App() {
             {/* TAX TRACKER */}
             <Route path="noticeSection" element={<NoticeSectionMaster />} />
 
-              {/* ESTIMATION AND BUDGET */}
+            {/* ESTIMATION AND BUDGET */}
             <Route path='budget' element={<Budget />} />
             <Route path='summaryMis' element={<SummaryMIS />} />
             <Route path='specificationMaster' element={<SpecificationMaster />} />
 
+            {/* FINANCE */}
+            <Route path='termSheet' element={<TermSheetListStateProvider><TermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/add/:TermSheetId?' element={<TermSheetListStateProvider><AddUpdateTermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/view' element={<TermSheetListStateProvider><ViewTermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/compare' element={<TermSheetListStateProvider><CompareTermSheet /></TermSheetListStateProvider>} />
+            <Route path='termSheet/document' element={<TermSheetListStateProvider><TermSheetDocument /></TermSheetListStateProvider>} />
           </Route>
 
           <Route path="*" element={<Navigate to="/sign-in" replace />} />

@@ -4,7 +4,7 @@ import { DataTable, type FilterInfo, type PaginationInfo, type SortInfo, type Ta
 import { runApiWithLoader } from '@/core/utils';
 import * as E from 'fp-ts/Either';
 import { useToast } from '@/core/hooks/useToast';
-import type { VendorData, FilterWithPaginationVendorRequest} from '@/features/vendor/models/VendorModel';
+import type { VendorData, FilterWithPaginationVendorRequest } from '@/features/vendor/models/VendorModel';
 import { vendorService } from '@/features/vendor/services/VendorService'
 import TooltipText from '@/ui/components/Tooltip/TooltipText';
 import { handleExportFile } from '@/core/utils/exportFile';
@@ -57,16 +57,16 @@ export const Vendor: React.FC = () => {
   const [tempFilters, setTempFilters] = useState<FilterInfo>({});
 
   const [isShowCustomizeVendorColumnsModal, setIsShowCustomizeVendorColumnsModal] = useState(false);
- 
+
   const [showImportModal, setShowImportModal] = useState(false);
 
   const [isShareMagicLinkModalOpen, setIsShareMagicLinkModalOpen] = useState(false);
   const [magicLink, setmagicLink] = useState<string>('');
 
   const { canAction, canExport } = useMenuPermissions();
-  
+
   useEffect(() => {
-   
+
     setPagination({ currentPage: listState.page });
 
     if (listState.searchTerm && String(listState.searchTerm).trim()) {
@@ -160,7 +160,7 @@ export const Vendor: React.FC = () => {
     loadVendors(1, { VendorName: '' }, sortInfo, undefined);
   };
 
- 
+
   const handleExportVendors = async (exportType: 'Excel' | 'PDF') => {
     await runApiWithLoader(
       setIsLoading,
@@ -229,7 +229,7 @@ export const Vendor: React.FC = () => {
   )
 
   const vendorListForTable = useMemo(() => vendorList, [vendorList]);
-  
+
   const handleViewVendorDetails = useCallback((row: VendorData) => {
     updateListState({ vendorId: row.VendorId, vendorName: row.VendorName });
     navigate('/vendor/view');
@@ -332,7 +332,13 @@ export const Vendor: React.FC = () => {
         width: '15',
         sortable: true,
         align: 'left',
-        render: (value) => value || '-'
+        render: (value) => (
+          <TooltipText
+            text={value || "-"}
+            maxWidth="180px"
+            tooltipThreshold={22}
+          />
+        ),
       },
       {
         key: 'CompanyType',
@@ -410,7 +416,7 @@ export const Vendor: React.FC = () => {
           );
         }
       },
-       {
+      {
         key: 'CountryName',
         label: 'Country',
         width: '15',
@@ -939,7 +945,6 @@ export const Vendor: React.FC = () => {
         }}
       />
 
-      {/*  SHARE MAGIC LINK MODAL */}
       <Modal
         isOpen={isShareMagicLinkModalOpen}
         onClose={() => setIsShareMagicLinkModalOpen(false)}
@@ -955,6 +960,7 @@ export const Vendor: React.FC = () => {
             className="thin-scroll"
             value={magicLink ?? ''}
             readOnly
+
           />
 
           <div className="flex items-center justify-end gap-3">
@@ -962,16 +968,14 @@ export const Vendor: React.FC = () => {
             <Button
               color="primary"
               onClick={handleCopyMagicLink}
-              type='button'
-            >
+              type='button'>
               Copy Link
             </Button>
 
             <Button
               color="secondary"
               onClick={handleShareMagicLink}
-              type='button'
-            >
+              type='button' >
               Share Link
             </Button>
 

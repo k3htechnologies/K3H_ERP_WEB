@@ -117,7 +117,8 @@ export const mapPathToRoute = (apiPath: string): string => {
         //MORE
         '/inwardoutward': '/inwardOutward',
         '/ticket': '/ticket',
-        '/otplogs': '/otplogs',
+        '/otplogs': '/otpLogs',
+        '/taxtracker': '/taxTracker',
 
 
         //SETTING EXTRA
@@ -125,6 +126,9 @@ export const mapPathToRoute = (apiPath: string): string => {
 
         //TAX TRACKER
         '/noticesection': '/noticeSection',
+
+        //FINANCE
+        '/termsheet': '/termSheet',
     }
 
 

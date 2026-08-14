@@ -18,7 +18,7 @@ export const fetchUOMMasterDropdown = async (pageNumber: number, params?: { valu
         const apiResponse = responseEither.right;
 
         const itemList = (apiResponse?.Data || []).map((d: any) => ({
-            label: d.UomCode,
+            label: `${d.Uom} (${d.UomCode})`,
             value: String(d.UomMasterId)
         }));
 

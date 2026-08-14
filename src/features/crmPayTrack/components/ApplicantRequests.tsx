@@ -1417,7 +1417,7 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                                     value={proofOfDocumentFiles}
                                     onChange={setProofOfDocumentFiles}
                                     allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
-                                    maxFiles={3} maxSizeMB={10}
+                                    
                                     onRemoveExisting={(url) => setRemovedProofOfDocumentURLs((prev) => [...prev, url])} />
                             </div>
                         </div>
@@ -1460,58 +1460,58 @@ export const ApplicantRequests: React.FC<Props> = ({ onLoaded }) => {
                             <Input label="Aadhaar Number" error={errorsBookingApplicant.AadharCardNumber} required type="text" value={formDataDetails.AadharCardNumber ?? ""} maxLength={12} onChange={(e) => handleFieldChangeBookingApplicantDetails("AadharCardNumber", filterAadhaar(e.target.value))} placeholder="Enter Aadhaar Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Aadhaar Card" required placeholder="Select Aadhaar Card" error={errorsBookingApplicant.AadharCardURL} value={aadharCardFiles} onChange={setAadharCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={2} maxSizeMB={10} onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Aadhaar Card" required placeholder="Select Aadhaar Card" error={errorsBookingApplicant.AadharCardURL} value={aadharCardFiles} onChange={setAadharCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={2}  onRemoveExisting={(url) => setRemovedAadharCardURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="PAN Number" required error={errorsBookingApplicant.PanNumber} type="text" value={formDataDetails.PanNumber ?? ""} maxLength={10} onChange={(e) => handleFieldChangeBookingApplicantDetails("PanNumber", filterPAN(e.target.value).toUpperCase())} placeholder="Enter PAN Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="PAN Card" required placeholder="Select PAN Card" error={errorsBookingApplicant.PanCardURL} value={panCardFiles} onChange={setPanCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]} maxFiles={2} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="PAN Card" required placeholder="Select PAN Card" error={errorsBookingApplicant.PanCardURL} value={panCardFiles} onChange={setPanCardFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"]} maxFiles={2} onRemoveExisting={(url) => setRemovedPanCardURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="Passport Number" error={errorsBookingApplicant.PassportNumber} type="text" value={formDataDetails.PassportNumber ?? ""} maxLength={8} onChange={(e) => handleFieldChangeBookingApplicantDetails("PassportNumber", filterPassportNumber(e.target.value.toUpperCase()))} placeholder="Enter Passport Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Passport" placeholder="Select Passport" error={errorsBookingApplicant.PassportURL} value={passportFiles} onChange={setPassportFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Passport" placeholder="Select Passport" error={errorsBookingApplicant.PassportURL} value={passportFiles} onChange={setPassportFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedPassportURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="Driving License Number" error={errorsBookingApplicant.DrivingLicenseNumber} type="text" value={formDataDetails.DrivingLicenseNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicantDetails("DrivingLicenseNumber", filterDrivingLicenseNumber(e.target.value.toUpperCase()))} placeholder="Enter Driving License Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Driving License" placeholder="Select Driving License" error={errorsBookingApplicant.DrivingLicenseURL} value={drivingLicenseFiles} onChange={setDrivingLicenseFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Driving License" placeholder="Select Driving License" error={errorsBookingApplicant.DrivingLicenseURL} value={drivingLicenseFiles} onChange={setDrivingLicenseFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedDrivingLicenseURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="Voting ID Number" error={errorsBookingApplicant.VotingIdNumber} type="text" value={formDataDetails.VotingIdNumber ?? ""} maxLength={10} onChange={(e) => handleFieldChangeBookingApplicantDetails("VotingIdNumber", filterVoterId(e.target.value.toUpperCase()))} placeholder="Enter Voting ID Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Voting ID" placeholder="Select Voting ID" error={errorsBookingApplicant.VotingIdURL} value={votingIdFiles} onChange={setVotingIdFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Voting ID" placeholder="Select Voting ID" error={errorsBookingApplicant.VotingIdURL} value={votingIdFiles} onChange={setVotingIdFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedVotingIdURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
                             <Input label="GST Number" error={errorsBookingApplicant.GSTNumber} type="text" value={formDataDetails.GSTNumber ?? ""} maxLength={15} onChange={(e) => handleFieldChangeBookingApplicantDetails("GSTNumber", filterGST(e.target.value.toUpperCase()))} placeholder="Enter GST Number" rightIcon={<IdCardIcon />} />
                         </div>
                         <div>
-                            <MultiFilePicker label="GST Documents" placeholder="Select GST Documents" error={errorsBookingApplicant.GSTNumberURL} value={gstFiles} onChange={setGstFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="GST Documents" placeholder="Select GST Documents" error={errorsBookingApplicant.GSTNumberURL} value={gstFiles} onChange={setGstFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedGstURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Cancelled Cheque" placeholder="Select Cancelled Cheque" error={errorsBookingApplicant.CancelledChequeURL} value={cancelledChequeFiles} onChange={setCancelledChequeFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedCancelledChequeURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Cancelled Cheque" placeholder="Select Cancelled Cheque" error={errorsBookingApplicant.CancelledChequeURL} value={cancelledChequeFiles} onChange={setCancelledChequeFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedCancelledChequeURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="POA (if NRI Execution)" placeholder="Select POA Document" error={errorsBookingApplicant.POAURL} value={pOAFiles} onChange={setPOAFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPOAURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="POA (if NRI Execution)" placeholder="Select POA Document" error={errorsBookingApplicant.POAURL} value={pOAFiles} onChange={setPOAFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedPOAURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Income Docs (Form 16 / ITR)" placeholder="Select Income Document" error={errorsBookingApplicant.IncomeForm16ITRURL} value={incomeForm16ITRFiles} onChange={setIncomeForm16ITRFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedIncomeForm16ITRURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Income Docs (Form 16 / ITR)" placeholder="Select Income Document" error={errorsBookingApplicant.IncomeForm16ITRURL} value={incomeForm16ITRFiles} onChange={setIncomeForm16ITRFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedIncomeForm16ITRURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="NRE / NRO Bank Details" placeholder="Select NRE / NRO Bank Document" error={errorsBookingApplicant.NreNroBankDetailsURL} value={nreNroBankDetailsFiles} onChange={setNreNroBankDetailsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedNreNroBankDetailsURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="NRE / NRO Bank Details" placeholder="Select NRE / NRO Bank Document" error={errorsBookingApplicant.NreNroBankDetailsURL} value={nreNroBankDetailsFiles} onChange={setNreNroBankDetailsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedNreNroBankDetailsURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Nominee Form" placeholder="Select Nominee Form" error={errorsBookingApplicant.NomineeFormURL} value={nomineeFormFiles} onChange={setNomineeFormFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedNomineeFormURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Nominee Form" placeholder="Select Nominee Form" error={errorsBookingApplicant.NomineeFormURL} value={nomineeFormFiles} onChange={setNomineeFormFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedNomineeFormURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Statement of Source of Funds" placeholder="Select Source Document" error={errorsBookingApplicant.StatementOfSourceOfFundsURL} value={statementOfSourceOfFundsFiles} onChange={setStatementOfSourceOfFundsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedStatementOfSourceOfFundsURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Statement of Source of Funds" placeholder="Select Source Document" error={errorsBookingApplicant.StatementOfSourceOfFundsURL} value={statementOfSourceOfFundsFiles} onChange={setStatementOfSourceOfFundsFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedStatementOfSourceOfFundsURLs((prev) => [...prev, url])} />
                         </div>
                         <div>
-                            <MultiFilePicker label="Payment Proof" placeholder="Select Payment Proof" error={errorsBookingApplicant.PaymentProofURL} value={paymentProofFiles} onChange={setPaymentProofFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]} maxFiles={3} maxSizeMB={10} onRemoveExisting={(url) => setRemovedPaymentProofURLs((prev) => [...prev, url])} />
+                            <MultiFilePicker label="Payment Proof" placeholder="Select Payment Proof" error={errorsBookingApplicant.PaymentProofURL} value={paymentProofFiles} onChange={setPaymentProofFiles} allowedTypes={["image/jpeg", "image/png", "application/pdf"]}  onRemoveExisting={(url) => setRemovedPaymentProofURLs((prev) => [...prev, url])} />
                         </div>
                     </div>
                 </div>

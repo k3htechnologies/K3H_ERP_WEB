@@ -25,7 +25,6 @@ export interface ParkingData {
     ParkingType?: string | null;
     ParkingSubType?: string | null;
     ParkingDimensions?: string | null;
-
     IsEVChargingAvailable: boolean;
 
     ParkingStatus?: 'Member' | "Available" | "Booked" | "Blocked" | "Hold";

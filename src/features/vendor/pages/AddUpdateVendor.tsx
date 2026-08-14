@@ -26,7 +26,6 @@ import BottomActionBar from "@/ui/components/forms/BottomActionBar";
 import { checkDuplicateField } from "@/core/utils/duplicateValidation";
 import MobileNumberInput from "@/ui/components/forms/MobileNumberInput";
 
-
 const initialFormState = (): AddUpdateVendorRequest => ({
   VendorId: 0,
   Uniquekey: "3fa85f64-5717-4562-b3fc-2c963f66afa6",
@@ -247,9 +246,7 @@ export const AddUpdateVendor: React.FC = () => {
       "Loading Vendor"
     );
   };
-  //#endregion
 
-  //#region LOAD MATERIAL SUB MATERIAL AND UOM MASTER
   const loadMaterialsSubMaterialMasterUOM = async () => {
     await runApiWithLoader(
       setIsLoading,
@@ -286,10 +283,6 @@ export const AddUpdateVendor: React.FC = () => {
     );
   };
 
-  //#endregion
-
-  //#region VALIDATION
-
   const validateAddVendorForm = (): {
 
     isValid: boolean;
@@ -306,7 +299,6 @@ export const AddUpdateVendor: React.FC = () => {
       newErrors.CompanyName = "Company name is required";
     }
 
-    // Mobile
     if (!formData.MobileNumber?.trim()) {
       newErrors.MobileNumber = "Mobile Number is required";
     } else if (!isValidMobile(formData.MobileNumber.trim(), formData.MobileNumberCountryCode!)) {
@@ -317,13 +309,11 @@ export const AddUpdateVendor: React.FC = () => {
       newErrors.EmailId = "E-Mail ID is mandatory";
     }
 
-    // Email
     if (!formData.EmailId?.trim()) {
       newErrors.EmailId = "E-Mail ID is required.";
     } else if (!isValidEmail(formData.EmailId?.trim())) {
       newErrors.EmailId = "Enter a valid E-Mail ID";
     }
-
 
     if (!formData.CompanyType?.trim()) {
       newErrors.CompanyType = "Company type is required";
@@ -335,7 +325,6 @@ export const AddUpdateVendor: React.FC = () => {
       newErrors.Address = "Address must be at least 25 characters long.";
     }
 
-    // Location
     if (!formData.CountryMasterId) {
       newErrors.CountryMasterId = "Country is required.";
     }
@@ -363,7 +352,6 @@ export const AddUpdateVendor: React.FC = () => {
       newErrors.GSTNumber = "Enter a valid GST Number.";
     }
 
-    // PAN
     if (!formData.PanCardNumber?.trim()) {
       newErrors.PanCardNumber = "PAN Number is required.";
     } else if (!isValidPAN(formData.PanCardNumber?.trim())) {
@@ -382,14 +370,12 @@ export const AddUpdateVendor: React.FC = () => {
       newErrors.GSTCertificateURL = "GST certificate file is required.";
     }
 
+
     return {
       isValid: Object.keys(newErrors).length === 0,
       errors: newErrors,
     };
   };
-  //#endregion
-
-  //#region PUSH VENDOR DATA
 
   const PushVendorFormData = (): FormData => {
 
@@ -416,14 +402,12 @@ export const AddUpdateVendor: React.FC = () => {
     fd.append('AvailableMaterialList', materialIds || formData.AvailableMaterialList || '');
     fd.append('AvailableContractList', formData.AvailableContractList || '');
 
-    // Append files - Aadhar Card
     aadharCardURLFiles.forEach((file) => {
       if (file instanceof File) {
         fd.append('AadharCardURL', file);
       }
     });
     fd.append('RemoveAadharCardURL', removedAadharCardUrls.join(','));
-
 
     panCardURLFiles.forEach((file) => {
       if (file instanceof File) {
@@ -438,6 +422,7 @@ export const AddUpdateVendor: React.FC = () => {
         fd.append('GSTCertificateURL', file);
       }
     });
+
     fd.append('RemoveGSTCertificateURL', removedGSTCertificateUrls.join(','));
 
     return fd;
@@ -445,23 +430,23 @@ export const AddUpdateVendor: React.FC = () => {
 
 
   const handleAddMaterial = useCallback((SubMaterialdata: MaterialSubMaterialUOM) => {
-
     const materialId = SubMaterialdata.SubMaterialMasterId;
 
-    const isCurrentlySelected = selectedMaterials.has(materialId);
-
     setSelectedMaterials((prev) => {
+
       const newSet = new Set(prev);
-      if (isCurrentlySelected) {
+
+      if (newSet.has(materialId)) {
         newSet.delete(materialId);
       } else {
         newSet.add(materialId);
       }
+
       return newSet;
     });
-
-  }, []);
-
+  },
+    []
+  );
 
   const filteredMaterialList = useMemo(() => {
 
@@ -493,6 +478,11 @@ export const AddUpdateVendor: React.FC = () => {
       return
     }
 
+    if (selectedMaterials.size === 0) {
+      addToast({ type: "error", title: "Please select at least one material" });
+      return;
+    }
+
     await runApiWithLoader(
       setIsLoading,
       setLoadingMessage,
@@ -515,9 +505,8 @@ export const AddUpdateVendor: React.FC = () => {
         return response;
       },
       undefined,
-      (error: unknown) => {
-        const errorMessage = error instanceof Error ? error.message : "Operation failed";
-        addToast({ type: "error", title: errorMessage });
+      (error: any) => {
+        addToast({ type: 'error', title: error.message || 'Operation failed' })
       },
       undefined,
       formData.VendorId ? "Updating Vendor" : "Add Vendor"
@@ -563,7 +552,6 @@ export const AddUpdateVendor: React.FC = () => {
 
   return (
 
-
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
       <Loader loading={isLoading} title={loadingMessage}><div></div> </Loader>
@@ -573,15 +561,16 @@ export const AddUpdateVendor: React.FC = () => {
         {/* ============================================================= [BASIC VENDOR DETAILS] ============================================================================================= */}
         <div className="space-y-4 pb-3">
           <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-500 pb-2">
-           Basic Details
+            Basic Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Vendor Name */}
+
             <Input
               label="Vendor Name"
               placeholder="Enter Vendor Name"
               required
               value={formData.VendorName}
+              maxLength={200}
               onChange={(e) => handleFieldChange("VendorName", e.target.value)}
               error={errors.VendorName}
             />
@@ -589,6 +578,7 @@ export const AddUpdateVendor: React.FC = () => {
               label="Company Name"
               placeholder="Enter Company Name"
               required
+              maxLength={200}
               value={formData.CompanyName}
               onChange={(e) => handleFieldChange("CompanyName", e.target.value)}
               error={errors.CompanyName}
@@ -931,9 +921,11 @@ export const AddUpdateVendor: React.FC = () => {
                 <div className="space-y-2 flex-1 overflow-y-auto thin-scroll">
                   {filteredMaterialList.length > 0 ? (
                     filteredMaterialList.map((item) => {
+
                       const isSelected = selectedMaterials.has(item.SubMaterialMasterId);
                       return (
-                        <div   key={item.SubMaterialMasterId} className="bg-white rounded-lg p-2 flex justify-between items-center">
+
+                        <div key={item.SubMaterialMasterId} className="bg-white rounded-lg p-2 flex justify-between items-center">
                           <div>
                             <p className="font-medium text-gray-900">{item.SubMaterialName}</p>
                             <p className="text-xs text-gray-500">{item.MaterialName}</p>
@@ -944,10 +936,8 @@ export const AddUpdateVendor: React.FC = () => {
                             color="transparent"
                             onClick={() => handleAddMaterial(item)}
                           >
-                            {isSelected ? (
-                              <Trash2 className="w-4 h-4" style={{ color: "red" }} />
-                            ) : (
-                              <Plus className="w-4 h-4" />
+                            {isSelected ? (<Trash2 className="w-4 h-4" style={{ color: "red" }} />
+                            ) : (<Plus className="w-4 h-4" />
                             )}
                           </Button>
                         </div>

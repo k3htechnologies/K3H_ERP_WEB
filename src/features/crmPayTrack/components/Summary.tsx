@@ -622,7 +622,6 @@ export const Summary: React.FC = () => {
                                 onChange={setProofOfDocumentFiles}
                                 allowedTypes={["image/jpeg", "image/png", "application/pdf"]}
                                 maxFiles={5}
-                                maxSizeMB={10}
                                 onRemoveExisting={(url) => setRemoveProofOfDocumentUrls((prev) => [...prev, url])}
                                 error={errors.ProofOfDocument} />
 

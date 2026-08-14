@@ -15,7 +15,7 @@ interface ApprovalActionsProps {
 const ApprovalActions = ({
     showApproval = false,
     isIcons = false,
-    displayText="",
+    displayText = "",
     approvalStatus = "Pending",
     onHistory,
     onApprove,
@@ -26,26 +26,23 @@ const ApprovalActions = ({
 
             {/* HISTORY - Always visible */}
             {!displayText && (
-            <span className={`px-2 py-1 text-xs font-semibold  ${getStatusColor(
-                    approvalStatus
-                )}`}
-            >
-                {approvalStatus}
-            </span>
+                <span className={`px-2 py-1 text-xs font-semibold  ${getStatusColor(approvalStatus)}`}>
+                    {approvalStatus}
+                </span>
             )}
+            
+            {onHistory && (
+                <button
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onHistory?.();
+                    }}
+                    className={`px-3 py-1 text-sm text-blue-600 hover:bg-gray-100 ${showApproval ? "border-r" : ""}`}>
+                    {isIcons ? <History size={16} /> : "History"}
 
-            <button
-                onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    onHistory?.();
-                }}
-                className={`px-3 py-1 text-sm text-blue-600 hover:bg-gray-100 ${showApproval ? "border-r" : ""
-                    }`}
-            >
-                {isIcons ? <History size={16} /> : "History"}
-                
-            </button>
+                </button>
+            )}
 
             {/* APPROVE + REJECT only if approval required */}
             {showApproval && (

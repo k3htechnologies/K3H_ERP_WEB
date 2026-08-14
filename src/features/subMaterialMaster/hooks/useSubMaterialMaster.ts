@@ -345,15 +345,15 @@ export const useSubMaterialMaster = () => {
       newErrors.SubMaterialName = "Sub Material Name must be at least 3 characters long"
     }
 
-    if (formData.MaterialMasterId === 0) {
+    if (Number(formData.MaterialMasterId) === 0) {
       newErrors.MaterialMasterId = "Material is required";
     }
 
-    if (formData.UomMasterId === 0) {
+    if (Number(formData.UomMasterId) === 0) {
       newErrors.UomMasterId = "UOM is required";
     }
     if (!Number(formData.LeadTimeInDays) || Number(formData.LeadTimeInDays) < 0) {
-      newErrors.LeadTimeInDays = "Lead Time (Days) cannot be negative";
+      newErrors.LeadTimeInDays = "Lead Time is required";
     }
 
     return {
@@ -442,7 +442,7 @@ export const useSubMaterialMaster = () => {
       setLoadingMessage,
       async () => {
         const params: FilterPullExcelSample = {
-          TableName: 'SUB MATERIAL MASTER'
+          TableName: 'MATERIAL MASTER'
         }
 
         const response = await technicalService.apiCallPullExcelSample(params);

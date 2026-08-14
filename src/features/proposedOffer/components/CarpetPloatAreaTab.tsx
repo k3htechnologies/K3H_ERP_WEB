@@ -142,7 +142,7 @@ export const CarpetPlotAreaTab: React.FC<CarpetPlotAreaTabProps> = ({
 
           <div className="bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE]">
             <h4 className="text-sm font-semibold text-[#1D4ED8]">
-              Construction Details
+              Existing Details
             </h4>
           </div>
           <div className="p-4 bg-white">

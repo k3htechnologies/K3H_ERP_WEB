@@ -14,12 +14,13 @@ import { useMenuPermissions } from '@/features/menu/hooks/useMenuPermissions';
 import Tabs from '@/ui/components/Tab/Tab';
 import { parseDocumentUrls } from '@/core/utils/documentUtils';
 import MultiImageViewer from '@/ui/components/ImageViewer/ImageViewer';
-import { formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from '@/core/utils/dateFormat';
 import Accordion from '@/ui/components/Card/Accordion';
 import { ChevronDownIcon, ChevronRightIcon } from 'lucide-react';
 import TableActionToolbar from '@/ui/components/TableAction/TableActionToolbar';
 import useDebouncedCallback from '@/core/hooks/useDebouncedCallback';
 import { useBuildingListState } from '@/features/building/context/BuildingListStateContext';
+import { formatCurrency } from '@/core/utils/comman';
 
 export const ViewBuilding: React.FC = () => {
 
@@ -246,32 +247,23 @@ export const ViewBuilding: React.FC = () => {
         );
     };
 
-    //#endregion 
 
-    //#region EDIT BUILDING
     const handleEditBuilding = (row: BuildingData) => {
         if (!row?.BuildingId) return;
         navigate(`/building/add/${row.BuildingId}`);
     };
-    //#endregion
 
-    //#region EDIT BUILDING DOCUMENT
     const handleViewBuildingDocument = () => {
         navigate('/building/document');
     };
-    //#endregion
 
-    //#region EDIT BUILDING Description
     const handleViewBuildingDescription = () => {
         navigate('/building/description');
     };
-    //#endregion
 
-    //#region BACK BUILDING PAGE
     const handleBackToListBuilding = () => {
         navigate('/building');
     };
-    //#endregion
 
     return (
 
@@ -335,7 +327,7 @@ export const ViewBuilding: React.FC = () => {
             </div>
 
             {activeTab === 'Overview' && (
-                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-3">
+                <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mt-5">
 
                     {/* ================= LEFT SIDE (2/3) ================= */}
                     <div className="lg:col-span-3 space-y-6">
@@ -358,6 +350,7 @@ export const ViewBuilding: React.FC = () => {
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
                                     <FieldItem label="Land Ownership" value={buildingData?.LandOwnershipType ?? '-'} />
+                                    <FieldItem label="Category" value={buildingData?.Category ?? '-'} />
 
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-1 pt-4 ">
@@ -372,6 +365,72 @@ export const ViewBuilding: React.FC = () => {
                                 </div>
                             </div>
                         </section>
+
+                        {buildingData?.Category == "Tender" && (
+                            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                                    <div className="bg-[#FCF1FF] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#561F64]">
+                                            Tender Amount Details
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                                            <FieldItem label="Amount" value={formatCurrency(buildingData?.TenderAmount ?? "-")} />
+                                            <FieldItem label="Payment Mode" value={buildingData?.TenderAmountPaymentMode} />
+
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                            <FieldItem label="Purchase Start Date" value={formatDate_dd_MonthName_yy(buildingData?.TenderPurchaseStartDate ?? '-')} />
+                                            <FieldItem label="Purchase End Date" value={formatDate_dd_MonthName_yy(buildingData?.TenderPurchaseEndDate ?? '-')} />
+
+
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                            <FieldItem label="Transaction / Cheque / DD No" value={buildingData?.TenderAmountChequeNumber} urls={buildingData.TenderAmountChequeNumberURL} isIcon />
+
+
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 pt-4">
+                                            <FieldItem label="Payorder Remark" value={buildingData?.TenderAmountPayorderRemark} />
+
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
+
+                                    <div className="bg-[#FFECEC] px-3 py-2 border-b border-[#D0D7DE]">
+                                        <h4 className="text-sm font-semibold text-[#E92C2C]">
+                                            Tender EMD Details
+                                        </h4>
+                                    </div>
+                                    <div className="p-4 bg-white">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 border-b border-[#135bec2e] pb-4">
+                                            <FieldItem label="EMD Amount" value={formatCurrency(buildingData?.TenderEMDAmount ?? "-")} />
+                                            <FieldItem label="Submission Date" value={formatDate_dd_MonthName_yy(buildingData?.TenderSubmissionDate ?? "-")} />
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                            <FieldItem label="Payment Mode" value={buildingData?.TenderEMDPaymentMode} />
+
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 border-b border-[#135bec2e] pb-4 pt-4">
+                                            <FieldItem label="Transaction / Cheque / DD No" value={buildingData?.TenderEMDChequeNumber} urls={buildingData.TenderEMDChequeNumberURL} isIcon />
+
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-1 lg:grid-cols-1 gap-4 pt-4">
+                                            <FieldItem label="Payorder Remark" value={buildingData?.TenderEMDPayorderRemark} />
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+
+                        )}
 
                         {/* ================= PROPERTY INFORMATION ================= */}
                         <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
@@ -540,7 +599,7 @@ export const ViewBuilding: React.FC = () => {
             )}
 
             {activeTab === "Document" && (
-                <div className="mt-3">
+                <div className="mt-5">
                     <TableActionToolbar
                         isShowSearchBar
                         searchTerm={searchTerm}
@@ -631,11 +690,9 @@ export const ViewBuilding: React.FC = () => {
                 </div>
             )}
 
-
-
             {activeTab === 'Details' && (
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-3">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-5">
                     <div className="lg:col-span-3 space-y-6">
 
                         <section className="border-[0.1px] rounded-xl border-[#33333321] rounded-sm overflow-hidden">
@@ -690,7 +747,7 @@ export const ViewBuilding: React.FC = () => {
 
                             <div className="bg-[#E7F2FF] px-3 py-2 border-b border-[#D0D7DE]">
                                 <h4 className="text-sm font-semibold text-[#1D4ED8]">
-                                    Building Construction Details
+                                    Existing Details
                                 </h4>
                             </div>
                             <div className="p-4 bg-white">

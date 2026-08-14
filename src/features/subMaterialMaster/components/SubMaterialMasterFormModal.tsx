@@ -108,7 +108,7 @@ export const SubMaterialMasterFormModal: React.FC<SubMaterialMasterFormModalProp
               error={errors.LeadTimeInDays}
               type="text"
               value={formData.LeadTimeInDays}
-              maxLength={100}
+              maxLength={5}
               rightIcon={<span className="text-gray-500">Days</span>}
               onChange={(e) => onFieldChange('LeadTimeInDays', filterNumbers(e.target.value))}
               placeholder="Enter Lead Time"

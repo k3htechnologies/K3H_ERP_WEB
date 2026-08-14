@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import type { AddUpdateBudget, BudgetData, FilterWithPaginationBudgetRequest } from "@/features/budget/models/BudgetModel";
 import { runApiWithLoader } from "@/core/utils";
 import { useProject } from "@/features/projectMaster/context/ProjectContext";
@@ -26,13 +26,18 @@ import { filterNumbersWithDecimal } from "@/core/utils/fileValidation";
 import SingleSelectDropdownWithPagination from "@/ui/components/DropDown/SingleSelectDropdownWithPagination";
 import { fetchSpecificationMasterDropdown } from "@/features/specificationMaster/utils/SpecificationMasterDropDown";
 import { createDropdownInitialValue } from "@/core/utils/createDropdownInitialValue";
-import { fetchPaginatedFlatsDropdown } from "../../inventory/PaginatedFlatsDropDown";
 import { updateFilter } from "@/core/utils/filterHelper";
 import { SinglePageSelection } from "@/ui/components/DropDown/SinglePageSelection";
 import { BUDGET_LEVEL_TYPE } from "@/core/constants";
 import MultiSelectPagination from "@/ui/components/DropDown/Multiselectpagination";
 import { useMultiSelectDropdown } from "@/core/hooks/useMultiSelectDropdown";
 import { formatCurrency } from "@/core/utils/comman";
+import ApprovalActionModal from "@/features/modulesWorkflowApproval/components/ApprovalActionModal";
+import ApprovalActions from "@/features/modulesWorkflowApproval/components/ApprovalActionsButton";
+import type { ModulesApprovalStatusRequest, UpdateModulesWorkflowApprovalRequest } from "@/features/modulesWorkflowApproval/models/ModulesWorkflowApprovalModel";
+import { modulesWorkflowApprovalService } from "@/features/modulesWorkflowApproval/services/ModulesWorkflowApprovalService";
+import { ApprovalLogModal } from "@/features/modulesWorkflowApproval/components/ApprovalLogModal";
+import { fetchPaginatedFlatsDropdown } from "@/features/inventory/PaginatedFlatsDropDown";
 
 const initialFormState = (): AddUpdateBudget => ({
     ProjectId: 0,
@@ -76,6 +81,10 @@ export const Budget: React.FC = () => {
     const [selectedUom, setSelectedUom] = useState("");
     const [selectFlatValues, setSelectFlatValues] = useState<string | number | null>(null);
     const [parentData, setParentData] = useState({ category: "", subCategory: "", });
+    const [isApprovalLogModalOpen, setIsApprovalLogModalOpen] = useState(false);
+    const [approvalLogRequest, setApprovalLogRequest] = useState<ModulesApprovalStatusRequest | null>(null);
+    const [isApprovalActionModalOpen, setIsApprovalActionModalOpen] = useState(false);
+    const [approvalActionType, setApprovalActionType] = useState<"approve" | "reject">("approve");
 
     useEffect(() => {
         if (!projectId) return
@@ -84,14 +93,59 @@ export const Budget: React.FC = () => {
         loadBudgetData(1, filters, sortInfo, searchTerm)
     }, [projectId]);
 
+    const flatFetchParams = useMemo(() => ({
+        projectId: String(projectId)
+    }), [projectId]);
+
     const flatDropDown = useMultiSelectDropdown({
         value: selectFlatValues,
         fetchCallback: fetchPaginatedFlatsDropdown,
-        fetchParams: {
-            projectId: String(projectId),
-        },
+        fetchParams: flatFetchParams,
         autoFetchOptions: true,
     });
+
+    const fetchFlatsForModal = useCallback(
+        (pageNumber: number, params?: { value?: string }) =>
+            fetchPaginatedFlatsDropdown(pageNumber, {
+                projectId: Number(projectId),
+                flat: params?.value,
+            }),
+        [projectId]
+    );
+
+    useLayoutEffect(() => {
+
+        const savedBudgetId = sessionStorage.getItem(`budgetScrollId_${projectId}`);
+
+        if (!savedBudgetId) return;
+
+        let retry = 0;
+
+        const scrollToBudget = () => {
+
+            const element = document.getElementById(`budget-${savedBudgetId}`);
+
+            if (element) {
+
+                element.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                });
+
+                sessionStorage.removeItem(`budgetScrollId_${projectId}`);
+                return;
+            }
+
+            if (retry < 15) {
+                retry++;
+                setTimeout(scrollToBudget, 200);
+            }
+        };
+        scrollToBudget();
+
+        return () => {
+        };
+    }, [budgetData, projectId]);
 
     const loadBudgetData = useCallback(async (page: number = pagination.currentPage, filterParams: FilterInfo, sort?: SortInfo, searchText?: string) => {
         runApiWithLoader(
@@ -192,9 +246,6 @@ export const Budget: React.FC = () => {
         if (addLevel === "L3" && !formData.LevelId3) {
             newErrors.LevelId3 = "Category Name is Required";
         }
-        if (addLevel === "L1" && !formData.OrderBy) {
-            newErrors.OrderBy = "Order By is Required"
-        }
 
         if (addLevel === "L3") {
 
@@ -219,8 +270,20 @@ export const Budget: React.FC = () => {
         }
     }
 
-    const totalRate = Number(formData?.LabourCost || 0) + Number(formData?.MaterialCost || 0) + Number(formData?.PMCost || 0);
-    const budget = Number(formData?.Quantity || 0) * totalRate;
+    const hasRateValue =
+        String(formData?.LabourCost ?? "") !== "" ||
+        String(formData?.MaterialCost ?? "") !== "" ||
+        String(formData?.PMCost ?? "") !== "";
+
+    const totalRate = hasRateValue
+        ? Number(formData?.LabourCost || 0) +
+        Number(formData?.MaterialCost || 0) +
+        Number(formData?.PMCost || 0)
+        : null;
+
+    const budget = hasRateValue
+        ? Number(formData?.Quantity || 0) * (totalRate ?? 0)
+        : null;
 
     const PushBudgetFormData = (): AddUpdateBudget => {
         return {
@@ -263,16 +326,22 @@ export const Budget: React.FC = () => {
 
                 if (E.isRight(response)) {
 
-                    setBudgetData(response.right.Data);
+                    const savedBudgetId = editBudgetData?.BudgetId || formData.BudgetId || response.right.Data?.[0]?.BudgetId;
 
+                    if (savedBudgetId) {
+                        sessionStorage.setItem(`budgetScrollId_${projectId}`, String(savedBudgetId));
+                    }
                     setIsAddUpdateModalOpen(false);
-
                     setEditBudgetData(null);
 
                     addToast({ type: 'success', title: response.right.SuccessMessage[0] });
 
-                    loadBudgetData(1, filters, sortInfo, searchTerm);
+                    const targetPage = editBudgetData
+                        ? pagination.currentPage
+                        : Math.max(1, Math.ceil((pagination.totalRecords + 1) / pagination.pageSize
+                        ));
 
+                    await loadBudgetData(targetPage, filters, sortInfo, searchTerm);
                 } else {
                     addToast({ type: "error", title: response.left?.message });
                 }
@@ -493,7 +562,11 @@ export const Budget: React.FC = () => {
             fixed: "right",
             align: "center",
             render: (_value, row) => {
+
+                const isApproved = row.ApprovalStatus === "Approved" || row.ApprovalStatus === "Partial Approved";
                 const showAddButton = row.LevelType !== "L3";
+                const accessToEdit = canAction && row.IsAccessToDelete === true && !isApproved;
+                const canAdd = canAction && !isApproved;
 
                 return (
                     <div className="flex justify-end ">
@@ -503,12 +576,12 @@ export const Budget: React.FC = () => {
                                 isborderRadius
                                 size="sm"
                                 title="Add Budget"
-                                disabled={!canAction}
+                                disabled={!canAdd}
                                 style={{
-                                    color: canAction ? "green" : "#9CA3AF",
+                                    color: canAdd ? "green" : "#a9aeb6",
                                     padding: "4px 8px",
-                                    cursor: canAction ? "pointer" : "not-allowed",
-                                    opacity: canAction ? 1 : 0.5
+                                    cursor: canAdd ? "pointer" : "not-allowed",
+                                    opacity: canAdd ? 1 : 0.5
                                 }}
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -555,14 +628,13 @@ export const Budget: React.FC = () => {
                             color="transparent"
                             isborderRadius
                             size="sm"
-                            disabled={!canAction}
+                            disabled={!accessToEdit}
                             style={{
-                                color: canAction ? "blue" : "#9CA3AF",
+                                color: accessToEdit ? "blue" : "#9CA3AF",
                                 padding: "4px 8px",
-                                cursor: canAction ? "pointer" : "not-allowed",
-                                opacity: canAction ? 1 : 0.5
+                                cursor: accessToEdit ? "pointer" : "not-allowed",
+                                opacity: accessToEdit ? 1 : 0.5
                             }}
-
                             title="Edit Budget"
                             onClick={(e) => {
                                 e.preventDefault();
@@ -623,7 +695,6 @@ export const Budget: React.FC = () => {
         [seletedBudgetColumnKeys, BudgetColumns])
 
     const BudgetForTable = useMemo(() => budgetData, [budgetData]);
-
 
     const handleSortColumn = useCallback((sort: SortInfo) => {
         setSortInfo(sort);
@@ -701,6 +772,73 @@ export const Budget: React.FC = () => {
         setTempFilters(prev => updateFilter(prev, key, value));
     }
 
+    const handleApproveRejectInvoice = (approvalType: "approve" | "reject") => {
+        setApprovalActionType(approvalType);
+        setIsApprovalActionModalOpen(true);
+    };
+
+    const handleApprovalLog = () => {
+        setApprovalLogRequest({
+            Id: Number(projectId),
+            SubId: 0,
+            SubSubId: 0,
+            SubSubSubId: 0,
+            ProjectId: Number(projectId),
+            ModuleName: "BUDGET APPROVAL",
+        });
+        setIsApprovalLogModalOpen(true);
+    };
+
+    const handleApprovalSubmit = async (remark: string) => {
+
+        if (!budgetData) return;
+
+        const payload: UpdateModulesWorkflowApprovalRequest = {
+            ModuleName: "BUDGET APPROVAL",
+            Id: Number(projectId),
+            SubId: 0,
+            ProjectId: Number(projectId),
+            IsApproved: approvalActionType === "approve",
+            Remarks: remark ?? null,
+        };
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+
+                const response = await modulesWorkflowApprovalService.apiCallupdateModulesWorkflowApproval(payload);
+
+                if (E.isRight(response)) {
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsApprovalActionModalOpen(false);
+
+                    await loadBudgetData(1, {}, sortInfo, searchTerm);
+
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+                }
+
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            approvalActionType === "approve" ? "Approving Budget" : "Rejecting Budget"
+        );
+    };
+
+    const approvalInfo = budgetData.length > 0 ? budgetData[0] : null;
+    const isBudgetApproved = approvalInfo?.ApprovalStatus === "Approved" || approvalInfo?.ApprovalStatus === "Partial Approved";
+
+    const grandTotal = budgetData
+        .filter(item => item.LevelType === "L1")
+        .reduce((sum, item) => sum + (Number(item.BudgetAmount) || 0), 0);
+
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
             <Loader loading={isLoading} title={loadingMessage}> <div /></Loader>
@@ -711,7 +849,7 @@ export const Budget: React.FC = () => {
                 onClearSearch={handlClearSearch}
                 onSearchChange={handleSearch}
                 searchPlaceholder="Search By Cost Head / Description"
-                isShowAddButton={canAction && Number(projectId) > 0}
+                isShowAddButton={canAction && Number(projectId) > 0 && !isBudgetApproved}
                 addTitle="Add"
                 onAdd={handleAddUpdateModal}
                 isShowFilterButton
@@ -729,6 +867,21 @@ export const Budget: React.FC = () => {
                 }}
             />
 
+            <div className="flex justify-end mt-1 w-full border border-gray-200 shadow-sm">
+                <div className="flex justify-end pb-2 gap-2 p-4">
+                    <span className="text-md font-medium truncate text-gray-700">Budget Status : </span>
+                    <ApprovalActions
+                        approvalStatus={approvalInfo?.ApprovalStatus}
+                        showApproval={approvalInfo?.IsApproval}
+                        onApprove={() => handleApproveRejectInvoice("approve")}
+                        onReject={() => handleApproveRejectInvoice("reject")}
+                        onHistory={handleApprovalLog}
+                        isIcons
+                    />
+                </div>
+            </div>
+            
+
             <CustomTable
                 columns={visibleBudgetColumns}
                 data={BudgetForTable}
@@ -740,7 +893,21 @@ export const Budget: React.FC = () => {
                 })}
                 emptyMessage="No Budget Data Found"
                 className="flex-1"
+                fixedHeight
+                recordsPerPage={pagination.pageSize}
             />
+
+            <div className="w-full border border-gray-200 bg-gray-50 shadow-sm">
+                <div className="flex items-center justify-between px-2 py-2">
+                    <span className="text-md font-medium text-gray-700">
+                        Grand Total Project Budget
+                    </span>
+
+                    <span className="text-md font-medium text-gray-600">
+                        {formatCurrency(grandTotal)}
+                    </span>
+                </div>
+            </div>
 
             <CustomizeColumnsModal
                 isOpen={isShowCustomizeModal}
@@ -886,20 +1053,6 @@ export const Budget: React.FC = () => {
                         />
                     </div>
 
-                    {(addLevel === "L1") && (
-                        <div>
-                            <Input
-                                label="Order By"
-                                placeholder="Enter Order By"
-                                value={formData?.OrderBy}
-                                onChange={(e) => handleFieldChange("OrderBy", Number(e.target.value))}
-                                error={errors.OrderBy}
-                                maxLength={2}
-                                required
-                            />
-                        </div>
-                    )}
-
                     {addLevel === "L3" && (
                         <>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -963,7 +1116,7 @@ export const Budget: React.FC = () => {
                                 <div>
                                     <Input
                                         label="Total Rate (₹)"
-                                        value={totalRate}
+                                        value={totalRate !== null ? totalRate.toFixed(2) : ""}
                                         disabled
                                     />
                                 </div>
@@ -971,7 +1124,7 @@ export const Budget: React.FC = () => {
                                 <div>
                                     <Input
                                         label="Budget Amount (₹)"
-                                        value={budget}
+                                        value={budget !== null ? budget.toFixed(2) : ""}
                                         disabled
                                     />
                                 </div>
@@ -983,7 +1136,7 @@ export const Budget: React.FC = () => {
                                     label="Flat"
                                     title="Select Flat"
                                     size="lg"
-                                    dataFetchCallBack={(pageNumber) => fetchPaginatedFlatsDropdown(pageNumber, { projectId: Number(projectId) })}
+                                    dataFetchCallBack={fetchFlatsForModal}
                                     options={flatDropDown.initialOptions}
                                     selectedValues={flatDropDown.selectedValues}
                                     onChange={(values) => {
@@ -1075,6 +1228,22 @@ export const Budget: React.FC = () => {
 
                 </div>
             </Modal>
+
+            <ApprovalLogModal
+                isOpen={isApprovalLogModalOpen}
+                title='Budget'
+                onClose={() => setIsApprovalLogModalOpen(false)}
+                request={approvalLogRequest}
+            />
+
+            <ApprovalActionModal
+                title='Budget'
+                isOpen={isApprovalActionModalOpen}
+                onClose={() => setIsApprovalActionModalOpen(false)}
+                actionType={approvalActionType}
+                onSubmit={handleApprovalSubmit}
+                loading={isLoading}
+            />
 
         </div>
     )

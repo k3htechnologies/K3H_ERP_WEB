@@ -17,7 +17,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(
       error,
       leftIcon,
       rightIcon,
-      className = '',
+      className = 'thin-scroll',
       style,
       rows = 3,
       autoResize = true,

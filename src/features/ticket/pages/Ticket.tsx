@@ -804,7 +804,6 @@ export const Ticket: React.FC = () => {
                             availableFilesURL={documentURL ?? ""}
                             allowedTypes={["image/jpeg", "image/png", "image/jpg"]}
                             maxFiles={5}
-                            maxSizeMB={10}
                             error={errors.DocumentURL}
                             onRemoveExisting={(url) => {
                                 setRemovedDocumentURLs((prev) => [...prev, url]);

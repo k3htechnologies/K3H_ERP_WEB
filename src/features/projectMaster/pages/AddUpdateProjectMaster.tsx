@@ -18,7 +18,7 @@ import Checkbox from "@/ui/components/forms/Checkbox";
 import { MultiFilePicker } from "@/ui/components/ImagePicker/MultiFilePicker";
 import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
 import BottomActionBar from "@/ui/components/forms/BottomActionBar";
-import { IndianRupee, MapPin, Phone } from "lucide-react";
+import { IndianRupee, Phone } from "lucide-react";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import { isToDateGreaterOrEqualFromDate } from "@/core/utils/comman";
 import { MultiSelectDropdown } from "@/ui/components/DropDown/MultiSelectDropdown";
@@ -376,14 +376,14 @@ const AddUpdateProjectMaster: React.FC = () => {
 
         }
 
-
-
         if (formData.IsRedevelopment === 0 && !formData.CTSNumber?.trim()) {
             newErrors.CTSNumber = "CTS Number is required.";
         }
 
         if (!formData.ProjectLocation?.trim()) {
             newErrors.ProjectLocation = "Project Location is required.";
+        } else if (formData.ProjectLocation.trim().length < 10) {
+            newErrors.ProjectLocation = "Project Location must be at least 10 characters.";
         }
 
         if (!formData.GoogleLocation?.trim()) {
@@ -610,8 +610,6 @@ const AddUpdateProjectMaster: React.FC = () => {
     //#endregion
 
     return (
-
-
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
             <Loader loading={isLoading} title={loadingMessage}>  <div></div> </Loader>
@@ -698,7 +696,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                         </div>
                     </div>
 
-                    {/* Scheme & Scope Details */}
+                    
                     <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Project Category</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -938,7 +936,7 @@ const AddUpdateProjectMaster: React.FC = () => {
                         </>
 
                     )}
-                    {/* Scheme & Scope Details */}
+                   
                     <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Liasoning Architect</h3>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -1021,30 +1019,32 @@ const AddUpdateProjectMaster: React.FC = () => {
                     {/* Scheme & Scope Details */}
                     <div className="space-y-4 pt-5">
                         <h3 className="text-lg font-semibold text-gray-900 border-b border-gray-300 pb-2">Location Details</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <Input
+                                <TextArea
                                     label="Project Location"
+                                    placeholder="Enter Project Location"
                                     required
                                     error={errors.ProjectLocation}
-                                    type="text"
+                                    className="thin-scroll"
                                     value={formData.ProjectLocation}
-                                    onChange={(e) => handleFieldChange('ProjectLocation', e.target.value)}
-                                    placeholder="Enter Project Location"
-                                />
+                                    maxLength={200}
+                                    onChange={(e) => handleFieldChange("ProjectLocation", e.target.value)} />
                             </div>
                             <div>
-                                <Input
+                                <TextArea
                                     label="Google Location"
                                     required
-                                    type="text"
                                     value={formData.GoogleLocation}
                                     onChange={e => handleFieldChange('GoogleLocation', filterGoogleMapsUrl(e.target.value))}
-                                    rightIcon={<MapPin className="w-4 h-4" />}
+                                    className="thin-scroll"
                                     error={errors.GoogleLocation}
                                     placeholder="Enter Google Location"
                                 />
                             </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
 
                             <div>
 

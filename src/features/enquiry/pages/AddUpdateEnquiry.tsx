@@ -1432,7 +1432,7 @@ export const AddUpdateEnquiry: React.FC = () => {
                     <FieldItem label="Branch" value={employeeDetails?.Branch || "-"} />
                     <FieldItem label="Reporting Person" value={employeeDetails?.ReportPersonName || "-"} />
                     <FieldItem label="E-Mail ID" value={employeeDetails?.EmailId || "-"} />
-                    <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber ? `+91 ${(employeeDetails?.PersonalMobileNumber)}` : '-'}/>
+                    <FieldItem label="Personal Mobile Number" value={employeeDetails?.PersonalMobileNumber ? `+91 ${(employeeDetails?.PersonalMobileNumber)}` : '-'} />
                   </div>
                 </div>
               )}
@@ -1756,7 +1756,12 @@ export const AddUpdateEnquiry: React.FC = () => {
             </div>
 
             <div>
-              <TextArea label="Remarks" className="thin-scroll" value={formData.Remark ?? ""} placeholder="Enter Remarks" onChange={(e) => handleFieldChange("Remark", e.target.value)} error={errors.Remark} />
+              <TextArea label="Remarks"
+                className="thin-scroll"
+                value={formData.Remark ?? ""}
+                placeholder="Enter Remarks"
+                onChange={(e) => handleFieldChange("Remark", e.target.value)}
+                error={errors.Remark} />
             </div>
           </div>
 

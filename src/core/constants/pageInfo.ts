@@ -160,6 +160,11 @@ export const getPageInfo = (path: string) => {
                 description: 'Smart Leave Credit Setup for Seamless HR Management',
             }
 
+        case 'noticeSection':
+            return {
+                title: 'Notice Section Master',
+                description: 'Centralized management of notice sections for real estate projects',
+            }
         // PAYROLL
 
         case 'payrollDashboard':
@@ -339,13 +344,19 @@ export const getPageInfo = (path: string) => {
                 description: 'Ticket',
             }
             
-            case 'otplogs':
+            case 'otpLogs':
             return {
                 title: 'OTP Logs',
                 description: 'OTP Logs'
             }
 
+        case 'taxTracker':
+            return {
+                title: 'Tax Tracker',
+                description: 'Tax Tracker for tracking notices issued by authorities across India',
+            }
 
+       
             {/* INVENTORY AND REPORT */ }
 
         case 'inventoryDashboard':
@@ -550,13 +561,6 @@ export const getPageInfo = (path: string) => {
                 description: "Brokerage",
             }
 
-        //TAX TRACKER
-        case 'noticeSection':
-            return {
-                title: 'Notice Section Master',
-                description: 'Centralized management of notice sections for real estate projects',
-            }
-
              //SPECIFICATION MASTER
         case 'specificationmaster':
             return {
@@ -569,6 +573,14 @@ export const getPageInfo = (path: string) => {
                 title: "Budget",
                 description: 'Overview of your system and key metrics',
             }
+
+            //FINANCE
+        case 'termSheet':
+            return {
+                title: "Term Sheet",
+                description: "Manage and track term sheets for real estate transactions",
+            }
+            
         default:
             return {
                 title: 'Dashboard',

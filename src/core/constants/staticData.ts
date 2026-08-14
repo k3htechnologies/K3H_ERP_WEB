@@ -665,8 +665,34 @@ export const MASTER_DATA = {
     "2027-28",
     "2028-29",
     "2029-30",
-  ]
+  ],
 
+  termSheetDocument: [
+  "Board Resolution",
+  "CA Certificate - Cost incurred till date & Outstanding debt Certificate",
+  "Deed Of Corporate Guarantee",
+  "Deed Of Hypothecation",
+  "Deed Of Personal Guarantee",
+  "Demand Promissory Note",
+  "Disbursement Request Letter as per format of NBFC or Bank",
+  "Escrow Agreement",
+  "Indenture of Mortgage",
+  "Loan Agreement",
+  "Other documents as per Sanction Letter",
+  "PDC to be given as per Sanction Letter",
+  "Power Of Attorney",
+  "Promoters Undertaking"
+],
+
+authorityOptions: ["District Court", "High Court", "Supreme Court", "Other"],
+
+orderStatusOptions: ['Favourable', 'Non-Favourable'],
+
+requestTypeOptions: ['Reply', 'Order', 'Notice', 'Close-Notice'],
+
+termSheetTypeOptions: ['Construction Finance (CF)', 'Loan Against Property (LAP)', 'Lease Rental Discounting (LRD)', 'Overdraft Facility (OD)'],
+
+termSheetApprovalStatus: ["Term Sheet", "Sanction" ,"Closed"],
 } as const;
 
 // ============================================================================
@@ -793,6 +819,13 @@ export const AOP_STATUS = toOptions(MASTER_DATA.aopStatus);
 export const TENDER_PAYMENT_MODE = toOptions(MASTER_DATA.tenderPaymentMode);
 export const TENANT_DOCUMENT_TYPE = toOptions(MASTER_DATA.tenantDocumentTypes);
 export const FINANCIAL_YEAR = toOptions(MASTER_DATA.financialYear);
+export const TERM_SHEET_DOCUMENT = toOptions(MASTER_DATA.termSheetDocument);
+export const AUTHORITY_OPTIONS = toOptions(MASTER_DATA.authorityOptions);
+export const ORDER_STATUS_OPTIONS = toOptions(MASTER_DATA.orderStatusOptions);
+export const REQUEST_TYPE_OPTIONS = toOptions(MASTER_DATA.requestTypeOptions);
+export const TERM_SHEET_TYPE_OPTIONS = toOptions(MASTER_DATA.termSheetTypeOptions);
+export const TERM_SHEET_APPROVAL_OPTIONS = toOptions(MASTER_DATA.termSheetApprovalStatus);
+
 
 // ============================================================================
 // AMENITY CATEGORIES (Only for UI Grouping)

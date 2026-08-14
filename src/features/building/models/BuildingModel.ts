@@ -1,19 +1,19 @@
-import type { ApiResponse } from "@/core/api/ApiResponse"
+import type { ApiResponse } from "@/core/api/ApiResponse";
 
 export interface FilterWithPaginationBuildingRequest {
-  PageSize: number
-  PageNumber: number
-  IsCheckPermission?: boolean
-  ProjectId?: number
-  BuildingId?: number
-  BuildingName?: string | ''
-  CTSNumber?: string | ''
-  RoadWidth?: string | ''
-  CityName?: string | ''
-  VillageName?: string | ''
-  WardName?: string | ''
-  SortBy?: string
-  ExportType?: 'Excel' | 'PDF'
+  PageSize: number;
+  PageNumber: number;
+  IsCheckPermission?: boolean;
+  ProjectId?: number;
+  BuildingId?: number;
+  BuildingName?: string | "";
+  CTSNumber?: string | "";
+  RoadWidth?: string | "";
+  CityName?: string | "";
+  VillageName?: string | "";
+  WardName?: string | "";
+  SortBy?: string;
+  ExportType?: "Excel" | "PDF";
 }
 
 export interface BuildingData {
@@ -65,14 +65,31 @@ export interface BuildingData {
 
   IsLitigation: boolean | null;
   LitigationRemarks: string;
-  CreatedById: number | 0
-  CreatedBy: string | ''
-  CreatedDate: string | null
-  ModifiedById: number | 0
-  ModifiedBy: string | ''
-  ModifiedDate: string | null
-  LastModifiedBy: string | ''
-  LastModifiedDate: string | null
+
+  Category: string | "";
+  TenderAmount: number | 0;
+  TenderPurchaseStartDate: string | "";
+  TenderPurchaseEndDate: string | "";
+  TenderAmountPaymentMode: string | "";
+  TenderAmountChequeNumber: string | "";
+  TenderAmountChequeNumberURL: string | "";
+  TenderAmountPayorderRemark: string | "";
+
+  TenderEMDAmount: number | 0;
+  TenderSubmissionDate: string | "";
+  TenderEMDPaymentMode: string | "";
+  TenderEMDChequeNumber: string | "";
+  TenderEMDChequeNumberURL: string | "";
+  TenderEMDPayorderRemark: string | "";
+
+  CreatedById: number | 0;
+  CreatedBy: string | "";
+  CreatedDate: string | null;
+  ModifiedById: number | 0;
+  ModifiedBy: string | "";
+  ModifiedDate: string | null;
+  LastModifiedBy: string | "";
+  LastModifiedDate: string | null;
 }
 
 export interface AddUpdateBuildingRequest {
@@ -81,7 +98,7 @@ export interface AddUpdateBuildingRequest {
   ProjectId: number | null;
   BuildingName: string;
   CTSNumber: string;
-  GoogleLocation?: string | '';
+  GoogleLocation?: string | "";
   TotalPlotAreaSqFt: number | null;
   TotalPlotAreaSqMt: number | null;
   RoadWidth: string;
@@ -104,25 +121,41 @@ export interface AddUpdateBuildingRequest {
   LandOwnershipType: string;
   IsLitigation: boolean | null;
   LitigationRemarks: string;
+
+  Category: string | '';
+  // TENDER DETAILS
+  TenderAmount: number | 0;
+  TenderPurchaseStartDate: string | null;
+  TenderPurchaseEndDate: string | null;
+  TenderAmountPaymentMode: string | '';
+  TenderAmountChequeNumber: string | '';
+  TenderAmountChequeNumberURL: (File | string)[] | null;
+  RemoveTenderAmountChequeNumberURL: string | '';
+  TenderAmountPayorderRemark: string | '';
+  TenderEMDAmount: number | 0;
+  TenderSubmissionDate: string | null;
+  TenderEMDPaymentMode: string | '';
+  TenderEMDChequeNumber: string | '';
+  TenderEMDChequeNumberURL: (File | string)[] | null;
+  RemoveTenderEMDChequeNumberURL: string | '';
+  TenderEMDPayorderRemark: string | '';
 }
 
 export interface DeleteBuildingRequest {
-  BuildingId: number
-  UniqueKey: string
-  ProjectId: number
+  BuildingId: number;
+  UniqueKey: string;
+  ProjectId: number;
 }
 
 export type BuildingListResponse = ApiResponse<BuildingData[]>;
 export type BuildingSaveResponse = ApiResponse<BuildingData[]>;
 export type BuildingDeleteResponse = ApiResponse<number>;
 
-
 // BUILDING DETAILS
 export interface FilterWithPaginationBuildingDetailsRequest {
-
-  ProjectId?: number
-  BuildingId?: number
-  ExportType?: 'Excel' | 'PDF'
+  ProjectId?: number;
+  BuildingId?: number;
+  ExportType?: "Excel" | "PDF";
 }
 
 export interface BuildingDetailsData {
@@ -149,14 +182,14 @@ export interface BuildingDetailsData {
   // ===================== [BUILDING KEY CONTACT DETAILS] =====================
   BuildingKeyContactDetailsData?: BuildingKeyContactDetails[];
 
-  CreatedById: number | 0
-  CreatedBy: string | ''
-  CreatedDate: string | null
-  ModifiedById: number | 0
-  ModifiedBy: string | ''
-  ModifiedDate: string | null
-  LastModifiedBy: string | ''
-  LastModifiedDate: string | null
+  CreatedById: number | 0;
+  CreatedBy: string | "";
+  CreatedDate: string | null;
+  ModifiedById: number | 0;
+  ModifiedBy: string | "";
+  ModifiedDate: string | null;
+  LastModifiedBy: string | "";
+  LastModifiedDate: string | null;
 }
 
 export interface BuildingKeyContactDetails {
@@ -171,14 +204,14 @@ export interface BuildingKeyContactDetails {
   MobileNumber?: string | null;
   EmailId?: string | null;
 
-  CreatedById: number | 0
-  CreatedBy: string | ''
-  CreatedDate: string | null
-  ModifiedById: number | 0
-  ModifiedBy: string | ''
-  ModifiedDate: string | null
-  LastModifiedBy: string | ''
-  LastModifiedDate: string | null
+  CreatedById: number | 0;
+  CreatedBy: string | "";
+  CreatedDate: string | null;
+  ModifiedById: number | 0;
+  ModifiedBy: string | "";
+  ModifiedDate: string | null;
+  LastModifiedBy: string | "";
+  LastModifiedDate: string | null;
 }
 
 export interface AddUpdateBuildingDetailsRequest {
@@ -209,16 +242,16 @@ export type BuildingDetailsSaveResponse = ApiResponse<BuildingDetailsData[]>;
 
 // BUILDING DOCUMENT
 export interface FilterWithPaginationBuildingDocumentRequest {
-  PageSize: number
-  PageNumber: number
-  IsCheckPermission?: boolean
-  ProjectId?: number
-  BuildingId?: number
-  BuildingDocumentId?: number
-  DocumentName?: string | ''
-  DocumentStatus?: string | ''
-  SortBy?: string
-  ExportType?: 'Excel' | 'PDF'
+  PageSize: number;
+  PageNumber: number;
+  IsCheckPermission?: boolean;
+  ProjectId?: number;
+  BuildingId?: number;
+  BuildingDocumentId?: number;
+  DocumentName?: string | "";
+  DocumentStatus?: string | "";
+  SortBy?: string;
+  ExportType?: "Excel" | "PDF";
 }
 
 export interface BuildingDocumentData {
@@ -232,14 +265,14 @@ export interface BuildingDocumentData {
   DocumentRemark?: string | null;
   IsMaster?: number | 0;
   UploadedBuildingDocumentCount: number;
-  CreatedById: number | 0
-  CreatedBy: string | ''
-  CreatedDate: string | null
-  ModifiedById: number | 0
-  ModifiedBy: string | ''
-  ModifiedDate: string | null
-  LastModifiedBy: string | ''
-  LastModifiedDate: string | null
+  CreatedById: number | 0;
+  CreatedBy: string | "";
+  CreatedDate: string | null;
+  ModifiedById: number | 0;
+  ModifiedBy: string | "";
+  ModifiedDate: string | null;
+  LastModifiedBy: string | "";
+  LastModifiedDate: string | null;
 }
 
 export interface AddUpdateBuildingDocumentRequest {
@@ -255,15 +288,12 @@ export interface AddUpdateBuildingDocumentRequest {
 }
 
 export interface DeleteBuildingDocumentRequest {
-
-  BuildingDocumentId: number
-  UniqueKey: string
-  BuildingId: number
-  ProjectId: number
+  BuildingDocumentId: number;
+  UniqueKey: string;
+  BuildingId: number;
+  ProjectId: number;
 }
 
 export type BuildingDocumentListResponse = ApiResponse<BuildingDocumentData[]>;
 export type BuildingDocumentSaveResponse = ApiResponse<BuildingDocumentData[]>;
 export type BuildingDocumentDeleteResponse = ApiResponse<number>;
-
-

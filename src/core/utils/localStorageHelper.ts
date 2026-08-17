@@ -1077,6 +1077,29 @@ export const LocalStorageHelper = {
     return null
   },
 
+  // ACCOUNT
+  getTaxTrackerTableColumns: (): string | null => {
+    const stored = localStorage.getItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS);
+    if (stored) {
+      try {
+        return localStorage.getItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS);
+      } catch (error) {
+        console.error("Error reading  Tax Tracker Columns Details:", error);
+        return null;
+      }
+    }
+    return null;
+
+  },
+
+  storeTaxTrackerTableColumns: (columns: string): void => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEYS.TAX_TRACKER_SELECTED_COLUMNS, columns);
+    } catch (error) {
+      console.error("Error Tax Tracker Columns Details:", error);
+    }
+  },
+
 
   //PROJECT DOCUMENT
   storeProjectDocumentCategoryMasterTableColumns: (columns: string): void => {

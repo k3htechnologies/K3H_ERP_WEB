@@ -32,6 +32,8 @@ import { filterNumbersWithDecimal, hasAnyDocumentFile } from "@/core/utils/fileV
 import { getNoticeStatusColor } from "@/features/taxTracker/utils/Status";
 import useDebouncedCallback from "@/core/hooks/useDebouncedCallback";
 import { updateFilter } from "@/core/utils/filterHelper";
+import CustomizeColumnsModal from "@/ui/components/CustomizeColumns/CustomizeColumnsModal";
+import { LocalStorageHelper } from "@/core/utils/localStorageHelper";
 
 const initialFormState = (): AddUpdateTaxTrackerRequest => ({
     TaxTrackerId: 0,
@@ -89,6 +91,7 @@ export const TaxTracker: React.FC = () => {
     const [removedNoticeDocumentURLs, setRemovedNoticeDocumentURLs] = useState<string[]>([]);
     const [filters, setFilters] = useState<FilterInfo>({});
     const [showFilterPopup, setShowFilterPopup] = useState(false);
+    const [isShowCustomizeTaxTrackerColumnsModal, setIsShowCustomizeTaxTrackerColumnsModal] = useState(false);
     const [tempFilters, setTempFilters] = useState<FilterInfo>({});
     const [searchTerm, setSearchTerm] = useState('');
 
@@ -113,22 +116,6 @@ export const TaxTracker: React.FC = () => {
     useEffect(() => {
         loadTaxTrackerList(page, filters);
     }, [page, filters]);
-
-    const applyFilters = () => {
-        setFilters(tempFilters);
-        setPagination({ currentPage: 1 });
-
-        loadTaxTrackerList(1, tempFilters);
-        setShowFilterPopup(false);
-    };
-
-    const clearFilters = () => {
-        setTempFilters({});
-        setFilters({});
-        setPagination({ currentPage: 1 });
-
-        loadTaxTrackerList(1, {}, sortInfo, searchTerm);
-    };
 
     const loadTaxTrackerList = async (
         page: number,
@@ -187,6 +174,412 @@ export const TaxTracker: React.FC = () => {
         )
     }
 
+    const handleAddTaxTracker = useCallback(() => {
+        navigate("/taxTracker/add/");
+    }, [navigate]);
+
+    const handleViewTaxTracker = useCallback((item: TaxTrackerData) => {
+        updateListState({
+            TaxTrackerId: item.TaxTrackerId ?? 0,
+            NoticeType: item.NoticeType ?? "",
+            CompanyName: item.CompanyName ?? "",
+            FinancialYear: item.FinancialYear ?? "",
+            GovernmentCompliance: item.GovernmentCompliance ?? ""
+        });
+        navigate('/taxTracker/view');
+    }, [navigate, updateListState],);
+
+    const handleFilterChange = (key: string, value: string) => {
+        setTempFilters(prev => updateFilter(prev, key, value));
+    }
+
+
+    const applyFilters = () => {
+        setFilters(tempFilters);
+        setPagination({ currentPage: 1 });
+
+        loadTaxTrackerList(1, tempFilters);
+        setShowFilterPopup(false);
+    };
+
+    const clearFilters = () => {
+        setTempFilters({});
+        setFilters({});
+        setPagination({ currentPage: 1 });
+
+        loadTaxTrackerList(1, {}, sortInfo, searchTerm);
+    };
+
+    const searchTaxTrackerRecords = async (searchValue: string) => {
+        setSearchTerm(searchValue);
+
+        if (searchValue.trim() === '') {
+            await loadTaxTrackerList(1, filters);
+            return;
+        }
+
+        await loadTaxTrackerList(1, filters, sortInfo, searchValue);
+    };
+
+    const clearSearchTaxTrackerRecords = () => {
+        setSearchTerm('');
+        debouncedSearch.cancel?.();
+        loadTaxTrackerList(1, { NoticeSection: '' }, sortInfo, undefined);
+    };
+
+    const handleConfirmationDialogBoxOpen = useCallback((row: TaxTrackerData) => {
+        setDeleteTaxTrackerData(row);
+        setIsConfirmationDialogBoxOpen(true);
+    }, []);
+
+    const handleExportTaxTracker = async (exportType: 'Excel' | 'PDF') => {
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: FilterWithPaginationTaxTrackerRequest = {
+                    PageNumber: 1,
+                    PageSize: pagination.totalRecords,
+                    GovernmentCompliance: filters.GovernmentCompliance || undefined,
+                    CompanyName: filters.CompanyName ?? undefined,
+                    NoticeSection: filters.NoticeSection || "",
+                    FinancialYear: filters.FinancialYear || undefined,
+                    NoticeType: filters.NoticeType || "",
+                    NoticeStatus: filters.NoticeStatus || undefined,
+                    FromNoticeDate: filters.FromNoticeDate || null,
+                    ToNoticeDate: filters.ToNoticeDate || null,
+                    ExportType: exportType,
+                };
+
+                const response = await taxTrackerService.apiCallPullTaxTracker(params);
+
+                handleExportFile(response, exportType, "Tax Tracker", addToast);
+
+                return response;
+            },
+            undefined,
+            (error: any) =>
+                addToast({ type: "error", title: error.message || "Export failed" }),
+            undefined,
+            "Preparing Export",
+        );
+    }
+
+    const handleExportTaxTrackerExcel = () => handleExportTaxTracker("Excel");
+    const handleExportTaxTrackerPdf = () => handleExportTaxTracker("PDF");
+
+    const handlePageChange = useCallback((newPage: number) => {
+        updateListState({ page: newPage });
+    }, [updateListState],
+    );
+
+
+    const handleSortColumn = useCallback((sort: SortInfo) => {
+        setSortInfo(sort);
+
+        loadTaxTrackerList(1, filters, sort);
+    }, [filters]);
+
+
+    const taxTrackerPaginationInfo: PaginationInfo = useMemo(
+        () => ({
+            currentPage: pagination.currentPage,
+            totalPages: pagination.totalPages,
+            totalRecords: pagination.totalRecords,
+            pageSize: pagination.pageSize,
+            onPageChange: handlePageChange,
+        }),
+        [
+            pagination.currentPage,
+            pagination.totalPages,
+            pagination.totalRecords,
+            pagination.pageSize,
+        ],
+    );
+
+    const handleAddAppealModal = useCallback((row: TaxTrackerData) => {
+        setIsAddUpdateRequestAppealModalOpen(true);
+        setRequestFormData(() => ({
+            ...getInitialRequestFormState(),
+            TaxTrackerId: row.TaxTrackerId ?? 0,
+        }));
+
+        setNoticeDocumentURL("");
+        setNoticeDocumentURLFiles([]);
+        setRemovedNoticeDocumentURLs([]);
+        setErrors({});
+        setFormData(prev => ({
+            ...prev,
+            Uniquekey: row.Uniquekey ?? null,
+        }));
+    }, [])
+
+    const noticeSectionColumns = useMemo<TableColumn[]>(
+        () => [
+            {
+                key: 'CompanyName',
+                label: 'Company Name',
+                width: '30',
+                fixed: 'left',
+                align: 'left',
+                render: value => value || ''
+            },
+            {
+                key: 'NoticeType',
+                label: 'Notice Title',
+                width: '30',
+                sortable: true,
+                fixed: 'left',
+                align: 'left',
+                render: (value, row) => (
+                    <TooltipText
+                        text={value || "-"}
+                        maxWidth="250px"
+                        tooltipThreshold={25}
+                        onClick={() => handleViewTaxTracker(row)}
+                    />
+                ),
+            },
+            {
+                key: 'GovernmentCompliance',
+                label: 'Government Compliance',
+                width: '30',
+                fixed: 'left',
+                align: 'left',
+                render: value => value || ''
+            },
+            {
+                key: 'NoticeSection',
+                label: 'Notice U / S',
+                width: '30',
+                fixed: 'left',
+                align: 'left',
+                render: value => value || ''
+            },
+            {
+                key: 'FinancialYear',
+                label: 'Financial Year',
+                width: '30',
+                fixed: 'left',
+                align: 'left',
+                render: value => value || ''
+            },
+
+            {
+                key: 'Authority',
+                label: 'Authority',
+                width: '30',
+                fixed: 'left',
+                align: 'left',
+                render: value => value || ''
+            },
+
+            {
+                key: 'NoticeDate',
+                label: 'Notice Date',
+                width: '30',
+                fixed: 'left',
+                align: 'left',
+                render: (value: any) => formatDate_dd_MonthName_yy(value),
+
+            },
+            {
+                key: 'DueDate',
+                label: 'Reply Due Date',
+                width: '30',
+                fixed: 'left',
+                align: 'left',
+                render: (value: any) => formatDate_dd_MonthName_yy(value),
+
+            },
+            {
+                key: "NoticeStatus",
+                label: "Notice Status",
+
+                render: (_, row) => {
+
+                    const { bg, text } = getNoticeStatusColor(row.NoticeStatus);
+
+                    return (
+                        <span
+                            className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
+                            style={{
+                                backgroundColor: bg,
+                                color: text,
+                            }}
+                        >
+                            {row.NoticeStatus}
+                        </span>
+                    );
+                }
+            },
+            {
+                key: 'Actions',
+                label: 'Actions',
+                width: '12',
+                sortable: false,
+                fixed: 'right',
+                align: 'center',
+                render: (_value, row) => {
+
+                    if (!canAction) return null;
+
+                    const isClosed = row.NoticeStatus === 'Closed';
+
+                    return (
+                        <div className="flex items-center justify-center gap-2">
+                            <Button
+                                onClick={(e) => {
+                                    e.preventDefault()
+                                    e.stopPropagation()
+                                    if (!isClosed) handleAddAppealModal(row)
+                                }}
+                                color="transparent"
+                                style={{
+                                    color: isClosed ? '#9ca3af' : 'blue',
+                                    opacity: isClosed ? 0.5 : 1,
+                                    cursor: isClosed ? 'not-allowed' : 'pointer',
+                                }}
+                                isborderRadius
+                                size="sm"
+                                title={isClosed ? 'Notice is closed' : 'Request Appeal'}
+                                disabled={isClosed}
+                            >
+                                <Plus className="h-4 w-4" />
+                            </Button>
+
+
+                            {row?.IsDelete === true && (
+                                <Button
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+
+                                        if (!row.IsDelete) {
+                                            handleConfirmationDialogBoxOpen(row);
+                                        }
+                                    }}
+                                    color="transparent"
+                                    style={{
+                                        color: row.IsDelete ? '#9ca3af' : 'red',
+                                        opacity: row.IsDelete ? 0.5 : 1,
+                                        cursor: row.IsDelete ? 'not-allowed' : 'pointer',
+                                    }}
+                                    isborderRadius
+                                    size="sm"
+                                    title={row.IsDelete ? 'Notice is already deleted' : 'Delete Tax Notice'}
+                                    disabled={row.IsDelete}
+                                >
+                                    <Trash2 className="h-4 w-4" />
+                                </Button>
+                            )}
+                        </div>
+                    )
+                }
+            },
+        ],
+        [handleConfirmationDialogBoxOpen, handleAddAppealModal, handleViewTaxTracker]
+    );
+
+    const requiredTaxTrackerColumnKeys: string[] = ['NoticeType', 'GovernmentCompliance', 'Authority', 'NoticeDate', 'DueDate', 'NoticeStatus', 'Actions'];
+
+    const allTaxTrackerColumnKeys: string[] = noticeSectionColumns.map(c => c.key);
+
+    const [selectedTaxTrackerColumnKeys, setSelectedTaxTrackerColumnKeys] = useState<string[]>(() => {
+        try {
+
+            const saved = LocalStorageHelper.getTaxTrackerTableColumns?.();
+
+            if (saved) {
+
+                const parsed = JSON.parse(saved) as string[]
+
+                const withRequired = Array.from(new Set([...parsed, ...requiredTaxTrackerColumnKeys]));
+
+                return withRequired.filter(k => allTaxTrackerColumnKeys.includes(k));
+            }
+        } catch { }
+        return allTaxTrackerColumnKeys;
+    });
+
+    useEffect(() => {
+        setSelectedTaxTrackerColumnKeys(prev => Array.from(new Set([...prev, ...requiredTaxTrackerColumnKeys])).filter(k => allTaxTrackerColumnKeys.includes(k)));
+    }, [noticeSectionColumns.length])
+
+    const visibleTaxTrackerColumns = useMemo(
+        () => noticeSectionColumns.filter(col => selectedTaxTrackerColumnKeys.includes(col.key)),
+        [noticeSectionColumns, selectedTaxTrackerColumnKeys]
+    );
+
+    const handleDeleteTaxTracker = async () => {
+        setIsConfirmationDialogBoxOpen(false);
+
+        if (!deleteTaxTrackerData) return;
+
+        await runApiWithLoader(
+            setIsLoading,
+            setLoadingMessage,
+            async () => {
+                const params: DeleteTaxTrackerRequest = {
+                    TaxTrackerId: deleteTaxTrackerData.TaxTrackerId || 0,
+                    Uniquekey: deleteTaxTrackerData.Uniquekey || "",
+
+                };
+
+                const response = await taxTrackerService.apiCallDeleteTaxTracker(params);
+
+                if (E.isRight(response)) {
+
+                    const newTotalRecords = pagination.totalRecords - 1;
+
+                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
+
+                    let pageToShow = pagination.currentPage;
+
+                    if (pagination.currentPage > newTotalPages) {
+                        pageToShow = newTotalPages;
+                    } else if (taxTrackerList.length === 1 && pagination.currentPage > 1) {
+                        pageToShow = pagination.currentPage - 1;
+                    }
+                    setPagination({
+                        currentPage: pageToShow,
+                        totalRecords: newTotalRecords,
+                        totalPages: newTotalPages,
+                    });
+
+                    await loadTaxTrackerList(pageToShow, filters, sortInfo);
+
+                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
+
+                    setIsConfirmationDialogBoxOpen(false);
+
+                    setDeleteTaxTrackerData(null);
+                } else {
+                    addToast({ type: "error", title: response.left.message });
+
+                    setIsConfirmationDialogBoxOpen(false);
+                }
+                return response;
+            },
+            undefined,
+            (error: any) => {
+                addToast({ type: "error", title: error.message });
+            },
+            undefined,
+            "Deleting Tax Tracker",
+        );
+    };
+
+    const handleRequestFieldChange = (field: keyof AddUpdateTaxTrackerDocumentRequest, value: any) => {
+        setRequestFormData((prev) => ({ ...prev, [field]: value }));
+
+        if (errors[field]) {
+            setErrors((prev) => ({ ...prev, [field]: "" }));
+        }
+    };
+
+
     const validateRequestForm = () => {
         const newErrors: { [key: string]: string } = {};
 
@@ -206,9 +599,6 @@ export const TaxTracker: React.FC = () => {
 
                 if (!requestFormData.AmountUnderDisputeDate)
                     newErrors.AmountUnderDisputeDate = "Notice Date is required.";
-
-                if (!requestFormData.AmountUnderDispute)
-                    newErrors.AmountUnderDispute = "Amount is required.";
 
                 if (!hasAnyDocumentFile(noticeDocumentURLFiles, noticeDocumentURL, removedNoticeDocumentURLs))
                     newErrors.NoticeDocumentURL = "Document is required.";
@@ -326,7 +716,6 @@ export const TaxTracker: React.FC = () => {
         fd.append('OrderStatus', requestFormData.OrderStatus || '');
         fd.append('NoticeStatus', requestFormData.NoticeStatus || '');
 
-
         noticeDocumentURLFiles.forEach(file => {
             if (file instanceof File) {
                 fd.append('NoticeDocumentURL', file);
@@ -343,134 +732,6 @@ export const TaxTracker: React.FC = () => {
 
         return fd;
     }
-
-    const handleFilterChange = (key: string, value: string) => {
-        setTempFilters(prev => updateFilter(prev, key, value));
-    }
-
-    const handleAddTaxTracker = useCallback(() => {
-        navigate("/taxTracker/add/");
-    }, [navigate]);
-
-    const handleViewTaxTracker = useCallback((item: TaxTrackerData) => {
-        updateListState({
-            TaxTrackerId: item.TaxTrackerId ?? 0,
-            NoticeType: item.NoticeType ?? "",
-            CompanyName: item.CompanyName ?? "",
-            FinancialYear: item.FinancialYear ?? "",
-            GovernmentCompliance: item.GovernmentCompliance ?? ""
-        });
-        navigate('/taxTracker/view');
-    }, [navigate, updateListState],);
-
-    const handleAddAppealModal = useCallback((row: TaxTrackerData) => {
-        setIsAddUpdateRequestAppealModalOpen(true);
-        setRequestFormData(() => ({
-            ...getInitialRequestFormState(),
-            TaxTrackerId: row.TaxTrackerId ?? 0,
-        }));
-
-        setNoticeDocumentURL("");
-        setNoticeDocumentURLFiles([]);
-        setRemovedNoticeDocumentURLs([]);
-        setErrors({});
-
-
-        setFormData(prev => ({
-            ...prev,
-            Uniquekey: row.Uniquekey ?? null,
-        }));
-    }, [])
-
-
-    const handleConfirmationDialogBoxOpen = useCallback((row: TaxTrackerData) => {
-        setDeleteTaxTrackerData(row);
-        setIsConfirmationDialogBoxOpen(true);
-    }, []);
-
-    const searchTaxTrackerRecords = async (searchValue: string) => {
-        setSearchTerm(searchValue);
-
-        const baseFilters: FilterInfo = {
-            ...filters,
-        };
-
-        if (searchValue.trim() === '') {
-            setFilters(baseFilters);
-            await loadTaxTrackerList(1, baseFilters);
-            return;
-        }
-
-        await loadTaxTrackerList(1, filters, sortInfo, searchValue)
-    };
-
-    const clearSearchTaxTrackerRecords = () => {
-        setSearchTerm('');
-        debouncedSearch.cancel?.();
-        loadTaxTrackerList(1, { NoticeSection: '' }, sortInfo, undefined);
-    };
-
-
-    const handleExportTaxTracker = async (exportType: 'Excel' | 'PDF') => {
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: FilterWithPaginationTaxTrackerRequest = {
-                    PageNumber: 1,
-                    PageSize: pagination.totalRecords,
-                    GovernmentCompliance: filters.GovernmentCompliance || undefined,
-                    CompanyName: filters.CompanyName ?? undefined,
-                    NoticeSection: filters.NoticeSection || "",
-                    FinancialYear: filters.FinancialYear || undefined,
-                    NoticeType: filters.NoticeType || "",
-                    NoticeStatus: filters.NoticeStatus || undefined,
-                    FromNoticeDate: filters.FromNoticeDate || null,
-                    ToNoticeDate: filters.ToNoticeDate || null,
-                    ExportType: exportType,
-                };
-
-                const response = await taxTrackerService.apiCallPullTaxTracker(params);
-
-                handleExportFile(response, exportType, "Tax Tracker", addToast);
-
-                return response;
-            },
-            undefined,
-            (error: any) =>
-                addToast({ type: "error", title: error.message || "Export failed" }),
-            undefined,
-            "Preparing Export",
-        );
-    }
-
-    const handleExportTaxTrackerExcel = () => handleExportTaxTracker("Excel");
-    const handleExportTaxTrackerPdf = () => handleExportTaxTracker("PDF");
-
-    const handlePageChange = useCallback((newPage: number) => {
-        updateListState({ page: newPage });
-    }, [updateListState],
-    );
-
-    const handleRequestFieldChange = (field: keyof AddUpdateTaxTrackerDocumentRequest, value: any) => {
-        setRequestFormData((prev) => ({ ...prev, [field]: value }));
-
-        if (errors[field]) {
-            setErrors((prev) => ({ ...prev, [field]: "" }));
-        }
-    };
-
-    const handleSortColumn = useCallback((sort: SortInfo) => {
-        setSortInfo(sort);
-
-        const updatedFilters = {
-            ...filters,
-        };
-
-        loadTaxTrackerList(1, updatedFilters, sort);
-    }, [filters]);
-
 
     const handleRequestForm = async (e?: React.FormEvent) => {
 
@@ -535,232 +796,6 @@ export const TaxTracker: React.FC = () => {
         );
     }
 
-    const handleDeleteTaxTracker = async () => {
-        setIsConfirmationDialogBoxOpen(false);
-
-        if (!deleteTaxTrackerData) return;
-
-        await runApiWithLoader(
-            setIsLoading,
-            setLoadingMessage,
-            async () => {
-                const params: DeleteTaxTrackerRequest = {
-                    TaxTrackerId: deleteTaxTrackerData.TaxTrackerId || 0,
-                    Uniquekey: deleteTaxTrackerData.Uniquekey || "",
-
-                };
-
-                const response = await taxTrackerService.apiCallDeleteTaxTracker(params);
-
-                if (E.isRight(response)) {
-
-                    const newTotalRecords = pagination.totalRecords - 1;
-
-                    const newTotalPages = Math.max(1, Math.ceil(newTotalRecords / pagination.pageSize));
-
-                    let pageToShow = pagination.currentPage;
-
-                    if (pagination.currentPage > newTotalPages) {
-                        pageToShow = newTotalPages;
-                    } else if (taxTrackerList.length === 1 && pagination.currentPage > 1) {
-                        pageToShow = pagination.currentPage - 1;
-                    }
-                    setPagination({
-                        currentPage: pageToShow,
-                        totalRecords: newTotalRecords,
-                        totalPages: newTotalPages,
-                    });
-
-                    await loadTaxTrackerList(pageToShow, filters, sortInfo);
-
-                    addToast({ type: "success", title: response.right.SuccessMessage?.[0] });
-
-                    setIsConfirmationDialogBoxOpen(false);
-
-                    setDeleteTaxTrackerData(null);
-                } else {
-                    addToast({ type: "error", title: response.left.message });
-
-                    setIsConfirmationDialogBoxOpen(false);
-                }
-                return response;
-            },
-            undefined,
-            (error: any) => {
-                addToast({ type: "error", title: error.message });
-            },
-            undefined,
-            "Deleting Tax Tracker",
-        );
-    };
-
-    const taxTrackerPaginationInfo: PaginationInfo = useMemo(
-        () => ({
-            currentPage: pagination.currentPage,
-            totalPages: pagination.totalPages,
-            totalRecords: pagination.totalRecords,
-            pageSize: pagination.pageSize,
-            onPageChange: handlePageChange,
-        }),
-        [
-            pagination.currentPage,
-            pagination.totalPages,
-            pagination.totalRecords,
-            pagination.pageSize,
-        ],
-    );
-
-    const noticeSectionColumns = useMemo<TableColumn[]>(
-        () => [
-            {
-                key: 'NoticeType',
-                label: 'Notice Type',
-                width: '30',
-                sortable: true,
-                fixed: 'left',
-                align: 'left',
-                render: (value, row) => (
-                    <TooltipText
-                        text={value || "-"}
-                        maxWidth="250px"
-                        tooltipThreshold={25}
-                        onClick={() => handleViewTaxTracker(row)}
-                    />
-                ),
-            },
-            {
-                key: 'GovernmentCompliance',
-                label: 'Government Compliance',
-                width: '30',
-                fixed: 'left',
-                align: 'left',
-                render: value => value || ''
-            },
-            {
-                key: 'CompanyName',
-                label: 'Company Name',
-                width: '30',
-                fixed: 'left',
-                align: 'left',
-                render: value => value || ''
-            },
-            {
-                key: 'Authority',
-                label: 'Authority',
-                width: '30',
-                fixed: 'left',
-                align: 'left',
-                render: value => value || ''
-            },
-            {
-                key: 'NoticeSection',
-                label: 'Notice U / S',
-                width: '30',
-                fixed: 'left',
-                align: 'left',
-                render: value => value || ''
-            },
-            {
-                key: 'NoticeDate',
-                label: 'Notice Date',
-                width: '30',
-                fixed: 'left',
-                align: 'left',
-                render: (value: any) => formatDate_dd_MonthName_yy(value),
-
-            },
-            {
-                key: 'DueDate',
-                label: 'Due Date',
-                width: '30',
-                fixed: 'left',
-                align: 'left',
-                render: (value: any) => formatDate_dd_MonthName_yy(value),
-
-            },
-            {
-                key: "NoticeStatus",
-                label: "Notice Status",
-
-                render: (_, row) => {
-
-                    const { bg, text } = getNoticeStatusColor(row.NoticeStatus);
-
-                    return (
-                        <span
-                            className="inline-block px-2 py-1 rounded-full text-xs font-medium whitespace-nowrap"
-                            style={{
-                                backgroundColor: bg,
-                                color: text,
-                            }}
-                        >
-                            {row.NoticeStatus}
-                        </span>
-                    );
-                }
-            },
-            {
-                key: 'Actions',
-                label: 'Actions',
-                width: '12',
-                sortable: false,
-                fixed: 'right',
-                align: 'center',
-                render: (_value, row) => {
-
-                    if (!canAction) return null;
-
-                    const isClosed = row.NoticeStatus === 'Closed';
-
-                    return (
-                        <div className="flex items-center justify-center gap-2">
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    if (!isClosed) handleAddAppealModal(row)
-                                }}
-                                color="transparent"
-                                style={{
-                                    color: isClosed ? '#9ca3af' : 'blue',
-                                    opacity: isClosed ? 0.5 : 1,
-                                    cursor: isClosed ? 'not-allowed' : 'pointer',
-                                }}
-                                isborderRadius
-                                size="sm"
-                                title={isClosed ? 'Notice is closed' : 'Request Appeal'}
-                                disabled={isClosed}
-                            >
-                                <Plus className="h-4 w-4" />
-                            </Button>
-
-                            <Button
-                                onClick={(e) => {
-                                    e.preventDefault()
-                                    e.stopPropagation()
-                                    if (!isClosed) handleConfirmationDialogBoxOpen(row)
-                                }}
-                                color="transparent"
-                                style={{
-                                    color: isClosed ? '#9ca3af' : 'red',
-                                    opacity: isClosed ? 0.5 : 1,
-                                    cursor: isClosed ? 'not-allowed' : 'pointer',
-                                }}
-                                isborderRadius
-                                size="sm"
-                                title={isClosed ? 'Notice is closed' : 'Delete Tax Notice'}
-                                disabled={isClosed}
-                            >
-                                <Trash2 className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    )
-                }
-            },
-        ],
-        [handleConfirmationDialogBoxOpen, handleAddAppealModal, handleViewTaxTracker]
-    );
-
     return (
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
 
@@ -777,6 +812,9 @@ export const TaxTracker: React.FC = () => {
                             debouncedSearch(v);
                         }}
                         onClearSearch={clearSearchTaxTrackerRecords}
+
+                        isShowCustomizeButton
+                        onCustomize={() => setIsShowCustomizeTaxTrackerColumnsModal(true)}
 
                         isShowFilterButton
                         filters={filters}
@@ -796,11 +834,32 @@ export const TaxTracker: React.FC = () => {
                 </div>
             </div>
 
+            <CustomizeColumnsModal
+                isOpen={isShowCustomizeTaxTrackerColumnsModal}
+                onClose={() => setIsShowCustomizeTaxTrackerColumnsModal(false)}
+                onApply={keys => {
+                    const withRequired = Array.from(
+                        new Set([...keys, ...requiredTaxTrackerColumnKeys])
+                    );
+                    setSelectedTaxTrackerColumnKeys(withRequired);
+
+                    try {
+                        LocalStorageHelper.storeTaxTrackerTableColumns?.(
+                            JSON.stringify(withRequired)
+                        );
+                    } catch { }
+                }}
+                columns={noticeSectionColumns}
+                selectedKeys={selectedTaxTrackerColumnKeys}
+                requiredKeys={requiredTaxTrackerColumnKeys}
+                title="Customize Table Columns"
+            />
+
             <div className="">
 
                 <DataTable
                     data={taxTrackerList}
-                    columns={noticeSectionColumns}
+                    columns={visibleTaxTrackerColumns}
                     pagination={taxTrackerPaginationInfo}
                     emptyMessage="No Tax Tracker Found"
                     recordsPerPage={20}
@@ -906,17 +965,7 @@ export const TaxTracker: React.FC = () => {
                                     required
                                     error={errors.AmountUnderDisputeDate} />
                             </div>
-                            <div>
-                                <Input
-                                    label="Amount Under Dispute (₹)"
-                                    placeholder="Enter Amount"
-                                    value={requestFormData.AmountUnderDispute || ''}
-                                    onChange={(e) => handleRequestFieldChange('AmountUnderDispute', filterNumbersWithDecimal(e.target.value) || "")}
-                                    error={errors.AmountUnderDispute}
-                                    rightIcon="₹"
-                                    required
-                                />
-                            </div>
+
                             <div className="mt-5">
                                 <MultiFilePicker
                                     label={`${requestFormData.RequestType} Document`}
@@ -1027,7 +1076,7 @@ export const TaxTracker: React.FC = () => {
                                             label="Amount Under Dispute"
                                             placeholder="Enter Amount"
                                             value={requestFormData.AmountUnderDispute || ''}
-
+                                            required
                                             onChange={(e) =>
                                                 handleRequestFieldChange(
                                                     "AmountUnderDispute",
@@ -1148,7 +1197,7 @@ export const TaxTracker: React.FC = () => {
                             <div className="mt-5">
                                 <Input
                                     type="text"
-                                    label='Notice Type'
+                                    label='Notice Title'
                                     value={tempFilters.NoticeType || ''}
                                     onChange={(e) => {
                                         setTempFilters({
@@ -1156,7 +1205,7 @@ export const TaxTracker: React.FC = () => {
                                             NoticeType: e.target.value
                                         });
                                     }}
-                                    placeholder="Enter Notice Type"
+                                    placeholder="Enter Notice Title"
                                     maxLength={70}
 
                                 />
@@ -1180,6 +1229,16 @@ export const TaxTracker: React.FC = () => {
                                     onChange={e => handleFilterChange("Authority", e.target.value)}
                                     placeholder="Enter Authority"
                                     maxLength={70}
+                                />
+                            </div>
+                            <div className="mt-5">
+                                <Input
+                                    label='Financial Year'
+                                    type="text"
+                                    value={tempFilters.FinancialYear || ''}
+                                    onChange={e => handleFilterChange("FinancialYear", e.target.value)}
+                                    placeholder="Enter Financial Year"
+                                    maxLength={7}
                                 />
                             </div>
                             <div className="mt-5">

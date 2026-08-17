@@ -6,7 +6,7 @@ import { runApiWithLoader } from "@/core/utils";
 import { taxTrackerService } from "@/features/taxTracker/services/TaxTrackerService";
 import * as E from "fp-ts/Either";
 import useToast from "@/core/hooks/useToast";
-import { formatDate_dd_MonthName_yy } from "@/core/utils/dateFormat";
+import { formatDate_dd_MonthName_yy, formatDate_dd_MonthName_yy_hh_mm } from "@/core/utils/dateFormat";
 import { FieldItem } from "@/ui/components/forms/FieldItem";
 import { Loader } from "@/core/utils/loader";
 import HeaderActionBar from "@/ui/components/forms/HeaderActionBar";
@@ -18,10 +18,58 @@ import { Button } from "@/ui/components/forms";
 import { Modal } from "@/ui/components/Modal/Modal";
 import { TextArea } from "@/ui/components/forms/Textarea";
 import MultiFilePicker from "@/ui/components/ImagePicker/MultiFilePicker";
-import { getCardConfig } from "@/features/taxTracker/utils/Status";
+import { getCardConfig, getNoticeStatusColor } from "@/features/taxTracker/utils/Status";
 import { formatCurrency } from "@/core/utils/comman";
-import Accordion from "@/ui/components/Card/Accordion";
 import { ChevronDownIcon, ChevronRightIcon } from "lucide-react";
+import { Accordion } from "@/ui/components/Card/Accordion";
+import { useMenuPermissions } from "@/features/menu/hooks/useMenuPermissions";
+
+interface NoticeCycle {
+    cycleKey: string;
+    anchorDoc: TaxTrackerDocumentDetailsData;
+    docs: TaxTrackerDocumentDetailsData[];
+    cycleNumber: number;
+}
+
+function groupIntoCycles(docs: TaxTrackerDocumentDetailsData[]): NoticeCycle[] {
+    if (!docs || docs.length === 0) return [];
+
+    const cycles: NoticeCycle[] = [];
+    let currentCycle: TaxTrackerDocumentDetailsData[] = [];
+    let currentHasReopen = false;
+
+    docs.forEach((doc) => {
+        const rt = doc.RequestType;
+        const isNotice = !rt || rt === "Notice";
+
+        if (isNotice && currentCycle.length === 0) {
+            currentCycle.push(doc);
+        } else if (isNotice && currentHasReopen) {
+            pushCycle(cycles, currentCycle);
+            currentCycle = [doc];
+            currentHasReopen = false;
+        } else {
+            currentCycle.push(doc);
+            if (rt === "Reopen") currentHasReopen = true;
+        }
+    });
+
+    if (currentCycle.length > 0) {
+        pushCycle(cycles, currentCycle);
+    }
+
+    return cycles;
+}
+
+function pushCycle(cycles: NoticeCycle[], docs: TaxTrackerDocumentDetailsData[]) {
+    const anchor = docs[0];
+    cycles.push({
+        cycleKey: String(anchor.TaxTrackerDocumentId ?? `cycle-${cycles.length}`),
+        anchorDoc: anchor,
+        docs,
+        cycleNumber: cycles.length + 1,
+    });
+}
 
 const getReopenRequestFormState = (): AddUpdateTaxTrackerDocumentRequest => ({
     TaxTrackerDocumentId: 0,
@@ -44,6 +92,7 @@ export const ViewTaxTracker: React.FC = () => {
 
     const [detailsData, setDetailsData] = useState<TaxTrackerData>();
     const [taxTrackerDetailsData, setTaxTrackerDetailsData] = useState<TaxTrackerDocumentDetailsData[]>([]);
+    const [openCycles, setOpenCycles] = useState<Set<string>>(new Set());
     const [reopenModalOpen, setReopenModalOpen] = useState(false);
     const [reopenFormData, setReopenFormData] = useState<AddUpdateTaxTrackerDocumentRequest>(() => getReopenRequestFormState());
     const [errors, setErrors] = useState<{ [k: string]: string }>({});
@@ -60,26 +109,44 @@ export const ViewTaxTracker: React.FC = () => {
     const { NoticeType, GovernmentCompliance } = listState;
     const navigate = useNavigate();
 
-    const noticeDetails = taxTrackerDetailsData.filter(
-        (item) => !item.RequestType || item.RequestType === "Notice"
-    );
+    const { canAction } = useMenuPermissions("/taxTracker");
 
-    const orderDetails = taxTrackerDetailsData.filter(
-        (item) => item.RequestType === "Order"
-    );
+    const latestRequest = taxTrackerDetailsData?.[taxTrackerDetailsData.length - 1];
+    const showReopenButton =
+        latestRequest?.RequestType === 'Close-Notice';
 
-    const taxTrackerDocumentAccordionItems = taxTrackerDetailsData
-        .filter(d => d.TaxTrackerDocumentId !== 0)
-        .map(d => ({
-            key: String(d.TaxTrackerDocumentId),
-            title: d.RequestType ?? "",
-            doc: d
-        }));
+    const noticeStatusColor = getNoticeStatusColor(detailsData?.NoticeStatus ?? "");
+
+    const firstDoc = taxTrackerDetailsData?.[0];
+
+    const isInitialNotice =
+        taxTrackerDetailsData.length === 1 &&
+        (!firstDoc?.RequestType || firstDoc?.RequestType === "Notice" || firstDoc?.RequestType === "");
+
+
+    const isEditable = canAction && isInitialNotice
+    const isEditDisabled = !isEditable;
+
+    const noticeCycles = groupIntoCycles(taxTrackerDetailsData);
+
+    const getNoticeDocsForCycle = (cycle: NoticeCycle) =>
+        cycle.docs.filter(d => !d.RequestType || d.RequestType === "Notice");
+
+    const getOrderDocsForCycle = (cycle: NoticeCycle) =>
+        cycle.docs.filter(d => d.RequestType === "Order");
+
+    const toggleCycle = (key: string) => {
+        setOpenCycles(prev => {
+            const next = new Set(prev);
+            if (next.has(key)) next.delete(key);
+            else next.add(key);
+            return next;
+        });
+    };
 
     useEffect(() => {
         loadDetailsData();
     }, [currentTaxTrackerId]);
-
 
     const loadDetailsData = async () => {
         await runApiWithLoader(
@@ -118,19 +185,6 @@ export const ViewTaxTracker: React.FC = () => {
         );
     };
 
-    const validateReopenRequestForm = () => {
-        const newErrors: { [key: string]: string } = {};
-
-        if (!reopenFormData.NoticeDescription || reopenFormData.NoticeDescription.trim() === "") {
-            newErrors.NoticeDescription = "Remark is required";
-        }
-
-        return {
-            isValid: Object.keys(newErrors).length === 0,
-            errors: newErrors,
-        };
-    };
-
     const PushAddUpdateRequestForm = (): FormData => {
         const fd = new FormData();
         fd.append('NoticeDescription', reopenFormData.NoticeDescription || '');
@@ -151,6 +205,24 @@ export const ViewTaxTracker: React.FC = () => {
         fd.append('RemoveNoticeDocumentURL', removedNoticeDocumentURLs.join(','));
 
         return fd;
+    };
+
+    const handleEditTaxTracker = (taxTrackerId: number) => {
+        if (!taxTrackerId) return;
+        navigate(`/taxTracker/add/${taxTrackerId}`);
+    };
+
+    const validateReopenRequestForm = () => {
+        const newErrors: { [key: string]: string } = {};
+
+        if (!reopenFormData.NoticeDescription || reopenFormData.NoticeDescription.trim() === "") {
+            newErrors.NoticeDescription = "Remark is required";
+        }
+
+        return {
+            isValid: Object.keys(newErrors).length === 0,
+            errors: newErrors,
+        };
     };
 
     const handleReopenModal = () => {
@@ -204,96 +276,161 @@ export const ViewTaxTracker: React.FC = () => {
         <div className="bg-white rounded-lg shadow-sm border border-gray-300 p-6">
             <Loader loading={isLoading} title={loadingMessage}> <div></div> </Loader>
 
-            <div className="flex justify-between items-center">
-                <div>
+            <div className="flex items-center justify-between gap-4">
+                <div className="flex-1">
                     <HeaderActionBar
                         titleText={`${GovernmentCompliance} : `}
                         subTitleText={NoticeType}
+                        EditText="Edit"
+                        canAction={!isEditDisabled}
+                        onEdit={() => {
+                            if (detailsData?.TaxTrackerId) handleEditTaxTracker(detailsData.TaxTrackerId)
+                        }}
                         onCancel={() => {
                             navigate('/taxTracker');
                         }}
                     />
                 </div>
 
-                {taxTrackerDetailsData.some((item) => item.RequestType === 'Close-Notice') && (
-                    <div className="text-right">
-                        <Button onClick={handleReopenModal}>Reopen</Button>
-                    </div>
+                {showReopenButton && (
+                    <Button onClick={handleReopenModal}>
+                        Reopen
+                    </Button>
                 )}
             </div>
 
             <div className="bg-white w-full rounded-lg border border-gray-200 shadow-xs overflow-hidden mt-5">
-                <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                    <FieldItem label="Company Name" value={detailsData?.CompanyName || '-'} />
-                    <FieldItem label="Financial Year" value={detailsData?.FinancialYear || '-'} />
-                    <FieldItem label="Responsible Person" value={detailsData?.ResponsiblePerson || '-'} />
+                <div className="px-5 py-4 grid grid-cols-1 md:grid-cols-4 items-start">
+                    <FieldItem
+                        label="Company Name"
+                        value={detailsData?.CompanyName || '-'}
+                    />
+
+                    <FieldItem
+                        label="Financial Year"
+                        value={detailsData?.FinancialYear || '-'}
+                    />
+                    <FieldItem
+                        label="Notice Status"
+                        value={
+                            <span
+                                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                                style={{
+                                    backgroundColor: noticeStatusColor.bg,
+                                    color: noticeStatusColor.text,
+                                }}
+                            >
+                                {detailsData?.NoticeStatus || "-"}
+                            </span>
+                        }
+                    />
+                    <FieldItem
+                        label="Authority"
+                        value={detailsData?.Authority || '-'}
+                    />
+                </div>
+                <div className="p-6">
+                    <FieldItem
+                        label="Responsible Person"
+                        value={detailsData?.ResponsiblePerson || '-'}
+                    />
                 </div>
             </div>
 
-            <div className="mt-5">
+            {noticeCycles.length === 0 ? (
+                <div className="mt-5 space-y-3">
+                    <div className="text-sm text-gray-400 italic text-center py-10">
+                        No data is present.
+                    </div>
+                </div>
+            ) : (
                 <Accordion
-                    items={taxTrackerDocumentAccordionItems}
-                    allowMultipleOpen
+                    className="mt-5 space-y-3"
+                    items={noticeCycles.map((cycle) => ({
+                        key: cycle.cycleKey,
+                        title: `Cycle ${cycle.cycleNumber}`,
+                    }))}
+                    openMap={Object.fromEntries([...openCycles].map(k => [k, true]))}
+                    onToggle={(key) => {
+                        toggleCycle(key);
+                    }}
                     renderItem={(item, isOpen, toggle) => {
-
-                        const taxTrackerDocumentDetailsData = taxTrackerDetailsData?.find(d => String(d.TaxTrackerDocumentId) === item.key);
-
-                        if (!taxTrackerDocumentDetailsData) return null;
+                        const cycle = noticeCycles.find(c => c.cycleKey === item.key)!;
+                        const noticeDocsInCycle = getNoticeDocsForCycle(cycle);
+                        const orderDocsInCycle = getOrderDocsForCycle(cycle);
+                        const cycleNotice = noticeDocsInCycle[0];
 
                         return (
-                            <div className="" >
-                                <div className="flex justify-between items-center px-4 py-3"
-                                    onClick={async () => {
-                                        toggle();
-                                        if (!isOpen) await loadDetailsData();
-                                    }}
+                            <>
+                                <div
+                                    className="relative cursor-pointer overflow-hidden rounded-xl bg-white"
+                                    onClick={toggle}
                                 >
-                                    <div className="grid grid-cols-4 gap-3">
-                                        <FieldItem
-                                            label="Request Type"
-                                            value={taxTrackerDocumentDetailsData.RequestType || 'Initial Notice'}
-                                        />
 
-                                        <FieldItem
-                                            label="Notice U/S"
-                                            value={detailsData?.NoticeSection || '-'}
-                                        />
+                                    {!isOpen && <div className="absolute inset-y-0 left-0 w-1 bg-[#2563EB]" />}
+                                    <div className="flex items-center justify-between px-5 py-3 pl-6 pt-5">
+                                        <div className="grid grid-cols-1 md:grid-cols-5 gap-3 flex-1">
 
-                                        <FieldItem
-                                            label="Notice Date"
-                                            value={formatDate_dd_MonthName_yy(detailsData?.NoticeDate || '')}
-                                        />
+                                            <FieldItem
+                                                label="Notice Date"
+                                                value={formatDate_dd_MonthName_yy(
+                                                    cycleNotice?.RequestType === "Notice"
+                                                        ? cycleNotice?.AmountUnderDisputeDate || ''
+                                                        : detailsData?.NoticeDate || ''
+                                                )}
+                                            />
 
-                                        <FieldItem
-                                            label="Notice Type"
-                                            value={detailsData?.NoticeType || '-'}
-                                        />
+                                            <FieldItem
+                                                label="Notice Title"
+                                                value={detailsData?.NoticeType || '-'}
+                                            />
+                                            <FieldItem
+                                                label="Government Compliance"
+                                                value={detailsData?.GovernmentCompliance || '-'}
+                                            />
+
+                                            <FieldItem
+                                                label="Notice U/S"
+                                                value={detailsData?.NoticeSection || '-'}
+                                            />
+                                            <FieldItem
+                                                label="Reply Due Date"
+                                                value={formatDate_dd_MonthName_yy(detailsData?.DueDate || '')}
+                                            />
+                                        </div>
+                                        <span className="ml-6 flex-shrink-0">
+                                            {isOpen ? (
+                                                <ChevronDownIcon className="h-5 w-5" />
+                                            ) : (
+                                                <ChevronRightIcon className="h-5 w-5" />
+                                            )}
+                                        </span>
                                     </div>
-                                    <span>{isOpen ? <ChevronDownIcon className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}</span>
                                 </div>
 
                                 {isOpen && (
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pl-3 pt-3 pb-3">
                                         <div className="space-y-5">
+
                                             <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs">
                                                 <div className="bg-[#f3f0fe] px-3 py-2 border-b border-[#D0D7DE]">
                                                     <h4 className="text-sm font-semibold text-[#8349df]">
-                                                        Address Details
+                                                        Authority Details
                                                     </h4>
                                                 </div>
 
-
-                                                {noticeDetails.map((item, key) => (
+                                                {noticeDocsInCycle.map((item, key) => (
                                                     <div key={key}>
-                                                        <div className={`p-4 bg-white grid grid-cols-3 gap-4 ${key !== noticeDetails.length - 1 && 'border-b border-gray-300'}`}>
-                                                            <FieldItem label="Due Date" value={detailsData?.DueDate ? formatDate_dd_MonthName_yy(detailsData.DueDate) : '-'} />
+                                                        <div className={`p-4 bg-white grid grid-cols-3 gap-4 ${key !== noticeDocsInCycle.length - 1 && 'border-b border-gray-300'}`}>
+                                                            <FieldItem label="Officer Name" value={item?.OfficerName || '-'} />
                                                             <FieldItem label="Office Address" value={item?.OfficerAddress || '-'} />
-                                                            <FieldItem label="Created By" value={item?.CreatedBy || '-'} />
                                                         </div>
+
+
                                                     </div>
                                                 ))}
 
-                                                {!noticeDetails?.length && (
+                                                {!noticeDocsInCycle?.length && (
                                                     <div className="p-4 bg-white grid grid-cols-3 gap-4">
                                                         <FieldItem label="Notice U/S" value="-" />
                                                         <FieldItem label="Due Date" value="-" />
@@ -312,9 +449,9 @@ export const ViewTaxTracker: React.FC = () => {
                                                     </h4>
                                                 </div>
 
-                                                {orderDetails.map((item, key) => (
+                                                {orderDocsInCycle.map((item, key) => (
                                                     <div key={key}>
-                                                        <div className={`p-4 bg-white grid grid-cols-3 gap-4 ${key !== orderDetails.length - 1 ? 'border-b border-gray-300' : ''}`}>
+                                                        <div className={`p-4 bg-white grid grid-cols-3 gap-4 ${key !== orderDocsInCycle.length - 1 ? 'border-b border-gray-300' : ''}`}>
                                                             <FieldItem
                                                                 label={
                                                                     item?.OrderStatus === "Non-Favourable"
@@ -327,28 +464,48 @@ export const ViewTaxTracker: React.FC = () => {
                                                                         : "-"
                                                                 }
                                                             />
-                                                            <FieldItem
-                                                                label="Demand Amount"
-                                                                value={formatCurrency(item.AmountUnderDispute)}
-                                                            />
+
+                                                            {item?.OrderStatus !== "Favourable" && (
+                                                                <FieldItem
+                                                                    label="Amount Under Dispute"
+                                                                    value={formatCurrency(item.AmountUnderDispute)}
+                                                                />
+                                                            )}
+
                                                             {item?.OrderStatus === "Non-Favourable" && (
                                                                 <FieldItem
                                                                     label="Authority Type"
                                                                     value={item?.AuthorityType || "-"}
                                                                 />
                                                             )}
+
                                                             <FieldItem
                                                                 label="Order Status"
-                                                                value={item?.OrderStatus || "-"}
+                                                                value={
+                                                                    (() => {
+                                                                        const orderStatusColor = getNoticeStatusColor(item?.OrderStatus ?? "");
+                                                                        return (
+                                                                            <span
+                                                                                className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium"
+                                                                                style={{
+                                                                                    backgroundColor: orderStatusColor.bg,
+                                                                                    color: orderStatusColor.text,
+                                                                                }}
+                                                                            >
+                                                                                {item?.OrderStatus || "-"}
+                                                                            </span>
+                                                                        );
+                                                                    })()
+                                                                }
                                                             />
                                                         </div>
                                                     </div>
                                                 ))}
 
-                                                {(!orderDetails || orderDetails.length === 0) && (
+                                                {(!orderDocsInCycle || orderDocsInCycle.length === 0) && (
                                                     <div className="p-4 bg-white grid grid-cols-3 gap-4">
                                                         <FieldItem label="Order Date" value="-" />
-                                                        <FieldItem label="Demand Amount" value="-" />
+                                                        <FieldItem label="Amount Under Dispute" value="-" />
                                                         <FieldItem label="Order Status" value="-" />
                                                     </div>
                                                 )}
@@ -363,15 +520,15 @@ export const ViewTaxTracker: React.FC = () => {
 
                                                 <div className="p-4 bg-white grid grid-cols-3 gap-4">
                                                     <FieldItem label="Created By" value={detailsData?.CreatedBy} />
-                                                    <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy(detailsData?.CreatedDate || '')} />
+                                                    <FieldItem label="Created Date" value={formatDate_dd_MonthName_yy_hh_mm(detailsData?.CreatedDate || '')} />
                                                     <FieldItem label="Modified By" value={detailsData?.ModifiedBy} />
-                                                    <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy(detailsData?.ModifiedDate || '')} />
+                                                    <FieldItem label="Modified Date" value={formatDate_dd_MonthName_yy_hh_mm(detailsData?.ModifiedDate || '')} />
                                                 </div>
                                             </section>
                                         </div>
 
-                                        <div>
-                                            <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs bg-white min-h-[500px] overflow-y-auto thin-scroll">
+                                        <div className="pr-4">
+                                            <section className="border-[0.1px] rounded-xl border-[#33333321] overflow-hidden shadow-2xs bg-white min-h-[500px] overflow-y-auto thin-scroll ">
                                                 <div className="bg-[#edf7ed] px-3 py-2 border-b border-[#D0D7DE]">
                                                     <h4 className="text-sm font-semibold text-[#1e4620]">
                                                         Activity Tracker
@@ -379,10 +536,10 @@ export const ViewTaxTracker: React.FC = () => {
                                                 </div>
 
                                                 <div className="flex flex-col items-center w-full p-4">
-                                                    <div className="w-full ml-1 h-[506px] overflow-y-auto pr-2 thin-scroll">
-                                                        {taxTrackerDetailsData && taxTrackerDetailsData.length > 0 ? (
+                                                    <div className="w-full ml-1 h-[400px] overflow-y-auto pr-2 thin-scroll">
+                                                        {cycle.docs.length > 0 ? (
                                                             <div className="space-y-5">
-                                                                {taxTrackerDetailsData.map((item, index) => {
+                                                                {cycle.docs.map((item, index) => {
                                                                     const isLeftAligned = !item.RequestType || item.RequestType === "Notice" || item.RequestType === "Order";
 
                                                                     const cardConfig = getCardConfig(item.OrderStatus ?? undefined, item.RequestType ?? undefined);
@@ -397,14 +554,14 @@ export const ViewTaxTracker: React.FC = () => {
                                                                                             {cardConfig.title}
                                                                                         </p>
                                                                                         <div className={`text-xs font-medium ${item.RequestType === "Reply" || item.RequestType === "Order" ? 'text-gray-300' : 'text-gray-500'}`}>
-                                                                                            {formatDate_dd_MonthName_yy(item.CreatedDate ?? "")}
+                                                                                            {formatDate_dd_MonthName_yy(item.AmountUnderDisputeDate ?? "")}
                                                                                         </div>
                                                                                     </div>
 
                                                                                     {item.NoticeDescription && (
                                                                                         <div className="mt-2 pt-2">
                                                                                             <p className={`text-xs font-semibold ${cardConfig.labelColor}`}>
-                                                                                                Remark : <span className={`font-normal ${cardConfig.fieldTextColor}`}>{item.NoticeDescription}</span>
+                                                                                                Description : <span className={`font-normal ${cardConfig.fieldTextColor}`}>{item.NoticeDescription}</span>
                                                                                             </p>
                                                                                         </div>
                                                                                     )}
@@ -421,21 +578,28 @@ export const ViewTaxTracker: React.FC = () => {
                                                                                     )}
                                                                                 </div>
 
-                                                                                <div className="mt-1.5 px-1">
-                                                                                    <div className="flex justify-between text-[10px] tracking-wider text-gray-500 font-bold">
-                                                                                        {item.OfficerName && (
-                                                                                            <p>
-                                                                                                AUTHORITY : <span className={cardConfig.footerColor}>{item?.OfficerName}</span>
-                                                                                            </p>
-                                                                                        )}
-                                                                                        <p>
-                                                                                            {item.RequestType === "Reply" ? "UPLOADED BY : " : "AUTHORITY NAME : "}
-                                                                                            <span className={cardConfig.footerColor}>
-                                                                                                {(item.CreatedBy || item.OfficerName || "").toUpperCase()}
-                                                                                            </span>
-                                                                                        </p>
+
+                                                                                {(!item.RequestType || item.RequestType === "Notice" || item.RequestType === "Reply") && (
+                                                                                    <div className="mt-1.5 px-1">
+                                                                                        <div className="flex justify-between text-[10px] tracking-wider text-gray-500 font-bold">
+                                                                                            {detailsData?.Authority && (
+                                                                                                <p>
+                                                                                                    AUTHORITY : <span className={cardConfig.footerColor}>{detailsData?.Authority}</span>
+                                                                                                </p>
+                                                                                            )}
+                                                                                            {(!item.RequestType || item.RequestType === "Notice") && (
+                                                                                                <p>
+                                                                                                    OFFICER NAME : <span className={cardConfig.footerColor}>{(item.OfficerName || "").toUpperCase()}</span>
+                                                                                                </p>
+                                                                                            )}
+                                                                                            {item.RequestType === "Reply" && (
+                                                                                                <p>
+                                                                                                    REPLIED BY : <span className={cardConfig.footerColor}>{(item.CreatedBy || "").toUpperCase()}</span>
+                                                                                                </p>
+                                                                                            )}
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
+                                                                                )}
 
                                                                             </div>
                                                                         </div>
@@ -451,18 +615,13 @@ export const ViewTaxTracker: React.FC = () => {
                                                 </div>
                                             </section >
                                         </div >
-
-
                                     </div>
                                 )}
-
-                            </div>
+                            </>
                         );
-                    }}>
-
-                </Accordion>
-
-            </div>
+                    }}
+                />
+            )}
 
             <Modal
                 isOpen={reopenModalOpen}

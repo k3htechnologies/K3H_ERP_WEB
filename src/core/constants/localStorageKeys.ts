@@ -99,8 +99,11 @@ export const LOCAL_STORAGE_KEYS = {
     //TICKET MASTER
     TICKET_MASTER_SELECTED_COLUMNS: 'ticket.selectedColumns',
 
-    //TAX TRACKER
+    //NOTICE SECTION MASTER
     NOTICE_SECTION_MASTER_SELECTED_COLUMNS: 'noticeSectionMaster.selectedColumns',
+
+    //TAX TRACKER
+    TAX_TRACKER_SELECTED_COLUMNS: 'taxTracker.selectedColumns',
 
 
 } as const

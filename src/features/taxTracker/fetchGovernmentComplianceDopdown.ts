@@ -21,8 +21,7 @@ export const fetchNoticeSectionDropdown = async (pageNumber: number, governmentC
             .filter((d: any) => d.GovernmentCompliance === governmentCompliance)
             .map((d: any) => ({
                 label: d.NoticeSection,
-                value: d.NoticeSection,
-                noticeSectionMasterId: d.NoticeSectionMasterId
+                value: d.NoticeSectionMasterId,
             }));
 
         return {

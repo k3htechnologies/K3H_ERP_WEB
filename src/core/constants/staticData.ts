@@ -609,7 +609,8 @@ export const MASTER_DATA = {
 
   ibmObmReportStage: ["IBM", "OBM"],
 
-  noticeType: ['Income Tax', 'GST', 'PT', 'PF', 'ESIC', 'Other'],
+  noticeType: ['GST (Goverment Service Tax)', 'Income Tax', 'PF (Provident Fund)', 'ESIC (Employee State Insurance)', 'PT (Profession Tax)', 'Other'],
+
 
   authorityOptions: ["District Court", "High Court", "Supreme Court", "Other"],
 
